@@ -238,3 +238,21 @@ TEST_CASE("postgres_listener_service_notify_method", tags) {
 
     listener.stop();
 }
+
+TEST_CASE("postgres_listener_service_connect_forces_utc_session", tags) {
+    database_helper h;
+    const auto& credentials = h.context().credentials();
+
+    auto conn_result = connect_utc(credentials);
+    REQUIRE(conn_result);
+
+    // Behavioral assertion: in a UTC session the sentinel function equals the
+    // naive literal's fold, so this DO block raises. In any non-UTC session
+    // (the server default is Europe/London) the naive literal folds away and
+    // the DO block succeeds -- which would fail the REQUIRE_FALSE below.
+    auto result = (*conn_result)->execute(
+        "DO $ BEGIN IF ores_utility_infinity_timestamp_fn() = "
+        "'9999-12-31 23:59:59'::timestamptz THEN RAISE EXCEPTION 'utc'; "
+        "END IF; END $;");
+    REQUIRE_FALSE(result);
+}

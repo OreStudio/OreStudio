@@ -22,6 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.database/domain/session_utilities.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <mutex>
@@ -152,7 +153,7 @@ public:
         // Force UTC for all timestamp operations on this connection.
         // PostgreSQL returns timestamptz values as "YYYY-MM-DD HH:MM:SS+00"
         // when the session timezone is UTC, which from_iso8601_utc accepts.
-        auto tz_result = (*session_result)->execute("SELECT set_config('TimeZone', 'UTC', false)");
+        auto tz_result = domain::force_session_utc(**session_result);
         if (!tz_result) {
             return sqlgen::error("Failed to set session timezone to UTC: " +
                                  std::string(tz_result.error().what()));

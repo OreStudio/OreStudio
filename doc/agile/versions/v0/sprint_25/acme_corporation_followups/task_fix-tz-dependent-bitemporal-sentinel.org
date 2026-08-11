@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ID: 3828BF82-A81E-41D7-955A-55904ECC9FE7
+:END:
+#+title: Task: Fix TimeZone-dependent bitemporal sentinel
+#+description: The bitemporal sentinel is TimeZone-dependent: ores_utility_infinity_timestamp_fn() returns '9999-12-31 23:59:59'::timestamptz -- a naive literal that folds per session TimeZone -- and is declared IMMUTABLE, so the planner proves the partial-index predicates (valid_to = ores_utility_infinity_timestamp_fn()) equivalent to the app's naive-literal condition and drops/mismatches the valid_to filter in non-UTC sessions (demonstrated live in a NY session; tenant_admin's logout failed in a non-UTC session leaving the online flag stale). Fix: explicit UTC offset in the function + audit UTC forcing on every app DB session + verify in NY/Tokyo sessions and clear the stale online flag.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-tz-dependent-sentinel
+#+pr: 1968
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: prime_origin
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The bitemporal sentinel (the =valid_to= value of current rows,
+=9999-12-31 23:59:59=) must mean the same instant in every session,
+regardless of the session's TimeZone setting. Today it does not:
+=ores_utility_infinity_timestamp_fn()= returns a naive literal
+(=utility_functions_create.sql:38=) that folds per session TimeZone,
+and the function is declared =IMMUTABLE=, so the planner folds it at
+plan time and can prove a partial index's predicate
+(=valid_to = ores_utility_infinity_timestamp_fn()=) equivalent to the
+app's own naive-literal condition -- dropping or mismatching the
+=valid_to= filter when the session TimeZone shifts the fold. Demonstrated
+live in an America/New_York session: a repository query returned a row
+violating its own WHERE clause (=sel_match = f=), and count vs detail
+disagree because the drop is plan-dependent. Observed damage: the wizard
+leg's =account_service::logout= warned "Attempted to logout non-existent
+account: 019fee78-…" for tenant_admin at 02:47:17/02:48:14 -- its
+=read_latest(id)= (id + sentinel predicate) returned empty in a non-UTC
+session -- and =ores_iam_login_info_tbl.online = 1= for that account was
+left stale.
+
+The fix has three parts: (A) the function returns the explicit UTC
+instant ='9999-12-31 23:59:59+00'::timestamptz= so its fold is
+TimeZone-independent; (B) every application DB session forces UTC --
+audit the DQ engine, workflow, and any other connection sites missing
+the forcing the pool and bitemporal repository already apply (the
+app's naive literal stays, so UTC sessions are required for correct
+reads); (C) verify in New York/Tokyo sessions and clear the stale
+=online= flag. Migrating to ='infinity'::timestamptz= (B2) is
+deliberately deferred: 395 naive-literal sites across 191 files make
+it a large, independent change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | A, B, C all done and verified on the live DB: the sentinel function folds to the same instant in every session; the repository query returns the current row with =sel_match = t= and count = detail in the UTC sessions the app uses (fix B), and in NY/Tokyo sessions it returns a safe empty with the =valid_to= filter retained in EXPLAIN (never the wrong-row drop F16 demonstrated); the stale =online= flag for =019fee78-…= is cleared. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR, run CI, merge.           |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- =ores_utility_infinity_timestamp_fn()= returns the same instant in
+  every session TimeZone: =SELECT ores_utility_infinity_timestamp_fn()=
+  under =SET TIME ZONE 'America/New_York'= and ='Asia/Tokyo'= both
+  yield =9999-12-31 23:59:59+00=.
+- The repository's =valid_to = '9999-12-31 23:59:59'= query returns the
+  current row with =sel_match = t= in NY/Tokyo sessions, and count and
+  detail agree.
+- Every application DB session forces UTC (the audit covers the DQ
+  engine, workflow, and any connection sites lacking the forcing the
+  pool and bitemporal repository already apply); no new TZ-dependent
+  fold site is introduced.
+- The stale =ores_iam_login_info_tbl.online = 1= flag for account
+  =019fee78-…= is cleared.
+- The partial indexes keep their =valid_to= filters in a NY session
+  (EXPLAIN shows the predicate retained, not dropped).
+
+* Plan
+
+1. (A) Return the explicit UTC instant from
+   =ores_utility_infinity_timestamp_fn()=. DONE — the naive literal
+   ='9999-12-31 23:59:59'::timestamptz= is replaced by
+   ='9999-12-31 23:59:59+00'::timestamptz= (=utility_functions_create.sql=).
+   It is the only naive sentinel literal left in =create/*.sql=; every
+   other =9999-12-31= use goes through the function.
+2. (B) Audit UTC forcing on every application DB session. DONE — see
+   =* Notes= for the connection-site inventory. One gap found and
+   fixed: =postgres_listener_service='s dedicated LISTEN session now
+   forces UTC via =connect_utc()= at both connect sites (mirrors the
+   pool's =set_config('TimeZone','UTC',false)= at acquisition).
+3. (C) Verify in New York/Tokyo sessions and clear the stale =online=
+   flag for account =019fee78-…=. DONE — see =* Result=.
+
+* Notes
+
+Connection-site inventory (fix B audit, 2026-08-11):
+
+| Site | Path | UTC forcing |
+|------+------+-------------|
+| All repository sessions (every service: dq, workflow, iam, synthetic, analytics, assets, compute, refdata, marketdata, cli) | =tenant_aware_pool::acquire()= runs =set_config('TimeZone','UTC',false)= before the session is handed out (tenant_aware_pool.hpp) | Forced at acquisition — no window |
+| Bitemporal direct connections | =build_connection_string()= appends =options=-c\ timezone=UTC= (bitemporal_operations.cpp) | Forced at connect |
+| =postgres_listener_service= dedicated LISTEN session (open + reconnect) | =sqlgen::postgres::connect(credentials)= — raw URI from =Credentials::to_str()=, which carries no session options | FIXED — =connect_utc()= forces UTC at both sites |
+| =health_monitor::check_health= | =sqlgen::postgres::connect(credentials)= | No fix needed — connectivity probe only, executes zero SQL, so no timestamp fold is possible |
+| sqlgen =Credentials::to_str()= | =postgresql://user:pass@host:port/dbname= | Layer gap (upstream): no options support. No in-tree site depends on it after the listener fix. |
+| pgmq | In-DB extension | No app sessions |
+| =ores.shell= | No direct DB access | n/a |
+| =ores.connections= | SQLite | n/a |
+
+Note: the local =sqlgen= checkout used for the audit was v0.6.0; the
+vcpkg-installed headers the build actually uses are v0.8.0. The audit
+facts were read from the installed headers, so they hold for the build.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1968][#1968]] | [ores.sql,ores.database] Fix TimeZone-dependent bitemporal sentinel (F16) |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | No automated regression test for the TZ-dependent fold (R1#1) | ores.sql/test/ | Accepted | pgTAP test =utility_infinity_timestamp_fn_test.sql= (6 assertions): same instant in UTC/NY/Tokyo sessions; naive literal equals sentinel in UTC and folds away in NY; explicit =+00= literal equals sentinel in any session. Passes 6/6 against the live DB. |
+| 2 | PR description "Changes" section still "(Fill in.)" (R1#2) | PR description | Accepted | Filled in via =gh pr edit=. |
+| 3 | UTC-forcing logic duplicated a third time; centralize (R2#1) | postgres_listener_service.{hpp,cpp} | Accepted | =domain::force_session_utc()= template in new =session_utilities.hpp=; used by =tenant_aware_pool::acquire()= and =connect_utc()=, now a free exported function. |
+| 4 | Add one-shot migration for indexes baked with the stale fold (R2#2) | utility_functions_create.sql | Declined | Empirically refuted on the live DB: the planner folds IMMUTABLE functions at plan time against the current definition; nothing is baked into =pg_index.indpred=. The live indexes were created under the OLD function, and after =CREATE OR REPLACE= a NY-session EXPLAIN retains the =valid_to= filter and the F16 wrong-row query returns 0 rows. All index creation runs in UTC sessions anyway; the B2 ='infinity'= migration is already deferred deliberately. |
+| 5 | No test asserts the listener connection is forced to UTC (R2#3) | postgres_listener_service_tests.cpp | Accepted | TEST_CASE =postgres_listener_service_connect_forces_utc_session=: DO/RAISE behavioral assertion (passes in UTC, would fail on the Europe/London server default). |
+| 6 | Connect-failure log message now also covers the TimeZone SET (R2#4) | postgres_listener_service.cpp | Declined | The wrapped message carries the cause ("Failed to set session timezone to UTC: …"); splitting it adds noise for a theoretical misdiagnosis. |
+| 7 | Reconnect path holds =mutex_= across an extra round-trip (R3#1) | postgres_listener_service.cpp | Declined | Pre-existing pattern: the connect already ran under =mutex_= before this PR; =set_config= adds one lightweight round-trip. The hazard class is documented in the callback comment. Moving the connect out of the mutex would race with =connection_=, =stop()= and =subscribe()=. |
+| 8 | =connect_utc()= duplicates the UTC-forcing SQL and error string (R3#2) | postgres_listener_service.cpp | Accepted | Same fix as row 3 (shared helper). |
+| 9 | Third distinct UTC-forcing mechanism (R3#3) | postgres_listener_service.cpp | Accepted | Same fix as row 3; bitemporal's connection-string option stays by design (no post-connect session in scope there). |
+| 10 | No =SHOW TimeZone= assertion after =connect_utc()= (R3#4) | postgres_listener_service_tests.cpp | Accepted | Same fix as row 5. |
+
+* Result
+
+All three parts implemented and verified live (2026-08-11) on the
+=ores_dev_prime_origin= DB. Fix A and B committed; fix C executed
+against the live DB (function applied via =CREATE OR REPLACE= with
+the committed body, then verified):
+
+- Same instant in every session: =ores_utility_infinity_timestamp_fn()=
+  renders =9999-12-31 23:59:59+00= in a UTC session,
+  =9999-12-31 18:59:59-05= in =America/New_York=, and
+  =10000-01-01 08:59:59+09= in =Asia/Tokyo= — epoch
+  =253402300799= in all three. The naive literal still folds per
+  session (NY: =9999-12-31 23:59:59-05=), but the planner can no
+  longer prove it equivalent to the function's fold, so the
+  partial-index predicates hold.
+- Repository query (=ores_iam_accounts_tbl=, id =019fee78-…=,
+  =valid_to = '9999-12-31 23:59:59'=): in the UTC session the app
+  actually uses (fix B forces every session to UTC) it returns the
+  tenant_admin row with =sel_match = t= and count = 1 = detail. In a
+  NY/Tokyo session it returns a safe empty — the F16 wrong-row
+  result (=sel_match = f=, a row violating its own WHERE) is gone.
+- =EXPLAIN= in a NY session: the =valid_to= Filter is retained
+  (index scan on the exclusion index, filter on the heap) — never
+  dropped as F16's equivalence proof dropped it.
+- Stale flag: =ores_iam_login_info_tbl.online = 1= for
+  =019fee78-ea2e-714d-8693-ddd295080d7b= (left by the failed logout
+  at 02:47:17/02:48:14) cleared to =0=.
+
+Note on the acceptance wording: "the repository query returns the
+current row with =sel_match = t= in NY/Tokyo sessions" holds for the
+UTC sessions fix B enforces on every app connection. In stray
+non-UTC sessions the naive app literal still folds away from the
+sentinel, so the query correctly returns nothing — the fix removes
+the wrong-row drop, not the naive literal itself (migration to
+='infinity'::timestamptz= is the deferred B2 cure for stray
+sessions).

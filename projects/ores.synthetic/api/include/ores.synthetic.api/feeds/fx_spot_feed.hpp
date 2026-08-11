@@ -136,8 +136,9 @@ private:
  * this builder and is deleted by the per-config control-plane task. Until then the factory path
  * behaves like the auto-start path it replaces (gmm_initial_price as-is).
  *
- * @throws std::invalid_argument if @p components is empty, cfg.ticks_per_hour is non-positive,
- * or cfg.process_type is unknown to process_factory.
+ * @throws std::invalid_argument if @p components is empty or cfg.ticks_per_hour is non-positive.
+ * cfg.process_type is not validated here: it is forwarded to process_factory::make_process(),
+ * which falls back to the geometric engine for unrecognised values.
  */
 ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed> make_fx_spot_feed(
     ores::nats::service::client& nats,

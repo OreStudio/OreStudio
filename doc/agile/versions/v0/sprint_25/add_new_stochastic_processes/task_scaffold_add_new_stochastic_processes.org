@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -73,3 +73,15 @@ via its "Verifies task" field.
 | 5 | Heartbeat rule: #+updated/Last touched stale in three files | sprint.org, ir-curve-followups/story.org, task_expand_stochastic_ir_process_types.org | Accepted | Bumped all to 2026-08-11. |
 
 * Result
+
+The story scaffold: =story.org= with decisions and out-of-scope, the
+scaffold and analysis task docs, sprint 25 wiring, and the six engine
+tasks moved from IR curve follow-ups with Goal and Acceptance rescoped
+to system wiring (engines merged via PR #1932, wiring remaining).
+
+PR #1965 carried the scaffold through four review rounds; every
+finding was accepted and fixed: story row moved to the Product table,
+six tasks rescoped to wiring goals, analysis task renamed to
+=task_analyse_stochastic_process_landscape.org=, out-of-scope
+populated, heartbeat timestamps bumped. Reviewer: no new issues, PR
+ready.

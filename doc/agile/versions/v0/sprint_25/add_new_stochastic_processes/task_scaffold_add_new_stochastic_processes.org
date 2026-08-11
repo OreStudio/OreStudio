@@ -8,7 +8,7 @@
 #+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-new-stochastic-processes
-#+pr:
+#+pr: 1965
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1965][#1965]] | [agile,docs] Scaffold stochastic processes story; env configure -y |
 
 * Review
 

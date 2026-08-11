@@ -42,7 +42,7 @@ green Windows build by making the include explicit.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:9343D731-D0B0-4656-998D-8B6C5D64B9FA][Scaffold story: Hotfix: rate_tree fails to compile on Windows]] | STARTED | 2026-08-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:9343D731-D0B0-4656-998D-8B6C5D64B9FA][Scaffold story: Hotfix: rate_tree fails to compile on Windows]] | DONE | 2026-08-11 | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:5F6EF4CE-1644-4460-96BC-F993CB5C62C9][Implement Hotfix: rate_tree fails to compile on Windows]] | STARTED | 2026-08-11 | | Initial task for: Hotfix: rate_tree fails to compile on Windows |
 
 * Decisions

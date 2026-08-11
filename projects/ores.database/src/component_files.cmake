@@ -41,6 +41,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/database_options.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/exceptions.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/ores.database.domain.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/session_utilities.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/domain/tenant_aware_pool.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.database/ores.database.hpp"

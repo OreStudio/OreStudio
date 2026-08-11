@@ -51,7 +51,7 @@ variant we don't distinguish from G2++/the general 2-factor case).
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-08-06                               |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 

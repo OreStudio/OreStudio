@@ -23,8 +23,28 @@
 #include "ores.marketdata.api/domain/market_data_identifier.hpp"
 #include "ores.marketdata.api/domain/oresmd_uri.hpp"
 #include "ores.marketdata.core/export.hpp"
+#include <set>
+#include <string>
 
 namespace ores::marketdata::core {
+
+/**
+ * @brief Canonical spellings of the free-text identifier components, supplied by the
+ * caller from refdata.
+ *
+ * The URI builder matches the identifier's tenor and point values against these sets
+ * and rejects unknown spellings; oresmd keeps no dependency on the refdata
+ * repositories. Values use the parser's spelling (lowercase, as parse() stores them);
+ * a typed "6m" and a program-built "6M" are two strings unless the caller's refdata
+ * container says which is canonical.
+ */
+struct canonical_values final {
+    /** @brief Canonical tenor spellings (e.g. "3m", "1d"). */
+    std::set<std::string> tenor;
+
+    /** @brief Canonical point spellings (e.g. "5y", "sr,5y", "5y,2y,atm"). */
+    std::set<std::string> point;
+};
 
 /**
  * @brief Parses oresmd URIs into market_data_identifier and serialises them back, per
@@ -43,6 +63,18 @@ public:
     /** @brief Serialises @p identifier back into an oresmd URI, the reverse of parse(). */
     [[nodiscard]] static domain::oresmd_uri
     to_uri(const domain::market_data_identifier& identifier);
+
+    /**
+     * @brief Serialises @p identifier, matching its tenor and point values against
+     * @p canonical and rejecting unknown spellings with oresmd_exception.
+     *
+     * The canonical form of the stored string: values the container knows are emitted
+     * verbatim, values it does not know are an error -- the caller (refdata) owns the
+     * spelling. Identifiers without a tenor or point (scalar series, correlation) are
+     * unaffected.
+     */
+    [[nodiscard]] static domain::oresmd_uri to_uri(const domain::market_data_identifier& identifier,
+                                                   const canonical_values& canonical);
 };
 
 }

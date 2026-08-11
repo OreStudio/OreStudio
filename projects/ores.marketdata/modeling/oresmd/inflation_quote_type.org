@@ -15,11 +15,11 @@
 
 * Quote types
 
-| enum_name | ore_type | ore_metric | point_semantics | qualifier_shape | comment |
-|-----------+----------+------------+-----------------+-----------------+------------------------------------------------------------|
-| zc_swap | ZC_INFLATIONSWAP | RATE | tenor | simple | ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate). |
-| yy_swap | YY_INFLATIONSWAP | RATE | tenor | simple | YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate). |
-| seasonality | SEASONALITY | RATE | tenor | mult_literal | SEASONALITY/RATE (seasonality adjustment factor). |
+| enum_name | ore_type | ore_constant      | ore_metric | point_semantics | qualifier_shape | comment |
+|-----------+----------+-------------------+------------+-----------------+-----------------+------------------------------------------------------------|
+| zc_swap | ZC_INFLATIONSWAP | zc_inflation_swap | RATE | tenor | simple | ZC_INFLATIONSWAP/RATE (zero-coupon inflation swap rate). |
+| yy_swap | YY_INFLATIONSWAP | yy_inflation_swap | RATE | tenor | simple | YY_INFLATIONSWAP/RATE (year-on-year inflation swap rate). |
+| seasonality | SEASONALITY | seasonality | RATE | tenor | mult_literal | SEASONALITY/RATE (seasonality adjustment factor). |
 
 * Enum brief
 

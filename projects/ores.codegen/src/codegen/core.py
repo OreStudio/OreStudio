@@ -1710,7 +1710,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 m = row.get('ore_metric', '')
                 if m not in first_seen:
                     first_seen[m] = len(groups)
-                    groups.append({'metric': m, 'names': []})
+                    # The projections template renders each metric case as
+                    # `return ore_metric_spec::<constant>;`; the constant name is
+                    # the ORE METRIC value in snake_case (RATE -> rate), mirroring
+                    # the hand-written ore_metric_spec block in the template.
+                    groups.append({'metric': m, 'constant': m.lower(), 'names': []})
                 groups[first_seen[m]]['names'].append(row['enum_name'])
             data[f'{ac}_ore'] = {
                 'asset_class': ac,
@@ -1718,6 +1722,12 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 'metric_groups': groups,
                 'ore_type_default': qts[0].get('ore_type', '') if qts else '',
                 'ore_metric_default': qts[0].get('ore_metric', '') if qts else '',
+                # ore_constant names the ore_type_spec constant each enum maps to
+                # (the Ore constant column of the Quote types table); the forward
+                # ore_type() switches and the inverse dispatcher both reference
+                # these constants, so a rename stays in sync in both directions.
+                'ore_constant_default': qts[0].get('ore_constant', '') if qts else '',
+                'ore_metric_constant_default': (qts[0].get('ore_metric', '').lower() if qts else ''),
             }
         # Parse/resolve function definitions run in the hand-crafted files'
         # own order (fx, ir, equity, credit, correlation, inflation,

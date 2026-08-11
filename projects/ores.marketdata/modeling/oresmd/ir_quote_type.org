@@ -15,20 +15,20 @@
 
 * Quote types
 
-| enum_name           | ore_type          | ore_metric      | point_semantics | qualifier_shape         | notes | comment |
-|---------------------+-------------------+-----------------+-----------------+-------------------------+-------+--------------------------------------------------------------------------------------------------|
-| ir_swap             | IR_SWAP           | RATE            | tenor           | includes_index_2d       | 6-segment: IR_SWAP/RATE/CCY/2D/TENOR/POINT | IR_SWAP (par swap rate). |
-| discount            | DISCOUNT          | RATE            | tenor           | curve_id                | 5-segment: DISCOUNT/RATE/CCY/CURVE_ID/POINT | DISCOUNT (curve-sampled discount factor). |
-| mm                  | MM                | RATE            | tenor           | includes_index          | 6-segment: MM/RATE/CCY/INDEX/TENOR/POINT | MM (money market rate). |
-| fra                 | FRA               | RATE            | tenor           | includes_index          | 6-segment: FRA/RATE/CCY/INDEX/TENOR/POINT | FRA (forward rate agreement rate). |
-| imm_fra             | IMM_FRA           | RATE            | tenor           | includes_index          | 6-segment: IMM_FRA/RATE/CCY/INDEX/TENOR/POINT | IMM_FRA (IMM-settled FRA rate). |
-| basis_swap          | BASIS_SWAP        | BASIS_SPREAD    | tenor           | includes_index          | 6-segment: BASIS_SWAP/BASIS_SPREAD/CCY/INDEX/TENOR/POINT | BASIS_SWAP (single-currency basis swap spread). |
-| bma_swap            | BMA_SWAP          | RATIO           | tenor           | no_index                | 5-segment: BMA_SWAP/RATIO/CCY/TENOR/POINT | BMA_SWAP (Bond Market Association swap ratio). |
-| cc_basis_swap       | CC_BASIS_SWAP     | BASIS_SPREAD    | tenor           | no_index                | 5-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY/TENOR/POINT | CC_BASIS_SWAP (cross-currency basis swap spread). |
-| cc_fix_float_swap   | CC_FIX_FLOAT_SWAP | RATE            | tenor           | no_index                | 5-segment: CC_FIX_FLOAT_SWAP/RATE/CCY/TENOR/POINT | CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate). |
-| zero                | ZERO              | RATE            | tenor           | includes_index          | 6-segment: ZERO/RATE/CCY/INDEX/TENOR/POINT | ZERO (zero-coupon rate). |
-| mm_future           | MM_FUTURE         | PRICE           | tenor           | includes_index          | 6-segment: MM_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | MM_FUTURE (money market future price). |
-| oi_future           | OI_FUTURE         | PRICE           | tenor           | includes_index          | 6-segment: OI_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | OI_FUTURE (overnight index future price). |
+| enum_name           | ore_type          | ore_constant           | ore_metric      | point_semantics | qualifier_shape         | notes | comment |
+|---------------------+-------------------+------------------------+-----------------+-----------------+-------------------------+-------+--------------------------------------------------------------------------------------------------|
+| ir_swap             | IR_SWAP           | ir_swap                | RATE            | tenor           | includes_index_2d       | 6-segment: IR_SWAP/RATE/CCY/2D/TENOR/POINT | IR_SWAP (par swap rate). |
+| discount            | DISCOUNT          | discount               | RATE            | tenor           | curve_id                | 5-segment: DISCOUNT/RATE/CCY/CURVE_ID/POINT | DISCOUNT (curve-sampled discount factor). |
+| mm                  | MM                | mm                     | RATE            | tenor           | includes_index          | 6-segment: MM/RATE/CCY/INDEX/TENOR/POINT | MM (money market rate). |
+| fra                 | FRA               | fra                    | RATE            | tenor           | includes_index          | 6-segment: FRA/RATE/CCY/INDEX/TENOR/POINT | FRA (forward rate agreement rate). |
+| imm_fra             | IMM_FRA           | imm_fra                | RATE            | tenor           | includes_index          | 6-segment: IMM_FRA/RATE/CCY/INDEX/TENOR/POINT | IMM_FRA (IMM-settled FRA rate). |
+| basis_swap          | BASIS_SWAP        | basis_swap             | BASIS_SPREAD    | tenor           | includes_index          | 6-segment: BASIS_SWAP/BASIS_SPREAD/CCY/INDEX/TENOR/POINT | BASIS_SWAP (single-currency basis swap spread). |
+| bma_swap            | BMA_SWAP          | bma_swap               | RATIO           | tenor           | no_index                | 5-segment: BMA_SWAP/RATIO/CCY/TENOR/POINT | BMA_SWAP (Bond Market Association swap ratio). |
+| cc_basis_swap       | CC_BASIS_SWAP     | cc_basis_swap          | BASIS_SPREAD    | tenor           | no_index                | 5-segment: CC_BASIS_SWAP/BASIS_SPREAD/CCY/TENOR/POINT | CC_BASIS_SWAP (cross-currency basis swap spread). |
+| cc_fix_float_swap   | CC_FIX_FLOAT_SWAP | cc_fix_float_swap      | RATE            | tenor           | no_index                | 5-segment: CC_FIX_FLOAT_SWAP/RATE/CCY/TENOR/POINT | CC_FIX_FLOAT_SWAP (cross-currency fix-float swap rate). |
+| zero                | ZERO              | zero                   | RATE            | tenor           | includes_index          | 6-segment: ZERO/RATE/CCY/INDEX/TENOR/POINT | ZERO (zero-coupon rate). |
+| mm_future           | MM_FUTURE         | mm_future              | PRICE           | tenor           | includes_index          | 6-segment: MM_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | MM_FUTURE (money market future price). |
+| oi_future           | OI_FUTURE         | oi_future              | PRICE           | tenor           | includes_index          | 6-segment: OI_FUTURE/PRICE/CCY/INDEX/TENOR/POINT | OI_FUTURE (overnight index future price). |
 
 * Enum brief
 

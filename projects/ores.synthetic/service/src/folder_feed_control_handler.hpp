@@ -195,14 +195,21 @@ public:
                     << " — no GMM components.";
                 continue;
             }
-            const auto feed = factory.make(
-                std::string(fx_spot_feed_kind),
-                bctx,
-                fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
-            if (ctrl_->add(std::move(feed), container->second.binding_mode))
-                ++fx_counts.started;
-            else
-                ++fx_counts.already_running;
+            try {
+                const auto feed = factory.make(
+                    std::string(fx_spot_feed_kind),
+                    bctx,
+                    fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
+                if (ctrl_->add(std::move(feed), container->second.binding_mode))
+                    ++fx_counts.started;
+                else
+                    ++fx_counts.already_running;
+            } catch (const std::exception& e) {
+                ++fx_counts.skipped;
+                BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
+                    << "Skipping " << fx.ore_key << " under folder " << req->folder_id
+                    << " — failed to start: " << e.what();
+            }
         }
 
         feed_kind_counts ir_counts;
@@ -273,8 +280,21 @@ public:
                         << " — qualifier already held by running feed '" << *holder << "'.";
                     continue;
                 }
-                if (curve_ctrl_->add(std::move(feed)))
+                std::string conflicting_source_name;
+                if (curve_ctrl_->add(std::move(feed), &conflicting_source_name))
                     ++ir_counts.started;
+                else if (conflicting_source_name.empty())
+                    // A concurrent cascade started the same config between
+                    // the qualifier pre-check and the add.
+                    ++ir_counts.already_running;
+                else {
+                    ++ir_counts.skipped;
+                    BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
+                        << "Skipping IR curve config " << cfg.currency_code << "/"
+                        << cfg.index_family << " under folder " << req->folder_id
+                        << " — qualifier already held by running feed '"
+                        << conflicting_source_name << "'.";
+                }
             } catch (const std::exception& e) {
                 ++ir_counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)

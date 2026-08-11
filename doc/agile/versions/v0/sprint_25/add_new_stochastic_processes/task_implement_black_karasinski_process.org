@@ -5,39 +5,41 @@
 #+description: Implement a log-normal short-rate engine via Euler discretization of d(ln r) = kappa(theta - ln r)dt + sigma dW, then r = exp(ln r). This ensures positivity without a tree — a simple SDE approach, data-oriented with plain struct parameters and free functions. Reference: QuantLib BlackKarasinski class.
 #+type: task
 #+level: s1
-#+filetags: :ir-curve-followups:sprint_25:v0:
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
-#+branch: feature/expand-stochastic-ir-process-types
-#+pr: 1932
+#+branch:
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-09
+#+updated: 2026-08-11
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add a working Black-Karasinski engine to process_factory with Catch2 tests covering: exact log-normal transition step, generated rates stay positive for standard parameter sets, discount_factor() approximated via tree or derived analytically, and comparison against QuantLib reference values.
+The Black-Karasinski process appears as a selectable process type in the IR curve generation config UI, with its own parameter fields (kappa, theta, sigma) stored in a strongly-typed child table. The engine itself is complete (merged via PR #1932); the system wiring is the remaining scope, following the G2 precedent.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
-| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Nothing. |
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Engine implemented and merged (PR #1932); system wiring remaining. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-08-07                               |
+| Next         | Wire into the system (factory, seed data, config storage, Qt UI), following the G2 precedent. |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
-- BK process compiles and passes all tests on Linux
-- process_factory dispatches black_karasinski correctly
-- Generated rates are always positive for reasonable parameters
+- Seed data row makes the Black-Karasinski process appear in the process type combo box
+- process_factory constructs a working Black-Karasinski engine (factory method and parameter struct)
+- Black-Karasinski parameters persist to and load from the child table
+- IrCurveGenerationConfigDetailDialog shows Black-Karasinski parameter fields when selected
+- Existing Vasicek/CIR/Hull-White/G2 configs are unaffected
 
 * Plan
 
@@ -46,6 +48,8 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Moved from the IR curve follow-ups story on 2026-08-11: the engine work is complete (merged via PR #1932 on 2026-08-10), but the engine is not wired into the system. The remaining scope — system wiring (factory, seed data, config storage, Qt UI) — is tracked here, under the Add new stochastic processes story, following the G2 wiring precedent.
 
 * Test Scenarios
 

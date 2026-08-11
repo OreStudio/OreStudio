@@ -5,39 +5,41 @@
 #+description: Implement an LMM/BGM engine where the state is a vector of forward LIBOR rates L_i(t) for N accrual periods. Data-oriented: the forward-rate vector, tenor structure, and correlation matrix are plain structs. The drift for each L_i under the forward measure depends on the correlation structure across all forward rates — the most complex drift calculation in the set. Reference: QuantLib LiborMarketModel classes.
 #+type: task
 #+level: s1
-#+filetags: :ir-curve-followups:sprint_25:v0:
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
-#+branch: feature/expand-stochastic-ir-process-types
-#+pr: 1932
+#+branch:
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-09
+#+updated: 2026-08-11
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add a working LMM engine to process_factory with Catch2 tests covering: drift for a single forward rate reduces to zero (log-normal, no drift under own measure), two-factor correlation produces correct drift adjustment, caplet prices match Black formula within discretization error, and comparison against QuantLib LMM reference values for a standard setup.
+The LIBOR Market Model process appears as a selectable process type in the IR curve generation config UI, with its own parameter fields (initial forward rates, tenor structure, correlation matrix) stored in a strongly-typed child table. The engine itself is complete (merged via PR #1932); the system wiring is the remaining scope, following the G2 precedent.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
-| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Nothing. |
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Engine implemented and merged (PR #1932); system wiring remaining. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-08-07                               |
+| Next         | Wire into the system (factory, seed data, config storage, Qt UI), following the G2 precedent. |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
-- LMM process compiles and passes all tests on Linux
-- Drift calculation is correct for a test correlation structure
-- Caplet pricing converges to Black formula as dt shrinks
+- Seed data row makes the LIBOR Market Model process appear in the process type combo box
+- process_factory constructs a working LIBOR Market Model engine (factory method and parameter struct)
+- LIBOR Market Model parameters persist to and load from the child table
+- IrCurveGenerationConfigDetailDialog shows LIBOR Market Model parameter fields when selected
+- Existing Vasicek/CIR/Hull-White/G2 configs are unaffected
 
 * Plan
 
@@ -46,6 +48,8 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Moved from the IR curve follow-ups story on 2026-08-11: the engine work is complete (merged via PR #1932 on 2026-08-10), but the engine is not wired into the system. The remaining scope — system wiring (factory, seed data, config storage, Qt UI) — is tracked here, under the Add new stochastic processes story, following the G2 wiring precedent.
 
 * Test Scenarios
 

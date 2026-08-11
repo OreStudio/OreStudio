@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:compass:environment:
 #+created: 2026-06-06
-#+updated: 2026-07-22
+#+updated: 2026-08-11
 
 #+begin_export markdown
 ---
@@ -63,10 +63,12 @@ Run the steps in order; each is idempotent.
    ./projects/ores.compass/compass.sh build --direct settings
    #+end_src
 
-6. /Initialise the environment/ — .env, certificates, IAM key:
+6. /Initialise the environment/ — .env, certificates, IAM key. The
+   =-y= flag answers the "reuse passwords?" prompt; without it, a
+   non-interactive shell hits EOF and the command fails:
 
    #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh env configure
+   ./projects/ores.compass/compass.sh env configure -y
    #+end_src
 
 7. /Recreate the database/ (=devops-recreate-db=) — stop services

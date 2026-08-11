@@ -1,0 +1,89 @@
+:PROPERTIES:
+:ID: 29061898-0911-480D-97B6-31B47A4F3C11
+:END:
+#+title: Task: Scaffold story: Add new stochastic processes
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
+#+owner: marco
+#+branch: feature/add-new-stochastic-processes
+#+pr: 1965
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1965][#1965]] | [agile,docs] Scaffold stochastic processes story; env configure -y |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Story row landed in the Hotfixes table instead of Product | doc/agile/versions/v0/sprint_25/sprint.org | Accepted | Moved to the Product table, after IR curve follow-ups. |
+| 2 | Reopened engine tasks keep original Implement Goal/Acceptance; G2 precedent uses wiring-scoped goal | add_new_stochastic_processes/task_implement_*.org (six files) | Accepted | Goal and Acceptance rewritten to system-wiring scope. |
+| 3 | Analysis task file misnamed task_implement_* | task_implement_add_new_stochastic_processes.org | Accepted | Renamed to task_analyse_stochastic_process_landscape.org. |
+| 4 | Out of scope section left empty in the new story | add_new_stochastic_processes/story.org | Accepted | Populated: SABR and any volatility-surface model. |
+| 5 | Heartbeat rule: #+updated/Last touched stale in three files | sprint.org, ir-curve-followups/story.org, task_expand_stochastic_ir_process_types.org | Accepted | Bumped all to 2026-08-11. |
+| 6 | Six reopened tasks share #+branch:/#+pr: with the merged engine PR; compass branch lookups assume uniqueness | six task_implement_*.org files | Accepted | Blanked #+branch: and #+pr:, matching the not-yet-started convention. |
+
+* Result
+
+The story scaffold: =story.org= with decisions and out-of-scope, the
+scaffold and analysis task docs, sprint 25 wiring, and the six engine
+tasks moved from IR curve follow-ups with Goal and Acceptance rescoped
+to system wiring (engines merged via PR #1932, wiring remaining).
+
+PR #1965 carried the scaffold through five review rounds; every
+finding was accepted and fixed: story row moved to the Product table,
+six tasks rescoped to wiring goals, analysis task renamed to
+=task_analyse_stochastic_process_landscape.org=, out-of-scope
+populated, heartbeat timestamps bumped, and stale =#+branch:=/=#+pr:=
+blanked on the six reopened tasks. Final review: no new issues, PR
+ready.

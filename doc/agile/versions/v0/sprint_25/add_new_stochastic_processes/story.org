@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: C603D702-DE7E-4DA4-8409-6FCB0F64808F
+:END:
+#+title: Story: Add new stochastic processes
+#+description: Add new stochastic process types for FX and IR: finish the unwired IR engines (Black-Karasinski, BDT, affine, HJM, LMM, QG) by wiring them into the system, add further IR models (two-factor Hull-White, shifted log-normal, normal/Bachelier), and add an FX jump/Poisson process engine. SABR and vol-surface models are out of scope.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:stochastic-processes:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The system exposes a wider catalogue of stochastic process engines, wired end-to-end (factory, seed data, config storage, Qt UI): the six unwired IR engines become selectable, further IR models (two-factor Hull-White, shifted log-normal, normal/Bachelier) are added, and an FX jump/Poisson process engine joins the synthetic FX spot price-process family. Every engine is validated against QuantLib reference tests.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Story scaffolded; six engine tasks moved in from IR curve follow-ups (engines merged, wiring pending). |
+| Waiting on    | Nothing.                               |
+| Next          | Run the analysis task: survey the landscape and break the story into tasks. |
+| Last touched  | 2026-08-11                               |
+
+* Acceptance
+
+- All moved engine tasks reach DONE with their processes selectable in the system, not just implemented in the quant layer.
+- Every new process is validated against QuantLib reference vectors from /home/marco/Development/ORE/Engine/QuantLib.
+- SABR and vol-surface models are out of scope.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:29061898-0911-480D-97B6-31B47A4F3C11][Scaffold story: Add new stochastic processes]] | DONE | 2026-08-11 | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B1CFD140-ADAB-4C2E-A682-D9B656C30295][Analysis: survey the stochastic process landscape and break the story into tasks]] | BACKLOG | | | Survey the stochastic process landscape (six unwired IR engines, G2 wiring precedent, new IR models, FX jump/Poisson capture, QuantLib reference) and produce the story's task breakdown. |
+| [[id:CDB12DB0-B0FF-4507-B94F-17540F6792B3][Implement Black-Karasinski log-normal short-rate process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib BlackKarasinski class. |
+| [[id:DF2BC7E3-8530-4A9C-9071-E48C2BDF44A5][Implement Black-Derman-Toy binomial tree short-rate process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib BlackDermanToy class. |
+| [[id:0F75021C-E1AF-452B-813C-DA43F37A7C4E][Implement multi-factor Affine Term Structure process framework]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: Duffie-Kan theory, QuantLib affine model fragments. |
+| [[id:65233C15-4ABD-4457-B238-0FD994028978][Implement Heath-Jarrow-Morton forward-curve process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib HJM class. |
+| [[id:48D2AA4A-6253-4B09-A78F-21C9B950F68C][Implement LIBOR Market Model forward-rate process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib LiborMarketModel classes. |
+| [[id:F1825CC4-6CB7-43F3-9184-0AFE22C15D34][Implement Quadratic Gaussian term-structure process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: Ahn-Dittmar-Gallant QG papers. |
+
+* Decisions
+
+- The six unwired IR engine tasks moved here from the IR curve follow-ups story on 2026-08-11. Their engines are merged (PR #1932, 2026-08-10); the system wiring is the remaining scope, following the G2 wiring precedent (Wire G2 task, DONE).
+- Scope is FX and IR only. SABR and any vol-surface model are out of scope.
+- Candidate additional IR models (from tmp/tmp.org): two-factor Hull-White (reuses the affine/G2 engine), shifted log-normal / displaced diffusion, normal (Bachelier). The FX jump/Poisson process comes from capture 84635A47 (deferred backlog).
+- QuantLib reference for validation: /home/marco/Development/ORE/Engine/QuantLib — its test-suite provides reference vectors for every target model.
+
+* Out of scope
+
+- SABR and any volatility-surface model: FX and IR only.

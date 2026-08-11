@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: B1CFD140-ADAB-4C2E-A682-D9B656C30295
+:END:
+#+title: Task: Analysis: survey the stochastic process landscape and break the story into tasks
+#+description: Survey the stochastic process landscape — six unwired IR engines, the G2 wiring precedent, new IR models (two-factor Hull-White, shifted log-normal, Bachelier), the FX jump/Poisson capture, and the QuantLib reference — and break the story into tasks.
+#+type: task
+#+level: s1
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Survey the stochastic process landscape and produce the story's task
+breakdown. The breakdown covers the six unwired IR engines and their
+system wiring, the candidate new IR models (two-factor Hull-White,
+shifted log-normal, normal/Bachelier), and the FX jump/Poisson
+process. Every target engine names its QuantLib reference tests. SABR
+and vol-surface models stay out of scope.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Produce the task breakdown.            |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- The breakdown covers: the six engine wirings (BK, BDT, affine, HJM, LMM, QG), the candidate new IR models, and the FX jump/Poisson process.
+- Every task names its QuantLib reference.
+- SABR and vol-surface models are absent.
+- Each task carries an effort estimate.
+- The story's Tasks table is populated.
+
+* Plan
+
+Survey program, in order:
+
+1. *Inventory the six unwired engines* (=black_karasinski_process=,
+   =black_derman_toy_process=, =affine_term_structure_process=,
+   =heath_jarrow_morton_process=, =libor_market_model_process=,
+   =quadratic_gaussian_process=). Record what each needs to reach the
+   system: factory method, seed rows, parameter structs, child
+   tables, config domain/repository work, Qt form.
+
+2. *Extract the G2 wiring precedent* (task
+   [[id:8B09FCC2-0D30-4AF2-A205-01FC0A41ED3D][Wire G2 into the system]],
+   DONE): the reusable step list per engine — strongly-typed parameter
+   struct, =process_factory= method, seed row, child table + migration,
+   config extension, =IrCurveGenerationConfigDetailDialog= form,
+   controller mapping.
+
+3. *QuantLib reference*: inventory =/home/marco/Development/ORE/Engine/QuantLib=
+   — the test-suite reference vectors for short-rate and forward-rate
+   models, and any jump-process references for the FX side. Note which
+   of our engines have direct QuantLib counterparts and which do not
+   (QG is the most original).
+
+4. *New IR models*: two-factor Hull-White (likely thin — the affine
+   engine already reproduces HW2/G2 exactly), shifted log-normal /
+   displaced diffusion, normal (Bachelier). Decide per model whether it
+   is a new engine or a parameterisation of an existing one, and name
+   the QuantLib class + test to port.
+
+5. *FX jump/Poisson process* (capture
+   [[id:84635A47-0E1A-4B67-A775-15F256D54A2D][Implement jump/Poisson
+   stochastic process component]]): =IStochasticProcess= in
+   ores.marketdata.api, a =process_factory::make_process()= branch in
+   ores.synthetic, and =FxSpotRateEditor= UI exposure (placeholder
+   exists). Survey jump-size distribution options and QuantLib
+   references.
+
+6. *UI surfaces*: =IrCurveGenerationConfigDetailDialog= parameter
+   forms, =FxSpotRateEditor= Component Tools panel, catalogue seed
+   data and combos. Assess whether the form-switching machinery
+   generalises beyond the G2 one-off.
+
+7. *Deliverable*: the task breakdown — one task per engine wiring, per
+   new IR model, and for the FX jump process — with effort estimates,
+   ordering, and QuantLib references. Populate the story's Tasks
+   table.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

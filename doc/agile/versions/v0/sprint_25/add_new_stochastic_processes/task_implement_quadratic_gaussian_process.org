@@ -5,39 +5,41 @@
 #+description: Implement a Quadratic Gaussian engine extending the affine framework with quadratic yield terms: r_t = delta_0 + delta^T X_t + X_t^T Gamma X_t. Data-oriented: builds on the affine framework's structs, adding a Gamma matrix. The quadratic term captures richer yield-curve dynamics (curvature effects) that affine models miss. This is the most original implementation — less direct QuantLib reference, more theory-driven. Reference: Ahn-Dittmar-Gallant QG papers.
 #+type: task
 #+level: s1
-#+filetags: :ir-curve-followups:sprint_25:v0:
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
-#+branch: feature/expand-stochastic-ir-process-types
-#+pr: 1932
+#+branch:
+#+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-09
+#+updated: 2026-08-11
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Add a working QG engine to process_factory with Catch2 tests covering: zero Gamma matrix reduces exactly to the affine framework, diagonal Gamma matches known two-factor QG closed forms, discount_factor() consistency with simulated paths, and yield-curve curvature (second derivative w.r.t. maturity) differs from the pure-affine case.
+The Quadratic Gaussian process appears as a selectable process type in the IR curve generation config UI, with its own parameter fields (delta_0, delta vector, Gamma matrix) stored in a strongly-typed child table. The engine itself is complete (merged via PR #1932); the system wiring is the remaining scope, following the G2 precedent.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
-| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Nothing. |
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Engine implemented and merged (PR #1932); system wiring remaining. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-08-07                               |
+| Next         | Wire into the system (factory, seed data, config storage, Qt UI), following the G2 precedent. |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
-- QG process compiles and passes all tests on Linux
-- Affine special case (Gamma=0) matches affine framework exactly
-- QG yields differ from affine yields for non-zero Gamma
+- Seed data row makes the Quadratic Gaussian process appear in the process type combo box
+- process_factory constructs a working Quadratic Gaussian engine (factory method and parameter struct)
+- Quadratic Gaussian parameters persist to and load from the child table
+- IrCurveGenerationConfigDetailDialog shows Quadratic Gaussian parameter fields when selected
+- Existing Vasicek/CIR/Hull-White/G2 configs are unaffected
 
 * Plan
 
@@ -46,6 +48,8 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Moved from the IR curve follow-ups story on 2026-08-11: the engine work is complete (merged via PR #1932 on 2026-08-10), but the engine is not wired into the system. The remaining scope — system wiring (factory, seed data, config storage, Qt UI) — is tracked here, under the Add new stochastic processes story, following the G2 wiring precedent.
 
 * Test Scenarios
 

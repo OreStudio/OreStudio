@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: FB57CE4C-5AAD-4189-A16F-304374116653
+:END:
+#+title: Task: Investigate the version/change_reason_code contract in refdata generator tests
+#+description: Determine whether the party_identifier/counterparty_identifier generator tests (and refdata generator tests generally) assert the contract the generators actually implement, and whether version==0 output means the tests no longer test what they claim: establish what version and change_reason_code mean (domain default vs persisted-first-version), what the codegen-standard generator boilerplate is after PR #1698, whether the stale-expectation fix already landed on main, and whether any stale assertions remain repo-wide.
+#+type: task
+#+level: s1
+#+filetags: :fix_party_counterparty_identifier_generator_tests:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B00412FD-10E4-4B85-A6BF-2096076E0911][party/counterparty_identifier_generator tests assert stale version/change_reason_code]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Establish the current contract of the refdata synthetic generators (version, change_reason_code) and whether the generator tests assert that contract. Determine whether version==0 assertions mean the tests verify nothing about the generator, or whether they validate the codegen-standard fixture contract. Record the root cause of the stale version==1/system.new expectations and the disposition of the fix.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B00412FD-10E4-4B85-A6BF-2096076E0911][party/counterparty_identifier_generator tests assert stale version/change_reason_code]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- Established what version and change_reason_code mean for the refdata synthetic generators: version 0 is the domain default of an unpersisted in-memory fixture; version 1+ is the persisted version counter the service layer sets on create.
+- Established the codegen-standard generator contract after PR #1698: version==0, change_reason_code=="system.test", matching the committed generators on main.
+- Answered whether version==0 assertions mean the tests verify nothing: no — the tests call the real generators and validate real output; at capture time the stale version==1 assertions failed loudly on every CI run (mismatch means FAIL, never a silent pass).
+- Verified the disposition of the fix: already merged on main — commits 90ad8693be, c113b851e, 123ca2bfa, d0458e500. No stale generator assertions remain in the repo.
+
+* Plan
+
+1. Read the capture (filed 2026-07-16) and its referenced test lines in =projects/ores.refdata/api/tests/generators_tests.cpp=.
+2. Grep every generator test's version/change_reason_code assertion against the generator sources.
+3. Blame the assertion lines to find which commit changed them, and date it against the capture.
+4. Read the generator sources and the change-reason constants to pin down the semantics of version and the two codes.
+5. Sweep the repo for any remaining stale assertions (version==1, "system.new" as generator expectations).
+
+* Notes
+
+- Current state on main (2026-08-11): all ten =generators_tests.cpp= test cases assert =version == 0= and =change_reason_code == "system.test"=, including =party_identifier_generator_produces_valid_instance= and =counterparty_identifier_generator_produces_valid_instance=.
+- The generators emit =version = 0= / ="system.test"= (=party_identifier_generator.cpp=, =counterparty_identifier_generator.cpp=). This is the codegen-standard boilerplate every refdata generator got in PR #1698; the domain default is =int version = 0= (never-persisted instance).
+- The fix for exactly this capture's issue landed on main one day after the capture was filed: commit =90ad8693be= (2026-07-17, "[dq,refdata,history,iam] Fix build and test breakage on main") rewrote the party_status, party_id_scheme, party_identifier and counterparty_identifier expectations. =c113b851e= (2026-07-28) fixed the =party_generator_produces_valid_instance= case the same way; =123ca2bfa= / =d0458e500= fixed the contact_information pair (the capture's own reference).
+- Version semantics: =ores.dq.domain.change_reason_constants= defines =synthetic_new="system.new"= (fresh synthetic fixture) and =synthetic_test_data="system.test"= (general test-only fixture); both are legitimate codes. The codegen standard chose ="system.test"=, so version==1 / "system.new" were pre-standardization leftovers in the hand-written generators' tests.
+- Repo-wide sweep: no stale generator assertions remain. The =version == 1= hits in ores.compute/ores.dq domain tests assign the field explicitly and assert their own value — a distinct, legitimate pattern, not generator output.
+- The capture's title/body overstates the live risk: at capture time the two tests failed loudly (assertion mismatch), so the drift was caught, not hidden.
+- Related systemic capture: =refdata_generated_code_stale_vs_templates.org= (47134F35-6BC0-4FC6-993A-AAA45F0E2D8E) tracks checked-in generated code drifting from codegen templates — the broader pattern this capture is one instance of.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The story's fix work was already done before the capture became a story: the stale =version == 1= / ="system.new"= expectations were fixed on main between 2026-07-17 and 2026-07-28 (=90ad8693be=, =c113b851e=, =123ca2bfa=, =d0458e500=). The tests do test the real generators; the mismatch failed loudly, so nothing was silently untested. The answer to "are we testing what we think we are testing" is yes, with the correction that the asserted contract changed: pre-PR-#1698 generators fabricated =version=1=/="system.new"= records, while the codegen standard (and the current generators) fabricate =version=0=/="system.test"= in-memory fixtures. No code change is required; this story closes as a record.

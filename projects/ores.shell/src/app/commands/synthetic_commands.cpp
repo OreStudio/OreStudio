@@ -23,10 +23,10 @@
 #include "ores.shell/app/command_args.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
+#include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
-#include "ores.synthetic.api/messaging/gmm_component_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
@@ -798,48 +798,16 @@ bool synthetic_commands::start_folder(std::ostream& out,
 bool synthetic_commands::start_feed(std::ostream& out,
                                     nats_client& session,
                                     const std::string& token) {
-    // Resolve the feed row and its GMM components, mirroring the Qt
-    // Market Simulator's per-pair start: the request carries the full
-    // price process, so the service never falls back to ad-hoc defaults.
+    // The request is keyed by config_id; the server resolves the config,
+    // its children, and the refdata context.
     const auto fx = resolve_feed(out, session, token);
     if (!fx)
         return false;
     const auto feed_id = boost::uuids::to_string(fx->id);
 
-    synthetic::messaging::get_gmm_components_request gmm_req{.offset = 0, .limit = 1000};
-    auto gmm_result = do_auth_request<synthetic::messaging::get_gmm_components_response>(
-        out, session, std::string(gmm_req.nats_subject), gmm_req);
-    if (!gmm_result)
-        return false;
-
-    std::vector<const synthetic::domain::gmm_component*> comps;
-    for (const auto& c : gmm_result->gmm_components)
-        if (boost::uuids::to_string(c.fx_spot_config_id) == feed_id)
-            comps.push_back(&c);
-    if (comps.empty()) {
-        fail(out) << "Feed " << feed_id << " has no price model components." << std::endl;
-        return false;
-    }
-    std::sort(comps.begin(), comps.end(), [](const auto* a, const auto* b) {
-        return a->component_index < b->component_index;
-    });
-
-    marketdata::messaging::start_market_feed_config_request req;
-    req.ore_key = fx->ore_key;
-    req.source_name = fx->source_name;
-    for (const auto* c : comps) {
-        req.gmm_means.push_back(c->mean);
-        req.gmm_stdevs.push_back(c->stdev);
-        req.gmm_weights.push_back(c->weight);
-    }
-    req.gmm_initial_price = fx->gmm_initial_price;
-    req.ticks_per_hour = static_cast<double>(fx->ticks_per_hour);
-    req.process_type = fx->process_type;
-    req.vintage_source = fx->vintage_source;
-    req.vintage_date = fx->vintage_date;
-
-    BOOST_LOG_SEV(lg(), info) << "Starting feed " << req.source_name << ".";
-    auto result = do_auth_request<marketdata::messaging::start_market_feed_config_response>(
+    synthetic::messaging::start_feed_request req{.config_id = feed_id};
+    BOOST_LOG_SEV(lg(), info) << "Starting feed " << feed_id << ".";
+    auto result = do_auth_request<synthetic::messaging::start_feed_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return false;
@@ -847,7 +815,7 @@ bool synthetic_commands::start_feed(std::ostream& out,
         fail(out) << "Start failed: " << result->message << std::endl;
         return false;
     }
-    out << "✓ Started feed " << req.source_name << " (" << feed_id << ")." << std::endl;
+    out << "✓ Started feed " << feed_id << "." << std::endl;
     return true;
 }
 
@@ -897,15 +865,16 @@ bool synthetic_commands::stop_folder(std::ostream& out,
 bool synthetic_commands::stop_feed(std::ostream& out,
                                    nats_client& session,
                                    const std::string& token) {
-    // The stop request is keyed by source_name; resolve it from the feed row.
+    // The stop request is keyed by config_id; the server resolves it to
+    // the config's source_name.
     const auto fx = resolve_feed(out, session, token);
     if (!fx)
         return false;
+    const auto feed_id = boost::uuids::to_string(fx->id);
 
-    marketdata::messaging::stop_market_feed_config_request req;
-    req.source_name = fx->source_name;
-    BOOST_LOG_SEV(lg(), info) << "Stopping feed " << req.source_name << ".";
-    auto result = do_auth_request<marketdata::messaging::stop_market_feed_config_response>(
+    synthetic::messaging::stop_feed_request req{.config_id = feed_id};
+    BOOST_LOG_SEV(lg(), info) << "Stopping feed " << feed_id << ".";
+    auto result = do_auth_request<synthetic::messaging::stop_feed_response>(
         out, session, std::string(req.nats_subject), req);
     if (!result)
         return false;
@@ -913,8 +882,7 @@ bool synthetic_commands::stop_feed(std::ostream& out,
         fail(out) << "Stop failed: " << result->message << std::endl;
         return false;
     }
-    out << "✓ Stopped feed " << req.source_name << " (" << boost::uuids::to_string(fx->id) << ")."
-        << std::endl;
+    out << "✓ Stopped feed " << feed_id << "." << std::endl;
     return true;
 }
 

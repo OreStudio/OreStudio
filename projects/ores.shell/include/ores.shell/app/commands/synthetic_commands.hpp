@@ -170,12 +170,12 @@ public:
      * | feed <feed-token>.
      *
      * Folder-scoped starts resolve the whole subtree server-side
-     * (start_feeds_under_folder_request); feed-scoped starts build a
-     * start_market_feed_config_request from the feed row and its GMM
-     * components, exactly as the Qt Market Simulator does. Folder
-     * tokens are UUIDs, exact names or codename paths; feed tokens are
-     * UUIDs, ore keys or source_names (see
-     * resolve_folder_id/resolve_feed).
+     * (start_feeds_under_folder_request); feed-scoped starts send the
+     * config_id and the server resolves the config, its children, and
+     * the refdata context (start_feed_request), exactly as the Qt
+     * Market Simulator does. Folder tokens are UUIDs, exact names or
+     * codename paths; feed tokens are UUIDs, ore keys or source_names
+     * (see resolve_folder_id/resolve_feed).
      */
     static void process_start(std::ostream& out,
                               ores::nats::service::nats_client& session,
@@ -186,8 +186,9 @@ public:
      * | feed <feed-token>.
      *
      * Folder-scoped stops resolve the whole subtree server-side
-     * (stop_feeds_under_folder_request); feed-scoped stops target the
-     * feed's source_name.
+     * (stop_feeds_under_folder_request); feed-scoped stops send the
+     * config_id and the server resolves it to the config's
+     * source_name.
      */
     static void process_stop(std::ostream& out,
                              ores::nats::service::nats_client& session,
@@ -216,10 +217,10 @@ public:
                              const std::string& token);
 
     /**
-     * @brief Start one feed, building a start_market_feed_config_request
-     * from the feed row and its GMM components (mirrors the Qt Market
-     * Simulator's per-pair start). @p token is a feed id, ore key or
-     * source_name.
+     * @brief Start one feed by config_id; the server resolves the
+     * config, its children, and the refdata context (mirrors the Qt
+     * Market Simulator's per-pair start). @p token is a feed id, ore
+     * key or source_name.
      *
      * @return true on success.
      */
@@ -239,8 +240,9 @@ public:
                             const std::string& token);
 
     /**
-     * @brief Stop one feed by its source_name, resolved from the feed
-     * row. @p token is a feed id, ore key or source_name.
+     * @brief Stop one feed by config_id; the server resolves it to the
+     * config's source_name. @p token is a feed id, ore key or
+     * source_name.
      *
      * @return true on success.
      */

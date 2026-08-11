@@ -18,12 +18,11 @@
  *
  */
 #include "registrar.hpp"
+#include "feed_config_handler.hpp"
 #include "folder_feed_control_handler.hpp"
-#include "ir_curve_feed_config_handler.hpp"
 #include "ir_curve_preview_handler.hpp"
-#include "market_feed_config_handler.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
-#include "ores.synthetic.api/messaging/ir_curve_feed_config_protocol.hpp"
+#include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_fx_spot_paths_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
@@ -42,38 +41,34 @@ registrar::register_handlers(ores::nats::service::client& nats,
     constexpr auto queue = "ores.synthetic.service";
 
     using namespace ores::marketdata::messaging;
-
-    subs.push_back(nats.queue_subscribe(std::string(start_market_feed_config_request::nats_subject),
-                                        queue,
-                                        [&nats, ctrl](ores::nats::message msg) {
-                                            market_feed_config_handler h(nats, ctrl);
-                                            h.start(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(stop_market_feed_config_request::nats_subject),
-                                        queue,
-                                        [&nats, ctrl](ores::nats::message msg) {
-                                            market_feed_config_handler h(nats, ctrl);
-                                            h.stop(std::move(msg));
-                                        }));
-
-    subs.push_back(nats.queue_subscribe(std::string(list_market_feed_configs_request::nats_subject),
-                                        queue,
-                                        [&nats, ctrl](ores::nats::message msg) {
-                                            market_feed_config_handler h(nats, ctrl);
-                                            h.list(std::move(msg));
-                                        }));
-
-    subs.push_back(
-        nats.queue_subscribe(std::string(validate_market_feed_config_request::nats_subject),
-                             queue,
-                             [&nats, ctrl](ores::nats::message msg) {
-                                 market_feed_config_handler h(nats, ctrl);
-                                 h.validate(std::move(msg));
-                             }));
+    using namespace ores::synthetic::messaging;
 
     subs.push_back(nats.queue_subscribe(
-        std::string(ores::synthetic::messaging::simulate_fx_spot_paths_request::nats_subject),
+        std::string(start_feed_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
+            h.start(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(stop_feed_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
+            h.stop(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(list_feeds_request::nats_subject),
+        queue,
+        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
+            h.list(std::move(msg));
+        }));
+
+    subs.push_back(nats.queue_subscribe(
+        std::string(simulate_fx_spot_paths_request::nats_subject),
         queue,
         [&nats, ctx, verifier](ores::nats::message msg) {
             simulate_handler h(nats, ctx, verifier);
@@ -102,32 +97,6 @@ registrar::register_handlers(ores::nats::service::client& nats,
                                             vintage_validity_handler h(nats, ctrl, ctx, verifier);
                                             h.list(std::move(msg));
                                         }));
-
-    using namespace ores::synthetic::messaging;
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(start_ir_curve_feed_request::nats_subject),
-        queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
-            h.start(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(stop_ir_curve_feed_request::nats_subject),
-        queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
-            h.stop(std::move(msg));
-        }));
-
-    subs.push_back(nats.queue_subscribe(
-        std::string(list_ir_curve_feed_configs_request::nats_subject),
-        queue,
-        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
-            h.list(std::move(msg));
-        }));
 
     subs.push_back(nats.queue_subscribe(std::string(simulate_ir_curve_paths_request::nats_subject),
                                         queue,

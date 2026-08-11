@@ -87,7 +87,8 @@ tooling class above.
 ** Local verification flow
 
 1. Classify the diff with the rule table.
-2. Run the checks for the class (site build, or build + =ctest --preset=).
+2. Run the checks for the class (site build, or =compass build= +
+   =compass test run=).
 3. Submit the build to CDash as experimental for visibility
    (=./compass.sh test run --preset <preset> --cdash Experimental=;
    runs the CTest.cmake script under the build lock, same shape CI

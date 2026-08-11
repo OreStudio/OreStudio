@@ -4999,20 +4999,25 @@ def _cmd_test_run(args):
         return 1
 
     lock_file, slot_name, _ = _acquire_build_lock()
-    log_path = _build_log_path(slot_name)
-    print(f"📝 Test output: {log_path} (tail -f to follow)")
-    log = open(log_path, "w")
+    log_path = _build_log_path(slot_name) if slot_name else None
+    log = None
+    if log_path is not None:
+        print(f"📝 Test output: {log_path} (tail -f to follow)")
+        log = open(log_path, "w")
     try:
         print(f"🔨 {' '.join(cmd)}")
-        rc = _run_logged(cmd, PROJECT_ROOT, log)
+        rc = (_run_logged(cmd, PROJECT_ROOT, log) if log is not None
+              else subprocess.run(cmd, cwd=PROJECT_ROOT).returncode)
         if rc != 0:
             print(f"❌ ctest failed with exit code {rc}: {' '.join(cmd)}",
                   file=sys.stderr)
             return rc
         return 0
     finally:
-        log.close()
-        lock_file.close()
+        if log is not None:
+            log.close()
+        if lock_file is not None:
+            lock_file.close()
 
 
 def _cmd_test_results(args):

@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: F0DEA73F-65B2-43C3-A83B-5A211F9C87ED
+:END:
+#+title: Task: Scaffold story: Absorb PR checks locally
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :local-checks-for-pr-velocity:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr: 1954
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the "Absorb PR checks locally" story into sprint 25: story doc with goal, acceptance, and out-of-scope; the initial analysis task; sprint table wiring; and the scaffold PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- Story doc exists in sprint 25 with goal, acceptance, and out-of-scope.
+- The initial analysis task exists under the story.
+- The sprint 25 Product table has the story row.
+- The scaffold PR is raised, and this task is closed before it merges.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1954][#1954]] | [agile] Add story: absorb PR checks locally |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story scaffolded into sprint 25 via PR #1954:
+
+- Story doc with goal, acceptance, and out-of-scope (ID 368E2B3E-CD2C-4FD5-90DD-D0E935810F4D).
+- Initial analysis task: "Analyse all CI workflows and map each check to its local equivalent" (ID 1F491E74-E4C3-4F07-9E44-4E7667A613AD), BACKLOG.
+- Sprint 25 Product table row wired.
+- Verification for the doc-only change: local site build clean (compass build --direct site).

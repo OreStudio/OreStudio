@@ -2,7 +2,7 @@
 :ID: 5E787646-8DB7-4B29-9DA6-7E94DAAABA52
 :END:
 #+title: Task: Delete legacy ORE representations
-#+description: Drop the legacy identity columns (series_type, metric, qualifier, point_id, ore_key, currency_code), the import classification table, the split_market_series_key identity use, and the DB check constraints; update the tests.
+#+description: Drop the legacy identity columns (series_type, metric, qualifier, ore_key, currency_code), the import classification table, the split_market_series_key identity use, and the DB check constraints; update the tests. point_id stays, repurposed to carry the serialised oresmd point.
 #+type: task
 #+level: s1
 #+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
@@ -36,8 +36,9 @@ backwards compatibility: the cutover is hard.
 
 * Acceptance
 
-- The columns =series_type=, =metric=, =qualifier=, =point_id=,
-  =ore_key=, and =currency_code= are dropped from the schema.
+- The columns =series_type=, =metric=, =qualifier=, =ore_key=, and
+  =currency_code= are dropped from the schema. =point_id= stays: it
+  carries the serialised oresmd point, per the observation task.
 - The import classification table and the
   =split_market_series_key= identity use are deleted.
 - The DB check constraints on identity are gone; validation lives in

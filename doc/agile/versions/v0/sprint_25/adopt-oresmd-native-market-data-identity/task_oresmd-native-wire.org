@@ -39,8 +39,9 @@ subscriber updates.
 
 - Tick subjects are oresmd-native: no =ore_key= component in the
   subject.
-- The =ir_curve_tick= payload carries the URI; =series_type=,
-  =metric=, =qualifier=, and =point_id= fields are gone.
+- The =ir_curve_tick= payload carries the oresmd URI, point
+  included; =series_type=, =metric=, and =qualifier= fields are
+  gone.
 - Every subscriber of =marketdata.v1.tick.*= and =synthetic.v1.*=
   updates.
 - Feed controllers resolve series and check collisions on URIs.

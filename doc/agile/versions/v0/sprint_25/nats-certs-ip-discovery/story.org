@@ -26,11 +26,11 @@ three platforms. Linux is unaffected (`ip` is always present).
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Fix verified locally.                  |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | PR.                                    |
+| Next          | Nothing.                               |
 | Last touched  | 2026-08-11                               |
 
 * Acceptance
@@ -44,9 +44,17 @@ three platforms. Linux is unaffected (`ip` is always present).
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:78613800-5F30-4614-A60E-8474EE1BC8C7][Scaffold story: Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] | DONE | 2026-08-11 | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:CAB9CC9F-E90D-4F1F-89CD-761A52FEE7A5][Implement Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] | STARTED | 2026-08-11 | | Initial task for: Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command) |
+| [[id:CAB9CC9F-E90D-4F1F-89CD-761A52FEE7A5][Implement Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] | DONE | 2026-08-11 | 2026-08-11 | Initial task for: Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command) |
 
 * Decisions
+
+- Catch `OSError` (not just `FileNotFoundError`) around the `ip`
+  subprocess call: sandboxed or non-executable `ip` is the same class
+  of failure as a missing binary.
+- Filter fallback addresses with `ipaddress` `is_loopback`/
+  `is_link_local` rather than a literal `127.0.0.1` discard:
+  `/etc/hosts` may map the hostname to another loopback (127.0.1.1),
+  and the cert SAN must stay non-routable-address-free.
 
 * Out of scope
 

@@ -87,7 +87,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Bot-authored PRs now merge with zero CI-side verification (nightly-format, misspell, drift bots open auto-fix PRs directly against main) | pr.yml (deleted) | declined | Story decision: the review is the backstop; claude-code-review.yml still runs on every PR event, bot PRs included. The deleted gate's checks never compiled code (the canary job was removed earlier) — the bots' output is mechanical regen/formatting. |
+| 2 | codegen-drift's "runs unconditionally" rationale is not preserved in the local replacement: a model-only edit classifies as docs and skips the check that catches forgotten regeneration | pr-raise/SKILL.org, ci-workflows-and-local-checks.org | accepted | Docs class now runs codegen drift when =projects/*/modeling/*= is changed, in both classification tables, with the retired job's rationale noted. |
+| 3 | Top-of-file comment in pr.yml conflation (this PR's job deletions vs. the earlier canary removal) | pr.yml (deleted) | declined | Moot: the file is deleted with the gate. |
 
 * Result
 

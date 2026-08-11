@@ -52,7 +52,7 @@ lifecycle is ordered this way.
 
    | Class          | Paths                                                         | Checks to run                    |
    |----------------+---------------------------------------------------------------+----------------------------------|
-   | docs           | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= (vendored) | Site build                       |
+   | docs           | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= (vendored) | Site build (+ codegen drift when =projects/*/modeling/*= changed) |
    | code (C++)     | =projects/ores.*= C++ sources and headers, =*.cmake=, =CMakeLists.txt= | Full build + ctest; roundtrip; drift checks; CDash experimental |
    | ci             | =.github/*=, =projects/ores.codegen/library/templates/*=      | Site build; roundtrip; drift checks |
    | python tooling | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | Compass test suite; drift checks |
@@ -60,6 +60,14 @@ lifecycle is ordered this way.
 
    The catch-all defaults an unmatched path to the code class — a
    change that matches no bucket still gets the full build.
+
+   The =projects/*/modeling/*= paths under docs carry a codegen-drift
+   exception: the retired =pr.yml= codegen-drift job ran
+   unconditionally, because a model-only edit classifies as docs and
+   would otherwise skip the check that catches forgotten regeneration.
+   A change touching the modeling paths also runs the codegen drift
+   checks (=compass build --direct codegen_templates= then
+   =check_component_drift.py=).
 
    The checks:
 

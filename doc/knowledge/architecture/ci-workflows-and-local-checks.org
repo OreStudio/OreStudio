@@ -62,7 +62,7 @@ with one addition (python tooling):
 
 | Class           | Paths                                                             | Checks the submit-PR skill runs                        |
 |-----------------+-------------------------------------------------------------------+--------------------------------------------------------|
-| docs            | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= vendored | site build; review; misspell |
+| docs            | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= vendored | site build; codegen drift when =projects/*/modeling/*= changed; review; misspell |
 | code (C++)      | =projects/ores.*= C++ sources, headers, =*.cmake=, =CMakeLists.txt= | full build + ctest; roundtrip; cmake-sources-drift; codegen-drift; review; misspell; CDash experimental |
 | ci              | =.github/*=, =projects/ores.codegen/library/templates/*=         | site; roundtrip; drift checks; review                  |
 | python tooling  | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | component test suite; drift checks; review; misspell  |
@@ -73,6 +73,13 @@ A mixed change runs the union of its classes' checks.
 The python tooling class exists because the retired classifier
 bucketed =ores.compass= and =ores.codegen= changes as docs, so their
 test suites never ran anywhere; locally they always do.
+
+The =projects/*/modeling/*= paths under docs carry a codegen-drift
+exception: the retired =pr.yml= codegen-drift job ran unconditionally,
+because a model-only edit classifies as docs and would otherwise skip
+the check that catches forgotten regeneration. A change touching the
+modeling paths also runs the codegen drift checks (tangle, then
+=check_component_drift.py=).
 
 ** Local verification flow
 

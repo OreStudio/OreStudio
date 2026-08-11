@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/folder-cascade-all-asset-classes
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
 #+updated: 2026-08-11
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,7 +29,7 @@ enumeration of config kinds.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -49,9 +49,62 @@ enumeration of config kinds.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=folder_feed_control_handler= is rewritten from an FX-only cascade into
+the single server-side walk the goal describes: one subtree query, both
+config families read, every row dispatched through
+=make_default_feed_factory()= to the per-kind controller. The IR pass
+is a per-row dispatch, not a second copy of the build sequence.
+
+1. *Handler* (=service/src/folder_feed_control_handler.hpp=): the
+   constructor gains =curve_ctrl= and =auth_nats= (both already in
+   scope at the registrar's call site — application.cpp builds the
+   controllers and =svc_nats= before registration). =start()= checks
+   both permissions (=synthetic::fx_spot_generation_configs:read= and
+   =synthetic::ir_curve_generation_configs:read=), reads both config
+   families plus their children (fx: =gmm_component=; ir:
+   =ir_curve_template_entry=, process parameter values, the definitions
+   catalogue), and walks each row in the subtree with uniform
+   startability: =enabled= plus an enabled container — the same gate
+   the FX auto-start walk applies, and the container-existence the IR
+   configs' trigger-validated =config_id= already guarantees. Each row
+   dispatches through =make_default_feed_factory()=: FX rows to
+   =feed_controller::add(feed, binding_mode)=, IR rows to
+   =curve_feed_controller::add(feed, &conflicting_source_name)= inside
+   try/catch, both mirroring the application.cpp auto-start walks. The
+   FX factory path drops the old =ctrl_->start()= vintage check
+   (=vintage_data_missing= skipped) — accepted: the cascade aligns
+   with the auto-start path it replaces, and the vintage check stays in
+   the client-supplied-params path until the control-plane task deletes
+   it. =stop()= walks both families, stopping each by =source_name= on
+   its own controller.
+
+2. *Protocol* (=ores.marketdata.api/messaging/market_feed_config_protocol.hpp=):
+   the folder start/stop responses gain kind-agnostic per-kind counts —
+   =std::map<std::string, feed_kind_counts>= keyed by the factory kind
+   string, so the protocol never enumerates an asset class. The
+   aggregate fields (=started=, =already_running=, =skipped=,
+   =stopped=) stay, keeping ores.shell's printed summary and every
+   existing consumer backward-safe.
+
+3. *Registrar* (=service/src/registrar.cpp=): both folder subscriptions
+   construct the handler with =ctrl=, =curve_ctrl=, =auth_nats=, =ctx=,
+   =verifier=.
+
+4. *Tests* (=service/tests/folder_feed_control_handler_tests.cpp=):
+   the first service-test handler integration test — real NATS, real
+   DB (scoped_database_helper), and an HS256 JWT minted in-test via
+   =jwt_authenticator::create_hs256()= carrying the test tenant and
+   both permission strings (the pattern the refdata eventing tests use
+   for NATS+DB, extended with the JWT seam). Seeds both config
+   families under the test tenant — folder, containers, fx config +
+   =gmm_component= rows, and the IR stack: =yield_curve_process_type=
+   (VASICEK), the four parameter definitions, a DEPOSIT template entry
+   (SPOT→1M) with its tenor/instrument-code rows, the
+   =RATES_SPOT_FORWARD= convention + resolution row, value rows, and
+   the =ir_curve_generation_config= row. Asserts the single-pass
+   request starts both kinds, per-kind counts, already-running on
+   repeat, =skipped= for disabled rows, stop counts, and permission
+   denial without the IR permission.
 
 * Notes
 

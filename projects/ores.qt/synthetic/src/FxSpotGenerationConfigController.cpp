@@ -176,16 +176,13 @@ void FxSpotGenerationConfigController::onShowHistory(
     showHistoryWindow(fx_spot_generation_config);
 }
 
-void FxSpotGenerationConfigController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new FX spot generation config";
-
-    auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
+void FxSpotGenerationConfigController::wireDetailDialogCommon(
+    FxSpotGenerationConfigDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setImageCache(imageCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &FxSpotGenerationConfigDetailDialog::statusMessage,
@@ -195,6 +192,15 @@ void FxSpotGenerationConfigController::showAddWindow() {
             &FxSpotGenerationConfigDetailDialog::errorMessage,
             this,
             &FxSpotGenerationConfigController::errorMessage);
+}
+
+void FxSpotGenerationConfigController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new FX spot generation config";
+
+    auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &FxSpotGenerationConfigDetailDialog::fx_spot_generation_configSaved,
             this,
@@ -235,22 +241,10 @@ void FxSpotGenerationConfigController::showDetailWindow(
                                << boost::uuids::to_string(fx_spot_generation_config.id);
 
     auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setConfig(fx_spot_generation_config);
 
-    connect(detailDialog,
-            &FxSpotGenerationConfigDetailDialog::statusMessage,
-            this,
-            &FxSpotGenerationConfigController::statusMessage);
-    connect(detailDialog,
-            &FxSpotGenerationConfigDetailDialog::errorMessage,
-            this,
-            &FxSpotGenerationConfigController::errorMessage);
     connect(detailDialog,
             &FxSpotGenerationConfigDetailDialog::fx_spot_generation_configSaved,
             this,
@@ -402,30 +396,9 @@ void FxSpotGenerationConfigController::onOpenVersion(
     }
 
     auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setConfig(fx_spot_generation_config);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &FxSpotGenerationConfigDetailDialog::statusMessage,
-            this,
-            [self = QPointer<FxSpotGenerationConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &FxSpotGenerationConfigDetailDialog::errorMessage,
-            this,
-            [self = QPointer<FxSpotGenerationConfigController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -551,25 +524,13 @@ void FxSpotGenerationConfigController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new FxSpotGenerationConfigDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setImageCache(imageCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_fx_spot_generation_config = fx_spot_generation_config;
     reverted_fx_spot_generation_config.version = 0;
     detailDialog->setConfig(reverted_fx_spot_generation_config);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &FxSpotGenerationConfigDetailDialog::statusMessage,
-            this,
-            &FxSpotGenerationConfigController::statusMessage);
-    connect(detailDialog,
-            &FxSpotGenerationConfigDetailDialog::errorMessage,
-            this,
-            &FxSpotGenerationConfigController::errorMessage);
     connect(detailDialog,
             &FxSpotGenerationConfigDetailDialog::fx_spot_generation_configSaved,
             this,

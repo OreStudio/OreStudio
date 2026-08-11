@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/uniform-auto-start
+#+pr: 1971
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
 #+updated: 2026-08-11
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,11 +29,11 @@ enabled + auto_start + enabled container. auto_start becomes a common lifecycle 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -48,9 +48,39 @@ enabled + auto_start + enabled container. auto_start becomes a common lifecycle 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The FX config gains =auto_start= as a common lifecycle column, then
+the two boot walks collapse into one.
+
+1. *auto_start on the FX config*: add the field to
+   =ores.synthetic.fx_spot_generation_config.org= (right after
+   =enabled=, mirroring the IR model's placement and shape —
+   boolean, not null, default false, orthogonal to =enabled=) and
+   regenerate the entity's full codegen set. The DQ artefact table
+   (=dq_synthetic_fx_spot_configs_artefact_create.sql=) gains
+   ="auto_start" boolean not null default false= — the exact column
+   the IR artefact already has — and the publish function's FX block
+   threads it through (select =a.auto_start=, insert
+   =coalesce(r.auto_start, false)=), matching the IR block's pattern.
+
+2. *Seeds preserve boot behaviour*: today every enabled FX row under
+   an enabled container auto-starts, and every publish-created
+   container is enabled — so the four FX populate scripts set
+   =auto_start=true= on every row, keeping the boot-started set
+   identical. The IR gate gains the enabled-container requirement;
+   every published IR container is enabled, so IR boot behaviour is
+   unchanged too.
+
+3. *One walk*: =auto_start_enabled_feeds= and
+   =auto_start_enabled_ir_curve_feeds= become one
+   =auto_start_feeds= pass. It reads every config kind once, applies
+   one startability gate (enabled + auto_start + enabled container),
+   collects per-kind build candidates (each carrying its kind string,
+   display name, binding mode, and build input), then adds them all
+   through the factory and the single controller with one
+   skip-with-warn message shape (missing children warn, gate skip
+   silent, conflict errors with the holding source name, build
+   failures caught per candidate) and one running-count summary. The
+   caller's single running-count line stays.
 
 * Notes
 
@@ -69,7 +99,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1971][#1971]] | [synthetic,sql] One auto-start with uniform startability |
 
 * Review
 
@@ -78,3 +108,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=auto_start= now exists on the FX spot generation config end to end:
+the codegen model (=ores.synthetic.fx_spot_generation_config.org=) and
+the DQ artefact model (=ores.dq.synthetic_fx_spot_config.org=) both
+gained the field after =enabled= (boolean, not null, default false,
+orthogonal to =enabled=), and the full codegen set was regenerated —
+domain structs, generators, repositories, mappers, the Qt detail
+dialog (autoStartCheck widget) and Qt model column, the DQ artefact
+create (=dq_synthetic_fx_spot_configs_artefact_create.sql=, SQL
+default false), the real-table create, and the publish-from-dq
+function (select =a.auto_start=, insert =coalesce(r.auto_start,
+false)=, mirroring the IR block).
+
+The four FX populate scripts set =auto_start=true= on every row, so
+the boot-started set is identical to before the column existed. The
+IR gate gains the enabled-container requirement, which changes
+nothing for published IR configs (every publish-created container is
+enabled).
+
+=auto_start_enabled_feeds= and =auto_start_enabled_ir_curve_feeds=
+collapsed into one =auto_start_feeds= pass in application.cpp: one
+read of every config kind, one startability gate (enabled +
+=auto_start= + enabled container), per-kind build candidates collected
+in the same pass, one common add loop through the factory and the
+single controller, one skip/conflict warning shape, and one
+"Auto-started N enabled feed(s)." summary line.
+
+Verification: full build green (100%), DB recreated (schema 0.0.25),
+rat green (exit 0) — including the folder-cascade tests, whose enabled
+FX row now sets =auto_start=true= like every published FX row.
+
+Acceptance met: auto_start exists on the FX config; one auto-start
+walk with one gate, one skip-with-warn shape, one summary; boot
+behaviour preserved for both kinds.

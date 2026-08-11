@@ -61,7 +61,7 @@ using ores::synthetic::feed::vintage_data_missing_error;
 
 /**
  * @brief NATS handler for IR curve feed start/stop/list control messages -- the on-demand
- * counterpart to auto_start_enabled_ir_curve_feeds(), mirroring market_feed_config_handler for
+ * counterpart to the boot-time auto_start_feeds() walk, mirroring market_feed_config_handler for
  * FX. Unlike auto-start (which only ever reads the service's own unscoped, system-tenant
  * context), start() derives a request-scoped context from the caller's own JWT via
  * make_request_context() -- the same pattern every other synthetic entity handler uses -- so a

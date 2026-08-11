@@ -63,6 +63,7 @@ public:
         TicksPerHour,
         ProcessType,
         Enabled,
+        AutoStart,
         VintageSource,
         VintageDate,
         Version,

@@ -35,6 +35,7 @@ create table if not exists "ores_dq_synthetic_fx_spot_configs_artefact_tbl" (
     "name" text not null,
     "description" text null,
     "enabled" boolean not null,
+    "auto_start" boolean not null default false,
     "base_currency_code" text not null,
     "quote_currency_code" text not null,
     "gmm_initial_price" double precision not null,

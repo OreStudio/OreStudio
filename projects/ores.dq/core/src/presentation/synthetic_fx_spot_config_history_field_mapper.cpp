@@ -32,6 +32,7 @@ render_synthetic_fx_spot_config_fields(const domain::synthetic_fx_spot_config& v
     fields.push_back({.name = "Name", .value = v.name});
     fields.push_back({.name = "Description", .value = v.description.value_or(std::string{})});
     fields.push_back({.name = "Enabled", .value = v.enabled ? "true" : "false"});
+    fields.push_back({.name = "Auto Start", .value = v.auto_start ? "true" : "false"});
     fields.push_back({.name = "Base Currency Code", .value = v.base_currency_code});
     fields.push_back({.name = "Quote Currency Code", .value = v.quote_currency_code});
     fields.push_back({.name = "Gmm Initial Price", .value = std::to_string(v.gmm_initial_price)});

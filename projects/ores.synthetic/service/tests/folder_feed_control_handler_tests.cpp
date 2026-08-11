@@ -292,6 +292,9 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     fx_enabled.ticks_per_hour = 12;
     fx_enabled.process_type = "geometric";
     fx_enabled.enabled = true;
+    // An enabled config under an enabled container is auto-start eligible,
+    // like every published FX row.
+    fx_enabled.auto_start = true;
     fx_enabled.vintage_source = "";
     fx_enabled.vintage_date = "";
     fx_enabled.modified_by = db_user;

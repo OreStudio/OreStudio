@@ -149,6 +149,10 @@ begin
     insert into ores_dq_synthetic_fx_spot_configs_artefact_tbl (
         dataset_id, tenant_id, id, version,
         name, description, enabled,
+        -- auto_start=true on every row: all starter FX configs are
+        -- auto-start eligible (enabled under an enabled container),
+        -- matching the boot behaviour they had before the column existed.
+        auto_start,
         base_currency_code, quote_currency_code,
         gmm_initial_price, ticks_per_hour, process_type,
         price_source, vintage_source, vintage_date
@@ -160,7 +164,7 @@ begin
         -- every row here is 'vintage' today.
         'Vintage Synthetic FX Spot (2016 ORE Samples): ' || p.base || '/' || p.quote,
         '2016 ORE Samples synthetic FX spot generator: 2-component geometric Gaussian mixture calibrated to plausible real FX volatility.',
-        true, p.base, p.quote,
+        true, true, p.base, p.quote,
         0, 1800, 'geometric',
         'vintage', 'fed.h10.2016-02-05', '2016-02-05'
     from (values

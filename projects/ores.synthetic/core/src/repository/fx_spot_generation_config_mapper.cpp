@@ -53,6 +53,7 @@ fx_spot_generation_config_mapper::map(const fx_spot_generation_config_entity& v)
     r.ticks_per_hour = v.ticks_per_hour;
     r.process_type = v.process_type;
     r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
     r.vintage_source = v.vintage_source;
     r.vintage_date = v.vintage_date;
     r.folder_id = v.folder_id.has_value() ?
@@ -93,6 +94,7 @@ fx_spot_generation_config_mapper::map(const domain::fx_spot_generation_config& v
     r.ticks_per_hour = v.ticks_per_hour;
     r.process_type = v.process_type;
     r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
     r.vintage_source = v.vintage_source;
     r.vintage_date = v.vintage_date;
     r.folder_id = v.folder_id.has_value() ? std::optional(boost::uuids::to_string(*v.folder_id)) :

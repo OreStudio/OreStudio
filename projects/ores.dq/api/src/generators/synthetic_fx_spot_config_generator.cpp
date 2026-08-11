@@ -43,6 +43,7 @@ generate_synthetic_synthetic_fx_spot_config(utility::generation::generation_cont
     r.name = std::string(faker::word::noun()) + " FX Config";
     r.description = std::string(faker::lorem::sentence());
     r.enabled = faker::datatype::boolean();
+    r.auto_start = faker::datatype::boolean();
     r.base_currency_code = std::string(faker::finance::currencyCode());
     r.quote_currency_code = std::string(faker::finance::currencyCode());
     r.gmm_initial_price = faker::number::decimal(0.5, 2.0);

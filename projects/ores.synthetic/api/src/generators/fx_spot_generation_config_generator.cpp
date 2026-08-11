@@ -53,6 +53,7 @@ generate_synthetic_fx_spot_generation_config(utility::generation::generation_con
     r.ticks_per_hour = faker::number::integer(1, 3600);
     r.process_type = std::string("geometric");
     r.enabled = faker::datatype::boolean();
+    r.auto_start = faker::datatype::boolean();
     r.vintage_source = std::string("ore.reference");
     r.vintage_date = std::string("2016-02-05");
     r.folder_id = std::nullopt;

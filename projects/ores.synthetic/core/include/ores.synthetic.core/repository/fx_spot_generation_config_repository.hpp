@@ -71,7 +71,6 @@ public:
     std::vector<domain::fx_spot_generation_config> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all FX spot generation configs, possibly filtered by primary key.
      */

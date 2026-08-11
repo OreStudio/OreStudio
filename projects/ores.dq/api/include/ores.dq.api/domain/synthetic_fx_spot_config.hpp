@@ -77,6 +77,13 @@ struct synthetic_fx_spot_config final {
     bool enabled = false;
 
     /**
+     * @brief Whether this config starts automatically when the service comes up, as opposed to
+     * manual-start-only. Orthogonal to enabled: a config can be enabledtrue, auto_startfalse
+     * (valid, manually startable, but never auto-started).
+     */
+    bool auto_start = false;
+
+    /**
      * @brief Synthetic FX Spot Config artefacts - denormalized parent+child FX generation config
      * rows for the synthetic market data bundle. Each row is a complete FX config combining the
      * parent market_data_generation_config fields (name, description, enabled) with the FX spot

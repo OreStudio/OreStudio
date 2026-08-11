@@ -32,11 +32,11 @@ Define the change-classification rules the submit-PR skills will use: doc-only c
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -47,9 +47,13 @@ Define the change-classification rules the submit-PR skills will use: doc-only c
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The analysis is recorded in the
+[[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]]
+knowledge doc: the full inventory of PR-gating checks, the fate of each
+(local / GitHub / retired), the change-classification rule table the
+submit-PR skills use, and the open questions the implementation tasks
+resolve. The story's =* Decisions= distills the durable choices at
+close.
 
 * Notes
 
@@ -77,3 +81,12 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Analysis delivered (see the PRs table): every check that gates a PR
+today is inventoried with its fate — run locally, stay on GitHub, or
+retire. The change-classification rule table (docs / code / ci /
+python tooling, mixed = union) is written. The analysis lives in the
+[[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]]
+knowledge doc, which the follow-up implementation tasks reference. All
+acceptance bullets are met. The story stays STARTED: the implementation
+tasks that absorb the checks locally are added next.

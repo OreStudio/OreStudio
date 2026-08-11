@@ -17,15 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "../src/ir_curve_feed.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
 
 const std::string tags("[ir_curve_feed][vintage]");
 
-using ores::synthetic::service::ir_curve_resolved_entry;
-using ores::synthetic::service::select_vintage_anchor_entry;
+using ores::synthetic::feed::ir_curve_resolved_entry;
+using ores::synthetic::feed::select_vintage_anchor_entry;
 
 ir_curve_resolved_entry make_entry(const std::string& point_id,
                                    const std::string& curve_role,

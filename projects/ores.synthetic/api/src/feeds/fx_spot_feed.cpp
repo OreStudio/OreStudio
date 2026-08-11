@@ -17,36 +17,84 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "fx_spot_feed.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
+#include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <chrono>
+#include <random>
 #include <stdexcept>
 #include <thread>
 
-namespace ores::synthetic::service {
+namespace ores::synthetic::feed {
 
 using namespace ores::logging;
 
 namespace {
 
 auto& lg() {
-    static auto instance = ores::logging::make_logger("ores.synthetic.service.fx_spot_feed");
+    static auto instance = ores::logging::make_logger("ores.synthetic.api.fx_spot_feed");
     return instance;
 }
 
 } // namespace
 
+ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed> make_fx_spot_feed(
+    ores::nats::service::client& nats,
+    const ores::synthetic::domain::fx_spot_generation_config& cfg,
+    const std::vector<ores::synthetic::domain::gmm_component>& components,
+    ores::synthetic::domain::binding_mode binding_mode) {
+    if (components.empty())
+        throw std::invalid_argument(
+            "make_fx_spot_feed: config '" + cfg.ore_key + "' has no GMM components.");
+
+    std::vector<double> means, stdevs, weights;
+    means.reserve(components.size());
+    stdevs.reserve(components.size());
+    weights.reserve(components.size());
+    for (const auto& c : components) {
+        means.push_back(c.mean);
+        stdevs.push_back(c.stdev);
+        weights.push_back(c.weight);
+    }
+
+    // Persistent random_device so the OS entropy pool is not re-seeded between rapid
+    // successive calls (which can produce equal values on some platforms when called on
+    // separate temporaries) -- same note as feed_controller::start().
+    static std::random_device rd;
+    const std::uint32_t seed = rd();
+    BOOST_LOG_SEV(lg(), ores::logging::info)
+        << "SYNTHETIC SEED: source='" << cfg.source_name << "' seed=" << seed;
+
+    auto process = ores::analytics::quant::service::process_factory::make_process(
+        cfg.process_type,
+        std::move(means),
+        std::move(stdevs),
+        std::move(weights),
+        cfg.gmm_initial_price,
+        seed);
+
+    return std::make_shared<fx_spot_feed>(nats,
+                                          cfg.ore_key,
+                                          cfg.source_name,
+                                          synthetic_producer_subject(cfg.source_name, binding_mode),
+                                          std::move(process),
+                                          static_cast<double>(cfg.ticks_per_hour));
+}
+
 fx_spot_feed::fx_spot_feed(
     ores::nats::service::client& nats,
     std::string ore_key,
+    std::string source_name,
     std::string nats_subject,
     std::unique_ptr<ores::analytics::quant::domain::IStochasticProcess> process,
     double ticks_per_hour)
     : nats_(nats)
     , ore_key_(std::move(ore_key))
+    , source_name_(std::move(source_name))
     , process_(std::move(process))
     , ticks_per_hour_(ticks_per_hour)
     , nats_subject_(std::move(nats_subject)) {
@@ -55,13 +103,32 @@ fx_spot_feed::fx_spot_feed(
         throw std::invalid_argument("fx_spot_feed: process must not be null");
     if (ticks_per_hour_ <= 0.0)
         throw std::invalid_argument("fx_spot_feed: ticks_per_hour must be positive");
+
+    if (const auto key =
+            ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key_);
+        key) {
+        qualifier_ = key->qualifier;
+    }
 }
 
-std::string fx_spot_feed::ore_key() const {
-    return ore_key_;
+const std::string& fx_spot_feed::source_name() const {
+    return source_name_;
 }
 
-void fx_spot_feed::start(handler on_tick) {
+const std::string& fx_spot_feed::qualifier() const {
+    return qualifier_;
+}
+
+const std::string& fx_spot_feed::role() const {
+    static const std::string empty;
+    return empty;
+}
+
+std::string fx_spot_feed::conflict_key() const {
+    return ores::marketdata::domain::feed_conflict_key(qualifier_, role());
+}
+
+void fx_spot_feed::start() {
     using namespace std::chrono;
 
     const auto period_us =
@@ -90,8 +157,6 @@ void fx_spot_feed::start(handler on_tick) {
         tick.ore_key = ore_key_;
         tick.datetime = system_clock::now();
         tick.mid = process_->next();
-
-        on_tick(tick);
 
         const auto& codec = ores::nats::default_wire_codec();
         BOOST_LOG_SEV(lg(), trace)

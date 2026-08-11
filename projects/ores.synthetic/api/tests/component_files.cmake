@@ -22,5 +22,6 @@ set(files
     "domain_generation_options_tests.cpp"
     "domain_organisation_generation_options_tests.cpp"
     "domain_synthetic_catalog_tests.cpp"
+    "feed_factory_tests.cpp"
     "main.cpp"
 )

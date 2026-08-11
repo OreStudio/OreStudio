@@ -20,8 +20,6 @@
 #include "ores.synthetic.service/app/application.hpp"
 #include "../curve_feed_controller.hpp"
 #include "../feed_controller.hpp"
-#include "../ir_curve_feed.hpp"
-#include "../ir_curve_template_resolver.hpp"
 #include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -34,6 +32,7 @@
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
+#include "ores.synthetic.api/feeds/feed_factory.hpp"
 #include "ores.synthetic.core/messaging/registrar.hpp"
 #include "ores.synthetic.core/repository/fx_spot_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/gmm_component_repository.hpp"
@@ -74,8 +73,13 @@ auto& auto_start_lg() {
     return instance;
 }
 
-void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::context& ctx) {
+void auto_start_enabled_feeds(feed_controller& ctrl,
+                              const ores::synthetic::feed::feed_build_context& bctx,
+                              const ores::database::context& ctx) {
     namespace repo = ores::synthetic::repository;
+    using ores::synthetic::feed::fx_spot_feed_build_input;
+    using ores::synthetic::feed::fx_spot_feed_kind;
+    using ores::synthetic::feed::make_default_feed_factory;
 
     repo::market_data_generation_config_repository feed_repo;
     repo::fx_spot_generation_config_repository fx_repo;
@@ -100,6 +104,7 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
     for (const auto& c : comps)
         by_fx[c.fx_spot_config_id].push_back(c);
 
+    const auto factory = make_default_feed_factory();
     int started = 0;
     for (const auto& fx : fxs) {
         const auto container = enabled_feeds.find(fx.config_id);
@@ -111,26 +116,11 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
                 << "Skipping enabled FX rate " << fx.ore_key << " — no GMM components.";
             continue;
         }
-        std::vector<double> means, stdevs, weights;
-        for (const auto& c : it->second) {
-            means.push_back(c.mean);
-            stdevs.push_back(c.stdev);
-            weights.push_back(c.weight);
-        }
-        const auto r = ctrl.start(fx.ore_key,
-                                  fx.source_name,
-                                  std::move(means),
-                                  std::move(stdevs),
-                                  std::move(weights),
-                                  fx.gmm_initial_price,
-                                  static_cast<double>(fx.ticks_per_hour),
-                                  fx.process_type,
-                                  {},
-                                  {},
-                                  nullptr,
-                                  {},
-                                  container->second.binding_mode);
-        if (r == feed_controller::start_result::started)
+        const auto feed = factory.make(
+            std::string(fx_spot_feed_kind),
+            bctx,
+            fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
+        if (ctrl.add(std::move(feed), container->second.binding_mode))
             ++started;
     }
     BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
@@ -141,15 +131,16 @@ void auto_start_enabled_feeds(feed_controller& ctrl, const ores::database::conte
 // per-tenant configs (e.g. a party's own published dataset) are started on demand instead, via
 // ir_curve_feed_config_handler's NATS control-plane -- mirroring feed_controller/
 // market_feed_config_handler's split for FX.
-void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
-                                       ores::nats::service::nats_client& auth_nats,
+void auto_start_enabled_ir_curve_feeds(const ores::synthetic::feed::feed_build_context& bctx,
                                        ores::synthetic::service::curve_feed_controller& ctrl,
                                        const ores::database::context& ctx) {
     namespace synth_repo = ores::synthetic::repository;
-    using ores::synthetic::service::build_ir_curve_refdata_context;
-    using ores::synthetic::service::ir_curve_qualifier;
-    using ores::synthetic::service::ir_curve_tenor_convention_code;
-    using ores::synthetic::service::make_ir_curve_feed;
+    using ores::synthetic::feed::build_ir_curve_refdata_context;
+    using ores::synthetic::feed::ir_curve_feed_build_input;
+    using ores::synthetic::feed::ir_curve_feed_kind;
+    using ores::synthetic::feed::ir_curve_qualifier;
+    using ores::synthetic::feed::ir_curve_tenor_convention_code;
+    using ores::synthetic::feed::make_default_feed_factory;
 
     synth_repo::ir_curve_generation_config_repository config_repo;
     synth_repo::ir_curve_template_entry_repository entry_repo;
@@ -176,6 +167,7 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
     for (const auto& v : values)
         values_by_config[v.config_id].push_back(v);
 
+    const auto factory = make_default_feed_factory();
     int started = 0;
     for (const auto& cfg : configs) {
         // auto_start is the auto-start-eligibility flag; enabled alone only means "startable at
@@ -212,8 +204,10 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
 
         try {
             std::string conflicting_source_name;
-            if (ctrl.add(make_ir_curve_feed(
-                             nats, auth_nats, cfg, it->second, vit->second, definitions, *refctx),
+            if (ctrl.add(factory.make(std::string(ir_curve_feed_kind),
+                                      bctx,
+                                      ir_curve_feed_build_input{
+                                          cfg, it->second, vit->second, definitions, *refctx}),
                          &conflicting_source_name)) {
                 ++started;
             } else {
@@ -313,15 +307,19 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto ctrl = std::make_shared<feed_controller>(nats, svc_nats, db_ctx.tenant_id());
 
+    // The shared inputs every producer builder needs. Auto-start has no
+    // end-user session, so the caller bearer token is empty.
+    const ores::synthetic::feed::feed_build_context bctx{nats, svc_nats, {}};
+
     // Autonomous, config-driven generation: start every enabled FX rate across
     // enabled configs. Each feed resolves its own series and publishes on its
     // synthetic producer channel.
-    auto_start_enabled_feeds(*ctrl, db_ctx);
+    auto_start_enabled_feeds(*ctrl, bctx, db_ctx);
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
                               << " feed(s) auto-started; waiting for control signals";
 
     auto curve_ctrl = std::make_shared<ores::synthetic::service::curve_feed_controller>();
-    auto_start_enabled_ir_curve_feeds(nats, svc_nats, *curve_ctrl, db_ctx);
+    auto_start_enabled_ir_curve_feeds(bctx, *curve_ctrl, db_ctx);
     BOOST_LOG_SEV(lg(), info) << "Curve feed controller ready — " << curve_ctrl->running_count()
                               << " feed(s) auto-started";
 

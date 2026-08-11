@@ -36,7 +36,7 @@ namespace ores::marketdata::service {
 
 /**
  * @brief Refdata inputs resolve_bootstrap_pillars() needs, read once per republish() call --
- * mirrors ores.synthetic::service::ir_curve_refdata_context, the equivalent context on the
+ * mirrors ores.synthetic::feed::ir_curve_refdata_context, the equivalent context on the
  * generation side.
  */
 struct curve_republish_refdata_context final {

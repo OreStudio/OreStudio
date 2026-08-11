@@ -17,7 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ir_curve_template_resolver.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.refdata.api/domain/tenor_resolution.hpp"
 #include "ores.refdata.core/repository/calendar_event_repository.hpp"
@@ -30,7 +30,7 @@
 #include <cctype>
 #include <stdexcept>
 
-namespace ores::synthetic::service {
+namespace ores::synthetic::feed {
 
 namespace {
 

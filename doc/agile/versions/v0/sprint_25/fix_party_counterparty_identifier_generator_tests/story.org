@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: B00412FD-10E4-4B85-A6BF-2096076E0911
+:END:
+#+title: Story: party/counterparty_identifier_generator tests assert stale version/change_reason_code
+#+description: generators_tests.cpp still expects version==1/system.new for party_identifier and counterparty_identifier generators, but the generators produce version==0/system.test — same stale-expectation pattern already fixed for the contact_information generators.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=projects/ores.refdata/api/tests/generators_tests.cpp= —
+=party_identifier_generator_produces_valid_instance= and
+=counterparty_identifier_generator_produces_valid_instance= — assert
+=sut.version == 1= and =sut.change_reason_code == "system.new"=, but
+=party_identifier_generator.cpp= / =counterparty_identifier_generator.cpp=
+set =version = 0= and =change_reason_code = "system.test"=. Fix the
+test assertions to match actual generator output, mirroring the fix
+already applied to =party_contact_information_generator_produces_valid_instance=
+and =counterparty_contact_information_generator_produces_valid_instance=
+in commits =123ca2bfa= / =d0458e500=.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-11                               |
+
+* Acceptance
+
+- The investigation task documents what version and change_reason_code mean for the refdata synthetic generators, why the tests asserted version==1/"system.new", and why the current version==0/"system.test" assertions are correct.
+- The disposition of the fix is recorded: already merged on main (commits 90ad8693be, c113b851e, 123ca2bfa, d0458e500); no code change remains for this story.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FB57CE4C-5AAD-4189-A16F-304374116653][Investigate the version/change_reason_code contract in refdata generator tests]] | DONE | 2026-08-11 | 2026-08-11 | Determine whether the party_identifier/counterparty_identifier generator tests (and refdata generator tests generally) assert the contract the generators actually implement, and whether version==0 output means the tests no longer test what they claim: establish what version and change_reason_code mean (domain default vs persisted-first-version), what the codegen-standard generator boilerplate is after PR #1698, whether the stale-expectation fix already landed on main, and whether any stale assertions remain repo-wide. |
+
+* Decisions
+
+- The codegen-standard contract is version==0 / change_reason_code=="system.test" (in-memory, never-persisted test fixture). The old version==1 / "system.new" expectations encoded pre-PR-#1698 hand-written generator behavior; the generators were aligned to the standard in PR #1698 and the test expectations lagged. Tests failing loudly caught the drift; no silent false-positive testing was happening.
+- Closed as DONE: the fix was done elsewhere — the stale expectations were already fixed on main before this story was promoted (commits 90ad8693be, c113b851e, 123ca2bfa, d0458e500, 2026-07-17..2026-07-28). The story stands as the investigation record.
+
+* Out of scope
+
+-
+
+* Promoted from capture
+
+Captured 2026-07-16 in the product backlog; promoted preserving the UUID.
+
+** What
+
+=projects/ores.refdata/api/tests/generators_tests.cpp= —
+=party_identifier_generator_produces_valid_instance= and
+=counterparty_identifier_generator_produces_valid_instance= — assert
+=sut.version == 1= and =sut.change_reason_code == "system.new"=, but
+=party_identifier_generator.cpp= / =counterparty_identifier_generator.cpp=
+set =version = 0= and =change_reason_code = "system.test"=. Fix the
+test assertions to match actual generator output, mirroring the fix
+already applied to =party_contact_information_generator_produces_valid_instance=
+and =counterparty_contact_information_generator_produces_valid_instance=
+in commits =123ca2bfa= / =d0458e500=.
+
+** Why
+
+Confirmed pre-existing and failing on =origin/main= (not introduced
+by any in-flight branch) while running the full test suite locally
+before raising an unrelated PR. Two tests currently fail every CI
+run; low-risk one-line fix per assertion.
+
+** References
+
+- =projects/ores.refdata/api/tests/generators_tests.cpp= lines ~242, ~274

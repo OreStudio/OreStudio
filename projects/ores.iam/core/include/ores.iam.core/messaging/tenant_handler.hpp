@@ -300,6 +300,20 @@ public:
             resp.steps.push_back(provision_acme_tenant_step{
                 .step = std::move(step), .action = std::move(action), .record_count = count});
         };
+        // Abort-path helper (F11): flips the response to failure and carries
+        // the DQ-side error detail publish_bundle recorded in the trailing
+        // <bundle>.failed step (publication_handler's error_message, or
+        // "workflow did not complete") into the top-level message, so a
+        // failed provisioning never replies with success=true.
+        auto fail_with = [&](const std::string& summary) {
+            resp.success = false;
+            resp.message = summary;
+            for (auto it = resp.steps.rbegin(); it != resp.steps.rend(); ++it)
+                if (it->step.ends_with(".failed")) {
+                    resp.message += " -- " + it->action;
+                    break;
+                }
+        };
 
         try {
             auto ctx_expected = ores::service::service::make_request_context(
@@ -393,6 +407,7 @@ public:
                                     lei_import_params(),
                                     add_step,
                                     progress("acme_lei_import"))) {
+                    fail_with("Step 2 failed: acme_lei_import");
                     reply(nats_, msg, resp);
                     return;
                 }
@@ -435,6 +450,7 @@ public:
                                         dq::messaging::build_params_json(groupParams),
                                         add_step,
                                         progress("acme_group"))) {
+                        fail_with("Step 3 failed: acme_group");
                         reply(nats_, msg, resp);
                         return;
                     }

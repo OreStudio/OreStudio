@@ -61,6 +61,10 @@
 \ir ./refdata_currency_pair_convention_calendars_seed_populate.sql
 
 \echo ''
+\echo '--- IR Curve Bootstrap Configs Seed Data ---'
+\ir ./refdata_ir_curve_bootstrap_configs_populate.sql
+
+\echo ''
 \ir ./refdata_floating_index_types_populate.sql
 
 \echo ''

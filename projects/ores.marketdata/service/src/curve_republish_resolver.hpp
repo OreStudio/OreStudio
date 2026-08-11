@@ -27,6 +27,7 @@
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
 #include <chrono>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -44,6 +45,11 @@ struct curve_republish_refdata_context final {
     std::unordered_map<std::string, ores::refdata::domain::tenor_convention_resolution>
         resolutions_by_tenor;
     std::chrono::year_month_day horizon; // == value_date == spot: T+0, see resolve's doc.
+    // The event-lookup schedule's date set (FOMC meeting dates), sorted
+    // ascending -- the requirement of the SCHEDULE_STEP walk's
+    // nth_on_or_after. Only SCHEDULE_STEP conventions consult it; the
+    // standard ANCHOR_OFFSET conventions never do.
+    std::optional<std::vector<std::chrono::year_month_day>> schedule_dates;
 };
 
 /**

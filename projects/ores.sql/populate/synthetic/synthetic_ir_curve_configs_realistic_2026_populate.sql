@@ -185,4 +185,53 @@ begin
         (5, 'SPOT', '5Y', 'IRS'),
         (6, 'SPOT', '10Y', 'IRS')
     ) as e(sequence_index, start_tenor_code, end_tenor_code, instrument_code);
+
+    -- The FOMC-dated short end, USD only: one extra config for the same
+    -- (currency, index_family) keyed by tenor 'FOMC', so it publishes its
+    -- own distinct series identity, 'USD/SOFR-FOMC' (see ir_curve_qualifier
+    -- in ir_curve_template_resolver.cpp) -- the raw grid the bootstrap
+    -- config consumes. Only USD has FOMC-dated pillars; the 20-currency
+    -- cross-join above must not be extended. The process calibration is the
+    -- same per-currency CIR set as the main USD curve row, so the two
+    -- segments move consistently.
+    insert into ores_dq_synthetic_ir_curve_configs_artefact_tbl (
+        dataset_id, tenant_id, id, version,
+        name, description, enabled, auto_start,
+        currency_code, index_family, tenor, process_type,
+        kappa, theta, sigma, initial_rate,
+        ticks_per_hour, fixed_leg_payment_frequency_code,
+        price_source, vintage_source, vintage_date
+    )
+    values (
+        v_dataset_id, v_tenant_id, gen_random_uuid(), 1,
+        'Fixed Synthetic IR Curve (2026 Realistic): USD/USD-SOFR-FOMC',
+        '2026 Realistic archetype: the FOMC-dated short end of USD-SOFR. A Cox-Ingersoll-Ross '
+        || 'short-rate process (the same calibration as the main USD curve) quotes the '
+        || 'meeting-dated point ids 1F..8F and the 1Y split tenor, publishing into the '
+        || 'RATES/YIELD USD/SOFR-FOMC raw grid the bootstrap config consumes; the curve itself '
+        || 'is built by the republish chain, not by this feed.',
+        true, true, 'USD', 'sofr', 'FOMC', 'COX_INGERSOLL_ROSS',
+        0.55, 0.04, 0.008, 0.04,
+        60, 'Quarterly',
+        'fixed', '', ''
+    );
+
+    insert into ores_dq_synthetic_ir_curve_template_entries_artefact_tbl (
+        dataset_id, tenant_id, currency_code, index_family, tenor,
+        sequence_index, start_tenor_code, end_tenor_code, instrument_code
+    )
+    select
+        v_dataset_id, v_tenant_id, 'USD', 'sofr', 'FOMC',
+        e.sequence_index, e.start_tenor_code, e.end_tenor_code, e.instrument_code
+    from (values
+        (0, 'SPOT', '1F', 'DEPO'),
+        (1, '1F', '2F', 'FRA'),
+        (2, '2F', '3F', 'FRA'),
+        (3, '3F', '4F', 'FRA'),
+        (4, '4F', '5F', 'FRA'),
+        (5, '5F', '6F', 'FRA'),
+        (6, '6F', '7F', 'FRA'),
+        (7, '7F', '8F', 'FRA'),
+        (8, '8F', '1Y', 'IRS')
+    ) as e(sequence_index, start_tenor_code, end_tenor_code, instrument_code);
 end $$;

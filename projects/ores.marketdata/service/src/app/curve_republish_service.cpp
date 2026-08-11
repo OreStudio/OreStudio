@@ -31,6 +31,7 @@
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
+#include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
 #include "ores.refdata.core/repository/tenor_repository.hpp"
@@ -47,11 +48,39 @@ using namespace ores::logging;
 
 namespace {
 
-constexpr auto* tenor_convention_code = "RATES_SPOT_FORWARD";
+// The FOMC meeting dates the RATES_SPOT_FOMC schedule walk steps along, read
+// from the event store. Sorted ascending explicitly: the walk's
+// nth_on_or_after silently yields a wrong "n-th meeting" on unsorted input,
+// and the repository's diary-entry-type read orders by id, not by event_date.
+std::vector<std::chrono::year_month_day> fomc_meeting_dates(ores::database::context ctx) {
+    ores::refdata::repository::calendar_event_repository event_repo;
+    std::vector<std::chrono::year_month_day> out;
+    for (const auto& e :
+         event_repo.read_latest_by_diary_entry_type(ctx, "central_bank_meeting", 0, 10000))
+        out.push_back(e.event_date);
+    std::sort(out.begin(), out.end());
+    return out;
+}
+
+// The tenor convention a curve's source series resolves under, selected by
+// the series qualifier: the FOMC raw grid (e.g. "USD/SOFR-FOMC") resolves
+// under RATES_SPOT_FOMC; everything else under RATES_SPOT_FORWARD.
+const char* tenor_convention_code_for(const std::string& qualifier) {
+    return qualifier.ends_with("-FOMC") ? "RATES_SPOT_FOMC" : "RATES_SPOT_FORWARD";
+}
 
 curve_republish_refdata_context build_refdata_context(ores::database::context ctx,
-                                                      std::chrono::year_month_day horizon) {
+                                                      std::chrono::year_month_day horizon,
+                                                      const boost::uuids::uuid& source_series_id) {
     namespace refdata_repo = ores::refdata::repository;
+
+    repository::market_series_repository series_repo;
+    const auto series = series_repo.read_latest(ctx, boost::uuids::to_string(source_series_id));
+    if (series.empty())
+        throw std::invalid_argument(
+            "curve_republish_service: source market_series not found: " +
+            boost::uuids::to_string(source_series_id));
+    const auto* tenor_convention_code = tenor_convention_code_for(series.front().qualifier);
 
     refdata_repo::tenor_repository tenor_repo;
     refdata_repo::tenor_convention_repository convention_repo;
@@ -69,6 +98,12 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
     for (const auto& r : resolution_repo.read_latest_by_convention(refctx.convention.code))
         refctx.resolutions_by_tenor.emplace(r.tenor_code, r);
     refctx.horizon = horizon;
+
+    // A SCHEDULE_STEP convention walks event-lookup schedules (FOMC_MEETING);
+    // the standard ANCHOR_OFFSET conventions have no schedule rows and never
+    // consult the date set.
+    if (refctx.convention.resolution_algorithm == "SCHEDULE_STEP")
+        refctx.schedule_dates = fomc_meeting_dates(ctx);
 
     return refctx;
 }
@@ -170,7 +205,8 @@ curve_republish_service::compute(context ctx,
     const auto config = read_config(ctx, bootstrap_config_id);
     const auto pillars = read_pillars(ctx, bootstrap_config_id);
     const auto horizon = std::chrono::floor<std::chrono::days>(as_of);
-    const auto refctx = build_refdata_context(ctx, std::chrono::year_month_day{horizon});
+    const auto refctx = build_refdata_context(ctx, std::chrono::year_month_day{horizon},
+                                              config.source_series_id);
     const auto raw_rates = read_raw_rates(ctx, config.source_series_id, as_of);
     const auto bootstrap_pillars = resolve_bootstrap_pillars(pillars, refctx, raw_rates);
 

@@ -39,4 +39,8 @@
 \ir ./marketdata_ir_deposit_rates_populate.sql
 
 \echo ''
+\echo '--- FOMC Segment Market Series Seed Data ---'
+\ir ./marketdata_market_series_fomc_populate.sql
+
+\echo ''
 \echo '=== Market Data Component Population Complete ==='

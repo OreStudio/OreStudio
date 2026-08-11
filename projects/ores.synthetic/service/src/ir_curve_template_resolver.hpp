@@ -27,6 +27,7 @@
 #include "ores.refdata.api/domain/tenor.hpp"
 #include "ores.refdata.api/domain/tenor_convention.hpp"
 #include "ores.refdata.api/domain/tenor_convention_resolution.hpp"
+#include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/domain/ir_curve_template_entry.hpp"
 #include "ores.synthetic.service/export.hpp"
 #include <chrono>
@@ -87,7 +88,30 @@ struct ir_curve_refdata_context final {
     std::map<std::string, ores::refdata::domain::tenor_convention_resolution> resolutions_by_tenor;
     std::chrono::year_month_day horizon;
     std::chrono::year_month_day spot; // == horizon: see resolve()'s doc
+    // The event-lookup schedule's date set (FOMC meeting dates), sorted
+    // ascending -- the requirement of the SCHEDULE_STEP walk's
+    // nth_on_or_after. Only SCHEDULE_STEP conventions consult it; the
+    // standard ANCHOR_OFFSET conventions never do.
+    std::optional<std::vector<std::chrono::year_month_day>> schedule_dates;
 };
+
+/**
+ * @brief The qualifier an IR curve generation config's feed publishes its series under
+ * (currency/index-family[-tenor], e.g. "USD/SOFR" or "USD/SOFR-FOMC").
+ *
+ * Shared by feed construction (ir_curve_feed.cpp) and by convention selection in the
+ * config-start paths, so the two can never disagree on a config's series identity.
+ */
+ORES_SYNTHETIC_SERVICE_EXPORT std::string
+ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generation_config& cfg);
+
+/**
+ * @brief The tenor convention an IR curve's series resolves under, selected by the series
+ * qualifier: the FOMC raw grid (qualifier "...-FOMC") resolves under RATES_SPOT_FOMC;
+ * everything else under RATES_SPOT_FORWARD.
+ */
+ORES_SYNTHETIC_SERVICE_EXPORT std::string
+ir_curve_tenor_convention_code(const std::string& qualifier);
 
 /**
  * @brief Resolves a Curve Template's raw (tenor code, instrument code) entries into the tick
@@ -121,16 +145,19 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
 
 /**
  * @brief Builds the refdata inputs resolve() needs by reading the tenor/instrument_code/
- * payment_frequency/tenor_convention_resolution catalogs once. Shared by auto-start (once at
- * service startup) and the on-demand start control-plane (once per start request) -- cheap
- * enough to rebuild per call given the catalog sizes involved (tens of rows each).
+ * payment_frequency/tenor_convention_resolution catalogs once per call. The convention is
+ * selected per config by the caller via ir_curve_tenor_convention_code(); a RATES_SPOT_FOMC
+ * convention additionally reads the event store for the schedule walk's meeting dates. Shared
+ * by auto-start (once per config at service startup) and the on-demand start control-plane
+ * (once per start request) -- cheap enough to rebuild per call given the catalog sizes involved
+ * (tens of rows each).
  *
- * @return An empty optional if the RATES_SPOT_FORWARD tenor convention is not found (a
- * misconfigured environment, not a per-request error) -- callers should treat that as fatal to
- * every curve feed, not just the one being started.
+ * @param tenor_convention_code The convention the config's series resolves under.
+ * @return An empty optional if the convention is not found (a misconfigured environment, not a
+ * per-request error) -- callers should treat that as fatal to the feed being started.
  */
 ORES_SYNTHETIC_SERVICE_EXPORT std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx);
+build_ir_curve_refdata_context(ores::database::context ctx, const std::string& tenor_convention_code);
 
 /**
  * @brief Derives one resolved entry's published rate from a short-rate process's

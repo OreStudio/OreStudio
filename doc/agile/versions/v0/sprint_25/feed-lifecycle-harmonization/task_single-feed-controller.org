@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 1D756D47-9473-4A99-8A47-E3E4906DA4C3
+:END:
+#+title: Task: One lifecycle controller for all feed kinds
+#+description: Collapse feed_controller and curve_feed_controller into one controller: running map keyed by source_name, thread-per-feed, start/stop/list/join. Conflict semantics (IR qualifier plus role) expressed through the feed's own conflict key on the common interface, not a second class. FX extras (feed-binding auto-creation, sandbox subject, status loop) become uniform behaviour.
+#+type: task
+#+level: s1
+#+filetags: :synthetic:marketdata:feeds:feed-lifecycle-harmonization:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One lifecycle controller replaces feed_controller and curve_feed_controller: a running
+map keyed by source_name, one thread per feed, start/stop/list/join. The per-kind
+extras are expressed on the common interface (the feed's own conflict key for
+qualifier+role semantics) or become uniform behaviour — not a second class.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- One controller class serves both kinds; feed_controller and curve_feed_controller are
+  deleted.
+- Qualifier+role conflict semantics come from the feed's conflict key on the common
+  interface; the conflict is reported with the running source name.
+- FX-only extras become uniform: feed-binding auto-creation, sandbox subject derivation,
+  and the status loop run for every feed kind (or are explicitly dropped as FX
+  specifics, with the difference documented on the interface).
+- start/stop/list/running_count behaviour is unchanged for existing callers.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

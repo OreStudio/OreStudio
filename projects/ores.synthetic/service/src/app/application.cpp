@@ -147,6 +147,8 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
                                        const ores::database::context& ctx) {
     namespace synth_repo = ores::synthetic::repository;
     using ores::synthetic::service::build_ir_curve_refdata_context;
+    using ores::synthetic::service::ir_curve_qualifier;
+    using ores::synthetic::service::ir_curve_tenor_convention_code;
     using ores::synthetic::service::make_ir_curve_feed;
 
     synth_repo::ir_curve_generation_config_repository config_repo;
@@ -158,13 +160,6 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
     const auto entries = entry_repo.read_latest(ctx);
     const auto values = value_repo.read_latest(ctx);
     const auto definitions = definition_repo.read_latest(ctx);
-
-    auto refctx = build_ir_curve_refdata_context(ctx);
-    if (!refctx) {
-        BOOST_LOG_SEV(auto_start_lg(), error)
-            << "RATES_SPOT_FORWARD tenor convention not found — no IR curve feeds started.";
-        return;
-    }
 
     std::map<boost::uuids::uuid, std::vector<ores::synthetic::domain::ir_curve_template_entry>>
         entries_by_config;
@@ -201,6 +196,17 @@ void auto_start_enabled_ir_curve_feeds(ores::nats::service::client& nats,
             BOOST_LOG_SEV(auto_start_lg(), warn)
                 << "Skipping enabled IR curve config " << cfg.currency_code << "/"
                 << cfg.index_family << " — no parameter value rows.";
+            continue;
+        }
+
+        // The context is per config: the series qualifier selects the tenor
+        // convention (the FOMC grid resolves under RATES_SPOT_FOMC).
+        const auto refctx = build_ir_curve_refdata_context(
+            ctx, ir_curve_tenor_convention_code(ir_curve_qualifier(cfg)));
+        if (!refctx) {
+            BOOST_LOG_SEV(auto_start_lg(), error)
+                << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
+                << " — tenor convention not found.";
             continue;
         }
 

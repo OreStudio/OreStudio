@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: F550327A-001F-460F-A490-4EBF94642F31
+:END:
+#+title: Task: One feed ingest loop over a unified subject scheme
+#+description: Collapse feed_ingest_loop and curve_feed_ingest_loop into one persistence path: the kind is part of the tick subject instead of a second subject family and a second JetStream stream. Uniform republish and observation handling.
+#+type: task
+#+level: s1
+#+filetags: :marketdata:synthetic:feeds:feed-lifecycle-harmonization:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+One ingest loop replaces feed_ingest_loop and curve_feed_ingest_loop over a unified
+subject scheme — the kind is part of the tick subject, one JetStream stream — with
+uniform republish and observation handling for every feed kind.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- One ingest loop subscribes to the unified tick subjects; the curve subject family and
+  the second JetStream stream are retired.
+- The tick wire type carries the kind; persistence (market_observation rows) and
+  republish behave uniformly (FX republish semantics applied to every kind, or the
+  difference is an explicit per-kind flag on the interface).
+- Existing observation data and consumers (curve_republish_resolver point-id lookups)
+  keep working.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

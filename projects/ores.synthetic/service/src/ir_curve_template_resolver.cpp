@@ -20,12 +20,14 @@
 #include "ir_curve_template_resolver.hpp"
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.refdata.api/domain/tenor_resolution.hpp"
+#include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include "ores.refdata.core/repository/instrument_code_repository.hpp"
 #include "ores.refdata.core/repository/payment_frequency_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
 #include "ores.refdata.core/repository/tenor_repository.hpp"
 #include <algorithm>
+#include <cctype>
 #include <stdexcept>
 
 namespace ores::synthetic::service {
@@ -66,8 +68,12 @@ std::chrono::year_month_day resolve_tenor_code(const ir_curve_refdata_context& c
                                                const std::string& code) {
     if (code == "SPOT")
         return ctx.spot;
-    return resolve_end_date(
-        find_tenor(ctx, code), ctx.convention, find_resolution(ctx, code), ctx.horizon, ctx.spot);
+    return resolve_end_date(find_tenor(ctx, code),
+                            ctx.convention,
+                            find_resolution(ctx, code),
+                            ctx.horizon,
+                            ctx.spot,
+                            ctx.schedule_dates);
 }
 
 // Builds the fixed-leg schedule for a Swap entry by stepping the payment frequency's own
@@ -117,6 +123,19 @@ build_swap_schedule(const ir_curve_refdata_context& ctx,
 
 } // namespace
 
+std::string ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generation_config& cfg) {
+    auto family = cfg.index_family;
+    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
+        return static_cast<char>(std::toupper(c));
+    });
+    return cfg.currency_code + "/" + (cfg.tenor.empty() ? family : family + "-" + cfg.tenor);
+}
+
+std::string ir_curve_tenor_convention_code(const std::string& qualifier) {
+    return qualifier.ends_with("-FOMC") ? std::string("RATES_SPOT_FOMC") :
+                                          std::string("RATES_SPOT_FORWARD");
+}
+
 std::vector<ir_curve_resolved_entry>
 resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& entries,
         const ir_curve_refdata_context& ctx,
@@ -160,7 +179,7 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
 }
 
 std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx) {
+build_ir_curve_refdata_context(ores::database::context ctx, const std::string& tenor_convention_code) {
     namespace refdata_repo = ores::refdata::repository;
 
     refdata_repo::instrument_code_repository instrument_code_repo;
@@ -169,7 +188,7 @@ build_ir_curve_refdata_context(ores::database::context ctx) {
     refdata_repo::tenor_convention_repository convention_repo;
     refdata_repo::tenor_convention_resolution_repository resolution_repo(ctx);
 
-    const auto conventions = convention_repo.read_latest(ctx, "RATES_SPOT_FORWARD");
+    const auto conventions = convention_repo.read_latest(ctx, tenor_convention_code);
     if (conventions.empty())
         return std::nullopt;
 
@@ -185,6 +204,22 @@ build_ir_curve_refdata_context(ores::database::context ctx) {
         refctx.resolutions_by_tenor.emplace(r.tenor_code, r);
     refctx.horizon = std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now());
     refctx.spot = refctx.horizon; // T+0: see resolve()'s doc.
+
+    // A SCHEDULE_STEP convention walks event-lookup schedules (FOMC_MEETING);
+    // the standard ANCHOR_OFFSET conventions have no schedule rows and never
+    // consult the date set. Sorted ascending explicitly: the walk's
+    // nth_on_or_after silently yields a wrong "n-th meeting" on unsorted
+    // input, and the repository's diary-entry-type read orders by id, not by
+    // event_date.
+    if (refctx.convention.resolution_algorithm == "SCHEDULE_STEP") {
+        refdata_repo::calendar_event_repository event_repo;
+        std::vector<std::chrono::year_month_day> dates;
+        for (const auto& e :
+             event_repo.read_latest_by_diary_entry_type(ctx, "central_bank_meeting", 0, 10000))
+            dates.push_back(e.event_date);
+        std::sort(dates.begin(), dates.end());
+        refctx.schedule_dates = std::move(dates);
+    }
 
     return refctx;
 }

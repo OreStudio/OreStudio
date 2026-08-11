@@ -105,6 +105,74 @@ ir_curve_refdata_context make_context() {
     return ctx;
 }
 
+// The FOMC raw-grid template in its production shape (USD, tenor 'FOMC'):
+// SPOT->1F DEPO, 1F->2F..7F->8F FRA, 8F->1Y IRS, resolved under
+// RATES_SPOT_FOMC -- a SCHEDULE_STEP convention whose 1F..8F rows walk the
+// FOMC_MEETING schedule (the meeting dates supplied as schedule_dates, in
+// ascending order as the walk requires) and whose 1Y split tenor is a
+// membership-only row resolving on the calendar axis (spot + one year).
+std::vector<std::chrono::year_month_day> fomc_2026_meeting_dates() {
+    using namespace std::chrono;
+    return {2026y / January / 28d, 2026y / March / 18d, 2026y / April / 29d,
+            2026y / June / 17d,    2026y / July / 29d,  2026y / September / 16d,
+            2026y / October / 28d, 2026y / December / 9d};
+}
+
+tenor make_fomc_tenor(const std::string& code, int meeting_ordinal) {
+    tenor t;
+    t.code = code;
+    t.kind = "SPECIAL";
+    t.unit = "NONE";
+    t.multiplier = meeting_ordinal;
+    return t;
+}
+
+ir_curve_refdata_context make_fomc_context() {
+    using namespace std::chrono;
+    ir_curve_refdata_context ctx;
+
+    ctx.schedule_dates = fomc_2026_meeting_dates();
+    ctx.tenors_by_code.emplace("SPOT", make_tenor("SPOT", "DAY", 0));
+    for (int n = 1; n <= 8; ++n) {
+        const auto code = std::to_string(n) + "F";
+        ctx.tenors_by_code.emplace(code, make_fomc_tenor(code, n));
+        tenor_convention_resolution r;
+        r.convention_code = "RATES_SPOT_FOMC";
+        r.tenor_code = code;
+        r.offset_unit = "DAY";
+        r.offset_multiplier = 0;
+        r.schedule_code = "FOMC_MEETING";
+        r.schedule_step_count = n;
+        ctx.resolutions_by_tenor.emplace(code, std::move(r));
+    }
+    ctx.tenors_by_code.emplace("1Y", make_tenor("1Y", "YEAR", 1));
+    ctx.resolutions_by_tenor.emplace("1Y", make_resolution("1Y")); // membership only
+
+    ctx.convention.code = "RATES_SPOT_FOMC";
+    ctx.convention.measured_from = "SPOT";
+    ctx.convention.resolution_algorithm = "SCHEDULE_STEP";
+
+    ctx.instrument_codes_by_code.emplace("DEPO", make_instrument_code("DEPO", "DEPOSIT"));
+    ctx.instrument_codes_by_code.emplace("FRA", make_instrument_code("FRA", "FRA"));
+    ctx.instrument_codes_by_code.emplace("IRS", make_instrument_code("IRS", "SWAP"));
+
+    ctx.payment_frequencies_by_code.emplace("Quarterly", make_quarterly());
+
+    ctx.horizon = 2026y / January / 2d;
+    ctx.spot = ctx.horizon;
+
+    return ctx;
+}
+
+std::vector<ir_curve_template_entry> make_fomc_entries() {
+    std::vector<ir_curve_template_entry> out;
+    out.push_back(make_entry(0, "SPOT", "1F", "DEPO"));
+    for (int n = 1; n <= 7; ++n)
+        out.push_back(make_entry(n, std::to_string(n) + "F", std::to_string(n + 1) + "F", "FRA"));
+    out.push_back(make_entry(8, "8F", "1Y", "IRS"));
+    return out;
+}
+
 }
 
 TEST_CASE("resolve derives ticks and year_fraction for a Deposit (point) entry", tags) {
@@ -183,4 +251,60 @@ TEST_CASE("resolve throws on an unknown fixed-leg payment frequency for a Swap e
     const auto ctx = make_context();
     CHECK_THROWS_AS(resolve({make_entry(0, "SPOT", "2Y", "SWAP")}, ctx, "Monthly"),
                     std::invalid_argument);
+}
+
+TEST_CASE("resolve maps the FOMC template onto the meeting-dated point ids 1F..8F and the 1Y "
+          "split",
+          tags) {
+    const auto ctx = make_fomc_context();
+    const auto out = resolve(make_fomc_entries(), ctx, "Quarterly");
+
+    REQUIRE(out.size() == 9);
+    // SPOT->1F: the deposit pillar's point id is the first meeting.
+    CHECK(out[0].curve_role == "DEPOSIT");
+    CHECK(out[0].point_id == "1F");
+    CHECK(out[0].ticks_ahead_start == 0);
+    CHECK(out[0].ticks_ahead_end == 26); // 2026-01-02 -> 2026-01-28
+    // 1F->2F, ..., 7F->8F: each FRA pillar ends at the next meeting.
+    const std::vector<int> expected_end = {75,  117, 166, 208, 257, 299, 341};
+    for (int n = 1; n <= 7; ++n) {
+        CHECK(out[n].curve_role == "FRA");
+        CHECK(out[n].point_id == std::to_string(n + 1) + "F");
+        CHECK(out[n].ticks_ahead_end == expected_end[n - 1]); // 2026-03-18, ..., 2026-12-09
+    }
+    // 8F->1Y: the split pillar is the swap grid's first tenor, spot + 1 year.
+    CHECK(out[8].curve_role == "SWAP");
+    CHECK(out[8].point_id == "1Y");
+    CHECK(out[8].ticks_ahead_start == 341); // 2026-12-09 (the 8th meeting)
+    CHECK(out[8].ticks_ahead_end == 365);   // 2027-01-02 (the calendar-axis fallback)
+}
+
+TEST_CASE("resolve chains each FOMC interval start onto the previous meeting", tags) {
+    const auto ctx = make_fomc_context();
+    const auto out = resolve(make_fomc_entries(), ctx, "Quarterly");
+
+    REQUIRE(out.size() == 9);
+    // The FOMC-to-FOMC fixing windows fall out of the entry order: each
+    // interval opens at the previous interval's maturity (a meeting date).
+    for (int i = 1; i <= 8; ++i)
+        CHECK(out[i].ticks_ahead_start == out[i - 1].ticks_ahead_end);
+}
+
+TEST_CASE("resolve builds a quarterly fixed-leg schedule for the 8F->1Y split swap", tags) {
+    const auto ctx = make_fomc_context();
+    const auto out = resolve(make_fomc_entries(), ctx, "Quarterly");
+
+    REQUIRE(out.size() == 9);
+    const auto& r = out[8];
+    REQUIRE(r.curve_role == "SWAP");
+    // The schedule anchors at spot and steps quarterly to the 1Y maturity
+    // (1Y / 3M); its accruals span spot -> maturity, unlike the entry's own
+    // year_fraction, which spans 8F -> 1Y (the final meeting to maturity).
+    REQUIRE(r.fixed_leg_schedule.size() == 4);
+    std::size_t previous = 0;
+    for (const auto& step : r.fixed_leg_schedule) {
+        CHECK(step.ticks_ahead > previous);
+        previous = step.ticks_ahead;
+    }
+    CHECK(r.fixed_leg_schedule.back().ticks_ahead == r.ticks_ahead_end);
 }

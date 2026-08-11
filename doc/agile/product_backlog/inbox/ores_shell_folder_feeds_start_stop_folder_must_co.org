@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: E5553757-7D88-4B58-8057-C4A3230EE1AA
+:END:
+#+title: ores.shell folder feeds: start/stop folder must cover IR cur…
+#+description: ores.shell folder feeds: start/stop folder must cover IR curve configs too. synthetic start folder <token> only starts fx_spot_generation_config rows (marketdata.v1.market_feed_configs.start_folder, per market_feed_config_protocol.hpp); ir_curve_generation_configs under the same folder are ignored, and ores.shell has no IR curve feed commands at all (the synthetic.service ir_curve_feed_configs.start/stop/list handlers are only reachable via raw NATS, config_id-keyed). Design intent: the top-level folder contains both FX and IR; folder-scoped start/stop should enumerate both config kinds. Extend the folder protocol (or add a synthetic.v1 ir_curve folder variant) and add shell verbs mirroring the FX ones.
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

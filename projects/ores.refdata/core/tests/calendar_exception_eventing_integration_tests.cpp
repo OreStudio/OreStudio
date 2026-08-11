@@ -38,6 +38,15 @@
 // facet, hence the fully-qualified refdata paths.
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
+// FK-parent sentinel seed: a seeded calendar parent's insert trigger
+// validates country_code against the countries table for the write
+// tenant, and the synthetic calendar generator always emits the ZZ
+// sentinel -- seed it before the parent write or the parent insert is
+// rejected. Like the entity-level sentinel seed, the country generator
+// and repository are used regardless of the child's generator facet,
+// hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/country_generator.hpp"
+#include "ores.refdata.core/repository/country_repository.hpp"
 // Soft-FK parent seeding (ores_refdata_calendars_tbl): the parent's own generator and
 // repository live in the same component as the child.
 #include "ores.refdata.api/generators/calendar_generator.hpp"
@@ -88,6 +97,7 @@ ores::nats::config::nats_options test_nats_options() {
 using namespace ores::refdata::generators;
 using ores::refdata::domain::calendar_exception;
 using ores::refdata::repository::calendar_exception_repository;
+using ores::refdata::repository::country_repository;
 using ores::refdata::repository::country_repository;
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
@@ -148,6 +158,15 @@ TEST_CASE("write_calendar_exception_publishes_nats_changed_event", tags) {
     // matches no active row, so the parent must be written first.
     auto calendar_code_parent = ores::refdata::generators::generate_synthetic_calendar(ctx);
     calendar_code_parent.change_reason_code = "system.test";
+    // The parent calendar's insert trigger validates country_code
+    // against the countries table for the write tenant, and the
+    // synthetic calendar generator always emits the ZZ sentinel --
+    // seed it before the parent write or the parent insert is
+    // rejected. Distinct name from the entity-level sentinel seed
+    // block: both are in scope when the entity also carries the
+    // seed_country_sentinel flag.
+    country_repository parent_cty_repo;
+    parent_cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
     ores::refdata::repository::calendar_repository calendar_code_repo;
     calendar_code_repo.write(party_ctx, calendar_code_parent);
     v.calendar_code = calendar_code_parent.code;

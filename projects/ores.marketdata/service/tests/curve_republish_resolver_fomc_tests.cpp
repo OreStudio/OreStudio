@@ -19,11 +19,11 @@
  */
 // Test obligations propagated from doc/llm/specs/fomc-dated-ois-short-end.allium.
 //
-// The FOMC bootstrap segment, shaped as story Decision D3 (pillars SPOT->1F,
-// 1F->2F, ..., 8F->1Y under one config; split_tenor_code = 1Y), walked
-// through the existing republish resolver. These tests pass today -- the
-// chain is existing behaviour; only the refdata rows (tenor_schedules,
-// event seeds, the config itself) are missing in production.
+// The FOMC bootstrap segment (pillars SPOT->1F, 1F->2F, ..., 8F->1Y under
+// one config; split_tenor_code = 1Y) walked through the existing republish
+// resolver, in the same shape the production seed data takes (see
+// refdata_ir_curve_bootstrap_configs_populate.sql and
+// refdata_tenor_convention_resolutions_populate.sql).
 //
 // Obligations covered here:
 //   - surface-exposure.CurveRepublish      (the pillar loop: codes and dates)
@@ -34,15 +34,17 @@
 //     quote fails loudly)
 //   - derived.Tenor.is_fomc                (SPECIAL/NONE, multiplier >= 1 pillars,
 //     as data)
-//   - Story acceptance: the FOMC-to-FOMC fixing schedule falls out of the
-//     pillar order.
+//   - Acceptance: the FOMC-to-FOMC fixing schedule falls out of the pillar
+//     order.
 //
-// The resolution rows here use ANCHOR_OFFSET day offsets that land on the
-// meeting dates. ANCHOR_OFFSET remains a valid configuration -- this context
-// could equally express the pillars as FOMC_MEETING schedule steps, and the
-// expected dates are the same meeting dates either way. The SCHEDULE_STEP
-// walk itself is the contract of domain_tenor_resolution_fomc_tests.cpp
-// (ores.refdata.api).
+// The fixture mirrors the production shape exactly: the convention resolves
+// under SCHEDULE_STEP with FOMC_MEETING schedule rows for 1F..8F, the
+// context supplies the meeting dates as schedule_dates (the same
+// central_bank_meeting calendar_events the production builders fetch, in
+// ascending order as the walk requires), and the 1Y split tenor is a
+// membership-only row whose calendar-axis fallback resolves it as
+// spot + one year. The SCHEDULE_STEP walk itself is additionally covered by
+// domain_tenor_resolution_fomc_tests.cpp (ores.refdata.api).
 #include "../src/curve_republish_resolver.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
@@ -67,7 +69,7 @@ const std::string split_code = "1Y";
 
 // 2026 FOMC meeting dates -- the second day of each published two-day range
 // (statement/decision day), transcribed from federalreserve.gov; the same
-// window task D4 seeds into calendar_event.
+// dates the refdata seed stores as central_bank_meeting calendar_events.
 std::vector<year_month_day> fomc_2026_meeting_dates() {
     return {2026y / January / 28d, 2026y / March / 18d, 2026y / April / 29d,
             2026y / June / 17d,    2026y / July / 29d,  2026y / September / 16d,
@@ -84,12 +86,28 @@ tenor make_tenor(const std::string& code, const std::string& kind, const std::st
     return t;
 }
 
-tenor_convention_resolution make_resolution(const std::string& tenor_code, int offset_days) {
+// A meeting-dated tenor: the n-th FOMC_MEETING schedule step on-or-after
+// spot, with a zero calendar-axis offset -- the same shape as the
+// production resolution rows for 1F..8F.
+tenor_convention_resolution make_fomc_resolution(const std::string& tenor_code, int meeting_ordinal) {
     tenor_convention_resolution r;
     r.convention_code = "RATES_SPOT_FOMC";
     r.tenor_code = tenor_code;
     r.offset_unit = "DAY";
-    r.offset_multiplier = offset_days;
+    r.offset_multiplier = 0;
+    r.schedule_code = "FOMC_MEETING";
+    r.schedule_step_count = meeting_ordinal;
+    return r;
+}
+
+// A membership-only resolution row: no schedule fields and no offset, so
+// the tenor resolves on the calendar axis (its own unit/multiplier from
+// the convention's SPOT anchor) -- the production shape of the 1Y split
+// tenor under RATES_SPOT_FOMC.
+tenor_convention_resolution make_membership_resolution(const std::string& tenor_code) {
+    tenor_convention_resolution r;
+    r.convention_code = "RATES_SPOT_FOMC";
+    r.tenor_code = tenor_code;
     return r;
 }
 
@@ -103,9 +121,9 @@ make_pillar(int seq, const std::string& start, const std::string& end, const std
     return p;
 }
 
-// The D3 pillar list: SPOT->1F, 1F->2F, ..., 8F->1Y under one config. The
-// FOMC pillars carry the spec's is_fomc shape (SPECIAL/NONE, multiplier
-// >= 1); the 1Y split pillar is a plain period tenor.
+// The FOMC segment pillar list: SPOT->1F, 1F->2F, ..., 8F->1Y under one
+// config. The FOMC pillars carry the is_fomc shape (SPECIAL/NONE,
+// multiplier >= 1); the 1Y split pillar is a plain period tenor.
 std::vector<ir_curve_bootstrap_pillar> make_fomc_pillars() {
     std::vector<ir_curve_bootstrap_pillar> out;
     out.push_back(make_pillar(0, "SPOT", "1F", "DEPOSIT"));
@@ -122,22 +140,21 @@ curve_republish_refdata_context make_fomc_context() {
     ctx.horizon = 2026y / January / 2d;
 
     const auto meetings = fomc_2026_meeting_dates();
+    ctx.schedule_dates = meetings; // already ascending, as the walk requires.
     ctx.tenors_by_code.emplace("SPOT", make_tenor("SPOT", "PERIOD", "DAY", 0));
     ctx.tenors_by_code.emplace(split_code, make_tenor(split_code, "PERIOD", "YEAR", 1));
     for (int n = 1; n <= meeting_count; ++n) {
         const auto code = std::to_string(n) + "F";
         ctx.tenors_by_code.emplace(code, make_tenor(code, "SPECIAL", "NONE", n));
-        // ANCHOR_OFFSET day offsets landing on the meeting dates; the same
-        // pillar dates could equally be expressed as FOMC_MEETING steps.
-        ctx.resolutions_by_tenor.emplace(
-            code, make_resolution(code, (sys_days(meetings[n - 1]) - sys_days(ctx.horizon)).count()));
+        ctx.resolutions_by_tenor.emplace(code, make_fomc_resolution(code, n));
     }
-    ctx.resolutions_by_tenor.emplace("SPOT", make_resolution("SPOT", 0));
-    ctx.resolutions_by_tenor.emplace(split_code, make_resolution(split_code, 0));
+    // The split tenor is a membership-only row: the calendar-axis fallback
+    // resolves it as spot + YEAR x 1 (its own period), the production shape.
+    ctx.resolutions_by_tenor.emplace(split_code, make_membership_resolution(split_code));
 
     ctx.convention.code = "RATES_SPOT_FOMC";
     ctx.convention.measured_from = "SPOT";
-    ctx.convention.resolution_algorithm = "ANCHOR_OFFSET";
+    ctx.convention.resolution_algorithm = "SCHEDULE_STEP";
     return ctx;
 }
 
@@ -172,9 +189,9 @@ TEST_CASE("resolve_bootstrap_pillars resolves the FOMC pillar chain onto the mee
     }
     // 8F->1Y: the final pillar ends at the split tenor (spot + 1 year).
     // The date is pinned explicitly -- the PERIOD/YEAR-1 split tenor from
-    // the SPOT anchor (horizon = 2026-01-02), offset DAY x 0 -- rather than
-    // re-derived through the same resolve_tenor_date the pillar loop used,
-    // which could not catch a systematically wrong date.
+    // the SPOT anchor (horizon = 2026-01-02), via the calendar-axis
+    // fallback -- rather than re-derived through the same resolve_tenor_date
+    // the pillar loop used, which could not catch a systematically wrong date.
     CHECK(resolved[meeting_count].point_id == split_code);
     CHECK(resolved[meeting_count].end_date == 2027y / January / 2d);
 }

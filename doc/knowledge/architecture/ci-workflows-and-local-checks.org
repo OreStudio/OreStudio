@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: BC85C0DF-99BE-4079-A649-88A236AE0ACF
+:END:
+#+title: CI workflows and local checks
+#+description: Every GitHub Actions workflow and check that gates a PR today, its fate after the absorb-PR-checks-locally story (run locally before submit, stay on GitHub, or retire), and the change-classification rules the submit-PR skills use to decide what to run.
+#+type: knowledge
+#+level: cross
+#+filetags: :ci:devops:pr:velocity:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+* Summary
+
+The PR gate on GitHub runs six jobs: classify, site, roundtrip,
+cmake-sources-drift, codegen-drift, and pr-gate, plus an automatic
+Claude code review on every PR event. Only the site job adds real
+signal for docs-only changes; the drift checks catch stale generated
+files. The [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][absorb-PR-checks-locally story]] moves these checks local:
+the submit-PR skills classify the change and run only the matching
+checks before raising the PR. GitHub keeps the continuous builds,
+nightlies, site deploy, coverage, and housekeeping bots. This document
+is the inventory, the fate of every check, and the classification rule
+table.
+
+* Detail
+
+** The PR gate today
+
+The =pr.yml= workflow gates every pull request to =main=:
+
+| Job               | Runs when            | What it checks                                                        | Cost     |
+|-------------------+----------------------+-----------------------------------------------------------------------+----------|
+| classify          | always               | Path classifier; buckets every changed file into docs/code/ci         | ~3s      |
+| site              | docs or ci changed   | Site build + link check via CTestSite.cmake; submits to CDash as the "Site" group; no Doxygen | ~20 min  |
+| roundtrip         | code or ci changed   | =python3 scripts/ore_domain_roundtrip_check.py=                       | ~1 min   |
+| cmake-sources-drift | code or ci changed | =regenerate_cmake_component_files.py --all --check=; every component_files.cmake is up to date | ~1 min |
+| codegen-drift     | always               | =check_component_drift.py --components refdata,reporting,marketdata=; generated code matches templates | ~2 min |
+| pr-gate           | always               | Aggregates the jobs above; the branch-protection required check       | ~4s      |
+
+Two more workflows touch PR branches:
+
+- =claude-code-review.yml= runs the automatic Claude review on every
+  PR event (opened, synchronize, ready_for_review, reopened) — ~1-2 min.
+- =misspell.yml= runs the misspell fixer on every push to every branch
+  and opens auto-fix PRs (a bot, not a gate).
+
+** Fate of each check
+
+| Check                 | Fate         | Where it runs instead / rationale |
+|-----------------------+--------------+-----------------------------------|
+| classify              | stays        | Dispatcher for the minimal gate; the local skills mirror the same rules (see below). |
+| site                  | retired      | Local: =compass build --direct site= (same emacs export; ~5-10 min locally). Optional CDash submission as experimental. |
+| roundtrip             | retired      | Local: =python3 scripts/ore_domain_roundtrip_check.py=. |
+| cmake-sources-drift   | retired      | Local: =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =codegen-sync-cmake-sources= skill wraps it. |
+| codegen-drift         | retired      | Local: tangle codegen templates (=compass build --direct codegen_templates=) then =check_component_drift.py= with the same components. |
+| pr-gate               | stays (minimal) | Aggregates only classify; keeps branch protection a single required check at ~7s. |
+| claude-code-review    | retired      | Local: the =code-review= skill runs before submit; findings go into the task's =* Review= table and are addressed in the round. The on-demand =@claude= trigger (=claude.yml=) stays. |
+| misspell              | retired      | Local misspell check folded into the review pass. |
+| site-cdash (Doxygen)  | stays        | =build-site.yml= builds the full site + Doxygen and deploys on main push. |
+| continuous-* (linux/macos/windows) | stays | Every 2/3/12h + tags: full build matrix + ctest, submitted to CDash as continuous. |
+| nightly-linux         | stays        | Daily: full build + =ctest -VV= to CDash Nightly + valgrind dynamic analysis. |
+| nightly-format        | stays        | Daily clang-format drift → auto-fix PR; local =tangle_clang_format= exists. |
+| ore_coverage          | stays        | Coverage on main push. |
+| shell-script-drift / template-drift | stays | Cheap main-push checks; local tangle equivalents exist (=tangle_shell_scripts=, =tangle_codegen_templates=). |
+| codeql-analysis, stale | stays       | Manual security scan; housekeeping bot. |
+
+** Change-classification rules
+
+The submit-PR skill classifies the diff and runs only the matching
+checks. The classes mirror =pr.yml='s classify buckets, with one
+addition (python tooling):
+
+| Class           | Paths                                                             | Checks the submit-PR skill runs                        |
+|-----------------+-------------------------------------------------------------------+--------------------------------------------------------|
+| docs            | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= vendored | site build; review; misspell |
+| code (C++)      | =projects/ores.*= C++ sources, headers, =*.cmake=, =CMakeLists.txt= | full build + ctest; roundtrip; cmake-sources-drift; codegen-drift; review; misspell; CDash experimental |
+| ci              | =.github/*=, =projects/ores.codegen/library/templates/*=         | site; roundtrip; drift checks; review                  |
+| python tooling  | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | component test suite; drift checks; review; misspell  |
+
+A mixed change runs the union of its classes' checks.
+
+Gap the current classify rules hide: =pr.yml= buckets =ores.compass=
+and =ores.codegen= changes as docs, so the PR gate never runs their
+test suites. The local classification fixes this with the python
+tooling class above.
+
+** Local verification flow
+
+1. Classify the diff with the rule table.
+2. Run the checks for the class (site build, or build + =ctest --preset=).
+3. Submit the build to CDash as experimental for visibility
+   (=ctest --script CTest.cmake= with the experimental group; exact
+   invocation refined in the implementation task).
+4. Run the review skill locally; record findings in the task's
+   =* Review= table; address them.
+5. Record the verification in the PR description as a
+   =--change= bullet (e.g. "Verification: doc-only change; local site
+   build clean").
+6. Raise the PR. GitHub runs only classify + pr-gate; merge when
+   green. Continuous builds and nightlies stay on GitHub.
+
+** Open questions for the implementation tasks
+
+- Keep =pr-gate= as the required check with only classify inside, or
+  drop it and let the review be the gate? The story's default: keep
+  the minimal gate.
+- How experimental submissions are tagged and filtered out of the
+  continuous/nightly dashboards on CDash.
+- The classify rules live in two places (pr.yml and the skill); keep
+  them in sync, or extract a shared rules file the workflow and the
+  skill both read.
+- Which exact test suites run for python tooling changes
+  (compass, codegen).
+
+* See also
+
+- [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] — the story this analysis feeds.
+- [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] — the driving task.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the knowledge index.

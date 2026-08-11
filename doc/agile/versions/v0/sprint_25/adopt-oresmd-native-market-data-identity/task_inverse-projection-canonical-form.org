@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/inverse-projection-canonical-form
 #+pr:
 #+blocked_on: none
 #+blocked_since:
@@ -30,7 +30,7 @@ keeps no dependency on the refdata repositories.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

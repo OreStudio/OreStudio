@@ -114,7 +114,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | FX auto-start walk has no per-row try/catch, unlike the IR walk | projects/ores.synthetic/service/src/app/application.cpp | Declined | Pre-existing on main, deliberately preserved by the seam design. The claimed failure modes are unreachable: the walk hardcodes =fx_spot_feed_kind=, registered by the same =make_default_feed_factory()= call, and constructs the exact build-input variant the builder expects; empty components are already skip-with-warn. The uniform-auto-start task (E1F81BE2) merges the walks and makes skip-with-warn common code. |
+| 2 | FX tick publish not guarded; an uncaught throw would =std::terminate()= the service | projects/ores.synthetic/api/src/feeds/fx_spot_feed.cpp | Accepted | Publish wrapped in try/catch, logging "SYNTHETIC PUBLISH FAILED" and skipping the tick, mirroring =ir_curve_feed::start()=. Fixed in fde4bc008. |
+| 3 | Doc overstates =make_fx_spot_feed='s error behaviour | projects/ores.synthetic/api/include/ores.synthetic.api/feeds/fx_spot_feed.hpp | Accepted | =@throws= corrected: throws only on empty components and non-positive =ticks_per_hour=; an unknown =process_type= falls back to the geometric engine, not an exception. Fixed in 252fa53cc. |
 
 * Result
 

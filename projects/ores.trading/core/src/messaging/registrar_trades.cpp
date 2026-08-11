@@ -94,7 +94,8 @@ register_trade_handlers(ores::nats::service::client& nats,
 
     // Instrument reference data — trade types
     auto trade_type_subs = register_trade_type_handlers(nats, ctx, verifier);
-    subs.insert(subs.end(), std::make_move_iterator(trade_type_subs.begin()),
+    subs.insert(subs.end(),
+                std::make_move_iterator(trade_type_subs.begin()),
                 std::make_move_iterator(trade_type_subs.end()));
 
     return subs;

@@ -80,9 +80,14 @@ double true_df(year_month_day d) {
 // 2026 FOMC meeting dates -- the second day of each published two-day range
 // (statement/decision day), transcribed from federalreserve.gov.
 std::vector<year_month_day> fomc_2026_meeting_dates() {
-    return {2026y / January / 28d, 2026y / March / 18d, 2026y / April / 29d,
-            2026y / June / 17d,    2026y / July / 29d,  2026y / September / 16d,
-            2026y / October / 28d, 2026y / December / 9d};
+    return {2026y / January / 28d,
+            2026y / March / 18d,
+            2026y / April / 29d,
+            2026y / June / 17d,
+            2026y / July / 29d,
+            2026y / September / 16d,
+            2026y / October / 28d,
+            2026y / December / 9d};
 }
 
 // The D3 pillar grid, in date order: the eight meetings plus the 1Y split
@@ -117,8 +122,7 @@ std::vector<bootstrap_pillar> make_fomc_pillars() {
         }
         const double rate =
             curve_instrument_pricer::swap_par_rate(1.0, true_df(dates[i]), dfs, accruals);
-        const std::string point_id =
-            i < meeting_count ? std::to_string(i + 1) + "F" : split_code;
+        const std::string point_id = i < meeting_count ? std::to_string(i + 1) + "F" : split_code;
         out.push_back({point_id, SWAP, rate, value_date, dates[i], schedule});
     }
     return out;
@@ -126,9 +130,8 @@ std::vector<bootstrap_pillar> make_fomc_pillars() {
 
 // The continuously-compounded forward rate implied by the interpolated
 // curve between a and b.
-double implied_forward(const std::vector<bootstrapped_point>& points,
-                       year_month_day a,
-                       year_month_day b) {
+double
+implied_forward(const std::vector<bootstrapped_point>& points, year_month_day a, year_month_day b) {
     const auto dfa = curve_bootstrap_engine::interpolate_discount_factor(
         points, a, FLAT_FORWARD_THEN_LOG_LINEAR);
     const auto dfb = curve_bootstrap_engine::interpolate_discount_factor(

@@ -113,9 +113,14 @@ ir_curve_refdata_context make_context() {
 // membership-only row resolving on the calendar axis (spot + one year).
 std::vector<std::chrono::year_month_day> fomc_2026_meeting_dates() {
     using namespace std::chrono;
-    return {2026y / January / 28d, 2026y / March / 18d, 2026y / April / 29d,
-            2026y / June / 17d,    2026y / July / 29d,  2026y / September / 16d,
-            2026y / October / 28d, 2026y / December / 9d};
+    return {2026y / January / 28d,
+            2026y / March / 18d,
+            2026y / April / 29d,
+            2026y / June / 17d,
+            2026y / July / 29d,
+            2026y / September / 16d,
+            2026y / October / 28d,
+            2026y / December / 9d};
 }
 
 tenor make_fomc_tenor(const std::string& code, int meeting_ordinal) {
@@ -266,7 +271,7 @@ TEST_CASE("resolve maps the FOMC template onto the meeting-dated point ids 1F..8
     CHECK(out[0].ticks_ahead_start == 0);
     CHECK(out[0].ticks_ahead_end == 26); // 2026-01-02 -> 2026-01-28
     // 1F->2F, ..., 7F->8F: each FRA pillar ends at the next meeting.
-    const std::vector<int> expected_end = {75,  117, 166, 208, 257, 299, 341};
+    const std::vector<int> expected_end = {75, 117, 166, 208, 257, 299, 341};
     for (int n = 1; n <= 7; ++n) {
         CHECK(out[n].curve_role == "FRA");
         CHECK(out[n].point_id == std::to_string(n + 1) + "F");

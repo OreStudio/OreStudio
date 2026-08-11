@@ -66,14 +66,13 @@ struct tenor_window final {
  * exhausted (fewer than schedule_step_count dates on-or-after the walk start) — all of these
  * are configuration/data errors.
  */
-ORES_REFDATA_API_EXPORT std::chrono::year_month_day
-resolve_end_date(const tenor& t,
-                 const tenor_convention& convention,
-                 const std::optional<tenor_convention_resolution>& resolution,
-                 std::chrono::year_month_day horizon,
-                 std::chrono::year_month_day spot,
-                 const std::optional<std::vector<std::chrono::year_month_day>>& schedule_dates =
-                     std::nullopt);
+ORES_REFDATA_API_EXPORT std::chrono::year_month_day resolve_end_date(
+    const tenor& t,
+    const tenor_convention& convention,
+    const std::optional<tenor_convention_resolution>& resolution,
+    std::chrono::year_month_day horizon,
+    std::chrono::year_month_day spot,
+    const std::optional<std::vector<std::chrono::year_month_day>>& schedule_dates = std::nullopt);
 
 /**
  * @brief Resolves a (horizon, tenor, convention) triple into its [start, end) date window, where

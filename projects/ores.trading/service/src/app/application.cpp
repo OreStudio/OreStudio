@@ -179,10 +179,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto party_role_type_sub =
         ores::trading::service::messaging::register_party_role_type_event_mapping(
             event_source, event_bus, nats);
-    auto trade_type_sub =
-        ores::trading::service::messaging::register_trade_type_event_mapping(event_source,
-                                                                             event_bus,
-                                                                             nats);
+    auto trade_type_sub = ores::trading::service::messaging::register_trade_type_event_mapping(
+        event_source, event_bus, nats);
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";

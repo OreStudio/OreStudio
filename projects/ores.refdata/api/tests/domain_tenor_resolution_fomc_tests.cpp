@@ -66,22 +66,25 @@ const std::string tags("[tenor_resolution][fomc]");
 // FOMC_MEETING schedule lookup walks this same data.
 std::vector<std::chrono::year_month_day> fomc_2026_meeting_dates() {
     using namespace std::chrono;
-    return {year(2026) / month(1) / day(28),   year(2026) / month(3) / day(18),
-            year(2026) / month(4) / day(29),   year(2026) / month(6) / day(17),
-            year(2026) / month(7) / day(29),   year(2026) / month(9) / day(16),
-            year(2026) / month(10) / day(28),  year(2026) / month(12) / day(9)};
+    return {year(2026) / month(1) / day(28),
+            year(2026) / month(3) / day(18),
+            year(2026) / month(4) / day(29),
+            year(2026) / month(6) / day(17),
+            year(2026) / month(7) / day(29),
+            year(2026) / month(9) / day(16),
+            year(2026) / month(10) / day(28),
+            year(2026) / month(12) / day(9)};
 }
 
 // The spec's ScheduleWalk.nth contract, made executable: the n-th date of
 // the schedule's set on-or-after the anchor (anchor + calendar offset; the
 // FOMC convention's offset is zero, measured from SPOT).
-std::chrono::year_month_day nth_on_or_after(
-    const std::vector<std::chrono::year_month_day>& dates,
-    std::chrono::year_month_day anchor,
-    int n) {
+std::chrono::year_month_day nth_on_or_after(const std::vector<std::chrono::year_month_day>& dates,
+                                            std::chrono::year_month_day anchor,
+                                            int n) {
     using namespace std::chrono;
-    auto it = std::find_if(dates.begin(), dates.end(),
-                           [anchor](year_month_day d) { return d >= anchor; });
+    auto it = std::find_if(
+        dates.begin(), dates.end(), [anchor](year_month_day d) { return d >= anchor; });
     std::advance(it, n - 1);
     return *it;
 }
@@ -253,12 +256,10 @@ TEST_CASE("SCHEDULE_STEP rejects resolution with no event-lookup dates supplied"
     // An event-lookup walk with no dates to walk: neither the defaulted
     // nullopt nor an explicitly empty set is walkable. The dates are caller
     // data, so this is a data error, reported as std::logic_error.
-    CHECK_THROWS_AS(resolve_end_date(make_fomc_tenor(1),
-                                     make_fomc_convention(),
-                                     make_fomc_resolution(1),
-                                     horizon,
-                                     spot),
-                    std::logic_error);
+    CHECK_THROWS_AS(
+        resolve_end_date(
+            make_fomc_tenor(1), make_fomc_convention(), make_fomc_resolution(1), horizon, spot),
+        std::logic_error);
 
     const std::vector<std::chrono::year_month_day> no_meetings{};
     CHECK_THROWS_AS(resolve_end_date(make_fomc_tenor(1),

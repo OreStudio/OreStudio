@@ -147,8 +147,8 @@ void on_conn_error(natsConnection* nc,
         if (nc != nullptr)
             natsConnection_ReadLastError(nc, detail, sizeof(detail));
         if (detail[0] != '\0')
-            BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err)
-                                      << " (" << detail << ")";
+            BOOST_LOG_SEV(lg(), warn)
+                << "NATS error: " << natsStatus_GetText(err) << " (" << detail << ")";
         else
             BOOST_LOG_SEV(lg(), warn) << "NATS error: " << natsStatus_GetText(err);
     } catch (...) {
@@ -445,9 +445,9 @@ void client::connect() {
         if (const char* last = nats_GetLastError(nullptr))
             detail = last;
         throw nats_connect_error(
-            kind, std::string("NATS connect failed: ") + natsStatus_GetText(s) +
-                      (detail.empty() ? std::string()
-                                      : std::string(" (") + detail + ")"));
+            kind,
+            std::string("NATS connect failed: ") + natsStatus_GetText(s) +
+                (detail.empty() ? std::string() : std::string(" (") + detail + ")"));
     }
 
     // Note: natsConnection_JetStream(jsCtx**, natsConnection*, jsOptions*)

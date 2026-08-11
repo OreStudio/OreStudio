@@ -31,7 +31,7 @@ generate_synthetic_account_party(utility::generation::generation_context& ctx) {
     const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
 
     domain::account_party r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id = tenant_id;
     r.account_id = ctx.generate_uuid();
     r.party_id = ctx.generate_uuid();

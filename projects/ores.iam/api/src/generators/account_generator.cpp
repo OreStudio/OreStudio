@@ -29,7 +29,7 @@ using ores::utility::generation::generation_keys;
 
 domain::account generate_synthetic_account(utility::generation::generation_context& ctx) {
     domain::account r;
-    r.version = 1;
+    r.version = 0;
     const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);
     r.tenant_id = parsed_tid.has_value() ? parsed_tid.value() : utility::uuid::tenant_id::system();

@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_TENANT_STATUS_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_TENANT_STATUS_REPOSITORY_HPP
+#ifndef ORES_IAM_CORE_REPOSITORY_TENANT_STATUS_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_TENANT_STATUS_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant_status.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -46,18 +49,69 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
-    void write(context ctx, const domain::tenant_status& status);
-    void write(context ctx, const std::vector<domain::tenant_status>& statuses);
+    /**
+     * @brief Writes tenant statuses to database.
+     */
+    /**@{*/
+    void write(context ctx, const domain::tenant_status& v);
+    void write(context ctx, const std::vector<domain::tenant_status>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest tenant statuses, possibly filtered by primary key.
+     */
+    /**@{*/
     std::vector<domain::tenant_status> read_latest(context ctx);
     std::vector<domain::tenant_status> read_latest(context ctx, const std::string& status);
+    /**@}*/
 
+    /**
+     * @brief Reads all tenant statuses, possibly filtered by primary key.
+     */
     std::vector<domain::tenant_status> read_all(context ctx, const std::string& status);
 
+    /**
+     * @brief Reads a single tenant status as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::tenant_status>
+    read_at_version(context ctx, const std::string& status, std::uint32_t version);
+
+    /**
+     * @brief Reads latest tenant statuses with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::tenant_status>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active tenant statuses.
+     * @param ctx Repository context with database connection
+     * @return Total number of active tenant statuses
+     */
+    std::uint32_t get_total_status_count(context ctx);
+
+    /**
+     * @brief Deletes a tenant status by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& status);
-    void remove(context ctx, const std::vector<std::string>& statuses);
+
+    /**
+     * @brief Deletes tenant statuses by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& statuss);
 };
 
 }

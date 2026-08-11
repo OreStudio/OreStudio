@@ -19,7 +19,11 @@
  */
 #include "ores.iam.api/generators/tenant_type_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::iam::generators {
 
@@ -27,19 +31,23 @@ using ores::utility::generation::generation_keys;
 
 domain::tenant_type generate_synthetic_tenant_type(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::tenant_type r;
-    r.version = 1;
-    r.type = "type_" + ctx.alphanumeric(8) + "_" + std::to_string(idx);
-    r.name = "Type " + std::to_string(idx);
-    r.description = "Synthetic test type";
-    r.display_order = idx;
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.name = std::string(faker::word::adjective()) + " Tenant" + "-" + std::to_string(idx);
+    r.description = std::string(faker::lorem::sentence());
+    r.display_order = faker::number::integer(1, 100);
     r.modified_by = modified_by;
+    r.performed_by = modified_by;
     r.change_reason_code = "system.test";
     r.change_commentary = "Synthetic test data";
-    r.performed_by = modified_by;
     r.recorded_at = ctx.past_timepoint();
     return r;
 }
@@ -48,7 +56,7 @@ std::vector<domain::tenant_type>
 generate_synthetic_tenant_types(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::tenant_type> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i)
+    while (r.size() < n)
         r.push_back(generate_synthetic_tenant_type(ctx));
     return r;
 }

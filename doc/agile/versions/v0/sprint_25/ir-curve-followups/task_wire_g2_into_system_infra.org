@@ -28,9 +28,9 @@ G2 appears as a selectable process type in the IR curve generation config UI, wi
 |--------------+----------------------------------------|
 | State        | DONE                                  |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | All 8 steps implemented + 2 bonus fixes. PR #1926 raised. |
+| Now          | Nothing. |
 | Waiting on   | Review.                                |
-| Next         | Verification: provisioning, manual Qt test, preview.   |
+| Next         | Nothing. |
 | Last touched | 2026-08-09                               |
 
 * Acceptance

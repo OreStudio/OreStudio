@@ -31,8 +31,11 @@ domain::tenant_status tenant_status_mapper::map(const tenant_status_entity& v) {
 
     domain::tenant_status r;
     r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.status = v.status.value();
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;
@@ -50,8 +53,11 @@ tenant_status_entity tenant_status_mapper::map(const domain::tenant_status& v) {
 
     tenant_status_entity r;
     r.status = v.status;
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description;
     r.display_order = v.display_order;
     r.modified_by = v.modified_by;

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :ir-curve-followups:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/tenant-type-has-tenant-id-drift
+#+pr: 1961
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
-#+updated: 2026-08-06
-#+environment:
+#+updated: 2026-08-11
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,12 +41,12 @@ vice versa).
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                 |
 | Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
@@ -54,9 +54,63 @@ vice versa).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Finding: the live schema is not the drifted side
+
+The =tenant_id= column's authority is the
+=ores.iam.tenant_type_lookup_entity.org= model (=has_tenant_id: true=)
+— not the legacy =ores.iam.tenant_type.org=. Git provenance across
+=ores.codegen= JSON models, lookup orgs, legacy orgs, and the live SQL
+files shows the lookup lineage generated the tenant-scoped schema.
+
+The legacy =*.org= files are the broken duplicates: wrong model type
+(=ores.codegen.entity= vs =ores.codegen.lookup_entity=), unloadable
+legacy =* Primary key= format, stale C++/Qt output, and no
+=:has_tenant_id:=. Regenerating them through the domain route would
+drop =tenant_id= — exactly what PR #1788 did and why it was reverted.
+
+The =lookup_entity= type is architectural duplication. The
+=domain_entity= route supports natural-key-only entities end-to-end
+with better output (typed =tenant_id=, =entity_type_of= dispatch,
+=clock_timestamp()=, security definer). The DQ migration
+(commits 724253fc8, d04000791) set the precedent: migrate to
+=domain_entity=, delete the lookup models.
+
+** Reconciliation (all three IAM lookups — user-confirmed scope)
+
+=tenant_type=, =account_type=, and =tenant_status= were migrated:
+
+- Rewrote the three legacy orgs to the current =domain_entity=
+  format, bound to =:profile: simple-lookup= in =* Flags= (no
+  hand-authored feature flags). Blueprint:
+  =ores.refdata.party_status.org= (zero-diff verified).
+- Deleted the three =_lookup_entity.org= files (=git rm=), following
+  the DQ precedent. No external references existed.
+- Regenerated the full supported set: domain headers, json_io,
+  table_io, generators, protocol, changed_event, handler, registrars,
+  history_field_mapper, repository/mapper/service, eventing
+  integration tests, Qt layer, SQL create/drop/notify-trigger.
+
+** SQL verification
+
+Per-entity diff of live SQL before/after: =tenant_id= preserved in the
+PK and the gist exclude. Additions are the standard domain-route
+hardening (name unique index, security definer insert function,
+=clock_timestamp()=, system-tenant bootstrap check, notify triggers) —
+the same shape as party_status.
+
+** Wiring
+
+- =iam_create.sql= / =iam_drop.sql=: added the three notify-trigger
+  =\ir= lines (create and drop sides), mirroring the accounts pattern.
+- =component_files.cmake= (src and tests) for =ores.iam.core=
+  regenerated via
+  =regenerate_cmake_component_files.py --component ores.iam.core= so
+  the three new eventing integration tests enter the build.
+
+** Idempotency
+
+=compass codegen entity generate <entity> --diff= for all three
+entities: zero differences across the supported set.
 
 * Notes
 
@@ -75,7 +129,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1961][#1961]] | [ores.iam] Reconcile IAM lookup models with domain_entity format |
 
 * Review
 
@@ -84,6 +138,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Investigation complete: the live tenant-scoped schema was never
+drifted from its authority. The authority is the lookup_entity models;
+the legacy orgs were the stale duplicates. All three IAM lookup
+entities (tenant_type, account_type, tenant_status) now live as single
+domain_entity models bound to the =simple-lookup= profile, the lookup
+models are deleted, and the full supported set regenerates idempotently
+(zero diff). tenant_id is preserved in the regenerated SQL.
+
+Deferred (per user instruction "don't build"): project build, DB
+recreate, and provisioning — required before the regenerated SQL and
+C++ can be exercised.
+
+Verification (2026-08-11): full build clean; the three IAM suites green
+(=test_ores.iam.api.tests= 107 cases, =ores.iam.core.tests= 94,
+=ores.iam.service.tests= 13) including the three new NATS eventing
+integration tests.
+
+Fixing the regenerated generators exposed a version-semantics defect:
+the codegen template was fixed (3f456e359) to emit =version = 0=
+(the DB insert trigger treats 0 as "skip the check, assign next
+version"), but the ores.iam tests still asserted the buggy
+=version == 1= and the four hand-written generators (tenant, role,
+account, account_party) still hardcoded 1 — commit 447b257e6 aligns
+them; the remaining stale files across other components stay tracked
+by backlog capture 32B11CDE.
+
+Local DB: the three branch-new notify triggers were applied directly
+(create or replace, idempotent) so the eventing tests can run. The full
+DB recreate remains deferred — the remaining SQL delta (name unique
+index, =clock_timestamp()= insert function, trigger style) is exercised
+by CI on a fresh database.
 
 * Promoted from capture
 

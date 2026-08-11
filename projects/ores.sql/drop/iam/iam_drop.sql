@@ -52,6 +52,7 @@
 \ir ./iam_account_contact_informations_drop.sql
 \ir ./iam_accounts_notify_trigger_drop.sql
 \ir ./iam_accounts_drop.sql
+\ir ./iam_account_types_notify_trigger_drop.sql
 \ir ./iam_account_types_drop.sql
 
 -- Population functions
@@ -61,5 +62,7 @@
 \ir ./iam_tenants_notify_trigger_drop.sql
 \ir ./iam_tenants_drop.sql
 \ir ./iam_tenant_functions_drop.sql
+\ir ./iam_tenant_statuses_notify_trigger_drop.sql
 \ir ./iam_tenant_statuses_drop.sql
+\ir ./iam_tenant_types_notify_trigger_drop.sql
 \ir ./iam_tenant_types_drop.sql

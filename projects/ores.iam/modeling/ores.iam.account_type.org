@@ -10,8 +10,10 @@
 #+entity_singular: account_type
 #+entity_plural: account_types
 #+entity_title: Account Type
+#+coding_scheme: none
+#+image_id: false
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-10
 
 Reference data table defining valid account type classifications.
 Examples: 'user', 'service', 'algorithm', 'llm'.
@@ -25,25 +27,27 @@ with passwords, while service accounts authenticate via sessions only.
 :schema:    public
 :product:   ores
 :component: iam
+:profile:   simple-lookup
 :END:
 
-* Primary key
+* Columns
+
+** type
 :PROPERTIES:
-:column:   type
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
 :END:
 
 Unique type code.
 
 Examples: 'user', 'service', 'algorithm', 'llm'.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Human-readable name for the type.
@@ -51,8 +55,6 @@ Human-readable name for the type.
 #+begin_src cpp :name generator
 std::string(faker::word::adjective()) + " Account"
 #+end_src
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -72,6 +74,7 @@ std::string(faker::lorem::sentence())
 :type:     integer
 :cpp_type: int
 :nullable: false
+:default:  0
 :END:
 
 Order for UI display purposes.
@@ -87,11 +90,31 @@ faker::number::integer(1, 100)
 :tablename: ores_iam_account_types_tbl
 :END:
 
+** Extra drops
+
+#+begin_src sql :name body :implements 5E47F108-1350-4540-B3C2-E83DD5379B2D
+drop function if exists ores_iam_validate_account_type_fn;
+#+end_src
+
+* Validation function
+:PROPERTIES:
+:tenant_scope: system
+:order_by:     display_order
+:END:
+
+* Insert trigger
+** Validations
+
+| column             | validation_function               |
+|--------------------+-----------------------------------|
+| change_reason_code | ores_dq_validate_change_reason_fn |
+
 * C++
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
+:subcomponent:        api
+:service_find_prefix: true
 :END:
 
 ** Repository
@@ -134,13 +157,12 @@ faker::number::integer(1, 100)
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.iam/domain/account_type.hpp
+:domain_include:         ores.iam.api/domain/account_type.hpp
 :domain_class:           iam::domain::account_type
-:protocol_include:       ores.iam/messaging/account_type_protocol.hpp
+:protocol_include:       ores.iam.api/messaging/account_type_protocol.hpp
 :collection_name:        account_types
 :item_var:               account_type
 :key_field:              type
-:has_uuid_primary_key:   false
 :get_request_class:      iam::messaging::get_account_types_request
 :get_response_class:     iam::messaging::get_account_types_response
 :get_message_type:       get_account_types_request

@@ -5,18 +5,18 @@
 #+description: Implement a general multi-factor affine term-structure engine: r_t = delta_0 + delta^T X_t, where X_t follows a multi-factor affine diffusion. Data-oriented: the factor dynamics are a struct of (kappa vector, sigma matrix, theta vector, delta_0, delta vector) with free-function evolvers. The existing 1-factor Vasicek/CIR/Hull-White become special cases of this framework. Reference: Duffie-Kan theory, QuantLib affine model fragments.
 #+type: task
 #+level: s1
-#+filetags: :ir-curve-followups:sprint_25:v0:
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
 #+branch: feature/expand-stochastic-ir-process-types
 #+pr: 1932
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-09
+#+updated: 2026-08-11
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
-This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] story. It captures the goal, current status, acceptance, and any notes or results.
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
@@ -26,12 +26,12 @@ Add a working general affine framework to process_factory with Catch2 tests cove
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
-| Parent story | [[id:80F1638E-D04A-4618-ABD6-7A853F31FCD0][IR curve follow-ups]] |
-| Now          | Nothing. |
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Engine implemented and merged (PR #1932); system wiring remaining. |
 | Waiting on   | Nothing.                               |
-| Next         | Nothing. |
-| Last touched | 2026-08-07                               |
+| Next         | Wire into the system (factory, seed data, config storage, Qt UI), following the G2 precedent. |
+| Last touched | 2026-08-11                               |
 
 * Acceptance
 
@@ -46,6 +46,8 @@ are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
 * Notes
+
+Moved from the IR curve follow-ups story on 2026-08-11: the engine work is complete (merged via PR #1932 on 2026-08-10), but the engine is not wired into the system. The remaining scope — system wiring (factory, seed data, config storage, Qt UI) — is tracked here, under the Add new stochastic processes story, following the G2 wiring precedent.
 
 * Test Scenarios
 

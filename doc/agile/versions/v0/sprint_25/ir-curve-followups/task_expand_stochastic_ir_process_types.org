@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
-#+updated: 2026-08-06
+#+updated: 2026-08-11
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -378,6 +378,8 @@ and one parameter struct — no cross-model coupling.
 7. Extend the config controller to map between UI and DB layers
 
 * Notes
+
+On 2026-08-11 the six per-engine tasks (Black-Karasinski, BDT, affine, HJM, LMM, QG) moved to the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story, reopened as BACKLOG: the engines are merged (PR #1932) but not wired into the system, so the system wiring is tracked under the new story (factory, seed data, config storage, Qt UI), following the G2 wiring precedent. This task stays DONE here: it covers the quant-layer expansion that landed via PR #1932.
 
 * Test Scenarios
 

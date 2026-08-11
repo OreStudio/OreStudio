@@ -58,11 +58,11 @@ change.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
-| Now          | Analysis written into =* Plan=; awaiting review. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close the task; split the target state into implementation tasks. |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -462,3 +462,29 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The analysis delivered, per acceptance:
+
+- *Inventory*: 13 entities plus the refdata catalogs, each with its
+  identifier fields and its oresmd connection, with file references.
+- *Consumers*: the market simulator, all Qt UIs, and =ores.shell=.
+  The story claimed the shell has no market data surface; the
+  analysis corrected that — it has three (=marketdata import=,
+  =synthetic= feed control, =crm rates=), all ORE-shaped.
+- *Fields vs URI*: decided per entity. One =oresmd_uri= column each;
+  observations keep the series FK plus the point. The hybrid is
+  ruled out: two writable copies of identity drift and no constraint
+  can detect it.
+- *Projection boundary*: forward projections stay at the ORE-format
+  edge (file and CSV export). The NATS wire becomes oresmd-native.
+  The inverse projection (ORE key to oresmd identifier) is needed at
+  the import boundary and is sequenced first.
+- *Canonical form*: pinned. Fixed parameter order, lowercase, absent
+  fields skipped. Tenor and point spelling come from refdata,
+  supplied to the URI builder as a container — no direct repository
+  dependency. Round-trip tests make the form a contract.
+- *Target state*: six sequenced steps, each keeping the system
+  buildable. Split into implementation tasks on the story at close.
+- No schema or code change was made.
+
+Acceptance: met.

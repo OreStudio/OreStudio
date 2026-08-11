@@ -40,9 +40,9 @@ identity drift.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Analysis task has delivered the target state; decisions distilled here. |
-| Waiting on    | Review of the analysis task.            |
-| Next          | Close the analysis task; break the target state into implementation tasks. |
+| Now           | Analysis task DONE; target state split into seven implementation tasks. |
+| Waiting on    | Review and merge of the analysis branch. |
+| Next          | Start the first implementation task: inverse projection and canonical form. |
 | Last touched  | 2026-08-11                               |
 
 * Acceptance
@@ -66,7 +66,7 @@ identity drift.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:0446D795-EECA-4D78-A8FA-1E9CAF010D6E][Analysis: market data identity on oresmd — inventory, consumers, fields-vs-URI target state]] | STARTED | 2026-08-11 | | Inventory every market-data-bearing entity and how it connects to oresmd today; enumerate consumers across the market simulator, all Qt UIs, and ores.shell; answer the key question per entity -- component fields vs a single URI string (the hybrid of both must be explicitly ruled on); produce a sequenced target state. Analysis only, no schema or code change. |
+| [[id:0446D795-EECA-4D78-A8FA-1E9CAF010D6E][Analysis: market data identity on oresmd — inventory, consumers, fields-vs-URI target state]] | DONE | 2026-08-11 | 2026-08-11 | Inventory every market-data-bearing entity and how it connects to oresmd today; enumerate consumers across the market simulator, all Qt UIs, and ores.shell; answer the key question per entity -- component fields vs a single URI string (the hybrid of both must be explicitly ruled on); produce a sequenced target state. Analysis only, no schema or code change. |
 
 * Decisions
 
@@ -93,6 +93,11 @@ Decided by the analysis task (see its =* Plan=):
 - Coverage gap: oresmd models seven asset classes. ORE series types
   without an oresmd identifier (e.g. BOND) are rejected at import
   until oresmd grows them.
+
+- The URI builder decouples from refdata: the caller supplies a
+  container of canonical values (tenor, point). The builder matches
+  against it and rejects unknown spellings; no direct repository
+  dependency.
 
 * Out of scope
 

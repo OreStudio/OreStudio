@@ -129,10 +129,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | add() has no re-entrancy guard for the same source_name; a duplicate add emplace-collides, destroying a joinable thread (std::terminate) | curve_feed_controller.hpp | Fixed | 84186ad74: add() returns false for an already-running source_name, as start() always did |
-| 2 | FX factory.make()/ctrl_->add() not wrapped in try/catch; one malformed row propagates out of start() and the request times out | folder_feed_control_handler.hpp | Fixed | 958f56db3: try/catch counts the row as skipped with a warn log, mirroring the IR pass |
-| 3 | IR add() false return counted nowhere; totals under-count | folder_feed_control_handler.hpp | Fixed | 958f56db3: conflicting-source-name out param; empty conflict (concurrent duplicate) counts as already_running, named conflict as skipped with warn |
-| 4 | Trailing comment on the skipped field, against the comment convention | market_feed_config_protocol.hpp | Fixed | 001b5ac6c: comment moved above the field |
+| 1 | add() has no re-entrancy guard for the same source_name; a duplicate add emplace-collides, destroying a joinable thread (std::terminate) | curve_feed_controller.hpp | Fixed | 7b657a0543: add() returns false for an already-running source_name, as start() always did |
+| 2 | FX factory.make()/ctrl_->add() not wrapped in try/catch; one malformed row propagates out of start() and the request times out | folder_feed_control_handler.hpp | Fixed | c7f9ad53b3: try/catch counts the row as skipped with a warn log, mirroring the IR pass |
+| 3 | IR add() false return counted nowhere; totals under-count | folder_feed_control_handler.hpp | Fixed | c7f9ad53b3: conflicting-source-name out param; empty conflict (concurrent duplicate) counts as already_running, named conflict as skipped with warn |
+| 4 | Trailing comment on the skipped field, against the comment convention | market_feed_config_protocol.hpp | Fixed | d3f2c370d1: comment moved above the field |
 | 5 | FX cascade drops the vintage-price check the old ctrl_->start() path had | folder_feed_control_handler.hpp | Declined | Accepted in the Plan (lines 74-77): the cascade aligns with the auto-start path it replaces; the vintage check stays in the client-supplied-params path until task 5 (config-id-control-plane) deletes it |
 | 6 | start_folder/stop_folder now require both FX and IR read permissions | folder_feed_control_handler.hpp | Declined | Uniform gate is the designed behavior: the cascade now touches both config families; the handler's doc comment states the gate |
 | 7 | Folder-cascade walk duplicates the auto-start walk in application.cpp | folder_feed_control_handler.hpp | Declined | Story task 4 (uniform-auto-start) plans the unification of both walks |

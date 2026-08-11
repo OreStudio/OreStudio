@@ -48,9 +48,39 @@ enabled + auto_start + enabled container. auto_start becomes a common lifecycle 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The FX config gains =auto_start= as a common lifecycle column, then
+the two boot walks collapse into one.
+
+1. *auto_start on the FX config*: add the field to
+   =ores.synthetic.fx_spot_generation_config.org= (right after
+   =enabled=, mirroring the IR model's placement and shape —
+   boolean, not null, default false, orthogonal to =enabled=) and
+   regenerate the entity's full codegen set. The DQ artefact table
+   (=dq_synthetic_fx_spot_configs_artefact_create.sql=) gains
+   ="auto_start" boolean not null default false= — the exact column
+   the IR artefact already has — and the publish function's FX block
+   threads it through (select =a.auto_start=, insert
+   =coalesce(r.auto_start, false)=), matching the IR block's pattern.
+
+2. *Seeds preserve boot behaviour*: today every enabled FX row under
+   an enabled container auto-starts, and every publish-created
+   container is enabled — so the four FX populate scripts set
+   =auto_start=true= on every row, keeping the boot-started set
+   identical. The IR gate gains the enabled-container requirement;
+   every published IR container is enabled, so IR boot behaviour is
+   unchanged too.
+
+3. *One walk*: =auto_start_enabled_feeds= and
+   =auto_start_enabled_ir_curve_feeds= become one
+   =auto_start_feeds= pass. It reads every config kind once, applies
+   one startability gate (enabled + auto_start + enabled container),
+   collects per-kind build candidates (each carrying its kind string,
+   display name, binding mode, and build input), then adds them all
+   through the factory and the single controller with one
+   skip-with-warn message shape (missing children warn, gate skip
+   silent, conflict errors with the holding source name, build
+   failures caught per candidate) and one running-count summary. The
+   caller's single running-count line stays.
 
 * Notes
 

@@ -146,6 +146,16 @@ is the clear setup the codebase never had: config table + producer + one registr
   =feed_controller::list(kind)= scopes the running snapshot by it. The
   per-kind control-plane handlers list only their own kind, preserving
   the pre-collapse list behaviour.
+- Uniform startability (task E1F81BE2): =auto_start= is a common
+  lifecycle column — the FX config gains it (codegen model + DQ
+  artefact, SQL default false, published via coalesce), the IR config
+  already had it. The gate for auto-start-at-boot is uniform:
+  config enabled + =auto_start= + enabled container. The IR gate
+  gains the enabled-container requirement; every publish-created
+  container is enabled, so boot behaviour is unchanged. The FX seeds
+  set =auto_start=true= on every row (all enabled under enabled
+  containers) to keep the boot-started set identical. One
+  =auto_start_feeds= walk replaces the two per-kind walks.
 
 * References
 
@@ -160,7 +170,7 @@ is the clear setup the codebase never had: config table + producer + one registr
 | [[id:050DF944-CCB1-4171-B51D-013D798DCF89][The feed seam: common producer interface + per-kind factory]] | DONE | 2026-08-11 | 2026-08-11 | Build the seam the original FX PoC architecture doc specified (design question 8, never implemented): generalize IFxSpotFeed into a common feed interface (source_name, qualifier, role, start, stop) implemented by both fx_spot_feed and ir_curve_feed, plus a factory mapping kind to producer builder, registered per asset class. |
 | [[id:9E2344CF-9A66-4742-9DE6-6E2AFBF8B3B1][Folder cascade covers every asset class via the factory]] | DONE | 2026-08-11 | 2026-08-11 | The start/stop feeds under folder request walks the folder subtree once and starts every feed under it, dispatching through the factory to the per-kind producer. No client-side enumeration. Fixes the reported defect: today the cascade resolves only fx_spot_generation_config rows; the IR pass would have been a third copy of the build sequence. |
 | [[id:1D756D47-9473-4A99-8A47-E3E4906DA4C3][One lifecycle controller for all feed kinds]] | DONE | 2026-08-11 | 2026-08-11 | Collapse feed_controller and curve_feed_controller into one controller: running map keyed by source_name, thread-per-feed, start/stop/list/join. Conflict semantics (IR qualifier plus role) expressed through the feed's own conflict key on the common interface, not a second class. FX extras (feed-binding auto-creation, sandbox subject, status loop) become uniform behaviour. |
-| [[id:E1F81BE2-3D7D-4CF3-963F-3DD51D980458][One auto-start with uniform startability semantics]] | STARTED | 2026-08-11 | | Collapse auto_start_enabled_feeds and auto_start_enabled_ir_curve_feeds into one boot-time walk with uniform startability: enabled, auto_start (added to the FX config for uniform semantics) and an enabled container. Skip-with-warn and running-count reporting become common code. |
+| [[id:E1F81BE2-3D7D-4CF3-963F-3DD51D980458][One auto-start with uniform startability semantics]] | DONE | 2026-08-11 | 2026-08-11 | Collapse auto_start_enabled_feeds and auto_start_enabled_ir_curve_feeds into one boot-time walk with uniform startability: enabled, auto_start (added to the FX config for uniform semantics) and an enabled container. Skip-with-warn and running-count reporting become common code. |
 | [[id:FD3C0B97-3965-48D6-972E-7D8C497519E2][One per-config control-plane keyed by config_id, server-side resolution]] | BACKLOG | | | One start/stop/list handler for all kinds, following the IR pattern: the client sends config_id, the server resolves config plus children plus refdata context, checks permissions, and starts the producer via the factory. Delete the FX market_feed_config_handler client-supplied-params path (the no-auth anti-pattern). |
 | [[id:26D67D72-1136-4100-BFED-C081246B5ADB][ores.shell: feed verbs for every asset class]] | BACKLOG | | | ores.shell gains the missing IR curve feed commands and every control-plane verb works regardless of asset class: folder start/stop (one request, server-side cascade) and per-config start/stop/list keyed by config_id. No shell command enumerates asset classes; new asset classes plug in via the factory. |
 | [[id:60AA1609-3956-41AB-A5B8-0A530F031EF4][Delete client-side feed enumeration]] | BACKLOG | | | Remove the tree-walk-and-fan-out re-implementations in clients now that the server cascades folders itself: the Qt MarketSimulatorWindow folder branch plus per-config IR loop (and its auto_start client-side filter) and the start_synthetic_theme_feeds two-path provisioning in tenant_handler. Clients send the folder/config request; the server does the rest. |

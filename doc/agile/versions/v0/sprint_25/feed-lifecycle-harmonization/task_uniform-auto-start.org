@@ -29,11 +29,11 @@ enabled + auto_start + enabled container. auto_start becomes a common lifecycle 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -108,3 +108,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=auto_start= now exists on the FX spot generation config end to end:
+the codegen model (=ores.synthetic.fx_spot_generation_config.org=) and
+the DQ artefact model (=ores.dq.synthetic_fx_spot_config.org=) both
+gained the field after =enabled= (boolean, not null, default false,
+orthogonal to =enabled=), and the full codegen set was regenerated —
+domain structs, generators, repositories, mappers, the Qt detail
+dialog (autoStartCheck widget) and Qt model column, the DQ artefact
+create (=dq_synthetic_fx_spot_configs_artefact_create.sql=, SQL
+default false), the real-table create, and the publish-from-dq
+function (select =a.auto_start=, insert =coalesce(r.auto_start,
+false)=, mirroring the IR block).
+
+The four FX populate scripts set =auto_start=true= on every row, so
+the boot-started set is identical to before the column existed. The
+IR gate gains the enabled-container requirement, which changes
+nothing for published IR configs (every publish-created container is
+enabled).
+
+=auto_start_enabled_feeds= and =auto_start_enabled_ir_curve_feeds=
+collapsed into one =auto_start_feeds= pass in application.cpp: one
+read of every config kind, one startability gate (enabled +
+=auto_start= + enabled container), per-kind build candidates collected
+in the same pass, one common add loop through the factory and the
+single controller, one skip/conflict warning shape, and one
+"Auto-started N enabled feed(s)." summary line.
+
+Verification: full build green (100%), DB recreated (schema 0.0.25),
+rat green (exit 0) — including the folder-cascade tests, whose enabled
+FX row now sets =auto_start=true= like every published FX row.
+
+Acceptance met: auto_start exists on the FX config; one auto-start
+walk with one gate, one skip-with-warn shape, one summary; boot
+behaviour preserved for both kinds.

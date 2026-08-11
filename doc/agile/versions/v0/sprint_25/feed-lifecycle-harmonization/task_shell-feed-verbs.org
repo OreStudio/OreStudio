@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :shell:synthetic:feeds:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/shell-feed-verbs
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
 #+updated: 2026-08-11
-#+environment:
+#+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,7 +29,7 @@ new asset classes are covered automatically via the factory.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

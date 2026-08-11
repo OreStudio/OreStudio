@@ -157,7 +157,8 @@ struct start_feeds_under_folder_response {
     // per-kind breakdown follows; both are always populated.
     int started = 0;
     int already_running = 0;
-    int skipped = 0; // e.g. no children rows, or disabled
+    // e.g. no children rows, or disabled
+    int skipped = 0;
     std::map<std::string, feed_kind_counts> by_kind;
 };
 

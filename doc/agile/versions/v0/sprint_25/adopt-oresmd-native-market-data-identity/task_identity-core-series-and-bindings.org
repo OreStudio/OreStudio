@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 9B56689B-6EB0-448D-A5FA-8C029803B9F5
+:END:
+#+title: Task: Identity core: market_series and feed_binding store oresmd URIs
+#+description: market_series and feed_binding gain oresmd_uri columns; backfill existing rows through the inverse projection; drop series_type/metric/qualifier and ore_key; repositories, registrars, and ingest loops read URIs; auto-create uses identifiers.
+#+type: task
+#+level: s1
+#+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 022F15FD-0BC3-4F07-BA1F-916AB65EFD39
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make =market_series= and =feed_binding= store one =oresmd_uri= as
+identity, replacing =series_type=/=metric=/=qualifier= and
+=ore_key=. Backfill existing rows through the inverse projection.
+Every reader and writer in =ores.marketdata= and =ores.synthetic=
+uses URIs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- =market_series=: one =oresmd_uri= column; =series_type=, =metric=,
+  =qualifier=, =asset_class=, =series_subclass=, and =is_scalar=
+  drop. Classification derives from the URI, as generated columns
+  only where an index needs them.
+- =feed_binding=: =ore_key= becomes =oresmd_uri=.
+- The natural key is (party, uri); unique indexes move to the URI.
+- Backfill migrated existing rows through the inverse projection;
+  rows with no mapping were dropped or rejected.
+- Repositories, registrars, ingest loops, and auto-create read and
+  write URIs end-to-end.
+- Validation lives in the oresmd layer, not in SQL check
+  constraints.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

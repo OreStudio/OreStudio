@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 413E0BB1-5156-4442-A582-9AD403AFA905
+:END:
+#+title: Task: Observation identity: point_id carries the oresmd point
+#+description: market_observation.point_id carries the serialised oresmd point; scalar series have a null point (the SPOT sentinel dies); fixings and observation_lineages follow; the DQ artefact mirrors observation identity.
+#+type: task
+#+level: s1
+#+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 9B56689B-6EB0-448D-A5FA-8C029803B9F5
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the observation rows carry the oresmd point. =point_id= holds
+the serialised oresmd point; scalar series have a null point and the
+"SPOT" sentinel dies. Fixings, lineages, and the DQ artefact follow
+the same shape.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- =market_observation.point_id= is null for scalar series; "SPOT" is
+  gone from the data and the code.
+- Non-scalar points serialise the oresmd point (tenor;
+  expiry/strike/model_subtype for vol surfaces).
+- =market_fixings= and =observation_lineages= match the observation
+  shape.
+- The DQ artefact mirrors observation identity.
+- Consumers (ingest loops, curve republish, editors, charts)
+  round-trip the point.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

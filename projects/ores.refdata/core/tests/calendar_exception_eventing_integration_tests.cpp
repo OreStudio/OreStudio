@@ -162,9 +162,11 @@ TEST_CASE("write_calendar_exception_publishes_nats_changed_event", tags) {
     // against the countries table for the write tenant, and the
     // synthetic calendar generator always emits the ZZ sentinel --
     // seed it before the parent write or the parent insert is
-    // rejected.
-    country_repository cty_repo;
-    cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
+    // rejected. Distinct name from the entity-level sentinel seed
+    // block: both are in scope when the entity also carries the
+    // seed_country_sentinel flag.
+    country_repository parent_cty_repo;
+    parent_cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
     ores::refdata::repository::calendar_repository calendar_code_repo;
     calendar_code_repo.write(party_ctx, calendar_code_parent);
     v.calendar_code = calendar_code_parent.code;

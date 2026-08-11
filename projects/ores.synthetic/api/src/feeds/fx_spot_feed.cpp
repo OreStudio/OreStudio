@@ -158,16 +158,25 @@ void fx_spot_feed::start() {
         tick.datetime = system_clock::now();
         tick.mid = process_->next();
 
-        const auto& codec = ores::nats::default_wire_codec();
-        BOOST_LOG_SEV(lg(), trace)
-            << "Encoding fx_spot_tick for " << nats_subject_ << ": wire_format="
-            << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
-        nats_.js_publish(nats_subject_, codec.encode(tick));
-        const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
-        if (n == 1 || n % 100 == 0) {
-            BOOST_LOG_SEV(lg(), info)
-                << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='" << ore_key_
-                << "' count=" << n << " mid=" << tick.mid;
+        // A tick-loop thread has no caller to propagate an exception to -- an uncaught throw
+        // here would std::terminate() the whole service process, taking down every other feed
+        // and NATS handler with it. Log and skip this tick instead; the next tick tries again.
+        try {
+            const auto& codec = ores::nats::default_wire_codec();
+            BOOST_LOG_SEV(lg(), trace)
+                << "Encoding fx_spot_tick for " << nats_subject_ << ": wire_format="
+                << (codec.format() == ores::nats::wire_format::msgpack ? "msgpack" : "json");
+            nats_.js_publish(nats_subject_, codec.encode(tick));
+            const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
+            if (n == 1 || n % 100 == 0) {
+                BOOST_LOG_SEV(lg(), info)
+                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='"
+                    << ore_key_ << "' count=" << n << " mid=" << tick.mid;
+            }
+        } catch (const std::exception& ex) {
+            BOOST_LOG_SEV(lg(), error)
+                << "SYNTHETIC PUBLISH FAILED: subject='" << nats_subject_ << "' ore_key='"
+                << ore_key_ << "': " << ex.what();
         }
     }
 }

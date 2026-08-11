@@ -8,7 +8,7 @@
 #+filetags: :local-checks-for-pr-velocity:sprint_25:v0:
 #+owner: marco
 #+branch: feature/classify-changes-and-run-targeted-checks
-#+pr:
+#+pr: 1966
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -71,7 +71,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1966][#1966]] | [agile] Classify changes and run targeted checks in submit-PR skills |
 
 * Review
 

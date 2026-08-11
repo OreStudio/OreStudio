@@ -68,9 +68,14 @@ def _local_ipv4_addresses() -> list[str]:
     address to appear as an "IP Address" SAN entry, never a DNS entry.
     """
     addrs: set[str] = set()
-    proc = subprocess.run(["ip", "-4", "-o", "addr", "show"],
-                          capture_output=True, text=True, check=False)
-    if proc.returncode == 0:
+    try:
+        proc = subprocess.run(["ip", "-4", "-o", "addr", "show"],
+                              capture_output=True, text=True, check=False)
+    except OSError:
+        # No usable `ip` on this platform (macOS, Windows, restricted
+        # sandbox) — fall through to the gethostname resolution below.
+        proc = None
+    if proc is not None and proc.returncode == 0:
         for line in proc.stdout.splitlines():
             parts = line.split()
             if len(parts) >= 4 and parts[2] == "inet":
@@ -85,7 +90,13 @@ def _local_ipv4_addresses() -> list[str]:
                 addrs.add(res[4][0])
         except OSError:
             pass
-        addrs.discard("127.0.0.1")
+        # Same filtering as the `ip` path above: /etc/hosts may map the
+        # hostname to a loopback address (e.g. Debian's 127.0.1.1).
+        addrs = {
+            addr for addr in addrs
+            if not ipaddress.ip_address(addr).is_loopback
+            and not ipaddress.ip_address(addr).is_link_local
+        }
     return sorted(addrs)
 
 

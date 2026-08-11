@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: CAB9CC9F-E90D-4F1F-89CD-761A52FEE7A5
+:END:
+#+title: Task: Implement Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)
+#+description: Initial task for: Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)
+#+type: task
+#+level: s1
+#+filetags: :nats-certs-ip-discovery:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-nats-certs-ip-discovery
+#+pr: 1959
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:74A90E3D-32BC-4174-8926-C2F4D06D171B][Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make `_local_ipv4_addresses` in `projects/ores.compass/src/nats_certs.py`
+reach its existing gethostname fallback when the `ip` binary is absent,
+so NATS certificate generation (and therefore `compass env configure`)
+works on macOS and Windows.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:74A90E3D-32BC-4174-8926-C2F4D06D171B][Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- `_local_ipv4_addresses()` returns non-loopback IPv4 addresses without
+  the `ip` binary (macOS/Windows path).
+- Linux path unchanged: `ip` output still preferred when present.
+
+* Plan
+
+Diagnosis: `_local_ipv4_addresses` runs
+`subprocess.run(["ip", "-4", "-o", "addr", "show"], check=False)`.
+When the `ip` executable is missing (macOS, Windows), `Popen` raises
+`FileNotFoundError` during exec — `check=False` only suppresses
+non-zero exit codes, not a missing binary — so the exception propagates
+through `env_init.run` and aborts `compass env configure`. The
+gethostname fallback below it is dead code in practice.
+
+Fix: catch `FileNotFoundError` around the `subprocess.run` call and
+fall through to the existing `socket.getaddrinfo(socket.gethostname())`
+path. One small change; no behaviour change on Linux where `ip` exists.
+
+* Notes
+
+Root cause: `_local_ipv4_addresses` ran `subprocess.run(["ip", ...],
+check=False)`; a missing executable raises `FileNotFoundError` at exec
+time, which `check=False` does not suppress (it only tolerates non-zero
+exit codes). Linux always ships `ip`, so the gethostname fallback was
+dead code in practice until macOS/Windows runners hit it.
+
+Fix: catch `OSError` around the call and fall through to the existing
+fallback, filtering the fallback results for loopback/link-local
+addresses (gethostname may resolve to e.g. Debian's 127.0.1.1).
+Verified: pytest suite `test_nats_certs.py` passes with and without the
+`ip` binary (3 tests); Linux behaviour unchanged.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1959][#1959]] | [ores.compass] Fix NATS cert IP discovery on macOS/Windows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Gethostname fallback only strips literal 127.0.0.1, not the loopback range (and 169.254.0.0/16 link-local) | nats_certs.py | Accepted | Fixed in d91537dd6 — filter with is_loopback/is_link_local; deterministic getaddrinfo test added |
+| 2 | Only FileNotFoundError caught, not other exec failures (PermissionError) | nats_certs.py | Accepted | Fixed in e511d2a0a — catch OSError instead |
+
+* Result
+
+Shipped in PR #1959: `_local_ipv4_addresses` now catches `OSError`
+(covering missing and unusable `ip` binaries) and filters fallback
+addresses for loopback/link-local, so `compass env configure` completes
+on macOS/Windows and no non-routable address leaks into the NATS server
+cert SAN. Acceptance met: fallback path returns non-loopback IPv4
+without `ip` (3 tests, 110-suite green); Linux path unchanged.

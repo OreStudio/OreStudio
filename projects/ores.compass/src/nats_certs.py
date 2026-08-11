@@ -68,9 +68,14 @@ def _local_ipv4_addresses() -> list[str]:
     address to appear as an "IP Address" SAN entry, never a DNS entry.
     """
     addrs: set[str] = set()
-    proc = subprocess.run(["ip", "-4", "-o", "addr", "show"],
-                          capture_output=True, text=True, check=False)
-    if proc.returncode == 0:
+    try:
+        proc = subprocess.run(["ip", "-4", "-o", "addr", "show"],
+                              capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        # No `ip` on this platform (macOS, Windows) — fall through to the
+        # gethostname resolution below.
+        proc = None
+    if proc is not None and proc.returncode == 0:
         for line in proc.stdout.splitlines():
             parts = line.split()
             if len(parts) >= 4 and parts[2] == "inet":

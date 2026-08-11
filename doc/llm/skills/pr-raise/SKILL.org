@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:pr:github:claude:review:
 #+created: 2026-06-07
-#+updated: 2026-07-11
+#+updated: 2026-08-11
 
 #+begin_export markdown
 ---
@@ -35,24 +35,63 @@ lifecycle is ordered this way.
 
 * How to use this skill
 
-1. *MANDATORY — build and run tests locally first, and do not skip
-   this even under time pressure*. CI no longer runs a full C++
-   build/test job on PRs (the old "canary" job was removed — it took
-   too long and slowed down development), so this step is the *only*
-   thing that catches a broken build before review, and the PR
-   description is the only record that it happened. Use =compass
-   build= (not raw =cmake --build=) — it takes the host-wide build
-   lock so this doesn't corrupt or get corrupted by another
-   environment's concurrent build; see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]:
+1. *MANDATORY — classify the change and run only the matching checks
+   locally first, and do not skip this even under time pressure*. CI
+   runs only the minimal gate (classify + pr-gate) on PRs, so this
+   step is the *only* thing that catches a broken build before review,
+   and the PR description is the only record that it happened.
+
+   Classify the diff against its branch point:
 
    #+begin_src sh :results verbatim
-   ./compass.sh build --preset <preset>
-   ctest --preset <preset>
+   git diff origin/main...HEAD --name-only
    #+end_src
 
-   Do not raise the PR until both are clean. Note the preset, the
-   build result, and the test tally (e.g. "142/142 passed") — they go
-   into the PR description in step 2.
+   Bucket every changed file with the rule table. A mixed change runs
+   the union of its classes' checks:
+
+   | Class          | Paths                                                         | Checks to run                    |
+   |----------------+---------------------------------------------------------------+----------------------------------|
+   | docs           | =doc/*=, =assets/*=, =.claude/*=, =*.md=, =*.org=, =projects/*/modeling/*= (org/puml/png), =external/*= (vendored) | Site build                       |
+   | code (C++)     | =projects/ores.*= C++ sources and headers, =*.cmake=, =CMakeLists.txt= | Full build + ctest; roundtrip; drift checks; CDash experimental |
+   | ci             | =.github/*=, =projects/ores.codegen/library/templates/*=      | Site build; roundtrip; drift checks |
+   | python tooling | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | Compass test suite; drift checks |
+   | anything else  | any path matching no bucket above                             | Code class checks (full build + ctest; roundtrip; drift checks) |
+
+   The catch-all defaults an unmatched path to the code class, mirroring
+   =pr.yml='s classify default — a change that matches no bucket still
+   gets the full build.
+
+   The checks:
+
+   - *Site build*: =./compass.sh build --direct site=.
+   - *Full build and tests* (code class only; run both via =compass=,
+     never raw =cmake --build= or =ctest= — it takes the host-wide
+     build lock so a concurrent build in another worktree can't
+     corrupt this one; see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]):
+
+     #+begin_src sh :results verbatim
+     ./compass.sh build --preset <preset>
+     ./compass.sh test run --preset <preset>
+     #+end_src
+
+   - *Roundtrip*: =python3 scripts/ore_domain_roundtrip_check.py=.
+   - *cmake-sources drift*:
+     =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=
+     (when a source file was added or removed, regenerate with
+     =--all= instead; see [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]]).
+   - *codegen drift*: =./compass.sh build --direct codegen_templates=
+     then
+     =python3 projects/ores.codegen/scripts/check_component_drift.py --components refdata,reporting,marketdata=.
+   - *Compass test suite*:
+     =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests -q=.
+   - *CDash experimental* (code class; visibility only):
+     =./compass.sh test run --preset <preset> --cdash Experimental=.
+
+   Do not raise the PR until the checks for the class are clean. Note
+   the class(es), the checks run, and the results (e.g. "doc-only;
+   local site build clean" or "code; build clean (<preset>); ctest
+   142/142 passed") — they go into the PR description in step 2.
 
 2. *Close task/story bookkeeping now, if not already done*. The task
    should already be =DONE= with its =* Result= written and the parent
@@ -60,15 +99,16 @@ lifecycle is ordered this way.
    raising the PR, not after review. If it's not done yet, do it now,
    as part of the same commit set the PR will contain from the start.
 
-3. *Raise the PR*, including the local verification from step 1 as an
-   explicit =--change= bullet so it's visible in the PR description
-   (reviewers and future readers can see it happened without asking):
+3. *Raise the PR*, including the change class and the verification
+   from step 1 as an explicit =--change= bullet so it's visible in the
+   PR description (reviewers and future readers can see it happened
+   without asking):
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] Description" \
      --summary "What changes, why." \
      --change "First change" --change "Second change" \
-     --change "Verification: local build clean (<preset>); ctest <N>/<N> passed"
+     --change "Verification: <class>; <checks run and results>"
    #+end_src
 
    Compass validates the title, builds the body, pushes the branch,

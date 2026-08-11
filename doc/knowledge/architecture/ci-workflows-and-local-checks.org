@@ -76,6 +76,7 @@ addition (python tooling):
 | code (C++)      | =projects/ores.*= C++ sources, headers, =*.cmake=, =CMakeLists.txt= | full build + ctest; roundtrip; cmake-sources-drift; codegen-drift; review; misspell; CDash experimental |
 | ci              | =.github/*=, =projects/ores.codegen/library/templates/*=         | site; roundtrip; drift checks; review                  |
 | python tooling  | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | component test suite; drift checks; review; misspell  |
+| anything else   | any path matching no bucket above                                | code class checks; review; misspell                   |
 
 A mixed change runs the union of its classes' checks.
 
@@ -87,10 +88,12 @@ tooling class above.
 ** Local verification flow
 
 1. Classify the diff with the rule table.
-2. Run the checks for the class (site build, or build + =ctest --preset=).
+2. Run the checks for the class (site build, or =compass build= +
+   =compass test run=).
 3. Submit the build to CDash as experimental for visibility
-   (=ctest --script CTest.cmake= with the experimental group; exact
-   invocation refined in the implementation task).
+   (=./compass.sh test run --preset <preset> --cdash Experimental=;
+   runs the CTest.cmake script under the build lock, same shape CI
+   uses).
 4. Run the review skill locally; record findings in the task's
    =* Review= table; address them.
 5. Record the verification in the PR description as a

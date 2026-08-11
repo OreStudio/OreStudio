@@ -67,5 +67,9 @@ via its "Verifies task" field.
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
 | 1 | Story row landed in the Hotfixes table instead of Product | doc/agile/versions/v0/sprint_25/sprint.org | Accepted | Moved to the Product table, after IR curve follow-ups. |
+| 2 | Reopened engine tasks keep original Implement Goal/Acceptance; G2 precedent uses wiring-scoped goal | add_new_stochastic_processes/task_implement_*.org (six files) | Accepted | Goal and Acceptance rewritten to system-wiring scope. |
+| 3 | Analysis task file misnamed task_implement_* | task_implement_add_new_stochastic_processes.org | Accepted | Renamed to task_analyse_stochastic_process_landscape.org. |
+| 4 | Out of scope section left empty in the new story | add_new_stochastic_processes/story.org | Accepted | Populated: SABR and any volatility-surface model. |
+| 5 | Heartbeat rule: #+updated/Last touched stale in three files | sprint.org, ir-curve-followups/story.org, task_expand_stochastic_ir_process_types.org | Accepted | Bumped all to 2026-08-11. |
 
 * Result

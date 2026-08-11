@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: E62808C1-D692-4877-835D-3A512A9F4160
+:END:
+#+title: Story: Adopt oresmd as the native market data identity across simulator, UIs, and shell
+#+description: Make oresmd the single native market data identifier across the market simulator, all Qt UIs, and ores.shell, abandoning ORE-shaped representations on persisted entities. First task: a thorough analysis of how the market data tables connect to oresmd today and the target state -- inventorying every market-data-bearing entity and answering whether entities should store oresmd component fields or a single URI string.
+#+type: story
+#+level: s2
+#+filetags: :market-data:identifiers:oresmd:sprint_25:v0:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: merry_newton
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Make oresmd the native market data identifier across ORE Studio. The
+market simulator (=ores.synthetic=), every Qt UI that displays or
+edits market data, and =ores.shell= all talk oresmd natively, and the
+persisted entities that identify market data (=market_series=,
+=market_observation=, the generation configs, and related tables)
+abandon their ORE-shaped representations (=series_type=/=metric=/
+=qualifier=, =point_id=, =ore_key=, =currency_code=) in favour of
+oresmd identity. Backwards compatibility is explicitly out of scope:
+a hard cutover is the accepted strategy.
+
+The first task is a thorough analysis. It inventories how the market
+data tables connect to oresmd today and sets the target state. Its key
+question: do entities store the individual components of an oresmd
+identifier (=ccy=, =index=, =tenor=, =role=, =point=) as fields, or a
+single column carrying the oresmd URI string? The hybrid -- both
+fields and the URI -- must be explicitly ruled on; the working
+assumption is that it is redundant: two canonical copies of the same
+identity drift.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-11                               |
+
+* Acceptance
+
+- The analysis task (this story's first task) delivers: (a) an
+  inventory of every market-data-bearing entity and its current
+  identifier fields, with its read/write consumers; (b) a
+  per-entity decision on fields-vs-URI storage with rationale; (c) a
+  sequenced target state -- the way forward -- grounded in the actual
+  codebase, not design-time assumptions.
+- Every consumer lens is covered in the analysis: market simulator,
+  Qt UIs, and =ores.shell= (including what =ores.shell= must gain --
+  today it has no market data surface at all).
+- The target state is implemented: simulator, UIs, and shell talk
+  oresmd natively for market data identity.
+- The legacy ORE representations for market data identity are deleted
+  once the target state lands -- no backwards compatibility, per the
+  story's scope.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:0446D795-EECA-4D78-A8FA-1E9CAF010D6E][Analysis: market data identity on oresmd — inventory, consumers, fields-vs-URI target state]] | STARTED | 2026-08-11 | | Inventory every market-data-bearing entity and how it connects to oresmd today; enumerate consumers across the market simulator, all Qt UIs, and ores.shell; answer the key question per entity -- component fields vs a single URI string (the hybrid of both must be explicitly ruled on); produce a sequenced target state. Analysis only, no schema or code change. |
+
+* Decisions
+
+* Out of scope
+
+- ORE file-format round-trips (=curveconfig.xml=, =todaysmarket.xml=,
+  market-data quote strings): conversion is a separate concern from
+  identity; the earlier XML round-trip task was abandoned and tracked
+  separately.
+- Projection fidelity to ORE/Bloomberg/Reuters key strings: oresmd's
+  projection rules already exist and stay; the question of where the
+  projection boundary lives (if anywhere) is for the analysis task to
+  answer, not new notation work.
+- The market data values themselves (quotes, fixings, curves): only
+  identity is in scope.

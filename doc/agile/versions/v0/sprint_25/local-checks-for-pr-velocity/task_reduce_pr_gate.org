@@ -92,6 +92,7 @@ via its "Verifies task" field.
 | 3 | Top-of-file comment in pr.yml conflation (this PR's job deletions vs. the earlier canary removal) | pr.yml (deleted) | declined | Moot: the file is deleted with the gate. |
 | 4 | nightly-includes.yml auto-fix PR body still cites the deleted codegen-drift check (contradicts "no reference to the gate or its jobs") | nightly-includes.yml | accepted | Body now says hand-edited generated output would fail the local component drift check (check_component_drift.py) |
 | 5 | Knowledge doc Open questions still says the classify rules live in two places (pr.yml and the skill); pr.yml is deleted by this PR | ci-workflows-and-local-checks.org | accepted | Bullet removed; the skill alone owns the rules (the classification task's resolution) |
+| 6 | build-site.yml comments still describe the deleted gate: "Pull requests build the site via pr.yml's site job" and "the same build runs on doc-class pull requests via pr.yml" | build-site.yml | accepted | Comments now say doc-class PRs build the site locally via the pr-raise skill, which is where broken id-links are caught; this workflow covers main pushes (build + deploy) and manual runs only. |
 
 * Result
 

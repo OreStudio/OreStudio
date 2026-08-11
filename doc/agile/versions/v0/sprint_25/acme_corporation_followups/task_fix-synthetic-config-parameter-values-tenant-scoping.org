@@ -48,7 +48,7 @@ and nothing may bake them in.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Fix implemented in codegen (model flag =:use_system_tenant:= on the FK, regenerated SQL); template drift on the notify/registrar channels fixed the same way. Fully verified on a fresh DB (shell leg): =synthetic.themes.realistic_2026= publishes for all 4 parties, 58 staff photos land, all 3 offices' =synthetic_feeds= steps complete and the IR/FX feeds tick (3933 observations persisted). The feeds step exposed two further masked bugs, fixed and verified as part of this task's cascade: F13 (RLS party-isolation shadowing on the values table, 2abea4a81) and F14 (feed start read the parameter-definitions catalogue with the caller's tenant instead of the system tenant, f251b4d00) -- see the review task's findings table. |
+| Now          | Fix implemented in codegen (model flag =:use_system_tenant:= on the FK, regenerated SQL); template drift on the notify/registrar channels fixed the same way. Fully verified on a fresh DB (shell leg): =synthetic.themes.realistic_2026= publishes for all 4 parties, 58 staff photos land, all 3 offices' =synthetic_feeds= steps complete and the IR/FX feeds tick (3933 observations persisted). The feeds step exposed two further masked bugs, fixed and verified as part of this task's cascade: F13 (RLS party-isolation shadowing on the values table, 6ef39a7f2) and F14 (feed start read the parameter-definitions catalogue with the caller's tenant instead of the system tenant, 716efb0d0) -- see the review task's findings table. |
 | Waiting on   | Nothing.                               |
 | Next         | Wizard leg on a second fresh DB (scenario B296624F): reproduce the same result through the wizard path. |
 | Last touched | 2026-08-10                               |
@@ -124,10 +124,10 @@ Two further masked bugs surfaced once the feeds ran for the first
 time and were fixed within this cascade (both recorded in the review
 task's findings table): F13 -- the values table's RLS party-isolation
 policy shadowed =config_id= with the inner IR-config table's own
-column (=synthetic_rls_policies_create.sql=, fixed 2abea4a81); F14 --
+column (=synthetic_rls_policies_create.sql=, fixed 6ef39a7f2); F14 --
 the feed start read the parameter-definitions catalogue with the
 caller's tenant instead of the system tenant
-(=ir_curve_feed_config_handler.hpp=, fixed f251b4d00).
+(=ir_curve_feed_config_handler.hpp=, fixed 716efb0d0).
 
 Open design question (F15, recorded in the review task): the feed
 controller keys feeds by =source_name= service-wide, so only the

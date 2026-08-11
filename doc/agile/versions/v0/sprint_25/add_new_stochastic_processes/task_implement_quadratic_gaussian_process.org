@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a working QG engine to process_factory with Catch2 tests covering: zero Gamma matrix reduces exactly to the affine framework, diagonal Gamma matches known two-factor QG closed forms, discount_factor() consistency with simulated paths, and yield-curve curvature (second derivative w.r.t. maturity) differs from the pure-affine case.
+The Quadratic Gaussian process appears as a selectable process type in the IR curve generation config UI, with its own parameter fields (delta_0, delta vector, Gamma matrix) stored in a strongly-typed child table. The engine itself is complete (merged via PR #1932); the system wiring is the remaining scope, following the G2 precedent.
 
 * Status
 
@@ -35,9 +35,11 @@ Add a working QG engine to process_factory with Catch2 tests covering: zero Gamm
 
 * Acceptance
 
-- QG process compiles and passes all tests on Linux
-- Affine special case (Gamma=0) matches affine framework exactly
-- QG yields differ from affine yields for non-zero Gamma
+- Seed data row makes the Quadratic Gaussian process appear in the process type combo box
+- process_factory constructs a working Quadratic Gaussian engine (factory method and parameter struct)
+- Quadratic Gaussian parameters persist to and load from the child table
+- IrCurveGenerationConfigDetailDialog shows Quadratic Gaussian parameter fields when selected
+- Existing Vasicek/CIR/Hull-White/G2 configs are unaffected
 
 * Plan
 

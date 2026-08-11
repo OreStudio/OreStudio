@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a working general affine framework to process_factory with Catch2 tests covering: 1-factor affine reduces exactly to Vasicek, 1-factor CIR reduces exactly to our cox_ingersoll_ross_process, 2-factor affine matches G2++ for the same parameters, and the general N-factor case works for N up to a reasonable limit.
+The affine term-structure process appears as a selectable process type in the IR curve generation config UI, with its own parameter fields (kappa vector, sigma matrix, theta vector, delta_0, delta vector) stored in a strongly-typed child table. The engine itself is complete (merged via PR #1932); the system wiring is the remaining scope, following the G2 precedent.
 
 * Status
 
@@ -35,9 +35,11 @@ Add a working general affine framework to process_factory with Catch2 tests cove
 
 * Acceptance
 
-- Affine framework compiles and passes all tests on Linux
-- Existing Vasicek, CIR, HW, G2++ results are reproduced as special cases
-- N-factor parameterization works for user-specified factor count
+- Seed data row makes the affine process appear in the process type combo box
+- process_factory constructs a working affine engine (factory method and parameter struct)
+- Affine parameters persist to and load from the child table
+- IrCurveGenerationConfigDetailDialog shows affine parameter fields when selected
+- Existing Vasicek/CIR/Hull-White/G2 configs are unaffected
 
 * Plan
 

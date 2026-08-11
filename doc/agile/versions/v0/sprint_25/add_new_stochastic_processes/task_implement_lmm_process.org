@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a working LMM engine to process_factory with Catch2 tests covering: drift for a single forward rate reduces to zero (log-normal, no drift under own measure), two-factor correlation produces correct drift adjustment, caplet prices match Black formula within discretization error, and comparison against QuantLib LMM reference values for a standard setup.
+The LIBOR Market Model process appears as a selectable process type in the IR curve generation config UI, with its own parameter fields (initial forward rates, tenor structure, correlation matrix) stored in a strongly-typed child table. The engine itself is complete (merged via PR #1932); the system wiring is the remaining scope, following the G2 precedent.
 
 * Status
 
@@ -35,9 +35,11 @@ Add a working LMM engine to process_factory with Catch2 tests covering: drift fo
 
 * Acceptance
 
-- LMM process compiles and passes all tests on Linux
-- Drift calculation is correct for a test correlation structure
-- Caplet pricing converges to Black formula as dt shrinks
+- Seed data row makes the LIBOR Market Model process appear in the process type combo box
+- process_factory constructs a working LIBOR Market Model engine (factory method and parameter struct)
+- LIBOR Market Model parameters persist to and load from the child table
+- IrCurveGenerationConfigDetailDialog shows LIBOR Market Model parameter fields when selected
+- Existing Vasicek/CIR/Hull-White/G2 configs are unaffected
 
 * Plan
 

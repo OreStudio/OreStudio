@@ -8,7 +8,7 @@
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch: feature/review-acme-fit-for-purpose
-#+pr:
+#+pr: 1958
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1958][#1958]] | [agile] ACME fit-for-purpose review: fixes F10/F11/F13/F14, verification F1-F16 |
 
 * Review
 

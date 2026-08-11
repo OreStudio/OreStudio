@@ -71,12 +71,19 @@ const std::string split_code = "1Y";
 // (statement/decision day), transcribed from federalreserve.gov; the same
 // dates the refdata seed stores as central_bank_meeting calendar_events.
 std::vector<year_month_day> fomc_2026_meeting_dates() {
-    return {2026y / January / 28d, 2026y / March / 18d, 2026y / April / 29d,
-            2026y / June / 17d,    2026y / July / 29d,  2026y / September / 16d,
-            2026y / October / 28d, 2026y / December / 9d};
+    return {2026y / January / 28d,
+            2026y / March / 18d,
+            2026y / April / 29d,
+            2026y / June / 17d,
+            2026y / July / 29d,
+            2026y / September / 16d,
+            2026y / October / 28d,
+            2026y / December / 9d};
 }
 
-tenor make_tenor(const std::string& code, const std::string& kind, const std::string& unit,
+tenor make_tenor(const std::string& code,
+                 const std::string& kind,
+                 const std::string& unit,
                  int multiplier) {
     tenor t;
     t.code = code;
@@ -89,7 +96,8 @@ tenor make_tenor(const std::string& code, const std::string& kind, const std::st
 // A meeting-dated tenor: the n-th FOMC_MEETING schedule step on-or-after
 // spot, with a zero calendar-axis offset -- the same shape as the
 // production resolution rows for 1F..8F.
-tenor_convention_resolution make_fomc_resolution(const std::string& tenor_code, int meeting_ordinal) {
+tenor_convention_resolution make_fomc_resolution(const std::string& tenor_code,
+                                                 int meeting_ordinal) {
     tenor_convention_resolution r;
     r.convention_code = "RATES_SPOT_FOMC";
     r.tenor_code = tenor_code;
@@ -128,8 +136,7 @@ std::vector<ir_curve_bootstrap_pillar> make_fomc_pillars() {
     std::vector<ir_curve_bootstrap_pillar> out;
     out.push_back(make_pillar(0, "SPOT", "1F", "DEPOSIT"));
     for (int n = 1; n < meeting_count; ++n)
-        out.push_back(
-            make_pillar(n, std::to_string(n) + "F", std::to_string(n + 1) + "F", "SWAP"));
+        out.push_back(make_pillar(n, std::to_string(n) + "F", std::to_string(n + 1) + "F", "SWAP"));
     out.push_back(make_pillar(meeting_count, "8F", split_code, "SWAP"));
     return out;
 }
@@ -170,13 +177,12 @@ std::unordered_map<std::string, double> make_fomc_raw_rates() {
 
 }
 
-TEST_CASE("resolve_bootstrap_pillars resolves the FOMC pillar chain onto the meeting dates",
-          tags) {
+TEST_CASE("resolve_bootstrap_pillars resolves the FOMC pillar chain onto the meeting dates", tags) {
     const auto ctx = make_fomc_context();
     const auto meetings = fomc_2026_meeting_dates();
 
-    const auto resolved = resolve_bootstrap_pillars(make_fomc_pillars(), ctx,
-                                                    make_fomc_raw_rates());
+    const auto resolved =
+        resolve_bootstrap_pillars(make_fomc_pillars(), ctx, make_fomc_raw_rates());
 
     REQUIRE(resolved.size() == meeting_count + 1);
     // SPOT->1F: the deposit pillar ends at the first meeting.
@@ -201,8 +207,8 @@ TEST_CASE("resolve_bootstrap_pillars chains each FOMC pillar's start date onto t
           tags) {
     const auto ctx = make_fomc_context();
 
-    const auto resolved = resolve_bootstrap_pillars(make_fomc_pillars(), ctx,
-                                                    make_fomc_raw_rates());
+    const auto resolved =
+        resolve_bootstrap_pillars(make_fomc_pillars(), ctx, make_fomc_raw_rates());
 
     REQUIRE(resolved.size() == meeting_count + 1);
     for (int i = 1; i <= meeting_count; ++i)
@@ -214,8 +220,8 @@ TEST_CASE("resolve_bootstrap_pillars keeps FOMC pillar end dates strictly ascend
           tags) {
     const auto ctx = make_fomc_context();
 
-    const auto resolved = resolve_bootstrap_pillars(make_fomc_pillars(), ctx,
-                                                    make_fomc_raw_rates());
+    const auto resolved =
+        resolve_bootstrap_pillars(make_fomc_pillars(), ctx, make_fomc_raw_rates());
 
     REQUIRE(resolved.size() == meeting_count + 1);
     for (int i = 1; i <= meeting_count; ++i)
@@ -225,8 +231,8 @@ TEST_CASE("resolve_bootstrap_pillars keeps FOMC pillar end dates strictly ascend
 TEST_CASE("resolve_bootstrap_pillars looks up every FOMC point id in the raw grid", tags) {
     const auto ctx = make_fomc_context();
 
-    const auto resolved = resolve_bootstrap_pillars(make_fomc_pillars(), ctx,
-                                                    make_fomc_raw_rates());
+    const auto resolved =
+        resolve_bootstrap_pillars(make_fomc_pillars(), ctx, make_fomc_raw_rates());
 
     REQUIRE(resolved.size() == meeting_count + 1);
     // point id == end tenor code, and the observed rate comes through.
@@ -248,8 +254,8 @@ TEST_CASE("resolve_bootstrap_pillars fails loudly when a FOMC point id has no ra
 TEST_CASE("the FOMC-to-FOMC fixing schedule falls out of the pillar order", tags) {
     const auto ctx = make_fomc_context();
 
-    const auto resolved = resolve_bootstrap_pillars(make_fomc_pillars(), ctx,
-                                                    make_fomc_raw_rates());
+    const auto resolved =
+        resolve_bootstrap_pillars(make_fomc_pillars(), ctx, make_fomc_raw_rates());
 
     REQUIRE(resolved.size() == meeting_count + 1);
     // Each SWAP pillar's fixed-leg dates are every prior pillar's end date

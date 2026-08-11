@@ -157,7 +157,8 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
  * per-request error) -- callers should treat that as fatal to the feed being started.
  */
 ORES_SYNTHETIC_SERVICE_EXPORT std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx, const std::string& tenor_convention_code);
+build_ir_curve_refdata_context(ores::database::context ctx,
+                               const std::string& tenor_convention_code);
 
 /**
  * @brief Derives one resolved entry's published rate from a short-rate process's

@@ -29,9 +29,9 @@
 #include "ores.marketdata.core/service/observation_lineage_service.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_config.hpp"
 #include "ores.refdata.api/domain/ir_curve_bootstrap_pillar.hpp"
+#include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_config_repository.hpp"
 #include "ores.refdata.core/repository/ir_curve_bootstrap_pillar_repository.hpp"
-#include "ores.refdata.core/repository/calendar_event_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_repository.hpp"
 #include "ores.refdata.core/repository/tenor_convention_resolution_repository.hpp"
 #include "ores.refdata.core/repository/tenor_repository.hpp"
@@ -77,9 +77,8 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
     repository::market_series_repository series_repo;
     const auto series = series_repo.read_latest(ctx, boost::uuids::to_string(source_series_id));
     if (series.empty())
-        throw std::invalid_argument(
-            "curve_republish_service: source market_series not found: " +
-            boost::uuids::to_string(source_series_id));
+        throw std::invalid_argument("curve_republish_service: source market_series not found: " +
+                                    boost::uuids::to_string(source_series_id));
     const auto* tenor_convention_code = tenor_convention_code_for(series.front().qualifier);
 
     refdata_repo::tenor_repository tenor_repo;
@@ -205,8 +204,8 @@ curve_republish_service::compute(context ctx,
     const auto config = read_config(ctx, bootstrap_config_id);
     const auto pillars = read_pillars(ctx, bootstrap_config_id);
     const auto horizon = std::chrono::floor<std::chrono::days>(as_of);
-    const auto refctx = build_refdata_context(ctx, std::chrono::year_month_day{horizon},
-                                              config.source_series_id);
+    const auto refctx =
+        build_refdata_context(ctx, std::chrono::year_month_day{horizon}, config.source_series_id);
     const auto raw_rates = read_raw_rates(ctx, config.source_series_id, as_of);
     const auto bootstrap_pillars = resolve_bootstrap_pillars(pillars, refctx, raw_rates);
 

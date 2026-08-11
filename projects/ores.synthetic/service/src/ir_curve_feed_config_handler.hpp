@@ -144,8 +144,7 @@ public:
             repository::yield_curve_process_parameter_definition_repository definition_repo;
             const auto definitions = definition_repo.read_latest(req_ctx);
 
-            const auto convention_code =
-                ir_curve_tenor_convention_code(ir_curve_qualifier(cfg));
+            const auto convention_code = ir_curve_tenor_convention_code(ir_curve_qualifier(cfg));
             auto refctx = build_ir_curve_refdata_context(req_ctx, convention_code);
             if (!refctx) {
                 resp.message = "Tenor convention not found: " + convention_code;

@@ -179,7 +179,8 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
 }
 
 std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx, const std::string& tenor_convention_code) {
+build_ir_curve_refdata_context(ores::database::context ctx,
+                               const std::string& tenor_convention_code) {
     namespace refdata_repo = ores::refdata::repository;
 
     refdata_repo::instrument_code_repository instrument_code_repo;

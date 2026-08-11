@@ -18,9 +18,9 @@
  *
  */
 #include "ores.cli/config/add_account_options.hpp"
-#include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_change_reason_category_options.hpp"
 #include "ores.cli/config/add_change_reason_options.hpp"
+#include "ores.cli/config/add_compute_app_version_options.hpp"
 #include "ores.cli/config/add_country_options.hpp"
 #include "ores.cli/config/add_login_info_options.hpp"
 #include "ores.cli/config/add_permission_options.hpp"
@@ -1220,8 +1220,7 @@ TEST_CASE("test_login_info_list_help", login_info_tags) {
 // ==========================================================================
 const std::string compute_app_versions_tags("[compute_app_versions_parser]");
 
-const std::string valid_sha256(
-    "5c02f26e5bcd4a1c8e2b2c5b0a9c4d6e8f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c");
+const std::string valid_sha256("5c02f26e5bcd4a1c8e2b2c5b0a9c4d6e8f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c");
 
 TEST_CASE("test_compute_app_versions_add_missing_required_fields", compute_app_versions_tags) {
     auto lg = make_logger(test_suite);
@@ -1362,21 +1361,22 @@ TEST_CASE("test_compute_app_versions_add_uppercase_hex", compute_app_versions_ta
     parser p;
     std::ostringstream info, error;
 
-    std::vector<std::string> args = {"compute",
-                                     "app-versions",
-                                     "add",
-                                     "--app-id",
-                                     "550e8400-e29b-41d4-a716-446655440000",
-                                     "--wrapper-version",
-                                     "v1.2.0",
-                                     "--engine-version",
-                                     "ORE-Studio-7.1",
-                                     "--platform-package",
-                                     "x64-linux=https://example.com/ore.tar.gz",
-                                     "--package-sha256",
-                                     "x64-linux=5C02F26E5BCD4A1C8E2B2C5B0A9C4D6E8F1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C",
-                                     "--modified-by",
-                                     "marco"};
+    std::vector<std::string> args = {
+        "compute",
+        "app-versions",
+        "add",
+        "--app-id",
+        "550e8400-e29b-41d4-a716-446655440000",
+        "--wrapper-version",
+        "v1.2.0",
+        "--engine-version",
+        "ORE-Studio-7.1",
+        "--platform-package",
+        "x64-linux=https://example.com/ore.tar.gz",
+        "--package-sha256",
+        "x64-linux=5C02F26E5BCD4A1C8E2B2C5B0A9C4D6E8F1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C",
+        "--modified-by",
+        "marco"};
     BOOST_LOG_SEV(lg, debug) << "Args: " << args;
 
     CHECK_THROWS_AS(p.parse(args, info, error), parser_exception);

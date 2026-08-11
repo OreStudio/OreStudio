@@ -180,9 +180,8 @@ TEST_CASE("resolve_end_date_migrated_credit_cds_imm_resolves_to_pinned_roll_quar
     // stays NONE; the resolution row anchors at SPOT, the tenor's own period
     // supplies the one-year offset, then one roll-quarter step.
     const auto cds = make_convention("CREDIT_CDS_IMM", "NONE", "SCHEDULE_STEP");
-    const auto resolution =
-        make_resolution("CREDIT_CDS_IMM", "1Y", "SPOT", std::nullopt, std::nullopt,
-                        "ROLL_QUARTER", 1);
+    const auto resolution = make_resolution(
+        "CREDIT_CDS_IMM", "1Y", "SPOT", std::nullopt, std::nullopt, "ROLL_QUARTER", 1);
 
     const year_month_day horizon{year(2026), month(1), day(1)};
     const year_month_day spot{year(2026), month(1), day(2)};

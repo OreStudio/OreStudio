@@ -107,16 +107,16 @@ std::chrono::year_month_day walk_roll_quarter(std::chrono::year_month_day anchor
 // anchor, so an unsorted vector silently yields a wrong "n-th meeting" rather
 // than an error. Callers read from calendar_event ordered by event_date, which
 // satisfies this.
-std::optional<std::chrono::year_month_day> nth_on_or_after(
-    const std::vector<std::chrono::year_month_day>& dates,
-    std::chrono::year_month_day anchor,
-    int n) {
+std::optional<std::chrono::year_month_day>
+nth_on_or_after(const std::vector<std::chrono::year_month_day>& dates,
+                std::chrono::year_month_day anchor,
+                int n) {
     using namespace std::chrono;
 
     if (n < 1)
         return std::nullopt;
-    auto it = std::find_if(dates.begin(), dates.end(),
-                           [anchor](year_month_day d) { return d >= anchor; });
+    auto it = std::find_if(
+        dates.begin(), dates.end(), [anchor](year_month_day d) { return d >= anchor; });
     if (std::distance(it, dates.end()) < n)
         return std::nullopt;
     return *std::next(it, n - 1);
@@ -124,11 +124,11 @@ std::optional<std::chrono::year_month_day> nth_on_or_after(
 
 // The date a tenor's duration lands on from the anchor: the tenor's own
 // period for a PERIOD tenor, the resolution row's offset for a SPECIAL tenor.
-std::chrono::year_month_day resolve_offset_date(
-    const tenor& t,
-    const std::optional<tenor_convention_resolution>& resolution,
-    const tenor_convention& convention,
-    std::chrono::year_month_day anchor_date) {
+std::chrono::year_month_day
+resolve_offset_date(const tenor& t,
+                    const std::optional<tenor_convention_resolution>& resolution,
+                    const tenor_convention& convention,
+                    std::chrono::year_month_day anchor_date) {
     if (t.kind == "SPECIAL") {
         if (!resolution->offset_unit || !resolution->offset_multiplier)
             throw std::invalid_argument(
@@ -207,7 +207,8 @@ resolve_end_date(const tenor& t,
         if (!walked)
             throw std::logic_error("SCHEDULE_STEP resolution for tenor '" + t.code +
                                    "' under convention '" + convention.code + "' has schedule '" +
-                                   *resolution->schedule_code + "' which is exhausted: fewer than " +
+                                   *resolution->schedule_code +
+                                   "' which is exhausted: fewer than " +
                                    std::to_string(*resolution->schedule_step_count) +
                                    " dates on-or-after the walk start");
         return *walked;

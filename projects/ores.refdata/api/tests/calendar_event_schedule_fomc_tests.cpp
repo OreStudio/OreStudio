@@ -94,18 +94,18 @@ const std::string tags("[calendar_event][tenor_schedule][fomc]");
 // meetings per year).
 std::vector<std::chrono::year_month_day> fomc_meeting_dates() {
     using namespace std::chrono;
-    return {year(2025) / month(1) / day(29),   year(2025) / month(3) / day(19),
-            year(2025) / month(5) / day(7),    year(2025) / month(6) / day(18),
-            year(2025) / month(7) / day(30),   year(2025) / month(9) / day(17),
-            year(2025) / month(10) / day(29),  year(2025) / month(12) / day(10),
-            year(2026) / month(1) / day(28),   year(2026) / month(3) / day(18),
-            year(2026) / month(4) / day(29),   year(2026) / month(6) / day(17),
-            year(2026) / month(7) / day(29),   year(2026) / month(9) / day(16),
-            year(2026) / month(10) / day(28),  year(2026) / month(12) / day(9),
-            year(2027) / month(1) / day(27),   year(2027) / month(3) / day(17),
-            year(2027) / month(4) / day(28),   year(2027) / month(6) / day(9),
-            year(2027) / month(7) / day(28),   year(2027) / month(9) / day(15),
-            year(2027) / month(10) / day(27),  year(2027) / month(12) / day(8)};
+    return {year(2025) / month(1) / day(29),  year(2025) / month(3) / day(19),
+            year(2025) / month(5) / day(7),   year(2025) / month(6) / day(18),
+            year(2025) / month(7) / day(30),  year(2025) / month(9) / day(17),
+            year(2025) / month(10) / day(29), year(2025) / month(12) / day(10),
+            year(2026) / month(1) / day(28),  year(2026) / month(3) / day(18),
+            year(2026) / month(4) / day(29),  year(2026) / month(6) / day(17),
+            year(2026) / month(7) / day(29),  year(2026) / month(9) / day(16),
+            year(2026) / month(10) / day(28), year(2026) / month(12) / day(9),
+            year(2027) / month(1) / day(27),  year(2027) / month(3) / day(17),
+            year(2027) / month(4) / day(28),  year(2027) / month(6) / day(9),
+            year(2027) / month(7) / day(28),  year(2027) / month(9) / day(15),
+            year(2027) / month(10) / day(27), year(2027) / month(12) / day(8)};
 }
 
 // A meeting event on US.FOMC, transcribed from the D4 seed rows
@@ -209,8 +209,7 @@ TEST_CASE("tenor_schedule exposes its declared fields", tags) {
     tenor_schedule s;
     s.code = "FOMC_MEETING";
     s.name = "FOMC Meeting Schedule";
-    s.description =
-        "Event-lookup schedule: the central_bank_meeting diary events on US.FOMC";
+    s.description = "Event-lookup schedule: the central_bank_meeting diary events on US.FOMC";
     s.display_order = 2;
     s.schedule_source = "EVENT_LOOKUP";
     s.calendar_code = "US.FOMC";
@@ -408,8 +407,7 @@ TEST_CASE("tenor is FOMC when SPECIAL/NONE with multiplier at least one", tags) 
     // from refdata_tenors_populate.sql, task D2): kind = SPECIAL and
     // unit = NONE and multiplier >= 1.
     const auto is_fomc = [](const tenor& t) {
-        return t.kind == "SPECIAL" && t.unit == "NONE" && t.multiplier &&
-               *t.multiplier >= 1;
+        return t.kind == "SPECIAL" && t.unit == "NONE" && t.multiplier && *t.multiplier >= 1;
     };
 
     // The schedule tenors: 1F..8F are all FOMC tenors.

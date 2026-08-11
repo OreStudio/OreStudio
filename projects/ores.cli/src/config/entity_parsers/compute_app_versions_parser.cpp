@@ -142,9 +142,8 @@ read_add_compute_app_version_options(const variables_map& vm) {
                 BOOST_THROW_EXCEPTION(parser_exception(
                     "--package-sha256 must be 64 lowercase hex characters: " + raw));
             }
-            auto it = std::ranges::find_if(r.platform_packages, [&](const auto& pp) {
-                return pp.platform_code == code;
-            });
+            auto it = std::ranges::find_if(
+                r.platform_packages, [&](const auto& pp) { return pp.platform_code == code; });
             if (it == r.platform_packages.end()) {
                 BOOST_THROW_EXCEPTION(parser_exception(
                     "--package-sha256 refers to an unknown platform code: " + code +

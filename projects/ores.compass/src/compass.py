@@ -4877,13 +4877,26 @@ def cmd_test(argv):
     """compass test — test pillar: inspect build test results."""
     ap = argparse.ArgumentParser(
         prog="compass test",
-        description="Test pillar: parse and display Catch2 test results.")
+        description="Test pillar: run ctest under the build lock, or "
+                    "inspect build test results.")
     sub = ap.add_subparsers(dest="subcmd", required=True)
 
-    rp = sub.add_parser("results",
-                        help="Parse test-results*.xml and show an overview of the last test run")
+    rp = sub.add_parser("run",
+                        help="Run ctest under the build lock: 'run [--preset P] "
+                             "[--cdash GROUP] [-- extra ctest args]'")
     rp.add_argument("--preset", default="",
                     help="CMake preset name (default: read ORES_PRESET from .env)")
+    rp.add_argument("--cdash", default="", metavar="GROUP",
+                    help="CDash build group (Experimental, Continuous, Nightly): "
+                         "run the CTest.cmake script form instead of plain ctest; "
+                         "the script builds, tests, and submits to CDash")
+    rp.add_argument("ctest_args", nargs=argparse.REMAINDER,
+                    help="Extra ctest arguments after '--' (e.g. '-VV', '-R foo')")
+
+    rp2 = sub.add_parser("results",
+                         help="Parse test-results*.xml and show an overview of the last test run")
+    rp2.add_argument("--preset", default="",
+                     help="CMake preset name (default: read ORES_PRESET from .env)")
 
     lp = sub.add_parser("logging",
                         help="Toggle test logging: 'logging on [level]', "
@@ -4897,6 +4910,8 @@ def cmd_test(argv):
 
     args = ap.parse_args(argv)
 
+    if args.subcmd == "run":
+        return _cmd_test_run(args)
     if args.subcmd == "results":
         return _cmd_test_results(args)
     if args.subcmd == "logging":
@@ -4935,6 +4950,69 @@ def _cmd_test_logging(args):
     import env_init
     return env_init._logging_only(
         env_file, "enable" if args.action == "on" else "disable", args.level)
+
+
+def _test_run_command(preset, cdash_group, extra):
+    """Build the ctest command for `compass test run`; pure for unit tests.
+
+    Plain form: ctest --preset <preset> [extra...]. CDash form: the
+    CTest.cmake script with the build group and preset as script
+    variables — the same shape CI uses (continuous/nightly workflows),
+    which builds, runs tests, and submits to CDash.
+    """
+    if cdash_group:
+        if cdash_group not in ("Experimental", "Continuous", "Nightly"):
+            raise ValueError(f"Unsupported CDash build group: {cdash_group}")
+        return ["ctest", "--preset", preset, "--script",
+                f"CTest.cmake,build_group={cdash_group},preset={preset}"] + extra
+    return ["ctest", "--preset", preset] + extra
+
+
+def _cmd_test_run(args):
+    """compass test run — run ctest under the host-wide build lock.
+
+    ctest executes the built binaries; a concurrent cmake build in
+    another worktree can replace them mid-run, so the same lock slots
+    `compass build` uses are held for the whole run (see
+    _acquire_build_lock), and output streams to the slot's well-known
+    log — the file `compass build --status` tails.
+
+    --cdash GROUP switches to the CTest.cmake script form: the script
+    builds, tests, and submits to CDash under that group. Local
+    submissions use Experimental for visibility without polluting the
+    continuous/nightly dashboards.
+    """
+    preset = args.preset or _tr_read_preset()
+    if not preset:
+        print("❌ No preset supplied and ORES_PRESET not set in .env.\n"
+              "   Pass --preset <name> or run compass env configure.",
+              file=sys.stderr)
+        return 1
+
+    extra = list(args.ctest_args or [])
+    if extra and extra[0] == "--":
+        extra = extra[1:]
+    try:
+        cmd = _test_run_command(preset, args.cdash, extra)
+    except ValueError as exc:
+        print(f"❌ {exc}", file=sys.stderr)
+        return 1
+
+    lock_file, slot_name, _ = _acquire_build_lock()
+    log_path = _build_log_path(slot_name)
+    print(f"📝 Test output: {log_path} (tail -f to follow)")
+    log = open(log_path, "w")
+    try:
+        print(f"🔨 {' '.join(cmd)}")
+        rc = _run_logged(cmd, PROJECT_ROOT, log)
+        if rc != 0:
+            print(f"❌ ctest failed with exit code {rc}: {' '.join(cmd)}",
+                  file=sys.stderr)
+            return rc
+        return 0
+    finally:
+        log.close()
+        lock_file.close()
 
 
 def _cmd_test_results(args):
@@ -7136,7 +7214,8 @@ def main():
                                "--user scope, so oomd can kill it without "
                                "taking Emacs down with it")
     subparsers.add_parser("test",
-                          help="Test: 'test results' shows last run overview; "
+                          help="Test: 'test run' runs ctest under the build lock; "
+                               "'test results' shows last run overview; "
                                "'test logging on|off|status' toggles test logging; 'test --help'")
     subparsers.add_parser("site",
                           help="Site: build and serve the org-mode site locally; "

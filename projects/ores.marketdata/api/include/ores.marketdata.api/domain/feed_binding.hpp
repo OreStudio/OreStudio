@@ -72,8 +72,8 @@ struct feed_binding final {
 
     /**
      * @brief Unique producer identity; the ingest loop subscribes to
-     * synthetic.v1.tick.<source_name>. Matches the source_name field in
-     * start_market_feed_config_request.
+     * synthetic.v1.tick.<source_name>. Matches the source_name of the feed
+     * config the binding was created from.
      */
     std::string source_name;
 

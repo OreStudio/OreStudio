@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: 3D80654C-76CB-4482-ADAE-6C890E9E7C2C
+:END:
+#+title: Task: Reduce the PR gate to classify and pr-gate only
+#+description: The pr.yml workflow still runs site, roundtrip, cmake-sources-drift, and codegen-drift on every PR, gating every merge even though the submit-PR skills now run these checks locally. Delete those jobs from the PR gate: pr.yml keeps only classify (the path classifier) and pr-gate (the required check that aggregates it). Branch protection keeps pr-gate as the single required check. The site job's CTestSite CDash submission also goes, since experimental submissions now happen locally via compass test run --cdash Experimental.
+#+type: task
+#+level: s1
+#+filetags: :local-checks-for-pr-velocity:sprint_25:v0:
+#+owner: marco
+#+branch: feature/reduce-pr-gate
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The pr.yml workflow still runs site, roundtrip, cmake-sources-drift, and codegen-drift on every PR, gating every merge even though the submit-PR skills now run these checks locally. Delete those jobs from the PR gate: pr.yml keeps only classify (the path classifier) and pr-gate (the required check that aggregates it). Branch protection keeps pr-gate as the single required check. The site job's CTestSite CDash submission also goes, since experimental submissions now happen locally via compass test run --cdash Experimental.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- pr.yml runs only classify and pr-gate on pull requests; the site, roundtrip, cmake-sources-drift, and codegen-drift jobs are gone.
+- pr-gate aggregates only the classify job; branch protection still requires pr-gate.
+- No other workflow or required check depends on the removed jobs.
+- The knowledge doc's fate table matches what pr.yml actually runs.
+
+* Plan
+
+- Edit =pr.yml=: delete the =site=, =roundtrip=, =cmake-sources-drift=,
+  and =codegen-drift= jobs; =pr-gate= aggregates only =classify=.
+  Branch protection keeps =pr-gate= as the single required check, so
+  nothing changes there.
+- Grep the other workflows for references to the removed jobs before
+  deleting them; nothing may depend on their outputs.
+- Update the knowledge doc's fate table so "what the PR gate runs"
+  matches =pr.yml= exactly.
+- Deleting whole workflows is out of scope here: =claude-code-review.yml=
+  (auto review) and =misspell.yml= retire only once the local-review
+  task wires the code-review skill into the submit-PR flow — they are
+  the review coverage that skill replaces. The on-demand =claude.yml=
+  trigger stays. Recorded here so the deletion is tracked, not lost.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

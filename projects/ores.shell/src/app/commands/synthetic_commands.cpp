@@ -344,6 +344,10 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
         out, session, std::string(fx_req.nats_subject), fx_req);
     if (!fx_result)
         return std::nullopt;
+    if (!fx_result->success) {
+        fail(out) << "Failed to list feeds: " << fx_result->message << std::endl;
+        return std::nullopt;
+    }
 
     if (const auto id = try_uuid(token)) {
         const auto needle = boost::uuids::to_string(*id);
@@ -374,6 +378,10 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
         out, session, std::string(ir_req.nats_subject), ir_req);
     if (!ir_result)
         return std::nullopt;
+    if (!ir_result->success) {
+        fail(out) << "Failed to list feeds: " << ir_result->message << std::endl;
+        return std::nullopt;
+    }
 
     if (const auto id = try_uuid(token)) {
         const auto needle = boost::uuids::to_string(*id);

@@ -97,7 +97,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1952][#1952]] | [ores.synthetic] Fix realistic_2026 theme provisioning via system-tenant FK resolution |
+| [[https://github.com/OreStudio/OreStudio/pull/1952][#1952]] | [ores.synthetic] Fix realistic_2026 theme provisioning (system-tenant FK) |
 
 * Review
 

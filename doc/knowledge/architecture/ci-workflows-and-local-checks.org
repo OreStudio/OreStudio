@@ -76,6 +76,7 @@ addition (python tooling):
 | code (C++)      | =projects/ores.*= C++ sources, headers, =*.cmake=, =CMakeLists.txt= | full build + ctest; roundtrip; cmake-sources-drift; codegen-drift; review; misspell; CDash experimental |
 | ci              | =.github/*=, =projects/ores.codegen/library/templates/*=         | site; roundtrip; drift checks; review                  |
 | python tooling  | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | component test suite; drift checks; review; misspell  |
+| anything else   | any path matching no bucket above                                | code class checks; review; misspell                   |
 
 A mixed change runs the union of its classes' checks.
 

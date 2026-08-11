@@ -80,6 +80,9 @@ via its "Verifies task" field.
 | 1 | =_cmd_test_run= crashes when the build lock is unavailable (no =fcntl=): unguarded =lock_file.close()= and a =ores-build.log.None= path | compass.py | accepted | Guarded like =cmd_build=; regression test =test_run_degrades_without_fcntl= added |
 | 2 | Knowledge doc local-flow step 2 still says "build + =ctest --preset=" | ci-workflows-and-local-checks.org | accepted | Now: =compass build= + =compass test run= |
 | 3 | ctest runs twice per PR (plain run + CDash script form) | pr-raise/SKILL.org | declined | Intentional: plain run for fast feedback; the script form rebuilds incrementally and submits for CDash visibility (story acceptance) |
+| 4 | Codegen-drift step runs =build --direct codegen_templates=, a target that does not exist (only =tangle_codegen_templates=) — following the skill skips the check | pr-raise/SKILL.org | accepted | Added =codegen_templates= alias to =BUILD_TARGET_ALIASES=; =test_direct_build.py= asserts every alias resolves to a known direct-build target |
+| 5 | Classification table has no catch-all bucket, unlike =pr.yml='s classify =*) code=true= default — unmatched paths map to zero classes and skip all checks | pr-raise/SKILL.org, ci-workflows-and-local-checks.org | accepted | Added "anything else" row (code class checks) to both tables |
+| 6 | =_cmd_test_run= duplicates =cmd_build='s lock/log lifecycle; factor into a shared helper | compass.py | declined | Two call sites only; factoring awaits a third caller (reviewer: not blocking) |
 
 * Result
 

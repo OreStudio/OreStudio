@@ -56,6 +56,11 @@ lifecycle is ordered this way.
    | code (C++)     | =projects/ores.*= C++ sources and headers, =*.cmake=, =CMakeLists.txt= | Full build + ctest; roundtrip; drift checks; CDash experimental |
    | ci             | =.github/*=, =projects/ores.codegen/library/templates/*=      | Site build; roundtrip; drift checks |
    | python tooling | =projects/ores.compass/*=, =projects/ores.codegen/*= (non-template) | Compass test suite; drift checks |
+   | anything else  | any path matching no bucket above                             | Code class checks (full build + ctest; roundtrip; drift checks) |
+
+   The catch-all defaults an unmatched path to the code class, mirroring
+   =pr.yml='s classify default — a change that matches no bucket still
+   gets the full build.
 
    The checks:
 

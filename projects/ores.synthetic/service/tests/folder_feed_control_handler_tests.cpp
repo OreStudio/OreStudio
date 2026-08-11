@@ -169,8 +169,11 @@ struct seeded_cascade {
 };
 
 // Seeds a root folder with one child collection holding one enabled FX
-// config (with its GMM component), one disabled FX config, and one enabled
-// IR curve config (with its template entry and VASICEK parameter values).
+// config (with its GMM component), one disabled FX config, one conflicting
+// enabled FX config (the same EUR/USD pair as the first — the uniform
+// conflict rule lets only one of the two run; the cascade skips the
+// second), and one enabled IR curve config (with its template entry and
+// VASICEK parameter values).
 seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
                             const boost::uuids::uuid& test_party) {
     namespace dom = ores::synthetic::domain;
@@ -306,8 +309,24 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     fx_disabled.source_name = "cascade.test.fx.gbp_usd";
     fx_disabled.enabled = false;
 
+    // A second enabled config on the same EUR/USD pair: whichever of the
+    // two the cascade reaches first starts; the other is conflict-skipped,
+    // so the per-kind counts stay kind-stable regardless of read order. It
+    // needs its own container — the schema forbids two FX configs on the
+    // same pair under the same one.
+    dom::market_data_generation_config conflict_container = container;
+    conflict_container.id = uuid();
+    conflict_container.name = "Cascade Test Conflict Container";
+    repo::market_data_generation_config_repository().write(party_ctx, conflict_container);
+
+    dom::fx_spot_generation_config fx_conflicting = fx_enabled;
+    fx_conflicting.id = uuid();
+    fx_conflicting.config_id = conflict_container.id;
+    fx_conflicting.source_name = "cascade.test.fx.eur_usd_conflict";
+
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_enabled);
     repo::fx_spot_generation_config_repository().write(party_ctx, fx_disabled);
+    repo::fx_spot_generation_config_repository().write(party_ctx, fx_conflicting);
 
     dom::gmm_component comp;
     comp.tenant_id = h.tenant_id();
@@ -325,6 +344,12 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     comp.change_commentary = "folder cascade test seed";
     comp.recorded_at = now;
     repo::gmm_component_repository().write(party_ctx, comp);
+
+    dom::gmm_component conflict_comp = comp;
+    conflict_comp.id = uuid();
+    conflict_comp.fx_spot_config_id = fx_conflicting.id;
+    conflict_comp.description = "cascade test conflicting component";
+    repo::gmm_component_repository().write(party_ctx, conflict_comp);
 
     dom::ir_curve_generation_config ir;
     ir.tenant_id = h.tenant_id();
@@ -450,36 +475,46 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
     const std::string fx_kind(ores::synthetic::feed::fx_spot_feed_kind);
     const std::string ir_kind(ores::synthetic::feed::ir_curve_feed_kind);
 
-    // First pass: the enabled FX feed and the IR feed start; the disabled
-    // FX row is skipped. Per-kind counts split the aggregate.
+    // First pass: one of the two EUR/USD FX configs starts (the uniform
+    // conflict rule lets only one run — the second is skipped, proving the
+    // qualifier_conflict rejection end to end), the disabled FX row is
+    // skipped, and the IR feed starts. Per-kind counts split the aggregate.
     const auto start1 =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
             f.nats, test_start_subject, token, start_feeds_under_folder_request{.folder_id = folder});
     REQUIRE(start1.success);
     CHECK(start1.started == 2);
     CHECK(start1.already_running == 0);
-    CHECK(start1.skipped == 1);
+    CHECK(start1.skipped == 2);
     REQUIRE(start1.by_kind.contains(fx_kind));
     REQUIRE(start1.by_kind.contains(ir_kind));
     CHECK(start1.by_kind.at(fx_kind).started == 1);
     CHECK(start1.by_kind.at(fx_kind).already_running == 0);
-    CHECK(start1.by_kind.at(fx_kind).skipped == 1);
+    CHECK(start1.by_kind.at(fx_kind).skipped == 2);
     CHECK(start1.by_kind.at(ir_kind).started == 1);
     CHECK(start1.by_kind.at(ir_kind).already_running == 0);
     CHECK(start1.by_kind.at(ir_kind).skipped == 0);
     CHECK(f.ctrl->running_count() == 2);
 
-    // Repeat: both are already running; the disabled row is still skipped.
+    // The collapsed controller lists every kind; the per-kind filter must
+    // scope it (which of the two EUR/USD sources runs depends on read order,
+    // so the exact source_name is not asserted).
+    CHECK(f.ctrl->list().size() == 2);
+    CHECK(f.ctrl->list(fx_kind).size() == 1);
+    CHECK(f.ctrl->list(ir_kind).size() == 1);
+
+    // Repeat: both are already running; the disabled and conflicting rows
+    // are still skipped.
     const auto start2 =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
             f.nats, test_start_subject, token, start_feeds_under_folder_request{.folder_id = folder});
     REQUIRE(start2.success);
     CHECK(start2.started == 0);
     CHECK(start2.already_running == 2);
-    CHECK(start2.skipped == 1);
+    CHECK(start2.skipped == 2);
     CHECK(start2.by_kind.at(fx_kind).started == 0);
     CHECK(start2.by_kind.at(fx_kind).already_running == 1);
-    CHECK(start2.by_kind.at(fx_kind).skipped == 1);
+    CHECK(start2.by_kind.at(fx_kind).skipped == 2);
     CHECK(start2.by_kind.at(ir_kind).started == 0);
     CHECK(start2.by_kind.at(ir_kind).already_running == 1);
     CHECK(start2.by_kind.at(ir_kind).skipped == 0);

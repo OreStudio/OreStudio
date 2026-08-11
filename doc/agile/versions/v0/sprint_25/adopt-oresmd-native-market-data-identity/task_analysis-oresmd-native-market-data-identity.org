@@ -339,6 +339,11 @@ The plan pins down the rest in step 0:
   canonical spelling must come from the caller; refdata tenors
   provide it. A typed "6m" and a program-built "6M" are two
   strings. The canonical form is the refdata spelling.
+- Decoupling: the URI builder receives the canonical values as a
+  supplied container (tenor, point, and the other free-text
+  components). It matches against the container and rejects unknown
+  spellings. oresmd keeps no direct dependency on the refdata
+  repositories; the caller supplies the relational data.
 - Round-trip tests: =parse(to_uri(id)) == id= and
   =to_uri(parse(uri)) == uri= for canonical input, plus equality of
   semantically-equal identifiers. These tests make the canonical

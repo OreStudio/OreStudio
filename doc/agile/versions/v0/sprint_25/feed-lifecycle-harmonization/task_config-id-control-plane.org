@@ -49,9 +49,65 @@ deleted.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One kind-agnostic per-config control-plane replaces the two per-kind
+handlers: the client sends =config_id=, the server resolves the
+config, its children, and the refdata context, checks permissions,
+and starts the producer via the factory. The FX client-supplied-params
+pass-through (no auth) is deleted. =validate= is deleted with it —
+Qt's Validate Vintage moves to =get_vintage_validity=, which already
+serves both kinds.
+
+1. *One protocol*: new
+   =ores.synthetic.api/messaging/feed_config_protocol.hpp=
+   (=ores::synthetic::messaging=) carries the three per-config verbs,
+   kind-agnostic — =start_feed_request{config_id}=,
+   =stop_feed_request{config_id, source_name}=,
+   =list_feeds_request{} — on subjects
+   =synthetic.v1.feed_configs.start|stop|list=. The per-kind structs
+   are deleted with their headers (=ir_curve_feed_config_protocol.hpp=
+   deleted; =market_feed_config_protocol.hpp= keeps the folder
+   cascade and vintage-validity shapes and =feed_kind_counts=,
+   dropping its per-config start/stop/list/validate structs).
+
+2. *One handler*: =feed_config_handler.hpp= replaces
+   =market_feed_config_handler.hpp= and
+   =ir_curve_feed_config_handler.hpp= (both deleted). It applies the
+   IR pattern uniformly: auth via =make_request_context=; resolution
+   probes the FX repository first, then the IR repository, by
+   =config_id= — the =market_data_generation_config= container has no
+   kind discriminator, so the probe is the resolution. The resolved
+   kind picks the permission check (=synthetic::fx_spot_generation_configs:read=
+   vs =synthetic::ir_curve_generation_configs:read=), the enabled
+   gates (config + container), the children reads, and the factory
+   build input. Start dispatches through
+   =make_default_feed_factory().make= (IR via =with_system_tenant= +
+   =build_ir_curve_refdata_context=); the IR builder's
+   =vintage_data_missing_error= (FX does not throw it) is caught
+   with the uniform vintage-data-missing message. Stop resolves
+   =config_id= to =source_name= and calls =ctrl_->stop()=; list is
+   =ctrl_->list()= with an empty kind — every running feed, both
+   kinds.
+
+3. *Uniform error shape*: missing config ("Feed config not found:
+   <id>"), disabled ("Feed config is not enabled: <id>"), already
+   running, qualifier conflict (with the holding source name), and
+   vintage-data-missing read the same for both kinds.
+
+4. *Consumers migrate to the =config_id= path*: the registrar
+   subscribes 3 subjects (7 gone); Qt =MarketSimulatorWindow= sends
+   the unified requests for FX pairs and IR curves (its two list
+   calls merge into one; its per-row FX Validate Vintage loop moves
+   to =get_vintage_validity=, dropping =resolved_price=); ores.shell
+   =start_feed= drops the client-side GMM parameter assembly and
+   sends =config_id= (=stop_feed= likewise); =tenant_handler= IR
+   provisioning sends the unified start request (subject change).
+
+5. *Tests*: =feed_config_handler_tests.cpp= mirrors the folder-cascade
+   integration test (real NATS + scoped DB + per-run tenant +
+   test-scoped subjects): seed a container with an FX config and an
+   IR config plus children and refdata; verify start (both kinds),
+   already-running, not-found, disabled, missing children, list, and
+   stop. Registered in =tests/component_files.cmake=.
 
 * Notes
 

@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: F2284D6F-CF30-4991-9F0A-50AACEFDD0D9
+:END:
+#+title: Task: The NATS wire carries oresmd URIs
+#+description: Tick subjects and the ir_curve_tick payload carry oresmd URIs; every subscriber of marketdata.v1.tick.* and synthetic.v1.* updates; feed controllers resolve and collide on URIs.
+#+type: task
+#+level: s1
+#+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: EC35D956-8E23-4455-830F-F7D2BCBB0A4A
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the NATS wire oresmd-native. Tick subjects and the
+=ir_curve_tick= payload carry URIs, not ORE-shaped keys. Every
+subscriber updates.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- Tick subjects are oresmd-native: no =ore_key= component in the
+  subject.
+- The =ir_curve_tick= payload carries the oresmd URI, point
+  included; =series_type=, =metric=, and =qualifier= fields are
+  gone.
+- Every subscriber of =marketdata.v1.tick.*= and =synthetic.v1.*=
+  updates.
+- Feed controllers resolve series and check collisions on URIs.
+- Forward projections stay available at the ORE-format edge (file
+  and CSV export).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

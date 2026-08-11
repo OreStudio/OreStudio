@@ -8,12 +8,12 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:ste100:writing:
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-08-10
 
 #+begin_export markdown
 ---
 name: doc-review-ste100
-description: Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short sentences. Use when agent output is hard to parse; triggers: simplify this, STE100 rewrite.
+description: Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short sentences. Use when agent output is hard to parse; triggers: simplify this, STE100 rewrite. This is the mandated default tone for all user-facing agent prose in ORE Studio.
 license: MIT
 ---
 #+end_export
@@ -32,6 +32,16 @@ license: MIT
 This skill is not for creative or marketing copy — STE is deliberately
 flat and literal. Do not apply it to text where voice, nuance, or
 persuasion is the point.
+
+* Scope: the default tone for agent prose
+
+ORE Studio requires this style in all user-facing agent prose. The
+rules apply to every explanation and instruction an agent writes —
+not only to text it rewrites on request. Write compliant text first.
+Do not write dense text and then rewrite it.
+
+Do not apply the rules to structured output. JSON, diffs, code,
+commit messages, and command output keep their own conventions.
 
 * How to use this skill
 

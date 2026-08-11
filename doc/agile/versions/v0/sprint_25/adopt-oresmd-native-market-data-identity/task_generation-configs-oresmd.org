@@ -1,0 +1,84 @@
+:PROPERTIES:
+:ID: EC35D956-8E23-4455-830F-F7D2BCBB0A4A
+:END:
+#+title: Task: Generation configs move to oresmd URIs
+#+description: fx_spot_generation_config and ir_curve_generation_config switch to one oresmd_uri each; the component columns drop; validation moves from SQL constraints to the oresmd layer; the Qt editors round-trip URIs.
+#+type: task
+#+level: s1
+#+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 413E0BB1-5156-4442-A582-9AD403AFA905
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the synthetic generation configs identify market data by oresmd
+URI. =fx_spot_generation_config= and =ir_curve_generation_config=
+each carry one =oresmd_uri=; the component columns drop; validation
+moves to the oresmd layer; the Qt editors round-trip URIs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- =fx_spot_generation_config=: =ore_key= becomes =oresmd_uri=;
+  =base_currency_code= and =quote_currency_code= drop; the pair
+  comes from the parsed identifier; the base != quote check lives in
+  the parser.
+- =ir_curve_generation_config=: =currency_code=, =index_family=,
+  =tenor=, and =role= become one =oresmd_uri=.
+- Validation (family list, tenor rules, role) lives in the oresmd
+  layer.
+- =FxSpotRateEditor= and =IrCurveEditor= edit and save URIs.
+- =ir_curve_template_entries= stays unchanged: the instrument grid
+  is not identity.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

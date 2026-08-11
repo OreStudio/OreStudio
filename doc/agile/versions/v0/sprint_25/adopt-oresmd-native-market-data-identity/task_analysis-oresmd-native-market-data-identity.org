@@ -1,0 +1,492 @@
+:PROPERTIES:
+:ID: 0446D795-EECA-4D78-A8FA-1E9CAF010D6E
+:END:
+#+title: Task: Analysis: market data identity on oresmd — inventory, consumers, fields-vs-URI target state
+#+description: Inventory every market-data-bearing entity and how it connects to oresmd today; enumerate consumers across the market simulator, all Qt UIs, and ores.shell; answer the key question per entity -- component fields vs a single URI string (the hybrid of both must be explicitly ruled on); produce a sequenced target state. Analysis only, no schema or code change.
+#+type: task
+#+level: s1
+#+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
+#+owner: marco
+#+branch: feature/analysis-oresmd-native-market-data-identity
+#+pr: 1957
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: merry_newton
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Deliver the analysis this story's scope depends on: a complete picture
+of how the market data tables connect to oresmd today, and a decided
+target state for the hard cutover. Ground it in the actual codebase,
+not design-time assumptions.
+
+- *Inventory*: every market-data-bearing entity and its identifier
+  fields -- =market_series= (=series_type=/=metric=/=qualifier=),
+  =market_observation= (=point_id=), =market_fixings=,
+  =observation_lineages=, =feed_bindings=, =fx_spot_generation_config=
+  (=ore_key=), =ir_curve_generation_config= (=currency_code=,
+  =index_family=, =tenor=, =role=), =ir_curve_template_entries=,
+  =market_data_generation_configs=, and any other table that
+  identifies market data -- plus the refdata catalogs that back
+  oresmd's enums. For each, say how it connects to oresmd today
+  (projections used as a generation source; no stored URI anywhere).
+- *Consumers*: enumerate the read/write consumers across the three
+  lenses the story cares about -- the market simulator
+  (=ores.synthetic= service), every Qt UI that displays or edits
+  market data, and =ores.shell= (which today has no market data
+  surface at all -- state what it must gain).
+- *The key question*: per entity, decide between component fields
+  (=ccy=, =index=, =tenor=, =role=, =point=) and a single URI-string
+  column. The hybrid -- both stored -- must be explicitly ruled on;
+  the working assumption is that it is redundant, two canonical
+  copies of the same identity that drift.
+- *Impact*: what the hard cutover touches, with no backwards
+  compatibility constraint.
+- *Target state*: a sequenced plan -- which entity moves first, what
+  each cutover looks like, what gets deleted -- ready to be split
+  into implementation tasks on this story.
+
+This task is analysis and planning only. It makes no schema or code
+change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- A complete inventory exists of every market-data-bearing entity,
+  its current identifier fields, and its read/write consumers, with
+  file references -- not a representative sample.
+- Every consumer lens is covered: market simulator, Qt UIs, and
+  =ores.shell= -- including what =ores.shell= must gain to talk
+  market data at all.
+- The fields-vs-URI question is answered per entity with rationale;
+  the hybrid (both fields and the URI string) is explicitly ruled on
+  -- confirmed as redundant drift, or justified with a concrete
+  argument.
+- The projection boundary is addressed: where (if anywhere) oresmd's
+  ORE-key projections remain as a conversion layer, versus being
+  abandoned outright.
+- A sequenced target state is written -- ordering, per-cutover shape,
+  final deletions -- ready to be split into implementation tasks.
+- No schema or code change is made as part of this task; the
+  deliverable is the analysis and plan.
+
+* Plan
+
+This is the analysis deliverable. It inventories every
+market-data-bearing entity, maps every consumer across the three
+lenses, answers the fields-vs-URI question per entity, and sets the
+sequenced target state. It covers ORE-format import and export and
+CSV import and export, per the task scope. It made no schema or code
+change.
+
+** 1. Inventory: entities, identifier fields, and oresmd today
+
+Every entity that identifies market data, its identifier fields, and
+how it connects to oresmd today. SQL shapes live under
+=projects/ores.sql/create/=; domain structs under
+=ores.marketdata.api/domain/= and =ores.synthetic.api/domain/=.
+
+| Entity | Table | Identifier fields today | oresmd connection today |
+|--------+-------+-------------------------+-------------------------|
+| market_series | =ores_marketdata_market_series_tbl= | =series_type=, =metric=, =qualifier= (natural key); =asset_class=, =series_subclass=, =is_scalar= | None stored. Ingest loops and import generate the columns from oresmd projections or from ORE key splits. |
+| market_observation | =ores_marketdata_market_observations_tbl= | =series_id= (FK), =point_id= | None. =point_id= carries ORE coordinates: "SPOT", "6M", "25Y/10Y/ATM". |
+| market_fixing | =ores_marketdata_market_fixings_tbl= | =series_id= (FK) | None. |
+| observation_lineage | =ores_marketdata_observation_lineages_tbl= | =series_id=, =point_id=, =source_series_ids= (jsonb) | None. |
+| feed_binding | =ores_marketdata_feed_bindings_tbl= | =ore_key=, =source_name= | None stored. Ingest splits =ore_key= via =oresmd_projections::split_market_series_key=. |
+| fx_spot_generation_config | =ores_synthetic_fx_spot_generation_configs_tbl= | =base_currency_code=, =quote_currency_code=, =ore_key= | The UI derives =ore_key= from an oresmd identifier via =to_quote_key= (=FxSpotRateEditor.cpp:128=). |
+| ir_curve_generation_config | =ores_synthetic_ir_curve_generation_configs_tbl= | =currency_code=, =index_family=, =tenor=, =role= | The columns mirror the oresmd IR identifier's components. =IrCurveEditor= edits them as oresmd fields (=IrCurveEditor.cpp:94=, =IrCurveEditor.cpp:1297=). |
+| ir_curve_template_entry | =ores_synthetic_ir_curve_template_entries_tbl= | =start_tenor_code=, =end_tenor_code=, =instrument_code= | None. Instrument grid over refdata tenors and codes; not identity. |
+| market_data_generation_config | =ores_synthetic_market_data_generation_configs_tbl= | None | Container: scope, binding mode, name. |
+| gmm_component | =ores_synthetic_gmm_components_tbl= | None | Process parameters. |
+| process_parameter_value | =ores_synthetic_ir_curve_generation_config_process_parameter_values_tbl= | None | Process parameters. |
+| DQ artefact | =ores_dq_market_data_observations_artefact_tbl= | =series_type=, =metric=, =qualifier=, =point_id= | None. It mirrors observation identity for dataset publishing. |
+| folder | =ores_synthetic_folders_tbl= | None | Organisation of feeds. |
+
+Refdata catalogs that back oresmd's enums:
+
+| Catalog | Table | Backs |
+|---------+-------+-------|
+| overnight index conventions | =refdata_overnight_index_conventions_tbl= | =index_family= (overnight families) |
+| ibor index conventions | =refdata_ibor_index_conventions_tbl= | =index_family= (ibor families) |
+| floating index types | =refdata_floating_index_types_tbl= | =index_family= (hand-seeded; the earlier migration found the conventions tables are the right source) |
+| curve roles | =refdata_curve_roles_tbl= | =role= |
+| currency market tiers | =refdata_currency_market_tiers_tbl= | market tier |
+| currencies, currency pairs | =refdata_currencies_tbl=, =refdata_currency_pairs_tbl= | =ccy=, =pair= |
+| tenors, instrument codes | =refdata_tenors_tbl=, =refdata_instrument_codes_tbl= | tenors, the instrument grid |
+| bootstrap configs | =refdata_ir_curve_bootstrap_configs_tbl= | =output_series_id=, =source_series_id= (FKs), =curve_family_role=, =split_tenor_code= |
+| bootstrap pillars | =refdata_ir_curve_bootstrap_pillars_tbl= | pillar grid: tenors, =curve_role_code= |
+| CRM configs | =refdata_crm_topology_configs_tbl=, =refdata_crm_driver_pairs_tbl=, =refdata_crm_enabled_derived_pairs_tbl= | FX driver and derived pairs |
+
+** 2. Consumers across the three lenses
+
+*** 2.1 Market simulator: =ores.synthetic= service and the ingest side
+
+- =feed_controller.hpp= (=ores.synthetic/service/src/feed_controller.hpp=):
+  auto-creates =feed_binding= rows with =ore_key= (=:380-406=);
+  =resolve_series()= splits the =ore_key= and finds or creates the
+  =market_series= by its three columns (=:538-587=);
+  =vintage_data_available()= splits the =ore_key= and queries
+  observations by series components and =point_id == "SPOT"=
+  (=:420-490=).
+- =fx_spot_feed=: publishes =fx_spot_tick= (mid, datetime) on
+  =synthetic.v1.tick.<source_name>=. The tick carries no identity;
+  the binding's =ore_key= is the identity.
+- =ir_curve_feed= (=ir_curve_feed.hpp=): constructed with
+  (=series_type=, =metric=, =qualifier=, =role=) (=:74-85=). Publishes
+  one =ir_curve_tick= per template entry on
+  =synthetic.v1.curve_family.<source>=; the tick payload carries
+  =series_type=, =metric=, =qualifier=, =point_id=.
+- =curve_feed_controller.hpp=: collision check on (=qualifier=,
+  =role=) (=:41-46=).
+- =feed_ingest_loop.cpp= (=ores.marketdata/service/src/app/feed_ingest_loop.cpp=):
+  reads =feed_binding= rows; =split_market_series_key(ore_key)=
+  (=:61-66=); finds or auto-creates the series, deriving asset_class
+  from the lowercased series_type (=:188-213=); writes observations
+  with =point_id = "SPOT"= (=:223=); republishes on
+  =marketdata.v1.tick.<tenant>.<ore_key>= with '/' mapped to '.'
+  (=:49-56=); feeds the CRM bridge base/quote from the qualifier
+  (=:240-250=).
+- =curve_feed_ingest_loop.cpp=: writes observations from the tick's
+  =series_type=/=metric=/=qualifier=/=point_id=; auto-creates series
+  (=:65-109=).
+- =import_service.cpp= (=ores.marketdata/core/src/service/import_service.cpp=):
+  the ORE-format boundary. Parses market.txt and fixings.txt;
+  decomposes keys via the series_key_registry; classifies ~40 ORE
+  series types through a hardcoded table (=:55-110=); corrects
+  reversed =FX/RATE= qualifiers against refdata currency pairs
+  (=:244-276=); upserts series and bulk-inserts observations and
+  fixings. Fixing series become =FIXING/RATE/<index_name>=
+  (=:321-322=).
+- CRUD services, registrars, and repositories in
+  =ores.marketdata/core/src/= (series, observation, fixing, lineage,
+  binding) query and write by the three columns.
+- =publish_from_dq_handler.cpp=: DQ dataset artefacts to market
+  series and observations.
+- =market_series_handler.cpp=: =marketdata.v1.series.export-to-storage=
+  (all series to JSON, gzip, object storage).
+- =curve_republish_resolver.cpp=: bootstrap configs to republished
+  derived curves.
+
+*** 2.2 Qt UIs
+
+- =ores.qt/mktdata=: =MarketSeriesMdiWindow= (list, filter by
+  =series_type=, create series via =MarketDataController=),
+  =MarketObservationMdiWindow=, =MarketFixingsMdiWindow= (filters
+  =series_type == "FIXING"=, =:46=), =MarketFixingDetailMdiWindow=,
+  =FxSpotChartWindow= (joins =series_type/metric/qualifier= for
+  display, =:65=), =FxSpotGridWindow=, =ClientMarketSeriesModel=
+  (filter by =series_type=, =:186-238=).
+- =ores.qt/marketdata=: =RateCurvesMdiWindow= (curve snapshots,
+  subscribes to =marketdata.v1.tick.*=), =CurveSnapshotMdiWindow=
+  (grid; CSV export, =:748=), =FeedBindingMdiWindow=,
+  =FeedBindingController=, =ClientFeedBindingModel= (create bindings
+  with =ore_key=), =CrmCrossRatesMatrixMdiWindow= (CSV export,
+  =:706=), =SyntheticBindingDialog=.
+- =ores.qt/synthetic=: =FxSpotRateEditor= (=to_quote_key= for the
+  =ore_key=, =:128-133=), =IrCurveEditor= (splits index_family and
+  tenor at the oresmd boundary, =:94-96=, =:1297=), generation config
+  dialogs.
+- =ores.qt/refdata=: =MarketSeriesPickerDialog= (picks series for
+  bootstrap configs by components).
+
+*** 2.3 =ores.shell=
+
+The story says the shell has no market data surface. That is wrong.
+The shell has three market data surfaces, all ORE-shaped, and zero
+oresmd usage:
+
+- =marketdata_commands.cpp=: =marketdata import --file --fixings
+  --source= — reads ORE market.txt/fixings.txt and sends
+  =import_market_data_request= over NATS. Scripts:
+  =import_ta002_ir_swap.ores=, =import_marketrisk_histsimvar.ores=,
+  =import_legacy_example_56.ores=.
+- =synthetic_commands.cpp=: =synthetic list configs=, =synthetic
+  start folder=, =synthetic stop folder=, =synthetic
+  validate-vintage= — feed control over generation configs.
+- =crm_commands.cpp=: =crm rates majors|scandies|exotics|matrix= —
+  view CRM cross rates. Scripts: =crm_rates_majors.ores= etc.
+
+What the shell must gain: oresmd-native identity in every command.
+=marketdata import= keeps ORE files as an input format but stores
+oresmd URIs. New commands: =marketdata list series= showing URIs,
+=marketdata add series <uri>=, =marketdata validate <uri>=, and feed
+control by URI. Every command output that names market data prints
+the oresmd URI, never the ORE key.
+
+** 3. Import and export to ORE format and CSV
+
+The boundary formats, per the task scope:
+
+- ORE text import: market*.txt and fixings*.txt.
+  =parse_market_data()= and =parse_fixings()=
+  (=ores.ore.core/market/market_data_parser.hpp=) parse the files.
+  The =series_key_registry= (=series_key_registry.hpp=) decomposes
+  each key into =series_type=/=metric=/=qualifier=/=point_id=.
+  =marketdata.v1.import= (=import_protocol.hpp=) carries the content
+  to =import_service=.
+- ORE text export: =serialize_market_data()= and
+  =serialize_fixings()= (=market_data_serializer.hpp=) write the ORE
+  text format. The Qt CSV exports call them.
+- CSV: =CurveSnapshotMdiWindow.cpp:748= and
+  =CrmCrossRatesMatrixMdiWindow.cpp:706= export displayed data to
+  .csv files in ORE text format. =ImportEntityDialog= (=ores.qt=) is
+  a generic entity CSV import for refdata entities; it does not touch
+  market data. There is no CSV import of market data and no CSV
+  export of series catalogs.
+- ORE XML: =importer= and =exporter= (=ores.ore.core/xml/) handle
+  conventions.xml (nine categories including IborIndex and
+  OvernightIndex — the refdata that backs =index_family=),
+  currencyconfig.xml, calendaradjustments.xml, and portfolio XML.
+  There is no curveconfig.xml or todaysmarket.xml round-trip wired to
+  our tables. The conventions import feeds the catalogs behind
+  oresmd's enums; it is not market data identity itself.
+- JSON export: =marketdata.v1.series.export-to-storage= serializes
+  all series to JSON and gzip.
+
+Consequence for the cutover: ORE text and CSV are boundary formats.
+The target state keeps them, but the boundary translates. ORE keys
+enter the system only at the import boundary; the system stores
+oresmd URIs. CSV exports keep ORE keys only at the file edge, as a
+projection. Nothing ORE-shaped is stored.
+
+** 4. The key question: fields vs a URI string
+
+*** 4.1 Framework
+
+1. Identity is the meaning of a row. Two writable representations of
+   the same identity in one row drift.
+2. The oresmd identifier is a variant of seven typed structs
+   (=market_data_identifier.hpp=). A field-per-component schema needs
+   one nullable column per component across all seven asset classes —
+   an untyped union in SQL. The URI is the variant serialised: one
+   column, =parse_oresmd= validates, =to_uri= canonicalises.
+3. The C++ domain objects already carry the typed variant. The DB
+   stores the URI string; =parse_oresmd= and =to_uri= convert at the
+   read and write boundary. No client code sees a raw string as a
+   domain object.
+4. Validation moves from SQL check constraints into the oresmd layer:
+   enum membership and cross-field rules. One source of truth.
+5. Classification (=asset_class=, =series_subclass=, =is_scalar=) is
+   derived, not identity. It stays only as generated columns where an
+   index needs it, never as writable columns.
+6. Surrogate FKs to the series row are relationships, not identity
+   copies. They stay: joins, RLS, hypertable size, and rename freedom
+   depend on them.
+
+*** 4.2 Decision per entity
+
+| Entity | Decision | Rationale |
+|--------+----------+-----------|
+| market_series | One =oresmd_uri= column. Drop =series_type=, =metric=, =qualifier=, =asset_class=, =series_subclass=, =is_scalar=. | The series IS an oresmd identifier. Heterogeneous across asset classes. Classification derives from the URI. Natural key = (party, uri). |
+| market_observation | Keep =series_id= FK. The =point_id= column carries the serialised oresmd point (tenor; expiry/strike/model_subtype). No component columns. | The point is the observation's own identity component. Scalar series have no point: the "SPOT" sentinel dies, the column is null. The full identifier is series URI plus point. |
+| market_fixing | Keep =series_id= FK. | The fixing series carries the index identity. No point dimension. |
+| observation_lineage | Keep =series_id= FK and the point column, same shape as observations. | It describes a specific observation. |
+| feed_binding | =ore_key= becomes =oresmd_uri=. | The binding names one identifier. Ingest parses the URI to find the series. |
+| fx_spot_generation_config | =ore_key= becomes =oresmd_uri=. Drop =base_currency_code= and =quote_currency_code=. | The pair is the identifier's primary key. The process reads the pair from the parsed identifier. The =base <> quote= check moves to the parser. |
+| ir_curve_generation_config | =currency_code=, =index_family=, =tenor=, =role= become one =oresmd_uri=. | The columns are exactly the IR identifier's components. Validation (family list, tenor rules, role) moves to the oresmd layer. |
+| ir_curve_template_entry | Unchanged. | Refdata-backed instrument grid, not identity. |
+| market_data_generation_config | Unchanged. | Container. |
+| gmm_component, process_parameter_value | Unchanged. | Process parameters. |
+| DQ artefact | Mirror observations: =series_id= FK plus point. | It is a snapshot of observations. |
+| bootstrap configs | Keep =output_series_id= and =source_series_id= FKs. Drop =curve_family_role=: the role lives in the output series URI. | The series rows carry identity. |
+| CRM configs | Driver and derived pairs reference FX series identity (URI or series relationship). | The pairs name FX market data. |
+
+*** 4.3 The hybrid ruling
+
+Rejected everywhere. The working assumption is confirmed: two
+writable copies of identity drift.
+
+Concrete failure: the UI edits =role= on
+=ir_curve_generation_config= while a URI column still carries the old
+role. Every consumer that reads the URI sees stale identity. No
+constraint can detect it: both are plain text columns.
+
+There is no compensating benefit. Reads can always parse the URI.
+SQL joins never need the components: identity is atomic, and the
+queries that exist today match the whole identity, not one component.
+The =series_type= filter in the Qt models is a coarse prefix; with a
+URI it becomes a prefix match on the scheme path (=oresmd://fx/...=).
+
+*** 4.4 Canonical form
+
+Equality lookup needs a canonical form: one string per identifier.
+=oresmd_parser::to_uri= already provides one
+(=oresmd_parser.cpp:356-416=):
+
+- Parameter order is fixed per asset class. =to_uri= appends the
+  parameters in a hardcoded order.
+- Asset class, pair, ccy, ticker, and codes are lowercased.
+- Absent fields are skipped. "Not set" has one spelling.
+
+The plan pins down the rest in step 0:
+
+- Value spelling: =tenor= and =point= pass through verbatim. The
+  canonical spelling must come from the caller; refdata tenors
+  provide it. A typed "6m" and a program-built "6M" are two
+  strings. The canonical form is the refdata spelling.
+- Decoupling: the URI builder receives the canonical values as a
+  supplied container (tenor, point, and the other free-text
+  components). It matches against the container and rejects unknown
+  spellings. oresmd keeps no direct dependency on the refdata
+  repositories; the caller supplies the relational data.
+- Round-trip tests: =parse(to_uri(id)) == id= and
+  =to_uri(parse(uri)) == uri= for canonical input, plus equality of
+  semantically-equal identifiers. These tests make the canonical
+  form a contract, not an accident.
+- Percent-encoding: boost::urls encodes and decodes. The stored
+  string is the encoded canonical form. Matching uses the same form.
+
+** 5. The projection boundary
+
+- Forward projections (=to_quote_key=, =to_curve_key=,
+  =to_index_name=) stay. They become boundary-only conversion:
+  ORE file export, CSV export with ORE keys, and ORE XML if ever
+  wired. They are not identity.
+- =split_market_series_key= stays only inside ORE-format import. It
+  is an ORE-format concern, not an identity concern.
+- A new inverse projection is needed: ORE key string to oresmd
+  identifier, at the import boundary. The series_key_registry's
+  decomposition table is the seed. The mapping rules follow the
+  forward projections in reverse.
+- Coverage gap: oresmd models seven asset classes. The registry
+  knows ~40 ORE series types (BOND, BMA_SWAP, and others have no
+  oresmd identifier). Series types without an oresmd mapping are
+  rejected at import until oresmd grows them. Real data today is
+  FX, IR, and fixings — covered.
+- The NATS wire is NOT a projection boundary. The tick subjects
+  (=marketdata.v1.tick.<tenant>.<ore_key>=) and the =ir_curve_tick=
+  payload fields are ORE-shaped. The cutover makes the wire
+  oresmd-native.
+- The import-time FX convention correction
+  (=fx_quote_convention_checker=) stays. It swaps the identifier's
+  pair at parse time. Same function, new target.
+
+** 6. Impact of the hard cutover
+
+The cutover touches, with no backwards compatibility:
+
+1. Schema: =oresmd_uri= columns; legacy columns dropped; unique
+   indexes move to the URI; check constraints removed; validation
+   moves to the oresmd layer; generated classification columns only
+   where an index needs them.
+2. Data: one-time backfill through the new inverse projection, ORE
+   components to oresmd identifier to URI. Rows with no oresmd
+   mapping are dropped or rejected.
+3. =ores.marketdata= service: =import_service= (builds identifiers),
+   =feed_ingest_loop= and =curve_feed_ingest_loop= (parse URIs,
+   auto-create from identifiers, URI subjects), repositories,
+   registrars, =publish_from_dq=, =curve_republish_resolver=,
+   export-to-storage (URIs in JSON).
+4. =ores.synthetic= service: =feed_controller= (resolve series and
+   vintage from URIs), =fx_spot_feed=, =ir_curve_feed= (constructor
+   takes the identifier; tick carries the URI), =curve_feed_controller=
+   (collision on the URI).
+5. =ores.shell=: =marketdata import= stores URIs; new oresmd-native
+   commands; =synthetic= and =crm= outputs print URIs.
+6. Qt: market data windows and models display and edit URIs;
+   =FxSpotRateEditor= and =IrCurveEditor= round-trip the URI through
+   their forms; tick subscriptions use URI subjects; CSV exports keep
+   ORE keys via projection at the file edge.
+7. Wire: NATS subjects and tick payloads carry URIs.
+8. Boundaries: ORE text import translates at the edge; CSV export
+   projects at the file edge; nothing ORE-shaped is stored.
+
+** 7. Target state: sequenced
+
+- Step 0, prerequisite: the inverse projection (ORE key to oresmd
+  identifier) in =ores.marketdata.core/oresmd=, tested against the
+  registry's table. Pin the canonical form: round-trip tests
+  (=parse(to_uri(id)) == id=, =to_uri(parse(uri)) == uri=) and
+  value-spelling rules (tenor and point via refdata).
+- Step 1: identity core. =market_series= and =feed_binding= gain
+  =oresmd_uri=; backfill; legacy columns dropped; repositories,
+  registrars, and ingest loops read URIs; auto-create uses
+  identifiers.
+- Step 2: observation rows. =point_id= carries the serialised oresmd
+  point; scalars have null; the "SPOT" sentinel dies; fixings and
+  lineages follow; the DQ artefact mirrors.
+- Step 3: generation configs. =fx_spot_generation_config= and
+  =ir_curve_generation_config= switch to URIs; validation moves to
+  the oresmd layer; the editors round-trip URIs.
+- Step 4: the wire. Tick subjects and =ir_curve_tick= carry URIs;
+  every subscriber of =marketdata.v1.tick.*= updates.
+- Step 5: =ores.shell=. =marketdata import= stores URIs; new
+  oresmd-native commands; outputs print URIs.
+- Step 6: deletion. =series_type=, =metric=, =qualifier=, =ore_key=,
+  =currency_code= columns; the import classification table; the
+  =split_market_series_key= identity use; the DB check constraints;
+  all tests. =point_id= stays: Step 2 repurposes it to carry the
+  serialised oresmd point.
+
+Ordering rationale: the identity core first, then the rows that
+reference it, then the generators, then the wire, then the shell,
+then deletion. Each step keeps the system buildable.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1957][#1957]] | [agile] Analysis: oresmd-native market data identity |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | =point_id= kept (4.2, Step 2) but listed for deletion (Step 6) | analysis, delete task, wire task | Accepted | Fixed: =point_id= removed from the Step 6 list; delete and wire tasks now say it is kept and repurposed. |
+| 2 | sprint.org story row still BACKLOG while the story is STARTED | sprint.org | Accepted | Fixed: row flipped to STARTED. |
+
+* Result
+
+The analysis delivered, per acceptance:
+
+- *Inventory*: 13 entities plus the refdata catalogs, each with its
+  identifier fields and its oresmd connection, with file references.
+- *Consumers*: the market simulator, all Qt UIs, and =ores.shell=.
+  The story claimed the shell has no market data surface; the
+  analysis corrected that — it has three (=marketdata import=,
+  =synthetic= feed control, =crm rates=), all ORE-shaped.
+- *Fields vs URI*: decided per entity. One =oresmd_uri= column each;
+  observations keep the series FK plus the point. The hybrid is
+  ruled out: two writable copies of identity drift and no constraint
+  can detect it.
+- *Projection boundary*: forward projections stay at the ORE-format
+  edge (file and CSV export). The NATS wire becomes oresmd-native.
+  The inverse projection (ORE key to oresmd identifier) is needed at
+  the import boundary and is sequenced first.
+- *Canonical form*: pinned. Fixed parameter order, lowercase, absent
+  fields skipped. Tenor and point spelling come from refdata,
+  supplied to the URI builder as a container — no direct repository
+  dependency. Round-trip tests make the form a contract.
+- *Target state*: six sequenced steps, each keeping the system
+  buildable. Split into implementation tasks on the story at close.
+- No schema or code change was made.
+
+Acceptance: met.

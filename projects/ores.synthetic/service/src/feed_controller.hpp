@@ -21,27 +21,23 @@
 #define ORES_SYNTHETIC_SERVICE_FEED_CONTROLLER_HPP
 
 #include "ores.analytics.quant/service/process_factory.hpp"
-#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/market_series.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
+#include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <atomic>
-#include <cctype>
 #include <chrono>
 #include <format>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <random>
-#include <rfl/enums.hpp>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -75,21 +71,67 @@ inline bool should_ensure_feed_binding(bool already_running,
 }
 
 /**
- * @brief Runs the synthetic producer feeds; one tick thread per feed.
+ * @brief Whether two running/candidate feeds would collide: same qualifier
+ * AND same role.
  *
- * Owned by application::run() as a shared_ptr and passed to the
- * market_feed_config_handler lambdas in the registrar, and driven on startup
- * by the autonomous config-driven auto-starter. Holds a map of running feeds
- * keyed by source name (a producer's unique identity), so several producers —
- * including two for the same pair (e.g. Wiener vs GBM-drift EUR/USD) — run
- * concurrently and publish on distinct subjects.
+ * role is deliberately part of the comparison — a discount feed and a
+ * projection feed for the same qualifier are expected to coexist, not
+ * conflict. FX feeds have an empty role, which makes the comparison
+ * qualifier-only: two FX feeds on the same pair cannot both run, because
+ * both would publish into the same observation series — the same hazard
+ * the IR rule guards against. A feed with an empty qualifier (an
+ * unparseable ORE key) has no published market-data key to protect and
+ * conflicts with nothing. Pure and free of IFeed/NATS so it is directly
+ * unit-testable without a live NATS client.
+ */
+inline bool feeds_conflict(const std::string& qualifier_a,
+                           const std::string& role_a,
+                           const std::string& qualifier_b,
+                           const std::string& role_b) {
+    return !qualifier_a.empty() && qualifier_a == qualifier_b && role_a == role_b;
+}
+
+/**
+ * @brief Owns the running synthetic producer feeds; one tick thread per
+ * feed.
  *
- * Each feed resolves/creates its own market series from its ORE key and
- * publishes on its synthetic producer channel: "synthetic.v1.tick.<source>".
+ * Serves every asset class from one class: the map of running feeds is
+ * keyed by source_name (a producer's unique identity), so several
+ * producers run concurrently and publish on distinct subjects — but at
+ * most one per (qualifier, role) pair (see feeds_conflict), so two feeds
+ * on the same pair — two FX feeds included — never both run. Every feed
+ * enters the map through the common IFeed interface: the per-kind
+ * producers (fx_spot_feed, ir_curve_feed) differ only in what they
+ * publish, not in how they are owned.
  *
- * Threading: start() and stop() are called from NATS I/O callbacks and the
- * startup path; both are protected by a mutex. shutdown() is called from the
- * application coroutine after the NATS I/O loop has stopped.
+ * Three paths register a feed:
+ *   - add() — the config-driven path (auto-start at boot, the folder
+ *     cascade): the caller has already built the feed from persisted
+ *     config via the factory, including any vintage resolution the
+ *     builder performed. Returns false (and never starts) when the
+ *     source_name is already running or the conflict key is held.
+ *   - start(IFeed) — the on-demand path (the per-config control-plane),
+ *     distinguishing already_running from qualifier_conflict.
+ *   - start(ore_key, ...) — the client-supplied-params path, the FX-only
+ *     ad-hoc surface (raw GMM parameters over the wire) that the
+ *     per-config control-plane task deletes. It is the only path that
+ *     performs the vintage-availability check and feed-binding
+ *     auto-creation; the config-driven path does neither.
+ *
+ * At most one feed per (qualifier, role) pair — the pair the feed's own
+ * IFeed::conflict_key() encodes (see feeds_conflict) — runs at a time:
+ * an add()/start() whose pair is already held by a *different* running
+ * feed is rejected, never silently, and never by stopping the existing
+ * one. Switching requires an explicit stop() first. The check compares
+ * the pair via feeds_conflict() rather than the key string, because an
+ * empty qualifier (an unparseable ORE key) must conflict with nothing
+ * even though its key string is non-empty. The conflict is reported with
+ * the running feed's source_name, via the conflicting-source-name out
+ * parameter or running_source_name_for_conflict_key().
+ *
+ * Threading: start() and stop() are called from NATS I/O callbacks and
+ * the startup path; both are protected by a mutex. shutdown() is called
+ * from the application coroutine after the NATS I/O loop has stopped.
  */
 class feed_controller {
 private:
@@ -100,12 +142,9 @@ private:
 
 public:
     feed_controller(ores::nats::service::client& nats,
-                    ores::nats::service::nats_client& auth_nats,
-                    ores::utility::uuid::tenant_id tenant_id)
+                    ores::nats::service::nats_client& auth_nats)
         : nats_(nats)
-        , auth_nats_(auth_nats)
-        , md_client_(auth_nats)
-        , tenant_id_(std::move(tenant_id)) {}
+        , auth_nats_(auth_nats) {}
 
     ~feed_controller() {
         stop_flag_.store(true, std::memory_order_relaxed);
@@ -114,7 +153,7 @@ public:
         shutdown();
     }
 
-    enum class start_result { started, already_running, vintage_data_missing };
+    enum class start_result { started, already_running, qualifier_conflict, vintage_data_missing };
 
     /**
      * @brief Start one producer feed. Keyed by source_name (unique per producer).
@@ -154,6 +193,10 @@ public:
      * bound-feed resolution" means here: the exclusion is structural (a
      * different subject the consumer never listens to), not merely a
      * missing opt-in.
+     *
+     * The conflict rule is the uniform one: a feed whose conflict key is
+     * already held by a different running feed returns qualifier_conflict
+     * with @p out_conflicting_source_name set to the holder's source_name.
      */
     start_result start(const std::string& ore_key,
                        const std::string& source_name,
@@ -168,7 +211,8 @@ public:
                        std::string* error_detail = nullptr,
                        const std::string& caller_bearer_token = {},
                        ores::synthetic::domain::binding_mode binding_mode =
-                           ores::synthetic::domain::binding_mode::bound) {
+                           ores::synthetic::domain::binding_mode::bound,
+                       std::string* out_conflicting_source_name = nullptr) {
         if (!vintage_source.empty()) {
             std::string detail;
             double resolved_price = 0.0;
@@ -219,20 +263,12 @@ public:
                                                    synthetic_producer_subject(key, binding_mode),
                                                    std::move(process),
                                                    ticks_per_hour);
-                running_feed rf;
-                rf.feed = feed;
-                rf.binding_mode = binding_mode;
-                rf.thread = std::thread([feed]() { feed->start(); });
-                feeds_.emplace(key, std::move(rf));
-                BOOST_LOG_SEV(lg(), ores::logging::info)
-                    << "SYNTHETIC START: source='" << key << "' ore_key='" << ore_key
-                    << "' subject='" << synthetic_producer_subject(key, binding_mode)
-                    << "' binding_mode='" << rfl::enum_to_string(binding_mode)
-                    << "' ticks_per_hour=" << ticks_per_hour << " — now " << feeds_.size()
-                    << " feed(s) running";
-                if (!status_thread_.joinable()) {
-                    status_thread_ = std::thread(&feed_controller::status_loop, this);
+                if (const auto conflict = find_conflict(*feed, key)) {
+                    if (out_conflicting_source_name)
+                        *out_conflicting_source_name = *conflict;
+                    return start_result::qualifier_conflict;
                 }
+                start_running(std::move(feed), binding_mode);
             }
         }
         // Binding creation does a blocking NATS round-trip -- always done
@@ -249,37 +285,92 @@ public:
     }
 
     /**
-     * @brief Config-driven start path: registers an already-constructed feed as running and
-     * spawns its tick thread, mirroring curve_feed_controller::add(). Unlike start(), it does
-     * no vintage check, binding auto-creation, or process construction -- the caller (auto-start)
-     * built the feed from persisted config via the factory, including any vintage resolution the
-     * builder performed. Returns false without starting when a feed with the same source_name is
-     * already running.
+     * @brief Config-driven path: registers an already-constructed feed as
+     * running and spawns its tick thread (auto-start at boot, the folder
+     * cascade). Unlike the client-supplied-params start(), it does no
+     * vintage check, binding auto-creation, or process construction — the
+     * caller built the feed from persisted config via the factory,
+     * including any vintage resolution the builder performed.
+     *
+     * @p binding_mode is stored with the running feed purely as the
+     * client-supplied-params start()'s restart gate (see
+     * should_ensure_feed_binding): the config path itself never creates a
+     * feed_binding, but a later ad-hoc start() of the same source must see
+     * the mode this feed actually started with — a sandboxed feed must not
+     * gain a bound feed_binding through a caller that never knew about its
+     * mode. Callers that built the feed with a sandboxed mode (the folder
+     * cascade, the boot auto-start walk) pass it through here.
+     *
+     * Returns false without starting when a feed with the same source_name
+     * is already running, or when the feed's conflict key is held by a
+     * different running feed (with @p out_conflicting_source_name set to
+     * the holder's source_name).
      */
     bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
-             ores::synthetic::domain::binding_mode binding_mode) {
-        auto fx = std::dynamic_pointer_cast<fx_spot_feed>(std::move(feed));
-        if (!fx)
-            throw std::invalid_argument("feed_controller::add: feed is not an fx_spot_feed");
-        const std::string key = fx->source_name();
-        {
-            std::lock_guard lock(mu_);
-            if (feeds_.contains(key))
-                return false;
-            running_feed rf;
-            rf.feed = fx;
-            rf.binding_mode = binding_mode;
-            rf.thread = std::thread([fx]() { fx->start(); });
-            feeds_.emplace(key, std::move(rf));
-            BOOST_LOG_SEV(lg(), ores::logging::info)
-                << "SYNTHETIC START: source='" << key << "' ore_key='" << fx->ore_key()
-                << "' subject='" << synthetic_producer_subject(key, binding_mode)
-                << "' binding_mode='" << rfl::enum_to_string(binding_mode) << "' — now "
-                << feeds_.size() << " feed(s) running";
-            if (!status_thread_.joinable())
-                status_thread_ = std::thread(&feed_controller::status_loop, this);
+             ores::synthetic::domain::binding_mode binding_mode,
+             std::string* out_conflicting_source_name = nullptr) {
+        std::lock_guard lock(mu_);
+        const auto source_name = feed->source_name();
+        // The caller's own source_name is excluded from conflict detection,
+        // so a duplicate add for it would pass the qualifier check and then
+        // emplace-collide: the discarded node would destroy a joinable
+        // thread (std::terminate). Concurrent request paths (folder cascade)
+        // can race past a caller's pre-checks, so guard the same way start()
+        // does.
+        if (feeds_.contains(source_name))
+            return false;
+        if (const auto conflict = find_conflict(*feed, source_name)) {
+            if (out_conflicting_source_name)
+                *out_conflicting_source_name = *conflict;
+            return false;
         }
+        start_running(std::move(feed), binding_mode);
         return true;
+    }
+
+    /** @brief add() with the default (bound) binding mode. */
+    bool add(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
+             std::string* out_conflicting_source_name) {
+        return add(std::move(feed),
+                   ores::synthetic::domain::binding_mode::bound,
+                   out_conflicting_source_name);
+    }
+
+    /**
+     * @brief On-demand path: starts a feed by source_name if not already
+     * running, and if no *different* feed already holds its conflict key.
+     * Use running_source_name_for_conflict_key() to build an actionable
+     * message when this returns qualifier_conflict.
+     */
+    start_result start(std::shared_ptr<ores::marketdata::domain::IFeed> feed) {
+        std::lock_guard lock(mu_);
+        const auto source_name = feed->source_name();
+        if (feeds_.contains(source_name))
+            return start_result::already_running;
+        if (find_conflict(*feed, source_name))
+            return start_result::qualifier_conflict;
+        start_running(std::move(feed));
+        return start_result::started;
+    }
+
+    /**
+     * @brief The source_name of the running feed currently holding @p
+     * conflict_key, if any — for building the "already running as X — stop
+     * it first" message after a qualifier_conflict result.
+     *
+     * Feeds with an empty qualifier never hold a conflict key (see
+     * feeds_conflict) and are skipped, so the lookup cannot false-positive
+     * on one of them.
+     */
+    std::optional<std::string> running_source_name_for_conflict_key(const std::string& conflict_key) const {
+        std::lock_guard lock(mu_);
+        for (const auto& [name, rf] : feeds_) {
+            if (rf.feed->qualifier().empty())
+                continue;
+            if (rf.feed->conflict_key() == conflict_key)
+                return name;
+        }
+        return std::nullopt;
     }
 
     /**
@@ -321,19 +412,31 @@ public:
         return feeds_.size();
     }
 
-    /** @brief Snapshot of source_names for all currently running feeds. */
-    std::vector<std::string> list() const {
+    /**
+     * @brief Snapshot of source_names for all currently running feeds,
+     * optionally scoped to one feed kind (IFeed::kind()) — the per-kind
+     * control-plane handlers list only their own kind, so a collapsed
+     * controller still answers each handler's list as before.
+     */
+    std::vector<std::string> list(const std::string& kind = {}) const {
         std::lock_guard lock(mu_);
         std::vector<std::string> names;
         names.reserve(feeds_.size());
-        for (const auto& [key, _] : feeds_)
+        for (const auto& [key, rf] : feeds_) {
+            if (!kind.empty() && rf.feed->kind() != kind)
+                continue;
             names.push_back(key);
+        }
         return names;
     }
 
     /**
      * @brief Check whether a feed's required vintage data exists, without
      * starting it. Powers the Market Simulator "validate all" action.
+     *
+     * FX-only surface (the IR producers resolve vintage at build time, in
+     * the factory builder): the vintage_validity_handler iterates
+     * fx_spot_generation_config rows exclusively.
      *
      * @param error_detail Set to an actionable message when unavailable;
      * untouched otherwise.
@@ -524,15 +627,15 @@ private:
         for (const auto& [key, rf] : feeds_) {
             const auto count = rf.feed ? rf.feed->publish_count() : 0;
             BOOST_LOG_SEV(lg(), ores::logging::info)
-                << "SYNTHETIC STATUS: source='" << key << "' ore_key='" << rf.feed->ore_key()
-                << "' subject='" << synthetic_producer_subject(key, rf.binding_mode)
-                << "' published=" << count;
+                << "SYNTHETIC STATUS: source='" << key << "' published=" << count;
         }
     }
 
     struct running_feed {
-        std::shared_ptr<fx_spot_feed> feed;
+        std::shared_ptr<ores::marketdata::domain::IFeed> feed;
         std::thread thread;
+        // The ad-hoc start()'s restart gate (see should_ensure_feed_binding);
+        // the config-driven add() path never reads it.
         ores::synthetic::domain::binding_mode binding_mode =
             ores::synthetic::domain::binding_mode::bound;
     };
@@ -544,64 +647,46 @@ private:
             rf.thread.join();
     }
 
-    // Find-or-create the FX spot market series for an ORE key like
-    // "FX/RATE/EUR/USD" → series_type "FX", metric "RATE", qualifier "EUR/USD".
-    bool resolve_series(const std::string& ore_key, boost::uuids::uuid& out) {
-        using namespace ores::marketdata::domain;
+    // Emplace a feed as running, spawn its tick thread, and start the
+    // status thread on the first feed. Caller must already hold mu_.
+    void start_running(std::shared_ptr<ores::marketdata::domain::IFeed> feed,
+                       ores::synthetic::domain::binding_mode binding_mode =
+                           ores::synthetic::domain::binding_mode::bound) {
+        const auto key = feed->source_name();
+        auto* raw = feed.get();
+        running_feed rf;
+        rf.feed = std::move(feed);
+        rf.binding_mode = binding_mode;
+        rf.thread = std::thread([raw] { raw->start(); });
+        feeds_.emplace(key, std::move(rf));
+        BOOST_LOG_SEV(lg(), ores::logging::info)
+            << "SYNTHETIC START: source='" << key << "' — now " << feeds_.size()
+            << " feed(s) running";
+        if (!status_thread_.joinable())
+            status_thread_ = std::thread(&feed_controller::status_loop, this);
+    }
 
-        const auto key =
-            ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
-        if (!key) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn) << "Cannot parse ORE key '" << ore_key << "'.";
-            return false;
+    // The source_name of a *different* running feed already holding @p
+    // feed's conflict key, if any — a running feed with the same qualifier
+    // but a *different* role (e.g. discount vs. projection) is not a
+    // conflict. Excludes @p excluding_source_name so re-adding/restarting
+    // the same config never self-conflicts. Caller must already hold mu_.
+    std::optional<std::string>
+    find_conflict(const ores::marketdata::domain::IFeed& feed,
+                  const std::string& excluding_source_name) const {
+        const auto qualifier = feed.qualifier();
+        const auto role = feed.role();
+        for (const auto& [name, rf] : feeds_) {
+            if (name == excluding_source_name)
+                continue;
+            if (feeds_conflict(rf.feed->qualifier(), rf.feed->role(), qualifier, role))
+                return name;
         }
-        const auto& series_type = key->series_type;
-        const auto& metric = key->metric;
-        const auto& qualifier = key->qualifier;
-
-        auto existing = md_client_.list_series(series_type);
-        if (!existing) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Failed to list series for '" << series_type << "': " << existing.error();
-            return false;
-        }
-        for (const auto& s : *existing) {
-            if (s.metric == metric && s.qualifier == qualifier) {
-                out = s.id;
-                return true;
-            }
-        }
-
-        market_series s;
-        s.id = uuid_gen_();
-        s.tenant_id = tenant_id_;
-        s.series_type = series_type;
-        s.metric = metric;
-        s.qualifier = qualifier;
-        s.asset_class = asset_class::fx;
-        s.series_subclass = series_subclass::spot;
-        s.is_scalar = true;
-        s.modified_by = "ores.synthetic.service";
-        s.performed_by = "ores.synthetic.service";
-        s.change_reason_code = "system.initial_load";
-        s.change_commentary = ore_key + " synthetic feed initialisation";
-
-        const auto saved = md_client_.save_series({s});
-        if (!saved) {
-            BOOST_LOG_SEV(lg(), ores::logging::warn)
-                << "Failed to create series for '" << ore_key << "': " << saved.error();
-            return false;
-        }
-        BOOST_LOG_SEV(lg(), ores::logging::info) << "Created series for " << ore_key << ".";
-        out = s.id;
-        return true;
+        return std::nullopt;
     }
 
     ores::nats::service::client& nats_;
     ores::nats::service::nats_client& auth_nats_;
-    ores::marketdata::client::market_data_client md_client_;
-    ores::utility::uuid::tenant_id tenant_id_;
-    boost::uuids::random_generator uuid_gen_;
 
     mutable std::mutex mu_;
     std::map<std::string, running_feed> feeds_;

@@ -2441,7 +2441,7 @@ void MarketSimulatorWindow::stopIrCurvesAsync(
 
 // Local, synchronous check -- no NATS round-trip needed. Two enabled+auto_start IR curve
 // configs in the same folder targeting the same (currency_code, index_family, tenor, role)
-// tuple would both be eligible for auto-start, but curve_feed_controller only ever lets one
+// tuple would both be eligible for auto-start, but feed_controller only ever lets one
 // actually run (see its own doc comment) -- the other silently never starts at boot, which
 // reads as "broken" rather than "misconfigured" unless flagged here. role is part of the group
 // key deliberately (not excluded, unlike the collision key's own doc elsewhere): a discount

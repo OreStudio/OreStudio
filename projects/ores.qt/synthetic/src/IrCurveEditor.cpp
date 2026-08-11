@@ -276,7 +276,7 @@ void IrCurveEditor::buildInstrumentTab() {
     form->addRow(tr("Index name"), indexNameCombo_);
 
     // discount/projection/self_discounting -- lets a discount curve and a projection curve for
-    // the same currency+index+tenor coexist (curve_feed_controller's collision check keys on
+    // the same currency+index+tenor coexist (feed_controller's collision check keys on
     // (qualifier, role), not qualifier alone). Defaults to self_discounting, the shape every
     // pre-existing synthetic curve assumes.
     roleCombo_ = new QComboBox(identityBox);

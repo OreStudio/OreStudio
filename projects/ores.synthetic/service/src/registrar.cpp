@@ -36,7 +36,6 @@ std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
                              ores::nats::service::nats_client& auth_nats,
                              std::shared_ptr<feed_controller> ctrl,
-                             std::shared_ptr<curve_feed_controller> curve_ctrl,
                              ores::database::context ctx,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
@@ -84,20 +83,16 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(
         nats.queue_subscribe(std::string(start_feeds_under_folder_request::nats_subject),
                              queue,
-                             [&nats, &auth_nats, ctrl, curve_ctrl, ctx,
-                              verifier](ores::nats::message msg) {
-                                 folder_feed_control_handler h(
-                                     nats, ctrl, curve_ctrl, auth_nats, ctx, verifier);
+                             [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+                                 folder_feed_control_handler h(nats, ctrl, auth_nats, ctx, verifier);
                                  h.start(std::move(msg));
                              }));
 
     subs.push_back(
         nats.queue_subscribe(std::string(stop_feeds_under_folder_request::nats_subject),
                              queue,
-                             [&nats, &auth_nats, ctrl, curve_ctrl, ctx,
-                              verifier](ores::nats::message msg) {
-                                 folder_feed_control_handler h(
-                                     nats, ctrl, curve_ctrl, auth_nats, ctx, verifier);
+                             [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+                                 folder_feed_control_handler h(nats, ctrl, auth_nats, ctx, verifier);
                                  h.stop(std::move(msg));
                              }));
 
@@ -113,24 +108,24 @@ registrar::register_handlers(ores::nats::service::client& nats,
     subs.push_back(nats.queue_subscribe(
         std::string(start_ir_curve_feed_request::nats_subject),
         queue,
-        [&nats, &auth_nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, auth_nats, curve_ctrl, ctx, verifier);
+        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            ir_curve_feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
             h.start(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
         std::string(stop_ir_curve_feed_request::nats_subject),
         queue,
-        [&nats, &auth_nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, auth_nats, curve_ctrl, ctx, verifier);
+        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            ir_curve_feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
             h.stop(std::move(msg));
         }));
 
     subs.push_back(nats.queue_subscribe(
         std::string(list_ir_curve_feed_configs_request::nats_subject),
         queue,
-        [&nats, &auth_nats, curve_ctrl, ctx, verifier](ores::nats::message msg) {
-            ir_curve_feed_config_handler h(nats, auth_nats, curve_ctrl, ctx, verifier);
+        [&nats, &auth_nats, ctrl, ctx, verifier](ores::nats::message msg) {
+            ir_curve_feed_config_handler h(nats, auth_nats, ctrl, ctx, verifier);
             h.list(std::move(msg));
         }));
 

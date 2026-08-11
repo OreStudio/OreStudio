@@ -18,7 +18,6 @@
 #
 set(files
     "config_parser_tests.cpp"
-    "curve_feed_controller_tests.cpp"
     "feed_controller_tests.cpp"
     "folder_feed_control_handler_tests.cpp"
     "ir_curve_feed_vintage_tests.cpp"

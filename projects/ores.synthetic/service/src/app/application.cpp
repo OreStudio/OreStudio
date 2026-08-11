@@ -18,7 +18,6 @@
  *
  */
 #include "ores.synthetic.service/app/application.hpp"
-#include "../curve_feed_controller.hpp"
 #include "../feed_controller.hpp"
 #include "../registrar.hpp"
 #include "ores.database/service/context_factory.hpp"
@@ -120,8 +119,19 @@ void auto_start_enabled_feeds(feed_controller& ctrl,
             std::string(fx_spot_feed_kind),
             bctx,
             fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
-        if (ctrl.add(std::move(feed), container->second.binding_mode))
+        std::string conflicting_source_name;
+        if (ctrl.add(std::move(feed), container->second.binding_mode, &conflicting_source_name)) {
             ++started;
+        } else if (!conflicting_source_name.empty()) {
+            // A genuine seed-data misconfiguration (two enabled configs sharing
+            // an ore_key), not a per-request error -- log clearly and move on
+            // rather than failing the whole auto-start pass. An already-running
+            // same-source row (a duplicate config) stays silent, as before.
+            BOOST_LOG_SEV(auto_start_lg(), error)
+                << "Skipping enabled FX rate " << fx.ore_key << " — ore_key already held by "
+                << "auto-started feed '" << conflicting_source_name
+                << "'; both are enabled for the same market data key.";
+        }
     }
     BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
 }
@@ -132,7 +142,7 @@ void auto_start_enabled_feeds(feed_controller& ctrl,
 // ir_curve_feed_config_handler's NATS control-plane -- mirroring feed_controller/
 // market_feed_config_handler's split for FX.
 void auto_start_enabled_ir_curve_feeds(const ores::synthetic::feed::feed_build_context& bctx,
-                                       ores::synthetic::service::curve_feed_controller& ctrl,
+                                       feed_controller& ctrl,
                                        const ores::database::context& ctx) {
     namespace synth_repo = ores::synthetic::repository;
     using ores::synthetic::feed::build_ir_curve_refdata_context;
@@ -305,33 +315,29 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         throw;
     }
 
-    auto ctrl = std::make_shared<feed_controller>(nats, svc_nats, db_ctx.tenant_id());
+    auto ctrl = std::make_shared<feed_controller>(nats, svc_nats);
 
     // The shared inputs every producer builder needs. Auto-start has no
     // end-user session, so the caller bearer token is empty.
     const ores::synthetic::feed::feed_build_context bctx{nats, svc_nats, {}};
 
-    // Autonomous, config-driven generation: start every enabled FX rate across
-    // enabled configs. Each feed resolves its own series and publishes on its
-    // synthetic producer channel.
+    // Autonomous, config-driven generation: start every enabled feed of every
+    // kind across enabled configs. Each feed resolves its own series and
+    // publishes on its synthetic producer channel.
     auto_start_enabled_feeds(*ctrl, bctx, db_ctx);
+    auto_start_enabled_ir_curve_feeds(bctx, *ctrl, db_ctx);
     BOOST_LOG_SEV(lg(), info) << "Feed controller ready — " << ctrl->running_count()
                               << " feed(s) auto-started; waiting for control signals";
-
-    auto curve_ctrl = std::make_shared<ores::synthetic::service::curve_feed_controller>();
-    auto_start_enabled_ir_curve_feeds(bctx, *curve_ctrl, db_ctx);
-    BOOST_LOG_SEV(lg(), info) << "Curve feed controller ready — " << curve_ctrl->running_count()
-                              << " feed(s) auto-started";
 
     co_await ores::service::service::run(
         io_ctx,
         nats,
         std::move(db_ctx),
         "ores.synthetic.service",
-        [ctrl, curve_ctrl, &svc_nats](auto& n, auto c, auto v) {
+        [ctrl, &svc_nats](auto& n, auto c, auto v) {
             auto subs = ores::synthetic::messaging::registrar::register_handlers(n, c, v);
-            auto market_subs = ores::synthetic::service::registrar::register_handlers(
-                n, svc_nats, ctrl, curve_ctrl, c, v);
+            auto market_subs =
+                ores::synthetic::service::registrar::register_handlers(n, svc_nats, ctrl, c, v);
             subs.insert(subs.end(),
                         std::make_move_iterator(market_subs.begin()),
                         std::make_move_iterator(market_subs.end()));
@@ -344,7 +350,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         });
 
     ctrl->shutdown();
-    curve_ctrl->shutdown();
     event_source.stop();
     co_return;
 }

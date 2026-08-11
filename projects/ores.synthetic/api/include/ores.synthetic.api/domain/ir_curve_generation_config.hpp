@@ -108,9 +108,9 @@ struct ir_curve_generation_config final {
      * self_discounting for backward-compatible seed data (the shape every existing synthetic IR
      * curve config already assumes: one curve serving both purposes). Fixed 3-value vocabulary
      * intrinsic to this record, not a reference to another entity -- no soft FK, validated by a
-     * plain SQL check rather than a lookup-table trigger. curve_feed_controller's collision check
-     * deliberately excludes role from its conflict key, so a discount config and a projection
-     * config for the same (currency_code, index_family, tenor) can run side by side.
+     * plain SQL check rather than a lookup-table trigger. feed_controller's collision check keys
+     * on (qualifier, role), not qualifier alone, so a discount config and a projection config for
+     * the same (currency_code, index_family, tenor) can run side by side.
      */
     std::string role = "self_discounting";
 

@@ -23,6 +23,7 @@
 #include "feed_controller.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -80,6 +81,7 @@ public:
 
         start_market_feed_config_response resp;
         std::string error_detail;
+        std::string conflicting_source_name;
         const auto bearer = ores::nats::service::extract_bearer(msg);
         const auto result = ctrl_->start(req->ore_key,
                                          req->source_name,
@@ -92,7 +94,9 @@ public:
                                          req->vintage_source,
                                          req->vintage_date,
                                          &error_detail,
-                                         bearer);
+                                         bearer,
+                                         ores::synthetic::domain::binding_mode::bound,
+                                         &conflicting_source_name);
 
         const std::string id = req->source_name.empty() ? req->ore_key : req->source_name;
         using sr = feed_controller::start_result;
@@ -109,6 +113,13 @@ public:
                 resp.message = "Feed already running: " + id;
                 BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
                     << msg.subject << " — feed already running: " << id;
+                break;
+            case sr::qualifier_conflict:
+                resp.success = false;
+                resp.message = "Already running as '" + conflicting_source_name +
+                               "' — stop it first before starting '" + id + "'.";
+                BOOST_LOG_SEV(market_feed_config_handler_lg(), warn)
+                    << msg.subject << " — feed " << id << " rejected: " << resp.message;
                 break;
             case sr::vintage_data_missing:
                 resp.success = false;
@@ -183,7 +194,9 @@ public:
         using namespace ores::marketdata::messaging;
         [[maybe_unused]] const auto cid = log_handler_entry(market_feed_config_handler_lg(), msg);
         list_market_feed_configs_response resp;
-        resp.running_source_names = ctrl_->list();
+        // The collapsed controller owns every feed kind; this handler lists
+        // only its own (FX spot), as the per-kind controller it replaced did.
+        resp.running_source_names = ctrl_->list(std::string(ores::synthetic::feed::fx_spot_feed_kind));
         resp.success = true;
         BOOST_LOG_SEV(market_feed_config_handler_lg(), info)
             << msg.subject << " — " << resp.running_source_names.size() << " feed(s) running";

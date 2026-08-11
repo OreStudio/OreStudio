@@ -20,7 +20,6 @@
 #ifndef ORES_SYNTHETIC_SERVICE_FOLDER_FEED_CONTROL_HANDLER_HPP
 #define ORES_SYNTHETIC_SERVICE_FOLDER_FEED_CONTROL_HANDLER_HPP
 
-#include "curve_feed_controller.hpp"
 #include "feed_controller.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -71,7 +70,7 @@ using namespace ores::logging;
  * The single place that turns "start everything under this folder" into a
  * sequence of producer starts: it resolves the folder subtree once and
  * dispatches every config row beneath it — of every asset class — through
- * the producer factory (feed_factory) to the per-kind controller, so Qt,
+ * the producer factory (feed_factory) to the feed controller, so Qt,
  * ores.shell, and a wt workflow step all get the same behaviour from one
  * request instead of each re-implementing the tree-walk-and-fan-out
  * themselves.
@@ -85,13 +84,11 @@ class folder_feed_control_handler {
 public:
     folder_feed_control_handler(ores::nats::service::client& nats,
                                 std::shared_ptr<feed_controller> ctrl,
-                                std::shared_ptr<curve_feed_controller> curve_ctrl,
                                 ores::nats::service::nats_client& auth_nats,
                                 ores::database::context ctx,
                                 std::optional<ores::security::jwt::jwt_authenticator> verifier)
         : nats_(nats)
         , ctrl_(std::move(ctrl))
-        , curve_ctrl_(std::move(curve_ctrl))
         , auth_nats_(auth_nats)
         , ctx_(std::move(ctx))
         , verifier_(std::move(verifier)) {}
@@ -206,10 +203,21 @@ public:
                     std::string(fx_spot_feed_kind),
                     bctx,
                     fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
-                if (ctrl_->add(std::move(feed), container->second.binding_mode))
+                std::string conflicting_source_name;
+                if (ctrl_->add(std::move(feed), container->second.binding_mode,
+                               &conflicting_source_name))
                     ++fx_counts.started;
-                else
+                else if (conflicting_source_name.empty())
+                    // A concurrent cascade started the same config between
+                    // this loop's checks and the add.
                     ++fx_counts.already_running;
+                else {
+                    ++fx_counts.skipped;
+                    BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
+                        << "Skipping " << fx.ore_key << " under folder " << req->folder_id
+                        << " — ore_key already held by running feed '" << conflicting_source_name
+                        << "'.";
+                }
             } catch (const std::exception& e) {
                 ++fx_counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
@@ -271,27 +279,12 @@ public:
                     bctx,
                     ir_curve_feed_build_input{
                         cfg, it->second, vit->second, definitions, *refctx});
-                const auto holder =
-                    curve_ctrl_->running_source_name_for_qualifier(feed->qualifier(),
-                                                                   feed->role());
-                if (holder && *holder == cfg.source_name) {
-                    ++ir_counts.already_running;
-                    continue;
-                }
-                if (holder) {
-                    ++ir_counts.skipped;
-                    BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                        << "Skipping IR curve config " << cfg.currency_code << "/"
-                        << cfg.index_family << " under folder " << req->folder_id
-                        << " — qualifier already held by running feed '" << *holder << "'.";
-                    continue;
-                }
                 std::string conflicting_source_name;
-                if (curve_ctrl_->add(std::move(feed), &conflicting_source_name))
+                if (ctrl_->add(std::move(feed), &conflicting_source_name))
                     ++ir_counts.started;
                 else if (conflicting_source_name.empty())
                     // A concurrent cascade started the same config between
-                    // the qualifier pre-check and the add.
+                    // this loop's checks and the add.
                     ++ir_counts.already_running;
                 else {
                     ++ir_counts.skipped;
@@ -362,7 +355,7 @@ public:
         for (const auto& cfg : ir_configs) {
             if (!cfg.folder_id.has_value() || !folder_ids.contains(*cfg.folder_id))
                 continue;
-            ir_stopped += static_cast<int>(curve_ctrl_->stop(cfg.source_name));
+            ir_stopped += static_cast<int>(ctrl_->stop(cfg.source_name));
         }
 
         resp.stopped = fx_stopped + ir_stopped;
@@ -428,7 +421,6 @@ private:
 
     ores::nats::service::client& nats_;
     std::shared_ptr<feed_controller> ctrl_;
-    std::shared_ptr<curve_feed_controller> curve_ctrl_;
     ores::nats::service::nats_client& auth_nats_;
     ores::database::context ctx_;
     std::optional<ores::security::jwt::jwt_authenticator> verifier_;

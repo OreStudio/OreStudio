@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: CBE53221-9F38-4C94-8AE5-AA86867965C8
+:END:
+#+title: Task: Add code-review-comments skill
+#+description: New Claude Code skill that reviews and cleans code comments, wired into CLAUDE.md so it applies to all code we create or edit. Based on two prior-art sources with attribution.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch: feature/code-review-comments
+#+pr: 1951
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Give the repo one consistent rule set for code comments: sparse, durable, above-the-code, no edit-history narration. The rules come from two prior-art sources, both attributed: the comment-cleanup skill (motlin/claude-code-plugins, Apache-2.0) and the clean-code-comments skill (mcpmarket.com).
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Merged via PR #1951.                     |
+| Waiting on   | Nothing.                               |
+| Next         | None — task complete.                   |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- Skill doc exists at doc/llm/skills/code-review-comments/SKILL.org with the comment rules, a reference file, and worked examples.
+- Prior art attributed: LICENSE.txt carries Apache-2.0 with the motlin source named; both upstreams linked from the Reference section.
+- CLAUDE.md carries a standing rule so the comment rules apply to every comment in code we create or edit.
+- Skill cross-referenced from the S1 Agent function doc and the skills catalogue.
+- Skills bundle rebuilds clean and the skill appears in the Claude Code skill selector.
+- Site build is clean.
+
+* Plan
+
+Author the skill in org source under
+=doc/llm/skills/code-review-comments/SKILL.org=, following the
+=doc-review-ste100= pattern: thin index in the skill, rule set in a
+tangled =comment-rules.md= reference, worked examples in
+=before-after.md=, and the upstream Apache-2.0 licence text in
+=LICENSE.txt= with both prior-art sources attributed. The workflow
+detail lives in a recipe
+(=how_do_i_clean_code_comments=), linked from the skill's Recipes
+section. Wire the skill in: standing rule in =CLAUDE.md=,
+id-link from the S1 Agent function doc, row in the skills catalogue
+(regenerated with =generate_skills_catalogue.py=). Deploy via
+=compass build --direct skills=; verify with a site build.
+
+* Notes
+
+One review round (three bot reviews, 2026-08-11) produced eleven
+findings. Ten accepted: catalogue regenerated, licence frontmatter
+scoped to =LICENSE.txt=, "required scope" rule rewritten concretely,
+Doxygen =///<= carve-out added (skill, rules reference, examples),
+recipe created and linked, story Tasks row added, task status filled.
+Two declined: the claimed uncommitted =CLAUDE.md= revert does not
+exist in this checkout (working tree clean), and the task's
+=#+created: 2026-08-11= is accurate — scaffolding ran at 00:17 local
+after the date rolled over.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1951][#1951]] | [docs] Add code-review-comments skill |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Catalogue stale vs its generator (title, truncation, sort) | claude_code_skills.org | Fixed | Regenerated with build/scripts/generate_skills_catalogue.py |
+| 2 | licence frontmatter overstates coverage | SKILL.org | Fixed | Now "Complete terms in LICENSE.txt" |
+| 3 | "required scope" undefined | SKILL.org | Fixed | Rewritten with Doxygen-block / #region examples |
+| 4 | Stray empty bullet in Recipes | SKILL.org | Fixed | Links the new how_do_i_clean_code_comments recipe |
+| 5 | Procedural detail embedded in the skill | SKILL.org | Fixed | Step 2 slimmed to a link; workflow lives in the recipe |
+| 6 | No Doxygen ///< carve-out | SKILL.org | Fixed | Carve-out in step 2, comment-rules.md, before-after.md; checklist linked |
+| 7 | Task row missing from story Tasks table | story.org | Fixed | Row added |
+| 8 | Task Status/Plan/Notes placeholders | task doc | Fixed | Filled |
+| 9 | Uncommitted CLAUDE.md revert | CLAUDE.md | Declined | Working tree clean; no such revert exists in this checkout |
+| 10 | Task dates ahead of "today" | task doc | Declined | Scaffolded 2026-08-11 00:17 local after the date rolled over; dates accurate |
+
+* Result
+
+PR [#1951](https://github.com/OreStudio/OreStudio/pull/1951) — merged.
+
+Branch =feature/code-review-comments= commits:
+
+- =8ecd0199e= [docs] Add code-review-comments skill
+- =8bf47b67e= [agile] Add task for code-review-comments skill to Documentation improvements
+- =bb22c5f67= [agile] Record PR #1951 on task
+- =96e699430= [docs] Fix code-review-comments skill review findings
+- =9a736eae0= [docs] Add how_do_i_clean_code_comments recipe
+- =80eb28ecc= [docs] Regenerate skills catalogue
+- =3756c4f01= [agile] Record PR #1951 review round on task and story
+- =5eb71cf47= [docs] Fix recipe filetags for site validation

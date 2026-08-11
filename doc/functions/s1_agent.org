@@ -71,6 +71,9 @@ The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke p
   failures until green.
 - [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]], [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] — self-review before
   asking for human review.
+- [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] — when creating,
+  editing, or cleaning code comments: keep them sparse, above the
+  code, with no edit-history narration.
 - [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests]] — when the task adds or changes code that
   needs Catch2 coverage.
 - [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure]] — when a test goes red mid-task.

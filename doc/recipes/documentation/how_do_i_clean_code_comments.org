@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: DE7C2BC5-3C21-4A8F-8C2A-7A8800F1FCF2
+:END:
+#+title: How do I clean code comments?
+#+description: Remove comment clutter and keep necessary explanations when cleaning code comments in a diff or across the repository, per the code-review-comments skill.
+#+type: recipe
+#+level: cross
+#+filetags: :documentation:comments:recipe:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+This recipe walks the cleanup pass of the
+[[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] skill. The skill is
+the thin index; this recipe carries the procedural detail. The rule set
+itself lives in the skill's =comment-rules.md= reference and follows the
+[[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][code review checklist]] for what a code comment must satisfy.
+
+* Question
+
+How do I clean up code comments in a diff or across the repository?
+
+* Answer
+
+1. *Choose the scope.* Clean only the comments a diff introduces or
+   changes. Clean the whole repository only when the user asks for it.
+2. *Apply the comment rules* from the skill's =comment-rules.md=
+   reference:
+   - Use comments sparingly.
+   - Do not comment out code — remove it instead.
+   - Do not add comments that describe the process of changing code.
+   - Do not use past-tense verbs — added, removed, changed, updated, or
+     "now handles". Example of a bad comment:
+     =this.timeout(10_000); // Increase timeout for API calls= — the
+     reader cannot know what the timeout was increased from, and does
+     not care about the old behavior.
+   - Do not emphasize code versions ("this code now handles ...").
+   - Do not use end-of-line comments, except Doxygen =///<= trailing
+     comments, which are the established convention for documenting
+     public API.
+   - Place comments above the code they describe, at the same
+     indentation.
+3. *Remove comment clutter*:
+   - commented-out code;
+   - comments that restate the code or the method name;
+   - edit-history narration.
+4. *Preserve necessary comments*:
+   - =TODO=/=FIXME= and similar work markers;
+   - linter, formatter, compiler, and generated-code directives;
+   - non-obvious reasoning, constraints, and business rules;
+   - pre-existing comments during a diff-only pass.
+5. *Focus only on comments.* Never change executable code, behavior, or
+   unrelated formatting. Regenerate generated files instead of editing
+   them.
+6. *Report the outcome.* Produce a before/after table of every comment
+   you changed (see the skill's =before-after.md=). If the code already
+   complies, say so.
+
+* Script
+
+Not applicable — this is a manual workflow, not a script.
+
+* Tested by
+
+Manual QA: run the pass on a sample diff, then check the before/after
+table against =comment-rules.md=. CI does not exercise this recipe.
+
+* See also
+
+- [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] — the skill this recipe serves.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][code review checklist]] — the Doxygen-on-public-API convention.

@@ -8,7 +8,7 @@
 #+filetags: :rate-tree-windows-build:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-rate-tree-windows-build
-#+pr:
+#+pr: 1967
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1967][#1967]] | [ores.analytics.quant] Fix rate_tree.cpp missing string include |
 
 * Review
 

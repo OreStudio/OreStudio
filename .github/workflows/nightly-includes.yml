@@ -1,0 +1,100 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# yamllint disable rule:line-length
+---
+name: Nightly Include Hygiene
+
+on:  # yamllint disable-line rule:truthy
+  schedule:
+    - cron: '0 3 * * *'  # 03:00 UTC every night, an hour after Nightly Format
+  workflow_dispatch:      # allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  includes:
+    name: misc-include-cleaner
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+          submodules: recursive  # vcpkg toolchain lives in the submodule
+
+      - name: Install Clang
+        # Same LLVM version the linux-clang CI matrix builds with, so
+        # the suggestions match what developers see locally.
+        uses: KyleMayes/install-llvm-action@v2
+        with:
+          version: "19"
+          arch: x64
+
+      - name: get-cmake
+        uses: lukka/get-cmake@v4.4.2
+
+      - name: Cache vcpkg binary packages
+        # Same key the continuous-linux workflow uses, so the nightly
+        # run reuses the main CI's cache instead of rebuilding deps.
+        uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-linux-clang-debug-ninja-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-linux-clang-debug-ninja-
+
+      - name: run-vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          doNotCache: false
+
+      - name: Configure (compile_commands.json only)
+        # Configure-only: the include check parses translation units
+        # from compile_commands.json, so the long compile step is not
+        # needed. vcpkg installs its dependencies during configure.
+        run: cmake --preset linux-clang-debug-ninja
+
+      - name: Run clang-tidy misc-include-cleaner in-place
+        run: ./build/scripts/check_includes.sh linux-clang-debug-ninja --fix
+
+      - name: Create pull request if files changed
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: bot/nightly-includes
+          commit-message: '[format] Nightly include-cleaner run'
+          title: '[format] Nightly include-cleaner run'
+          body: |
+            Automated nightly clang-tidy misc-include-cleaner pass.
+
+            This PR was raised by the `nightly-includes` workflow because one or
+            more C++ source files use a symbol without a directly-included
+            header declaring it (e.g. `std::to_string` without the `string`
+            header, which breaks the MSVC build), or include a header nothing
+            uses. Review and merge to keep the tree clean.
+
+            Fixes to generated files should go into their codegen templates
+            instead — the `codegen-drift` check rejects hand-edited generated
+            output. Reproduce locally:
+
+            ```sh
+            cmake --preset linux-clang-debug-ninja
+            ./build/scripts/check_includes.sh linux-clang-debug-ninja --fix
+            ```
+          labels: formatting,automated
+          delete-branch: true

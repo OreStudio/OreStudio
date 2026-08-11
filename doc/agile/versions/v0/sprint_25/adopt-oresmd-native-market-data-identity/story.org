@@ -40,9 +40,9 @@ identity drift.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Now           | Analysis task has delivered the target state; decisions distilled here. |
+| Waiting on    | Review of the analysis task.            |
+| Next          | Close the analysis task; break the target state into implementation tasks. |
 | Last touched  | 2026-08-11                               |
 
 * Acceptance
@@ -70,12 +70,36 @@ identity drift.
 
 * Decisions
 
+Decided by the analysis task (see its =* Plan=):
+
+- Identity storage: one =oresmd_uri= column per identity-bearing
+  entity. No component fields.
+- The hybrid (fields and URI) is rejected: two writable copies of the
+  same identity drift, and no constraint can detect it. No
+  compensating benefit exists.
+- Classification (=asset_class=, =series_subclass=, =is_scalar=) is
+  derived, not identity. Generated columns only where an index needs
+  them.
+- Surrogate FKs to series rows are relationships, not identity
+  copies. They stay.
+- Validation moves from SQL check constraints into the oresmd parser
+  and validator layer.
+- The projection boundary is the ORE-format edge. Forward projections
+  stay for ORE file and CSV export. The import boundary gains the
+  inverse projection (ORE key to oresmd identifier). The NATS wire is
+  oresmd-native, not a projection.
+- ORE text (market.txt, fixings.txt) and CSV stay as boundary
+  formats; nothing ORE-shaped is stored.
+- Coverage gap: oresmd models seven asset classes. ORE series types
+  without an oresmd identifier (e.g. BOND) are rejected at import
+  until oresmd grows them.
+
 * Out of scope
 
-- ORE file-format round-trips (=curveconfig.xml=, =todaysmarket.xml=,
-  market-data quote strings): conversion is a separate concern from
-  identity; the earlier XML round-trip task was abandoned and tracked
-  separately.
+- ORE XML round-trips beyond conventions (=curveconfig.xml=,
+  =todaysmarket.xml=): not planned. The earlier XML round-trip task
+  was abandoned and tracked separately. The conventions import stays:
+  it feeds the refdata catalogs behind oresmd's enums.
 - Projection fidelity to ORE/Bloomberg/Reuters key strings: oresmd's
   projection rules already exist and stay; the question of where the
   projection boundary lives (if anywhere) is for the analysis task to

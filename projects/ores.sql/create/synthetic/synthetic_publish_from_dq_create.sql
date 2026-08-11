@@ -332,6 +332,7 @@ begin
                 a.ticks_per_hour,
                 a.process_type,
                 a.enabled,
+                a.auto_start,
                 a.price_source,
                 a.vintage_source,
                 a.vintage_date
@@ -358,7 +359,7 @@ begin
                 tenant_id, id, version, party_id, config_id, folder_id,
                 base_currency_code, quote_currency_code,
                 source_name, ore_key, price_source, gmm_initial_price, ticks_per_hour, process_type,
-                enabled, vintage_source, vintage_date,
+                enabled, auto_start, vintage_source, vintage_date,
                 modified_by, performed_by, change_reason_code, change_commentary
             )
             select
@@ -384,6 +385,7 @@ begin
                 case when r.price_source = 'fixed' then r.gmm_initial_price else 0 end,
                 r.ticks_per_hour, r.process_type,
                 coalesce(r.enabled, true),
+                coalesce(r.auto_start, false),
                 coalesce(r.vintage_source, ''), coalesce(r.vintage_date, ''),
                 coalesce(ores_iam_current_service_fn(), current_user), current_user,
                 'system.external_data_import', 'Published from DQ dataset: ' || v_dataset_name

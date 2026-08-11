@@ -43,6 +43,7 @@ struct synthetic_fx_spot_config_entity {
     std::string name;
     std::optional<std::string> description;
     bool enabled = false;
+    bool auto_start = false;
     std::string base_currency_code;
     std::string quote_currency_code;
     double gmm_initial_price;

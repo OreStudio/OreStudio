@@ -127,6 +127,10 @@ void FxSpotGenerationConfigDetailDialog::setupConnections() {
             &QCheckBox::toggled,
             this,
             &FxSpotGenerationConfigDetailDialog::onFieldChanged);
+    connect(ui_->autoStartCheck,
+            &QCheckBox::toggled,
+            this,
+            &FxSpotGenerationConfigDetailDialog::onFieldChanged);
     connect(ui_->vintageSourceEdit,
             &QLineEdit::textChanged,
             this,
@@ -177,6 +181,7 @@ void FxSpotGenerationConfigDetailDialog::setReadOnly(bool readOnly) {
     ui_->gmmInitialPriceEdit->setReadOnly(readOnly);
     ui_->processTypeEdit->setReadOnly(readOnly);
     ui_->enabledCheck->setEnabled(!readOnly);
+    ui_->autoStartCheck->setEnabled(!readOnly);
     ui_->vintageSourceEdit->setReadOnly(readOnly);
     ui_->vintageDateEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -194,6 +199,7 @@ void FxSpotGenerationConfigDetailDialog::updateUiFromConfig() {
     ui_->ticksPerHourEdit->setValue(fx_spot_generation_config_.ticks_per_hour);
     ui_->processTypeEdit->setText(QString::fromStdString(fx_spot_generation_config_.process_type));
     ui_->enabledCheck->setChecked(fx_spot_generation_config_.enabled);
+    ui_->autoStartCheck->setChecked(fx_spot_generation_config_.auto_start);
     ui_->vintageSourceEdit->setText(
         QString::fromStdString(fx_spot_generation_config_.vintage_source));
     ui_->vintageDateEdit->setText(QString::fromStdString(fx_spot_generation_config_.vintage_date));
@@ -220,6 +226,7 @@ void FxSpotGenerationConfigDetailDialog::updateConfigFromUi() {
     fx_spot_generation_config_.ticks_per_hour = ui_->ticksPerHourEdit->value();
     fx_spot_generation_config_.process_type = ui_->processTypeEdit->text().trimmed().toStdString();
     fx_spot_generation_config_.enabled = ui_->enabledCheck->isChecked();
+    fx_spot_generation_config_.auto_start = ui_->autoStartCheck->isChecked();
     fx_spot_generation_config_.vintage_source =
         ui_->vintageSourceEdit->text().trimmed().toStdString();
     fx_spot_generation_config_.vintage_date = ui_->vintageDateEdit->text().trimmed().toStdString();

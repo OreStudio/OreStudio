@@ -147,6 +147,7 @@ void FxSpotGenerationConfigMdiWindow::setupTable() {
             cs::text_left,
             cs::text_left,
             cs::text_left,
+            cs::text_left,
             cs::mono_center,
             cs::text_left,
             cs::text_left,

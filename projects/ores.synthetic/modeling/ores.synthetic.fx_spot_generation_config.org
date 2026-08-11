@@ -196,6 +196,29 @@ Whether the configuration is active and eligible for generation.
 faker::datatype::boolean()
 #+end_src
 
+** auto_start
+:PROPERTIES:
+:type:          boolean
+:cpp_type:      bool
+:nullable:      false
+:default_value: false
+:END:
+
+Whether this config starts automatically when the service comes up,
+as opposed to manual-start-only. Orthogonal to =enabled=: a config can
+be =enabled=true, auto_start=false= (valid, manually startable, but
+never auto-started -- e.g. a legacy/alternate-index variant living
+alongside a currency's primary config so the two never silently fight
+over the same published qualifier at boot). Starting a feed --
+whether auto-start-at-boot or a manual Start -- is rejected outright
+if another feed is already running for the same ore_key; nothing
+auto-disables the running one, so switching requires an explicit Stop
+then Start.
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
 ** vintage_source
 :PROPERTIES:
 :type:     text
@@ -369,6 +392,7 @@ std::nullopt
 | ticks_per_hour      | Ticks per Hour      | ticksPerHourEdit     | spin_box  |        | true        |                                 |
 | process_type        | Process Type        | processTypeEdit      | line_edit |        | true        | geometric, arithmetic, or ornstein_uhlenbeck |
 | enabled             | Enabled             | enabledCheck         | check_box |        |             |                                 |
+| auto_start          | Auto-Start          | autoStartCheck       | check_box |        |             |                                 |
 | vintage_source      | Vintage Source      | vintageSourceEdit    | line_edit |        |             | Required if Price Source is vintage, e.g. ore.reference |
 | vintage_date        | Vintage Date        | vintageDateEdit      | line_edit |        |             | Required if Price Source is vintage, YYYY-MM-DD |
 
@@ -392,6 +416,7 @@ the formatter function needs, if any.
 | TicksPerHour       | ticks_per_hour      | Ticks/Hr            | int       | 80    |                   |                                |
 | ProcessType        | process_type        | Process Type        | string    | 100   | processTypeLabel  | ores.qt/ProcessTypeLabel.hpp   |
 | Enabled            | enabled             | Enabled             | bool      | 70    |                   |                                |
+| AutoStart          | auto_start          | Auto-Start          | bool      | 80    |                   |                                |
 | VintageSource      | vintage_source      | Vintage Source      | string    | 140   |                   |                                |
 | VintageDate        | vintage_date        | Vintage Date        | string    | 110   |                   |                                |
 | Version            | version             | Version             | int       | 70    |                   |                                |

@@ -103,6 +103,8 @@ QVariant ClientFxSpotGenerationConfigModel::data(const QModelIndex& index, int r
                 return processTypeLabel(fx_spot_generation_config.process_type);
             case Enabled:
                 return fx_spot_generation_config.enabled ? tr("true") : tr("false");
+            case AutoStart:
+                return fx_spot_generation_config.auto_start ? tr("true") : tr("false");
             case VintageSource:
                 return QString::fromStdString(fx_spot_generation_config.vintage_source);
             case VintageDate:
@@ -164,6 +166,8 @@ QVariant ClientFxSpotGenerationConfigModel::headerData(int section,
             return tr("Process Type");
         case Enabled:
             return tr("Enabled");
+        case AutoStart:
+            return tr("Auto-Start");
         case VintageSource:
             return tr("Vintage Source");
         case VintageDate:

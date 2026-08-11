@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class FxSpotGenerationConfigMdiWindow;
+class FxSpotGenerationConfigDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 class ImageCache;
@@ -96,6 +97,14 @@ private:
     void showAddWindow();
     void
     showDetailWindow(const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * FxSpotGenerationConfigDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(FxSpotGenerationConfigDetailDialog* detailDialog);
     void showHistoryWindow(
         const synthetic::domain::fx_spot_generation_config& fx_spot_generation_config);
 

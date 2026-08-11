@@ -57,6 +57,7 @@ struct fx_spot_generation_config_entity {
     int ticks_per_hour = 0;
     std::string process_type = "geometric";
     bool enabled = false;
+    bool auto_start = false;
     std::string vintage_source;
     std::string vintage_date;
     std::optional<std::string> folder_id;

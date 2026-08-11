@@ -46,6 +46,7 @@ create table if not exists "ores_synthetic_fx_spot_generation_configs_tbl" (
     "ticks_per_hour" integer not null,
     "process_type" text not null,
     "enabled" boolean not null,
+    "auto_start" boolean not null,
     "vintage_source" text not null,
     "vintage_date" text not null,
     "folder_id" uuid null,
@@ -142,7 +143,6 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent

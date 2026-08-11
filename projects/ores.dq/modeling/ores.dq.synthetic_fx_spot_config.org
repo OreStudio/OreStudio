@@ -72,6 +72,23 @@ std::string(faker::lorem::sentence())
 faker::datatype::boolean()
 #+end_src
 
+** auto_start
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:default:  false
+:END:
+
+Whether this config starts automatically when the service comes up,
+as opposed to manual-start-only. Orthogonal to =enabled=: a config can
+be =enabled=true, auto_start=false= (valid, manually startable, but
+never auto-started).
+
+#+begin_src cpp :name generator
+faker::datatype::boolean()
+#+end_src
+
 ** base_currency_code
 :PROPERTIES:
 :type:     text

@@ -118,6 +118,17 @@ struct fx_spot_generation_config final {
     bool enabled = false;
 
     /**
+     * @brief Whether this config starts automatically when the service comes up, as opposed to
+     * manual-start-only. Orthogonal to enabled: a config can be enabledtrue, auto_startfalse
+     * (valid, manually startable, but never auto-started -- e.g. a legacy/alternate-index variant
+     * living alongside a currency's primary config so the two never silently fight over the same
+     * published qualifier at boot). Starting a feed -- whether auto-start-at-boot or a manual Start
+     * -- is rejected outright if another feed is already running for the same ore_key; nothing
+     * auto-disables the running one, so switching requires an explicit Stop then Start.
+     */
+    bool auto_start = false;
+
+    /**
      * @brief Source tag of the market-data vintage this feed's initial spot and availability guard
      * are validated against (e.g. "ore.reference"), matching market_observation.source. Only
      * populated (and required) when price_source is "vintage"; empty when "fixed" — see

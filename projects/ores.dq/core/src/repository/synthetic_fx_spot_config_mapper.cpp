@@ -39,6 +39,7 @@ synthetic_fx_spot_config_mapper::map(const synthetic_fx_spot_config_entity& v) {
     r.name = v.name;
     r.description = v.description;
     r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
     r.base_currency_code = v.base_currency_code;
     r.quote_currency_code = v.quote_currency_code;
     r.gmm_initial_price = v.gmm_initial_price;
@@ -68,6 +69,7 @@ synthetic_fx_spot_config_mapper::map(const domain::synthetic_fx_spot_config& v) 
     r.name = v.name;
     r.description = v.description;
     r.enabled = v.enabled;
+    r.auto_start = v.auto_start;
     r.base_currency_code = v.base_currency_code;
     r.quote_currency_code = v.quote_currency_code;
     r.gmm_initial_price = v.gmm_initial_price;

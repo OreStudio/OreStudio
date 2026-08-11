@@ -33,9 +33,15 @@ $$;
 
 -- Returns the 'infinity' timestamp used for valid_to in temporal tables.
 -- This centralizes the sentinel value representing records that are currently valid.
+-- The literal carries an explicit UTC offset: a naive literal would fold per
+-- session TimeZone, and this function is IMMUTABLE -- the planner folds it at
+-- plan time, so a TZ-dependent fold would let it prove the partial-index
+-- predicates (valid_to = ores_utility_infinity_timestamp_fn()) equivalent to
+-- the app's own naive-literal condition and drop the valid_to filter in
+-- non-UTC sessions.
 CREATE OR REPLACE FUNCTION ores_utility_infinity_timestamp_fn()
 RETURNS timestamptz AS $$
-    SELECT '9999-12-31 23:59:59'::timestamptz;
+    SELECT '9999-12-31 23:59:59+00'::timestamptz;
 $$ LANGUAGE sql IMMUTABLE;
 
 /**

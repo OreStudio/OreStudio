@@ -89,8 +89,9 @@ tooling class above.
 1. Classify the diff with the rule table.
 2. Run the checks for the class (site build, or build + =ctest --preset=).
 3. Submit the build to CDash as experimental for visibility
-   (=ctest --script CTest.cmake= with the experimental group; exact
-   invocation refined in the implementation task).
+   (=./compass.sh test run --preset <preset> --cdash Experimental=;
+   runs the CTest.cmake script under the build lock, same shape CI
+   uses).
 4. Run the review skill locally; record findings in the task's
    =* Review= table; address them.
 5. Record the verification in the PR description as a

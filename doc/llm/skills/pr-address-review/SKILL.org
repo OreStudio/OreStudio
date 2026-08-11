@@ -8,7 +8,7 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:compass:
 #+created: 2026-06-06
-#+updated: 2026-07-11
+#+updated: 2026-08-11
 
 #+begin_export markdown
 ---
@@ -54,13 +54,13 @@ Review comments arrived on a PR: handle one complete round — sync, read, decid
 4. /Decide per comment/ — explicit accept or decline; never silently ignore.
 
 5. /Fix/ — one commit per logical fix; never amend on a branch under
-   review. Build and run tests locally before pushing (same preset as
-   =pr-raise=) — this is the only local verification a round gets, so
-   don't skip it. Update the task's =* Review= table (step 7) for this
-   round and include that in the *same* push as the fixes — never push
-   a bookkeeping-only commit after this round's CI has already gone
-   green; that wastes a full CI cycle recording something with no code
-   content. Push.
+   review. Classify the round's fix with the [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][pr-raise]] rule table and
+   run only the matching checks locally before pushing — this is the
+   only local verification a round gets, so don't skip it. Update the
+   task's =* Review= table (step 7) for this round and include that in
+   the *same* push as the fixes — never push a bookkeeping-only commit
+   after this round's CI has already gone green; that wastes a full CI
+   cycle recording something with no code content. Push.
 
 6. /Reply to every comment/ — accepted: "Fixed in <sha> — ..."; declined: "Not changed. <reason>":
 

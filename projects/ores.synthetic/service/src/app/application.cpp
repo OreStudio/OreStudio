@@ -119,8 +119,19 @@ void auto_start_enabled_feeds(feed_controller& ctrl,
             std::string(fx_spot_feed_kind),
             bctx,
             fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
-        if (ctrl.add(std::move(feed), container->second.binding_mode))
+        std::string conflicting_source_name;
+        if (ctrl.add(std::move(feed), container->second.binding_mode, &conflicting_source_name)) {
             ++started;
+        } else if (!conflicting_source_name.empty()) {
+            // A genuine seed-data misconfiguration (two enabled configs sharing
+            // an ore_key), not a per-request error -- log clearly and move on
+            // rather than failing the whole auto-start pass. An already-running
+            // same-source row (a duplicate config) stays silent, as before.
+            BOOST_LOG_SEV(auto_start_lg(), error)
+                << "Skipping enabled FX rate " << fx.ore_key << " — ore_key already held by "
+                << "auto-started feed '" << conflicting_source_name
+                << "'; both are enabled for the same market data key.";
+        }
     }
     BOOST_LOG_SEV(auto_start_lg(), info) << "Auto-started " << started << " enabled feed(s).";
 }

@@ -91,6 +91,7 @@ via its "Verifies task" field.
 | 2 | codegen-drift's "runs unconditionally" rationale is not preserved in the local replacement: a model-only edit classifies as docs and skips the check that catches forgotten regeneration | pr-raise/SKILL.org, ci-workflows-and-local-checks.org | accepted | Docs class now runs codegen drift when =projects/*/modeling/*= is changed, in both classification tables, with the retired job's rationale noted. |
 | 3 | Top-of-file comment in pr.yml conflation (this PR's job deletions vs. the earlier canary removal) | pr.yml (deleted) | declined | Moot: the file is deleted with the gate. |
 | 4 | nightly-includes.yml auto-fix PR body still cites the deleted codegen-drift check (contradicts "no reference to the gate or its jobs") | nightly-includes.yml | accepted | Body now says hand-edited generated output would fail the local component drift check (check_component_drift.py) |
+| 5 | Knowledge doc Open questions still says the classify rules live in two places (pr.yml and the skill); pr.yml is deleted by this PR | ci-workflows-and-local-checks.org | accepted | Bullet removed; the skill alone owns the rules (the classification task's resolution) |
 
 * Result
 

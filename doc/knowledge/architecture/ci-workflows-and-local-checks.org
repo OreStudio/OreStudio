@@ -102,9 +102,6 @@ modeling paths also runs the codegen drift checks (tangle, then
 
 - How experimental submissions are tagged and filtered out of the
   continuous/nightly dashboards on CDash.
-- The classify rules live in two places (pr.yml and the skill); keep
-  them in sync, or extract a shared rules file the workflow and the
-  skill both read.
 - Which exact test suites run for python tooling changes
   (compass, codegen).
 

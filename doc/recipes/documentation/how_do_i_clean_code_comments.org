@@ -5,7 +5,7 @@
 #+description: Remove comment clutter and keep necessary explanations when cleaning code comments in a diff or across the repository, per the code-review-comments skill.
 #+type: recipe
 #+level: cross
-#+filetags: :code review:comments:
+#+filetags: :documentation:comments:recipe:
 #+created: 2026-08-11
 #+updated: 2026-08-11
 

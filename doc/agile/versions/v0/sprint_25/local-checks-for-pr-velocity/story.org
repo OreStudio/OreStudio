@@ -52,14 +52,16 @@ The objective is higher velocity without losing quality. More analysis is needed
 | [[id:1F491E74-E4C3-4F07-9E44-4E7667A613AD][Analyse all CI workflows and map each check to its local equivalent]] | DONE | 2026-08-11 | 2026-08-11 | Inventory every GitHub Actions workflow and check that gates PRs today (site checks, drift checks, build, ctest, code review, pr-gate, ...). For each, decide its fate: run locally before submit, stay on GitHub, or retire. Produce the change-classification rules the submit-PR skills will use. |
 | [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | DONE | | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:000AD939-CEDD-487E-A23F-EAD86B3F1CE7][Classify changes and run targeted local checks in the submit-PR skills]] | DONE | 2026-08-11 | 2026-08-11 | Replace the unconditional build and ctest in pr-raise with change classification: read the changed files, bucket them per the rule table in the CI workflows and local checks knowledge doc (docs / code / ci / python tooling), and run only the matching checks. Record the class and the verification in the PR description. pr-address-review reuses the classification for its per-round verification. |
-| [[id:3D80654C-76CB-4482-ADAE-6C890E9E7C2C][Reduce the PR gate to classify and pr-gate only]] | DONE | 2026-08-11 | 2026-08-11 | The pr.yml workflow still runs site, roundtrip, cmake-sources-drift, and codegen-drift on every PR, gating every merge even though the submit-PR skills now run these checks locally. Delete those jobs from the PR gate: pr.yml keeps only classify (the path classifier) and pr-gate (the required check that aggregates it). Branch protection keeps pr-gate as the single required check. The site job's CTestSite CDash submission also goes, since experimental submissions now happen locally via compass test run --cdash Experimental. |
+| [[id:3D80654C-76CB-4482-ADAE-6C890E9E7C2C][Delete the PR gate: no GitHub CI on pull requests]] | DONE | 2026-08-11 | 2026-08-11 | The pr.yml workflow gated every pull request with site, roundtrip, drift, and classifier jobs that now run locally via the submit-PR skills — a vestigial ~7s shell gating on nothing real. Delete the workflow entirely (classify, pr-gate, and the retired functional jobs together) and remove the branch-protection required check. The review is the quality backstop on GitHub; the submit-PR skills are the gate. |
 
 * Decisions
 
 - The analysis and the change-classification rule table live in the
   [[id:BC85C0DF-99BE-4079-A649-88A236AE0ACF][CI workflows and local checks]] knowledge doc; the implementation tasks follow it.
-- Checks retire from the PR gate in favor of local runs; =pr-gate=
-  stays as the minimal required check (classify only).
+- The PR gate is deleted entirely: =pr.yml= (classify, pr-gate, and
+  the retired functional jobs together) and the branch-protection
+  required check are gone. The review is the quality backstop on
+  GitHub; the submit-PR skills are the gate.
 - GitHub CI keeps the continuous builds, nightlies, site deploy, and
   coverage jobs.
 - The classification rule table lives in the =pr-raise= skill — one
@@ -72,8 +74,7 @@ The objective is higher velocity without losing quality. More analysis is needed
   =claude-code-review.yml= (auto review on PR events) and =misspell.yml=
   retire when the local code-review skill lands, since they are the
   review coverage that skill replaces; the on-demand =claude.yml=
-  trigger stays. The gate-reduction task deletes only the retired jobs
-  from =pr.yml=.
+  trigger stays. The gate-reduction task deletes =pr.yml= entirely.
 
 * Out of scope
 

@@ -2,7 +2,7 @@
 :ID: BC85C0DF-99BE-4079-A649-88A236AE0ACF
 :END:
 #+title: CI workflows and local checks
-#+description: Every GitHub Actions workflow and check that gates a PR today, its fate after the absorb-PR-checks-locally story (run locally before submit, stay on GitHub, or retire), and the change-classification rules the submit-PR skills use to decide what to run.
+#+description: Every GitHub Actions workflow, its fate after the absorb-PR-checks-locally story (run locally before submit, stay on GitHub, or retire), and the change-classification rules the submit-PR skills use to decide what to run.
 #+type: knowledge
 #+level: cross
 #+filetags: :ci:devops:pr:velocity:
@@ -11,34 +11,31 @@
 
 * Summary
 
-The PR gate on GitHub is minimal: classify (the path classifier) and
-pr-gate (the sole required check). The site, roundtrip, and drift
-checks moved local: the [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][absorb-PR-checks-locally story]]'s submit-PR
-skills classify the change and run only the matching checks before
-raising the PR. GitHub keeps the continuous builds, nightlies, site
-deploy, coverage, and housekeeping bots. This document is the
-inventory, the fate of every check, and the classification rule table.
+GitHub runs no PR gate: the =pr.yml= workflow was deleted, including
+its classifier, and branch protection has no required check. The
+[[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][absorb-PR-checks-locally story]]'s submit-PR skills classify the change
+and run only the matching checks before raising the PR; the review is
+the quality backstop on GitHub. GitHub keeps the continuous builds,
+nightlies, site deploy, coverage, and housekeeping bots. This document
+is the inventory, the fate of every check, and the classification rule
+table.
 
 * Detail
 
-** The PR gate today
+** The PR gate
 
-The =pr.yml= workflow gates every pull request to =main=:
+There is no PR gate. The =pr.yml= workflow gated every pull request to
+=main= until the gate-reduction task deleted it: the =classify= job
+(the path classifier) and =pr-gate= (the sole required check, which
+aggregated classify) went with it, and the branch-protection required
+check was removed. The site, roundtrip, and drift checks it once ran
+now run locally (see the fate table below).
 
-| Job      | Runs when | What it records                                                    | Cost |
-|----------+-----------+--------------------------------------------------------------------+------|
-| classify | always    | Path classifier; buckets every changed file into docs/code/ci (audit trail; the local skills mirror the rules) | ~3s |
-| pr-gate  | always    | Aggregates classify; the branch-protection required check          | ~4s  |
-
-The four functional jobs (=site=, =roundtrip=,
-=cmake-sources-drift=, =codegen-drift=) ran in this workflow until the
-gate-reduction task deleted them; they run locally now (see the fate
-table below).
-
-Two more workflows touch PR branches:
+The workflows that touch PR branches:
 
 - =claude-code-review.yml= runs the automatic Claude review on every
   PR event (opened, synchronize, ready_for_review, reopened) — ~1-2 min.
+- =claude.yml= runs the review on demand via an =@claude= comment.
 - =misspell.yml= runs the misspell fixer on every push to every branch
   and opens auto-fix PRs (a bot, not a gate).
 
@@ -46,12 +43,7 @@ Two more workflows touch PR branches:
 
 | Check                 | Fate            | Where it runs instead / rationale |
 |-----------------------+-----------------+-----------------------------------|
-| classify              | stays           | Dispatcher for the minimal gate; the local skills mirror the same rules (see below). |
-| site                  | deleted from pr.yml | Local: =compass build --direct site= (same emacs export; ~5-10 min locally). Optional CDash submission as experimental. |
-| roundtrip             | deleted from pr.yml | Local: =python3 scripts/ore_domain_roundtrip_check.py=. |
-| cmake-sources-drift   | deleted from pr.yml | Local: =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =codegen-sync-cmake-sources= skill wraps it. |
-| codegen-drift         | deleted from pr.yml | Local: tangle codegen templates (=compass build --direct codegen_templates=) then =check_component_drift.py= with the same components. |
-| pr-gate               | stays (minimal) | Aggregates only classify; keeps branch protection a single required check at ~7s. |
+| classify, site, roundtrip, cmake-sources-drift, codegen-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally); optional CDash submission as experimental. Roundtrip: local =python3 scripts/ore_domain_roundtrip_check.py=. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =codegen-sync-cmake-sources= skill wraps it. codegen-drift: local tangle (=compass build --direct codegen_templates=) then =check_component_drift.py= with the same components. pr-gate: no branch-protection required check remains. |
 | claude-code-review    | retired      | Local: the =code-review= skill runs before submit; findings go into the task's =* Review= table and are addressed in the round. The on-demand =@claude= trigger (=claude.yml=) stays. |
 | misspell              | retired      | Local misspell check folded into the review pass. |
 | site-cdash (Doxygen)  | stays        | =build-site.yml= builds the full site + Doxygen and deploys on main push. |
@@ -65,8 +57,8 @@ Two more workflows touch PR branches:
 ** Change-classification rules
 
 The submit-PR skill classifies the diff and runs only the matching
-checks. The classes mirror =pr.yml='s classify buckets, with one
-addition (python tooling):
+checks. The classes mirror the retired =pr.yml= classifier's buckets,
+with one addition (python tooling):
 
 | Class           | Paths                                                             | Checks the submit-PR skill runs                        |
 |-----------------+-------------------------------------------------------------------+--------------------------------------------------------|
@@ -78,10 +70,9 @@ addition (python tooling):
 
 A mixed change runs the union of its classes' checks.
 
-Gap the current classify rules hide: =pr.yml= buckets =ores.compass=
-and =ores.codegen= changes as docs, so the PR gate never runs their
-test suites. The local classification fixes this with the python
-tooling class above.
+The python tooling class exists because the retired classifier
+bucketed =ores.compass= and =ores.codegen= changes as docs, so their
+test suites never ran anywhere; locally they always do.
 
 ** Local verification flow
 
@@ -97,14 +88,11 @@ tooling class above.
 5. Record the verification in the PR description as a
    =--change= bullet (e.g. "Verification: doc-only change; local site
    build clean").
-6. Raise the PR. GitHub runs only classify + pr-gate; merge when
-   green. Continuous builds and nightlies stay on GitHub.
+6. Raise the PR. GitHub runs no gate; merge when the review round is
+   complete. Continuous builds and nightlies stay on GitHub.
 
 ** Open questions for the implementation tasks
 
-- Keep =pr-gate= as the required check with only classify inside, or
-  drop it and let the review be the gate? The story's default: keep
-  the minimal gate.
 - How experimental submissions are tagged and filtered out of the
   continuous/nightly dashboards on CDash.
 - The classify rules live in two places (pr.yml and the skill); keep

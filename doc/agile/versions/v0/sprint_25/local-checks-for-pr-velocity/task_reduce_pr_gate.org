@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 3D80654C-76CB-4482-ADAE-6C890E9E7C2C
 :END:
-#+title: Task: Reduce the PR gate to classify and pr-gate only
-#+description: The pr.yml workflow still runs site, roundtrip, cmake-sources-drift, and codegen-drift on every PR, gating every merge even though the submit-PR skills now run these checks locally. Delete those jobs from the PR gate: pr.yml keeps only classify (the path classifier) and pr-gate (the required check that aggregates it). Branch protection keeps pr-gate as the single required check. The site job's CTestSite CDash submission also goes, since experimental submissions now happen locally via compass test run --cdash Experimental.
+#+title: Task: Delete the PR gate: no GitHub CI on pull requests
+#+description: The pr.yml workflow gated every pull request with site, roundtrip, drift, and classifier jobs that now run locally via the submit-PR skills — a vestigial ~7s shell gating on nothing real. Delete the workflow entirely (classify, pr-gate, and the retired functional jobs together) and remove the branch-protection required check. The review is the quality backstop on GitHub; the submit-PR skills are the gate.
 #+type: task
 #+level: s1
 #+filetags: :local-checks-for-pr-velocity:sprint_25:v0:
@@ -20,7 +20,14 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The pr.yml workflow still runs site, roundtrip, cmake-sources-drift, and codegen-drift on every PR, gating every merge even though the submit-PR skills now run these checks locally. Delete those jobs from the PR gate: pr.yml keeps only classify (the path classifier) and pr-gate (the required check that aggregates it). Branch protection keeps pr-gate as the single required check. The site job's CTestSite CDash submission also goes, since experimental submissions now happen locally via compass test run --cdash Experimental.
+The pr.yml workflow gated every pull request, but once the submit-PR
+skills ran the site, roundtrip, and drift checks locally, the gate
+shrank to a vestigial shell: classify (whose buckets nothing consumed)
+feeding pr-gate (which passed whenever classify succeeded). The gate
+was ~7s of GitHub time per PR gating on nothing real. Delete =pr.yml=
+entirely — classify and pr-gate with the retired jobs — and remove the
+branch-protection required check. The review is the quality backstop
+on GitHub; the submit-PR skills are the gate.
 
 * Status
 
@@ -35,22 +42,23 @@ The pr.yml workflow still runs site, roundtrip, cmake-sources-drift, and codegen
 
 * Acceptance
 
-- pr.yml runs only classify and pr-gate on pull requests; the site, roundtrip, cmake-sources-drift, and codegen-drift jobs are gone.
-- pr-gate aggregates only the classify job; branch protection still requires pr-gate.
-- No other workflow or required check depends on the removed jobs.
-- The knowledge doc's fate table matches what pr.yml actually runs.
+- =pr.yml= is deleted; no PR gate workflow runs on GitHub.
+- Branch protection has no required status check (other protection
+  settings are preserved).
+- No skill, recipe, or doc references the gate or its jobs.
+- The knowledge doc's fate table reflects the deletion.
+- The review workflow still runs on PR events.
 
 * Plan
 
-- Edit =pr.yml=: delete the =site=, =roundtrip=, =cmake-sources-drift=,
-  and =codegen-drift= jobs; =pr-gate= aggregates only =classify=.
-  Branch protection keeps =pr-gate= as the single required check, so
-  nothing changes there.
-- Grep the other workflows for references to the removed jobs before
-  deleting them; nothing may depend on their outputs.
-- Update the knowledge doc's fate table so "what the PR gate runs"
-  matches =pr.yml= exactly.
-- Deleting whole workflows is out of scope here: =claude-code-review.yml=
+- Delete =pr.yml=: classify, pr-gate, and the already-retired
+  functional jobs go together — none of them gate on real signal.
+- Remove the branch-protection required status check via the GitHub
+  API, preserving every other protection setting.
+- Update the knowledge doc (summary, gate section, fate table, local
+  flow, open questions) and the =pr-raise= skill (it still said "the
+  minimal gate (classify + pr-gate)") to the no-gate reality.
+- Deleting other workflows is out of scope here: =claude-code-review.yml=
   (auto review) and =misspell.yml= retire only once the local-review
   task wires the code-review skill into the submit-PR flow — they are
   the review coverage that skill replaces. The on-demand =claude.yml=
@@ -73,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1970][#1970]] | [ci] Reduce the PR gate to classify and pr-gate only |
+| [[https://github.com/OreStudio/OreStudio/pull/1970][#1970]] | [ci] Delete the PR gate: no GitHub CI on pull requests |
 
 * Review
 
@@ -83,17 +91,18 @@ via its "Verifies task" field.
 
 * Result
 
-=pr.yml= now runs exactly two jobs: =classify= (records the change's
-bucket) and =pr-gate= (the sole required check, aggregating only
-classify). The =site=, =roundtrip=, =cmake-sources-drift=, and
-=codegen-drift= jobs were deleted; nothing else references them
-(=ore_coverage.yml= has its own unrelated =roundtrip= job; =site-cdash.yml=
-stays for main-push deploys). Branch protection already required only
-=pr-gate=, so nothing changed there. The knowledge doc's gate table,
-fate table, and summary now match the reduced gate.
+=pr.yml= is deleted: classify, pr-gate, and the retired functional
+jobs went together — a ~7s per PR shell gating on nothing real.
+Branch protection lost its required status check (other settings
+preserved; verified via the API). Nothing references the gate: the
+knowledge doc (summary, gate section, fate table, local flow, open
+questions) and the =pr-raise= skill now describe the no-gate reality;
+=ore_coverage.yml='s own =roundtrip= job and =site-cdash.yml= (main
+deploys) are untouched. The review workflows (=claude-code-review.yml=,
+=claude.yml=) still run on PR events.
 
 Verification (ci + docs classes): roundtrip clean; cmake-sources drift
 clean; codegen drift clean (no in-tree changes); local site build
-clean. Deleting whole workflows is sequenced with the local-review
-task (auto review and misspell retire when the local review skill
-lands), recorded in Plan.
+clean. Deleting whole workflows beyond the gate is sequenced with the
+local-review task (auto review and misspell retire when the local
+review skill lands), recorded in Plan.

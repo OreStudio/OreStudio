@@ -18,6 +18,8 @@
  *
  */
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
+#include "ores.analytics.quant/service/processes/black_karasinski_params.hpp"
+#include "ores.analytics.quant/service/processes/black_karasinski_process.hpp"
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_params.hpp"
 #include "ores.analytics.quant/service/processes/cox_ingersoll_ross_process.hpp"
 #include "ores.analytics.quant/service/processes/hull_white_params.hpp"
@@ -46,6 +48,7 @@ std::string to_lower(std::string s) {
 /// process type code. The row-based store must contain exactly these.
 const std::map<std::string, std::vector<std::string>>& expected_parameters() {
     static const std::map<std::string, std::vector<std::string>> m{
+        {"black_karasinski", {"kappa", "theta", "sigma", "initial_rate"}},
         {"vasicek", {"kappa", "theta", "sigma", "initial_rate"}},
         {"cox_ingersoll_ross", {"kappa", "theta", "sigma", "initial_rate"}},
         {"hull_white", {"kappa", "theta", "sigma", "initial_rate"}},
@@ -75,6 +78,8 @@ map_parameters_to_yield_curve_process(
     std::uint32_t seed,
     double dt) {
 
+    using ores::analytics::quant::service::black_karasinski_params;
+    using ores::analytics::quant::service::black_karasinski_process;
     using ores::analytics::quant::service::cox_ingersoll_ross_params;
     using ores::analytics::quant::service::cox_ingersoll_ross_process;
     using ores::analytics::quant::service::hull_white_params;
@@ -185,6 +190,15 @@ map_parameters_to_yield_curve_process(
         p.rho = value("rho");
         p.initial_rate = value("initial_rate");
         return std::make_unique<two_factor_gaussian_process>(p, seed, dt);
+    }
+
+    if (type == "black_karasinski") {
+        black_karasinski_params p;
+        p.kappa = value("kappa");
+        p.theta = value("theta");
+        p.sigma = value("sigma");
+        p.initial_rate = value("initial_rate");
+        return std::make_unique<black_karasinski_process>(p, seed, dt);
     }
 
     if (type == "vasicek") {

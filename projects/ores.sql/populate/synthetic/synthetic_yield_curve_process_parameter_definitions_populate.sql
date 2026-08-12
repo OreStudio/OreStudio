@@ -112,7 +112,7 @@ values
      'Initial population of yield curve process parameter definitions'),
     (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,'BLACK_KARASINSKI', 'initial_rate',
      'Initial short rate: the level of the short rate at the simulation start date (time zero). Must be strictly positive - the model runs on the logarithm of the rate.',
-     'double', 0.03, 0, null, 4, current_user, current_user, 'system.initial_load',
+     'double', 0.03, 1e-6, null, 4, current_user, current_user, 'system.initial_load',
      'Initial population of yield curve process parameter definitions'),
 
     -- Two-Factor Gaussian (G2++)

@@ -76,8 +76,10 @@ scalar parameters, no schema change, no codegen. The surfaces are:
    =log(0.04) = -3.218876=, honest log-level default with an
    explanatory description); =kappa= unbounded below (=kappa <= 0= is
    a valid, degenerate driftless case — unlike Vasicek's min 0);
-   =sigma= and =initial_rate= min 0 (the engine enforces the strict
-   =initial_rate > 0= bound at construction).
+   =sigma= min 0; =initial_rate= min =1e-6=, a small positive epsilon
+   so the catalogue expresses the engine's strict =initial_rate > 0=
+   bound and the mapping layer rejects 0 (the engine's own strict
+   check stays as the last line of defence).
 
 3. =IrCurveEditor.cpp=: one =kEngines= row + one tooltip entry — the
    data-driven parameter table needs no dialog work.
@@ -118,7 +120,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | BLACK_KARASINSKI initial_rate min_value 0 lets a strictly-invalid 0 pass the mapping layer's range check; the engine rejects it later with different wording. | synthetic_yield_curve_process_parameter_definitions_populate.sql | ACCEPTED | min_value 0 to 1e-6 (small positive epsilon), matching the documented "strictly positive" invariant; mapping layer now rejects 0 with its consistent "below its minimum" error. |
+| 2 | No unit test exercises the new dispatch branch (matches the existing pattern — no mapping tests for any engine). | yield_curve_process_parameter_mapping.cpp | DECLINED | Consistent with all five existing process types (G2 included no mapping tests either); verification is DB recreate + runtime. A mapping-layer test suite across engines is a follow-up, not this PR. |
+| 3 | Stale tooltip-map comment: "not all three at once" — the map now holds five entries. | IrCurveEditor.cpp | ACCEPTED | Reworded to drop the hardcoded count. |
 
 * Result
 
@@ -155,8 +159,11 @@ The system wiring (this task's scope) landed in three commits on
    definitions catalogue (kappa/theta/sigma/initial_rate). Defaults
    match the quant test values: =theta = log(0.04) = -3.218876=
    (the long-run level of =ln r=), =kappa= unbounded below (valid
-   driftless branch), =sigma=/=initial_rate= min 0 with the strict
-   =initial_rate > 0= requirement documented in the description.
+   driftless branch), =sigma= min 0, =initial_rate= min =1e-6=
+   (review round 1: the catalogue now expresses the strict
+   =initial_rate > 0= bound as a small positive epsilon so the
+   mapping layer rejects 0 with its own consistent message instead of
+   the engine constructor).
 
 3. =[ores.qt]= =kEngines= row + tooltip entry in =IrCurveEditor= —
    the engine combo is populated from =kEngines=, so the row puts

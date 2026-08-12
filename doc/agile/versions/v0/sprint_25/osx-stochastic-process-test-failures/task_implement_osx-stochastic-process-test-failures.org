@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-12
 #+updated: 2026-08-12
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -37,9 +37,9 @@ still bounding genuine model errors:
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] |
-| Now          | Diagnosed: sub-sigma tolerances.       |
+| Now          | Fix verified locally.                  |
 | Waiting on   | Nothing.                               |
-| Next         | Widen tolerances, verify locally.      |
+| Next         | PR.                                    |
 | Last touched | 2026-08-12                               |
 
 * Acceptance
@@ -71,6 +71,28 @@ This makes the failure probability per platform negligible while
 keeping the checks ~4 sigma tight relative to genuine deviations.
 
 * Notes
+
+Root cause: the two Monte Carlo tests assert tolerances tighter than
+their own standard error, and =std::normal_distribution= maps the
+same =mt19937= seeds to different draws per standard library, so the
+macOS (libc++) sequence lands outside the bounds the tests were tuned
+to on Linux (libstdc++).
+
+Fix (committed): widen the bounds to multi-sigma headroom, matching
+the sibling conventions in the same files:
+
+- BK kappa <= 0 walk test: variance epsilon 3e-3 → 1.5e-2 (~4.7 sigma
+  at 200000 paths; the Gaussian-OU moments test already uses 1.5e-2
+  for the same estimator and path count).
+- HJM drift test: mean margins 2e-3 → 1e-2 (>= 3.2 sigma at the
+  noisiest rate, sigma = 0.5; the previous margin was ~0.6 sigma).
+  The front-rate zero-mean check gets the same margin.
+
+Verification: `compass build ores.analytics.quant.tests` green;
+running `[black_karasinski_process],[heath_jarrow_morton_process]`
+passes all 34 test cases (2084209 assertions) on Linux. No source
+changes — test-only hotfix; a genuine model error of ~3 sigma or more
+is still rejected.
 
 * Test Scenarios
 

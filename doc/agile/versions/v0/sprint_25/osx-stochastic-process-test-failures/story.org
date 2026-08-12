@@ -47,7 +47,7 @@ genuine model errors.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:D98B7262-190B-4204-A1A8-F5A2E6C9D299][Scaffold story: Hotfix: stochastic process statistical tests fail on macOS CI]] | DONE | 2026-08-12 | 2026-08-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:3DE5BBB9-13CD-41FF-9F69-855CF34A7FAA][Implement Hotfix: stochastic process statistical tests fail on macOS CI]] | BACKLOG | | | Initial task for: Hotfix: stochastic process statistical tests fail on macOS CI |
+| [[id:3DE5BBB9-13CD-41FF-9F69-855CF34A7FAA][Implement Hotfix: stochastic process statistical tests fail on macOS CI]] | STARTED | 2026-08-12 | | Initial task for: Hotfix: stochastic process statistical tests fail on macOS CI |
 
 * Decisions
 

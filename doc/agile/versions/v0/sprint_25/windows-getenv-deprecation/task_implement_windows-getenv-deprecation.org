@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-12
 #+updated: 2026-08-12
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -21,7 +21,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Replace every =std::getenv= call in test code that Windows compiles
-with =ores::platform::environment::environment::get_value_or_default=
+with =ores::testing::make_nats_options()= -- a shared helper in
+ores.testing that reads the =ORES_NATS_*= variables through
+=ores::platform::environment::environment::get_value_or_default= --
 so the =-Werror= deprecation failure on Windows Clang goes away:
 
 - the codegen template =ores.cpp.eventing-integration-test.nats_integration_test.org=
@@ -38,7 +40,7 @@ so the =-Werror= deprecation failure on Windows Clang goes away:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -62,24 +64,33 @@ Root cause: MSVC's STL marks =std::getenv= deprecated in favour of
 that calls it fails the build (first observed in
 =account_type_eventing_integration_tests.cpp:60=). The failing files
 are codegen-generated from the
-=ores.cpp.eventing-integration-test.nats_integration_test= archetype:
-the =env()= lambda with =std::getenv= lives in the org template, so
-the fix belongs there, not in the generated files (CI enforces a
-zero-diff drift check).
+=ores.cpp.eventing-integration-test.nats_integration_test= archetype,
+whose template inlines a per-file =test_nats_options()= helper (built
+on =std::getenv=) into every generated test: 85 copies, plus two more
+hand-written copies in ores.synthetic. The fix belongs in the
+template, not in the generated files (CI enforces a zero-diff drift
+check), and the duplicated helper is consolidated into one shared
+helper rather than swapped file by file.
 
 Steps:
 
-1. Edit the org template: replace the =std::getenv= lambda with
-   =ores::platform::environment::environment::get_value_or_default(name, "")=
-   and add the =ores.platform/environment/environment.hpp= include.
-2. Re-tangle: =compass build --direct tangle_codegen_templates=.
-3. Regenerate per component with the codegen
+1. Add =ores::testing::make_nats_options()=: a header-only helper in
+   ores.testing (=nats_options_helper.hpp=) that reads the =ORES_NATS_*=
+   variables via
+   =ores::platform::environment::environment::get_value_or_default=
+   with the same defaults the per-file helpers used.
+2. Edit the org template: drop the inline =test_nats_options()= block,
+   include the helper header, call
+   =ores::testing::make_nats_options()= at the client construction
+   site.
+3. Re-tangle: =compass build --direct tangle_codegen_templates=.
+4. Regenerate per component with the codegen
    (=--address ores.cpp.eventing-integration-test=) and inspect the
-   diff: every generated file should show only the include, the
-   lambda replacement, and the =<cstdlib>= include drop if unused.
-4. Hand-fix the two ores.synthetic service tests (same lambda,
-   same replacement).
-5. Verify: grep for remaining =std::getenv=, build the affected test
+   diff: every generated file should show only the include swap and
+   the call-site change.
+5. Replace the two ores.synthetic service tests' local
+   =test_nats_options()= with the shared helper.
+6. Verify: grep for remaining =std::getenv=, build the affected test
    targets, run the drift check.
 
 * Notes

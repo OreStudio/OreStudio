@@ -88,6 +88,7 @@ constexpr EngineInfo kEngines[] = {
     {"COX_INGERSOLL_ROSS", QT_TR_NOOP("Cox-Ingersoll-Ross")},
     {"HULL_WHITE", QT_TR_NOOP("Hull-White")},
     {"TWO_FACTOR_GAUSSIAN", QT_TR_NOOP("Two-Factor Gaussian")},
+    {"BLACK_KARASINSKI", QT_TR_NOOP("Black-Karasinski")},
 };
 
 // indexNameCombo_ still lists the floating_index_type suffix shape this editor has
@@ -436,6 +437,10 @@ void IrCurveEditor::buildProcessTab() {
                 "Ornstein-Uhlenbeck factors. Richer curve shapes (humps, inversions) than any "
                 "single-factor model, at the cost of two reversion speeds and volatilities plus "
                 "their correlation.")},
+            {QStringLiteral("BLACK_KARASINSKI"),
+             tr("Black-Karasinski: d ln r = κ(θ−ln r)dt + σ dW. The logarithm of the short rate is "
+                "a mean-reverting Gaussian process, so the rate stays positive for all time; bond "
+                "prices have no closed form and are evaluated on a trinomial lattice of ln r.")},
         };
         auto it = descriptions.find(engineCombo_->currentData().toString());
         engineCombo_->setToolTip(it != descriptions.end() ? it->second : QString());

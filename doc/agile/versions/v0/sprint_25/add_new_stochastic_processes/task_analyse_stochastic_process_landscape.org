@@ -31,11 +31,11 @@ and vol-surface models stay out of scope.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
-| Now          | Survey complete (2026-08-12); the breakdown is delivered in the story's Tasks table and in =* Result=. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close the task's bookkeeping and raise the analysis PR. |
+| Next         | Nothing. |
 | Last touched | 2026-08-12                               |
 
 * Acceptance

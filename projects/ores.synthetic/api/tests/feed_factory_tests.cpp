@@ -88,6 +88,10 @@ fx_spot_generation_config make_fx_config() {
     cfg.ore_key = "FX/RATE/EUR/USD";
     cfg.source_name = "eur_usd_test";
     cfg.process_type = "geometric";
+    // "fixed" so the factory takes gmm_initial_price as-is -- the vintage
+    // lookup path needs a live authenticated market-data round trip and is
+    // covered by the service tests instead.
+    cfg.price_source = "fixed";
     cfg.gmm_initial_price = 1.1;
     cfg.ticks_per_hour = 60;
     return cfg;

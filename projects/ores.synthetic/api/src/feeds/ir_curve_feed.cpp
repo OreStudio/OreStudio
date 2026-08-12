@@ -21,6 +21,7 @@
 #include "ores.analytics.quant/service/curve_instrument_pricer.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
@@ -292,7 +293,8 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
                                            cfg.tenant_id,
                                            cfg.party_id,
                                            cfg.source_name,
-                                           "synthetic.v1.curve_family." + cfg.source_name,
+                                           ores::marketdata::domain::synthetic_tick_subject(
+                                               ir_curve_feed_kind, cfg.source_name),
                                            "RATES",
                                            "YIELD",
                                            ir_curve_qualifier(cfg),

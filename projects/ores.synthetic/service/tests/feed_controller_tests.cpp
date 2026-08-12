@@ -31,9 +31,9 @@ using ores::synthetic::service::should_ensure_feed_binding;
 
 }
 
-TEST_CASE("synthetic_producer_subject: bound publishes on the standard tick subject", tags) {
+TEST_CASE("synthetic_producer_subject: bound publishes on the fx_spot kind's tick subject", tags) {
     CHECK(synthetic_producer_subject("EUR_USD_GBM", binding_mode::bound) ==
-          "synthetic.v1.tick.EUR_USD_GBM");
+          "synthetic.v1.tick.fx_spot.EUR_USD_GBM");
 }
 
 TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject the "
@@ -45,9 +45,9 @@ TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject
 
     CHECK(sandboxed_subject == "synthetic.v1.sandbox.tick.EUR_USD_GBM");
     CHECK(sandboxed_subject != bound_subject);
-    // The ingest loop always subscribes to "synthetic.v1.tick." + source_name
-    // (see feed_ingest_loop.cpp) -- the sandboxed subject must not collide
-    // with that prefix under any source_name, or the exclusion isn't real.
+    // The ingest loop's one wildcard is "synthetic.v1.tick.>" (see
+    // feed_ingest_loop.cpp) -- the sandboxed subject must not collide with
+    // that prefix under any source_name, or the exclusion isn't real.
     CHECK(sandboxed_subject.starts_with("synthetic.v1.sandbox.tick."));
     CHECK_FALSE(bound_subject.starts_with("synthetic.v1.sandbox.tick."));
 }

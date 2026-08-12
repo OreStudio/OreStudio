@@ -74,13 +74,13 @@ public:
  *   2. Derives every template entry's rate from that one state's discount_factor()s, via
  *      curve_instrument_pricer (deposit/FRA/par-rate solve, dispatched by curve_role) — so the
  *      whole batch is, by construction, a slice of one internally consistent latent curve.
- *   3. Publishes each entry as its own ir_curve_tick, all sharing one datetime, on the family
- *      subject (synthetic.v1.curve_family.<source>) — N individual NATS messages, not one
+ *   3. Publishes each entry as its own ir_curve_tick, all sharing one datetime, on the unified
+ *      tick subject (synthetic.v1.tick.ir_curve.<source>) — N individual NATS messages, not one
  *      aggregate payload (see the task's "what the wire format is not" analysis).
  *
- * Persistence is handled by ores.marketdata.service's curve_feed_ingest_loop, which subscribes to
- * the family wildcard and writes one market_observation row per tick. The synthetic service has
- * no marketdata writes.
+ * Persistence is handled by ores.marketdata.service's feed_ingest_loop, which subscribes to the
+ * unified tick wildcard, dispatches on the kind token and writes one market_observation row per
+ * tick. The synthetic service has no marketdata writes.
  */
 class ORES_SYNTHETIC_API_EXPORT ir_curve_feed final : public ores::marketdata::domain::IFeed {
 public:

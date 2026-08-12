@@ -8,7 +8,7 @@
 #+filetags: :osx-stochastic-process-test-failures:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-osx-stochastic-process-test-failures
-#+pr:
+#+pr: 1976
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-12
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1976][#1976]] | [ores.analytics.quant] Widen statistical test tolerances to multi-sigma bounds |
 
 * Review
 

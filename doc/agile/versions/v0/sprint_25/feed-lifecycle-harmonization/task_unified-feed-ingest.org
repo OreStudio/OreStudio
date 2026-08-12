@@ -28,11 +28,11 @@ uniform republish and observation handling for every feed kind.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -124,3 +124,63 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped: one ingest loop over a unified tick subject scheme.
+
+- Wire contract: new shared header
+  =ores.marketdata.api/domain/tick_subjects.hpp= (prefixes, kind tokens
+  =fx_spot=/=ir_curve=, =synthetic_tick_subject()= builder). Both
+  producers emit =synthetic.v1.tick.<kind>.<source_name>=;
+  =synthetic_producer_subject= (fx_spot_feed.hpp) and =ir_curve_feed=
+  now share one subject derivation instead of two families. Sandbox
+  prefix and =marketdata.v1.tick.= republished scheme unchanged;
+  payloads unchanged — every existing decoder keeps working.
+- One loop: =curve_feed_ingest_loop= deleted (files, cmake entries);
+  =feed_ingest_loop= is the single loop with one wildcard
+  =synthetic.v1.tick.>= subscription and kind-token dispatch. The
+  per-source subscribe/unsubscribe lifecycle became a binding cache
+  (refresh() rebuilds it from enabled feed_bindings; the existing
+  feed_binding_changed_event trigger still drives refresh). fx_spot
+  ticks get identity from the cache; unbound ticks are dropped with a
+  one-time warn (the old structural unreachability, now explicit).
+  ir_curve persistence is the unchanged self-describing path, with
+  republish added: the raw payload goes to
+  =marketdata.v1.tick.<tenant>.<series_type>.<metric>.<qualifier>=
+  lowercased, through the same ore-key subject conversion as FX —
+  uniform republish per the plan (FX semantics applied to every kind,
+  no per-kind flag needed). CRM bridge stays FX-only, guarded by the
+  existing series-type check.
+- Streams: both services stop ensuring =synthetic_curve_ticks= (no
+  delete-stream API — a stale stream on an already-running server
+  lingers inert). =synthetic_ticks='s =synthetic.v1.tick.>= filter
+  already covers both kinds.
+- Consumers: MarketSimulatorWindow's =synthetic_subject()= now emits
+  the kind-prefixed subject via the shared kind tokens; its tick-chart
+  decode was already kind-agnostic. Republished-stream consumers
+  (fx_spot_subscription, Qt grid/chart) untouched.
+- Docs: subject references updated in the modeling orgs
+  (=feed_binding=, =market_observation=,
+  =ir_curve_generation_config=) and the generated headers
+  (=ir_curve_tick=, =feed_binding=, =market_observation=),
+  =curve_snapshot_protocol.hpp=, =curve_republish_service.hpp=,
+  =ir_curve_feed.hpp/cpp=, =fx_spot_feed.hpp= and the
+  =synthetic_producer_subject= sandbox test (whose bound-subject
+  expectation now asserts the =fx_spot= token).
+
+Acceptance met:
+
+- One ingest loop subscribes to the unified tick subjects; the curve
+  subject family and the second JetStream stream are retired — the
+  loop's single wildcard covers both kinds; =synthetic_curve_ticks= is
+  no longer ensured or produced into; =curve_feed_ingest_loop= is gone.
+- The tick wire type carries the kind (the factory kind string rides in
+  the subject); persistence and republish are uniform — FX republish
+  semantics applied to every kind with no per-kind flag.
+- Existing observation data and consumers keep working — payloads and
+  the republished =marketdata.v1.tick.= scheme are unchanged, so
+  curve_republish_resolver point-id lookups and the Qt tick chart work
+  as before.
+
+Verification: full build green (exit 0, 100%); no SQL change, so no DB
+recreate; =compass build rat= green (exit 0) after the documented iam
+CD-residue cleanup (memory ABF849AE).

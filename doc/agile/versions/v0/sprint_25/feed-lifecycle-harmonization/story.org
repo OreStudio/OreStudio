@@ -196,6 +196,25 @@ is the clear setup the codebase never had: config table + producer + one registr
   behaviour (every feed under the folder, both kinds) applies
   everywhere, matching the shell. Explicit Feed-leaf and
   folder-less selections still go through the per-config request.
+- Unified feed ingest (task F550327A): the kind is part of the tick
+  subject — =synthetic.v1.tick.<kind>.<source_name>=, the kind token
+  being the factory kind string (=fx_spot=, =ir_curve=) — so the
+  factory vocabulary and the subject scheme are one and the same. The
+  wire contract (prefixes, tokens, subject builder) lives in the new
+  shared header =ores.marketdata.api/domain/tick_subjects.hpp=, which
+  both services and the Qt client depend on. One =feed_ingest_loop=
+  with a single =synthetic.v1.tick.>= wildcard and kind-token dispatch
+  replaces both loops: the per-source subscribe/unsubscribe lifecycle
+  became a binding cache rebuilt by =refresh()= (still driven by
+  =feed_binding_changed_event=); an unbound fx_spot tick is dropped
+  with a one-time warn — the old structural unreachability, now
+  explicit. Republish is uniform — FX semantics applied to every kind
+  (raw payload to the lowercased =marketdata.v1.tick.<tenant>.<series>=
+  subject), no per-kind flag; CRM stays FX-only. =synthetic_curve_ticks=
+  is retired by stop-ensuring in both services (ores.nats has no
+  delete-stream API; a stale stream is inert). Payloads unchanged, so
+  every existing decoder and the curve_republish_resolver point-id
+  lookups keep working.
 
 * References
 
@@ -214,7 +233,7 @@ is the clear setup the codebase never had: config table + producer + one registr
 | [[id:FD3C0B97-3965-48D6-972E-7D8C497519E2][One per-config control-plane keyed by config_id, server-side resolution]] | DONE | 2026-08-11 | 2026-08-11 | One start/stop/list handler for all kinds, following the IR pattern: the client sends config_id, the server resolves config plus children plus refdata context, checks permissions, and starts the producer via the factory. Delete the FX market_feed_config_handler client-supplied-params path (the no-auth anti-pattern). |
 | [[id:26D67D72-1136-4100-BFED-C081246B5ADB][ores.shell: feed verbs for every asset class]] | DONE | 2026-08-11 | 2026-08-12 | ores.shell gains the missing IR curve feed commands and every control-plane verb works regardless of asset class: folder start/stop (one request, server-side cascade) and per-config start/stop/list keyed by config_id. No shell command enumerates asset classes; new asset classes plug in via the factory. |
 | [[id:60AA1609-3956-41AB-A5B8-0A530F031EF4][Delete client-side feed enumeration]] | DONE | 2026-08-12 | 2026-08-12 | Remove the tree-walk-and-fan-out re-implementations in clients now that the server cascades folders itself: the Qt MarketSimulatorWindow folder branch plus per-config IR loop (and its auto_start client-side filter) and the start_synthetic_theme_feeds two-path provisioning in tenant_handler. Clients send the folder/config request; the server does the rest. |
-| [[id:F550327A-001F-460F-A490-4EBF94642F31][One feed ingest loop over a unified subject scheme]] | STARTED | 2026-08-12 | | Collapse feed_ingest_loop and curve_feed_ingest_loop into one persistence path: the kind is part of the tick subject instead of a second subject family and a second JetStream stream. Uniform republish and observation handling. |
+| [[id:F550327A-001F-460F-A490-4EBF94642F31][One feed ingest loop over a unified subject scheme]] | DONE | 2026-08-12 | 2026-08-12 | Collapse feed_ingest_loop and curve_feed_ingest_loop into one persistence path: the kind is part of the tick subject instead of a second subject family and a second JetStream stream. Uniform republish and observation handling. |
 
 * Out of scope
 

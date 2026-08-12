@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 989374A9-2BE3-4370-BD85-7FC7C7C34047
+:END:
+#+title: Task: Fix: only the first party's synthetic feeds tick (per-party consumption)
+#+description: F15 from the ACME fit-for-purpose review. Only the first office's feeds tick: the controller keys feeds by source_name service-wide and every office's configs share the theme's source names. Design decision (2026-08-12): per-party consumption of a system-party-owned sim config, not per-office producers. Strategy in doc/llm/specs/simulated-market-data-strategy.allium.
+#+type: task
+#+level: s1
+#+filetags: :acme_corporation_followups:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every ACME party (UK, US, HK, holding) receives tick data for the
+simulated market, not just the first party whose feeds started. The
+sim config lives once, under the system party; each party consumes
+the same stream into its own per-party series via per-party feed
+bindings bound to the Live workspace. No per-office producers and no
+per-office theme publishing.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- The theme publishes once, against the system party (Root Tenant /
+  System Party), as part of ACME provisioning; offices do not publish
+  themes and their folder cascades start no feeds.
+- feed_binding carries workspace_id (NOT NULL, default = the Live
+  sentinel); the ACME provisioning creates bindings per office and
+  per holding party for every theme source, workspace = Live, plus a
+  binding for the system party.
+- The ingest loop keeps one subscription per (source_name, tenant,
+  party, workspace); every party's series fills with observations
+  from the shared stream.
+- The republish subject is per party:
+  marketdata.v1.tick.<tenant>.<workspace>.<party>.<ore_key>; the
+  marketdata client (fx_spot_subscription) consumes the new shape.
+- Fresh-DB verification: every ACME party's series has observations,
+  the same source produces identical values in every party, and the
+  party-scoped CRM reads are non-empty for US/HK.
+- The CRM config remains per-party (no shared config).
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

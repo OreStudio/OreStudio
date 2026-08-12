@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: C90544E7-5424-4956-A02D-6BB2F65D42DC
+:END:
+#+title: marketdata persistence intermittently failed 2026-08-12 03:0…
+#+description: marketdata persistence intermittently failed 2026-08-12 03:05:30-08:35:48 with 'Failed to persist observation' after 'No available connections in the pool': with the default pool size of 2 (database_options.hpp), one connection stuck in COMMIT (wait_event IO) from service boot at 03:01:50 for ~5.7h left one effective connection, and concurrent ingest handlers (5 ticks/s) drained it between acquires. Persistence recovered once the stuck connection resolved (~08:54); ~10,500 observations/party persisted afterward. Environmental/pre-existing fragility, not an F15 defect; consider surfacing the acquire timeout and/or raising pool size. ~479 idle Postgres connections also accumulated over 5 days (pre-existing leak, out of scope).
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

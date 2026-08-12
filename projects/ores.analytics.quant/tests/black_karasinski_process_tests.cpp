@@ -252,8 +252,12 @@ TEST_CASE("black_karasinski_process with kappa <= 0 degenerates to a driftless r
         zero_kappa.add(std::log(a.next()));
         negative_kappa.add(std::log(b.next()));
     }
-    CHECK(zero_kappa.sample_variance() == Catch::Approx(sigma * sigma * dt).epsilon(3e-3));
-    CHECK(negative_kappa.sample_variance() == Catch::Approx(sigma * sigma * dt).epsilon(3e-3));
+    // 1.5e-2 is ~4.7 sigma of the estimator at 200000 paths (the same
+    // headroom the Gaussian-OU moments test uses above); sub-sigma bounds
+    // flake because std::normal_distribution draws differ per standard
+    // library, so the same seeds produce different samples on macOS.
+    CHECK(zero_kappa.sample_variance() == Catch::Approx(sigma * sigma * dt).epsilon(1.5e-2));
+    CHECK(negative_kappa.sample_variance() == Catch::Approx(sigma * sigma * dt).epsilon(1.5e-2));
 
     black_karasinski_process p(-0.2, std::log(0.04), 0.3, 0.05, 42, dt);
     for (int i = 0; i < 100; ++i) {

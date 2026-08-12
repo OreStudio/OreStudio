@@ -28,7 +28,6 @@
 #include "ores.marketdata.api/messaging/curve_republish_protocol.hpp"
 #include "ores.marketdata.core/messaging/registrar.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
-#include "ores.marketdata.service/app/curve_feed_ingest_loop.hpp"
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
 #include "ores.marketdata.service/messaging/crm_handler.hpp"
 #include "ores.marketdata.service/messaging/curve_republish_handler.hpp"
@@ -84,17 +83,16 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     try {
         auto admin = nats.make_admin();
+        // The unified tick scheme (synthetic.v1.tick.<kind>.<source>) is fully
+        // covered by synthetic_ticks's "synthetic.v1.tick.>" filter; the retired
+        // synthetic_curve_ticks stream (curve_family subjects) is no longer ensured —
+        // a stale one on an already-running server is inert (no producers, no consumers).
         admin.ensure_stream(nats.make_stream_name("synthetic_ticks"),
                             {nats.make_subject("synthetic.v1.tick.>")});
-        // Separate from synthetic_ticks: see ores.synthetic.service's application.cpp for why
-        // (ensure_stream only creates a missing stream; it never updates an existing one's
-        // subjects, and synthetic_ticks predates this subject everywhere it already exists).
-        admin.ensure_stream(nats.make_stream_name("synthetic_curve_ticks"),
-                            {nats.make_subject("synthetic.v1.curve_family.>")});
         admin.ensure_stream(nats.make_stream_name("marketdata_ticks"),
                             {nats.make_subject("marketdata.v1.tick.>")});
         BOOST_LOG_SEV(lg(), info)
-            << "JetStream streams ready: synthetic_ticks, synthetic_curve_ticks, marketdata_ticks";
+            << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream streams: " << e.what();
         throw;
@@ -112,7 +110,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     auto crm_bridge = std::make_shared<crm_ingest_bridge>(make_context(cfg.database));
     auto ingest = std::make_shared<feed_ingest_loop>(nats, make_context(cfg.database), crm_bridge);
-    auto curve_ingest = std::make_shared<curve_feed_ingest_loop>(nats, make_context(cfg.database));
 
     namespace ev = ores::eventing;
     namespace mdev = ores::marketdata::eventing;
@@ -194,12 +191,11 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                              }));
             return subs;
         },
-        [&nats, ingest, curve_ingest](boost::asio::io_context& ioc) {
+        [&nats, ingest](boost::asio::io_context& ioc) {
             auto hb = std::make_shared<ores::service::service::heartbeat_publisher>(
                 std::string(service_name), std::string(service_version), nats);
             boost::asio::co_spawn(ioc, [hb]() { return hb->run(); }, boost::asio::detached);
             ingest->start();
-            curve_ingest->start();
         });
 
     event_source.stop();

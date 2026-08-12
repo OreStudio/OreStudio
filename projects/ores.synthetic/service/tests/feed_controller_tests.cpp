@@ -18,6 +18,9 @@
  *
  */
 #include "../src/feed_controller.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include <catch2/catch_test_macros.hpp>
 
 namespace {
@@ -31,9 +34,25 @@ using ores::synthetic::service::should_ensure_feed_binding;
 
 }
 
-TEST_CASE("synthetic_producer_subject: bound publishes on the standard tick subject", tags) {
+// The wire kind tokens (ores.marketdata.api) and the producer kind strings
+// (ores.synthetic.api) are declared independently; the compile-time ties
+// below keep the subject scheme and the producer vocabulary from drifting.
+static_assert(ores::synthetic::feed::fx_spot_feed_kind ==
+              ores::marketdata::domain::fx_spot_kind_token);
+static_assert(ores::synthetic::feed::ir_curve_feed_kind ==
+              ores::marketdata::domain::ir_curve_kind_token);
+
+TEST_CASE("synthetic_producer_subject: bound publishes on the fx_spot kind's tick subject", tags) {
     CHECK(synthetic_producer_subject("EUR_USD_GBM", binding_mode::bound) ==
-          "synthetic.v1.tick.EUR_USD_GBM");
+          "synthetic.v1.tick.fx_spot.EUR_USD_GBM");
+}
+
+TEST_CASE("synthetic_tick_subject: ir_curve_feed_kind publishes on the ir_curve kind's "
+          "tick subject",
+          tags) {
+    CHECK(ores::marketdata::domain::synthetic_tick_subject(
+              ores::synthetic::feed::ir_curve_feed_kind, "usd.sofr") ==
+          "synthetic.v1.tick.ir_curve.usd.sofr");
 }
 
 TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject the "
@@ -45,9 +64,9 @@ TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject
 
     CHECK(sandboxed_subject == "synthetic.v1.sandbox.tick.EUR_USD_GBM");
     CHECK(sandboxed_subject != bound_subject);
-    // The ingest loop always subscribes to "synthetic.v1.tick." + source_name
-    // (see feed_ingest_loop.cpp) -- the sandboxed subject must not collide
-    // with that prefix under any source_name, or the exclusion isn't real.
+    // The ingest loop's one wildcard is "synthetic.v1.tick.>" (see
+    // feed_ingest_loop.cpp) -- the sandboxed subject must not collide with
+    // that prefix under any source_name, or the exclusion isn't real.
     CHECK(sandboxed_subject.starts_with("synthetic.v1.sandbox.tick."));
     CHECK_FALSE(bound_subject.starts_with("synthetic.v1.sandbox.tick."));
 }

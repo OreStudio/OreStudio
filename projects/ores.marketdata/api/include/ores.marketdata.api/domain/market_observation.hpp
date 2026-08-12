@@ -88,7 +88,7 @@ struct market_observation final {
 
     /**
      * @brief Source tag identifying the producer channel that published this observation (e.g.
-     * synthetic.v1.tick.EUR-USD).
+     * synthetic.v1.tick.fx_spot.eur-usd).
      */
     std::string source;
 

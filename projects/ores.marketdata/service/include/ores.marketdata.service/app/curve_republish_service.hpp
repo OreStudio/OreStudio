@@ -32,11 +32,11 @@ namespace ores::marketdata::service::app {
 
 /**
  * @brief Computes and publishes an IR curve bootstrap config's output -- the "republish/remap"
- * step, analogous to curve_feed_ingest_loop's raw-tick remap but a transform rather than a
+ * step, analogous to feed_ingest_loop's raw-tick remap but a transform rather than a
  * passthrough.
  *
  * On-demand, not NATS-per-tick and not scheduler-only: a bootstrap is a batch recompute over a
- * presumed-complete grid at a given as-of, unlike curve_feed_ingest_loop's per-tick remap.
+ * presumed-complete grid at a given as-of, unlike feed_ingest_loop's per-tick remap.
  * compute()/republish() are pure orchestration methods callable identically from a NATS
  * request/reply handler, shell/CLI, or a scheduler job.
  *

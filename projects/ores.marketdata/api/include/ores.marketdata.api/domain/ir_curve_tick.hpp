@@ -30,7 +30,7 @@ namespace ores::marketdata::domain {
 
 /**
  * @brief One (tenor, rate) point of an IR Curve Template's tick batch, published per-point via
- * NATS on the family subject (synthetic.v1.curve_family.<source>).
+ * NATS on the unified tick subject (synthetic.v1.tick.ir_curve.<source>).
  *
  * Unlike fx_spot_tick, which relies on a feed_binding row at the ingest side to supply tenant/
  * party/series identity, an ir_curve_tick is fully self-describing: a curve family has no

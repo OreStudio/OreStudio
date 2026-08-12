@@ -32,7 +32,7 @@ namespace ores::marketdata::messaging {
  * point_id, reconstructed from independently-ticking market_observation rows.
  *
  * series_type/metric/qualifier identify the series the same way market_series is looked up
- * elsewhere (e.g. curve_feed_ingest_loop) -- the caller does not need to know the internal
+ * elsewhere (e.g. the unified feed ingest loop) -- the caller does not need to know the internal
  * series_id. Always "latest" (now) for the as-of time; no as-of-in-the-past parameter yet.
  */
 struct get_curve_snapshot_request {

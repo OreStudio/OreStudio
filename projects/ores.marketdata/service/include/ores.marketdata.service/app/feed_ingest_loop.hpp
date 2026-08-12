@@ -22,35 +22,49 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <set>
 #include <string>
+#include <string_view>
 #include <thread>
-#include <vector>
 
 namespace ores::marketdata::service::app {
 
 /**
- * @brief Subscribes to raw synthetic producer channels and republishes on the
- * official tenant-scoped stream.
+ * @brief The single ingest loop: one wildcard subscription on the unified tick
+ * scheme (synthetic.v1.tick.>) persists every arriving tick as a market_observation.
  *
- * On start(), all enabled feed_binding rows are loaded; for each one a NATS
- * subscription is opened on "synthetic.v1.tick.<source_name>". Each arriving
- * fx_spot_tick is:
- *   1. Persisted as a market_observation (tenant + no point_id, source in commentary).
- *   2. Re-published verbatim on "marketdata.v1.tick.<ore_key_subject>" so that
- *      existing consumers (fx_spot_subscription, chart) continue to work unchanged.
+ * The kind token in the subject (the factory kind string — see
+ * ores.marketdata.api/domain/tick_subjects.hpp) selects the per-kind path:
  *
- * refresh() re-reads the bindings table and reconciles subscriptions: new
- * enabled bindings are subscribed, disabled/deleted bindings are unsubscribed.
- * It is called by the feed_binding NATS notify trigger handler on every change.
+ * - fx_spot ticks are bound-feed ticks: identity (tenant, party, ore_key) comes
+ *   from the feed_binding cache, not from the wire (fx_spot_tick is not
+ *   self-describing). A tick whose source has no enabled binding is dropped
+ *   with a one-time warn.
+ * - ir_curve ticks are fully self-describing (tenant, party, series identity and
+ *   point_id all travel on the wire); no binding is involved.
+ *
+ * Every persisted tick is republished verbatim on
+ * "marketdata.v1.tick.<tenant>.<series>", the scheme existing consumers
+ * (fx_spot_subscription, chart) subscribe to. Republish is gated on a
+ * successful persist, so the republished stream cannot diverge from the
+ * observations table.
+ *
+ * refresh() re-reads the bindings table and rebuilds the cache. It is called by
+ * the feed_binding NATS notify trigger handler on every change.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT feed_ingest_loop {
 private:
@@ -61,7 +75,7 @@ private:
     }
 
 public:
-    /// @param crm_bridge Optional; if set, every persisted tick is also
+    /// @param crm_bridge Optional; if set, every persisted fx_spot tick is also
     /// offered to the bridge as a candidate driver update (a no-op if the
     /// tick's (tenant, party) has no CRM configured, or the pair isn't
     /// one of its driver edges) -- see crm_ingest_bridge's own class doc.
@@ -74,17 +88,41 @@ public:
     void refresh();
 
 private:
-    // Both called only from refresh(), which holds mu_.
-    void subscribe_binding_locked(const std::string& ore_key,
-                                  const std::string& source_name,
-                                  const std::string& tenant_id_str,
-                                  const std::string& party_id_str);
-    void unsubscribe_binding_locked(const std::string& source_name);
+    void on_tick(const ores::nats::message& msg);
+    void ingest_fx_spot(const ores::nats::message& msg, std::string_view source_name);
+    void ingest_ir_curve(const ores::nats::message& msg);
+    /// Shared persistence for both tick kinds: resolve the market_series by its
+    /// series identity, auto-creating it when missing, then write the
+    /// observation row. Returns true when the observation was persisted, so
+    /// callers can gate side effects (republish) on a durable write.
+    /// asset_class is derived from the lowercased series_type; series_subclass
+    /// falls back to that same derivation when no wire value exists.
+    bool persist_tick_observation(const ores::database::context& ctx,
+                                  ores::utility::uuid::tenant_id tenant_id,
+                                  const boost::uuids::uuid& party_id,
+                                  const std::string& series_type,
+                                  const std::string& metric,
+                                  const std::string& qualifier,
+                                  std::optional<ores::marketdata::domain::series_subclass>
+                                      series_subclass,
+                                  bool is_scalar,
+                                  std::chrono::system_clock::time_point datetime,
+                                  const std::string& value,
+                                  const std::string& source,
+                                  const std::string& point_id);
     void status_loop();
     void log_status() const;
 
-    struct feed_stats {
+    /// Identity a bound fx_spot tick needs; nothing on the wire supplies it.
+    struct binding_record {
         std::string ore_key;
+        std::string tenant_id_str;
+        boost::uuids::uuid party_id;
+        std::string publish_subject;
+    };
+
+    struct feed_stats {
+        std::string series_identity;
         std::string nats_subject;
         std::atomic<std::uint64_t> tick_count{0};
         std::atomic<std::chrono::system_clock::time_point::rep> last_tick_rep{
@@ -95,8 +133,17 @@ private:
     ores::database::context ctx_;
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     mutable std::mutex mu_;
-    std::map<std::string, ores::nats::service::subscription> subs_;
-    std::map<std::string, std::shared_ptr<feed_stats>> stats_;
+    std::optional<ores::nats::service::subscription> sub_;
+    /// Enabled feed_binding rows keyed by source_name; built by refresh().
+    std::map<std::string, binding_record> bindings_;
+    /// Sources already warned about as unbound, so a running feed doesn't spam.
+    std::set<std::string> unbound_warned_;
+    /// Per-(kind token, source_name) stats: the same source_name can exist in
+    /// more than one feed kind, so the kind token is part of the key.
+    std::map<std::pair<std::string, std::string>, std::shared_ptr<feed_stats>> stats_;
+    /// Reused across ticks. The loop's single subscription dispatches callbacks
+    /// serially, so one generator is safe.
+    boost::uuids::random_generator uuid_gen_;
 
     static constexpr std::chrono::minutes status_interval_{1};
     std::atomic<bool> stop_flag_{false};

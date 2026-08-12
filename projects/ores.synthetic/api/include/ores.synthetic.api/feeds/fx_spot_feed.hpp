@@ -22,6 +22,7 @@
 
 #include "ores.analytics.quant/domain/i_stochastic_process.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
@@ -54,12 +55,13 @@ inline constexpr std::string_view fx_spot_feed_kind = "fx_spot";
  * error.
  *
  * sandboxed feeds publish under a distinct "synthetic.v1.sandbox.tick."
- * prefix rather than "synthetic.v1.tick." -- the marketdata ingest loop's
- * subscription subject is always derived from a feed_binding's source_name
- * as "synthetic.v1.tick." + source_name (see feed_ingest_loop.cpp), so a
- * sandboxed feed's ticks are structurally unreachable from the bound-feed
- * resolution path regardless of whether a feed_binding for this source_name
- * exists.
+ * prefix rather than the unified "synthetic.v1.tick.<kind>.<source>"
+ * scheme — the marketdata ingest loop's subscription subject is always
+ * derived from a feed_binding's source_name as
+ * "synthetic.v1.tick.fx_spot." + source_name (see feed_ingest_loop.cpp),
+ * so a sandboxed feed's ticks are structurally unreachable from the
+ * bound-feed resolution path regardless of whether a feed_binding for this
+ * source_name exists.
  */
 inline std::string synthetic_producer_subject(const std::string& source_name,
                                               ores::synthetic::domain::binding_mode binding_mode) {
@@ -70,7 +72,8 @@ inline std::string synthetic_producer_subject(const std::string& source_name,
         token += safe ? static_cast<char>(c) : '_';
     }
     const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
-    return sandboxed ? "synthetic.v1.sandbox.tick." + token : "synthetic.v1.tick." + token;
+    return sandboxed ? "synthetic.v1.sandbox.tick." + token
+                     : ores::marketdata::domain::synthetic_tick_subject(fx_spot_feed_kind, token);
 }
 
 /**

@@ -19,7 +19,6 @@
 set(files
     "app/application.cpp"
     "app/crm_ingest_bridge.cpp"
-    "app/curve_feed_ingest_loop.cpp"
     "app/curve_republish_service.cpp"
     "app/feed_ingest_loop.cpp"
     "app/host.cpp"
@@ -39,7 +38,6 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/application.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/application_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/crm_ingest_bridge.hpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/curve_feed_ingest_loop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/curve_republish_service.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/feed_ingest_loop.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.marketdata.service/app/host.hpp"

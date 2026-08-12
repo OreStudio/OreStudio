@@ -27,30 +27,41 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include <atomic>
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <map>
 #include <memory>
 #include <mutex>
+#include <optional>
+#include <set>
 #include <string>
+#include <string_view>
 #include <thread>
-#include <vector>
 
 namespace ores::marketdata::service::app {
 
 /**
- * @brief Subscribes to raw synthetic producer channels and republishes on the
- * official tenant-scoped stream.
+ * @brief The single ingest loop: one wildcard subscription on the unified tick
+ * scheme (synthetic.v1.tick.>) persists every arriving tick as a market_observation.
  *
- * On start(), all enabled feed_binding rows are loaded; for each one a NATS
- * subscription is opened on "synthetic.v1.tick.<source_name>". Each arriving
- * fx_spot_tick is:
- *   1. Persisted as a market_observation (tenant + no point_id, source in commentary).
- *   2. Re-published verbatim on "marketdata.v1.tick.<ore_key_subject>" so that
- *      existing consumers (fx_spot_subscription, chart) continue to work unchanged.
+ * The kind token in the subject (the factory kind string — see
+ * ores.marketdata.api/domain/tick_subjects.hpp) selects the per-kind path:
  *
- * refresh() re-reads the bindings table and reconciles subscriptions: new
- * enabled bindings are subscribed, disabled/deleted bindings are unsubscribed.
- * It is called by the feed_binding NATS notify trigger handler on every change.
+ * - fx_spot ticks are bound-feed ticks: identity (tenant, party, ore_key) comes
+ *   from the feed_binding cache, not from the wire (fx_spot_tick is not
+ *   self-describing). A tick whose source has no enabled binding is dropped with
+ *   a one-time warn — the same outcome as the pre-unification binding-driven
+ *   subscriptions (unbound ticks never arrived), now explicit.
+ * - ir_curve ticks are fully self-describing (tenant, party, series identity and
+ *   point_id all travel on the wire); no binding is involved.
+ *
+ * Every persisted tick is republished verbatim on
+ * "marketdata.v1.tick.<tenant>.<series>" so existing consumers
+ * (fx_spot_subscription, chart) continue to work unchanged — the FX republish
+ * semantics now apply to every kind.
+ *
+ * refresh() re-reads the bindings table and rebuilds the cache. It is called by
+ * the feed_binding NATS notify trigger handler on every change.
  */
 class ORES_MARKETDATA_SERVICE_EXPORT feed_ingest_loop {
 private:
@@ -61,7 +72,7 @@ private:
     }
 
 public:
-    /// @param crm_bridge Optional; if set, every persisted tick is also
+    /// @param crm_bridge Optional; if set, every persisted fx_spot tick is also
     /// offered to the bridge as a candidate driver update (a no-op if the
     /// tick's (tenant, party) has no CRM configured, or the pair isn't
     /// one of its driver edges) -- see crm_ingest_bridge's own class doc.
@@ -74,17 +85,22 @@ public:
     void refresh();
 
 private:
-    // Both called only from refresh(), which holds mu_.
-    void subscribe_binding_locked(const std::string& ore_key,
-                                  const std::string& source_name,
-                                  const std::string& tenant_id_str,
-                                  const std::string& party_id_str);
-    void unsubscribe_binding_locked(const std::string& source_name);
+    void on_tick(const ores::nats::message& msg);
+    void ingest_fx_spot(const ores::nats::message& msg, std::string_view source_name);
+    void ingest_ir_curve(const ores::nats::message& msg);
     void status_loop();
     void log_status() const;
 
-    struct feed_stats {
+    /// Identity a bound fx_spot tick needs; nothing on the wire supplies it.
+    struct binding_record {
         std::string ore_key;
+        std::string tenant_id_str;
+        boost::uuids::uuid party_id;
+        std::string publish_subject;
+    };
+
+    struct feed_stats {
+        std::string series_identity;
         std::string nats_subject;
         std::atomic<std::uint64_t> tick_count{0};
         std::atomic<std::chrono::system_clock::time_point::rep> last_tick_rep{
@@ -95,7 +111,11 @@ private:
     ores::database::context ctx_;
     std::shared_ptr<crm_ingest_bridge> crm_bridge_;
     mutable std::mutex mu_;
-    std::map<std::string, ores::nats::service::subscription> subs_;
+    std::optional<ores::nats::service::subscription> sub_;
+    /// Enabled feed_binding rows keyed by source_name; built by refresh().
+    std::map<std::string, binding_record> bindings_;
+    /// Sources already warned about as unbound, so a running feed doesn't spam.
+    std::set<std::string> unbound_warned_;
     std::map<std::string, std::shared_ptr<feed_stats>> stats_;
 
     static constexpr std::chrono::minutes status_interval_{1};

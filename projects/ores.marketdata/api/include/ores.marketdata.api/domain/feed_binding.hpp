@@ -33,8 +33,9 @@ namespace ores::marketdata::domain {
  * producer channel (source_name); enables/disables the ingest loop subscription.
  *
  * A feed binding records which raw producer channel feeds an official market
- * series. The marketdata service reads all enabled bindings at startup, subscribes
- * to synthetic.v1.tick.<source_name>, persists each arriving tick as a
+ * series. The marketdata service reads all enabled bindings at startup into the
+ * ingest loop's binding cache — the source of tenant/party/ore_key identity for
+ * fx_spot ticks, which are not self-describing — persists each arriving tick as a
  * market_observation, and republishes on the official tenant-scoped stream
  * marketdata.v1.tick.<tenant_id>.<ore_key>.
  *
@@ -71,9 +72,9 @@ struct feed_binding final {
     std::string ore_key;
 
     /**
-     * @brief Unique producer identity; the ingest loop subscribes to
-     * synthetic.v1.tick.<source_name>. Matches the source_name of the feed config the binding was
-     * created from.
+     * @brief Unique producer identity; the subject suffix of the producer's
+     * synthetic.v1.tick.fx_spot.<source_name> channel, keying the ingest loop's binding cache.
+     * Matches the source_name of the feed config the binding was created from.
      */
     std::string source_name;
 

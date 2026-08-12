@@ -8,7 +8,7 @@
 #+filetags: :windows-getenv-deprecation:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-windows-getenv-deprecation
-#+pr: 1978
+#+pr: 1981
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-12
@@ -110,6 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1981][#1981]] | [ores.testing] Consolidate NATS test options into shared helper |
 | [[https://github.com/OreStudio/OreStudio/pull/1978][#1978]] | [agile] Scaffold hotfix: Windows build fails on std::getenv deprecation |
 
 * Review

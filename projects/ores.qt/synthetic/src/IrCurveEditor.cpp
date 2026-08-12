@@ -419,8 +419,8 @@ void IrCurveEditor::buildProcessTab() {
         const int idx = engineCombo_->findData(QString::fromStdString(ir_.process_type));
         engineCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
     }
-    // Tooltip describes only the currently-selected engine, not all three at once -- refreshed on
-    // every selection change instead of one static blurb covering the whole combo.
+    // Tooltip describes only the currently-selected engine, not every engine at once -- refreshed
+    // on every selection change instead of one static blurb covering the whole combo.
     auto updateEngineTooltip = [this](int) {
         static const std::map<QString, QString> descriptions = {
             {QStringLiteral("VASICEK"),

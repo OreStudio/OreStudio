@@ -37,7 +37,9 @@ inline ores::nats::config::nats_options make_nats_options() {
     using env = ores::platform::environment::environment;
 
     ores::nats::config::nats_options opts;
-    opts.url = env::get_value_or_default("ORES_NATS_URL", "nats://localhost:4222");
+    opts.url = env::get_value_or_default("ORES_NATS_URL", "");
+    if (opts.url.empty())
+        opts.url = "nats://localhost:4222";
     opts.subject_prefix = env::get_value_or_default("ORES_NATS_SUBJECT_PREFIX", "");
     opts.tls_ca_cert = env::get_value_or_default("ORES_NATS_TLS_CA", "");
     opts.tls_client_cert = env::get_value_or_default("ORES_NATS_TLS_CERT", "");

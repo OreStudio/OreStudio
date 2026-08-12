@@ -8,7 +8,7 @@
 #+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
 #+branch: feature/analyse-stochastic-process-landscape
-#+pr:
+#+pr: 1975
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -117,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1975][#1975]] | [agile,docs] Analyse stochastic-process landscape; task breakdown |
 
 * Review
 

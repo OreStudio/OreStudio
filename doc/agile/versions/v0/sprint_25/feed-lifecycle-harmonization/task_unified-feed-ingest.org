@@ -47,9 +47,56 @@ uniform republish and observation handling for every feed kind.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+One subject family, one wire convention, one ingest loop.
+
+- Wire scheme: =synthetic.v1.tick.<kind>.<source_name>= — the kind is
+  the factory kind string (=fx_spot=, =ir_curve=), so the factory
+  vocabulary and the subject scheme are one and the same. The sandbox
+  prefix (=synthetic.v1.sandbox.tick.=) and the republished
+  =marketdata.v1.tick.= scheme are unchanged. New shared header
+  =ores.marketdata.api/domain/tick_subjects.hpp= holds the prefix, the
+  kind tokens and the subject builder — the wire contract; both
+  ores.synthetic (producers) and ores.marketdata (ingest, Qt clients)
+  already depend on ores.marketdata.api.
+- Streams: the existing =synthetic_ticks= stream (=synthetic.v1.tick.>)
+  already filters both kinds — no stream change needed.
+  =synthetic_curve_ticks= is retired: both services stop ensuring it and
+  no producer publishes into it. ores.nats has no delete-stream API, so
+  the stale stream on an already-running server lingers inert (no
+  producers, no consumers) until the server store is reset.
+- Producers: =synthetic_producer_subject= (fx_spot_feed.hpp) emits
+  =synthetic.v1.tick.fx_spot.<token>= for bound feeds; sandboxed feeds
+  unchanged. ir_curve_feed emits =synthetic.v1.tick.ir_curve.<source>=.
+  Wire payloads are unchanged — the kind rides in the subject, so every
+  existing decoder (Qt tick chart, fx_spot_subscription) keeps working.
+- One ingest loop: =curve_feed_ingest_loop= is deleted;
+  =feed_ingest_loop= becomes the single loop with one wildcard
+  subscription =synthetic.v1.tick.>= and kind-token dispatch:
+  - =fx_spot=: identity from the binding cache (refresh() rebuilds it
+    from feed_bindings on the existing feed_binding_changed_event
+    trigger; the per-source subscribe/unsubscribe lifecycle becomes a
+    cache lifecycle). An arriving tick whose source has no enabled
+    binding is dropped with a one-time warn — the same outcome as
+    today's structural unreachability (no subscription), now explicit.
+    Persistence, CRM bridge and republish unchanged in substance.
+  - =ir_curve=: the self-describing persistence path is unchanged;
+    republish is added (FX republish semantics applied to every kind):
+    the raw payload goes to
+    =marketdata.v1.tick.<tenant>.<series_type>.<metric>.<qualifier>=
+    lowercased, through the same ore-key subject conversion.
+  - CRM stays FX-only: currency driver pairs are FX-shaped, guarded by
+    the existing series-type check.
+- Consumers: MarketSimulatorWindow's =synthetic_subject()= emits the
+  kind-prefixed subject (=is_curve_family= maps to the =ir_curve=
+  token); its tick-chart decode (=extract_tick_value=) is already
+  kind-agnostic. Republished-stream consumers (fx_spot_subscription,
+  Qt grid/chart windows) are untouched — same subjects, same payloads.
+- Docs: the subject references in =ir_curve_tick.hpp=,
+  =feed_binding.hpp=, =market_observation.hpp=, =fx_spot_feed.hpp=,
+  =ir_curve_feed.hpp=, MarketSimulatorWindow and the sandbox test
+  comment are updated to the unified scheme.
+- Verification: full build; no SQL change so no DB recreate; =compass
+  build rat=.
 
 * Notes
 

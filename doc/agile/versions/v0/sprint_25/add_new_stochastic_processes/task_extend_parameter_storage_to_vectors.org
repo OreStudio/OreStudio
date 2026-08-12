@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 233EFA77-2462-4CB8-BDEF-78F8FBC558F8
+:END:
+#+title: Task: Extend process parameter storage to vector-valued parameters
+#+description: Extend the yield-curve process parameter definition/value model to vector-valued parameters (serialized storage, parsing, validation), unblocking the curve-conformant parameters of BDT (sigma path), HJM (per-tenor volatilities/spacings), and LMM (per-rate volatilities/displacements). Scalar definitions and values stay unchanged.
+#+type: task
+#+level: s1
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The process parameter definition and value model supports vector-valued parameters: a definition can declare a vector type, a value row can store a serialized vector, and the mapping layer parses and validates it (element count, per-element bounds). This is the shared storage groundwork for the BDT, HJM, and LMM wirings; scalar parameters behave exactly as before.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- A definition row can declare a vector-valued parameter (data_type extension); existing scalar definitions are unaffected
+- A value row stores a serialized vector; the mapping layer parses it and validates element count and per-element bounds
+- The parameter table in IrCurveEditor renders a vector parameter as a single editable row
+- Seed data demonstrates at least one vector parameter for one consumer process type
+- No QuantLib reference: shared storage infrastructure; consumer tasks carry their own references
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

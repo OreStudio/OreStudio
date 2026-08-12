@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_25:v0:stochastic-processes:
 #+created: 2026-08-11
-#+updated: 2026-08-11
+#+updated: 2026-08-12
 #+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -23,36 +23,46 @@ The system exposes a wider catalogue of stochastic process engines, wired end-to
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Story scaffolded; six engine tasks moved in from IR curve follow-ups (engines merged, wiring pending). |
+| Now           | Analysis complete (2026-08-12): the landscape survey produced an 11-task breakdown with effort estimates and QuantLib references. |
 | Waiting on    | Nothing.                               |
-| Next          | Run the analysis task: survey the landscape and break the story into tasks. |
-| Last touched  | 2026-08-11                               |
+| Next          | Execute the wiring tasks in dependency order: Black-Karasinski first, then the vector-parameter groundwork. |
+| Last touched  | 2026-08-12                               |
 
 * Acceptance
 
 - All moved engine tasks reach DONE with their processes selectable in the system, not just implemented in the quant layer.
 - Every new process is validated against QuantLib reference vectors from /home/marco/Development/ORE/Engine/QuantLib.
+- Where QuantLib 1.42.1 carries no class for a model (BDT, HJM, QG), the task names the historical QuantLib reference and relies on the engine's own cross-validation (lattice vs Monte Carlo; affine/QG recursion identity at gamma == 0).
 - SABR and vol-surface models are out of scope.
 
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-| [[id:29061898-0911-480D-97B6-31B47A4F3C11][Scaffold story: Add new stochastic processes]] | DONE | 2026-08-11 | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:B1CFD140-ADAB-4C2E-A682-D9B656C30295][Analysis: survey the stochastic process landscape and break the story into tasks]] | STARTED | 2026-08-11 | | Survey the stochastic process landscape (six unwired IR engines, G2 wiring precedent, new IR models, FX jump/Poisson capture, QuantLib reference) and produce the story's task breakdown. |
-| [[id:CDB12DB0-B0FF-4507-B94F-17540F6792B3][Implement Black-Karasinski log-normal short-rate process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib BlackKarasinski class. |
-| [[id:DF2BC7E3-8530-4A9C-9071-E48C2BDF44A5][Implement Black-Derman-Toy binomial tree short-rate process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib BlackDermanToy class. |
-| [[id:0F75021C-E1AF-452B-813C-DA43F37A7C4E][Implement multi-factor Affine Term Structure process framework]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: Duffie-Kan theory, QuantLib affine model fragments. |
-| [[id:65233C15-4ABD-4457-B238-0FD994028978][Implement Heath-Jarrow-Morton forward-curve process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib HJM class. |
-| [[id:48D2AA4A-6253-4B09-A78F-21C9B950F68C][Implement LIBOR Market Model forward-rate process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: QuantLib LiborMarketModel classes. |
-| [[id:F1825CC4-6CB7-43F3-9184-0AFE22C15D34][Implement Quadratic Gaussian term-structure process]] | BACKLOG | | | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Reference: Ahn-Dittmar-Gallant QG papers. |
+| Task | State | Start | End | Effort | Description |
+|------+-------+-------+-----+--------+-------------|
+| [[id:29061898-0911-480D-97B6-31B47A4F3C11][Scaffold story: Add new stochastic processes]] | DONE | 2026-08-11 | 2026-08-11 | S | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:B1CFD140-ADAB-4C2E-A682-D9B656C30295][Analysis: survey the stochastic process landscape and break the story into tasks]] | STARTED | 2026-08-11 | | M | Survey the stochastic process landscape (six unwired IR engines, G2 wiring precedent, new IR models, FX jump/Poisson capture, QuantLib reference) and produce the story's task breakdown. |
+| [[id:CDB12DB0-B0FF-4507-B94F-17540F6792B3][Implement Black-Karasinski log-normal short-rate process]] | BACKLOG | | | S | Engine merged via PR #1932; remaining: system wiring (factory, seed data, config storage, Qt UI) following the G2 precedent. Four scalar parameters fit the EAV machinery as-is. Reference: QuantLib BlackKarasinski (onefactormodels/blackkarasinski.hpp; no dedicated test in this version's suite). |
+| [[id:DF2BC7E3-8530-4A9C-9071-E48C2BDF44A5][Implement Black-Derman-Toy binomial tree short-rate process]] | BACKLOG | | | M | Engine merged via PR #1932; remaining: system wiring following the G2 precedent. Needs the vector-parameter groundwork: sigma_path is time-varying and the discount curve is a model input derived from the config's curve. Reference: no QuantLib class in this checkout (BlackDermanToy removed from QuantLib); historical reference only. |
+| [[id:0F75021C-E1AF-452B-813C-DA43F37A7C4E][Implement multi-factor Affine Term Structure process framework]] | BACKLOG | | | M | Engine merged via PR #1932; remaining: system wiring following the G2 precedent. Eigen matrix/vector parameters via named-scalar expansion (fixed two-factor UI scope), rebuilt in the mapping layer. Reference: QuantLib G2 (twofactormodels/g2.hpp) and bermudanswaption.cpp testCachedG2Values as the two-factor special case. |
+| [[id:65233C15-4ABD-4457-B238-0FD994028978][Implement Heath-Jarrow-Morton forward-curve process]] | BACKLOG | | | M | Engine merged via PR #1932; remaining: system wiring following the G2 precedent. Needs the vector-parameter groundwork; the forward grid derives from the config's curve. Reference: no QuantLib class in this checkout (HjmModel removed); historical ql/termstructures/forwardratefamily reference. |
+| [[id:48D2AA4A-6253-4B09-A78F-21C9B950F68C][Implement LIBOR Market Model forward-rate process]] | BACKLOG | | | L | Engine merged via PR #1932; remaining: system wiring following the G2 precedent. Largest parameter surface (rates, volatilities, correlation matrix, displacements, spacings); needs the vector-parameter groundwork. Reference: QuantLib liborforwardmodel.hpp/lfmprocess.hpp and libormarketmodel.cpp (testCapletPricing, testSwaptionPricing, testCalibration). |
+| [[id:F1825CC4-6CB7-43F3-9184-0AFE22C15D34][Implement Quadratic Gaussian term-structure process]] | BACKLOG | | | M | Engine merged via PR #1932; remaining: system wiring following the G2 precedent. Affine's surface plus the gamma matrix; the most original engine. Reference: no QuantLib class in this checkout (QuadraticGaussianModel removed); Ahn-Dittmar-Gallant papers. |
+| [[id:233EFA77-2462-4CB8-BDEF-78F8FBC558F8][Extend process parameter storage to vector-valued parameters]] | BACKLOG | | | M | Extend the parameter definition/value model to vector-valued parameters (serialized storage, parsing, validation), unblocking BDT, HJM, and LMM. No QuantLib reference: shared storage infrastructure. |
+| [[id:C60D63FB-24E4-432D-A7DE-63CBBBC731DA][Implement jump-diffusion (Merton) FX spot process engine]] | BACKLOG | | | S | Merton 1976 jump-diffusion engine in ores.analytics.quant: GBM plus compound Poisson jumps with log-normal sizes. Reference: QuantLib Merton76Process and test-suite/jumpdiffusion.cpp (testMerton76, testGreeks). |
+| [[id:1965EE9B-8563-4D7B-A23E-34FC4F2FDA1A][Wire jump-diffusion into the system: factory, config storage, Qt UI]] | BACKLOG | | | M | Factory branch, config storage, FxSpotRateEditor surface (replaces the Component Tools placeholder), shared validation. Reference: via the engine task. |
 
 * Decisions
 
 - The six unwired IR engine tasks moved here from the IR curve follow-ups story on 2026-08-11. Their engines are merged (PR #1932, 2026-08-10); the system wiring is the remaining scope, following the G2 wiring precedent (Wire G2 task, DONE).
 - Scope is FX and IR only. SABR and any vol-surface model are out of scope.
 - Candidate additional IR models (from tmp/tmp.org): two-factor Hull-White (reuses the affine/G2 engine), shifted log-normal / displaced diffusion, normal (Bachelier). The FX jump/Poisson process comes from capture 84635A47 (deferred backlog).
-- QuantLib reference for validation: /home/marco/Development/ORE/Engine/QuantLib — its test-suite provides reference vectors for every target model.
+- QuantLib reference for validation: /home/marco/Development/ORE/Engine/QuantLib — its test-suite provides reference vectors for most target models; BDT, HJM, and QG have no class in this checkout (see the inventory finding below).
+- Analysis findings (2026-08-12): the new IR models resolve to existing engines — two-factor Hull-White is exactly G2++ (already wired as =two_factor_gaussian_process=; QuantLib anchor G2 + bermudanswaption.cpp testCachedG2Values); normal/Bachelier is the arithmetic engine (FX ABM) and Vasicek (normal short rate), both wired; shifted log-normal is already parameterised inside LMM (displacements). No new-engine tasks for the IR models.
+- QuantLib 1.42.1 inventory: Black-Karasinski and LMM classes and tests present; G2 present (affine anchor); Merton76Process + jumpdiffusion.cpp present (FX jump anchor). BDT, HJM, and QG classes are absent from this checkout (removed from QuantLib): their tasks name historical references and rely on the engines' own cross-validation (rate_tree lattice vs Monte Carlo; affine/QG recursion identity at gamma == 0).
+- EAV representation: the scalar value table covers Black-Karasinski as-is, and affine/QG via named-scalar expansion (fixed two-factor UI scope, matrices rebuilt in the mapping layer). Curve-conformant vectors (BDT sigma path, HJM/LMM per-tenor grids) need the vector-parameter extension — the groundwork task.
+- FX jump splits into an engine task (quant layer, Merton 1976 port) and a wiring task (factory, config, editor). The capture 84635A47 file paths are stale: IStochasticProcess and process_factory now live in ores.analytics.quant, and the FX flow runs FxSpotRateEditor → fx_spot_generation_config → make_fx_spot_feed → process_factory::make_process().
+- Effort scale in the Tasks table: S ≤ 1 dev-day, M 2–3 dev-days, L 4–5 dev-days. (No prior convention; the scale is recorded here.)
+- The parameter form generalises beyond the G2 one-off: IrCurveEditor's table is rebuilt from the definitions table on engine change, so new engines need no dialog work — only a kEngines row and tooltip entry in each editor's hardcoded engine table, plus seed rows on the IR side.
 
 * Out of scope
 

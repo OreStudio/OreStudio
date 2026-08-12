@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
-#+updated: 2026-08-11
+#+updated: 2026-08-12
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -33,10 +33,10 @@ and vol-surface models stay out of scope.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
-| Now          | Not yet started.                       |
+| Now          | Survey complete (2026-08-12); the breakdown is delivered in the story's Tasks table and in =* Result=. |
 | Waiting on   | Nothing.                               |
-| Next         | Produce the task breakdown.            |
-| Last touched | 2026-08-11                               |
+| Next         | Close the task's bookkeeping and raise the analysis PR. |
+| Last touched | 2026-08-12                               |
 
 * Acceptance
 
@@ -96,6 +96,12 @@ Survey program, in order:
 
 * Notes
 
+- Capture 84635A47's file paths are stale (pre-quant-layer): it cites
+  =ores.marketdata.api/domain/i_stochastic_process.hpp= and
+  =ores.synthetic/service/src/process_factory.cpp=; both now live in
+  =ores.analytics.quant= (=domain/i_stochastic_process.hpp= and
+  =service/process_factory.cpp=).
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -120,3 +126,88 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Survey completed 2026-08-12. The story's Tasks table now carries the
+breakdown — 11 tasks with effort estimates, ordering, and QuantLib
+references — and three new task docs were scaffolded via =compass add
+task=: vector-parameter groundwork, jump-diffusion engine, and
+jump-diffusion wiring.
+
+1. *Six unwired engines.* All six parameter structs exist (PR #1932)
+   with the G2 row-architecture contract. Shapes: Black-Karasinski =
+   four scalars (kappa, theta, sigma, initial_rate), the same shape as
+   the wired one-factor family; BDT = discount_curve and sigma_path,
+   both vectors, the curve a model input; affine = Eigen vectors and a
+   covariance matrix; HJM = three vectors (the forward grid derives
+   from the config's curve); LMM = the largest surface (rates,
+   volatilities, correlation matrix, displacements, spacings); QG =
+   affine's set plus the gamma matrix. Per-engine wiring = an
+   =expected_parameters= entry and dispatch branch in
+   =map_parameters_to_yield_curve_process=, seed rows (process type +
+   parameter definitions), and a =kEngines= row + tooltip in
+   =IrCurveEditor=. No migration, no config-domain change, no dialog
+   work: the G2 machinery already made the parameter form data-driven.
+
+2. *G2 wiring precedent.* The eight steps (param structs → definitions
+   entity → value child entity → mapping layer → seed → migration →
+   factory consumers → dialog). Reusability: steps 2–4 and 8 are
+   generic; the dialog rewrite actually landed in =IrCurveEditor=
+   (data-driven parameter table), so new engines need no dialog
+   changes. Only the engine combos are per-engine work: hardcoded
+   =kEngines= tables in both editors.
+
+3. *QuantLib reference* (1.42.1 at
+   =/home/marco/Development/ORE/Engine/QuantLib=). Present:
+   Black-Karasinski (onefactormodels/blackkarasinski.hpp — no
+   dedicated test in this version's suite), G2 (twofactormodels/g2.hpp,
+   bermudanswaption.cpp testCachedG2Values), LMM (liborforwardmodel.hpp/
+   lfmprocess.hpp in ql/legacy/libormarketmodels/ and
+   ql/models/marketmodels/; tests libormarketmodel.cpp —
+   testSimpleCovarianceModels/testCapletPricing/testCalibration/
+   testSwaptionPricing — and libormarketmodelprocess.cpp), and the FX
+   jump reference (Merton76Process/BatesProcess in ql/processes/,
+   test-suite/jumpdiffusion.cpp — testMerton76, testGreeks). Absent
+   from this checkout: BlackDermanToy, HjmModel, and
+   QuadraticGaussianModel (all removed from QuantLib). Our BDT/HJM/QG
+   engines carry their own validation (rate_tree lattice vs Monte
+   Carlo; affine/QG recursion identity at gamma == 0); historical
+   QuantLib versions hold the removed classes as literature reference.
+   QG is the most original engine, as predicted.
+
+4. *New IR models.* All three resolve to existing engines — no new
+   tasks: two-factor Hull-White ≡ G2++ (already wired as
+   =two_factor_gaussian_process=); normal/Bachelier is the arithmetic
+   engine (FX ABM) and Vasicek (normal short rate), both wired;
+   shifted log-normal/displaced diffusion is already parameterised
+   inside LMM (displacements), and no standalone QuantLib short-rate
+   class exists in this checkout.
+
+5. *FX jump/Poisson* (capture 84635A47). The capture's paths are
+   stale: IStochasticProcess and process_factory now live in
+   =ores.analytics.quant=, and the FX flow is FxSpotRateEditor →
+   =fx_spot_generation_config= (+ gmm_component child) →
+   =make_fx_spot_feed= → =process_factory::make_process(process_type,
+   means, stdevs, weights, initial_price, seed)=. The FX catalogue is
+   the editor's hardcoded engine table plus the config's free-string
+   process_type; there is no process-type reference table on the FX
+   side. Two new tasks: engine (Merton 1976 port — GBM + compound
+   Poisson, log-normal jumps; reference jumpdiffusion.cpp) and wiring
+   (factory branch, config storage, editor surface replacing the
+   "Jump / Poisson processes" placeholder bullet).
+
+6. *UI surfaces.* IR: =IrCurveEditor='s parameter table is rebuilt
+   from the definitions table on engine change — fully data-driven, no
+   per-engine work; =IrCurveGenerationConfigDetailDialog= needs
+   nothing. FX: =FxSpotRateEditor= has per-engine Simple pages and
+   Advanced-table repurposing; the jump engine needs a real parameter
+   surface. Seed data: process types + parameter definitions on the IR
+   side only.
+
+7. *Breakdown.* Eleven rows in the story's Tasks table (effort scale
+   in the story Decisions): Black-Karasinski wiring (S) → vector
+   groundwork (M) → BDT wiring (M) → affine wiring (M) → QG wiring
+   (M) → HJM wiring (M) → LMM wiring (L), plus the FX track in
+   parallel: jump engine (S) → jump wiring (M). Ordering logic:
+   Black-Karasinski first (pure scalar, zero design risk); the
+   groundwork before BDT (its first vector consumer); affine before
+   QG (shared matrix machinery); LMM last (largest surface).

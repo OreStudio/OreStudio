@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: C60D63FB-24E4-432D-A7DE-63CBBBC731DA
+:END:
+#+title: Task: Implement jump-diffusion (Merton) FX spot process engine
+#+description: Implement a jump-diffusion spot engine in ores.analytics.quant: geometric Brownian motion plus a compound Poisson jump component with log-normal jump sizes (Merton 1976), following the data-oriented pattern of gaussian_mixture_model_process. Reference: QuantLib Merton76Process, test-suite/jumpdiffusion.cpp (testMerton76, testGreeks).
+#+type: task
+#+level: s1
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A jump_diffusion_process joins the IStochasticProcess family in ores.analytics.quant: GBM drift and volatility, Poisson jump arrivals per tick, and log-normal jump sizes (Merton 1976). Plain struct parameters, exact jump simulation, validation; the system wiring (factory, config storage, Qt UI) is tracked in the Wire jump-diffusion task.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- jump_diffusion_process implements IStochasticProcess::next() with Poisson jump arrivals and log-normal jump sizes
+- Parameter struct: drift, volatility, jump intensity, jump-size mean, jump-size sigma, initial price; validation rejects negative volatility and intensity
+- Unit tests reproduce QuantLib reference values from test-suite/jumpdiffusion.cpp (testMerton76 and testGreeks)
+- Seed determinism for a fixed seed
+- No system wiring in this task — wiring is tracked in the Wire jump-diffusion task
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

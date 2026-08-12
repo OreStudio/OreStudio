@@ -48,7 +48,7 @@ codegen template and regenerates, so the Windows build compiles again.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7012042B-7BAC-4989-BE1F-C2679821ABC0][Scaffold story: Hotfix: Windows build fails on std::getenv deprecation]] | STARTED | 2026-08-12 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:7012042B-7BAC-4989-BE1F-C2679821ABC0][Scaffold story: Hotfix: Windows build fails on std::getenv deprecation]] | DONE | 2026-08-12 | 2026-08-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:AEA7E72A-5254-481F-9E27-AA51DC2BA7C8][Implement Hotfix: Windows build fails on std::getenv deprecation]] | BACKLOG | | | Initial task for: Hotfix: Windows build fails on std::getenv deprecation |
 
 * Decisions

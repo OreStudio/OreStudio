@@ -29,7 +29,9 @@ namespace ores::platform::environment {
  * environment.
  *
  * Wraps std::getenv / setenv / unsetenv (Unix) and _putenv_s (Windows).
- * This is the provider that ores.platform uses by default.
+ * This is the provider that ores.platform uses by default. Callers must
+ * go through this provider: std::getenv is deprecated in MSVC's STL
+ * (in favour of _dupenv_s) and breaks the Windows build under -Werror.
  */
 class real_environment_provider final : public environment_provider {
 public:

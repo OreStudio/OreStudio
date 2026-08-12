@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-|          |       |       |
+| [[id:795B5273-58CF-40BF-9F01-E83CF82F1891][Verify Black-Karasinski IR curve config]] | PENDING | Covers the BK-specific acceptance: engine in combo, four parameter fields with seeded defaults/bounds, save/reopen persistence, live preview via the mapping layer, Vasicek regression. History and eventing steps omitted: both are generic config-entity mechanics, independent of process type. |
 
 * PRs
 

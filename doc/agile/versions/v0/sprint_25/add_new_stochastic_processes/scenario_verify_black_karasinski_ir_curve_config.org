@@ -1,0 +1,165 @@
+:PROPERTIES:
+:ID: 795B5273-58CF-40BF-9F01-E83CF82F1891
+:END:
+#+title: Test Scenario: Verify Black-Karasinski IR curve config
+#+description: Verify the Black-Karasinski engine appears in the IR curve config editor's engine combo, shows its four parameter fields with the seeded defaults and bounds, persists them to the child table on save, and drives a live curve preview through the mapping layer, with existing Vasicek configs unaffected.
+#+type: test_scenario
+#+level: s1
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
+#+target_dialog: IrCurveEditor (embedded in MarketSimulatorWindow) — Menu: Market Data > Synthetic > Market Simulator; toolbar actions New Feed / New IR Curve
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:CDB12DB0-B0FF-4507-B94F-17540F6792B3][Implement Black-Karasinski log-normal short-rate process]] in [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- Database recreated 2026-08-12 from the merged BK head (drift
+  current, =compass db status=) — includes the five process types and
+  the 23 parameter definitions seeded by PR #1980.
+- Acme Corporation holding group provisioned via =compass shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+  — completed with no failed steps.
+- Services running (=compass services status=: synthetic service up).
+- The client is launched with this scenario preloaded (System >
+  Testing > Scenario Runner).
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:CDB12DB0-B0FF-4507-B94F-17540F6792B3][Implement Black-Karasinski log-normal short-rate process]] |
+| Parent story  | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]]   |
+| Target dialog | IrCurveEditor (embedded in MarketSimulatorWindow) — Menu: Market Data > Synthetic > Market Simulator; toolbar actions New Feed / New IR Curve |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant admin
+
+- Account: =tenant_admin@acme_corporation=, password:
+  =Secure-Password-123= (from the Acme provisioning script's =login=
+  line).
+- After login, confirm the Acme Corporation party is selected and the
+  main window opens with the menu bar.
+
+** Open the Market Simulator
+
+- Menu: Market Data > Synthetic > Market Simulator.
+- The window opens with an empty left tree (no feeds exist yet) and
+  the toolbar (Reload, New Feed, New FX Rate, New IR Curve, Edit,
+  Delete, Start Feed, Stop Feed).
+
+** Create a new feed
+
+- Click the =New Feed= toolbar button.
+- Name it =BK Feature Test= and accept.
+- Confirm the feed appears in the left tree.
+
+** Start a new IR curve config
+
+- Select the =BK Feature Test= feed in the left tree.
+- Click the =New IR Curve= toolbar button.
+- The IR curve editor opens (Provenance / Instrument / Process /
+  Curve Template tabs).
+- On the Instrument tab: pick Currency =USD=, Index =SOFR= (both
+  combos must populate with reference data); leave Role and Source
+  Name at their defaults.
+
+** Select the Black-Karasinski engine
+
+- On the Process tab, open the =Engine:= combo at the top.
+- Confirm the fifth and final entry is =Black-Karasinski= (after
+  Vasicek, Cox-Ingersoll-Ross, Hull-White, Two-Factor Gaussian).
+- Select it — the tooltip shows "Black-Karasinski: d ln r = κ(θ−ln
+  r)dt + σ dW..." and the parameter table reloads with four rows.
+
+** Check the four BK parameter fields
+
+- Confirm the parameter table shows exactly: =kappa=, =theta=,
+  =sigma=, =initial_rate=.
+- Confirm the seeded defaults: kappa =0.5=, theta ==-3.218876=
+  (log(0.04), the long-run level of ln r), sigma =0.01=,
+  initial_rate =0.03=.
+- Confirm the spin-box bounds: sigma cannot go below 0; typing 0 into
+  initial_rate clamps to =1e-6= (strictly positive — 0 is not
+  selectable); kappa and theta have no lower bound.
+
+** Confirm the live curve preview renders
+
+- On the Process tab, confirm the curve shape chart and the sample
+  paths preview draw a positive short-rate curve that evolves over
+  time — this constructs the engine through the mapping layer
+  (preview request → map_parameters_to_yield_curve_process), so a
+  dispatch or validation failure would show an error banner instead.
+- No error banner is displayed.
+
+** Change sigma, save the config
+
+- Set sigma =0.02= (edit the spin box on the sigma row).
+- Click =Save=; enter a change reason if prompted.
+- Confirm the new config appears under =BK Feature Test= in the tree.
+
+** Reopen and confirm persistence
+
+- Double-click the saved config in the tree (edit mode).
+- On the Process tab confirm the engine is still =Black-Karasinski=
+  and the parameter table shows sigma =0.02= — the value read back
+  from the config's child value rows, not the seeded default (0.01).
+- kappa, theta, initial_rate show their saved values (0.5,
+  -3.218876, 0.03).
+
+** Regression: Vasicek config unaffected
+
+- With the feed still selected, click =New IR Curve= again.
+- Leave the engine at the default =Vasicek=; confirm its four
+  parameters show the Vasicek defaults (theta =0.03=, sigma =0.01=)
+  and its preview renders.
+- Save it with a change reason, then close the editor.
+
+** Delete both test configs
+
+- Select each config in the tree and click =Delete=, confirming the
+  prompt.
+- Confirm both disappear from the tree and the feed remains.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

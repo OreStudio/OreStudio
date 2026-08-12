@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-black-karasinski-process
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -26,7 +26,7 @@ The Black-Karasinski process appears as a selectable process type in the IR curv
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
 | Now          | Engine implemented and merged (PR #1932); system wiring remaining. |
 | Waiting on   | Nothing.                               |

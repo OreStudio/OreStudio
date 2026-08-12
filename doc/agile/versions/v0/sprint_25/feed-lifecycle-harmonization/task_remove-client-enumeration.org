@@ -48,9 +48,33 @@ clients send the folder/config request and the server cascades.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The server-side folder cascade (task 9E2344CF) already covers every
+asset class, so both clients delete their enumeration; nothing on the
+server changes.
+
+- =tenant_handler.hpp= =start_synthetic_theme_feeds=: the
+  dataset/config/folder resolution stays, then one folder-scoped
+  request. The IR two-path block is deleted: the folder-hierarchy walk
+  into =subtree_folder_ids=, the =get_ir_curve_generation_configs=
+  listing, the =auto_start= filter, and the per-curve
+  =start_feed_request= fan-out — plus the includes only it used
+  (=ir_curve_generation_config_protocol.hpp=,
+  =ores.utility/domain/hierarchy.hpp=, =<unordered_set>=). The
+  function's doc comment and the request-block comment now say one
+  folder-scoped request cascades every feed kind. A folder failure
+  returns false immediately (previously it set =ok=false= and kept
+  walking; the caller sees the same =.failed= step either way).
+- =MarketSimulatorWindow=: the folder branch of =onStartFeedClicked=
+  and of the theme picker (=promptThemeAndStart=) issues the folder
+  request only — the per-config IR loop with its =auto_start= filter
+  is deleted from both. =onStopFeedClicked= stops via the folder
+  request only when a folder is selected; the per-feed stop
+  (=stopIrCurvesAsync=) runs only in the folder-less case. The per-feed
+  path (=startPairsAsync= + =startIrCurvesAsync=) stays for Feed-leaf
+  and folder-less selections — explicit selections still go through
+  the kind-agnostic per-config request (task 5).
+- Behaviour parity rests on the folder cascade covering both kinds;
+  it is verified via the folder-cascade QA scenarios (task 9E2344CF).
 
 * Notes
 

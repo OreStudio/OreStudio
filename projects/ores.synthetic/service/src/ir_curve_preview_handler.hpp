@@ -21,7 +21,6 @@
 #define ORES_SYNTHETIC_SERVICE_IR_CURVE_PREVIEW_HANDLER_HPP
 
 #include "ores.analytics.quant/service/process_factory.hpp"
-#include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -30,6 +29,7 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_template_resolver.hpp"
 #include "ores.synthetic.api/messaging/preview_ir_curve_shape_protocol.hpp"
 #include "ores.synthetic.api/messaging/simulate_ir_curve_paths_protocol.hpp"
 #include <boost/uuid/random_generator.hpp>

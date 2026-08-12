@@ -160,9 +160,9 @@ public:
             entries_by_config;
         for (const auto& e : entries)
             entries_by_config[e.ir_curve_config_id].push_back(e);
-        std::map<
-            boost::uuids::uuid,
-            std::vector<ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>>
+        std::map<boost::uuids::uuid,
+                 std::vector<
+                     ores::synthetic::domain::ir_curve_generation_config_process_parameter_value>>
             values_by_config;
         for (const auto& v : values)
             values_by_config[v.config_id].push_back(v);
@@ -204,8 +204,8 @@ public:
                     bctx,
                     fx_spot_feed_build_input{fx, it->second, container->second.binding_mode});
                 std::string conflicting_source_name;
-                if (ctrl_->add(std::move(feed), container->second.binding_mode,
-                               &conflicting_source_name))
+                if (ctrl_->add(
+                        std::move(feed), container->second.binding_mode, &conflicting_source_name))
                     ++fx_counts.started;
                 else if (conflicting_source_name.empty())
                     // A concurrent cascade started the same config between
@@ -235,8 +235,8 @@ public:
             if (!cfg.enabled || container == containers.end() || !container->second.enabled) {
                 ++ir_counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/"
-                    << cfg.index_family << " under folder " << req->folder_id
+                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
+                    << " under folder " << req->folder_id
                     << " — not enabled (config or container).";
                 continue;
             }
@@ -244,18 +244,16 @@ public:
             if (it == entries_by_config.end() || it->second.empty()) {
                 ++ir_counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/"
-                    << cfg.index_family << " under folder " << req->folder_id
-                    << " — no template entries.";
+                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
+                    << " under folder " << req->folder_id << " — no template entries.";
                 continue;
             }
             const auto vit = values_by_config.find(cfg.id);
             if (vit == values_by_config.end() || vit->second.empty()) {
                 ++ir_counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/"
-                    << cfg.index_family << " under folder " << req->folder_id
-                    << " — no parameter value rows.";
+                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
+                    << " under folder " << req->folder_id << " — no parameter value rows.";
                 continue;
             }
 
@@ -267,9 +265,8 @@ public:
             if (!refctx) {
                 ++ir_counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/"
-                    << cfg.index_family << " under folder " << req->folder_id
-                    << " — tenor convention not found.";
+                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
+                    << " under folder " << req->folder_id << " — tenor convention not found.";
                 continue;
             }
 
@@ -277,8 +274,7 @@ public:
                 const auto feed = factory.make(
                     std::string(ir_curve_feed_kind),
                     bctx,
-                    ir_curve_feed_build_input{
-                        cfg, it->second, vit->second, definitions, *refctx});
+                    ir_curve_feed_build_input{cfg, it->second, vit->second, definitions, *refctx});
                 std::string conflicting_source_name;
                 if (ctrl_->add(std::move(feed), &conflicting_source_name))
                     ++ir_counts.started;
@@ -291,15 +287,14 @@ public:
                     BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
                         << "Skipping IR curve config " << cfg.currency_code << "/"
                         << cfg.index_family << " under folder " << req->folder_id
-                        << " — qualifier already held by running feed '"
-                        << conflicting_source_name << "'.";
+                        << " — qualifier already held by running feed '" << conflicting_source_name
+                        << "'.";
                 }
             } catch (const std::exception& e) {
                 ++ir_counts.skipped;
                 BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                    << "Skipping IR curve config " << cfg.currency_code << "/"
-                    << cfg.index_family << " under folder " << req->folder_id
-                    << " — failed to start: " << e.what();
+                    << "Skipping IR curve config " << cfg.currency_code << "/" << cfg.index_family
+                    << " under folder " << req->folder_id << " — failed to start: " << e.what();
             }
         }
 
@@ -373,20 +368,21 @@ private:
     // Auth + the uniform permission gate shared by both verbs: every kind's
     // config family is readable by the caller, so one check covers the
     // whole subtree walk — no per-kind permission branching.
-    std::optional<ores::database::context>
-    authenticated_context(std::string_view verb, const ores::nats::message& msg) {
+    std::optional<ores::database::context> authenticated_context(std::string_view verb,
+                                                                 const ores::nats::message& msg) {
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                << "Rejecting " << verb << " request: auth failed: "
-                << static_cast<int>(ctx_expected.error());
+                << "Rejecting " << verb
+                << " request: auth failed: " << static_cast<int>(ctx_expected.error());
             error_reply(nats_, msg, ctx_expected.error());
             return std::nullopt;
         }
         if (!has_permission(*ctx_expected, "synthetic::fx_spot_generation_configs:read") ||
             !has_permission(*ctx_expected, "synthetic::ir_curve_generation_configs:read")) {
             BOOST_LOG_SEV(folder_feed_control_handler_lg(), warn)
-                << "Rejecting " << verb << " request: missing permission "
+                << "Rejecting " << verb
+                << " request: missing permission "
                    "synthetic::fx_spot_generation_configs:read or "
                    "synthetic::ir_curve_generation_configs:read.";
             error_reply(nats_, msg, ores::service::error_code::forbidden);

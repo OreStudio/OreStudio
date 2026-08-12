@@ -110,8 +110,7 @@ ir_curve_qualifier(const ores::synthetic::domain::ir_curve_generation_config& cf
  * qualifier: the FOMC raw grid (qualifier "...-FOMC") resolves under RATES_SPOT_FOMC;
  * everything else under RATES_SPOT_FORWARD.
  */
-ORES_SYNTHETIC_API_EXPORT std::string
-ir_curve_tenor_convention_code(const std::string& qualifier);
+ORES_SYNTHETIC_API_EXPORT std::string ir_curve_tenor_convention_code(const std::string& qualifier);
 
 /**
  * @brief Resolves a Curve Template's raw (tenor code, instrument code) entries into the tick
@@ -157,7 +156,8 @@ resolve(const std::vector<ores::synthetic::domain::ir_curve_template_entry>& ent
  * per-request error) -- callers should treat that as fatal to the feed being started.
  */
 ORES_SYNTHETIC_API_EXPORT std::optional<ir_curve_refdata_context>
-build_ir_curve_refdata_context(ores::database::context ctx, const std::string& tenor_convention_code);
+build_ir_curve_refdata_context(ores::database::context ctx,
+                               const std::string& tenor_convention_code);
 
 /**
  * @brief Derives one resolved entry's published rate from a short-rate process's

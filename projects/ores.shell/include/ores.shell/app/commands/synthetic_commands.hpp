@@ -183,8 +183,7 @@ public:
      *
      * @return true on success.
      */
-    static bool list_feeds(std::ostream& out,
-                           ores::nats::service::nats_client& session);
+    static bool list_feeds(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Start feeds: synthetic start folder <folder-token>

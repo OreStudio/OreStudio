@@ -20,8 +20,8 @@
 #ifndef ORES_SYNTHETIC_API_FEEDS_FEED_FACTORY_HPP
 #define ORES_SYNTHETIC_API_FEEDS_FEED_FACTORY_HPP
 
-#include "ir_curve_feed.hpp"
 #include "fx_spot_feed.hpp"
+#include "ir_curve_feed.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/nats_client.hpp"
@@ -110,7 +110,9 @@ public:
      * the kind's own build-input variant member.
      */
     [[nodiscard]] std::shared_ptr<ores::marketdata::domain::IFeed>
-    make(const std::string& kind, const feed_build_context& ctx, const feed_build_input& input) const;
+    make(const std::string& kind,
+         const feed_build_context& ctx,
+         const feed_build_input& input) const;
 
     /**
      * @brief The registered kind strings, sorted alphabetically.

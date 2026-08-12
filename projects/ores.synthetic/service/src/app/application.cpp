@@ -130,10 +130,9 @@ void auto_start_feeds(feed_controller& ctrl,
     // enabled=true, auto_start=false config (e.g. a legacy/alternate-index
     // variant) is deliberately skipped here and left for on-demand start
     // only.
-    const auto startable = [&enabled_feeds](bool config_enabled, bool auto_start,
-                                            boost::uuids::uuid config_id) {
-        return config_enabled && auto_start &&
-               enabled_feeds.find(config_id) != enabled_feeds.end();
+    const auto startable = [&enabled_feeds](
+                               bool config_enabled, bool auto_start, boost::uuids::uuid config_id) {
+        return config_enabled && auto_start && enabled_feeds.find(config_id) != enabled_feeds.end();
     };
 
     // Group children by their parent config id; note the field asymmetry —
@@ -172,10 +171,11 @@ void auto_start_feeds(feed_controller& ctrl,
                 << "Skipping enabled FX rate " << fx.ore_key << " — no GMM components.";
             continue;
         }
-        candidates.push_back({std::string(fx_spot_feed_kind), fx.ore_key,
-                              container->second.binding_mode,
-                              fx_spot_feed_build_input{fx, it->second,
-                                                       container->second.binding_mode}});
+        candidates.push_back(
+            {std::string(fx_spot_feed_kind),
+             fx.ore_key,
+             container->second.binding_mode,
+             fx_spot_feed_build_input{fx, it->second, container->second.binding_mode}});
     }
 
     for (const auto& cfg : configs) {
@@ -218,7 +218,8 @@ void auto_start_feeds(feed_controller& ctrl,
     for (const auto& c : candidates) {
         try {
             std::string conflicting_source_name;
-            if (ctrl.add(factory.make(c.kind, bctx, c.input), c.binding_mode,
+            if (ctrl.add(factory.make(c.kind, bctx, c.input),
+                         c.binding_mode,
                          &conflicting_source_name)) {
                 ++started;
             } else if (!conflicting_source_name.empty()) {
@@ -228,8 +229,7 @@ void auto_start_feeds(feed_controller& ctrl,
                 // whole auto-start pass. An already-running same-source row
                 // (a duplicate config) stays silent, as before.
                 BOOST_LOG_SEV(auto_start_lg(), error)
-                    << "Skipping auto-start of " << c.name << " — feed '"
-                    << conflicting_source_name
+                    << "Skipping auto-start of " << c.name << " — feed '" << conflicting_source_name
                     << "' is already running for the same market data key.";
             }
         } catch (const std::exception& e) {

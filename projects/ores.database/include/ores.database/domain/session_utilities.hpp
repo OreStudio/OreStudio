@@ -42,8 +42,7 @@ namespace ores::database::domain {
  */
 template <class T>
 sqlgen::Result<sqlgen::Nothing> force_session_utc(T& _executor) noexcept {
-    auto result =
-        _executor.execute("SELECT set_config('TimeZone', 'UTC', false)");
+    auto result = _executor.execute("SELECT set_config('TimeZone', 'UTC', false)");
     if (!result) {
         return sqlgen::error("Failed to set session timezone to UTC: " +
                              std::string(result.error().what()));

@@ -341,9 +341,11 @@ struct exact_match_result {
 // yields the feed identity; several matches are reported ambiguous,
 // listing each matching feed's source_name, and yield nothing.
 template <typename Config, typename NameMatch, typename OreKeyOf>
-exact_match_result
-exact_feed_match(std::ostream& out, const std::vector<Config>& configs,
-                 const std::string& token, NameMatch is_name_match, OreKeyOf ore_key_of) {
+exact_match_result exact_feed_match(std::ostream& out,
+                                    const std::vector<Config>& configs,
+                                    const std::string& token,
+                                    NameMatch is_name_match,
+                                    OreKeyOf ore_key_of) {
     std::vector<Config> exact;
     for (const auto& c : configs)
         if (is_name_match(c))
@@ -385,8 +387,7 @@ std::optional<resolved_feed>
 resolve_feed(std::ostream& out, nats_client& session, const std::string& token) {
     const auto id = try_uuid(token);
 
-    synthetic::messaging::get_fx_spot_generation_configs_request fx_req{.offset = 0,
-                                                                        .limit = 1000};
+    synthetic::messaging::get_fx_spot_generation_configs_request fx_req{.offset = 0, .limit = 1000};
     auto fx_result = do_auth_request<synthetic::messaging::get_fx_spot_generation_configs_response>(
         out, session, std::string(fx_req.nats_subject), fx_req);
     if (!fx_result)
@@ -403,7 +404,9 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
             return found;
     } else {
         const auto matched = exact_feed_match(
-            out, fx_result->fx_spot_generation_configs, token,
+            out,
+            fx_result->fx_spot_generation_configs,
+            token,
             [&token](const auto& c) { return c.ore_key == token || c.source_name == token; },
             [](const auto& c) { return c.ore_key; });
         if (matched.feed || matched.ambiguous)
@@ -412,8 +415,9 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
 
     synthetic::messaging::get_ir_curve_generation_configs_request ir_req{.offset = 0,
                                                                          .limit = 1000};
-    auto ir_result = do_auth_request<synthetic::messaging::get_ir_curve_generation_configs_response>(
-        out, session, std::string(ir_req.nats_subject), ir_req);
+    auto ir_result =
+        do_auth_request<synthetic::messaging::get_ir_curve_generation_configs_response>(
+            out, session, std::string(ir_req.nats_subject), ir_req);
     if (!ir_result)
         return std::nullopt;
     if (!ir_result->success) {
@@ -431,7 +435,9 @@ resolve_feed(std::ostream& out, nats_client& session, const std::string& token) 
     }
 
     const auto matched = exact_feed_match(
-        out, ir_result->ir_curve_generation_configs, token,
+        out,
+        ir_result->ir_curve_generation_configs,
+        token,
         [&token](const auto& c) { return c.source_name == token; },
         [](const auto&) { return std::nullopt; });
     if (matched.feed || matched.ambiguous)

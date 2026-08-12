@@ -42,14 +42,14 @@ auto& lg() {
 
 } // namespace
 
-ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed> make_fx_spot_feed(
-    ores::nats::service::client& nats,
-    const ores::synthetic::domain::fx_spot_generation_config& cfg,
-    const std::vector<ores::synthetic::domain::gmm_component>& components,
-    ores::synthetic::domain::binding_mode binding_mode) {
+ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
+make_fx_spot_feed(ores::nats::service::client& nats,
+                  const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                  const std::vector<ores::synthetic::domain::gmm_component>& components,
+                  ores::synthetic::domain::binding_mode binding_mode) {
     if (components.empty())
-        throw std::invalid_argument(
-            "make_fx_spot_feed: config '" + cfg.ore_key + "' has no GMM components.");
+        throw std::invalid_argument("make_fx_spot_feed: config '" + cfg.ore_key +
+                                    "' has no GMM components.");
 
     std::vector<double> means, stdevs, weights;
     means.reserve(components.size());
@@ -69,13 +69,13 @@ ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed> make_fx_spot_feed(
     BOOST_LOG_SEV(lg(), ores::logging::info)
         << "SYNTHETIC SEED: source='" << cfg.source_name << "' seed=" << seed;
 
-    auto process = ores::analytics::quant::service::process_factory::make_process(
-        cfg.process_type,
-        std::move(means),
-        std::move(stdevs),
-        std::move(weights),
-        cfg.gmm_initial_price,
-        seed);
+    auto process =
+        ores::analytics::quant::service::process_factory::make_process(cfg.process_type,
+                                                                       std::move(means),
+                                                                       std::move(stdevs),
+                                                                       std::move(weights),
+                                                                       cfg.gmm_initial_price,
+                                                                       seed);
 
     return std::make_shared<fx_spot_feed>(nats,
                                           cfg.ore_key,
@@ -170,13 +170,12 @@ void fx_spot_feed::start() {
             const auto n = publish_count_.fetch_add(1, std::memory_order_relaxed) + 1;
             if (n == 1 || n % 100 == 0) {
                 BOOST_LOG_SEV(lg(), info)
-                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='"
-                    << ore_key_ << "' count=" << n << " mid=" << tick.mid;
+                    << "SYNTHETIC PUBLISH: subject='" << nats_subject_ << "' ore_key='" << ore_key_
+                    << "' count=" << n << " mid=" << tick.mid;
             }
         } catch (const std::exception& ex) {
-            BOOST_LOG_SEV(lg(), error)
-                << "SYNTHETIC PUBLISH FAILED: subject='" << nats_subject_ << "' ore_key='"
-                << ore_key_ << "': " << ex.what();
+            BOOST_LOG_SEV(lg(), error) << "SYNTHETIC PUBLISH FAILED: subject='" << nats_subject_
+                                       << "' ore_key='" << ore_key_ << "': " << ex.what();
         }
     }
 }

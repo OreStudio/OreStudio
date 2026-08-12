@@ -141,8 +141,7 @@ private:
     }
 
 public:
-    feed_controller(ores::nats::service::client& nats,
-                    ores::nats::service::nats_client& auth_nats)
+    feed_controller(ores::nats::service::client& nats, ores::nats::service::nats_client& auth_nats)
         : nats_(nats)
         , auth_nats_(auth_nats) {}
 
@@ -362,7 +361,8 @@ public:
      * feeds_conflict) and are skipped, so the lookup cannot false-positive
      * on one of them.
      */
-    std::optional<std::string> running_source_name_for_conflict_key(const std::string& conflict_key) const {
+    std::optional<std::string>
+    running_source_name_for_conflict_key(const std::string& conflict_key) const {
         std::lock_guard lock(mu_);
         for (const auto& [name, rf] : feeds_) {
             if (rf.feed->qualifier().empty())
@@ -659,9 +659,8 @@ private:
         rf.binding_mode = binding_mode;
         rf.thread = std::thread([raw] { raw->start(); });
         feeds_.emplace(key, std::move(rf));
-        BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "SYNTHETIC START: source='" << key << "' — now " << feeds_.size()
-            << " feed(s) running";
+        BOOST_LOG_SEV(lg(), ores::logging::info) << "SYNTHETIC START: source='" << key << "' — now "
+                                                 << feeds_.size() << " feed(s) running";
         if (!status_thread_.joinable())
             status_thread_ = std::thread(&feed_controller::status_loop, this);
     }
@@ -671,9 +670,8 @@ private:
     // but a *different* role (e.g. discount vs. projection) is not a
     // conflict. Excludes @p excluding_source_name so re-adding/restarting
     // the same config never self-conflicts. Caller must already hold mu_.
-    std::optional<std::string>
-    find_conflict(const ores::marketdata::domain::IFeed& feed,
-                  const std::string& excluding_source_name) const {
+    std::optional<std::string> find_conflict(const ores::marketdata::domain::IFeed& feed,
+                                             const std::string& excluding_source_name) const {
         const auto qualifier = feed.qualifier();
         const auto role = feed.role();
         for (const auto& [name, rf] : feeds_) {

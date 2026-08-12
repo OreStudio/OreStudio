@@ -153,12 +153,12 @@ private:
  * cfg.process_type is not validated here: it is forwarded to process_factory::make_process(),
  * which falls back to the geometric engine for unrecognised values.
  */
-ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed> make_fx_spot_feed(
-    ores::nats::service::client& nats,
-    const ores::synthetic::domain::fx_spot_generation_config& cfg,
-    const std::vector<ores::synthetic::domain::gmm_component>& components,
-    ores::synthetic::domain::binding_mode binding_mode =
-        ores::synthetic::domain::binding_mode::bound);
+ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
+make_fx_spot_feed(ores::nats::service::client& nats,
+                  const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                  const std::vector<ores::synthetic::domain::gmm_component>& components,
+                  ores::synthetic::domain::binding_mode binding_mode =
+                      ores::synthetic::domain::binding_mode::bound);
 
 }
 #endif

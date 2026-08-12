@@ -21,7 +21,6 @@
 #define ORES_MARKETDATA_API_DOMAIN_I_FEED_HPP
 
 #include "ores.marketdata.api/export.hpp"
-
 #include <cstdint>
 #include <string>
 #include <string_view>

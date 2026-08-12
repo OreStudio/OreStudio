@@ -217,8 +217,8 @@ private:
 
 TEST_CASE("make_default_feed_factory registers both kinds", tags) {
     const auto factory = make_default_feed_factory();
-    CHECK(factory.kinds() ==
-          std::vector<std::string>{std::string(fx_spot_feed_kind), std::string(ir_curve_feed_kind)});
+    CHECK(factory.kinds() == std::vector<std::string>{std::string(fx_spot_feed_kind),
+                                                      std::string(ir_curve_feed_kind)});
 }
 
 TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", tags) {
@@ -241,8 +241,8 @@ TEST_CASE("factory::make constructs an fx_spot_feed from its persisted config", 
 TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config", tags) {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
-    const auto input = ir_curve_feed_build_input{
-        f.config, f.entries, f.values, f.definitions, f.refctx};
+    const auto input =
+        ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx};
 
     const auto feed = factory.make(std::string(ir_curve_feed_kind), make_build_context(), input);
 
@@ -251,7 +251,8 @@ TEST_CASE("factory::make constructs an ir_curve_feed from its persisted config",
     CHECK(ir->source_name() == "usd_sofr_test");
     CHECK(ir->qualifier() == "USD/SOFR");
     CHECK(ir->role() == "discount");
-    CHECK(ir->conflict_key() == "USD/SOFR\x1f" "discount");
+    CHECK(ir->conflict_key() == "USD/SOFR\x1f"
+                                "discount");
     CHECK(ir->publish_count() == 0);
 }
 
@@ -264,18 +265,16 @@ TEST_CASE("factory::make rejects an unknown kind", tags) {
 TEST_CASE("factory::make rejects a build input that is not the kind's own", tags) {
     const auto factory = make_default_feed_factory();
     const auto f = make_ir_fixture();
-    const auto input = ir_curve_feed_build_input{
-        f.config, f.entries, f.values, f.definitions, f.refctx};
-    CHECK_THROWS_AS(
-        factory.make(std::string(fx_spot_feed_kind), make_build_context(), input),
-        std::invalid_argument);
+    const auto input =
+        ir_curve_feed_build_input{f.config, f.entries, f.values, f.definitions, f.refctx};
+    CHECK_THROWS_AS(factory.make(std::string(fx_spot_feed_kind), make_build_context(), input),
+                    std::invalid_argument);
 }
 
 TEST_CASE("factory::make dispatches to a replacement registration for a kind", tags) {
     feed_factory factory;
     factory.register_kind(
-        std::string(fx_spot_feed_kind),
-        [](const feed_build_context&, const feed_build_input&) {
+        std::string(fx_spot_feed_kind), [](const feed_build_context&, const feed_build_input&) {
             return std::shared_ptr<ores::marketdata::domain::IFeed>(new stub_feed());
         });
 

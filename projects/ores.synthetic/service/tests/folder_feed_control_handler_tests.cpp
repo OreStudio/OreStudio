@@ -57,9 +57,9 @@
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
-#include <algorithm>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <cstdlib>
@@ -154,11 +154,10 @@ Resp send_request(ores::nats::service::client& nats,
                   const std::string& subject,
                   const std::string& token,
                   const Req& req) {
-    auto reply = nats.request_sync(
-        subject,
-        ores::nats::default_wire_codec().encode(req),
-        {{std::string(ores::nats::headers::authorization),
-          std::string(ores::nats::headers::bearer_prefix) + token}});
+    auto reply = nats.request_sync(subject,
+                                   ores::nats::default_wire_codec().encode(req),
+                                   {{std::string(ores::nats::headers::authorization),
+                                     std::string(ores::nats::headers::bearer_prefix) + token}});
     auto decoded = ores::nats::default_wire_codec().decode<Resp>(reply.data);
     REQUIRE(decoded);
     return *decoded;
@@ -194,8 +193,8 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     namespace refdata_repo = ores::refdata::repository;
     {
         const auto tenors = refdata_repo::tenor_repository().read_latest(party_ctx);
-        REQUIRE(std::any_of(tenors.begin(), tenors.end(),
-                            [](const auto& t) { return t.code == "1M"; }));
+        REQUIRE(std::any_of(
+            tenors.begin(), tenors.end(), [](const auto& t) { return t.code == "1M"; }));
         const auto instruments = refdata_repo::instrument_code_repository().read_latest(party_ctx);
         REQUIRE(std::any_of(instruments.begin(), instruments.end(), [](const auto& i) {
             return i.code == "DEPO" && i.curve_role == "DEPOSIT";
@@ -204,7 +203,8 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
         REQUIRE(std::any_of(conventions.begin(), conventions.end(), [](const auto& c) {
             return c.code == "RATES_SPOT_FORWARD";
         }));
-        const auto frequencies = refdata_repo::payment_frequency_repository().read_latest(party_ctx);
+        const auto frequencies =
+            refdata_repo::payment_frequency_repository().read_latest(party_ctx);
         REQUIRE(std::any_of(frequencies.begin(), frequencies.end(), [](const auto& f) {
             return f.code == "Annual";
         }));
@@ -397,10 +397,8 @@ seeded_cascade seed_cascade(ores::testing::scoped_database_helper& h,
     entry.recorded_at = now;
     repo::ir_curve_template_entry_repository().write(party_ctx, entry);
 
-    const std::map<std::string, double> value_by_name = {{"kappa", 0.05},
-                                                          {"theta", 0.03},
-                                                          {"sigma", 0.01},
-                                                          {"initial_rate", 0.025}};
+    const std::map<std::string, double> value_by_name = {
+        {"kappa", 0.05}, {"theta", 0.03}, {"sigma", 0.01}, {"initial_rate", 0.025}};
     for (const auto& d : definitions) {
         dom::ir_curve_generation_config_process_parameter_value v;
         v.tenant_id = h.tenant_id();
@@ -444,17 +442,13 @@ struct cascade_fixture {
         using ores::marketdata::messaging::start_feeds_under_folder_request;
         using ores::marketdata::messaging::stop_feeds_under_folder_request;
         start_sub = nats.queue_subscribe(
-            test_start_subject,
-            "ores.synthetic.service",
-            [this](ores::nats::message msg) {
+            test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
                     nats, ctrl, auth_nats, db.context(), verifier);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
-            test_stop_subject,
-            "ores.synthetic.service",
-            [this](ores::nats::message msg) {
+            test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::folder_feed_control_handler h(
                     nats, ctrl, auth_nats, db.context(), verifier);
                 h.stop(std::move(msg));
@@ -484,7 +478,10 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
     // skipped, and the IR feed starts. Per-kind counts split the aggregate.
     const auto start1 =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
-            f.nats, test_start_subject, token, start_feeds_under_folder_request{.folder_id = folder});
+            f.nats,
+            test_start_subject,
+            token,
+            start_feeds_under_folder_request{.folder_id = folder});
     REQUIRE(start1.success);
     CHECK(start1.started == 2);
     CHECK(start1.already_running == 0);
@@ -510,7 +507,10 @@ TEST_CASE("folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts", tag
     // are still skipped.
     const auto start2 =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
-            f.nats, test_start_subject, token, start_feeds_under_folder_request{.folder_id = folder});
+            f.nats,
+            test_start_subject,
+            token,
+            start_feeds_under_folder_request{.folder_id = folder});
     REQUIRE(start2.success);
     CHECK(start2.started == 0);
     CHECK(start2.already_running == 2);
@@ -539,8 +539,8 @@ TEST_CASE("folder_cascade_rejects_without_the_ir_curve_permission", tags) {
     cascade_fixture f;
     const auto test_party = resolve_test_party(f.db);
     const auto seeds = seed_cascade(f.db, test_party);
-    const auto token =
-        mint_token(f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
+    const auto token = mint_token(
+        f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
 
     // The request is well-formed; only the missing IR permission can stop
     // it, so the reply carries X-Error: forbidden and no feed starts.
@@ -565,6 +565,9 @@ TEST_CASE("folder_cascade_rejects_a_malformed_folder_id", tags) {
 
     const auto resp =
         send_request<start_feeds_under_folder_request, start_feeds_under_folder_response>(
-            f.nats, test_start_subject, token, start_feeds_under_folder_request{.folder_id = "not-a-uuid"});
+            f.nats,
+            test_start_subject,
+            token,
+            start_feeds_under_folder_request{.folder_id = "not-a-uuid"});
     CHECK_FALSE(resp.success);
 }

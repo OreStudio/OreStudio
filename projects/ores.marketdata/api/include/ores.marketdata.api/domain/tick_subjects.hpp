@@ -30,11 +30,11 @@ namespace ores::marketdata::domain {
  *
  * The kind token is the third subject segment and equals the factory kind
  * string of the producing feed (fx_spot_feed_kind / ir_curve_feed_kind in
- * ores.synthetic.api) — the factory vocabulary and the wire scheme are the
- * same vocabulary, so a new asset class gets its subject kind for free with
- * its factory registration. The ingest loop dispatches on this token; the
- * payloads (fx_spot_tick / ir_curve_tick) are unchanged — the kind rides in
- * the subject, not in the wire type.
+ * ores.synthetic.api) — producers reuse the factory vocabulary as the
+ * subject kind, with no per-kind subject family. The ingest loop dispatches
+ * on this token, with one ingest branch per kind. The payloads
+ * (fx_spot_tick / ir_curve_tick) are unchanged — the kind rides in the
+ * subject, not in the wire type.
  *
  * Sandboxed feeds keep their own prefix (synthetic.v1.sandbox.tick.) — it is
  * structurally unreachable from the ingest loop's subscription and from any

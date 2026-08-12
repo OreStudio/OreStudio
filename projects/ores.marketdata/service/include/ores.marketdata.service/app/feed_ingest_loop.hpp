@@ -22,11 +22,14 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <map>
@@ -49,16 +52,16 @@ namespace ores::marketdata::service::app {
  *
  * - fx_spot ticks are bound-feed ticks: identity (tenant, party, ore_key) comes
  *   from the feed_binding cache, not from the wire (fx_spot_tick is not
- *   self-describing). A tick whose source has no enabled binding is dropped with
- *   a one-time warn — the same outcome as the pre-unification binding-driven
- *   subscriptions (unbound ticks never arrived), now explicit.
+ *   self-describing). A tick whose source has no enabled binding is dropped
+ *   with a one-time warn.
  * - ir_curve ticks are fully self-describing (tenant, party, series identity and
  *   point_id all travel on the wire); no binding is involved.
  *
  * Every persisted tick is republished verbatim on
- * "marketdata.v1.tick.<tenant>.<series>" so existing consumers
- * (fx_spot_subscription, chart) continue to work unchanged — the FX republish
- * semantics now apply to every kind.
+ * "marketdata.v1.tick.<tenant>.<series>", the scheme existing consumers
+ * (fx_spot_subscription, chart) subscribe to. Republish is gated on a
+ * successful persist, so the republished stream cannot diverge from the
+ * observations table.
  *
  * refresh() re-reads the bindings table and rebuilds the cache. It is called by
  * the feed_binding NATS notify trigger handler on every change.
@@ -88,6 +91,25 @@ private:
     void on_tick(const ores::nats::message& msg);
     void ingest_fx_spot(const ores::nats::message& msg, std::string_view source_name);
     void ingest_ir_curve(const ores::nats::message& msg);
+    /// Shared persistence for both tick kinds: resolve the market_series by its
+    /// series identity, auto-creating it when missing, then write the
+    /// observation row. Returns true when the observation was persisted, so
+    /// callers can gate side effects (republish) on a durable write.
+    /// asset_class is derived from the lowercased series_type; series_subclass
+    /// falls back to that same derivation when no wire value exists.
+    bool persist_tick_observation(const ores::database::context& ctx,
+                                  ores::utility::uuid::tenant_id tenant_id,
+                                  const boost::uuids::uuid& party_id,
+                                  const std::string& series_type,
+                                  const std::string& metric,
+                                  const std::string& qualifier,
+                                  std::optional<ores::marketdata::domain::series_subclass>
+                                      series_subclass,
+                                  bool is_scalar,
+                                  std::chrono::system_clock::time_point datetime,
+                                  const std::string& value,
+                                  const std::string& source,
+                                  const std::string& point_id);
     void status_loop();
     void log_status() const;
 
@@ -116,7 +138,12 @@ private:
     std::map<std::string, binding_record> bindings_;
     /// Sources already warned about as unbound, so a running feed doesn't spam.
     std::set<std::string> unbound_warned_;
-    std::map<std::string, std::shared_ptr<feed_stats>> stats_;
+    /// Per-(kind token, source_name) stats: the same source_name can exist in
+    /// more than one feed kind, so the kind token is part of the key.
+    std::map<std::pair<std::string, std::string>, std::shared_ptr<feed_stats>> stats_;
+    /// Reused across ticks. The loop's single subscription dispatches callbacks
+    /// serially, so one generator is safe.
+    boost::uuids::random_generator uuid_gen_;
 
     static constexpr std::chrono::minutes status_interval_{1};
     std::atomic<bool> stop_flag_{false};

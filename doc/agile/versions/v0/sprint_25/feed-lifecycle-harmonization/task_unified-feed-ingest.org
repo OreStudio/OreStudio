@@ -119,9 +119,19 @@ via its "Verifies task" field.
 
 * Review
 
+Round 1 (claude[bot], comment #5264564353):
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | ir_curve republishes even when persist failed | feed_ingest_loop.cpp | Fixed | Republish gated on persist success for both kinds. |
+| 2 | stats_ keyed by plain source_name, colliding across kinds | feed_ingest_loop.cpp | Fixed | Keyed by (kind, source_name). |
+| 3 | refresh() no longer prunes stats_ | feed_ingest_loop.cpp | Fixed | Prunes fx_spot stats of sources that left the bindings. |
+| 4 | fresh random_generator per tick | feed_ingest_loop.cpp | Fixed | Reused member generator. |
+| 5 | missing algorithm include | feed_ingest_loop.cpp | Fixed | Include added. |
+| 6 | duplicated persist logic, already drifted | feed_ingest_loop.cpp | Fixed | One persist_tick_observation helper; uniform asset-class derivation. |
+| 7 | kind dispatch hardcoded; tokens duplicated without a tie | tick_subjects.hpp, feed_controller_tests.cpp | Fixed | Doc reworded; static_assert ties + ir_curve subject-shape test. |
+| 8 | isIrCurveSourceName free-text lookup | MarketSimulatorWindow.cpp | Not changed | Pre-existing client-side resolution; the client has no kind on the wire. |
+| 9 | class doc narrates edit history | feed_ingest_loop.hpp | Fixed | Reworded to state the current design. |
 
 * Result
 

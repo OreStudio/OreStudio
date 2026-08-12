@@ -123,7 +123,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Tasks table row order contradicts the documented dependency order (groundwork after its consumers) | story.org | Accepted | Rows reordered to BK → groundwork → BDT → affine → QG → HJM → LMM; FX jump rows kept last. |
+| 2 | Sprint row for the story still BACKLOG while the story doc is STARTED | sprint.org | Accepted | Row set to STARTED with start 2026-08-11. |
 
 * Result
 

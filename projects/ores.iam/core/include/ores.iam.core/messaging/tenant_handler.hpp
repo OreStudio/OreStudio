@@ -689,7 +689,16 @@ public:
                         // party, workspace=Live, source) for the system
                         // party, the holding and every office, so each
                         // materializes its own observations from the shared
-                        // stream (per-party series, identical values).
+                        // stream (per-party series, identical values). Each
+                        // party's bindings are saved through a client
+                        // impersonating that party: feed-binding saves stamp
+                        // the binding's party from the authenticated context
+                        // (a security boundary), so one privileged client
+                        // cannot create bindings on another party's behalf.
+                        // Resolution of the theme's configs runs through the
+                        // system party's client, because the synthetic
+                        // tables are party-isolated by RLS and the configs
+                        // live under the system party.
                         const std::string bind_label = "system_market_data.bindings";
                         add_step(bind_label, "starting", 0);
                         std::vector<std::pair<std::string, boost::uuids::uuid>> binding_parties;
@@ -701,7 +710,9 @@ public:
 
                         bool bindings_ok = true;
                         for (const auto& [code, party_id] : binding_parties) {
+                            internal_request_client party_client = make_client(party_id);
                             if (!create_theme_feed_bindings(system_client,
+                                                            party_client,
                                                             "synthetic.themes.realistic_2026",
                                                             boost::uuids::to_string(party_id))) {
                                 add_step(bind_label + "." + code + ".failed",
@@ -950,25 +961,33 @@ private:
     // (theme) resolved by @p dataset_code, for @p party_id_str -- the
     // consumption contract of the consistent world (see the
     // simulated-market-data strategy): the theme's config lives once under
-    // the system party (the caller's client), every party consumes the
-    // shared stream through its own bindings, and the marketdata ingest
-    // loop materializes each party's observations from it. Workspace
-    // defaults to the Live sentinel. IR sources are deliberately not
-    // bound: IR producers publish on synthetic.v1.curve_family.<source>, a
-    // subject the ingest loop never listens to -- binding them would claim
-    // ingestion for a stream that never arrives. Best-effort, like
+    // the system party, every party consumes the shared stream through its
+    // own bindings, and the marketdata ingest loop materializes each
+    // party's observations from it. Two clients are needed: the synthetic
+    // tables are party-isolated by RLS and the theme's configs live under
+    // the system party, so resolution runs through @p resolve_client (the
+    // system party's); the bindings themselves are saved through
+    // @p save_client impersonating the consuming party, because
+    // feed-binding saves stamp the binding's party from the authenticated
+    // context (a security boundary). Sources already bound for the party
+    // are skipped, so the step is re-runnable. Workspace defaults to the
+    // Live sentinel. IR sources are deliberately not bound: IR producers
+    // publish on synthetic.v1.curve_family.<source>, a subject the ingest
+    // loop never listens to -- binding them would claim ingestion for a
+    // stream that never arrives. Best-effort, like
     // start_synthetic_theme_feeds: logs and returns false on any
     // resolution miss rather than failing provisioning; individual save
     // failures are logged and skipped so one bad source does not drop the
     // remaining bindings.
-    static bool create_theme_feed_bindings(internal_request_client& client,
+    static bool create_theme_feed_bindings(internal_request_client& resolve_client,
+                                           internal_request_client& save_client,
                                            const std::string& dataset_code,
                                            const std::string& party_id_str) {
         std::optional<boost::uuids::uuid> dataset_id;
         {
             dq::messaging::get_datasets_request req;
             req.limit = 1000;
-            auto resp = client.request(req);
+            auto resp = resolve_client.request(req);
             for (auto& d : resp.datasets)
                 if (d.code == dataset_code) {
                     dataset_id = d.id;
@@ -985,7 +1004,7 @@ private:
         {
             synthetic::messaging::get_market_data_generation_configs_request req;
             req.limit = 1000;
-            auto resp = client.request(req);
+            auto resp = resolve_client.request(req);
             if (!resp.success) {
                 BOOST_LOG_SEV(tenant_handler_lg(), warn)
                     << "create_theme_feed_bindings: list market_data_generation_configs "
@@ -1010,7 +1029,7 @@ private:
         {
             synthetic::messaging::get_fx_spot_generation_configs_request req;
             req.limit = 1000;
-            auto resp = client.request(req);
+            auto resp = resolve_client.request(req);
             if (!resp.success) {
                 BOOST_LOG_SEV(tenant_handler_lg(), warn)
                     << "create_theme_feed_bindings: list fx_spot_generation_configs failed: "
@@ -1022,10 +1041,37 @@ private:
                     sources.emplace_back(c.source_name, c.ore_key);
         }
 
+        // Active bindings already exist per natural key (tenant, party,
+        // ore_key, source_name); skip them so re-provisioning does not trip
+        // the unique index. The list is tenant-scoped, so filter down to
+        // this party's rows.
+        std::vector<std::string> existing;
+        {
+            marketdata::messaging::get_feed_bindings_request req;
+            req.limit = 1000;
+            auto resp = save_client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "create_theme_feed_bindings: list feed_bindings failed: "
+                    << resp.message;
+                return false;
+            }
+            for (const auto& b : resp.feed_bindings)
+                if (boost::uuids::to_string(b.party_id) == party_id_str)
+                    existing.push_back(b.ore_key + "|" + b.source_name);
+        }
+
         boost::uuids::random_generator uuid_gen;
         boost::uuids::string_generator sg;
         bool all_saved = true;
         for (const auto& [source_name, ore_key] : sources) {
+            if (std::find(existing.begin(), existing.end(), ore_key + "|" + source_name) !=
+                existing.end()) {
+                BOOST_LOG_SEV(tenant_handler_lg(), info)
+                    << "create_theme_feed_bindings: binding " << source_name << " for party "
+                    << party_id_str << " already exists; skipping";
+                continue;
+            }
             marketdata::domain::feed_binding binding;
             binding.id = uuid_gen();
             binding.ore_key = ore_key;
@@ -1037,7 +1083,7 @@ private:
             binding.change_commentary =
                 "Created by ACME provisioning: consumes the system-party simulated market "
                 "stream";
-            auto resp = client.request(
+            auto resp = save_client.request(
                 marketdata::messaging::save_feed_binding_request::from(std::move(binding)));
             if (!resp.success) {
                 BOOST_LOG_SEV(tenant_handler_lg(), warn)

@@ -161,11 +161,11 @@ public:
                 if (!configs.empty())
                     source_name = configs.front().source_name;
                 else {
-                    reply(nats_,
-                          msg,
-                          stop_feed_response{.success = false,
-                                             .message = "Feed config not found: " +
-                                                        req->config_id});
+                    reply(
+                        nats_,
+                        msg,
+                        stop_feed_response{.success = false,
+                                           .message = "Feed config not found: " + req->config_id});
                     return;
                 }
             }
@@ -216,13 +216,13 @@ private:
     // Auth gate shared by every verb; the per-kind permission check happens
     // after resolution, in start_fx/start_ir, since the caller's kind is not
     // known until the config_id is resolved.
-    std::optional<ores::database::context>
-    authenticated_context(std::string_view verb, const ores::nats::message& msg) {
+    std::optional<ores::database::context> authenticated_context(std::string_view verb,
+                                                                 const ores::nats::message& msg) {
         auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
         if (!ctx_expected) {
             BOOST_LOG_SEV(feed_config_handler_lg(), warn)
-                << "Rejecting " << verb << " request: auth failed: "
-                << static_cast<int>(ctx_expected.error());
+                << "Rejecting " << verb
+                << " request: auth failed: " << static_cast<int>(ctx_expected.error());
             error_reply(nats_, msg, ctx_expected.error());
             return std::nullopt;
         }
@@ -249,7 +249,8 @@ private:
         // carries the feed's binding_mode.
         namespace repo = ores::synthetic::repository;
         repo::market_data_generation_config_repository feed_repo;
-        const auto containers = feed_repo.read_latest(req_ctx, boost::uuids::to_string(cfg.config_id));
+        const auto containers =
+            feed_repo.read_latest(req_ctx, boost::uuids::to_string(cfg.config_id));
         if (!cfg.enabled || containers.empty() || !containers.front().enabled) {
             resp.message = "Feed config is not enabled: " + boost::uuids::to_string(cfg.id);
             reply(nats_, msg, resp);
@@ -271,11 +272,11 @@ private:
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
         const auto factory = ores::synthetic::feed::make_default_feed_factory();
         try {
-            const auto feed = factory.make(
-                std::string(ores::synthetic::feed::fx_spot_feed_kind),
-                bctx,
-                ores::synthetic::feed::fx_spot_feed_build_input{
-                    cfg, std::move(components), containers.front().binding_mode});
+            const auto feed =
+                factory.make(std::string(ores::synthetic::feed::fx_spot_feed_kind),
+                             bctx,
+                             ores::synthetic::feed::fx_spot_feed_build_input{
+                                 cfg, std::move(components), containers.front().binding_mode});
             reply_start_outcome(msg, resp, std::move(feed));
         } catch (const std::exception& e) {
             resp.success = false;
@@ -301,7 +302,8 @@ private:
 
         namespace repo = ores::synthetic::repository;
         repo::market_data_generation_config_repository feed_repo;
-        const auto containers = feed_repo.read_latest(req_ctx, boost::uuids::to_string(cfg.config_id));
+        const auto containers =
+            feed_repo.read_latest(req_ctx, boost::uuids::to_string(cfg.config_id));
         if (!cfg.enabled || containers.empty() || !containers.front().enabled) {
             resp.message = "Feed config is not enabled: " + boost::uuids::to_string(cfg.id);
             reply(nats_, msg, resp);
@@ -344,10 +346,10 @@ private:
         const auto sys_ctx = ores::database::service::tenant_context::with_system_tenant(req_ctx);
         const auto definitions = definition_repo.read_latest(sys_ctx);
 
-        const auto convention_code =
-            ores::synthetic::feed::ir_curve_tenor_convention_code(
-                ores::synthetic::feed::ir_curve_qualifier(cfg));
-        auto refctx = ores::synthetic::feed::build_ir_curve_refdata_context(req_ctx, convention_code);
+        const auto convention_code = ores::synthetic::feed::ir_curve_tenor_convention_code(
+            ores::synthetic::feed::ir_curve_qualifier(cfg));
+        auto refctx =
+            ores::synthetic::feed::build_ir_curve_refdata_context(req_ctx, convention_code);
         if (!refctx) {
             resp.message = "Tenor convention not found: " + convention_code;
             reply(nats_, msg, resp);
@@ -358,11 +360,11 @@ private:
         const ores::synthetic::feed::feed_build_context bctx{nats_, auth_nats_, bearer};
         const auto factory = ores::synthetic::feed::make_default_feed_factory();
         try {
-            const auto feed = factory.make(
-                std::string(ores::synthetic::feed::ir_curve_feed_kind),
-                bctx,
-                ores::synthetic::feed::ir_curve_feed_build_input{
-                    cfg, std::move(entries), std::move(values), definitions, *refctx});
+            const auto feed =
+                factory.make(std::string(ores::synthetic::feed::ir_curve_feed_kind),
+                             bctx,
+                             ores::synthetic::feed::ir_curve_feed_build_input{
+                                 cfg, std::move(entries), std::move(values), definitions, *refctx});
             reply_start_outcome(msg, resp, std::move(feed));
         } catch (const ores::synthetic::feed::vintage_data_missing_error& e) {
             resp.success = false;

@@ -154,11 +154,10 @@ Resp send_request(ores::nats::service::client& nats,
                   const std::string& subject,
                   const std::string& token,
                   const Req& req) {
-    auto reply = nats.request_sync(
-        subject,
-        ores::nats::default_wire_codec().encode(req),
-        {{std::string(ores::nats::headers::authorization),
-          std::string(ores::nats::headers::bearer_prefix) + token}});
+    auto reply = nats.request_sync(subject,
+                                   ores::nats::default_wire_codec().encode(req),
+                                   {{std::string(ores::nats::headers::authorization),
+                                     std::string(ores::nats::headers::bearer_prefix) + token}});
     auto decoded = ores::nats::default_wire_codec().decode<Resp>(reply.data);
     REQUIRE(decoded);
     return *decoded;
@@ -206,8 +205,8 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
     namespace refdata_repo = ores::refdata::repository;
     {
         const auto tenors = refdata_repo::tenor_repository().read_latest(party_ctx);
-        REQUIRE(std::any_of(tenors.begin(), tenors.end(),
-                            [](const auto& t) { return t.code == "1M"; }));
+        REQUIRE(std::any_of(
+            tenors.begin(), tenors.end(), [](const auto& t) { return t.code == "1M"; }));
         const auto instruments = refdata_repo::instrument_code_repository().read_latest(party_ctx);
         REQUIRE(std::any_of(instruments.begin(), instruments.end(), [](const auto& i) {
             return i.code == "DEPO" && i.curve_role == "DEPOSIT";
@@ -216,7 +215,8 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         REQUIRE(std::any_of(conventions.begin(), conventions.end(), [](const auto& c) {
             return c.code == "RATES_SPOT_FORWARD";
         }));
-        const auto frequencies = refdata_repo::payment_frequency_repository().read_latest(party_ctx);
+        const auto frequencies =
+            refdata_repo::payment_frequency_repository().read_latest(party_ctx);
         REQUIRE(std::any_of(frequencies.begin(), frequencies.end(), [](const auto& f) {
             return f.code == "Annual";
         }));
@@ -301,8 +301,7 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
         return fx;
     };
 
-    auto fx_enabled =
-        make_fx(main_container, "EUR", "USD", "feed_config.test.fx.eur_usd", true);
+    auto fx_enabled = make_fx(main_container, "EUR", "USD", "feed_config.test.fx.eur_usd", true);
     const auto fx_disabled =
         make_fx(main_container, "GBP", "USD", "feed_config.test.fx.gbp_usd", false);
     const auto fx_conflicting =
@@ -398,10 +397,8 @@ seeded_configs seed_configs(ores::testing::scoped_database_helper& h,
     entry.recorded_at = now;
     repo::ir_curve_template_entry_repository().write(party_ctx, entry);
 
-    const std::map<std::string, double> value_by_name = {{"kappa", 0.05},
-                                                          {"theta", 0.03},
-                                                          {"sigma", 0.01},
-                                                          {"initial_rate", 0.025}};
+    const std::map<std::string, double> value_by_name = {
+        {"kappa", 0.05}, {"theta", 0.03}, {"sigma", 0.01}, {"initial_rate", 0.025}};
     for (const auto& d : definitions) {
         dom::ir_curve_generation_config_process_parameter_value v;
         v.tenant_id = h.tenant_id();
@@ -454,25 +451,19 @@ struct config_fixture {
             test_secret, test_issuer, test_audience);
 
         start_sub = nats.queue_subscribe(
-            test_start_subject,
-            "ores.synthetic.service",
-            [this](ores::nats::message msg) {
+            test_start_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
                     nats, auth_nats, ctrl, db.context(), verifier);
                 h.start(std::move(msg));
             });
         stop_sub = nats.queue_subscribe(
-            test_stop_subject,
-            "ores.synthetic.service",
-            [this](ores::nats::message msg) {
+            test_stop_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
                     nats, auth_nats, ctrl, db.context(), verifier);
                 h.stop(std::move(msg));
             });
         list_sub = nats.queue_subscribe(
-            test_list_subject,
-            "ores.synthetic.service",
-            [this](ores::nats::message msg) {
+            test_list_subject, "ores.synthetic.service", [this](ores::nats::message msg) {
                 ores::synthetic::service::feed_config_handler h(
                     nats, auth_nats, ctrl, db.context(), verifier);
                 h.list(std::move(msg));
@@ -495,27 +486,30 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", tags) {
 
     // FX start by config_id: the server resolves the config, its children,
     // and the container, then starts the feed via the factory.
-    const auto fx_start =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
+    const auto fx_start = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
     REQUIRE(fx_start.success);
     CHECK(fx_start.message == "Feed started: " + seeds.fx_enabled_source);
     CHECK(f.ctrl->running_count() == 1);
 
     // Repeat: already running is success with the uniform message.
-    const auto fx_again =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
+    const auto fx_again = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
     REQUIRE(fx_again.success);
     CHECK(fx_again.message == "Feed already running: " + seeds.fx_enabled_source);
 
     // IR start by config_id: same request shape, different kind.
-    const auto ir_start =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.ir_enabled_id)});
+    const auto ir_start = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.ir_enabled_id)});
     REQUIRE(ir_start.success);
     CHECK(ir_start.message == "Feed started: " + seeds.ir_enabled_source);
 
@@ -524,15 +518,19 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", tags) {
         f.nats, test_list_subject, token, list_feeds_request{});
     REQUIRE(list.success);
     REQUIRE(list.running_source_names.size() == 2);
-    CHECK(std::find(list.running_source_names.begin(), list.running_source_names.end(),
+    CHECK(std::find(list.running_source_names.begin(),
+                    list.running_source_names.end(),
                     seeds.fx_enabled_source) != list.running_source_names.end());
-    CHECK(std::find(list.running_source_names.begin(), list.running_source_names.end(),
+    CHECK(std::find(list.running_source_names.begin(),
+                    list.running_source_names.end(),
                     seeds.ir_enabled_source) != list.running_source_names.end());
 
     // Stop the IR feed by config_id: the server resolves it to the
     // config's source_name.
     const auto ir_stop = send_request<stop_feed_request, stop_feed_response>(
-        f.nats, test_stop_subject, token,
+        f.nats,
+        test_stop_subject,
+        token,
         stop_feed_request{.config_id = boost::uuids::to_string(seeds.ir_enabled_id)});
     REQUIRE(ir_stop.success);
     CHECK(ir_stop.message == "1 feed(s) stopped");
@@ -540,7 +538,9 @@ TEST_CASE("feed_config_start_stops_and_lists_both_kinds_by_config_id", tags) {
 
     // Stop the FX feed by source_name (the config_id-less path).
     const auto fx_stop = send_request<stop_feed_request, stop_feed_response>(
-        f.nats, test_stop_subject, token,
+        f.nats,
+        test_stop_subject,
+        token,
         stop_feed_request{.source_name = seeds.fx_enabled_source});
     REQUIRE(fx_stop.success);
     CHECK(fx_stop.message == "1 feed(s) stopped");
@@ -557,33 +557,31 @@ TEST_CASE("feed_config_reports_not_found_and_disabled_uniformly", tags) {
                                    "synthetic::ir_curve_generation_configs:read"});
 
     const auto missing_id = boost::uuids::to_string(boost::uuids::random_generator()());
-    const auto not_found =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = missing_id});
+    const auto not_found = send_request<start_feed_request, start_feed_response>(
+        f.nats, test_start_subject, token, start_feed_request{.config_id = missing_id});
     CHECK_FALSE(not_found.success);
     CHECK(not_found.message == "Feed config not found: " + missing_id);
 
-    const auto stop_not_found =
-        send_request<stop_feed_request, stop_feed_response>(
-            f.nats, test_stop_subject, token,
-            stop_feed_request{.config_id = missing_id});
+    const auto stop_not_found = send_request<stop_feed_request, stop_feed_response>(
+        f.nats, test_stop_subject, token, stop_feed_request{.config_id = missing_id});
     CHECK_FALSE(stop_not_found.success);
     CHECK(stop_not_found.message == "Feed config not found: " + missing_id);
 
     // Disabled configs read the same for both kinds.
-    const auto fx_disabled =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_disabled_id)});
+    const auto fx_disabled = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_disabled_id)});
     CHECK_FALSE(fx_disabled.success);
     CHECK(fx_disabled.message ==
           "Feed config is not enabled: " + boost::uuids::to_string(seeds.fx_disabled_id));
 
-    const auto ir_disabled =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.ir_disabled_id)});
+    const auto ir_disabled = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.ir_disabled_id)});
     CHECK_FALSE(ir_disabled.success);
     CHECK(ir_disabled.message ==
           "Feed config is not enabled: " + boost::uuids::to_string(seeds.ir_disabled_id));
@@ -598,29 +596,27 @@ TEST_CASE("feed_config_start_requires_the_resolved_kind_permission", tags) {
 
     // FX-only token: the IR start must be rejected at the resolved-kind
     // permission check, with no feed started.
-    const auto fx_only_token =
-        mint_token(f.db.tenant_id().to_string(), test_party,
-                   {"synthetic::fx_spot_generation_configs:read"});
-    const auto ir_reply = f.nats.request_sync(
-        test_start_subject,
-        ores::nats::default_wire_codec().encode(start_feed_request{
-            .config_id = boost::uuids::to_string(seeds.ir_enabled_id)}),
-        {{std::string(ores::nats::headers::authorization),
-          std::string(ores::nats::headers::bearer_prefix) + fx_only_token}});
+    const auto fx_only_token = mint_token(
+        f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
+    const auto ir_reply =
+        f.nats.request_sync(test_start_subject,
+                            ores::nats::default_wire_codec().encode(start_feed_request{
+                                .config_id = boost::uuids::to_string(seeds.ir_enabled_id)}),
+                            {{std::string(ores::nats::headers::authorization),
+                              std::string(ores::nats::headers::bearer_prefix) + fx_only_token}});
     REQUIRE(ir_reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(ir_reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
     CHECK(f.ctrl->running_count() == 0);
 
     // IR-only token: the FX start must be rejected the same way.
-    const auto ir_only_token =
-        mint_token(f.db.tenant_id().to_string(), test_party,
-                   {"synthetic::ir_curve_generation_configs:read"});
-    const auto fx_reply = f.nats.request_sync(
-        test_start_subject,
-        ores::nats::default_wire_codec().encode(start_feed_request{
-            .config_id = boost::uuids::to_string(seeds.fx_enabled_id)}),
-        {{std::string(ores::nats::headers::authorization),
-          std::string(ores::nats::headers::bearer_prefix) + ir_only_token}});
+    const auto ir_only_token = mint_token(
+        f.db.tenant_id().to_string(), test_party, {"synthetic::ir_curve_generation_configs:read"});
+    const auto fx_reply =
+        f.nats.request_sync(test_start_subject,
+                            ores::nats::default_wire_codec().encode(start_feed_request{
+                                .config_id = boost::uuids::to_string(seeds.fx_enabled_id)}),
+                            {{std::string(ores::nats::headers::authorization),
+                              std::string(ores::nats::headers::bearer_prefix) + ir_only_token}});
     REQUIRE(fx_reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(fx_reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
     CHECK(f.ctrl->running_count() == 0);
@@ -635,23 +631,23 @@ TEST_CASE("feed_config_start_rejects_missing_children", tags) {
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read"});
 
-    const auto fx_no_comps =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_no_components_id)});
+    const auto fx_no_comps = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_no_components_id)});
     CHECK_FALSE(fx_no_comps.success);
-    CHECK(fx_no_comps.message ==
-          "Feed config has no GMM components: " +
-              boost::uuids::to_string(seeds.fx_no_components_id));
+    CHECK(fx_no_comps.message == "Feed config has no GMM components: " +
+                                     boost::uuids::to_string(seeds.fx_no_components_id));
 
-    const auto ir_no_entries =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.ir_no_entries_id)});
+    const auto ir_no_entries = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.ir_no_entries_id)});
     CHECK_FALSE(ir_no_entries.success);
-    CHECK(ir_no_entries.message ==
-          "Feed config has no Curve Template entries: " +
-              boost::uuids::to_string(seeds.ir_no_entries_id));
+    CHECK(ir_no_entries.message == "Feed config has no Curve Template entries: " +
+                                       boost::uuids::to_string(seeds.ir_no_entries_id));
 
     CHECK(f.ctrl->running_count() == 0);
 }
@@ -665,18 +661,20 @@ TEST_CASE("feed_config_start_reports_qualifier_conflict", tags) {
                                   {"synthetic::fx_spot_generation_configs:read",
                                    "synthetic::ir_curve_generation_configs:read"});
 
-    const auto first =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
+    const auto first = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_enabled_id)});
     REQUIRE(first.success);
 
     // A second FX config on the same EUR/USD pair: the uniform conflict
     // rule lets only one run, reported with the holding source_name.
-    const auto second =
-        send_request<start_feed_request, start_feed_response>(
-            f.nats, test_start_subject, token,
-            start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_conflicting_id)});
+    const auto second = send_request<start_feed_request, start_feed_response>(
+        f.nats,
+        test_start_subject,
+        token,
+        start_feed_request{.config_id = boost::uuids::to_string(seeds.fx_conflicting_id)});
     CHECK_FALSE(second.success);
     CHECK(second.message == "Already running as '" + seeds.fx_enabled_source +
                                 "' — stop it first before starting '" +
@@ -687,17 +685,16 @@ TEST_CASE("feed_config_start_reports_qualifier_conflict", tags) {
 TEST_CASE("feed_config_list_requires_both_permissions", tags) {
     config_fixture f;
     const auto test_party = resolve_test_party(f.db);
-    const auto token = mint_token(f.db.tenant_id().to_string(),
-                                  test_party,
-                                  {"synthetic::fx_spot_generation_configs:read"});
+    const auto token = mint_token(
+        f.db.tenant_id().to_string(), test_party, {"synthetic::fx_spot_generation_configs:read"});
 
     // Every kind is listed, so the gate is the same uniform pair the folder
     // cascade requires.
-    const auto reply = f.nats.request_sync(
-        test_list_subject,
-        ores::nats::default_wire_codec().encode(list_feeds_request{}),
-        {{std::string(ores::nats::headers::authorization),
-          std::string(ores::nats::headers::bearer_prefix) + token}});
+    const auto reply =
+        f.nats.request_sync(test_list_subject,
+                            ores::nats::default_wire_codec().encode(list_feeds_request{}),
+                            {{std::string(ores::nats::headers::authorization),
+                              std::string(ores::nats::headers::bearer_prefix) + token}});
     REQUIRE(reply.headers.contains(std::string(ores::nats::headers::x_error)));
     CHECK(reply.headers.at(std::string(ores::nats::headers::x_error)) == "forbidden");
 }

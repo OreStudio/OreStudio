@@ -674,8 +674,7 @@ void MarketSimulatorWindow::reload() {
         // Query which feeds the synthetic service currently has running so the
         // UI shows correct Running/Stopped status even after a restart. One
         // request covers every kind.
-        auto listResp =
-            cm->process_authenticated_request(m::list_feeds_request{});
+        auto listResp = cm->process_authenticated_request(m::list_feeds_request{});
         if (listResp && listResp->success)
             r.runningSourceNames = std::move(listResp->running_source_names);
 
@@ -2478,11 +2477,11 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
             // price_source "fixed" has no vintage to check — not a failure,
             // just not applicable.
             if (!e.applicable) {
-                results.push_back(
-                    {label, true, QLatin1String("fixed spot — no vintage to check")});
+                results.push_back({label, true, QLatin1String("fixed spot — no vintage to check")});
                 continue;
             }
-            results.push_back({label, e.valid,
+            results.push_back({label,
+                               e.valid,
                                e.valid ? QLatin1String("vintage data available") :
                                          QLatin1String("vintage data unavailable")});
         }

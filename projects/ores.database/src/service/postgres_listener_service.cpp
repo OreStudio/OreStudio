@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.database/domain/session_utilities.hpp"
 #include "ores.database/service/postgres_listener_service.hpp"
+#include "ores.database/domain/session_utilities.hpp"
 #include <algorithm>
 #include <chrono>
 #include <list>

@@ -20,9 +20,9 @@
 #ifndef ORES_DATABASE_TENANT_AWARE_POOL_HPP
 #define ORES_DATABASE_TENANT_AWARE_POOL_HPP
 
+#include "ores.database/domain/session_utilities.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include "ores.database/domain/session_utilities.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <mutex>

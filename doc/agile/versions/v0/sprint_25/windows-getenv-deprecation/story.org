@@ -1,0 +1,67 @@
+:PROPERTIES:
+:ID: F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA
+:END:
+#+title: Story: Hotfix: Windows build fails on std::getenv deprecation
+#+description: Windows CI compiles with -Werror -Wdeprecated-declarations: std::getenv is deprecated in MSVC's STL in favour of _dupenv_s. The generated eventing integration tests (and two hand-written ores.synthetic tests) call std::getenv, so every such file fails the Windows build, e.g. account_type_eventing_integration_tests.cpp:60.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Windows CI build fails on every test file that calls
+=std::getenv=: Windows Clang compiles with
+=-Werror -Wdeprecated-declarations=, and MSVC's STL deprecates
+=std::getenv= in favour of =_dupenv_s=. The NATS eventing integration
+tests (~85 generated files) and two hand-written ores.synthetic
+service tests all call it. The fix replaces =std::getenv= with the
+portable =ores::platform::environment::environment= wrapper in the
+codegen template and regenerates, so the Windows build compiles again.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-12                               |
+
+* Acceptance
+
+- The Windows CI build compiles every test target that previously
+  failed on the =std::getenv= deprecation warning.
+- The codegen template is the single source of the fix: regenerated
+  test files match the template (zero-diff drift check).
+- Test behaviour is unchanged: NATS connection options still resolve
+  from the process environment the same way.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:7012042B-7BAC-4989-BE1F-C2679821ABC0][Scaffold story: Hotfix: Windows build fails on std::getenv deprecation]] | STARTED | 2026-08-12 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:AEA7E72A-5254-481F-9E27-AA51DC2BA7C8][Implement Hotfix: Windows build fails on std::getenv deprecation]] | BACKLOG | | | Initial task for: Hotfix: Windows build fails on std::getenv deprecation |
+
+* Decisions
+
+- Fix the codegen template and regenerate, rather than hand-editing
+  the ~85 generated test files: the template is the single source and
+  CI's drift check enforces it.
+- Use =environment::get_value_or_default(name, "")= so the existing
+  empty-string semantics of the =env()= lambda are preserved exactly
+  (the URL fallback to =nats://localhost:4222= depends on it).
+- =systemd_notify.cpp= already uses =ores.platform::environment=; no
+  change needed there.
+
+* Out of scope
+
+-

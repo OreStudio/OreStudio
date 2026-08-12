@@ -103,6 +103,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:74A90E3D-32BC-4174-8926-C2F4D06D171B][Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] | DONE | 2026-08-11 | 2026-08-11 | NATS certificate generation fails on macOS and Windows because `_local_ipv4_addresses` shells out to the Linux-only `ip` binary and never reaches its gethostname fallback. |
 | [[id:34FFCE53-473A-4532-95D2-4A8448CB4F19][Hotfix: rate_tree fails to compile on Windows]] | DONE | 2026-08-11 | 2026-08-11 | rate_tree.cpp calls std::to_string without including the string header, breaking the MSVC build. |
 | [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] | DONE | 2026-08-12 | 2026-08-12 | Sample-variance and drift-mean Monte Carlo tests in ores.analytics.quant fail on macOS because their tolerances are tighter than the tests' own standard error. |
+| [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] | BACKLOG | | | Windows CI compiles with -Werror -Wdeprecated-declarations: std::getenv is deprecated in MSVC's STL in favour of _dupenv_s. The generated eventing integration tests (and two hand-written ores.synthetic tests) call std::getenv, so every such file fails the Windows build, e.g. account_type_eventing_integration_tests.cpp:60. |
 
 * Achievements
 

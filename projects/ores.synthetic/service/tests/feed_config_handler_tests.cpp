@@ -54,13 +54,13 @@
 #include "ores.synthetic.core/repository/ir_curve_template_entry_repository.hpp"
 #include "ores.synthetic.core/repository/market_data_generation_config_repository.hpp"
 #include "ores.synthetic.core/repository/yield_curve_process_parameter_definition_repository.hpp"
+#include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
-#include <cstdlib>
 #include <map>
 #include <optional>
 #include <set>
@@ -106,27 +106,6 @@ boost::uuids::uuid resolve_test_party(ores::testing::scoped_database_helper& h) 
             return p.id;
     FAIL("No System party for tenant " << h.tenant_id().to_string());
     return {};
-}
-
-// Reads NATS connection settings the same way every service resolves them
-// at startup -- CMake bakes every .env variable into the ctest process
-// environment, so these are populated identically for both `compass build`
-// local runs and CI.
-ores::nats::config::nats_options test_nats_options() {
-    auto env = [](const char* name) -> std::string {
-        const char* v = std::getenv(name);
-        return v ? std::string(v) : std::string();
-    };
-
-    ores::nats::config::nats_options opts;
-    opts.url = env("ORES_NATS_URL");
-    if (opts.url.empty())
-        opts.url = "nats://localhost:4222";
-    opts.subject_prefix = env("ORES_NATS_SUBJECT_PREFIX");
-    opts.tls_ca_cert = env("ORES_NATS_TLS_CA");
-    opts.tls_client_cert = env("ORES_NATS_TLS_CERT");
-    opts.tls_client_key = env("ORES_NATS_TLS_KEY");
-    return opts;
 }
 
 // Mints an HS256 token the handler's verifier accepts, scoped to the test
@@ -441,7 +420,7 @@ struct config_fixture {
     std::optional<ores::nats::service::subscription> list_sub;
 
     config_fixture()
-        : nats(test_nats_options())
+        : nats(ores::testing::make_nats_options())
         , auth_nats(nats, [](bool) { return std::string(); }) {
         nats.connect();
         REQUIRE(nats.is_connected());

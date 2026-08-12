@@ -2005,12 +2005,6 @@ void MarketSimulatorWindow::promptThemeAndStart() {
             const auto folderId = item->data(FolderIdRole).toString().toStdString();
             if (!folderId.empty()) {
                 startFolderAsync(folderId);
-                auto curves = irCurvesUnderIndex(item->index());
-                curves.erase(std::remove_if(curves.begin(),
-                                            curves.end(),
-                                            [](const auto& ir) { return !ir.auto_start; }),
-                             curves.end());
-                startIrCurvesAsync(std::move(curves));
             } else {
                 startPairsAsync(pairsUnderIndex(item->index()));
                 startIrCurvesAsync(irCurvesUnderIndex(item->index()));
@@ -2030,10 +2024,7 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     // backing folder) cascades via one folder-scoped backend request instead
     // of enumerating and firing one request per feed client-side. Anything
     // else (a Feed leaf, a multi-selection, or a folder-less Collection)
-    // falls back to the per-feed path, which already cascades correctly.
-    // The folder-scoped request only ever resolves fx_spot_generation_config rows
-    // server-side, so IR curves in the current selection always go through the
-    // per-feed path in addition, never through the folder fast-path.
+    // falls back to the per-feed request, which already cascades correctly.
     if (currentNodeType() == NodeType::Root) {
         // Starting at Root would cascade every theme at once (e.g. "2016 ORE
         // Samples" and "2026 Realistic" simultaneously), which is nonsensical --
@@ -2046,17 +2037,6 @@ void MarketSimulatorWindow::onStartFeedClicked() {
     const auto folderId = selectedFolderId();
     if (!folderId.empty()) {
         startFolderAsync(folderId);
-        // Folder-level "start everything under here" is a bulk cascade, not
-        // per-curve consent -- auto_start=false curves (e.g. legacy IBOR-era
-        // ones living in the same folder as their RFR siblings) must stay
-        // out of it and only start via an explicit single-curve selection
-        // below, exactly like the service's own startup behaviour.
-        auto curves = selectedIrCurves();
-        curves.erase(std::remove_if(curves.begin(),
-                                    curves.end(),
-                                    [](const auto& ir) { return !ir.auto_start; }),
-                     curves.end());
-        startIrCurvesAsync(std::move(curves));
     } else {
         startPairsAsync(selectedFxPairs());
         startIrCurvesAsync(selectedIrCurves());
@@ -2172,9 +2152,10 @@ void MarketSimulatorWindow::onStopFeedClicked() {
     const auto folderId = selectedFolderId();
     if (!folderId.empty())
         stopFolderAsync(folderId);
-    else
+    else {
         stopPairsAsync(selectedFxPairs());
-    stopIrCurvesAsync(selectedIrCurves());
+        stopIrCurvesAsync(selectedIrCurves());
+    }
 }
 
 void MarketSimulatorWindow::stopFolderAsync(const std::string& folderId) {

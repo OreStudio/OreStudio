@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: D98B7262-190B-4204-A1A8-F5A2E6C9D299
+:END:
+#+title: Task: Scaffold story: Hotfix: stochastic process statistical tests fail on macOS CI
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :osx-stochastic-process-test-failures:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/osx-stochastic-process-test-failures
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Scaffold the hotfix story on a =hotfix/= branch: story and task
+documents, sprint wiring, and the working branch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Story scaffolded on =hotfix/osx-stochastic-process-test-failures= off
+origin/main: story.org, scaffold and implement tasks, sprint.org
+Hotfixes row set to STARTED (2026-08-12). Story Goal/Acceptance and
+implement-task Goal/Plan filled with the diagnosis (sub-sigma
+tolerances vs. the tests' own standard error).

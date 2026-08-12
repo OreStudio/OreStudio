@@ -102,6 +102,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:3EA23D13-8892-46C3-9B73-D511847E5536][Hotfix: Valgrind flags NATS one-time init blocks as leaks on eventing tests]] | DONE | 2026-08-10 | 2026-08-10 | CDash dynamic analysis flags 21 still-reachable leak records on three components (ores.trading.core.tests, ores.reporting.core.tests, ores.refdata.core.tests), all from the NATS C library one-time global init (nats_openLib) reached via the eventing client connect. Add narrow suppressions to build/valgrind/custom.supp and create a valgrind recipe. |
 | [[id:74A90E3D-32BC-4174-8926-C2F4D06D171B][Hotfix: NATS cert generation fails on macOS/Windows (missing `ip` command)]] | DONE | 2026-08-11 | 2026-08-11 | NATS certificate generation fails on macOS and Windows because `_local_ipv4_addresses` shells out to the Linux-only `ip` binary and never reaches its gethostname fallback. |
 | [[id:34FFCE53-473A-4532-95D2-4A8448CB4F19][Hotfix: rate_tree fails to compile on Windows]] | DONE | 2026-08-11 | 2026-08-11 | rate_tree.cpp calls std::to_string without including the string header, breaking the MSVC build. |
+| [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] | STARTED | 2026-08-12 | | Sample-variance and drift-mean Monte Carlo tests in ores.analytics.quant fail on macOS because their tolerances are tighter than the tests' own standard error. |
 
 * Achievements
 

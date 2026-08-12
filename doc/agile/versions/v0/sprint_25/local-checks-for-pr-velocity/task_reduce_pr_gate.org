@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 3D80654C-76CB-4482-ADAE-6C890E9E7C2C
+:END:
+#+title: Task: Delete the PR gate: no GitHub CI on pull requests
+#+description: The pr.yml workflow gated every pull request with site, roundtrip, drift, and classifier jobs that now run locally via the submit-PR skills — a vestigial ~7s shell gating on nothing real. Delete the workflow entirely (classify, pr-gate, and the retired functional jobs together) and remove the branch-protection required check. The review is the quality backstop on GitHub; the submit-PR skills are the gate.
+#+type: task
+#+level: s1
+#+filetags: :local-checks-for-pr-velocity:sprint_25:v0:
+#+owner: marco
+#+branch: feature/reduce-pr-gate
+#+pr: 1970
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The pr.yml workflow gated every pull request, but once the submit-PR
+skills ran the site, roundtrip, and drift checks locally, the gate
+shrank to a vestigial shell: classify (whose buckets nothing consumed)
+feeding pr-gate (which passed whenever classify succeeded). The gate
+was ~7s of GitHub time per PR gating on nothing real. Delete =pr.yml=
+entirely — classify and pr-gate with the retired jobs — and remove the
+branch-protection required check. The review is the quality backstop
+on GitHub; the submit-PR skills are the gate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-11                               |
+
+* Acceptance
+
+- =pr.yml= is deleted; no PR gate workflow runs on GitHub.
+- Branch protection has no required status check (other protection
+  settings are preserved).
+- No skill, recipe, or doc references the gate or its jobs.
+- The knowledge doc's fate table reflects the deletion.
+- The review workflow still runs on PR events.
+
+* Plan
+
+- Delete =pr.yml=: classify, pr-gate, and the already-retired
+  functional jobs go together — none of them gate on real signal.
+- Remove the branch-protection required status check via the GitHub
+  API, preserving every other protection setting.
+- Update the knowledge doc (summary, gate section, fate table, local
+  flow, open questions) and the =pr-raise= skill (it still said "the
+  minimal gate (classify + pr-gate)") to the no-gate reality.
+- Deleting other workflows is out of scope here: =claude-code-review.yml=
+  (auto review) and =misspell.yml= retire only once the local-review
+  task wires the code-review skill into the submit-PR flow — they are
+  the review coverage that skill replaces. The on-demand =claude.yml=
+  trigger stays. Recorded here so the deletion is tracked, not lost.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1970][#1970]] | [ci] Delete the PR gate: no GitHub CI on pull requests |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Bot-authored PRs now merge with zero CI-side verification (nightly-format, misspell, drift bots open auto-fix PRs directly against main) | pr.yml (deleted) | declined | Story decision: the review is the backstop; claude-code-review.yml still runs on every PR event, bot PRs included. The deleted gate's checks never compiled code (the canary job was removed earlier) — the bots' output is mechanical regen/formatting. |
+| 2 | codegen-drift's "runs unconditionally" rationale is not preserved in the local replacement: a model-only edit classifies as docs and skips the check that catches forgotten regeneration | pr-raise/SKILL.org, ci-workflows-and-local-checks.org | accepted | Docs class now runs codegen drift when =projects/*/modeling/*= is changed, in both classification tables, with the retired job's rationale noted. |
+| 3 | Top-of-file comment in pr.yml conflation (this PR's job deletions vs. the earlier canary removal) | pr.yml (deleted) | declined | Moot: the file is deleted with the gate. |
+| 4 | nightly-includes.yml auto-fix PR body still cites the deleted codegen-drift check (contradicts "no reference to the gate or its jobs") | nightly-includes.yml | accepted | Body now says hand-edited generated output would fail the local component drift check (check_component_drift.py) |
+| 5 | Knowledge doc Open questions still says the classify rules live in two places (pr.yml and the skill); pr.yml is deleted by this PR | ci-workflows-and-local-checks.org | accepted | Bullet removed; the skill alone owns the rules (the classification task's resolution) |
+| 6 | build-site.yml comments still describe the deleted gate: "Pull requests build the site via pr.yml's site job" and "the same build runs on doc-class pull requests via pr.yml" | build-site.yml | accepted | Comments now say doc-class PRs build the site locally via the pr-raise skill, which is where broken id-links are caught; this workflow covers main pushes (build + deploy) and manual runs only. |
+
+* Result
+
+=pr.yml= is deleted: classify, pr-gate, and the retired functional
+jobs went together — a ~7s per PR shell gating on nothing real.
+Branch protection lost its required status check (other settings
+preserved; verified via the API). Nothing references the gate: the
+knowledge doc (summary, gate section, fate table, local flow, open
+questions) and the =pr-raise= skill now describe the no-gate reality;
+=ore_coverage.yml='s own =roundtrip= job and =site-cdash.yml= (main
+deploys) are untouched. The review workflows (=claude-code-review.yml=,
+=claude.yml=) still run on PR events.
+
+Verification (ci + docs classes): roundtrip clean; cmake-sources drift
+clean; codegen drift clean (no in-tree changes); local site build
+clean. Deleting whole workflows beyond the gate is sequenced with the
+local-review task (auto review and misspell retire when the local
+review skill lands), recorded in Plan.

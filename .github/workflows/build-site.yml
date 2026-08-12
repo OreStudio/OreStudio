@@ -15,8 +15,8 @@
 #
 ---
 name: Product website
-# Pull requests build the site via pr.yml's site job; this workflow
-# covers pushes to main (build + deploy) and manual runs.
+# Pull requests build the site locally via the pr-raise skill; this
+# workflow covers pushes to main (build + deploy) and manual runs.
 on:  # yamllint disable-line rule:truthy
   push:
     branches: ["main"]
@@ -38,10 +38,10 @@ jobs:
       with_doxygen: true
 
   # Build the site on every push to main and hand it to the deploy job as
-  # an artifact. The same build runs on doc-class pull requests via pr.yml,
-  # which is where broken id-links are caught before they reach main. It
-  # does not deploy. Kept as a separate job so the ~5 min Org build runs
-  # outside the serialized Pages-deploy concurrency group.
+  # an artifact. Doc-class pull requests build the site locally via the
+  # pr-raise skill, which is where broken id-links are caught before they
+  # reach main. It does not deploy. Kept as a separate job so the ~5 min
+  # Org build runs outside the serialized Pages-deploy concurrency group.
   build:
     runs-on: ubuntu-24.04
     steps:

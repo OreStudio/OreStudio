@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: AEA7E72A-5254-481F-9E27-AA51DC2BA7C8
+:END:
+#+title: Task: Implement Hotfix: Windows build fails on std::getenv deprecation
+#+description: Initial task for: Hotfix: Windows build fails on std::getenv deprecation
+#+type: task
+#+level: s1
+#+filetags: :windows-getenv-deprecation:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr: 1978
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Replace every =std::getenv= call in test code that Windows compiles
+with =ores::platform::environment::environment::get_value_or_default=
+so the =-Werror= deprecation failure on Windows Clang goes away:
+
+- the codegen template =ores.cpp.eventing-integration-test.nats_integration_test.org=
+  (tangled to =cpp_nats_integration_test.cpp.mustache=), which feeds
+  ~85 generated =*_eventing_integration_tests.cpp= files across
+  ores.iam, ores.refdata, ores.reporting, and ores.trading;
+- the two hand-written ores.synthetic service tests
+  (=feed_config_handler_tests.cpp=, =folder_feed_control_handler_tests.cpp=),
+  which carry a copy of the same =env()= lambda.
+
+=systemd_notify.cpp= already uses the ores.platform wrapper; no change.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- No =std::getenv= remains in any C++ source under =projects/=
+  (grep clean).
+- Generated test files are produced by the updated template: the
+  template-drift check reports zero diff.
+- The changed test targets build and pass on Linux; the fix is
+  portable by construction (the wrapper already guards Windows with
+  =_putenv_s=).
+
+* Plan
+
+Root cause: MSVC's STL marks =std::getenv= deprecated in favour of
+=_dupenv_s=, and Windows CI compiles with =-Werror=, so every file
+that calls it fails the build (first observed in
+=account_type_eventing_integration_tests.cpp:60=). The failing files
+are codegen-generated from the
+=ores.cpp.eventing-integration-test.nats_integration_test= archetype:
+the =env()= lambda with =std::getenv= lives in the org template, so
+the fix belongs there, not in the generated files (CI enforces a
+zero-diff drift check).
+
+Steps:
+
+1. Edit the org template: replace the =std::getenv= lambda with
+   =ores::platform::environment::environment::get_value_or_default(name, "")=
+   and add the =ores.platform/environment/environment.hpp= include.
+2. Re-tangle: =compass build --direct tangle_codegen_templates=.
+3. Regenerate per component with the codegen
+   (=--address ores.cpp.eventing-integration-test=) and inspect the
+   diff: every generated file should show only the include, the
+   lambda replacement, and the =<cstdlib>= include drop if unused.
+4. Hand-fix the two ores.synthetic service tests (same lambda,
+   same replacement).
+5. Verify: grep for remaining =std::getenv=, build the affected test
+   targets, run the drift check.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1978][#1978]] | [agile] Scaffold hotfix: Windows build fails on std::getenv deprecation |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -48,12 +48,14 @@ namespace ores::shell::app::commands {
  * the actual seed used so a random run can be reproduced.
  *
  * Also exposes market simulator operations scriptably: listing the
- * folder tree and market_data_generation_configs, starting/stopping
- * individual feeds or whole folder subtrees, and validating vintage
- * data availability -- the same operations the Qt Market Simulator
- * window performs, without the GUI. All requests are authenticated and
- * inherit the viewer's context, so RLS and scope-based filtering apply
- * exactly as they do in the client.
+ * folder tree, market_data_generation_configs and running feeds,
+ * starting/stopping individual feeds or whole folder subtrees, and
+ * validating vintage data availability -- the same operations the Qt
+ * Market Simulator window performs, without the GUI. Every feed verb
+ * works for any asset class: the shell never enumerates feed kinds.
+ * All requests are authenticated and inherit the viewer's context, so
+ * RLS and scope-based filtering apply exactly as they do in the
+ * client.
  */
 class synthetic_commands {
 private:
@@ -70,8 +72,8 @@ public:
      * @brief Register synthetic-data commands.
      *
      * Creates the synthetic submenu with the generate operation and the
-     * market simulator command group (list folders/configs, start/stop
-     * folder/feed, validate-vintage).
+     * market simulator command group (list folders/configs/feeds,
+     * start/stop folder/feed, validate-vintage).
      */
     static void register_commands(cli::Menu& root_menu, ores::nats::service::nats_client& session);
 
@@ -166,6 +168,25 @@ public:
                              std::optional<ores::synthetic::domain::scope> scope_filter);
 
     /**
+     * @brief List running feeds: synthetic list feeds.
+     *
+     * Prints the source_name of every feed currently running in the
+     * synthetic service, of every asset class, plus the running count.
+     */
+    static void process_list_feeds(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::vector<std::string>& args);
+
+    /**
+     * @brief Execute a running-feeds list request, printing one line
+     * per running feed's source_name.
+     *
+     * @return true on success.
+     */
+    static bool list_feeds(std::ostream& out,
+                           ores::nats::service::nats_client& session);
+
+    /**
      * @brief Start feeds: synthetic start folder <folder-token>
      * | feed <feed-token>.
      *
@@ -175,7 +196,7 @@ public:
      * the refdata context (start_feed_request), exactly as the Qt
      * Market Simulator does. Folder tokens are UUIDs, exact names or
      * codename paths; feed tokens are UUIDs, ore keys or source_names
-     * (see resolve_folder_id/resolve_feed).
+     * of any asset class (see resolve_folder_id/resolve_feed).
      */
     static void process_start(std::ostream& out,
                               ores::nats::service::nats_client& session,
@@ -220,7 +241,7 @@ public:
      * @brief Start one feed by config_id; the server resolves the
      * config, its children, and the refdata context (mirrors the Qt
      * Market Simulator's per-pair start). @p token is a feed id, ore
-     * key or source_name.
+     * key or source_name of any asset class.
      *
      * @return true on success.
      */
@@ -242,7 +263,7 @@ public:
     /**
      * @brief Stop one feed by config_id; the server resolves it to the
      * config's source_name. @p token is a feed id, ore key or
-     * source_name.
+     * source_name of any asset class.
      *
      * @return true on success.
      */
@@ -253,7 +274,7 @@ public:
     /**
      * @brief Report vintage-availability status for one feed, computed
      * live server-side via get_vintage_validity_request. @p token is a
-     * feed id, ore key or source_name.
+     * feed id, ore key or source_name of any asset class.
      *
      * @return true on success.
      */

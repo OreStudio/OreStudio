@@ -27,6 +27,7 @@
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/generate_organisation_protocol.hpp"
+#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
@@ -317,40 +318,124 @@ resolve_folder_id(std::ostream& out, nats_client& session, const std::string& to
     return std::nullopt;
 }
 
-// Resolve a feed token -- UUID, exact ore key or exact source_name --
-// to its fx_spot_generation_config row. A token shared by several
-// visible feeds (e.g. the same ore key under different collections) is
-// reported as ambiguous, listing each feed's source_name.
-std::optional<synthetic::domain::fx_spot_generation_config>
-resolve_feed(std::ostream& out, nats_client& session, const std::string& token) {
-    synthetic::messaging::get_fx_spot_generation_configs_request req{.offset = 0, .limit = 1000};
-    auto result = do_auth_request<synthetic::messaging::get_fx_spot_generation_configs_response>(
-        out, session, std::string(req.nats_subject), req);
-    if (!result)
-        return std::nullopt;
+// The identity of one feed config, of any asset class. The shell never
+// needs the kind: start/stop send config_id and the server resolves it.
+struct resolved_feed {
+    std::string config_id;
+    std::string source_name;
+    // FX feeds only; IR curve configs have no ore key. validate_vintage
+    // prints it.
+    std::optional<std::string> ore_key;
+};
 
-    if (const auto id = try_uuid(token)) {
-        const auto needle = boost::uuids::to_string(*id);
-        for (const auto& c : result->fx_spot_generation_configs)
-            if (boost::uuids::to_string(c.id) == needle)
-                return c;
-        fail(out) << "Feed not found: " << token << std::endl;
-        return std::nullopt;
-    }
+// The result of probing one feed family for an exact name match: a
+// single resolved feed, or several matching configs. Several matches
+// are ambiguous -- already reported to the user -- and the probe stops
+// there.
+struct exact_match_result {
+    std::optional<resolved_feed> feed;
+    bool ambiguous = false;
+};
 
-    std::vector<synthetic::domain::fx_spot_generation_config> exact;
-    for (const auto& c : result->fx_spot_generation_configs)
-        if (c.ore_key == token || c.source_name == token)
+// Resolve an exact name match within one feed family. A single match
+// yields the feed identity; several matches are reported ambiguous,
+// listing each matching feed's source_name, and yield nothing.
+template <typename Config, typename NameMatch, typename OreKeyOf>
+exact_match_result
+exact_feed_match(std::ostream& out, const std::vector<Config>& configs,
+                 const std::string& token, NameMatch is_name_match, OreKeyOf ore_key_of) {
+    std::vector<Config> exact;
+    for (const auto& c : configs)
+        if (is_name_match(c))
             exact.push_back(c);
     if (exact.size() == 1)
-        return exact.front();
+        return exact_match_result{resolved_feed{boost::uuids::to_string(exact.front().id),
+                                                exact.front().source_name,
+                                                ore_key_of(exact.front())}};
     if (exact.size() > 1) {
         std::vector<std::string> labels;
         for (const auto& c : exact)
             labels.push_back(c.source_name);
         report_ambiguous(out, "feed", token, labels);
+        return exact_match_result{std::nullopt, true};
+    }
+    return exact_match_result{};
+}
+
+// Find the config whose id matches the needle within one feed family.
+template <typename Config, typename OreKeyOf>
+std::optional<resolved_feed>
+feed_by_id(const std::vector<Config>& configs, const std::string& needle, OreKeyOf ore_key_of) {
+    for (const auto& c : configs)
+        if (boost::uuids::to_string(c.id) == needle)
+            return resolved_feed{needle, c.source_name, ore_key_of(c)};
+    return std::nullopt;
+}
+
+// Resolve a feed token -- UUID, exact ore key or exact source_name --
+// to its config identity, of any asset class. The shell probes the FX
+// config family first, then the IR curve family -- the server's own
+// kind resolution probes the repositories in the same order, so a
+// token matching both families, config ids and source_names alike,
+// resolves to the feed the server would start. A token shared by
+// several visible feeds (e.g. the same ore key under different
+// collections) is reported as ambiguous, listing each feed's
+// source_name.
+std::optional<resolved_feed>
+resolve_feed(std::ostream& out, nats_client& session, const std::string& token) {
+    const auto id = try_uuid(token);
+
+    synthetic::messaging::get_fx_spot_generation_configs_request fx_req{.offset = 0,
+                                                                        .limit = 1000};
+    auto fx_result = do_auth_request<synthetic::messaging::get_fx_spot_generation_configs_response>(
+        out, session, std::string(fx_req.nats_subject), fx_req);
+    if (!fx_result)
+        return std::nullopt;
+    if (!fx_result->success) {
+        fail(out) << "Failed to list feeds: " << fx_result->message << std::endl;
         return std::nullopt;
     }
+
+    if (id) {
+        if (const auto found = feed_by_id(fx_result->fx_spot_generation_configs,
+                                          boost::uuids::to_string(*id),
+                                          [](const auto& c) { return c.ore_key; }))
+            return found;
+    } else {
+        const auto matched = exact_feed_match(
+            out, fx_result->fx_spot_generation_configs, token,
+            [&token](const auto& c) { return c.ore_key == token || c.source_name == token; },
+            [](const auto& c) { return c.ore_key; });
+        if (matched.feed || matched.ambiguous)
+            return matched.feed;
+    }
+
+    synthetic::messaging::get_ir_curve_generation_configs_request ir_req{.offset = 0,
+                                                                         .limit = 1000};
+    auto ir_result = do_auth_request<synthetic::messaging::get_ir_curve_generation_configs_response>(
+        out, session, std::string(ir_req.nats_subject), ir_req);
+    if (!ir_result)
+        return std::nullopt;
+    if (!ir_result->success) {
+        fail(out) << "Failed to list feeds: " << ir_result->message << std::endl;
+        return std::nullopt;
+    }
+
+    if (id) {
+        if (const auto found = feed_by_id(ir_result->ir_curve_generation_configs,
+                                          boost::uuids::to_string(*id),
+                                          [](const auto&) { return std::nullopt; }))
+            return found;
+        fail(out) << "Feed not found: " << token << std::endl;
+        return std::nullopt;
+    }
+
+    const auto matched = exact_feed_match(
+        out, ir_result->ir_curve_generation_configs, token,
+        [&token](const auto& c) { return c.source_name == token; },
+        [](const auto&) { return std::nullopt; });
+    if (matched.feed || matched.ambiguous)
+        return matched.feed;
     fail(out) << "No feed matching '" << token << "'." << std::endl;
     return std::nullopt;
 }
@@ -422,6 +507,12 @@ void synthetic_commands::register_commands(cli::Menu& root_menu, nats_client& se
                       },
                       "List market_data_generation_configs visible to the logged-in party/tenant",
                       {"[--scope system|tenant|party]"});
+    list_menu->Insert("feeds",
+                      [&session](std::ostream& out, std::vector<std::string> args) {
+                          process_list_feeds(std::ref(out), std::ref(session), args);
+                      },
+                      "List the synthetic feeds running in the service, of every asset class",
+                      {});
     synthetic_menu->Insert(std::move(list_menu));
 
     synthetic_menu->Insert("start",
@@ -751,6 +842,47 @@ bool synthetic_commands::list_configs(std::ostream& out,
     return true;
 }
 
+void synthetic_commands::process_list_feeds(std::ostream& out,
+                                            nats_client& session,
+                                            const std::vector<std::string>& args) {
+    auto parsed = parse_args(args, {});
+    if (!parsed) {
+        fail(out) << parsed.error() << std::endl;
+        return;
+    }
+    if (!parsed->positionals.empty()) {
+        fail(out) << "synthetic list feeds takes no positional arguments; see help." << std::endl;
+        return;
+    }
+    if (!session.is_logged_in()) {
+        fail(out) << "Not logged in." << std::endl;
+        return;
+    }
+
+    list_feeds(out, session);
+}
+
+bool synthetic_commands::list_feeds(std::ostream& out, nats_client& session) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing running synthetic feeds.";
+
+    synthetic::messaging::list_feeds_request req;
+    auto result = do_auth_request<synthetic::messaging::list_feeds_response>(
+        out, session, std::string(req.nats_subject), req);
+    if (!result)
+        return false;
+    // The list response carries no message field; the failure reason is
+    // generic.
+    if (!result->success) {
+        fail(out) << "Failed to list feeds." << std::endl;
+        return false;
+    }
+
+    for (const auto& source_name : result->running_source_names)
+        out << "  " << source_name << std::endl;
+    out << result->running_source_names.size() << " running feed(s)." << std::endl;
+    return true;
+}
+
 void synthetic_commands::process_start(std::ostream& out,
                                        nats_client& session,
                                        const std::vector<std::string>& args) {
@@ -800,10 +932,10 @@ bool synthetic_commands::start_feed(std::ostream& out,
                                     const std::string& token) {
     // The request is keyed by config_id; the server resolves the config,
     // its children, and the refdata context.
-    const auto fx = resolve_feed(out, session, token);
-    if (!fx)
+    const auto feed = resolve_feed(out, session, token);
+    if (!feed)
         return false;
-    const auto feed_id = boost::uuids::to_string(fx->id);
+    const auto& feed_id = feed->config_id;
 
     synthetic::messaging::start_feed_request req{.config_id = feed_id};
     BOOST_LOG_SEV(lg(), info) << "Starting feed " << feed_id << ".";
@@ -867,10 +999,10 @@ bool synthetic_commands::stop_feed(std::ostream& out,
                                    const std::string& token) {
     // The stop request is keyed by config_id; the server resolves it to
     // the config's source_name.
-    const auto fx = resolve_feed(out, session, token);
-    if (!fx)
+    const auto feed = resolve_feed(out, session, token);
+    if (!feed)
         return false;
-    const auto feed_id = boost::uuids::to_string(fx->id);
+    const auto& feed_id = feed->config_id;
 
     synthetic::messaging::stop_feed_request req{.config_id = feed_id};
     BOOST_LOG_SEV(lg(), info) << "Stopping feed " << feed_id << ".";
@@ -910,11 +1042,14 @@ bool synthetic_commands::validate_vintage(std::ostream& out,
                                           nats_client& session,
                                           const std::string& token) {
     // Resolve the feed (id, ore key or source name), then look up its
-    // live server-side vintage validity entry.
-    const auto fx = resolve_feed(out, session, token);
-    if (!fx)
+    // live server-side vintage validity entry. Entries are keyed by fx
+    // config id, so only FX feeds match one; IR curve feeds report no
+    // entry. The ore key renders only for FX feeds.
+    const auto feed = resolve_feed(out, session, token);
+    if (!feed)
         return false;
-    const auto feed_id = boost::uuids::to_string(fx->id);
+    const auto& feed_id = feed->config_id;
+    const std::string ore_key = feed->ore_key ? " (" + *feed->ore_key + ")" : "";
 
     marketdata::messaging::get_vintage_validity_request req;
     auto result = do_auth_request<marketdata::messaging::get_vintage_validity_response>(
@@ -930,20 +1065,20 @@ bool synthetic_commands::validate_vintage(std::ostream& out,
         if (e.fx_spot_generation_config_id != feed_id)
             continue;
         if (!e.applicable) {
-            out << "⚠ Vintage check not applicable to feed " << fx->source_name << " ("
-                << fx->ore_key << ", fixed price source)." << std::endl;
+            out << "⚠ Vintage check not applicable to feed " << feed->source_name << ore_key
+                << " (fixed price source)." << std::endl;
             return true;
         }
         if (e.valid) {
-            out << "✓ Vintage data available for feed " << fx->source_name << " (" << fx->ore_key
-                << ")." << std::endl;
+            out << "✓ Vintage data available for feed " << feed->source_name << ore_key << "."
+                << std::endl;
             return true;
         }
-        fail(out) << "Vintage data missing for feed " << fx->source_name << " (" << fx->ore_key
-                  << ")." << std::endl;
+        fail(out) << "Vintage data missing for feed " << feed->source_name << ore_key << "."
+                  << std::endl;
         return false;
     }
-    fail(out) << "No vintage validity entry for feed " << fx->source_name << "." << std::endl;
+    fail(out) << "No vintage validity entry for feed " << feed->source_name << "." << std::endl;
     return false;
 }
 

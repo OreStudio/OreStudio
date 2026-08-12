@@ -20,6 +20,7 @@
 #include "ores.qt/MarketSimulatorWindow.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp"
+#include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
@@ -2518,18 +2519,22 @@ void MarketSimulatorWindow::onValidateVintageClicked() {
 // ---- Tick chart ---------------------------------------------------------
 
 std::string MarketSimulatorWindow::synthetic_subject(const std::string& source_name,
-                                                     bool is_curve_family) {
+                                                     bool is_curve) {
     std::string token;
     for (unsigned char c : source_name) {
         const bool safe = std::isalnum(c) || c == '.' || c == '_' || c == '-';
         token += safe ? static_cast<char>(c) : '_';
     }
-    // IR curve feeds publish on their own namespace, synthetic.v1.curve_family.<source> --
-    // distinct from the plain-tick namespace synthetic.v1.tick.<source> scalar feeds (FX) use
-    // (see this story's "Two subjects, not two message shapes" analysis). source_name follows
-    // the same "synthetic.<collection>.<pair>" shape for both asset classes now, so the caller
-    // must say which one this is (see isIrCurveSourceName()) rather than this function sniffing it.
-    return (is_curve_family ? "synthetic.v1.curve_family." : "synthetic.v1.tick.") + token;
+    // The unified tick scheme carries the feed kind as a subject token right after the shared
+    // prefix -- synthetic.v1.tick.<kind>.<source> (fx_spot/ir_curve, the producer factory kind
+    // strings) -- so the ingest loop's one wildcard dispatches without a second subject family.
+    // source_name follows the same "synthetic.<collection>.<pair>" shape for both asset classes
+    // now, so the caller must say which kind this is (see isIrCurveSourceName()) rather than this
+    // function sniffing it. Mirrors the producers' own derivation in synthetic_tick_subject().
+    return "synthetic.v1.tick." +
+           std::string(is_curve ? ores::marketdata::domain::ir_curve_kind_token
+                                : ores::marketdata::domain::fx_spot_kind_token) +
+           "." + token;
 }
 
 bool MarketSimulatorWindow::isIrCurveSourceName(const std::string& source_name) const {

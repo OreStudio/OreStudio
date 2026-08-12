@@ -29,11 +29,11 @@ clients send the folder/config request and the server cascades.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98][Feed lifecycle harmonization: asset-class-agnostic feed control-plane]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -102,3 +102,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Both clients stopped re-implementing the tree-walk-and-fan-out; the
+server-side folder cascade (task 9E2344CF) is now the single start/stop
+path, covering every asset class.
+
+=MarketSimulatorWindow=: the folder branch of =onStartFeedClicked= and
+of the theme picker (=promptThemeAndStart=) issue the folder request
+only — the per-config IR loop with its client-side =auto_start= filter
+is deleted from both. =onStopFeedClicked= stops via the folder-stop
+request when a folder is selected; the per-feed stop
+(=stopIrCurvesAsync=) runs only in the folder-less case. The per-feed
+path (=startPairsAsync= + =startIrCurvesAsync=) remains for Feed-leaf
+and folder-less selections, going through the kind-agnostic per-config
+request (task 5). Acceptance 1 met: folder start is the folder request
+only, the per-config IR loop and its =auto_start= filter are gone, and
+stopping is the folder-stop request.
+
+=tenant_handler= =start_synthetic_theme_feeds= keeps its
+dataset/config/folder resolution and sends one folder-scoped request.
+The IR two-path block (folder-hierarchy walk into =subtree_folder_ids=,
+the =get_ir_curve_generation_configs= listing, the =auto_start= filter,
+and the per-curve =start_feed_request= fan-out) is deleted, along with
+the includes only it used. A folder failure returns false immediately
+rather than continuing the walk. Acceptance 2 met: the function issues
+the folder request only; the subtree walk and per-kind fan-out are gone.
+
+Behaviour parity rests on the folder cascade covering both kinds — the
+cascade QA scenarios (task 9E2344CF) cover it, and the cascade's
+service tests (=folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts=)
+still pass on this branch.
+
+Verification: full build green (no SQL change, so no DB recreate);
+=compass build rat= green (all suites pass).

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: ABF849AE-7E40-4557-B58B-1C3F273603DE
+:END:
+#+title: ores.iam repository tests poison the shared test DB across rat runs
+#+description: The iam repository tests write deterministic names to the system tenant of the shared dev DB; a successful rat run leaves current rows that collide with the next run.
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+
+The ores.iam repository tests (repository_tenant_type_repository_tests.cpp, repository_tenant_status_repository_tests.cpp) write tenant types and statuses named 'CD N' (faker noun plus a static counter) to the system tenant of the shared test DB. The partial unique indexes tenant_types_name_uniq_idx and tenant_statuses_name_uniq_idx are scoped to valid_to = infinity, so every successful rat run leaves current rows that poison the next run with a duplicate-key failure.
+
+*Why:* A rat run collided twice (2026-08-12) on the shared dev DB: the before-insert trigger closes the prior current row when a colliding insert fires, so runs alternate fail/pass/fail/pass, with no code change involved.
+
+*How to apply:* When rat fails with duplicate key on tenant_types_name_uniq_idx or tenant_statuses_name_uniq_idx for the system tenant, soft-close the residue: delete the test-user rows (modified_by = ores_swift_curie_test_dml_user) via compass db sql -- the delete rule rewrites the delete to a soft-close update scoped to current versions, so the command is idempotent and never touches seed rows. Then re-run rat.

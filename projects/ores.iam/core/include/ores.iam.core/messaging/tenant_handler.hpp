@@ -46,10 +46,8 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
-#include "ores.synthetic.api/messaging/ir_curve_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
-#include "ores.utility/domain/hierarchy.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -63,7 +61,6 @@
 #include <stdexcept>
 #include <thread>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -745,20 +742,20 @@ private:
         return std::nullopt;
     }
 
-    // Starts every auto-start FX/IR feed under the calling party's
-    // (client's) theme collection folder for the given dq dataset code
-    // (e.g. "synthetic.themes.realistic_2026") -- the same folder-scoped
-    // mechanism the Qt Market Simulator's "Start at Root -> pick a theme"
-    // flow uses (PR #1741), resolved server-side from
-    // synthetic_publish_from_dq's container-per-(tenant, party, dataset)
-    // convention rather than by matching on display name. Best-effort:
-    // logs and returns false on any resolution miss (dataset/config/folder
-    // not found, or a list request itself failing server-side) rather than
-    // failing provisioning over a cosmetic follow-on step -- the party
-    // itself is already fully provisioned by this point. Returns whether
-    // resolution succeeded far enough to attempt starting feeds, so the
-    // caller can surface a miss in its own step list rather than reporting
-    // "completed" for a no-op.
+    // Starts every feed under the calling party's (client's) theme
+    // collection folder for the given dq dataset code (e.g.
+    // "synthetic.themes.realistic_2026") via one folder-scoped request
+    // the server cascades across asset classes -- the same mechanism the
+    // Qt Market Simulator's "Start at Root -> pick a theme" flow uses (PR
+    // #1741), resolved server-side from synthetic_publish_from_dq's
+    // container-per-(tenant, party, dataset) convention rather than by
+    // matching on display name. Best-effort: logs and returns false on any
+    // resolution miss (dataset/config/folder not found, or a list request
+    // itself failing server-side) rather than failing provisioning over a
+    // cosmetic follow-on step -- the party itself is already fully
+    // provisioned by this point. Returns whether resolution succeeded far
+    // enough to attempt starting feeds, so the caller can surface a miss in
+    // its own step list rather than reporting "completed" for a no-op.
     static bool start_synthetic_theme_feeds(internal_request_client& client,
                                             const std::string& dataset_code) {
         std::optional<boost::uuids::uuid> dataset_id;
@@ -826,73 +823,17 @@ private:
         }
         const auto folder_id_str = boost::uuids::to_string(*folder_id);
 
-        bool ok = true;
-
-        // FX: one folder-scoped request covers the whole subtree server-side.
-        {
-            marketdata::messaging::start_feeds_under_folder_request req;
-            req.folder_id = folder_id_str;
-            auto resp = client.request(req);
-            if (!resp.success) {
-                BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: start FX folder failed: " << resp.message;
-                ok = false;
-            }
+        // One folder-scoped request cascades every feed under the subtree
+        // server-side, across all asset classes.
+        marketdata::messaging::start_feeds_under_folder_request req;
+        req.folder_id = folder_id_str;
+        auto resp = client.request(req);
+        if (!resp.success) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "start_synthetic_theme_feeds: start folder failed: " << resp.message;
+            return false;
         }
-
-        // IR: the folder-scoped request only resolves fx_spot_generation_config
-        // rows server-side, so IR curves always go through the per-curve path,
-        // scoped to every folder in this theme's subtree (auto_start=false
-        // curves -- e.g. legacy IBOR-era ones sharing a folder with RFR
-        // siblings -- deliberately excluded, matching the Market Simulator's
-        // own folder-cascade behaviour).
-        std::unordered_set<std::string> subtree_folder_ids{folder_id_str};
-        {
-            synthetic::messaging::get_folder_hierarchy_request req;
-            req.root_id = folder_id_str;
-            auto resp = client.request(req);
-            if (!resp.success) {
-                BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: folder hierarchy lookup failed: "
-                    << resp.message;
-                ok = false;
-            }
-            std::function<void(const ores::utility::domain::hierarchy_node&)> collect =
-                [&](const ores::utility::domain::hierarchy_node& n) {
-                    subtree_folder_ids.insert(boost::uuids::to_string(n.id));
-                    for (const auto& c : n.children)
-                        collect(c);
-                };
-            for (const auto& root : resp.roots)
-                collect(root);
-        }
-        {
-            synthetic::messaging::get_ir_curve_generation_configs_request req;
-            req.limit = 1000;
-            auto resp = client.request(req);
-            if (!resp.success) {
-                BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                    << "start_synthetic_theme_feeds: list ir_curve_generation_configs failed: "
-                    << resp.message;
-                ok = false;
-            }
-            for (auto& ir : resp.ir_curve_generation_configs) {
-                if (!ir.auto_start || !ir.folder_id)
-                    continue;
-                if (!subtree_folder_ids.contains(boost::uuids::to_string(*ir.folder_id)))
-                    continue;
-                synthetic::messaging::start_feed_request start_req;
-                start_req.config_id = boost::uuids::to_string(ir.id);
-                auto start_resp = client.request(start_req);
-                if (!start_resp.success) {
-                    BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                        << "start_synthetic_theme_feeds: start IR curve " << ir.source_name
-                        << " failed: " << start_resp.message;
-                    ok = false;
-                }
-            }
-        }
-        return ok;
+        return true;
     }
 
     // Copies the system-tenant "key" template image into p_tenant_id (if not

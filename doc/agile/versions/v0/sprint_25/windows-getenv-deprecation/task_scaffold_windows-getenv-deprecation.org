@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-12                               |
 
 * Acceptance
@@ -69,3 +69,10 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story and task docs scaffolded on =hotfix/windows-getenv-deprecation=
+(off origin/main), sprint Hotfixes wiring updated, story STARTED with
+the implement task in BACKLOG. The doc-add-memory flow also ran in
+this session: memory =Use ores.platform for cross-platform
+functionality= recorded and wired into the Project memory inventory.
+Scaffold PR opened from this branch.

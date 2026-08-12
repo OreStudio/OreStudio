@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 1965EE9B-8563-4D7B-A23E-34FC4F2FDA1A
+:END:
+#+title: Task: Wire jump-diffusion into the system: factory, config storage, Qt UI
+#+description: Expose the jump_diffusion_process engine to the synthetic FX spot flow, following the Ornstein-Uhlenbeck wiring precedent: process_factory::make_process() branch, config parameter storage, FxSpotRateEditor surface, and shared validation.
+#+type: task
+#+level: s1
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: eager_maxwell
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The jump-diffusion engine appears as a selectable process type in the synthetic FX spot rate UI, with its parameters (drift, volatility, jump intensity, jump-size mean, jump-size sigma) stored on the config and threaded through make_fx_spot_feed to process_factory::make_process(), replacing the Jump/Poisson processes placeholder in the Component Tools panel.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- A jump_diffusion branch in process_factory::make_process() constructs a working engine from the parameter struct
+- The fx_spot_generation_config stores the jump parameters as new columns; the migration adds them with defaults and existing configs are unaffected
+- FxSpotRateEditor lists the jump-diffusion engine, shows its parameter fields, and the Component Tools Jump/Poisson processes placeholder bullet is replaced by the real surface
+- validate_process_parameters accepts the jump-diffusion parameter set (shared server/client rules)
+- Existing geometric/arithmetic/Ornstein-Uhlenbeck configs are unaffected
+- Reference: QuantLib Merton76Process and test-suite/jumpdiffusion.cpp (via the engine task)
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

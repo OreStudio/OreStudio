@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE
+:END:
+#+title: Story: Hotfix: stochastic process statistical tests fail on macOS CI
+#+description: Sample-variance and drift-mean Monte Carlo tests in ores.analytics.quant fail on macOS because their tolerances are tighter than the tests' own standard error.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ores.analytics.quant:sprint_25:v0:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Two Monte Carlo statistical tests in ores.analytics.quant fail on
+macOS CI: the Black-Karasinski sample-variance check and the HJM
+drift-mean check assert tolerances tighter than the tests' own
+standard error. =std::normal_distribution= is implementation-defined,
+so the same =mt19937= seeds produce a different draw sequence under
+libc++ (macOS) than under libstdc++ (Linux), and the macOS draws land
+just outside the bounds. The fix widens the tolerances to multi-sigma
+bounds so the tests pass on every platform while still rejecting
+genuine model errors.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-08-12                               |
+
+* Acceptance
+
+- ores.analytics.quant tests pass on Linux, macOS, and Windows CI.
+- Statistical assertions still bound genuine deviations (tolerances
+  at or above ~3 sigma of the estimator's standard error).
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:D98B7262-190B-4204-A1A8-F5A2E6C9D299][Scaffold story: Hotfix: stochastic process statistical tests fail on macOS CI]] | DONE | 2026-08-12 | 2026-08-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:3DE5BBB9-13CD-41FF-9F69-855CF34A7FAA][Implement Hotfix: stochastic process statistical tests fail on macOS CI]] | DONE | 2026-08-12 | 2026-08-12 | Initial task for: Hotfix: stochastic process statistical tests fail on macOS CI |
+
+* Decisions
+
+- Widen test tolerances rather than replace =std::normal_distribution=
+  with a platform-independent generator: test-only, minimal hotfix
+  scope; the per-platform draws remain statistically valid samples.
+- BK variance epsilon 1.5e-2 (~4.7 sigma at 200000 paths), matching
+  the sibling Gaussian-OU moments test in the same file.
+- HJM drift margins 1e-2 (>= 3.2 sigma at the noisiest leg). Per-rate
+  margins declined at review: a drift-formula error and the standard
+  error of each mean both scale with the rate's volatility, so
+  detection sensitivity is leg-independent in sigma units.
+
+* Out of scope
+
+-

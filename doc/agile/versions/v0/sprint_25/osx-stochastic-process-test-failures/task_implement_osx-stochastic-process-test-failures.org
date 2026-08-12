@@ -1,0 +1,127 @@
+:PROPERTIES:
+:ID: 3DE5BBB9-13CD-41FF-9F69-855CF34A7FAA
+:END:
+#+title: Task: Implement Hotfix: stochastic process statistical tests fail on macOS CI
+#+description: Initial task for: Hotfix: stochastic process statistical tests fail on macOS CI
+#+type: task
+#+level: s1
+#+filetags: :osx-stochastic-process-test-failures:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-osx-stochastic-process-test-failures
+#+pr: 1976
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Widen the statistical tolerances in the two failing tests so they
+hold for any platform's =std::normal_distribution= sequence while
+still bounding genuine model errors:
+
+- =black_karasinski_process_tests.cpp= (kappa <= 0 walk test):
+  sample variance of 200k paths must match =sigma^2 * dt=; the 3e-3
+  epsilon allows only ~0.95 sigma of the estimator's standard error.
+- =heath_jarrow_morton_process_tests.cpp= (drift grid-integral test):
+  per-tick drift means must match the hand-computed vector; the 2e-3
+  margin is ~0.6 sigma for the largest-vol rate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:4A047F18-0AE2-4DDF-9AC9-04AFAAF233AE][Hotfix: stochastic process statistical tests fail on macOS CI]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- Both tests pass on Linux with the current libstdc++ sequence.
+- Tolerances are >= ~3 sigma of the estimator's standard error, so
+  the libc++ (macOS) draw sequence cannot land outside them.
+
+* Plan
+
+Root cause: =std::normal_distribution= is implementation-defined;
+libc++ and libstdc++ map the same =mt19937= output to different normal
+draws. The tests seed each path (seeds 42+i) and were tuned against
+the Linux sequence, with tolerances tighter than the tests' own
+standard error:
+
+- BK variance test (lines 240-267): N = 200000 paths; standard error
+  of the sample variance is =sigma^2 * sqrt(2/N) = 1.42e-4=, but the
+  3e-3 epsilon admits only =1.35e-4= (0.95 sigma). macOS draws gave
+  0.044853 vs the expected 0.045.
+- HJM drift test (lines 163-194): N = 100000 paths; per-tick drift
+  mean for rate 3 has standard error ~3.2e-3, but the margin is 2e-3
+  (0.6 sigma). macOS draws gave mean[1] = 0.04733 vs 0.045.
+
+Fix: widen the bounds to multi-sigma headroom. BK epsilon to 1.5e-2
+(the sibling Gaussian-OU test in the same file already uses 1.5e-2
+for the same estimator at the same path count); HJM margin to 1e-2.
+This makes the failure probability per platform negligible while
+keeping the checks ~4 sigma tight relative to genuine deviations.
+
+* Notes
+
+Root cause: the two Monte Carlo tests assert tolerances tighter than
+their own standard error, and =std::normal_distribution= maps the
+same =mt19937= seeds to different draws per standard library, so the
+macOS (libc++) sequence lands outside the bounds the tests were tuned
+to on Linux (libstdc++).
+
+Fix (committed): widen the bounds to multi-sigma headroom, matching
+the sibling conventions in the same files:
+
+- BK kappa <= 0 walk test: variance epsilon 3e-3 → 1.5e-2 (~4.7 sigma
+  at 200000 paths; the Gaussian-OU moments test already uses 1.5e-2
+  for the same estimator and path count).
+- HJM drift test: mean margins 2e-3 → 1e-2 (>= 3.2 sigma at the
+  noisiest rate, sigma = 0.5; the previous margin was ~0.6 sigma).
+  The front-rate zero-mean check gets the same margin.
+
+Verification: `compass build ores.analytics.quant.tests` green;
+running `[black_karasinski_process],[heath_jarrow_morton_process]`
+passes all 34 test cases (2084209 assertions) on Linux. No source
+changes — test-only hotfix; a genuine model error of ~3 sigma or more
+is still rejected.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1976][#1976]] | [ores.analytics.quant] Widen statistical test tolerances to multi-sigma bounds |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Fix verified locally (build green, both suites pass: 34 test cases,
+2084209 assertions) and shipped as PR #1976. Review round: one
+minor observation on per-rate HJM margins, declined with rationale
+(error and standard error both scale with the rate's volatility, so
+detection is leg-independent in sigma units); reviewer approved,
+claude-review and check gates green.

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: B4E38241-6AD1-4859-9610-033CC39C0AF4
+:END:
+#+title: Use ores.platform for cross-platform functionality
+#+description: Always use ores.platform for getenv and any other cross-platform functionality it supports, rather than the native approach.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+
+Always use ores::platform::environment::environment (ores.platform) for getenv and any other cross-platform functionality that ores.platform supports, rather than the native approach (std::getenv, setenv, unsetenv, etc.).
+
+*Why:* Windows Clang compiles with -Werror -Wdeprecated-declarations: std::getenv is deprecated in MSVC's STL (it flags it in favour of _dupenv_s), so any native call breaks the Windows CI build. ores.platform wraps the platform-specific implementation (std::getenv/setenv/unsetenv on Unix, _putenv_s on Windows) behind one portable API. Previous incidents: setenv/unsetenv POSIX-only compile failures (PR #1876), std::getenv deprecation error in account_type_eventing_integration_tests.cpp:60.
+
+*How to apply:* When writing code that reads or writes environment variables, prefer ores::platform::environment::environment::get_value / get_value_or_default / set_value / unset_value over std::getenv/setenv/unsetenv and _putenv_s. Also check ores.platform for any other cross-platform primitive (paths, filesystem, etc.) before reaching for a native or POSIX-only call.

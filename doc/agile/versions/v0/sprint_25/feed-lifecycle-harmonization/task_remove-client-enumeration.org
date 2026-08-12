@@ -8,7 +8,7 @@
 #+filetags: :qt:synthetic:feeds:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
 #+branch: feature/remove-client-enumeration
-#+pr:
+#+pr: 1974
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1974][#1974]] | [iam,qt] Clients send the folder request only; the server cascades |
 
 * Review
 

@@ -98,13 +98,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1973][#1973]] | [shell] Feed verbs for every asset class: kind-agnostic token resolution and a running-feeds list |
+| [[https://github.com/OreStudio/OreStudio/pull/1973][#1973]] | [shell] Feed verbs for every asset class |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | resolve_feed skips the success check on the FX/IR list responses; a backend failure reads as "No feed matching" | synthetic_commands.cpp | Applied | success guard added after each probe, mirroring list_folders/list_configs. Raised by both review passes. |
+| 2 | The exact-match and ambiguity blocks are duplicated across the FX and IR probes | synthetic_commands.cpp | Applied | factored into exact_feed_match and feed_by_id; try_uuid hoisted above both probes. Raised by both review passes. |
+| 3 | try_uuid(token) parsed twice, once per probe | synthetic_commands.cpp | Applied | hoisted in the same refactor as row 2. |
+| 4 | Cross-family ambiguity unchecked for exact-name tokens; the FX match wins silently | synthetic_commands.cpp | Declined | FX-first mirrors the server's kind resolution (documented in resolve_feed); the server resolves the same config_id to the FX feed, so the win is consistent. A guard would add an IR round-trip to every FX match for a collision the naming conventions make unreachable. |
 
 * Result
 

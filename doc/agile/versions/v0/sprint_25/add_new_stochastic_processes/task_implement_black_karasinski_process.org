@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-black-karasinski-process
+#+pr: 1980
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-07
-#+updated: 2026-08-11
+#+updated: 2026-08-12
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ The Black-Karasinski process appears as a selectable process type in the IR curv
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]] |
-| Now          | Engine implemented and merged (PR #1932); system wiring remaining. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Wire into the system (factory, seed data, config storage, Qt UI), following the G2 precedent. |
-| Last touched | 2026-08-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-12                               |
 
 * Acceptance
 
@@ -46,6 +46,53 @@ The Black-Karasinski process appears as a selectable process type in the IR curv
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+#+begin_comment
+Wiring plan, written 2026-08-12, before implementation began. The
+engine is complete (PR #1932); this task wires it in following the G2
+precedent exactly.
+#+end_comment
+
+** Surfaces to touch
+
+The G2 wiring task established the row-based parameter architecture:
+definitions catalogue (read-only reference), per-config value rows
+(EAV child), the mapping layer that joins them and constructs the
+typed engine, seed rows, and the data-driven parameter table in
+IrCurveEditor. Black-Karasinski fits that machinery as-is — four
+scalar parameters, no schema change, no codegen. The surfaces are:
+
+1. =yield_curve_process_parameter_mapping.cpp=: =expected_parameters=
+   entry + dispatch branch constructing =black_karasinski_process=
+   from =black_karasinski_params= — direct construction in the
+   mapping layer, per the G2 precedent (=make_yield_curve_process()=
+   stays flat-arg, used by its own tests only; no new branch).
+
+2. Seed data: =BLACK_KARASINSKI= row in
+   =synthetic_yield_curve_process_types_populate.sql= (display_order
+   5) + 4 definition rows in the definitions populate script, defaults
+   matching the quant test values. Parameterization decisions:
+   =theta= is the long-run level of =ln r= (default
+   =log(0.04) = -3.218876=, honest log-level default with an
+   explanatory description); =kappa= unbounded below (=kappa <= 0= is
+   a valid, degenerate driftless case — unlike Vasicek's min 0);
+   =sigma= min 0; =initial_rate= min =1e-6=, a small positive epsilon
+   so the catalogue expresses the engine's strict =initial_rate > 0=
+   bound and the mapping layer rejects 0 (the engine's own strict
+   check stays as the last line of defence).
+
+3. =IrCurveEditor.cpp=: one =kEngines= row + one tooltip entry — the
+   data-driven parameter table needs no dialog work.
+
+4. Doc comment: enumerate =BLACK_KARASINSKI= in
+   =ir_curve_generation_config.process_type=.
+
+** Verification
+
+Full build + ctest, DB recreate (deploys + FK-validates the seed
+rows), roundtrip and cmake-sources drift checks. The engine's own
+Catch2 suite (24 tests, PR #1932) runs inside =ores.analytics.quant
+tests=.
 
 * Notes
 
@@ -66,13 +113,16 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1980][#1980]] | [ores.synthetic] Wire Black-Karasinski into the system: mapping, seed, editor |
 | [[https://github.com/OreStudio/OreStudio/pull/1932][#1932]] | [ores.analytics.quant] Implement six stochastic IR processes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | BLACK_KARASINSKI initial_rate min_value 0 lets a strictly-invalid 0 pass the mapping layer's range check; the engine rejects it later with different wording. | synthetic_yield_curve_process_parameter_definitions_populate.sql | ACCEPTED | min_value 0 to 1e-6 (small positive epsilon), matching the documented "strictly positive" invariant; mapping layer now rejects 0 with its consistent "below its minimum" error. |
+| 2 | No unit test exercises the new dispatch branch (matches the existing pattern — no mapping tests for any engine). | yield_curve_process_parameter_mapping.cpp | DECLINED | Consistent with all five existing process types (G2 included no mapping tests either); verification is DB recreate + runtime. A mapping-layer test suite across engines is a follow-up, not this PR. |
+| 3 | Stale tooltip-map comment: "not all three at once" — the map now holds five entries. | IrCurveEditor.cpp | ACCEPTED | Reworded to drop the hardcoded count. |
 
 * Result
 
@@ -92,3 +142,40 @@ All 368 =ores.analytics.quant= tests pass on Linux. Not yet wired into
 =process_factory= (deferred to PR 2: system infra wiring).
 
 Merged via PR #1932 (merge commit 4c9b23d99) on 2026-08-10.
+
+The system wiring (this task's scope) landed in three commits on
+=feature/implement-black-karasinski-process=:
+
+1. =[ores.synthetic]= =expected_parameters= entry + dispatch branch
+   constructing =black_karasinski_process= from its typed params
+   struct — direct construction in the mapping layer, per the G2
+   precedent. =make_yield_curve_process()= is untouched: it stays
+   flat-arg, used by =process_factory_tests.cpp= only, so the
+   "factory constructs a working engine" acceptance is satisfied by
+   the mapping layer exactly as it was for G2.
+
+2. =[ores.sql]= =BLACK_KARASINSKI= row (display_order 5) in the
+   process types seed + 4 definition rows in the parameter
+   definitions catalogue (kappa/theta/sigma/initial_rate). Defaults
+   match the quant test values: =theta = log(0.04) = -3.218876=
+   (the long-run level of =ln r=), =kappa= unbounded below (valid
+   driftless branch), =sigma= min 0, =initial_rate= min =1e-6=
+   (review round 1: the catalogue now expresses the strict
+   =initial_rate > 0= bound as a small positive epsilon so the
+   mapping layer rejects 0 with its own consistent message instead of
+   the engine constructor).
+
+3. =[ores.qt]= =kEngines= row + tooltip entry in =IrCurveEditor= —
+   the engine combo is populated from =kEngines=, so the row puts
+   Black-Karasinski in the dropdown; the parameter table is rebuilt
+   from the definitions catalogue on engine change, so the four
+   parameter fields appear with no dialog work.
+
+Verification: full build clean; ctest 71/71 passed (includes the
+=ores.analytics.quant= suite with the engine's 24 Catch2 tests); DB
+recreate deployed the seed rows and the populate summaries confirm
+them (process types 4 to 5, parameter definitions 19 to 23); domain
+roundtrip and cmake-sources drift checks clean. Existing
+Vasicek/CIR/Hull-White/G2 configs are unaffected: the dispatch is
+additive, the =VASICEK= default is unchanged, and no existing seed or
+migration was touched.

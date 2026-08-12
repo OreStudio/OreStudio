@@ -22,8 +22,9 @@
  * Yield Curve Process Types Population Script
  *
  * Populates the short-rate process engines an ir_curve_generation_config
- * can select (VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, TWO_FACTOR_GAUSSIAN), matching the IYieldCurveProcess
- * engines process_factory::make_yield_curve_process() can construct.
+ * can select (BLACK_KARASINSKI, VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE,
+ * TWO_FACTOR_GAUSSIAN), matching the engines the mapping layer
+ * (map_parameters_to_yield_curve_process) can construct.
  *
  * This script is idempotent - uses INSERT ON CONFLICT.
  */
@@ -46,7 +47,10 @@ values
      3, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types'),
     (ores_utility_system_tenant_id_fn(), 'TWO_FACTOR_GAUSSIAN', 0, 'Two-Factor Gaussian',
      'Two-factor Gaussian (G2++) short-rate model: a sum of two correlated mean-reverting Ornstein-Uhlenbeck factors around a long-term mean, giving a richer (humped) initial term structure than one-factor models while remaining analytically tractable.',
-     4, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types')
+     4, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types'),
+    (ores_utility_system_tenant_id_fn(), 'BLACK_KARASINSKI', 0, 'Black-Karasinski',
+     'Log-normal short-rate model: the logarithm of the short rate follows a mean-reverting Ornstein-Uhlenbeck process, so the simulated rate stays positive for all time. Bond prices are evaluated on a trinomial lattice of the log rate.',
+     5, current_user, current_user, 'system.initial_load', 'Initial population of yield curve process types')
 on conflict (tenant_id, code)
 where valid_to = ores_utility_infinity_timestamp_fn()
 do nothing;

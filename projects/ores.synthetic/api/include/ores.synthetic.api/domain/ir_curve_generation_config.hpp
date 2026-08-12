@@ -116,8 +116,9 @@ struct ir_curve_generation_config final {
 
     /**
      * @brief Short-rate process engine driving this curve (references
-     * yield_curve_process_type.code: VASICEK, COX_INGERSOLL_ROSS, HULL_WHITE, or
-     * TWO_FACTOR_GAUSSIAN) -- selects among ores.analytics.quant's IYieldCurveProcess engines. The
+     * yield_curve_process_type.code: BLACK_KARASINSKI, VASICEK, COX_INGERSOLL_ROSS,
+     * HULL_WHITE, or TWO_FACTOR_GAUSSIAN) -- selects among ores.analytics.quant's IYieldCurveProcess
+     * engines. The
      * engine's parameters are not stored as columns on this record; each process type has a
      * yield_curve_process_parameter_definition catalogue (name, description, min/max, defaults) and
      * this config's values live as ir_curve_generation_config_process_parameter_value rows, one per

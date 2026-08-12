@@ -97,6 +97,24 @@ values
      'double', 0.03, null, null, 4, current_user, current_user, 'system.initial_load',
      'Initial population of yield curve process parameter definitions'),
 
+    -- Black-Karasinski
+    (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,'BLACK_KARASINSKI', 'kappa',
+     'Mean reversion speed of ln r: how strongly the logarithm of the short rate is pulled back toward its long-run level theta. kappa <= 0 is a valid, if degenerate, driftless case (a random walk of ln r).',
+     'double', 0.5, null, null, 1, current_user, current_user, 'system.initial_load',
+     'Initial population of yield curve process parameter definitions'),
+    (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,'BLACK_KARASINSKI', 'theta',
+     'Long-run level of ln r: the level the logarithm of the short rate reverts to in the long run. The model is written on the log rate, so this is a logarithm, not a rate: a long-run rate of 4% corresponds to log(0.04) = -3.218876.',
+     'double', -3.218876, null, null, 2, current_user, current_user, 'system.initial_load',
+     'Initial population of yield curve process parameter definitions'),
+    (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,'BLACK_KARASINSKI', 'sigma',
+     'Volatility of ln r: the constant annualised standard deviation of the log-rate increments. Must be non-negative.',
+     'double', 0.01, 0, null, 3, current_user, current_user, 'system.initial_load',
+     'Initial population of yield curve process parameter definitions'),
+    (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,'BLACK_KARASINSKI', 'initial_rate',
+     'Initial short rate: the level of the short rate at the simulation start date (time zero). Must be strictly positive - the model runs on the logarithm of the rate.',
+     'double', 0.03, 1e-6, null, 4, current_user, current_user, 'system.initial_load',
+     'Initial population of yield curve process parameter definitions'),
+
     -- Two-Factor Gaussian (G2++)
     (ores_utility_system_tenant_id_fn(), gen_random_uuid(), 0,'TWO_FACTOR_GAUSSIAN', 'kappa_x',
      'Mean reversion speed of the first factor: how strongly factor x is pulled back toward zero. Combined with kappa_y it shapes the hump of the initial term structure. Must be non-negative.',

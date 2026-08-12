@@ -88,6 +88,7 @@ constexpr EngineInfo kEngines[] = {
     {"COX_INGERSOLL_ROSS", QT_TR_NOOP("Cox-Ingersoll-Ross")},
     {"HULL_WHITE", QT_TR_NOOP("Hull-White")},
     {"TWO_FACTOR_GAUSSIAN", QT_TR_NOOP("Two-Factor Gaussian")},
+    {"BLACK_KARASINSKI", QT_TR_NOOP("Black-Karasinski")},
 };
 
 // indexNameCombo_ still lists the floating_index_type suffix shape this editor has
@@ -418,8 +419,8 @@ void IrCurveEditor::buildProcessTab() {
         const int idx = engineCombo_->findData(QString::fromStdString(ir_.process_type));
         engineCombo_->setCurrentIndex(idx >= 0 ? idx : 0);
     }
-    // Tooltip describes only the currently-selected engine, not all three at once -- refreshed on
-    // every selection change instead of one static blurb covering the whole combo.
+    // Tooltip describes only the currently-selected engine, not every engine at once -- refreshed
+    // on every selection change instead of one static blurb covering the whole combo.
     auto updateEngineTooltip = [this](int) {
         static const std::map<QString, QString> descriptions = {
             {QStringLiteral("VASICEK"),
@@ -436,6 +437,10 @@ void IrCurveEditor::buildProcessTab() {
                 "Ornstein-Uhlenbeck factors. Richer curve shapes (humps, inversions) than any "
                 "single-factor model, at the cost of two reversion speeds and volatilities plus "
                 "their correlation.")},
+            {QStringLiteral("BLACK_KARASINSKI"),
+             tr("Black-Karasinski: d ln r = κ(θ−ln r)dt + σ dW. The logarithm of the short rate is "
+                "a mean-reverting Gaussian process, so the rate stays positive for all time; bond "
+                "prices have no closed form and are evaluated on a trinomial lattice of ln r.")},
         };
         auto it = descriptions.find(engineCombo_->currentData().toString());
         engineCombo_->setToolTip(it != descriptions.end() ? it->second : QString());

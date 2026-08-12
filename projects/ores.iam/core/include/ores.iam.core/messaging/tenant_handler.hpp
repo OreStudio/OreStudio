@@ -34,6 +34,7 @@
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
 #include "ores.iam.core/service/internal_request_client.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.marketdata.api/messaging/feed_binding_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_feed_config_protocol.hpp"
 #include "ores.nats/domain/headers.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -46,6 +47,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/feed_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
+#include "ores.synthetic.api/messaging/fx_spot_generation_config_protocol.hpp"
 #include "ores.synthetic.api/messaging/market_data_generation_config_protocol.hpp"
 #include "ores.utility/convert/base64_converter.hpp"
 #include "ores.variability.api/messaging/system_settings_protocol.hpp"
@@ -458,19 +460,20 @@ public:
                         client, *ctx_expected, tenant_id_str, "acme_group", username);
                     add_step("acme_group.staff_photos", "completed");
 
-                    // Market data: same plan as each office below (crm_topology
-                    // + synthetic theme configs + FX driver rates, minus
-                    // risk_management -- the holding company's own book/
-                    // portfolio tree is hand-seeded separately, not sourced
-                    // from that generic demo-org bundle). Without this, the
-                    // holding party has no CRM (Cross-Rates Matrix) at all:
-                    // a treasury user logged in at the default/holding-company
-                    // party saw a blank matrix with no way to get FX
-                    // visibility short of switching party to an office.
-                    auto group_mkt_plan = dq::messaging::party_provisioning_bundle_plan();
-                    std::erase_if(group_mkt_plan, [](const auto& step) {
-                        return step.bundle_code == "risk_management";
-                    });
+                    // Market data for the holding party: only its own CRM
+                    // topology (Cross-Rates Matrix). The synthetic theme and
+                    // FX driver rates publish once, against the system party
+                    // (see the system-party market-data step after the office
+                    // loop below) -- offices and the holding consume the
+                    // shared stream via per-party feed bindings instead of
+                    // owning their own copies of the sim config. Without
+                    // this, the holding party has no CRM (Cross-Rates Matrix)
+                    // at all: a treasury user logged in at the
+                    // default/holding-company party saw a blank matrix with
+                    // no way to get FX visibility short of switching party
+                    // to an office.
+                    const std::vector<dq::messaging::party_bundle_publish_step> group_mkt_plan{
+                        {"crm_topology", "CRM Cross-Rates Matrix topology"}};
                     std::string current_group_mkt_step;
                     dq::messaging::publish_party_provisioning_plan(
                         group_mkt_plan,
@@ -520,8 +523,9 @@ public:
             // Step 4+: per-office business units/portfolios/books/accounts,
             // then activation/logo/onboarding/membership for that party.
             // office_parties accumulates (code, party_id) as each office is
-            // resolved, so Step 7 below can reuse these NATS-resolved IDs
-            // rather than re-querying ores_refdata_parties_tbl directly.
+            // resolved, so the market-data and cross-entity steps below can
+            // reuse these NATS-resolved IDs rather than re-querying
+            // ores_refdata_parties_tbl directly.
             std::vector<std::pair<std::string, boost::uuids::uuid>> office_parties;
             int step_num = 4;
             for (const auto& office : acme_offices()) {
@@ -557,27 +561,20 @@ public:
                              /*set_default=*/false);
                 add_step(office.code + ".onboarding", "completed");
 
-                // Market data: the same synthetic FX/IR feed and driver-rate
-                // vintage every generic "provision party" flow publishes
-                // (party_provisioning_bundle_plan()) -- skipping only
-                // risk_management, since Acme's business units/portfolios/
-                // books already came from office.bundle_code above. Without
-                // this, an Acme party has no CRM (cross-rates matrix) or IR
-                // curve data at all: nothing populates ores_marketdata_*
-                // for a party unless something explicitly publishes it.
-                // The plan-iteration loop itself (publish + wait per bundle)
-                // is shared with ores.shell's "provision party" command --
-                // see publish_party_provisioning_plan()'s doc comment for
-                // why it's a template rather than a shared class. This also
-                // fixes a latent inconsistency: previously a failed bundle
-                // here was logged but the loop kept going to the next
-                // bundle, unlike every other step in this handler, which
-                // aborts on failure; now it skips to the next office too,
-                // matching the office.bundle_code publish above.
-                auto mkt_plan = dq::messaging::party_provisioning_bundle_plan();
-                std::erase_if(mkt_plan, [](const auto& step) {
-                    return step.bundle_code == "risk_management";
-                });
+                // Market data for the office: only its own CRM topology
+                // (Cross-Rates Matrix). The synthetic theme and FX driver
+                // rates are not published per office -- they publish once,
+                // against the system party (see the system-party market-data
+                // step after this loop), and this office consumes the shared
+                // stream via feed bindings created by that same step. Its
+                // series materialize per party from the stream, not from a
+                // per-office copy of the config. The plan-iteration loop
+                // itself (publish + wait per bundle) is shared with
+                // ores.shell's "provision party" command -- see
+                // publish_party_provisioning_plan()'s doc comment for why
+                // it's a template rather than a shared class.
+                const std::vector<dq::messaging::party_bundle_publish_step> mkt_plan{
+                    {"crm_topology", "CRM Cross-Rates Matrix topology"}};
                 std::string current_mkt_step;
                 // on_step always runs immediately before its matching
                 // publish/wait pair (guaranteed by the helper's loop body),
@@ -624,31 +621,116 @@ public:
                 add_step(photo_label, "starting", 0);
                 attach_staff_photos(client, *ctx_expected, tenant_id_str, office.code, username);
                 add_step(photo_label, "completed");
+            }
 
-                // Start this office's synthetic FX/IR feeds ticking, via the
-                // same folder-scoped mechanism PR #1741 introduced for the
-                // Qt Market Simulator's "Start at Root -> pick a theme"
-                // flow, so provisioning and manual start share one path
-                // rather than growing a second, Acme-specific one. Without
-                // this, a freshly-provisioned party's CRM cross-rates
-                // matrix and IR curve views sit static/configured but never
-                // ticking.
-                const auto feeds_label = office.code + ".synthetic_feeds";
-                add_step(feeds_label, "starting", 0);
-                if (start_synthetic_theme_feeds(client, "synthetic.themes.realistic_2026")) {
-                    add_step(feeds_label, "completed");
+            // Step 7: simulated market data, owned by the system party
+            // (consistent-world semantics -- every party sees the same
+            // market; see doc/llm/specs/simulated-market-data-strategy.allium
+            // and the F15 task). The two themes' configs and the FX
+            // driver-rate vintage publish once, against the system party;
+            // the system party, the holding and every office each get
+            // per-party feed bindings on the Live workspace, and the
+            // theme's feeds are started from the system party's folders.
+            // Offices publish no theme and start no feeds. The bindings
+            // come first so the ingest loop (which reacts to binding
+            // changes via the notify trigger) is subscribed before the
+            // first tick lands.
+            {
+                internal_request_client discover = make_client(caller_party_id);
+                auto system_party = find_system_party(discover);
+                if (!system_party) {
+                    add_step("system_market_data.skipped", "system_party_not_found", 0);
                 } else {
-                    // Best-effort by design (see start_synthetic_theme_feeds's own
-                    // "warn" logging) -- surfaced here too, matching the
-                    // office.code + ".skipped"/".failed" convention used
-                    // elsewhere in this loop, so a resolution miss is visible
-                    // in provision_acme_tenant_response.steps, not just the
-                    // service log.
-                    add_step(feeds_label + ".failed", "see service log for details", 0);
+                    internal_request_client system_client = make_client(system_party->id);
+                    const std::vector<dq::messaging::party_bundle_publish_step> system_mkt_plan{
+                        {"synthetic_realistic_2026",
+                         "synthetic market data configuration (2026)"},
+                        {"synthetic_ore_samples_2016",
+                         "synthetic market data configuration (legacy ORE Samples)"},
+                        {"marketdata.reference_vintage_2026_05_05", "FX driver rates"}};
+                    std::string current_sys_mkt_step;
+                    // Best-effort like the per-office market-data plan used
+                    // to be: every party is fully provisioned by this point,
+                    // so a failure here surfaces in the response's steps
+                    // rather than undoing the whole tenant.
+                    const bool mkt_ok = dq::messaging::publish_party_provisioning_plan(
+                        system_mkt_plan,
+                        system_party->id,
+                        [&](const std::string& bundle_code, const std::string& params_json)
+                            -> std::optional<dq::messaging::publish_bundle_response> {
+                            dq::messaging::publish_bundle_request req;
+                            req.bundle_code = bundle_code;
+                            req.published_by = username;
+                            req.atomic = true;
+                            req.params_json = params_json;
+                            auto pub = system_client.request(req);
+                            const auto mkt_label = "system_market_data." + bundle_code;
+                            if (!pub.success) {
+                                add_step(mkt_label + ".failed", pub.error_message, 0);
+                                return std::nullopt;
+                            }
+                            add_step(mkt_label,
+                                     "dispatched",
+                                     static_cast<std::uint64_t>(pub.datasets_dispatched));
+                            return pub;
+                        },
+                        [&](const std::string& instance_id, std::size_t expected) {
+                            const auto mkt_label = "system_market_data." + current_sys_mkt_step;
+                            return system_client.wait_for_workflow_instance(
+                                instance_id, std::chrono::seconds{120}, expected, progress(mkt_label));
+                        },
+                        [&](const auto& step) {
+                            current_sys_mkt_step = step.bundle_code;
+                            add_step("system_market_data." + step.bundle_code, "starting", 0);
+                        });
+
+                    if (mkt_ok) {
+                        // Per-party consumption: one binding per (tenant,
+                        // party, workspace=Live, source) for the system
+                        // party, the holding and every office, so each
+                        // materializes its own observations from the shared
+                        // stream (per-party series, identical values).
+                        const std::string bind_label = "system_market_data.bindings";
+                        add_step(bind_label, "starting", 0);
+                        std::vector<std::pair<std::string, boost::uuids::uuid>> binding_parties;
+                        binding_parties.emplace_back("system", system_party->id);
+                        if (auto holding = find_party(discover, "Acme Corporation Plc"))
+                            binding_parties.emplace_back("holding", holding->id);
+                        for (const auto& [code, party_id] : office_parties)
+                            binding_parties.emplace_back(code, party_id);
+
+                        bool bindings_ok = true;
+                        for (const auto& [code, party_id] : binding_parties) {
+                            if (!create_theme_feed_bindings(system_client,
+                                                            "synthetic.themes.realistic_2026",
+                                                            boost::uuids::to_string(party_id))) {
+                                add_step(bind_label + "." + code + ".failed",
+                                         "see service log for details",
+                                         0);
+                                bindings_ok = false;
+                            }
+                        }
+                        if (bindings_ok)
+                            add_step(bind_label, "completed");
+
+                        // Start the theme's feeds from the system party's
+                        // folders, via the same folder-scoped mechanism PR
+                        // #1741 introduced for the Qt Market Simulator, so
+                        // provisioning and manual start share one path. The
+                        // folder cascade starts no feeds for offices -- they
+                        // have no configs of their own.
+                        const std::string feeds_label = "system_market_data.synthetic_feeds";
+                        add_step(feeds_label, "starting", 0);
+                        if (start_synthetic_theme_feeds(system_client,
+                                                        "synthetic.themes.realistic_2026"))
+                            add_step(feeds_label, "completed");
+                        else
+                            add_step(feeds_label + ".failed", "see service log for details", 0);
+                    }
                 }
             }
 
-            // Step 7: cross-entity access for the "follow the sun" global-
+            // Step 8: cross-entity access for the "follow the sun" global-
             // book / risk-oversight roles -- deliberately narrow: only Desk
             // Heads on the two genuinely 24h-traded desks (IR Swaps, FX
             // Rates) get remote-booking membership on the London ("global
@@ -662,7 +744,7 @@ public:
             {
                 add_step("Step 7: Granting cross-entity access", "starting", 0);
                 grant_cross_entity_access(*ctx_expected, tenant_id_str, office_parties);
-                add_step("Step 7: Granting cross-entity access", "completed");
+                add_step("Step 8: Granting cross-entity access", "completed");
             }
 
             // Attaching the Barclays demo logo removed from here -- see the
@@ -849,6 +931,126 @@ private:
             return false;
         }
         return true;
+    }
+
+    // Finds the tenant's system party (party_category == "System", created
+    // once per tenant by the IAM provisioner) -- the owner of the simulated
+    // market config in the consistent world.
+    static std::optional<ores::refdata::domain::party> find_system_party(internal_request_client& client) {
+        ores::refdata::messaging::get_parties_request req;
+        req.limit = 1000;
+        auto resp = client.request(req);
+        for (auto& p : resp.parties)
+            if (p.party_category == "System")
+                return p;
+        return std::nullopt;
+    }
+
+    // Creates one feed binding per enabled FX source of the dq dataset
+    // (theme) resolved by @p dataset_code, for @p party_id_str -- the
+    // consumption contract of the consistent world (see the
+    // simulated-market-data strategy): the theme's config lives once under
+    // the system party (the caller's client), every party consumes the
+    // shared stream through its own bindings, and the marketdata ingest
+    // loop materializes each party's observations from it. Workspace
+    // defaults to the Live sentinel. IR sources are deliberately not
+    // bound: IR producers publish on synthetic.v1.curve_family.<source>, a
+    // subject the ingest loop never listens to -- binding them would claim
+    // ingestion for a stream that never arrives. Best-effort, like
+    // start_synthetic_theme_feeds: logs and returns false on any
+    // resolution miss rather than failing provisioning; individual save
+    // failures are logged and skipped so one bad source does not drop the
+    // remaining bindings.
+    static bool create_theme_feed_bindings(internal_request_client& client,
+                                           const std::string& dataset_code,
+                                           const std::string& party_id_str) {
+        std::optional<boost::uuids::uuid> dataset_id;
+        {
+            dq::messaging::get_datasets_request req;
+            req.limit = 1000;
+            auto resp = client.request(req);
+            for (auto& d : resp.datasets)
+                if (d.code == dataset_code) {
+                    dataset_id = d.id;
+                    break;
+                }
+        }
+        if (!dataset_id) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "create_theme_feed_bindings: dataset not found: " << dataset_code;
+            return false;
+        }
+
+        std::optional<boost::uuids::uuid> config_id;
+        {
+            synthetic::messaging::get_market_data_generation_configs_request req;
+            req.limit = 1000;
+            auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "create_theme_feed_bindings: list market_data_generation_configs "
+                       "failed: "
+                    << resp.message;
+                return false;
+            }
+            for (auto& c : resp.market_data_generation_configs)
+                if (c.dataset_id == dataset_id) {
+                    config_id = c.id;
+                    break;
+                }
+        }
+        if (!config_id) {
+            BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                << "create_theme_feed_bindings: no market_data_generation_config for dataset "
+                << dataset_code;
+            return false;
+        }
+
+        std::vector<std::pair<std::string, std::string>> sources; // (source_name, ore_key)
+        {
+            synthetic::messaging::get_fx_spot_generation_configs_request req;
+            req.limit = 1000;
+            auto resp = client.request(req);
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "create_theme_feed_bindings: list fx_spot_generation_configs failed: "
+                    << resp.message;
+                return false;
+            }
+            for (auto& c : resp.fx_spot_generation_configs)
+                if (c.enabled && c.config_id == config_id)
+                    sources.emplace_back(c.source_name, c.ore_key);
+        }
+
+        boost::uuids::random_generator uuid_gen;
+        boost::uuids::string_generator sg;
+        bool all_saved = true;
+        for (const auto& [source_name, ore_key] : sources) {
+            marketdata::domain::feed_binding binding;
+            binding.id = uuid_gen();
+            binding.ore_key = ore_key;
+            binding.source_name = source_name;
+            binding.asset_class = marketdata::domain::asset_class::fx;
+            binding.enabled = true;
+            binding.party_id = sg(party_id_str);
+            binding.change_reason_code = "system.new_record";
+            binding.change_commentary =
+                "Created by ACME provisioning: consumes the system-party simulated market "
+                "stream";
+            auto resp = client.request(
+                marketdata::messaging::save_feed_binding_request::from(std::move(binding)));
+            if (!resp.success) {
+                BOOST_LOG_SEV(tenant_handler_lg(), warn)
+                    << "create_theme_feed_bindings: save binding " << source_name << " for party "
+                    << party_id_str << " failed: " << resp.message;
+                all_saved = false;
+            }
+        }
+        if (sources.empty())
+            BOOST_LOG_SEV(tenant_handler_lg(), info)
+                << "create_theme_feed_bindings: no enabled FX sources for dataset "
+                << dataset_code;
+        return all_saved;
     }
 
     // Copies the system-tenant "key" template image into p_tenant_id (if not

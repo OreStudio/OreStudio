@@ -51,9 +51,24 @@ void feed_binding_repository::write(context ctx, const std::vector<domain::feed_
 std::vector<domain::feed_binding> feed_binding_repository::read_latest(context ctx) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c);
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("id"_c);
+        return execute_read_query<feed_binding_entity, domain::feed_binding>(
+            ctx,
+            query,
+            [](const auto& entities) { return feed_binding_mapper::map(entities); },
+            lg(),
+            "Reading latest feed bindings (workspace resolution chain).");
+    }
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<feed_binding_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("id"_c);
 
     return execute_read_query<feed_binding_entity, domain::feed_binding>(
         ctx,
@@ -68,8 +83,10 @@ std::vector<domain::feed_binding> feed_binding_repository::read_latest(context c
     BOOST_LOG_SEV(lg(), debug) << "Reading latest feed binding. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     return execute_read_query<feed_binding_entity, domain::feed_binding>(
         ctx,
@@ -84,8 +101,9 @@ std::vector<domain::feed_binding> feed_binding_repository::read_all(context ctx,
                                                                     const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading all feed binding versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id) |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id) |
                        order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<feed_binding_entity, domain::feed_binding>(
@@ -101,8 +119,10 @@ std::optional<domain::feed_binding> feed_binding_repository::read_at_version(
     BOOST_LOG_SEV(lg(), debug) << "Reading feed binding at version. " << "id: " << id
                                << " version: " << version;
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
-                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "version"_c == version) |
                        sqlgen::limit(1);
 
     const auto entities = execute_read_query<feed_binding_entity, domain::feed_binding>(
@@ -121,8 +141,10 @@ void feed_binding_repository::remove(context ctx, const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing feed binding. " << "id: " << id;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<feed_binding_entity> |
-                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c == id &&
+                             "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing feed binding from database.");
 }
@@ -133,9 +155,11 @@ feed_binding_repository::read_latest(context ctx, std::uint32_t offset, std::uin
                                << " and limit: " << limit;
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::read<std::vector<feed_binding_entity>> |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<feed_binding_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<feed_binding_entity, domain::feed_binding>(
         ctx,
@@ -154,9 +178,11 @@ std::uint32_t feed_binding_repository::get_total_feed_binding_count(context ctx)
     };
 
     const auto tid = ctx.tenant_id().to_string();
-    const auto query = sqlgen::select_from<feed_binding_entity>(sqlgen::count().as<"count">()) |
-                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
-                       sqlgen::to<count_result>;
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<feed_binding_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
 
     const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
     ensure_success(r, lg());
@@ -169,8 +195,10 @@ std::uint32_t feed_binding_repository::get_total_feed_binding_count(context ctx)
 void feed_binding_repository::remove(context ctx, const std::vector<std::string>& ids) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<feed_binding_entity> |
-                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "id"_c.in(ids) &&
+                             "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing feed bindings.");
 }
 

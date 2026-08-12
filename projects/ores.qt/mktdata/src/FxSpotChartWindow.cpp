@@ -20,6 +20,7 @@
 #include "ores.qt/FxSpotChartWindow.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
 #include <QActionGroup>
@@ -439,10 +440,16 @@ void FxSpotChartWindow::startLiveSubscription() {
 
     try {
         QPointer<FxSpotChartWindow> self = this;
+        // The chart follows the tick stream of the party whose series it
+        // shows, in the Live workspace (marketdata series are not yet
+        // workspace-scoped; scenario workspaces will bind here).
+        const auto workspace_id = utility::uuid::live_workspace_id();
         subscription_ = std::make_unique<marketdata::client::fx_spot_subscription>(
             clientManager_->nats_client(),
             oreKey_.toStdString(),
             clientManager_->currentTenantId(),
+            boost::uuids::to_string(workspace_id),
+            boost::uuids::to_string(series_.party_id),
             [self](const marketdata::domain::fx_spot_tick& tick) {
                 const qint64 ms = to_ms(tick.datetime);
                 const double mid = tick.mid;

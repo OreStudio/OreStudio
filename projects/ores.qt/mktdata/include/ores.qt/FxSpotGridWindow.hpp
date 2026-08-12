@@ -73,6 +73,11 @@ private:
     struct RowState {
         int row = -1;
         std::string ore_key;
+        // The binding's own (workspace, party): the tick stream this row
+        // follows is per (tenant, workspace, party, ore_key) -- each party's
+        // realtime stream is its own (see the simulated-market-data strategy).
+        std::string workspace_id;
+        std::string party_id;
         // Resolved once in buildRows() (direct or reversed lookup against
         // conventionCache_), not re-resolved on every tick -- applyTick() runs
         // on the hot path. See currency_pair_rate_formatter::format_rate's

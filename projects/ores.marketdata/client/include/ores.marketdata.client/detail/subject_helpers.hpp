@@ -26,19 +26,23 @@
 namespace ores::marketdata::client::detail {
 
 /**
- * @brief Convert an ORE canonical key to a NATS fan-out subject.
+ * @brief Convert an ORE canonical key to a per-party NATS fan-out subject.
  *
- * With tenant_id: "marketdata.v1.tick.<tenant_id>.fx.rate.eur.usd"
- * Without:        "marketdata.v1.tick.fx.rate.eur.usd"  (legacy / testing)
+ * "marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.fx.rate.eur.usd"
+ *
+ * The marketdata ingest loop republishes every tick on exactly this shape
+ * (see the simulated-market-data strategy: one stream per (tenant,
+ * workspace, party, ore_key), so each party's realtime stream is its own).
  */
-inline std::string ore_key_to_subject(std::string ore_key, const std::string& tenant_id = {}) {
+inline std::string ore_key_to_subject(std::string ore_key,
+                                      const std::string& tenant_id,
+                                      const std::string& workspace_id,
+                                      const std::string& party_id) {
     std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
     });
     std::replace(ore_key.begin(), ore_key.end(), '/', '.');
-    if (!tenant_id.empty())
-        return "marketdata.v1.tick." + tenant_id + "." + ore_key;
-    return "marketdata.v1.tick." + ore_key;
+    return "marketdata.v1.tick." + tenant_id + "." + workspace_id + "." + party_id + "." + ore_key;
 }
 
 }

@@ -8,7 +8,7 @@
 #+filetags: :marketdata:synthetic:feeds:feed-lifecycle-harmonization:sprint_25:v0:
 #+owner: marco
 #+branch: feature/unified-feed-ingest
-#+pr:
+#+pr: 1979
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-11
@@ -115,7 +115,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1979][#1979]] | [marketdata,synthetic,qt] Unified feed ingest: kind in the tick subject, one loop, one stream |
 
 * Review
 

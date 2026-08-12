@@ -9,10 +9,10 @@
 #+owner: marco
 #+branch: feature/fomc-bootstrap-segment
 #+pr: 1953
-#+blocked_on: 71B00A0E-DB2A-4C0E-A6C8-ED2818C96E98
-#+blocked_since: 2026-08-11
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-08-09
-#+updated: 2026-08-11
+#+updated: 2026-08-12
 #+environment: swift_curie
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Bootstrap the SOFR OIS short end off consecutive FOMC-meeting-dated pillars with
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DONE                              |
+| State        | STARTED                            |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Nothing. |
-| Waiting on   | Feed lifecycle harmonization (folder cascade + control-plane). |
-| Next         | Nothing. |
-| Last touched | 2026-08-10                               |
+| Now          | Resumed (2026-08-12) for the end-to-end verification: feed start through the folder cascade, republish chain. |
+| Waiting on   | Nothing.                               |
+| Next         | Run the end-to-end verification; fix anything it surfaces. |
+| Last touched | 2026-08-12                               |
 
 * Acceptance
 

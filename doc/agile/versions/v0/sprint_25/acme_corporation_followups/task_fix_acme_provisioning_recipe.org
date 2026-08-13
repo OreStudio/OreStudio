@@ -70,6 +70,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Log separator missing between instance id and error message | internal_request_client.cpp | Accepted | Fixed in 5e3065a435 |
+| 2 | fail_with doc comment still cites the replaced "workflow did not complete" fallback | tenant_handler.hpp | Accepted | Fixed in de8422bf5b |
+| 3 | Timeout-budget comment claims per-party 10-minute waits; actual waits are 1500s base, 600s LEI, 120s default per-party | provision_commands.cpp | Accepted | Fixed in 8b58315bdd |
+| 4 | Orphaned step-0 row left in_progress when start aborts after step persistence | workflow_engine.cpp | Accepted | Fixed in c13538bd7c |
+| 5 | No-steps recovery branch never publishes a status event | workflow_engine.cpp | Accepted | Fixed in c47cc88f8d |
 
 * Result

@@ -32,11 +32,11 @@
 #include "ores.refdata.api/generators/swap_convention_generator.hpp"
 #include "ores.refdata.core/repository/swap_convention_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 #include <thread>
 
 // Proves the "write an entity, observe its NATS entity-changed
@@ -50,27 +50,6 @@ namespace {
 const std::string_view test_suite("refdata.tests");
 const std::string tags("[eventing][integration]");
 
-
-// Reads NATS connection settings the same way every service resolves
-// them at startup -- CMake bakes every .env variable into the ctest
-// process environment, so these are populated identically for both
-// `compass build` local runs and CI.
-ores::nats::config::nats_options test_nats_options() {
-    auto env = [](const char* name) -> std::string {
-        const char* v = std::getenv(name);
-        return v ? std::string(v) : std::string();
-    };
-
-    ores::nats::config::nats_options opts;
-    opts.url = env("ORES_NATS_URL");
-    if (opts.url.empty())
-        opts.url = "nats://localhost:4222";
-    opts.subject_prefix = env("ORES_NATS_SUBJECT_PREFIX");
-    opts.tls_ca_cert = env("ORES_NATS_TLS_CA");
-    opts.tls_client_cert = env("ORES_NATS_TLS_CERT");
-    opts.tls_client_key = env("ORES_NATS_TLS_KEY");
-    return opts;
-}
 
 }
 
@@ -94,7 +73,7 @@ TEST_CASE("write_swap_convention_publishes_nats_changed_event", tags) {
     ev::service::event_bus bus;
     ev::service::postgres_event_source event_source(party_ctx, bus);
 
-    ores::nats::service::client nats(test_nats_options());
+    ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     REQUIRE(nats.is_connected());
 

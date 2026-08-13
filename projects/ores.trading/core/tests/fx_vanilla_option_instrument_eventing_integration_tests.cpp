@@ -29,6 +29,7 @@
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.testing/make_generation_context.hpp"
+#include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument.hpp"
 #include "ores.trading.api/domain/fx_vanilla_option_instrument_json_io.hpp" // IWYU pragma: keep.
@@ -38,7 +39,6 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
-#include <cstdlib>
 #include <thread>
 
 // Proves the "write an entity, observe its NATS entity-changed
@@ -72,27 +72,6 @@ write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
     return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 }
 
-// Reads NATS connection settings the same way every service resolves
-// them at startup -- CMake bakes every .env variable into the ctest
-// process environment, so these are populated identically for both
-// `compass build` local runs and CI.
-ores::nats::config::nats_options test_nats_options() {
-    auto env = [](const char* name) -> std::string {
-        const char* v = std::getenv(name);
-        return v ? std::string(v) : std::string();
-    };
-
-    ores::nats::config::nats_options opts;
-    opts.url = env("ORES_NATS_URL");
-    if (opts.url.empty())
-        opts.url = "nats://localhost:4222";
-    opts.subject_prefix = env("ORES_NATS_SUBJECT_PREFIX");
-    opts.tls_ca_cert = env("ORES_NATS_TLS_CA");
-    opts.tls_client_cert = env("ORES_NATS_TLS_CERT");
-    opts.tls_client_key = env("ORES_NATS_TLS_KEY");
-    return opts;
-}
-
 }
 
 using namespace ores::trading::generators;
@@ -115,7 +94,7 @@ TEST_CASE("write_fx_vanilla_option_instrument_publishes_nats_changed_event", tag
     ev::service::event_bus bus;
     ev::service::postgres_event_source event_source(party_ctx, bus);
 
-    ores::nats::service::client nats(test_nats_options());
+    ores::nats::service::client nats(ores::testing::make_nats_options());
     nats.connect();
     REQUIRE(nats.is_connected());
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :windows-getenv-deprecation:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr: 1978
+#+branch: feature/implement-windows-getenv-deprecation
+#+pr: 1981
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-12
 #+updated: 2026-08-12
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -21,7 +21,9 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Replace every =std::getenv= call in test code that Windows compiles
-with =ores::platform::environment::environment::get_value_or_default=
+with =ores::testing::make_nats_options()= -- a shared helper in
+ores.testing that reads the =ORES_NATS_*= variables through
+=ores::platform::environment::environment::get_value_or_default= --
 so the =-Werror= deprecation failure on Windows Clang goes away:
 
 - the codegen template =ores.cpp.eventing-integration-test.nats_integration_test.org=
@@ -38,11 +40,11 @@ so the =-Werror= deprecation failure on Windows Clang goes away:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-12                               |
 
 * Acceptance
@@ -62,27 +64,42 @@ Root cause: MSVC's STL marks =std::getenv= deprecated in favour of
 that calls it fails the build (first observed in
 =account_type_eventing_integration_tests.cpp:60=). The failing files
 are codegen-generated from the
-=ores.cpp.eventing-integration-test.nats_integration_test= archetype:
-the =env()= lambda with =std::getenv= lives in the org template, so
-the fix belongs there, not in the generated files (CI enforces a
-zero-diff drift check).
+=ores.cpp.eventing-integration-test.nats_integration_test= archetype,
+whose template inlines a per-file =test_nats_options()= helper (built
+on =std::getenv=) into every generated test: 85 copies, plus two more
+hand-written copies in ores.synthetic. The fix belongs in the
+template, not in the generated files (CI enforces a zero-diff drift
+check), and the duplicated helper is consolidated into one shared
+helper rather than swapped file by file.
 
 Steps:
 
-1. Edit the org template: replace the =std::getenv= lambda with
-   =ores::platform::environment::environment::get_value_or_default(name, "")=
-   and add the =ores.platform/environment/environment.hpp= include.
-2. Re-tangle: =compass build --direct tangle_codegen_templates=.
-3. Regenerate per component with the codegen
+1. Add =ores::testing::make_nats_options()=: a header-only helper in
+   ores.testing (=nats_options_helper.hpp=) that reads the =ORES_NATS_*=
+   variables via
+   =ores::platform::environment::environment::get_value_or_default=
+   with the same defaults the per-file helpers used.
+2. Edit the org template: drop the inline =test_nats_options()= block,
+   include the helper header, call
+   =ores::testing::make_nats_options()= at the client construction
+   site.
+3. Re-tangle: =compass build --direct tangle_codegen_templates=.
+4. Regenerate per component with the codegen
    (=--address ores.cpp.eventing-integration-test=) and inspect the
-   diff: every generated file should show only the include, the
-   lambda replacement, and the =<cstdlib>= include drop if unused.
-4. Hand-fix the two ores.synthetic service tests (same lambda,
-   same replacement).
-5. Verify: grep for remaining =std::getenv=, build the affected test
+   diff: every generated file should show only the include swap and
+   the call-site change.
+5. Replace the two ores.synthetic service tests' local
+   =test_nats_options()= with the shared helper.
+6. Verify: grep for remaining =std::getenv=, build the affected test
    targets, run the drift check.
 
 * Notes
+
+- Review round 1 (2026-08-12): both claude[bot] reviews approve; one
+  non-blocking observation -- =ORES_NATS_URL= set-but-empty loses the
+  localhost fallback with =get_value_or_default= alone. Fixed in
+  5995e8d3da: the helper now mirrors the original per-file lambda
+  exactly (read with empty default, then fall back when empty).
 
 * Test Scenarios
 
@@ -99,12 +116,27 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1981][#1981]] | [ores.testing] Consolidate NATS test options into shared helper |
 | [[https://github.com/OreStudio/OreStudio/pull/1978][#1978]] | [agile] Scaffold hotfix: Windows build fails on std::getenv deprecation |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =ORES_NATS_URL= set-but-empty loses the localhost fallback (both bot reviews otherwise approve) | nats_options_helper.hpp | Fixed | 5995e8d3da restores the exact empty-string fallback |
 
 * Result
+
+The =std::getenv= copies are gone: one shared
+=ores::testing::make_nats_options()= (=nats_options_helper.hpp=,
+header-only, reads the =ORES_NATS_*= variables through the
+ores.platform environment provider with the original lambda's exact
+semantics) replaces the 85 inlined helpers in the eventing-integration
+template output and the 2 hand-written ores.synthetic copies. The
+template and all 85 regenerated files across iam, refdata, reporting,
+and trading-cpp changed only in the include swap and call site; the
+template-drift check passed. Linux build and tests green:
+=ores.iam.core.tests= (95s, incl. the 3 regenerated eventing tests)
+and =ores.synthetic.service.tests= both pass. Remaining =std::getenv=
+in the tree is only inside =real_environment_provider.cpp= itself.
+Merged as PR #1981.

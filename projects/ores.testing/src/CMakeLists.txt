@@ -38,6 +38,7 @@ target_include_directories(${lib_target_name} PUBLIC
 
 target_link_libraries(${lib_target_name}
     PUBLIC
+        ores.nats.lib
         ores.telemetry.core.lib
         ores.telemetry.database.lib
         ores.utility.lib

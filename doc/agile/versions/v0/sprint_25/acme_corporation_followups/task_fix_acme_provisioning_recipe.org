@@ -31,7 +31,7 @@ One recipe, one command, deterministic ACME group every time: holding company + 
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-08-09                               |
+| Last touched | 2026-08-14                               |
 
 * Acceptance
 
@@ -76,6 +76,10 @@ via its "Verifies task" field.
 | 3 | Timeout-budget comment claims per-party 10-minute waits; actual waits are 1500s base, 600s LEI, 120s default per-party | provision_commands.cpp | Accepted | Fixed in 8b58315bdd |
 | 4 | Orphaned step-0 row left in_progress when start aborts after step persistence | workflow_engine.cpp | Accepted | Fixed in c13538bd7c |
 | 5 | No-steps recovery branch never publishes a status event | workflow_engine.cpp | Accepted | Fixed in c47cc88f8d |
+| 6 | Stale codegen'd header: tenor/role/process_type docs out of sync with the .org | ir_curve_generation_config.hpp | Accepted | Regenerated via ores.cpp.domain |
+| 7 | FOMC allowance widened to all 19 OIS families; only sofr has meeting-dated pillar machinery | synthetic_ir_curve_generation_configs_create.sql | Accepted | Check scoped to index_family = 'sofr' |
+| 8 | Doc overclaims schema enforcement of the FOMC exception | ir_curve_generation_config.org | Accepted | Doc rewritten to state the sofr-only scope the constraint enforces |
+| 9 | Task Status table stale vs story.org STARTED | task_fix_acme_provisioning_recipe.org | Accepted | State flipped to STARTED; Now/Next/Last touched updated |
 
 * Result
 

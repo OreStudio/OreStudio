@@ -28,9 +28,9 @@
 #include "ores.nats/service/client.hpp"
 #include "ores.nats/service/subscription.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <atomic>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <atomic>
 #include <chrono>
 #include <map>
 #include <memory>
@@ -97,19 +97,19 @@ private:
     /// callers can gate side effects (republish) on a durable write.
     /// asset_class is derived from the lowercased series_type; series_subclass
     /// falls back to that same derivation when no wire value exists.
-    bool persist_tick_observation(const ores::database::context& ctx,
-                                  ores::utility::uuid::tenant_id tenant_id,
-                                  const boost::uuids::uuid& party_id,
-                                  const std::string& series_type,
-                                  const std::string& metric,
-                                  const std::string& qualifier,
-                                  std::optional<ores::marketdata::domain::series_subclass>
-                                      series_subclass,
-                                  bool is_scalar,
-                                  std::chrono::system_clock::time_point datetime,
-                                  const std::string& value,
-                                  const std::string& source,
-                                  const std::string& point_id);
+    bool persist_tick_observation(
+        const ores::database::context& ctx,
+        ores::utility::uuid::tenant_id tenant_id,
+        const boost::uuids::uuid& party_id,
+        const std::string& series_type,
+        const std::string& metric,
+        const std::string& qualifier,
+        std::optional<ores::marketdata::domain::series_subclass> series_subclass,
+        bool is_scalar,
+        std::chrono::system_clock::time_point datetime,
+        const std::string& value,
+        const std::string& source,
+        const std::string& point_id);
     void status_loop();
     void log_status() const;
 

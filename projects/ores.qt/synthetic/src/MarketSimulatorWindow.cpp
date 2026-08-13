@@ -2532,8 +2532,8 @@ std::string MarketSimulatorWindow::synthetic_subject(const std::string& source_n
     // now, so the caller must say which kind this is (see isIrCurveSourceName()) rather than this
     // function sniffing it. Mirrors the producers' own derivation in synthetic_tick_subject().
     return "synthetic.v1.tick." +
-           std::string(is_curve ? ores::marketdata::domain::ir_curve_kind_token
-                                : ores::marketdata::domain::fx_spot_kind_token) +
+           std::string(is_curve ? ores::marketdata::domain::ir_curve_kind_token :
+                                  ores::marketdata::domain::fx_spot_kind_token) +
            "." + token;
 }
 

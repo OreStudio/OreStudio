@@ -91,8 +91,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                             {nats.make_subject("synthetic.v1.tick.>")});
         admin.ensure_stream(nats.make_stream_name("marketdata_ticks"),
                             {nats.make_subject("marketdata.v1.tick.>")});
-        BOOST_LOG_SEV(lg(), info)
-            << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
+        BOOST_LOG_SEV(lg(), info) << "JetStream streams ready: synthetic_ticks, marketdata_ticks";
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to ensure JetStream streams: " << e.what();
         throw;

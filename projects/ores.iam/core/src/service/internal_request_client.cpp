@@ -50,7 +50,7 @@ std::unordered_map<std::string, std::string> internal_request_client::headers() 
              std::string(ores::nats::headers::bearer_prefix) + token_}};
 }
 
-bool internal_request_client::wait_for_workflow_instance(
+internal_request_client::workflow_wait_result internal_request_client::wait_for_workflow_instance(
     const std::string& instance_id,
     std::chrono::seconds timeout,
     std::size_t expected_steps,
@@ -61,6 +61,14 @@ bool internal_request_client::wait_for_workflow_instance(
     const auto deadline = std::chrono::steady_clock::now() + timeout;
     std::map<int, std::string> last_status;
     int poll_failures = 0;
+    // Instance-level state from the most recent successful poll, used to
+    // build the timeout detail.
+    std::string last_instance_status;
+    std::string last_instance_error;
+    std::string last_poll_failure;
+    std::size_t last_completed = 0;
+    int last_step_count = 0;
+    std::string last_in_progress_step;
 
     while (true) {
         ores::workflow::messaging::get_workflow_steps_request req;
@@ -78,7 +86,7 @@ bool internal_request_client::wait_for_workflow_instance(
             // fail fast instead of burning the rest of the timeout.
             BOOST_LOG_SEV(lg(), error)
                 << "Aborting wait for workflow instance " << instance_id << ": " << e.what();
-            return false;
+            return {false, std::string(e.what())};
         } catch (const std::exception& e) {
             ok = false;
             result.message = e.what();
@@ -91,9 +99,16 @@ bool internal_request_client::wait_for_workflow_instance(
             // blip -- so failures here are not a reason to give up early;
             // the deadline below is the only backstop.
             ++poll_failures;
+            last_poll_failure = result.message;
             BOOST_LOG_SEV(lg(), warn) << "Poll " << poll_failures << " failed for " << instance_id
                                       << ": " << result.message;
         } else {
+            poll_failures = 0;
+            last_poll_failure.clear();
+            last_instance_status = result.status;
+            last_instance_error = result.error;
+            last_step_count = result.step_count;
+
             for (const auto& step : result.steps) {
                 auto& last = last_status[step.step_index];
                 if (last != step.status) {
@@ -103,28 +118,62 @@ bool internal_request_client::wait_for_workflow_instance(
                 }
             }
 
+            // An instance the engine failed to start reports failed with no
+            // steps; surface the instance-level error before the step scan.
+            if (result.status == "failed") {
+                const auto msg = result.error.empty() ?
+                                     std::string("workflow failed") :
+                                     "workflow failed: " + result.error;
+                BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id << msg;
+                return {false, msg};
+            }
+
             const auto total = result.steps.size();
             std::size_t completed = 0;
             for (const auto& step : result.steps) {
                 if (step.status == "failed") {
+                    const auto msg = "workflow failed at step " +
+                                     std::to_string(step.step_index + 1) + " (" + step.name +
+                                     "): " + step.error;
                     BOOST_LOG_SEV(lg(), error)
-                        << "Workflow instance " << instance_id << " failed at step "
-                        << step.step_index << ": " << step.error;
-                    return false;
+                        << "Workflow instance " << instance_id << msg;
+                    return {false, msg};
                 }
                 if (step.status == "completed" || step.status == "completed_with_warnings")
                     ++completed;
+                if (step.status == "in_progress")
+                    last_in_progress_step = step.name + " (" + step.status + ")";
             }
+            last_completed = completed;
             if (total > 0 && completed == total && total >= expected_steps) {
                 BOOST_LOG_SEV(lg(), info) << "Workflow instance " << instance_id << " completed ("
                                           << total << " step(s)).";
-                return true;
+                return {true, {}};
             }
         }
 
         if (std::chrono::steady_clock::now() + poll_interval > deadline) {
-            BOOST_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance " << instance_id;
-            return false;
+            // Build the timeout reason: instance-level progress when any
+            // poll succeeded, otherwise the last poll failure (e.g. the
+            // workflow never got created at all).
+            std::string detail;
+            if (!last_instance_status.empty()) {
+                detail = "timed out after " + std::to_string(timeout.count()) + "s; " +
+                         std::to_string(last_completed) + "/" +
+                         std::to_string(last_step_count) + " steps completed";
+                if (!last_in_progress_step.empty())
+                    detail += "; last step: " + last_in_progress_step;
+                if (!last_instance_error.empty())
+                    detail += "; instance error: " + last_instance_error;
+            } else if (!last_poll_failure.empty()) {
+                detail = "instance not found or unqueryable; the workflow did not start (" +
+                         last_poll_failure + ")";
+            } else {
+                detail = "timed out after " + std::to_string(timeout.count()) + "s";
+            }
+            BOOST_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance "
+                                       << instance_id << ": " << detail;
+            return {false, detail};
         }
         std::this_thread::sleep_for(poll_interval);
     }

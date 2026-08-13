@@ -131,6 +131,22 @@ public:
     }
 
     /**
+     * @brief Outcome of a workflow-instance wait, carrying the exact reason
+     * on failure so an orchestrator can surface it verbatim instead of a
+     * generic "workflow did not complete".
+     */
+    struct workflow_wait_result {
+        bool success = false;
+
+        /**
+         * @brief Human-readable failure reason: the failed step's error, the
+         * instance-level error of a workflow that never started, or the
+         * timeout detail with step progress. Empty on success.
+         */
+        std::string error;
+    };
+
+    /**
      * @brief Polls a dq.v1.bundles.publish / dq.v1.datasets.publish workflow
      * instance until it reaches a terminal state, mirroring
      * ores.shell's workflow_commands::wait_for_instance (client-type-coupled,
@@ -139,12 +155,12 @@ public:
      * @param on_progress Called with a human-readable line each time a
      *                    step's status changes, so the caller can surface
      *                    step-by-step progress to its own response stream.
-     * @return true if all expected steps completed; false on failure or
-     *         timeout (details logged, not thrown -- an incomplete
-     *         workflow is a reportable orchestration outcome, not a
-     *         transport-level exception).
+     * @return success=false on failure or timeout, with error carrying the
+     *         exact reason (details also logged, not thrown -- an
+     *         incomplete workflow is a reportable orchestration outcome,
+     *         not a transport-level exception).
      */
-    bool
+    workflow_wait_result
     wait_for_workflow_instance(const std::string& instance_id,
                                std::chrono::seconds timeout,
                                std::size_t expected_steps,

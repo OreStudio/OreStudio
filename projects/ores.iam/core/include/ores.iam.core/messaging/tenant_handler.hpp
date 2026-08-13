@@ -389,7 +389,7 @@ public:
                                R"({"opted_in_datasets": ["gleif.lei_counterparties.small"]})",
                                add_step,
                                progress("base"),
-                               std::chrono::seconds{600});
+                               std::chrono::seconds{1500});
             }
 
             // Step 2: the four-party Acme Corporation LEI hierarchy --
@@ -403,7 +403,8 @@ public:
                                     username,
                                     lei_import_params(),
                                     add_step,
-                                    progress("acme_lei_import"))) {
+                                    progress("acme_lei_import"),
+                                    std::chrono::seconds{600})) {
                     fail_with("Step 2 failed: acme_lei_import");
                     reply(nats_, msg, resp);
                     return;
@@ -494,10 +495,12 @@ public:
                         },
                         [&](const std::string& instance_id, std::size_t expected) {
                             const auto mkt_label = "acme_group." + current_group_mkt_step;
-                            return client.wait_for_workflow_instance(instance_id,
-                                                                     std::chrono::seconds{120},
-                                                                     expected,
-                                                                     progress(mkt_label));
+                            auto wait_result = client.wait_for_workflow_instance(
+                                instance_id, std::chrono::seconds{120}, expected,
+                                progress(mkt_label));
+                            if (!wait_result.success)
+                                add_step(mkt_label + ".failed", wait_result.error, 0);
+                            return wait_result.success;
                         },
                         [&](const auto& step) {
                             current_group_mkt_step = step.bundle_code;
@@ -600,10 +603,12 @@ public:
                         },
                         [&](const std::string& instance_id, std::size_t expected) {
                             const auto mkt_label = office.code + "." + current_mkt_step;
-                            return client.wait_for_workflow_instance(instance_id,
-                                                                     std::chrono::seconds{120},
-                                                                     expected,
-                                                                     progress(mkt_label));
+                            auto wait_result = client.wait_for_workflow_instance(
+                                instance_id, std::chrono::seconds{120}, expected,
+                                progress(mkt_label));
+                            if (!wait_result.success)
+                                add_step(mkt_label + ".failed", wait_result.error, 0);
+                            return wait_result.success;
                         },
                         [&](const auto& step) {
                             current_mkt_step = step.bundle_code;
@@ -718,11 +723,17 @@ private:
         }
         add_step(bundle_code, "dispatched", static_cast<std::uint64_t>(pub.datasets_dispatched));
 
-        if (!client.wait_for_workflow_instance(pub.instance_id,
-                                               timeout,
-                                               static_cast<std::size_t>(pub.datasets_dispatched),
-                                               on_progress)) {
-            add_step(bundle_code + ".failed", "workflow did not complete", 0);
+        auto result = client.wait_for_workflow_instance(pub.instance_id,
+                                                        timeout,
+                                                        static_cast<std::size_t>(
+                                                            pub.datasets_dispatched),
+                                                        on_progress);
+        if (!result.success) {
+            // The wait result carries the exact reason (failed step error,
+            // instance-level start failure, or the timeout detail) so a
+            // failed provisioning reports what actually went wrong instead
+            // of the generic "workflow did not complete".
+            add_step(bundle_code + ".failed", result.error, 0);
             return false;
         }
         return true;

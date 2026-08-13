@@ -120,7 +120,13 @@ Tenor of this curve's floating-rate index (references =tenor.code=,
 e.g. "3M", "6M"), required when =index_family= is a term family
 (=libor=/=euribor=), empty for overnight families (=sofr=/=estr=/=sonia=/=tona=,
 which have no tenor dimension) -- mirrors oresmd's own
-=index_family=-conditional grammar. Empty string, not SQL NULL: the
+=index_family=-conditional grammar. The literal discriminator ="FOMC"=
+is the one exception for overnight families: it keys a meeting-dated
+curve variant for the same =(currency_code, index_family)= (e.g. the
+USD-SOFR FOMC-dated short end, whose template entries resolve to
+meeting-dated pillars 1F..8F via =tenor_resolution=), so the config
+publishes its own distinct series identity instead of colliding with
+the standard curve's empty-tenor row. Empty string, not SQL NULL: the
 codegen used here has no true-nullable text support, same pattern as
 =vintage_source=/=vintage_date=. Not DB-FK-validated against =tenor=,
 matching the precedent set by =ir_curve_template_entry='s own
@@ -391,7 +397,7 @@ std::nullopt
 |----------------------------------------------------------|
 | "currency_code" <> ''                                    |
 | "index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') |
-| ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" = '') |
+| ("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" in ('', 'FOMC')) |
 | "role" in ('discount', 'projection', 'self_discounting') |
 | "source_name" <> ''                                       |
 | "ticks_per_hour" > 0                                       |

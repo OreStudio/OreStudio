@@ -75,7 +75,7 @@ create table if not exists "ores_synthetic_ir_curve_generation_configs_tbl" (
     check ("id" <> ores_utility_nil_uuid_fn()),
     check ("currency_code" <> ''),
     check ("index_family" in ('libor', 'euribor', 'sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor')),
-    check (("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" = '')),
+    check (("index_family" in ('libor', 'euribor') and "tenor" <> '') or ("index_family" in ('sofr', 'estr', 'sonia', 'tona', 'saron', 'aonia', 'corra', 'honia', 'sora', 'swestr', 'nowa', 'kofr', 'mibor', 'zaronia', 'destr', 'polonia', 'nzonia', 'shibor', 'tiie', 'taibor') and "tenor" in ('', 'FOMC'))),
     check ("role" in ('discount', 'projection', 'self_discounting')),
     check ("source_name" <> ''),
     check ("ticks_per_hour" > 0),

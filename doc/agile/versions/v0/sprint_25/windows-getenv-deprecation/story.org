@@ -28,11 +28,11 @@ codegen template and regenerates, so the Windows build compiles again.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-08-12                               |
 
 * Acceptance
@@ -49,7 +49,7 @@ codegen template and regenerates, so the Windows build compiles again.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7012042B-7BAC-4989-BE1F-C2679821ABC0][Scaffold story: Hotfix: Windows build fails on std::getenv deprecation]] | DONE | 2026-08-12 | 2026-08-12 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:AEA7E72A-5254-481F-9E27-AA51DC2BA7C8][Implement Hotfix: Windows build fails on std::getenv deprecation]] | STARTED | 2026-08-12 | | Initial task for: Hotfix: Windows build fails on std::getenv deprecation |
+| [[id:AEA7E72A-5254-481F-9E27-AA51DC2BA7C8][Implement Hotfix: Windows build fails on std::getenv deprecation]] | DONE | 2026-08-12 | 2026-08-12 | Initial task for: Hotfix: Windows build fails on std::getenv deprecation |
 
 * Decisions
 
@@ -71,3 +71,13 @@ codegen template and regenerates, so the Windows build compiles again.
 * Out of scope
 
 -
+
+* Result
+
+Implemented and merged as PR #1981 (scaffold PR #1978 merged first).
+The shared =ores::testing::make_nats_options()= helper replaces all 87
+=std::getenv=-based =test_nats_options()= copies (85 codegen-generated
+eventing integration tests + 2 hand-written ores.synthetic tests);
+the only =std::getenv= left in the tree is inside
+=real_environment_provider.cpp= itself. Template-drift check green;
+Linux test suites pass.

@@ -40,11 +40,11 @@ so the =-Werror= deprecation failure on Windows Clang goes away:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F4EBF3D7-D1D1-4E22-BCFA-63970685ECFA][Hotfix: Windows build fails on std::getenv deprecation]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-12                               |
 
 * Acceptance
@@ -126,3 +126,17 @@ via its "Verifies task" field.
 | 1 | =ORES_NATS_URL= set-but-empty loses the localhost fallback (both bot reviews otherwise approve) | nats_options_helper.hpp | Fixed | 5995e8d3da restores the exact empty-string fallback |
 
 * Result
+
+The =std::getenv= copies are gone: one shared
+=ores::testing::make_nats_options()= (=nats_options_helper.hpp=,
+header-only, reads the =ORES_NATS_*= variables through the
+ores.platform environment provider with the original lambda's exact
+semantics) replaces the 85 inlined helpers in the eventing-integration
+template output and the 2 hand-written ores.synthetic copies. The
+template and all 85 regenerated files across iam, refdata, reporting,
+and trading-cpp changed only in the include swap and call site; the
+template-drift check passed. Linux build and tests green:
+=ores.iam.core.tests= (95s, incl. the 3 regenerated eventing tests)
+and =ores.synthetic.service.tests= both pass. Remaining =std::getenv=
+in the tree is only inside =real_environment_provider.cpp= itself.
+Merged as PR #1981.

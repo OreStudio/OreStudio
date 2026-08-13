@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-12
-#+updated: 2026-08-12
-#+environment:
+#+updated: 2026-08-14
+#+environment: prime_origin
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -31,12 +31,12 @@ per-office theme publishing.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-12                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-14                               |
 
 * Acceptance
 
@@ -90,3 +90,32 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped on feature/f15-per-party-feed-consumption.
+
+- The marketdata service keeps one ingest subscription per
+  (source_name, tenant, party, workspace) and republishes each tick
+  on the per-party realtime subject
+  marketdata.v1.tick.<tenant>.<workspace>.<party>.<ore_key>.
+- ACME provisioning publishes the two themes and the FX driver
+  vintage once, against the system party; creates bindings for the
+  system party, holding and every office (workspace = Live sentinel);
+  offices publish no theme and start no feeds.
+- The factory path resolves "vintage" configs from the config's own
+  party series: (source=vintage_source, point_id="SPOT",
+  date=vintage_date) for FX, the shortest-tenor DEPOSIT anchor for IR
+  curves. market_data_client::find_series filters by party_id, so the
+  lookup cannot resolve another party's series.
+- The IR curve tenor-combo check now permits the 'FOMC' tenor for RFR
+  families (create script + one-shot migration).
+- CRM stays per-party; the group/office CRM topology plans are
+  unchanged.
+
+Fresh-DB verification (2026-08-12, prime_origin): 34 feeds started, 0
+skipped at boot; 65 first-tick fan-outs; every party's series fills
+(~10,500 observations per party for AUD/USD); cross-party consistency
+holds (0 divergent (source, observation_datetime) rows across all 13
+sources); party-scoped CRM reads are non-empty for US and HK; the
+per-party republish streams deliver (5/5 messages on
+marketdata.v1.tick.<tenant>.Live.<party>.fx.rate.eur.usd). All six
+acceptance bullets are met.

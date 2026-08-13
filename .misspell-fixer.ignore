@@ -2,4 +2,6 @@
 ^./build
 ^./assets
 ^./vcpkg
+^./.packages
 ^./projects/ores.org-js/graph
+^./projects/ores.compass/venv

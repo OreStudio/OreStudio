@@ -65,6 +65,7 @@ via its "Verifies task" field.
 | PR | Title |
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1983][#1983]] | [ores.iam] Surface exact workflow failure reasons on provisioning |
+| [[https://github.com/OreStudio/OreStudio/pull/1984][#1984]] | [synthetic,ores.sql] Allow FOMC-dated tenor for OIS IR curve configs |
 
 * Review
 

@@ -460,6 +460,8 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.created_at = std::chrono::system_clock::now();
 
     bool instance_created = false;
+    bool step_created = false;
+    boost::uuids::uuid step_id{};
     try {
         instance_repo_.create(ctx_, instance);
         instance_created = true;
@@ -467,7 +469,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         // Build and dispatch step 0.
         const auto& step_def = steps[0];
         const auto cmd_json = step_def.build_command(req.request_json, {});
-        const auto step_id = boost::uuids::random_generator()();
+        step_id = boost::uuids::random_generator()();
 
         domain::workflow_step step;
         step.id = step_id;
@@ -483,6 +485,7 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         step.created_at = std::chrono::system_clock::now();
 
         step_repo_.create(ctx_, step);
+        step_created = true;
         publish_command(step, instance_id, tenant_id);
         step_repo_.mark_command_published(ctx_, step_id);
 
@@ -506,6 +509,13 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
             instance_repo_.update_state(ctx_, instance_id, instance_states_.require("failed"),
                                         "", "Failed to start workflow: " + std::string(e.what()));
             publish_status_event(instance_id, tenant_id);
+            // The step-0 row persisted before the failure would otherwise
+            // stay in_progress forever: recovery re-dispatches only steps of
+            // instances still in_progress, and this instance is now failed.
+            if (step_created) {
+                step_repo_.update_state(ctx_, step_id, step_states_.require("failed"), "",
+                                        "Failed to start workflow: " + std::string(e.what()));
+            }
         } else {
             BOOST_LOG_SEV(lg(), error)
                 << "Failed to create workflow instance " << id_str << ": " << e.what();

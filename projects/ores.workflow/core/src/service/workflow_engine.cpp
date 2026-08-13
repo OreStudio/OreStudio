@@ -559,6 +559,7 @@ void workflow_engine::recover_in_progress() {
                 instance_repo_.update_state(ctx_, instance.id,
                                             instance_states_.require("failed"), "",
                                             "instance has no steps after recovery");
+                publish_status_event(instance.id, instance.tenant_id);
                 continue;
             }
             for (const auto& s : steps) {

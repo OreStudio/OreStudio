@@ -124,7 +124,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
                 const auto msg = result.error.empty() ?
                                      std::string("workflow failed") :
                                      "workflow failed: " + result.error;
-                BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id << msg;
+                BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id << ": " << msg;
                 return {false, msg};
             }
 
@@ -136,7 +136,7 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
                                      std::to_string(step.step_index + 1) + " (" + step.name +
                                      "): " + step.error;
                     BOOST_LOG_SEV(lg(), error)
-                        << "Workflow instance " << instance_id << msg;
+                        << "Workflow instance " << instance_id << ": " << msg;
                     return {false, msg};
                 }
                 if (step.status == "completed" || step.status == "completed_with_warnings")

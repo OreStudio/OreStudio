@@ -118,6 +118,33 @@ struct get_workflow_steps_request {
 struct get_workflow_steps_response {
     bool success = false;
     std::string message;
+    /**
+     * @brief Instance-level status: in_progress, completed, failed,
+     * compensating, or compensated.
+     *
+     * A failed instance may have zero steps (e.g. a start that died before
+     * persisting its first step), so callers must consult status/error rather
+     * than inferring failure from the step list alone.
+     */
+    std::string status;
+
+    /**
+     * @brief Instance-level error message, populated when status is failed
+     * (or during compensation).
+     */
+    std::string error;
+
+    /**
+     * @brief Total step count of the instance (may exceed steps.size() when
+     * not all steps have been created yet).
+     */
+    int step_count = 0;
+
+    /**
+     * @brief Zero-based index of the step currently being executed.
+     */
+    int current_step_index = 0;
+
     std::vector<workflow_step_summary> steps;
 };
 

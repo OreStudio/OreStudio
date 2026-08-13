@@ -459,36 +459,58 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
     instance.materialised_steps_json = materialise_steps_json(steps);
     instance.created_at = std::chrono::system_clock::now();
 
-    instance_repo_.create(ctx_, instance);
+    bool instance_created = false;
+    try {
+        instance_repo_.create(ctx_, instance);
+        instance_created = true;
 
-    // Build and dispatch step 0.
-    const auto& step_def = steps[0];
-    const auto cmd_json = step_def.build_command(req.request_json, {});
-    const auto step_id = boost::uuids::random_generator()();
+        // Build and dispatch step 0.
+        const auto& step_def = steps[0];
+        const auto cmd_json = step_def.build_command(req.request_json, {});
+        const auto step_id = boost::uuids::random_generator()();
 
-    domain::workflow_step step;
-    step.id = step_id;
-    step.workflow_id = instance_id;
-    step.step_index = 0;
-    step.name = step_def.name;
-    step.state_id = step_states_.require("in_progress");
-    step.request_json = cmd_json;
-    step.command_subject = step_def.command_subject;
-    step.command_json = cmd_json;
-    step.idempotency_key = boost::uuids::to_string(step_id);
-    step.compensation_subject = step_def.compensation_subject;
-    step.created_at = std::chrono::system_clock::now();
+        domain::workflow_step step;
+        step.id = step_id;
+        step.workflow_id = instance_id;
+        step.step_index = 0;
+        step.name = step_def.name;
+        step.state_id = step_states_.require("in_progress");
+        step.request_json = cmd_json;
+        step.command_subject = step_def.command_subject;
+        step.command_json = cmd_json;
+        step.idempotency_key = boost::uuids::to_string(step_id);
+        step.compensation_subject = step_def.compensation_subject;
+        step.created_at = std::chrono::system_clock::now();
 
-    step_repo_.create(ctx_, step);
-    publish_command(step, instance_id, tenant_id);
-    step_repo_.mark_command_published(ctx_, step_id);
+        step_repo_.create(ctx_, step);
+        publish_command(step, instance_id, tenant_id);
+        step_repo_.mark_command_published(ctx_, step_id);
 
-    BOOST_LOG_SEV(lg(), info) << "Workflow STARTED:" << " type=" << req.type
-                              << " workflow=" << boost::uuids::to_string(instance_id)
-                              << " step_count=" << steps.size() << " first_step=" << step_def.name
-                              << " subject=" << step_def.command_subject
-                              << " corr=" << req.correlation_id;
-    publish_status_event(instance_id, tenant_id);
+        BOOST_LOG_SEV(lg(), info) << "Workflow STARTED:" << " type=" << req.type
+                                  << " workflow=" << boost::uuids::to_string(instance_id)
+                                  << " step_count=" << steps.size()
+                                  << " first_step=" << step_def.name
+                                  << " subject=" << step_def.command_subject
+                                  << " corr=" << req.correlation_id;
+        publish_status_event(instance_id, tenant_id);
+    } catch (const std::exception& e) {
+        // A start that fails after the instance row exists (e.g. a dead
+        // database connection during step-0 persistence) must not leave an
+        // in_progress instance with no steps behind: waiters would poll it
+        // until their timeout with no error surfaced. Record the failure so
+        // the query path can report the exact reason.
+        const auto id_str = boost::uuids::to_string(instance_id);
+        if (instance_created) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to start workflow " << id_str << ": " << e.what();
+            instance_repo_.update_state(ctx_, instance_id, instance_states_.require("failed"),
+                                        "", "Failed to start workflow: " + std::string(e.what()));
+            publish_status_event(instance_id, tenant_id);
+        } else {
+            BOOST_LOG_SEV(lg(), error)
+                << "Failed to create workflow instance " << id_str << ": " << e.what();
+        }
+    }
 }
 
 void workflow_engine::recover_in_progress() {
@@ -517,6 +539,18 @@ void workflow_engine::recover_in_progress() {
 
             // Find all in-progress steps for this instance and re-dispatch.
             const auto steps = step_repo_.find_by_workflow_id(ctx_, instance.id);
+            if (steps.empty()) {
+                // A start that died before persisting its first step leaves
+                // an in_progress instance with no steps; nothing can ever
+                // re-dispatch it. Mark it failed so waiters see a real error.
+                BOOST_LOG_SEV(lg(), error)
+                    << "Instance " << boost::uuids::to_string(instance.id)
+                    << " has no steps; marking failed";
+                instance_repo_.update_state(ctx_, instance.id,
+                                            instance_states_.require("failed"), "",
+                                            "instance has no steps after recovery");
+                continue;
+            }
             for (const auto& s : steps) {
                 if (s.state_id != step_states_.require("in_progress"))
                     continue;

@@ -8,7 +8,7 @@
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-03
 #+updated: 2026-08-03
-#+environment: prime_origin
+#+environment: eager_maxwell
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.

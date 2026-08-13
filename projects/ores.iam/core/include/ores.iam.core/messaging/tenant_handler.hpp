@@ -299,9 +299,9 @@ public:
         };
         // Abort-path helper (F11): flips the response to failure and carries
         // the DQ-side error detail publish_bundle recorded in the trailing
-        // <bundle>.failed step (publication_handler's error_message, or
-        // "workflow did not complete") into the top-level message, so a
-        // failed provisioning never replies with success=true.
+        // <bundle>.failed step (the publication error_message on a dispatch
+        // failure, or the wait client's exact reason) into the top-level
+        // message, so a failed provisioning never replies with success=true.
         auto fail_with = [&](const std::string& summary) {
             resp.success = false;
             resp.message = summary;

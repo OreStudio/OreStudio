@@ -72,8 +72,8 @@ inline std::string synthetic_producer_subject(const std::string& source_name,
         token += safe ? static_cast<char>(c) : '_';
     }
     const bool sandboxed = binding_mode == ores::synthetic::domain::binding_mode::sandboxed;
-    return sandboxed ? "synthetic.v1.sandbox.tick." + token
-                     : ores::marketdata::domain::synthetic_tick_subject(fx_spot_feed_kind, token);
+    return sandboxed ? "synthetic.v1.sandbox.tick." + token :
+                       ores::marketdata::domain::synthetic_tick_subject(fx_spot_feed_kind, token);
 }
 
 /**

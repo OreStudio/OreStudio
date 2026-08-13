@@ -289,19 +289,19 @@ std::shared_ptr<ir_curve_feed> make_ir_curve_feed(
     // source_name is a persisted, editable column (see the field's own doc comment) -- the same
     // shape fx_spot_generation_config.source_name already uses, set at publish/save time rather
     // than computed here.
-    return std::make_shared<ir_curve_feed>(nats,
-                                           cfg.tenant_id,
-                                           cfg.party_id,
-                                           cfg.source_name,
-                                           ores::marketdata::domain::synthetic_tick_subject(
-                                               ir_curve_feed_kind, cfg.source_name),
-                                           "RATES",
-                                           "YIELD",
-                                           ir_curve_qualifier(cfg),
-                                           cfg.role,
-                                           std::move(process),
-                                           static_cast<double>(cfg.ticks_per_hour),
-                                           std::move(resolved));
+    return std::make_shared<ir_curve_feed>(
+        nats,
+        cfg.tenant_id,
+        cfg.party_id,
+        cfg.source_name,
+        ores::marketdata::domain::synthetic_tick_subject(ir_curve_feed_kind, cfg.source_name),
+        "RATES",
+        "YIELD",
+        ir_curve_qualifier(cfg),
+        cfg.role,
+        std::move(process),
+        static_cast<double>(cfg.ticks_per_hour),
+        std::move(resolved));
 }
 
 }

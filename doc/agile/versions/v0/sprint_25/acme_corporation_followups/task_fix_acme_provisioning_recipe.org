@@ -26,11 +26,11 @@ One recipe, one command, deterministic ACME group every time: holding company + 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:BC5582FB-1648-42F2-9D6A-B6DB6EEBC676][Acme Corporation follow-ups: manual chapter, logo fixes, synthetic feeds]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-09                               |
 
 * Acceptance
@@ -77,3 +77,15 @@ via its "Verifies task" field.
 | 5 | No-steps recovery branch never publishes a status event | workflow_engine.cpp | Accepted | Fixed in c47cc88f8d |
 
 * Result
+
+Both PRs delivered and merged:
+
+- [[https://github.com/OreStudio/OreStudio/pull/1983][#1983]]: honest provisioning failure reporting. The workflow engine records start failures on the instance and recovers step-less orphans; the query protocol carries instance status/error; the wait client returns the exact reason (failed step, failed instance, timeout with progress); =publish_bundle= propagates it into the step action so the shell prints the real error; wait windows raised to 1500 s (base), 600 s (acme_lei_import), 45 min (shell).
+- [[https://github.com/OreStudio/OreStudio/pull/1984][#1984]]: FOMC-dated tenor allowed for OIS IR curve configs, scoped to =index_family = 'sofr'= (model, generated SQL constraint, regenerated C++ header).
+
+Verified end-to-end against [[id:D28E67F7-0F2B-4184-B338-57D0F8A29DEC][scenario_acme_readiness]] on a fresh database with the official provisioning script: script exits 0 with no failed steps; login lands on Acme Corporation Plc with no setup wizard; exactly 4 parties all Active (9,695 LEIs); =tenant_admin= default_party_id = Acme Corporation Plc; onboarding suppressed; 43,834 GLEIF counterparties.
+
+Findings recorded, not regressions:
+
+- Provisioning does not create market-data feed bindings (scenario step 7 anticipated gap); rates render static until bindings are created via a client.
+- BU/portfolio/book/account structure is richer than the scenario's minimal targets (15 BUs / 59 accounts in UK vs 3 / 9) — pre-existing, user-validated.

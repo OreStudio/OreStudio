@@ -205,6 +205,10 @@ void workflow_query_handler::get_steps(ores::nats::message msg) {
 
     get_workflow_steps_response resp;
     resp.success = true;
+    resp.status = state_name(instance->state_id);
+    resp.error = instance->error;
+    resp.step_count = instance->step_count;
+    resp.current_step_index = instance->current_step_index;
     resp.steps.reserve(raw_steps.size());
 
     for (const auto& s : raw_steps) {

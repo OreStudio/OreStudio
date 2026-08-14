@@ -316,11 +316,13 @@ void provision_commands::process_tenant(std::ostream& out,
         out << "[1/2] Provisioning the Acme Corporation holding group..." << std::endl;
         iam::messaging::provision_acme_tenant_command provision_req;
         // The single request below drives every bundle publish and party
-        // activation server-side, including the ~13k-row GLEIF
-        // counterparty import (its own internal wait budget: 10 minutes)
-        // and the subsequent best-effort Barclays-logo poll (up to 8
-        // minutes) -- give it generous headroom over that combined budget.
-        auto provisioned = do_request(out, session, provision_req, std::chrono::minutes(25), true);
+        // activation server-side. The server-side wait budgets: the base
+        // bundle (1500 s -- 38 sequential dataset publishes, including the
+        // ~13k-row GLEIF counterparty import, can exceed 10 minutes on a
+        // busy machine) and the acme_lei_import hierarchy (600 s); the
+        // per-party/office bundles use the 120 s default. Give the request
+        // generous headroom over that combined budget.
+        auto provisioned = do_request(out, session, provision_req, std::chrono::minutes(45), true);
         if (!provisioned)
             return;
         if (!provisioned->success) {

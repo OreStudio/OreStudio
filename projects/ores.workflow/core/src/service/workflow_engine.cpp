@@ -504,16 +504,21 @@ void workflow_engine::on_start_workflow(ores::nats::message msg) {
         // the query path can report the exact reason.
         const auto id_str = boost::uuids::to_string(instance_id);
         if (instance_created) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to start workflow " << id_str << ": " << e.what();
-            instance_repo_.update_state(ctx_, instance_id, instance_states_.require("failed"),
-                                        "", "Failed to start workflow: " + std::string(e.what()));
+            BOOST_LOG_SEV(lg(), error) << "Failed to start workflow " << id_str << ": " << e.what();
+            instance_repo_.update_state(ctx_,
+                                        instance_id,
+                                        instance_states_.require("failed"),
+                                        "",
+                                        "Failed to start workflow: " + std::string(e.what()));
             publish_status_event(instance_id, tenant_id);
             // The step-0 row persisted before the failure would otherwise
             // stay in_progress forever: recovery re-dispatches only steps of
             // instances still in_progress, and this instance is now failed.
             if (step_created) {
-                step_repo_.update_state(ctx_, step_id, step_states_.require("failed"), "",
+                step_repo_.update_state(ctx_,
+                                        step_id,
+                                        step_states_.require("failed"),
+                                        "",
                                         "Failed to start workflow: " + std::string(e.what()));
             }
         } else {
@@ -553,11 +558,12 @@ void workflow_engine::recover_in_progress() {
                 // A start that died before persisting its first step leaves
                 // an in_progress instance with no steps; nothing can ever
                 // re-dispatch it. Mark it failed so waiters see a real error.
-                BOOST_LOG_SEV(lg(), error)
-                    << "Instance " << boost::uuids::to_string(instance.id)
-                    << " has no steps; marking failed";
-                instance_repo_.update_state(ctx_, instance.id,
-                                            instance_states_.require("failed"), "",
+                BOOST_LOG_SEV(lg(), error) << "Instance " << boost::uuids::to_string(instance.id)
+                                           << " has no steps; marking failed";
+                instance_repo_.update_state(ctx_,
+                                            instance.id,
+                                            instance_states_.require("failed"),
+                                            "",
                                             "instance has no steps after recovery");
                 publish_status_event(instance.id, instance.tenant_id);
                 continue;

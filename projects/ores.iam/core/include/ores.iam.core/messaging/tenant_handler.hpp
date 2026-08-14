@@ -495,9 +495,11 @@ public:
                         },
                         [&](const std::string& instance_id, std::size_t expected) {
                             const auto mkt_label = "acme_group." + current_group_mkt_step;
-                            auto wait_result = client.wait_for_workflow_instance(
-                                instance_id, std::chrono::seconds{120}, expected,
-                                progress(mkt_label));
+                            auto wait_result =
+                                client.wait_for_workflow_instance(instance_id,
+                                                                  std::chrono::seconds{120},
+                                                                  expected,
+                                                                  progress(mkt_label));
                             if (!wait_result.success)
                                 add_step(mkt_label + ".failed", wait_result.error, 0);
                             return wait_result.success;
@@ -603,9 +605,11 @@ public:
                         },
                         [&](const std::string& instance_id, std::size_t expected) {
                             const auto mkt_label = office.code + "." + current_mkt_step;
-                            auto wait_result = client.wait_for_workflow_instance(
-                                instance_id, std::chrono::seconds{120}, expected,
-                                progress(mkt_label));
+                            auto wait_result =
+                                client.wait_for_workflow_instance(instance_id,
+                                                                  std::chrono::seconds{120},
+                                                                  expected,
+                                                                  progress(mkt_label));
                             if (!wait_result.success)
                                 add_step(mkt_label + ".failed", wait_result.error, 0);
                             return wait_result.success;
@@ -723,11 +727,11 @@ private:
         }
         add_step(bundle_code, "dispatched", static_cast<std::uint64_t>(pub.datasets_dispatched));
 
-        auto result = client.wait_for_workflow_instance(pub.instance_id,
-                                                        timeout,
-                                                        static_cast<std::size_t>(
-                                                            pub.datasets_dispatched),
-                                                        on_progress);
+        auto result =
+            client.wait_for_workflow_instance(pub.instance_id,
+                                              timeout,
+                                              static_cast<std::size_t>(pub.datasets_dispatched),
+                                              on_progress);
         if (!result.success) {
             // The wait result carries the exact reason (failed step error,
             // instance-level start failure, or the timeout detail) so a

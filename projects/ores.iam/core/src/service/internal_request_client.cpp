@@ -121,9 +121,8 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             // An instance the engine failed to start reports failed with no
             // steps; surface the instance-level error before the step scan.
             if (result.status == "failed") {
-                const auto msg = result.error.empty() ?
-                                     std::string("workflow failed") :
-                                     "workflow failed: " + result.error;
+                const auto msg = result.error.empty() ? std::string("workflow failed") :
+                                                        "workflow failed: " + result.error;
                 BOOST_LOG_SEV(lg(), error) << "Workflow instance " << instance_id << ": " << msg;
                 return {false, msg};
             }
@@ -159,8 +158,8 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             std::string detail;
             if (!last_instance_status.empty()) {
                 detail = "timed out after " + std::to_string(timeout.count()) + "s; " +
-                         std::to_string(last_completed) + "/" +
-                         std::to_string(last_step_count) + " steps completed";
+                         std::to_string(last_completed) + "/" + std::to_string(last_step_count) +
+                         " steps completed";
                 if (!last_in_progress_step.empty())
                     detail += "; last step: " + last_in_progress_step;
                 if (!last_instance_error.empty())
@@ -171,8 +170,8 @@ internal_request_client::workflow_wait_result internal_request_client::wait_for_
             } else {
                 detail = "timed out after " + std::to_string(timeout.count()) + "s";
             }
-            BOOST_LOG_SEV(lg(), error) << "Timed out waiting for workflow instance "
-                                       << instance_id << ": " << detail;
+            BOOST_LOG_SEV(lg(), error)
+                << "Timed out waiting for workflow instance " << instance_id << ": " << detail;
             return {false, detail};
         }
         std::this_thread::sleep_for(poll_interval);

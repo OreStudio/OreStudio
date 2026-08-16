@@ -8,7 +8,7 @@
 #+filetags: :windows-ifeed-export-hotfix:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/windows-ifeed-export-hotfix
-#+pr:
+#+pr: 1987
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-16
@@ -26,11 +26,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0D71B3BE-9EC4-425E-A86A-AC375E43CDA4][Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-16                               |
 
 * Acceptance
@@ -69,3 +69,7 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Story and task docs scaffolded via =compass story new --kind hotfix= on
+branch =hotfix/windows-ifeed-export-hotfix=, sprint-wired, and raised
+as PR #1987.

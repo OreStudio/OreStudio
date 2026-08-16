@@ -8,7 +8,7 @@
 #+filetags: :acme_corporation_followups:sprint_25:v0:
 #+owner: marco
 #+branch:
-#+pr:
+#+pr: 1986
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-12
@@ -81,7 +81,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1986][#1986]] | [marketdata] F15: per-party consumption of the shared simulated market |
 
 * Review
 

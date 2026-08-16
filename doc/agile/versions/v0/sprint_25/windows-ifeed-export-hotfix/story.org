@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: 0D71B3BE-9EC4-425E-A86A-AC375E43CDA4
+:END:
+#+title: Story: Hotfix: Windows link fails on missing IFeed ctor/dtor exports
+#+description: Windows CI fails at the link of ores.synthetic.api.dll in all three configs (clang-debug, msvc-debug, msvc-release): lld-link: error: undefined symbol: __declspec(dllimport) ores::marketdata::domain::IFeed::IFeed(void) and ~IFeed(void), referenced from fx_spot_feed/ir_curve_feed (feed_factory.cpp, fx_spot_feed.cpp). IFeed is ORES_MARKETDATA_API_EXPORT (dllimport in consumers) with inline-defaulted ctor and virtual dtor in i_feed.hpp; the abstract class is never constructed or destroyed inside ores.marketdata.api, so the producer never emits or exports them.
+#+type: story
+#+level: s2
+#+filetags: :windows:link:exports:sprint_25:v0:
+#+created: 2026-08-16
+#+updated: 2026-08-16
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Restore the Windows CI build: make ores.marketdata.api.dll export IFeed's default ctor and virtual dtor so consumers (ores.synthetic.api feeds) can import them.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-16                               |
+
+* Acceptance
+
+- The Windows CI build links ores.synthetic.api.dll in all three configs.
+- IFeed remains abstract and header-declarable; consumers unchanged.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:175FB3D6-68C9-4ADC-8060-FB32CFAA4F4D][Scaffold story: Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | STARTED | 2026-08-16 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:0D8C0297-E102-4D3B-9AD3-BDBD0454DE6E][Implement Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | BACKLOG | | | Initial task for: Hotfix: Windows link fails on missing IFeed ctor/dtor exports |
+
+* Decisions
+
+* Out of scope
+
+-

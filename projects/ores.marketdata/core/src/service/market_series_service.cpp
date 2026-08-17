@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/service/market_series_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <cstdint>
@@ -62,6 +64,12 @@ market_series_service::get_market_series(const std::string& id) {
 void market_series_service::save_market_series(const domain::market_series& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Market Series id cannot be empty.");
+    try {
+        (void)ores::marketdata::core::oresmd_parser::parse(domain::oresmd_uri{v.oresmd_uri});
+    } catch (const ores::marketdata::core::oresmd_exception&) {
+        throw std::invalid_argument("Market Series oresmd_uri is not a valid oresmd URI: " +
+                                    v.oresmd_uri);
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving market series. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
@@ -71,9 +79,16 @@ void market_series_service::save_market_series(const domain::market_series& v) {
 
 void market_series_service::save_market_series(
     const std::vector<domain::market_series>& market_series) {
-    for (const auto& e : market_series)
+    for (const auto& e : market_series) {
         if (e.id.is_nil())
             throw std::invalid_argument("Market Series id cannot be empty.");
+        try {
+            (void)ores::marketdata::core::oresmd_parser::parse(domain::oresmd_uri{e.oresmd_uri});
+        } catch (const ores::marketdata::core::oresmd_exception&) {
+            throw std::invalid_argument("Market Series oresmd_uri is not a valid oresmd URI: " +
+                                        e.oresmd_uri);
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_series.size() << " market series";
     auto ts = market_series;
     for (auto& e : ts)

@@ -20,8 +20,6 @@
 #ifndef ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_HPP
 #define ORES_MARKETDATA_API_DOMAIN_MARKET_SERIES_HPP
 
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/nil_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -32,16 +30,20 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Catalog entry identifying what is being observed (series type, metric, qualifier, asset
- * class).
+ * @brief Catalog entry identifying what is being observed, by its canonical oresmd URI.
  *
  * A catalog entry for a market data series — it records what is being observed:
  * a yield curve, vol surface, spot rate, fixing index, or similar. Standard
  * temporal reference data; changes infrequently so a regular table with GIST
  * exclusion is appropriate.
  *
- * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
- * asset_class and series_subclass carry the coarse taxonomy for filtering.
+ * Identity is the canonical oresmd URI (e.g.
+ * oresmd://ir/eur?tenor3m&typequote&quoteir_swap&metricrate&point5y).
+ * Classification (asset class, subclass, scalar-ness) derives from the URI in
+ * the oresmd layer, not from stored columns. The URI is read and written
+ * end-to-end: the import boundaries project ORE keys into URIs via
+ * oresmd_projections::from_ore_key= / from_index_name, and the oresmd
+ * parser canonicalises before persistence.
  *
  * derivation_kind/derivation_config_id/derivation_config_version mark
  * whether this series is directly observed (the sentinel OBSERVED) or
@@ -76,37 +78,13 @@ struct market_series final {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief ORE market data type token (e.g. FXSpot, YieldCurve, FXVolatility).
+     * @brief Canonical oresmd URI identifying this series (e.g.
+     * oresmd://ir/eur?tenor3m&typequote&quoteir_swap&metricrate&point5y=). One URI per series; the
+     * natural key is (party, uri). Classification (asset class, subclass, scalar-ness) derives from
+     * the URI in the oresmd layer, so no classification columns are stored — a reader needs the
+     * oresmd parser, not extra columns, to know what a series is.
      */
-    std::string series_type;
-
-    /**
-     * @brief Metric within the series type (e.g. SPOT, DISCOUNT, FLAT_FWD_VOLATILITY).
-     */
-    std::string metric;
-
-    /**
-     * @brief Free-text qualifier disambiguating the series within type+metric (e.g. EUR,
-     * EUR-EURIBOR-3M, or an empty string for scalars).
-     */
-    std::string qualifier;
-
-    /**
-     * @brief Coarse asset class taxonomy: FX, RATES, CREDIT, EQUITY, COMMODITY, INFLATION, BOND,
-     * CROSS_ASSET.
-     */
-    domain::asset_class asset_class = domain::asset_class::fx;
-
-    /**
-     * @brief Subclass within the asset class (e.g. SPOT, VOLATILITY, YIELD, SPREAD).
-     */
-    domain::series_subclass series_subclass = domain::series_subclass::spot;
-
-    /**
-     * @brief True when the series has no point dimension (e.g. an FX spot rate or a single fixing),
-     * false when it is curve/surface/matrix data.
-     */
-    bool is_scalar = false;
+    std::string oresmd_uri;
 
     /**
      * @brief References derivation_kind.code -- whether this series is directly observed (the

@@ -22,7 +22,6 @@
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/enums.hpp>
 
 namespace ores::marketdata::repository {
 
@@ -39,17 +38,8 @@ domain::market_series market_series_mapper::map(const market_series_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
 
-    r.series_type = v.series_type;
+    r.oresmd_uri = v.oresmd_uri;
 
-
-    r.metric = v.metric;
-
-
-    r.qualifier = v.qualifier;
-
-    r.asset_class = rfl::string_to_enum<domain::asset_class>(v.asset_class).value();
-    r.series_subclass = rfl::string_to_enum<domain::series_subclass>(v.series_subclass).value();
-    r.is_scalar = v.is_scalar;
     r.derivation_kind = v.derivation_kind;
     r.derivation_config_id = boost::lexical_cast<boost::uuids::uuid>(v.derivation_config_id);
     r.derivation_config_version = v.derivation_config_version;
@@ -73,17 +63,8 @@ market_series_entity market_series_mapper::map(const domain::market_series& v) {
     r.party_id = boost::uuids::to_string(v.party_id);
 
 
-    r.series_type = v.series_type;
+    r.oresmd_uri = v.oresmd_uri;
 
-
-    r.metric = v.metric;
-
-
-    r.qualifier = v.qualifier;
-
-    r.asset_class = rfl::enum_to_string(v.asset_class);
-    r.series_subclass = rfl::enum_to_string(v.series_subclass);
-    r.is_scalar = v.is_scalar;
     r.derivation_kind = v.derivation_kind;
     r.derivation_config_id = boost::uuids::to_string(v.derivation_config_id);
     r.derivation_config_version = v.derivation_config_version;

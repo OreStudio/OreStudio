@@ -62,11 +62,12 @@ std::vector<std::chrono::year_month_day> fomc_meeting_dates(ores::database::cont
     return out;
 }
 
-// The tenor convention a curve's source series resolves under, selected by
-// the series qualifier: the FOMC raw grid (e.g. "USD/SOFR-FOMC") resolves
-// under RATES_SPOT_FOMC; everything else under RATES_SPOT_FORWARD.
-const char* tenor_convention_code_for(const std::string& qualifier) {
-    return qualifier.ends_with("-FOMC") ? "RATES_SPOT_FOMC" : "RATES_SPOT_FORWARD";
+// The tenor convention a curve's source series resolves under, selected by the
+// series' oresmd URI: the FOMC raw grid (e.g.
+// "oresmd://ir/usd?index=sofr&tenor=fomc&type=fixing") resolves under
+// RATES_SPOT_FOMC; everything else under RATES_SPOT_FORWARD.
+const char* tenor_convention_code_for(const std::string& uri) {
+    return uri.find("&tenor=fomc") != std::string::npos ? "RATES_SPOT_FOMC" : "RATES_SPOT_FORWARD";
 }
 
 curve_republish_refdata_context build_refdata_context(ores::database::context ctx,
@@ -79,7 +80,7 @@ curve_republish_refdata_context build_refdata_context(ores::database::context ct
     if (series.empty())
         throw std::invalid_argument("curve_republish_service: source market_series not found: " +
                                     boost::uuids::to_string(source_series_id));
-    const auto* tenor_convention_code = tenor_convention_code_for(series.front().qualifier);
+    const auto* tenor_convention_code = tenor_convention_code_for(series.front().oresmd_uri);
 
     refdata_repo::tenor_repository tenor_repo;
     refdata_repo::tenor_convention_repository convention_repo;
@@ -165,7 +166,7 @@ read_pillars(ores::database::context ctx, const boost::uuids::uuid& bootstrap_co
 // config-creation task's own doc comment describes this as happening at config-creation time, but
 // no service code does it yet (see this task's own * Plan for why re-opening that task is out of
 // scope here). A missing row is a config-integrity error, not auto-fabricated: this service has
-// none of series_type/metric/qualifier to invent one from.
+// no oresmd URI to invent one from.
 void ensure_output_series_stamped(ores::database::context ctx,
                                   const ores::refdata::domain::ir_curve_bootstrap_config& config) {
     repository::market_series_repository series_repo;

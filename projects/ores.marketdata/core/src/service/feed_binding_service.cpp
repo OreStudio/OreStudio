@@ -17,6 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.marketdata.core/oresmd/oresmd_exception.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/service/feed_binding_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include <cstdint>
@@ -61,6 +63,12 @@ std::optional<domain::feed_binding> feed_binding_service::get_feed_binding(const
 void feed_binding_service::save_feed_binding(const domain::feed_binding& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Feed Binding id cannot be empty.");
+    try {
+        (void)ores::marketdata::core::oresmd_parser::parse(domain::oresmd_uri{v.oresmd_uri});
+    } catch (const ores::marketdata::core::oresmd_exception&) {
+        throw std::invalid_argument("Feed Binding oresmd_uri is not a valid oresmd URI: " +
+                                    v.oresmd_uri);
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving feed binding. " << "id: " << v.id;
     auto t = v;
     stamp(t, ctx_);
@@ -70,9 +78,16 @@ void feed_binding_service::save_feed_binding(const domain::feed_binding& v) {
 
 void feed_binding_service::save_feed_bindings(
     const std::vector<domain::feed_binding>& feed_bindings) {
-    for (const auto& e : feed_bindings)
+    for (const auto& e : feed_bindings) {
         if (e.id.is_nil())
             throw std::invalid_argument("Feed Binding id cannot be empty.");
+        try {
+            (void)ores::marketdata::core::oresmd_parser::parse(domain::oresmd_uri{e.oresmd_uri});
+        } catch (const ores::marketdata::core::oresmd_exception&) {
+            throw std::invalid_argument("Feed Binding oresmd_uri is not a valid oresmd URI: " +
+                                        e.oresmd_uri);
+        }
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << feed_bindings.size() << " feed bindings";
     auto ts = feed_bindings;
     for (auto& e : ts)

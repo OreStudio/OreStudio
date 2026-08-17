@@ -10,17 +10,22 @@
 #+entity_singular: market_series
 #+entity_plural: market_series
 #+entity_title: Market Series
-#+brief: Catalog entry identifying what is being observed (series type, metric, qualifier, asset class).
+#+brief: Catalog entry identifying what is being observed, by its canonical oresmd URI.
 #+created: 2026-06-30
-#+updated: 2026-06-30
+#+updated: 2026-08-11
 
 A catalog entry for a market data series — it records what is being observed:
 a yield curve, vol surface, spot rate, fixing index, or similar. Standard
 temporal reference data; changes infrequently so a regular table with GIST
 exclusion is appropriate.
 
-Every ORE market data key follows the skeleton =TYPE / METRIC / QUALIFIER=;
-=asset_class= and =series_subclass= carry the coarse taxonomy for filtering.
+Identity is the canonical oresmd URI (e.g.
+=oresmd://ir/eur?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y=).
+Classification (asset class, subclass, scalar-ness) derives from the URI in
+the oresmd layer, not from stored columns. The URI is read and written
+end-to-end: the import boundaries project ORE keys into URIs via
+=oresmd_projections::from_ore_key= / =from_index_name=, and the oresmd
+parser canonicalises before persistence.
 
 =derivation_kind=/=derivation_config_id=/=derivation_config_version= mark
 whether this series is directly observed (the sentinel =OBSERVED=) or
@@ -65,98 +70,19 @@ Set server-side from the authenticated session. Enforced by RLS.
 ctx.generate_uuid()
 #+end_src
 
-** series_type
+** oresmd_uri
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
 :natural_key: true
 :END:
 
-ORE market data type token (e.g. =FXSpot=, =YieldCurve=, =FXVolatility=).
-
-** metric
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:natural_key: true
-:END:
-
-Metric within the series type (e.g. =SPOT=, =DISCOUNT=, =FLAT_FWD_VOLATILITY=).
-
-** qualifier
-:PROPERTIES:
-:type:     text
-:cpp_type: std::string
-:natural_key: true
-:END:
-
-Free-text qualifier disambiguating the series within type+metric (e.g. =EUR=,
-=EUR-EURIBOR-3M=, or an empty string for scalars).
-
-** asset_class
-:PROPERTIES:
-:type:          text
-:cpp_type:      domain::asset_class
-:is_enum:       true
-:nullable:      false
-:default_value: fx
-:END:
-
-Coarse asset class taxonomy: =FX=, =RATES=, =CREDIT=, =EQUITY=, =COMMODITY=,
-=INFLATION=, =BOND=, =CROSS_ASSET=.
-
-#+begin_src cpp :name generator
-// Cycled deterministically (not left uninitialized) -- an unset enum here
-// previously fed rfl::enum_to_string() a garbage value, flagged by the
-// nightly Valgrind run as an uninitialized-memory read (see PR #1412 /
-// task_fix_market_series_generator_uninitialized_enums).
-[idx]{
-    static constexpr domain::asset_class classes[] = {
-        domain::asset_class::fx,        domain::asset_class::rates,
-        domain::asset_class::credit,    domain::asset_class::equity,
-        domain::asset_class::commodity, domain::asset_class::inflation,
-        domain::asset_class::bond,      domain::asset_class::cross_asset};
-    return classes[static_cast<std::size_t>(idx) % std::size(classes)];
-}()
-#+end_src
-
-** series_subclass
-:PROPERTIES:
-:type:          text
-:cpp_type:      domain::series_subclass
-:is_enum:       true
-:nullable:      false
-:default_value: spot
-:END:
-
-Subclass within the asset class (e.g. =SPOT=, =VOLATILITY=, =YIELD=, =SPREAD=).
-
-#+begin_src cpp :name generator
-// Cycled deterministically -- see the asset_class generator above for why.
-[idx]{
-    static constexpr domain::series_subclass subclasses[] = {
-        domain::series_subclass::spot,         domain::series_subclass::forward,
-        domain::series_subclass::volatility,   domain::series_subclass::yield,
-        domain::series_subclass::basis,        domain::series_subclass::fra,
-        domain::series_subclass::xccy,         domain::series_subclass::spread,
-        domain::series_subclass::index_credit, domain::series_subclass::recovery,
-        domain::series_subclass::swap,         domain::series_subclass::capfloor,
-        domain::series_subclass::seasonality,  domain::series_subclass::price,
-        domain::series_subclass::correlation};
-    return subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)];
-}()
-#+end_src
-
-** is_scalar
-:PROPERTIES:
-:type:          boolean
-:cpp_type:      bool
-:nullable:      false
-:default_value: false
-:END:
-
-True when the series has no point dimension (e.g. an FX spot rate or a single
-fixing), false when it is curve/surface/matrix data.
+Canonical oresmd URI identifying this series (e.g.
+=oresmd://ir/eur?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y=).
+One URI per series; the natural key is (party, uri). Classification (asset
+class, subclass, scalar-ness) derives from the URI in the oresmd layer, so
+no classification columns are stored — a reader needs the oresmd parser,
+not extra columns, to know what a series is.
 
 ** derivation_kind
 :PROPERTIES:
@@ -223,11 +149,7 @@ The derivation config's version this series was produced under -- =0=
 
 | expression          |
 |---------------------|
-| "series_type" <> '' |
-| "metric" <> ''      |
-| "qualifier" <> ''   |
-| "asset_class" <> '' |
-| "series_subclass" <> '' |
+| "oresmd_uri" <> ''  |
 | ("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn() and "derivation_config_version" <> 0) |
 
 * Insert trigger
@@ -235,7 +157,6 @@ The derivation config's version this series was produced under -- =0=
 
 | column          | validation_function                        |
 |-----------------+---------------------------------------------|
-| asset_class     | ores_refdata_validate_asset_class_code_fn  |
 | derivation_kind | ores_refdata_validate_derivation_kind_fn   |
 
 * C++
@@ -253,20 +174,18 @@ The derivation config's version this series was produced under -- =0=
 :entity_plural_words:   market series
 :END:
 
-*** read_latest_by_type
+*** read_latest_by_uri
 :PROPERTIES:
 :ID: C4F82E58-B3D7-4A29-8F6E-1D9C0B2E7A41
 :END:
 
-Reads the latest market series matching =series_type=, =metric=, and
-=qualifier=. When =party_id= is non-empty, scopes the result to that
-party. Used by the ingest loop to find or create the series for each
-incoming tick.
+Reads the latest market series matching =oresmd_uri=. When =party_id= is
+non-empty, scopes the result to that party. Used by the ingest loop to
+find or create the series for each incoming tick.
 
 #+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
-std::vector<domain::market_series> read_latest_by_type(context ctx,
-    const std::string& series_type, const std::string& metric,
-    const std::string& qualifier, const std::string& party_id = {});
+std::vector<domain::market_series> read_latest_by_uri(context ctx,
+    const std::string& oresmd_uri, const std::string& party_id = {});
 #+end_src
 
 #+begin_src cpp :name impl_includes :implements 6141050C-0ED4-4680-B387-7DDDA3A69806
@@ -275,10 +194,8 @@ std::vector<domain::market_series> read_latest_by_type(context ctx,
 
 #+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
 std::vector<domain::market_series>
-market_series_repository::read_latest_by_type(context ctx, const std::string& series_type,
-                                              const std::string& metric,
-                                              const std::string& qualifier,
-                                              const std::string& party_id) {
+market_series_repository::read_latest_by_uri(context ctx, const std::string& oresmd_uri,
+                                             const std::string& party_id) {
     static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
 
@@ -286,32 +203,28 @@ market_series_repository::read_latest_by_type(context ctx, const std::string& se
         const auto query = sqlgen::read<std::vector<market_series_entity>> |
                            where("tenant_id"_c == tid && "party_id"_c == party_id &&
                                  "valid_to"_c == max.value() &&
-                                 "series_type"_c == series_type && "metric"_c == metric &&
-                                 "qualifier"_c == qualifier) |
+                                 "oresmd_uri"_c == oresmd_uri) |
                            order_by("id"_c);
         return execute_read_query<market_series_entity, domain::market_series>(
             ctx, query,
             [](const auto& entities) { return market_series_mapper::map(entities); },
-            lg(), "Reading latest market series by type and party");
+            lg(), "Reading latest market series by uri and party");
     }
 
     const auto query = sqlgen::read<std::vector<market_series_entity>> |
                        where("tenant_id"_c == tid && "valid_to"_c == max.value() &&
-                             "series_type"_c == series_type && "metric"_c == metric &&
-                             "qualifier"_c == qualifier) |
+                             "oresmd_uri"_c == oresmd_uri) |
                        order_by("id"_c);
     return execute_read_query<market_series_entity, domain::market_series>(
         ctx, query,
         [](const auto& entities) { return market_series_mapper::map(entities); },
-        lg(), "Reading latest market series by type");
+        lg(), "Reading latest market series by uri");
 }
 #+end_src
 
 ** Domain includes
 
 #+begin_src cpp :name includes
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/nil_generator.hpp>
 #include <chrono>

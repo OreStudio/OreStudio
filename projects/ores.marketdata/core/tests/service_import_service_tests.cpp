@@ -68,7 +68,7 @@ TEST_CASE("import_with_duplicates_are_errors_skips_only_the_affected_section", t
     // Market data has a duplicate; fixings does not.
     req.market_data_content = "20160205 FX/RATE/EUR/CHF 1.0\n"
                               "20160205 FX/RATE/EUR/CHF 1.5\n";
-    req.fixings_content = "2016-02-05 EUR-EONIA 0.001\n";
+    req.fixings_content = "2016-02-05 EUR-ESTR 0.001\n";
     req.source = "test.import_service";
     req.duplicates_are_errors = true;
 
@@ -104,16 +104,16 @@ TEST_CASE("import_defaults_point_id_to_spot_for_scalar_series", tags) {
     REQUIRE(resp.success);
     REQUIRE(resp.observation_count == 1);
 
-    const auto series = series_repo.read_latest_by_type(h.context(), "FX", "RATE", "EUR/USD");
+    const auto series =
+        series_repo.read_latest_by_uri(h.context(), "oresmd://fx/eurusd?type=quote&quote=spot");
     REQUIRE(series.size() == 1);
-    CHECK(series.front().is_scalar);
 
     const auto observations = obs_repo.read_latest(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
     CHECK(observations.front().point_id == "SPOT");
 }
 
-TEST_CASE("import_leaves_point_id_empty_for_non_scalar_series_with_short_key", tags) {
+TEST_CASE("import_preserves_the_point_id_of_a_non_scalar_series", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -123,11 +123,10 @@ TEST_CASE("import_leaves_point_id_empty_for_non_scalar_series_with_short_key", t
     ores::marketdata::repository::market_observations_repository obs_repo;
 
     ores::marketdata::messaging::import_market_data_request req;
-    // IR_SWAP has qualifier_depth 3 (currency/index_tenor/fixed_freq), so a
-    // key with only 2 qualifier segments is short: decompose_key treats it
-    // as a malformed/no-point_id key (not a scalar quote), and the import
-    // must not mislabel it as "SPOT".
-    req.market_data_content = "20160205 IR_SWAP/RATE/EUR/2D/1D 0.01\n";
+    // A full IR_SWAP key (6 segments) maps to an identifier carrying a
+    // point; the observation keeps the key's point rather than being
+    // mislabelled as "SPOT".
+    req.market_data_content = "20160205 IR_SWAP/RATE/EUR/2D/3M/PAR_RATE 0.01\n";
     req.source = "test.import_service";
 
     const auto resp = svc.import(req);
@@ -135,14 +134,39 @@ TEST_CASE("import_leaves_point_id_empty_for_non_scalar_series_with_short_key", t
     REQUIRE(resp.success);
     REQUIRE(resp.observation_count == 1);
 
-    const auto series =
-        series_repo.read_latest_by_type(h.context(), "IR_SWAP", "RATE", "EUR/2D/1D");
+    const auto series = series_repo.read_latest_by_uri(
+        h.context(), "oresmd://ir/eur?tenor=3m&type=quote&metric=rate&quote=ir_swap&point=par_rate");
     REQUIRE(series.size() == 1);
-    CHECK_FALSE(series.front().is_scalar);
 
     const auto observations = obs_repo.read_latest(h.context(), series.front().id);
     REQUIRE(observations.size() == 1);
-    CHECK(observations.front().point_id.empty());
+    CHECK(observations.front().point_id == "PAR_RATE");
+}
+
+TEST_CASE("import_drops_unmappable_ore_keys_with_a_warning", tags) {
+    auto lg(make_logger(test_suite));
+
+    database_helper h;
+    ores::nats::service::nats_client auth_nats;
+    import_service svc(h.context(), auth_nats);
+    ores::marketdata::repository::market_series_repository series_repo;
+
+    ores::marketdata::messaging::import_market_data_request req;
+    // A short IR_SWAP key (5 segments) has no oresmd identifier (the
+    // inverse projection needs all six), and BOND has no oresmd mapping at
+    // all. Neither row can be represented as a URI, so both are dropped --
+    // visibly, via the warning list -- rather than guessed at.
+    req.market_data_content = "20160205 IR_SWAP/RATE/EUR/2D/1D 0.01\n"
+                              "20160205 BOND/RATE/USD/1.5 99.5\n";
+    req.source = "test.import_service";
+
+    const auto resp = svc.import(req);
+
+    REQUIRE(resp.success);
+    REQUIRE(resp.observation_count == 0);
+    REQUIRE(resp.warnings.size() == 2);
+    CHECK(resp.warnings[0].find("IR_SWAP/RATE/EUR/2D/1D") != std::string::npos);
+    CHECK(resp.warnings[1].find("BOND/RATE/USD/1.5") != std::string::npos);
 }
 
 TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable", tags) {
@@ -169,6 +193,7 @@ TEST_CASE("import_leaves_fx_qualifier_untouched_when_currency_pairs_unreachable"
     REQUIRE(resp.observation_count == 1);
     CHECK(resp.warnings.empty());
 
-    const auto series = series_repo.read_latest_by_type(h.context(), "FX", "RATE", "USD/GBP");
+    const auto series =
+        series_repo.read_latest_by_uri(h.context(), "oresmd://fx/usdgbp?type=quote&quote=spot");
     REQUIRE(series.size() == 1);
 }

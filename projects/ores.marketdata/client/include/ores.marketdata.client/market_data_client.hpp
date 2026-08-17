@@ -78,13 +78,13 @@ public:
      * @brief Find an existing market series by its natural key.
      *
      * Fetches a generous page of series (limit 10000) and scans for an exact
-     * (series_type, metric, qualifier) match; there is no dedicated
-     * lookup-by-key request on the protocol yet.
+     * oresmd_uri match; there is no dedicated lookup-by-key request on the
+     * protocol yet.
      *
      * @return The matching series, std::nullopt if none found, or an error.
      */
-    [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string> find_series(
-        const std::string& series_type, const std::string& metric, const std::string& qualifier);
+    [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string>
+    find_series_by_uri(const std::string& oresmd_uri);
 
     /**
      * @brief List observations for a series (limit 10000, first page).
@@ -110,7 +110,7 @@ public:
 
     /**
      * @brief List feed bindings (limit 10000, first page) — enough for a
-     * caller checking whether a given (ore_key, source_name) is already bound.
+     * caller checking whether a given (oresmd_uri, source_name) is already bound.
      */
     [[nodiscard]] std::expected<std::vector<domain::feed_binding>, std::string>
     list_feed_bindings();

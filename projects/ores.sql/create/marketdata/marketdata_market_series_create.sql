@@ -29,8 +29,13 @@
  * temporal reference data; changes infrequently so a regular table with GIST
  * exclusion is appropriate.
  *
- * Every ORE market data key follows the skeleton TYPE / METRIC / QUALIFIER;
- * asset_class and series_subclass carry the coarse taxonomy for filtering.
+ * Identity is the canonical oresmd URI (e.g.
+ * oresmd://ir/eur?tenor3m&typequote&quoteir_swap&metricrate&point5y).
+ * Classification (asset class, subclass, scalar-ness) derives from the URI in
+ * the oresmd layer, not from stored columns. The URI is read and written
+ * end-to-end: the import boundaries project ORE keys into URIs via
+ * oresmd_projections::from_ore_key= / from_index_name, and the oresmd
+ * parser canonicalises before persistence.
  *
  * derivation_kind/derivation_config_id/derivation_config_version mark
  * whether this series is directly observed (the sentinel OBSERVED) or
@@ -47,12 +52,7 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "series_type" text not null,
-    "metric" text not null,
-    "qualifier" text not null,
-    "asset_class" text not null,
-    "series_subclass" text not null,
-    "is_scalar" boolean not null,
+    "oresmd_uri" text not null,
     "derivation_kind" text not null,
     "derivation_config_id" uuid not null,
     "derivation_config_version" integer not null default 0,
@@ -70,17 +70,13 @@ create table if not exists "ores_marketdata_market_series_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("series_type" <> ''),
-    check ("metric" <> ''),
-    check ("qualifier" <> ''),
-    check ("asset_class" <> ''),
-    check ("series_subclass" <> ''),
+    check ("oresmd_uri" <> ''),
     check (("derivation_kind" = 'OBSERVED' and "derivation_config_id" = ores_utility_nil_uuid_fn() and "derivation_config_version" = 0) or ("derivation_kind" <> 'OBSERVED' and "derivation_config_id" <> ores_utility_nil_uuid_fn() and "derivation_config_version" <> 0))
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists market_series_party_id_series_type_metric_qualifier_uniq_idx
-on "ores_marketdata_market_series_tbl" (tenant_id, party_id, series_type, metric, qualifier)
+create unique index if not exists market_series_party_id_oresmd_uri_uniq_idx
+on "ores_marketdata_market_series_tbl" (tenant_id, party_id, oresmd_uri)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
@@ -103,9 +99,6 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-
-    -- Validate asset_class
-    NEW.asset_class := ores_refdata_validate_asset_class_code_fn(NEW.tenant_id, NEW.asset_class);
 
     -- Validate derivation_kind
     NEW.derivation_kind := ores_refdata_validate_derivation_kind_fn(NEW.tenant_id, NEW.derivation_kind);

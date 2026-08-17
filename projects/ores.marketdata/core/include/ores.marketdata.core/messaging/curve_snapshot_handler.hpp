@@ -58,8 +58,8 @@ using namespace ores::logging;
 /**
  * @brief NATS message handler for curve snapshot / curve-evolution queries -- read-only, thin
  * wrappers around market_observations_repository::read_as_of()/read_as_of_buckets(), with
- * series_id resolved server-side from (series_type, metric, qualifier) so callers don't need
- * to know internal series ids.
+ * series_id resolved server-side from the oresmd URI so callers don't need to know internal
+ * series ids.
  */
 class curve_snapshot_handler {
 public:
@@ -82,8 +82,7 @@ public:
         if (auto req = decode<get_curve_snapshot_request>(msg)) {
             try {
                 repository::market_series_repository series_repo;
-                auto series = series_repo.read_latest_by_type(
-                    req_ctx, req->series_type, req->metric, req->qualifier);
+                auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
                 if (!series.empty()) {
                     repository::market_observations_repository obs_repo;
                     resp.observations = obs_repo.read_as_of(
@@ -126,8 +125,7 @@ public:
             }
             try {
                 repository::market_series_repository series_repo;
-                auto series = series_repo.read_latest_by_type(
-                    req_ctx, req->series_type, req->metric, req->qualifier);
+                auto series = series_repo.read_latest_by_uri(req_ctx, req->oresmd_uri);
                 if (!series.empty()) {
                     repository::market_observations_repository obs_repo;
                     resp.buckets =

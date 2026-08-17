@@ -2,23 +2,25 @@
 :ID: D1E2F3A4-B5C6-7890-D1E2-F3A4B5C67890
 :END:
 #+title: ores.marketdata.feed_binding
-#+description: Codegen entity model for the marketdata feed_bindings table; binds an official ORE key to one raw synthetic producer channel.
+#+description: Codegen entity model for the marketdata feed_bindings table; binds an official oresmd market series URI to one raw synthetic producer channel.
 #+type: ores.codegen.entity
 #+component: marketdata
 #+filetags: :model:entity:marketdata:
 #+entity_singular: feed_binding
 #+entity_plural: feed_bindings
 #+entity_title: Feed Binding
-#+brief: Persisted mapping that binds an official ORE market series (ore_key) to one raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
+#+brief: Persisted mapping that binds an official oresmd market series URI to one raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
 #+created: 2026-06-30
-#+updated: 2026-06-30
+#+updated: 2026-08-11
 
 A feed binding records which raw producer channel feeds an official market
-series. The marketdata service reads all enabled bindings at startup into the
-ingest loop's binding cache -- the source of tenant/party/ore_key identity for
-fx_spot ticks, which are not self-describing -- persists each arriving tick as
-a =market_observation=, and republishes on the official tenant-scoped stream
-=marketdata.v1.tick.<tenant_id>.<ore_key>=.
+series. The marketdata service reads all enabled bindings at startup, subscribes
+to =synthetic.v1.tick.<source_name>=, persists each arriving tick as a
+=market_observation=, and republishes on the official tenant-scoped stream
+=marketdata.v1.tick.<tenant_id>.<ore_key>= — where =ore_key= is the forward
+projection (=to_quote_key= / =to_index_name=) of the bound URI. The wire
+subject itself stays ORE-shaped until the story's wire task; the URI is its
+projection source.
 
 Rebinding (editing =source_name=) switches the ingest source without restarting
 producers. Setting =enabled = false= suspends the subscription without deleting
@@ -58,14 +60,17 @@ Set server-side from the authenticated session. Enforced by RLS.
 ctx.generate_uuid()
 #+end_src
 
-** ore_key
+** oresmd_uri
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
 :END:
 
-Official ORE market data key for the series being bound (e.g. =FX/RATE/EUR/USD=).
+Canonical oresmd URI of the series being bound (e.g.
+=oresmd://ir/eur?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y=).
+The natural key is (party, uri). Written by the bind seam and the ingest
+loop; the publish subject is derived from it by forward projection.
 
 ** source_name
 :PROPERTIES:
@@ -93,8 +98,8 @@ Coarse asset class taxonomy of the series being bound (=FX=, =RATES=,
 so FX-only and IR-only consumers of the binding list (e.g. the FX Spot
 grid) can filter to the kind they actually expect. Set client-side at
 bind time from the config being bound; soft FK to
-=refdata.asset_class_code= (same taxonomy already used by
-=market_series.asset_class=), not a hard FK. Defaults to =fx= (all
+=refdata.asset_class_code= (the taxonomy the oresmd layer classifies
+URIs into), not a hard FK. Defaults to =fx= (all
 pre-existing bindings are FX today) so any write path that doesn't set
 it explicitly -- e.g. the generic Feed Bindings admin dialog, which
 has no field for it -- gets a safe value instead of an uninitialized
@@ -122,7 +127,7 @@ binding. Setting to false suspends ingestion without removing the binding record
 
 | expression       |
 |------------------|
-| "ore_key" <> ''  |
+| "oresmd_uri" <> ''  |
 | "source_name" <> '' |
 | "asset_class" <> '' |
 
@@ -204,7 +209,7 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 :protocol_include:        ores.marketdata.api/messaging/feed_binding_protocol.hpp
 :collection_name:         feed_bindings
 :item_var:                feed_binding
-:key_field:               ore_key
+:key_field:               oresmd_uri
 :has_uuid_primary_key:    true
 :get_request_class:       marketdata::messaging::get_feed_bindings_request
 :get_response_class:      marketdata::messaging::get_feed_bindings_response
@@ -227,17 +232,17 @@ feed_binding_repository::read_latest_all_tenants(context ctx) {
 
 *** Detail fields
 
-| field       | label       | widget      | type      | is_key | is_required | placeholder       |
-|-------------+-------------+-------------+-----------+--------+-------------+-------------------|
-| ore_key     | ORE Key     | oreKeyEdit  | line_edit | true   | true        | Enter ORE key     |
-| source_name | Source Name | sourceEdit  | line_edit |        | true        | Enter source name |
-| enabled     | Enabled     | enabledEdit | check_box |        |             |                   |
+| field       | label       | widget        | type      | is_key | is_required | placeholder          |
+|-------------+-------------+---------------+-----------+--------+-------------+----------------------|
+| oresmd_uri  | ORESMD URI  | oresmdUriEdit | line_edit | true   | true        | Enter oresmd URI     |
+| source_name | Source Name | sourceEdit    | line_edit |        | true        | Enter source name   |
+| enabled     | Enabled     | enabledEdit   | check_box |        |             |                      |
 
 *** Columns (Qt model)
 
 | enum_name  | field       | header      | type    | width |
 |------------+-------------+-------------+---------+-------|
-| OreKey     | ore_key     | ORE Key     | string  | 200   |
+| OresmdUri  | oresmd_uri  | ORESMD URI  | string  | 300   |
 | SourceName | source_name | Source Name | string  | 200   |
 | Enabled    | enabled     | Enabled     | boolean | 80    |
 | Version    | version     | Version     | int     | 80    |

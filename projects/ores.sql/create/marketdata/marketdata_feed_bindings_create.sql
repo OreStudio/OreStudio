@@ -28,7 +28,10 @@
  * series. The marketdata service reads all enabled bindings at startup, subscribes
  * to synthetic.v1.tick.<source_name>, persists each arriving tick as a
  * market_observation, and republishes on the official tenant-scoped stream
- * marketdata.v1.tick.<tenant_id>.<ore_key>.
+ * marketdata.v1.tick.<tenant_id>.<ore_key> — where ore_key is the forward
+ * projection (to_quote_key / to_index_name) of the bound URI. The wire
+ * subject itself stays ORE-shaped until the story's wire task; the URI is its
+ * projection source.
  *
  * Rebinding (editing source_name) switches the ingest source without restarting
  * producers. Setting enabled  false= suspends the subscription without deleting
@@ -40,7 +43,7 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "party_id" uuid not null,
-    "ore_key" text not null,
+    "oresmd_uri" text not null,
     "source_name" text not null,
     "asset_class" text not null,
     "enabled" boolean not null,
@@ -58,14 +61,14 @@ create table if not exists "ores_marketdata_feed_bindings_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("ore_key" <> ''),
+    check ("oresmd_uri" <> ''),
     check ("source_name" <> ''),
     check ("asset_class" <> '')
 );
 
 -- Composite natural key: unique combination for active records
-create unique index if not exists feed_bindings_party_id_ore_key_source_name_uniq_idx
-on "ores_marketdata_feed_bindings_tbl" (tenant_id, party_id, ore_key, source_name)
+create unique index if not exists feed_bindings_party_id_oresmd_uri_source_name_uniq_idx
+on "ores_marketdata_feed_bindings_tbl" (tenant_id, party_id, oresmd_uri, source_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency

@@ -18,12 +18,12 @@
  *
  */
 #include "ores.marketdata.service/app/feed_ingest_loop.hpp"
-#include "ores.marketdata.api/domain/asset_class.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick.hpp"
 #include "ores.marketdata.api/domain/ir_curve_tick.hpp"
 #include "ores.marketdata.api/domain/market_observation.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.marketdata.core/repository/feed_binding_repository.hpp"
 #include "ores.marketdata.core/repository/market_observations_repository.hpp"
@@ -36,7 +36,6 @@
 #include <algorithm>
 #include <chrono>
 #include <format>
-#include <rfl/enums.hpp>
 #include <stdexcept>
 #include <string_view>
 
@@ -46,6 +45,9 @@ using namespace ores::logging;
 
 namespace {
 
+using ores::marketdata::core::oresmd_parser;
+using ores::marketdata::core::oresmd_projections;
+
 // One wildcard over the unified tick family: synthetic.v1.tick.<kind>.<source_name>.
 // '>' (multi-token wildcard), not '*' (single-token): source_name is dotted
 // (e.g. "ir_curve.usd.sofr"), so the subject has more than one token after the
@@ -53,23 +55,36 @@ namespace {
 // prefix never matches.
 constexpr auto* unified_wildcard_subject = "synthetic.v1.tick.>";
 
-// "FX/RATE/EUR/USD" → "marketdata.v1.tick.fx.rate.eur.usd"
-std::string ore_key_to_publish_subject(const std::string& tenant_id_str, std::string ore_key) {
-    std::transform(ore_key.begin(), ore_key.end(), ore_key.begin(), [](unsigned char c) {
+// "oresmd://fx/eurusd?type=quote&quote=spot" → "marketdata.v1.tick.fx.rate.eur.usd"
+// The wire subject stays ORE-shaped (it goes oresmd-native in a later story step);
+// it is the forward projection of the series' oresmd URI — the quote key for
+// quote identities, the index name for fixing identities.
+std::string uri_to_publish_subject(const std::string& tenant_id_str,
+                                   const std::string& oresmd_uri) {
+    const auto id = oresmd_parser::parse(domain::oresmd_uri{oresmd_uri});
+    auto key = oresmd_projections::to_quote_key(id);
+    if (!key)
+        key = oresmd_projections::to_index_name(id);
+    if (!key)
+        throw std::invalid_argument("URI has no ORE subject projection: " + oresmd_uri);
+    std::string subject = *key;
+    std::transform(subject.begin(), subject.end(), subject.begin(), [](unsigned char c) {
         return static_cast<char>(std::tolower(c));
     });
-    std::replace(ore_key.begin(), ore_key.end(), '/', '.');
-    return "marketdata.v1.tick." + tenant_id_str + "." + ore_key;
+    std::replace(subject.begin(), subject.end(), '/', '.');
+    return "marketdata.v1.tick." + tenant_id_str + "." + subject;
 }
 
-// "FX/RATE/EUR/USD" → {series_type="FX", metric="RATE", qualifier="EUR/USD"} -- thin
-// throwing adapter over the shared oresmd split, preserving this file's existing
-// try/catch-based error handling at both call sites.
-ores::marketdata::core::market_series_key parse_ore_key(const std::string& ore_key) {
-    auto kp = ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
-    if (!kp)
-        throw std::invalid_argument("Unparseable ORE key: " + ore_key);
-    return *kp;
+// "USD/SOFR-FOMC" (the curve-family tick's qualifier) → the canonical oresmd
+// URI of the series it feeds. "USD-SOFR-FOMC" is the index name; its inverse
+// projection is the fixing identity the raw grid is observed against.
+std::string uri_from_qualifier(const std::string& qualifier) {
+    std::string index_name = qualifier;
+    std::replace(index_name.begin(), index_name.end(), '/', '-');
+    const auto id = oresmd_projections::from_index_name(index_name);
+    if (!id)
+        throw std::invalid_argument("qualifier has no oresmd URI projection: " + qualifier);
+    return oresmd_parser::to_uri(*id).value;
 }
 
 } // namespace
@@ -108,10 +123,10 @@ void feed_ingest_loop::refresh() {
         if (!b.enabled)
             continue;
         binding_record rec;
-        rec.ore_key = b.ore_key;
+        rec.oresmd_uri = b.oresmd_uri;
         rec.tenant_id_str = b.tenant_id.to_string();
         rec.party_id = b.party_id;
-        rec.publish_subject = ore_key_to_publish_subject(rec.tenant_id_str, rec.ore_key);
+        rec.publish_subject = uri_to_publish_subject(rec.tenant_id_str, rec.oresmd_uri);
         bindings_.emplace(b.source_name, std::move(rec));
         unbound_warned_.erase(b.source_name);
     }
@@ -187,7 +202,7 @@ void feed_ingest_loop::ingest_fx_spot(const ores::nats::message& msg,
                      std::make_shared<feed_stats>())
                  .first->second;
         if (st->series_identity.empty()) {
-            st->series_identity = binding.ore_key;
+            st->series_identity = binding.oresmd_uri;
             st->nats_subject = msg.subject;
         }
     }
@@ -195,7 +210,7 @@ void feed_ingest_loop::ingest_fx_spot(const ores::nats::message& msg,
     st->last_tick_rep.store(now_rep, std::memory_order_relaxed);
 
     if (prev_count == 0) {
-        BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: source='" << binding.ore_key
+        BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: uri='" << binding.oresmd_uri
                                   << "' subject='" << binding.publish_subject
                                   << "' mid=" << tick->mid;
     }
@@ -204,25 +219,18 @@ void feed_ingest_loop::ingest_fx_spot(const ores::nats::message& msg,
     // the republished stream cannot diverge from the observations table.
     bool persisted = false;
     try {
-        const auto kp = parse_ore_key(binding.ore_key);
-        // Scalar FX spot series: no curve coordinate.
-        const bool is_scalar = true;
         persisted = persist_tick_observation(
             ctx_,
             ores::utility::uuid::tenant_id::from_string(binding.tenant_id_str).value(),
             binding.party_id,
-            kp.series_type,
-            kp.metric,
-            kp.qualifier,
-            std::nullopt,
-            is_scalar,
+            binding.oresmd_uri,
             tick->datetime,
             std::to_string(tick->mid),
             source,
-            "SPOT");
+            "SPOT"); // scalar FX spot series have no tenor/surface coordinate
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error)
-            << "Failed to persist observation for " << binding.ore_key << ": " << e.what();
+            << "Failed to persist observation for " << binding.oresmd_uri << ": " << e.what();
     }
 
     // Offer the tick to the CRM as a candidate driver update,
@@ -234,20 +242,18 @@ void feed_ingest_loop::ingest_fx_spot(const ores::nats::message& msg,
     // pairs are FX-shaped, so the bridge is an fx_spot concern only.
     if (crm_bridge_) {
         try {
-            const auto kp = parse_ore_key(binding.ore_key);
-            if (kp.series_type == "FX" && kp.metric == "RATE") {
-                const auto slash = kp.qualifier.find('/');
-                if (slash != std::string::npos) {
-                    crm_bridge_->update(binding.tenant_id_str,
-                                        kp.qualifier.substr(0, slash),
-                                        kp.qualifier.substr(slash + 1),
-                                        tick->mid,
-                                        tick->datetime);
-                }
+            const auto id = oresmd_parser::parse(domain::oresmd_uri{binding.oresmd_uri});
+            if (const auto* fx = std::get_if<domain::fx_market_data_identifier>(&id);
+                fx && fx->pair.size() == 6) {
+                crm_bridge_->update(binding.tenant_id_str,
+                                    fx->pair.substr(0, 3),
+                                    fx->pair.substr(3, 3),
+                                    tick->mid,
+                                    tick->datetime);
             }
         } catch (const std::exception& e) {
             BOOST_LOG_SEV(lg(), warn)
-                << "CRM update failed for " << binding.ore_key << ": " << e.what();
+                << "CRM update failed for " << binding.oresmd_uri << ": " << e.what();
         }
     }
 
@@ -262,6 +268,18 @@ void feed_ingest_loop::ingest_ir_curve(const ores::nats::message& msg) {
         return;
     }
 
+    // The tick's qualifier is the index name with '/' spelled as '-' (e.g.
+    // "USD/SOFR-FOMC" → "USD-SOFR-FOMC"); a qualifier with no projection is
+    // dropped visibly — the callback must not let an exception escape into
+    // the NATS dispatcher.
+    std::string oresmd_uri;
+    try {
+        oresmd_uri = uri_from_qualifier(tick->qualifier);
+    } catch (const std::exception& e) {
+        BOOST_LOG_SEV(lg(), warn) << "Dropping ir_curve tick: " << e.what();
+        return;
+    }
+
     const auto now_rep = std::chrono::system_clock::now().time_since_epoch().count();
     std::shared_ptr<feed_stats> st;
     {
@@ -272,7 +290,7 @@ void feed_ingest_loop::ingest_ir_curve(const ores::nats::message& msg) {
                               std::make_shared<feed_stats>())
                  .first->second;
         if (st->series_identity.empty()) {
-            st->series_identity = tick->series_type + "/" + tick->metric + "/" + tick->qualifier;
+            st->series_identity = oresmd_uri;
             st->nats_subject = msg.subject;
         }
     }
@@ -280,29 +298,22 @@ void feed_ingest_loop::ingest_ir_curve(const ores::nats::message& msg) {
     st->last_tick_rep.store(now_rep, std::memory_order_relaxed);
 
     if (prev_count == 0) {
-        BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: series='" << st->series_identity
+        BOOST_LOG_SEV(lg(), info) << "INGEST FIRST TICK: uri='" << st->series_identity
                                   << "' subject='" << msg.subject << "' value=" << tick->value;
     }
 
     // Republish is gated on the observation write, like fx_spot — the
     // republished stream must not diverge from the observations table.
-    const std::string ore_key = tick->series_type + "/" + tick->metric + "/" + tick->qualifier;
-    // Curve series: one observation per point_id, not a scalar line.
-    const bool is_scalar = false;
     const bool persisted = persist_tick_observation(ctx_,
                                                     tick->tenant_id,
                                                     tick->party_id,
-                                                    tick->series_type,
-                                                    tick->metric,
-                                                    tick->qualifier,
-                                                    tick->subclass,
-                                                    is_scalar,
+                                                    oresmd_uri,
                                                     tick->datetime,
                                                     std::to_string(tick->value),
                                                     tick->source_name,
                                                     tick->point_id);
     if (persisted)
-        nats_.js_publish(ore_key_to_publish_subject(tick->tenant_id.to_string(), ore_key),
+        nats_.js_publish(uri_to_publish_subject(tick->tenant_id.to_string(), oresmd_uri),
                          msg.data);
 }
 
@@ -310,11 +321,7 @@ bool feed_ingest_loop::persist_tick_observation(
     const ores::database::context& ctx,
     ores::utility::uuid::tenant_id tenant_id,
     const boost::uuids::uuid& party_id,
-    const std::string& series_type,
-    const std::string& metric,
-    const std::string& qualifier,
-    std::optional<domain::series_subclass> series_subclass,
-    bool is_scalar,
+    const std::string& oresmd_uri,
     std::chrono::system_clock::time_point datetime,
     const std::string& value,
     const std::string& source,
@@ -322,37 +329,21 @@ bool feed_ingest_loop::persist_tick_observation(
     try {
         auto tenant_ctx = ctx.with_tenant(tenant_id, "ores.marketdata.service");
 
-        const std::string ore_key = series_type + "/" + metric + "/" + qualifier;
         repository::market_series_repository series_repo;
-        auto existing = series_repo.read_latest_by_type(
-            tenant_ctx, series_type, metric, qualifier, boost::uuids::to_string(party_id));
+        auto existing = series_repo.read_latest_by_uri(
+            tenant_ctx, oresmd_uri, boost::uuids::to_string(party_id));
         if (existing.empty()) {
-            BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for " << ore_key;
-
-            // One derivation for every kind: the lowercased series_type is the
-            // asset-class enum name (FX → fx, RATES → rates).
-            std::string ac_str = series_type;
-            std::transform(ac_str.begin(), ac_str.end(), ac_str.begin(), [](unsigned char c) {
-                return static_cast<char>(std::tolower(c));
-            });
+            BOOST_LOG_SEV(lg(), info) << "Auto-creating market series for " << oresmd_uri;
 
             domain::market_series series;
             series.id = uuid_gen_();
             series.tenant_id = tenant_ctx.tenant_id();
             series.party_id = party_id;
-            series.series_type = series_type;
-            series.metric = metric;
-            series.qualifier = qualifier;
-            series.asset_class =
-                rfl::string_to_enum<domain::asset_class>(ac_str).value_or(domain::asset_class::fx);
-            series.series_subclass = series_subclass.value_or(
-                rfl::string_to_enum<domain::series_subclass>(ac_str).value_or(
-                    domain::series_subclass::spot));
-            series.is_scalar = is_scalar;
+            series.oresmd_uri = oresmd_uri;
             series.modified_by = ctx.service_account();
             series.performed_by = ctx.service_account();
             series.change_reason_code = "system.initial_load";
-            series.change_commentary = ore_key + " synthetic feed auto-created";
+            series.change_commentary = oresmd_uri + " synthetic feed auto-created";
             series_repo.write(tenant_ctx, series);
             existing.push_back(std::move(series));
         }
@@ -371,8 +362,8 @@ bool feed_ingest_loop::persist_tick_observation(
         obs_repo.write(tenant_ctx, obs);
         return true;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), error) << "Failed to persist observation for " << series_type << "/"
-                                   << metric << "/" << qualifier << ": " << e.what();
+        BOOST_LOG_SEV(lg(), error) << "Failed to persist observation for " << oresmd_uri << ": "
+                                   << e.what();
         return false;
     }
 }
@@ -407,7 +398,7 @@ void feed_ingest_loop::log_status() const {
         const auto age_s = ever ? duration_cast<seconds>(now - last_tp).count() : -1LL;
 
         BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: kind='" << kind << "' source='" << source
-                                  << "' series='" << st->series_identity << "' subject='"
+                                  << "' uri='" << st->series_identity << "' subject='"
                                   << st->nats_subject << "' ticks=" << count
                                   << (ever ? std::format(" last_tick={}s ago", age_s) :
                                              " last_tick=never");

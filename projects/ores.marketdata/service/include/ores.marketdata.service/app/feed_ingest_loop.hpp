@@ -22,7 +22,6 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.service/app/crm_ingest_bridge.hpp"
 #include "ores.marketdata.service/export.hpp"
 #include "ores.nats/service/client.hpp"
@@ -50,8 +49,8 @@ namespace ores::marketdata::service::app {
  * The kind token in the subject (the factory kind string — see
  * ores.marketdata.api/domain/tick_subjects.hpp) selects the per-kind path:
  *
- * - fx_spot ticks are bound-feed ticks: identity (tenant, party, ore_key) comes
- *   from the feed_binding cache, not from the wire (fx_spot_tick is not
+ * - fx_spot ticks are bound-feed ticks: identity (tenant, party, oresmd URI)
+ *   comes from the feed_binding cache, not from the wire (fx_spot_tick is not
  *   self-describing). A tick whose source has no enabled binding is dropped
  *   with a one-time warn.
  * - ir_curve ticks are fully self-describing (tenant, party, series identity and
@@ -59,7 +58,9 @@ namespace ores::marketdata::service::app {
  *
  * Every persisted tick is republished verbatim on
  * "marketdata.v1.tick.<tenant>.<series>", the scheme existing consumers
- * (fx_spot_subscription, chart) subscribe to. Republish is gated on a
+ * (fx_spot_subscription, chart) subscribe to. The subject is the ORE-shaped
+ * forward projection of the series' oresmd URI (quote key or index name) — the
+ * wire goes oresmd-native in a later story step. Republish is gated on a
  * successful persist, so the republished stream cannot diverge from the
  * observations table.
  *
@@ -92,20 +93,14 @@ private:
     void ingest_fx_spot(const ores::nats::message& msg, std::string_view source_name);
     void ingest_ir_curve(const ores::nats::message& msg);
     /// Shared persistence for both tick kinds: resolve the market_series by its
-    /// series identity, auto-creating it when missing, then write the
-    /// observation row. Returns true when the observation was persisted, so
-    /// callers can gate side effects (republish) on a durable write.
-    /// asset_class is derived from the lowercased series_type; series_subclass
-    /// falls back to that same derivation when no wire value exists.
+    /// oresmd URI, auto-creating it when missing, then write the observation
+    /// row. Returns true when the observation was persisted, so callers can
+    /// gate side effects (republish) on a durable write.
     bool persist_tick_observation(
         const ores::database::context& ctx,
         ores::utility::uuid::tenant_id tenant_id,
         const boost::uuids::uuid& party_id,
-        const std::string& series_type,
-        const std::string& metric,
-        const std::string& qualifier,
-        std::optional<ores::marketdata::domain::series_subclass> series_subclass,
-        bool is_scalar,
+        const std::string& oresmd_uri,
         std::chrono::system_clock::time_point datetime,
         const std::string& value,
         const std::string& source,
@@ -115,7 +110,7 @@ private:
 
     /// Identity a bound fx_spot tick needs; nothing on the wire supplies it.
     struct binding_record {
-        std::string ore_key;
+        std::string oresmd_uri;
         std::string tenant_id_str;
         boost::uuids::uuid party_id;
         std::string publish_subject;

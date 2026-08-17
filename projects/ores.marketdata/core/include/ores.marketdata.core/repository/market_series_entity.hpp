@@ -43,17 +43,8 @@ struct market_series_entity {
     std::string party_id;
 
 
-    std::string series_type;
+    std::string oresmd_uri;
 
-
-    std::string metric;
-
-
-    std::string qualifier;
-
-    std::string asset_class;
-    std::string series_subclass;
-    bool is_scalar = false;
     std::string derivation_kind = "OBSERVED";
     std::string derivation_config_id;
     int derivation_config_version = 0;

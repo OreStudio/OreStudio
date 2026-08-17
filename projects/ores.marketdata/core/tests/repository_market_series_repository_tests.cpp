@@ -100,11 +100,10 @@ TEST_CASE("read_latest_market_series_by_id", tags) {
     BOOST_LOG_SEV(lg, debug) << "Read market series: " << read;
 
     REQUIRE(read.size() == 1);
-    CHECK(read[0].qualifier == target.qualifier);
-    CHECK(read[0].series_type == target.series_type);
+    CHECK(read[0].oresmd_uri == target.oresmd_uri);
 }
 
-TEST_CASE("read_latest_market_series_by_type", tags) {
+TEST_CASE("read_latest_market_series_by_uri", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
@@ -114,11 +113,11 @@ TEST_CASE("read_latest_market_series_by_type", tags) {
     auto s = generate_synthetic_market_series(ctx);
     repo.write(h.context(), s);
 
-    auto read = repo.read_latest_by_type(h.context(), s.series_type, s.metric, s.qualifier);
-    BOOST_LOG_SEV(lg, debug) << "Read by type: " << read;
+    auto read = repo.read_latest_by_uri(h.context(), s.oresmd_uri);
+    BOOST_LOG_SEV(lg, debug) << "Read by uri: " << read;
 
     REQUIRE(read.size() == 1);
-    CHECK(read[0].qualifier == s.qualifier);
+    CHECK(read[0].oresmd_uri == s.oresmd_uri);
 }
 
 TEST_CASE("read_all_versions_of_market_series", tags) {

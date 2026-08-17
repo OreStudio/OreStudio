@@ -114,11 +114,9 @@ public:
      */
     void remove(context ctx, const std::vector<std::string>& ids);
 
-    std::vector<domain::market_series> read_latest_by_type(context ctx,
-                                                           const std::string& series_type,
-                                                           const std::string& metric,
-                                                           const std::string& qualifier,
-                                                           const std::string& party_id = {});
+    std::vector<domain::market_series> read_latest_by_uri(context ctx,
+                                                          const std::string& oresmd_uri,
+                                                          const std::string& party_id = {});
 };
 
 }

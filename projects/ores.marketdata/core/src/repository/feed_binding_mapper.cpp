@@ -39,7 +39,7 @@ domain::feed_binding feed_binding_mapper::map(const feed_binding_entity& v) {
     r.party_id = boost::lexical_cast<boost::uuids::uuid>(v.party_id);
 
 
-    r.ore_key = v.ore_key;
+    r.oresmd_uri = v.oresmd_uri;
 
 
     r.source_name = v.source_name;
@@ -66,7 +66,7 @@ feed_binding_entity feed_binding_mapper::map(const domain::feed_binding& v) {
     r.party_id = boost::uuids::to_string(v.party_id);
 
 
-    r.ore_key = v.ore_key;
+    r.oresmd_uri = v.oresmd_uri;
 
 
     r.source_name = v.source_name;

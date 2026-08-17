@@ -29,7 +29,7 @@
 namespace ores::marketdata::domain {
 
 /**
- * @brief Persisted mapping that binds an official ORE market series (ore_key) to one raw synthetic
+ * @brief Persisted mapping that binds an official oresmd market series URI to one raw synthetic
  * producer channel (source_name); enables/disables the ingest loop subscription.
  *
  * A feed binding records which raw producer channel feeds an official market
@@ -37,7 +37,10 @@ namespace ores::marketdata::domain {
  * ingest loop's binding cache — the source of tenant/party/ore_key identity for
  * fx_spot ticks, which are not self-describing — persists each arriving tick as a
  * market_observation, and republishes on the official tenant-scoped stream
- * marketdata.v1.tick.<tenant_id>.<ore_key>.
+ * marketdata.v1.tick.<tenant_id>.<ore_key> — where ore_key is the forward
+ * projection (to_quote_key / to_index_name) of the bound URI. The wire
+ * subject itself stays ORE-shaped until the story's wire task; the URI is its
+ * projection source.
  *
  * Rebinding (editing source_name) switches the ingest source without restarting
  * producers. Setting enabled  false= suspends the subscription without deleting
@@ -67,9 +70,12 @@ struct feed_binding final {
     boost::uuids::uuid party_id;
 
     /**
-     * @brief Official ORE market data key for the series being bound (e.g. FX/RATE/EUR/USD).
+     * @brief Canonical oresmd URI of the series being bound (e.g.
+     * oresmd://ir/eur?tenor3m&typequote&quoteir_swap&metricrate&point5y=). The natural key is
+     * (party, uri). Written by the bind seam and the ingest loop; the publish subject is derived
+     * from it by forward projection.
      */
-    std::string ore_key;
+    std::string oresmd_uri;
 
     /**
      * @brief Unique producer identity; the subject suffix of the producer's
@@ -82,10 +88,10 @@ struct feed_binding final {
      * @brief Coarse asset class taxonomy of the series being bound (FX, RATES, CREDIT, EQUITY,
      * COMMODITY, INFLATION, BOND, CROSS_ASSET), so FX-only and IR-only consumers of the binding
      * list (e.g. the FX Spot grid) can filter to the kind they actually expect. Set client-side at
-     * bind time from the config being bound; soft FK to refdata.asset_class_code (same taxonomy
-     * already used by market_series.asset_class), not a hard FK. Defaults to fx (all pre-existing
-     * bindings are FX today) so any write path that doesn't set it explicitly -- e.g. the generic
-     * Feed Bindings admin dialog, which has no field for it -- gets a safe value instead of an
+     * bind time from the config being bound; soft FK to refdata.asset_class_code (the taxonomy the
+     * oresmd layer classifies URIs into), not a hard FK. Defaults to fx (all pre-existing bindings
+     * are FX today) so any write path that doesn't set it explicitly -- e.g. the generic Feed
+     * Bindings admin dialog, which has no field for it -- gets a safe value instead of an
      * uninitialized one.
      */
     domain::asset_class asset_class = domain::asset_class::fx;

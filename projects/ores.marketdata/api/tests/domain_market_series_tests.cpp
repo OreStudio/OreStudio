@@ -20,16 +20,16 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/market_series.hpp"
 #include "ores.marketdata.api/domain/market_series_json_io.hpp" // IWYU pragma: keep.
+#include <algorithm>
 #include <boost/uuid/uuid_generators.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <cctype>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <sstream>
 
 namespace {
 
 using ores::marketdata::domain::market_series;
-using ores::marketdata::domain::asset_class;
-using ores::marketdata::domain::series_subclass;
 
 const std::string_view test_suite("ores.marketdata.api.tests");
 const std::string tags("[domain]");
@@ -37,12 +37,7 @@ const std::string tags("[domain]");
 market_series make_eur_discount_series() {
     market_series s;
     s.version = 1;
-    s.series_type = "DISCOUNT";
-    s.metric = "RATE";
-    s.qualifier = "EUR";
-    s.asset_class = asset_class::rates;
-    s.series_subclass = series_subclass::yield;
-    s.is_scalar = false;
+    s.oresmd_uri = "oresmd://ir/eur?role=discount&type=curve";
     s.modified_by = "system";
     s.performed_by = "system";
     s.change_reason_code = "system.new";
@@ -62,12 +57,8 @@ TEST_CASE("create_market_series_with_valid_fields", tags) {
     BOOST_LOG_SEV(lg, info) << "Market series: " << sut;
 
     CHECK(sut.version == 1);
-    CHECK(sut.series_type == "DISCOUNT");
-    CHECK(sut.metric == "RATE");
-    CHECK(sut.qualifier == "EUR");
-    CHECK(sut.asset_class == asset_class::rates);
-    CHECK(sut.series_subclass == series_subclass::yield);
-    CHECK(sut.is_scalar == false);
+    CHECK(sut.oresmd_uri == "oresmd://ir/eur?role=discount&type=curve");
+    CHECK(sut.derivation_kind == "OBSERVED");
 }
 
 TEST_CASE("create_scalar_fx_spot_series", tags) {
@@ -75,12 +66,7 @@ TEST_CASE("create_scalar_fx_spot_series", tags) {
 
     market_series sut;
     sut.version = 1;
-    sut.series_type = "FX";
-    sut.metric = "RATE";
-    sut.qualifier = "EUR/USD";
-    sut.asset_class = asset_class::fx;
-    sut.series_subclass = series_subclass::spot;
-    sut.is_scalar = true;
+    sut.oresmd_uri = "oresmd://fx/eurusd?type=quote&quote=spot";
     sut.modified_by = "system";
     sut.performed_by = "system";
     sut.change_reason_code = "system.new";
@@ -88,11 +74,7 @@ TEST_CASE("create_scalar_fx_spot_series", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "FX spot series: " << sut;
 
-    CHECK(sut.series_type == "FX");
-    CHECK(sut.qualifier == "EUR/USD");
-    CHECK(sut.asset_class == asset_class::fx);
-    CHECK(sut.series_subclass == series_subclass::spot);
-    CHECK(sut.is_scalar == true);
+    CHECK(sut.oresmd_uri == "oresmd://fx/eurusd?type=quote&quote=spot");
 }
 
 TEST_CASE("market_series_json_serialisation", tags) {
@@ -106,8 +88,7 @@ TEST_CASE("market_series_json_serialisation", tags) {
     BOOST_LOG_SEV(lg, info) << "JSON output: " << json_output;
 
     CHECK(!json_output.empty());
-    CHECK(json_output.find("DISCOUNT") != std::string::npos);
-    CHECK(json_output.find("EUR") != std::string::npos);
+    CHECK(json_output.find("oresmd://ir/eur?role=discount&type=curve") != std::string::npos);
 }
 
 TEST_CASE("create_swaption_vol_series", tags) {
@@ -115,12 +96,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
 
     market_series sut;
     sut.version = 1;
-    sut.series_type = "SWAPTION";
-    sut.metric = "RATE_LNVOL";
-    sut.qualifier = "EUR";
-    sut.asset_class = asset_class::rates;
-    sut.series_subclass = series_subclass::volatility;
-    sut.is_scalar = false;
+    sut.oresmd_uri = "oresmd://ir/eur?type=vol";
     sut.modified_by = "system";
     sut.performed_by = "system";
     sut.change_reason_code = "system.new";
@@ -128,10 +104,7 @@ TEST_CASE("create_swaption_vol_series", tags) {
     sut.recorded_at = std::chrono::system_clock::now();
     BOOST_LOG_SEV(lg, info) << "Swaption vol series: " << sut;
 
-    CHECK(sut.series_type == "SWAPTION");
-    CHECK(sut.asset_class == asset_class::rates);
-    CHECK(sut.series_subclass == series_subclass::volatility);
-    CHECK(sut.is_scalar == false);
+    CHECK(sut.oresmd_uri == "oresmd://ir/eur?type=vol");
 }
 
 TEST_CASE("create_market_series_with_faker", tags) {
@@ -139,12 +112,13 @@ TEST_CASE("create_market_series_with_faker", tags) {
 
     market_series sut;
     sut.version = faker::number::integer(1, 10);
-    sut.series_type = "MM";
-    sut.metric = "RATE";
-    sut.qualifier = std::string(faker::finance::currencyCode());
-    sut.asset_class = asset_class::rates;
-    sut.series_subclass = series_subclass::yield;
-    sut.is_scalar = false;
+    const auto currency = std::string(faker::finance::currencyCode());
+    std::string ccy;
+    ccy.reserve(currency.size());
+    std::transform(currency.begin(), currency.end(), std::back_inserter(ccy),
+                   [](unsigned char c) { return std::tolower(c); });
+    sut.oresmd_uri =
+        "oresmd://ir/" + ccy + "?index=libor&tenor=3m&type=quote&metric=rate&quote=mm&point=1m";
     sut.modified_by = std::string(faker::internet::username());
     sut.performed_by = std::string(faker::internet::username());
     sut.change_reason_code = "system.new";
@@ -153,6 +127,6 @@ TEST_CASE("create_market_series_with_faker", tags) {
     BOOST_LOG_SEV(lg, info) << "Faker market series: " << sut;
 
     CHECK(sut.version >= 1);
-    CHECK(!sut.qualifier.empty());
+    CHECK(sut.oresmd_uri.find(ccy) != std::string::npos);
     CHECK(!sut.modified_by.empty());
 }

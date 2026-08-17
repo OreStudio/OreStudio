@@ -43,44 +43,7 @@ generate_synthetic_market_series(utility::generation::generation_context& ctx) {
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.party_id = ctx.generate_uuid();
-    r.series_type = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.metric = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.qualifier = std::string(faker::word::noun()) + "-" + std::to_string(idx);
-    r.asset_class = // Cycled deterministically (not left uninitialized) -- an unset enum here
-                    // previously fed rfl::enum_to_string() a garbage value, flagged by the
-                    // nightly Valgrind run as an uninitialized-memory read (see PR #1412 /
-                    // task_fix_market_series_generator_uninitialized_enums).
-        [idx] {
-            static constexpr domain::asset_class classes[] = {domain::asset_class::fx,
-                                                              domain::asset_class::rates,
-                                                              domain::asset_class::credit,
-                                                              domain::asset_class::equity,
-                                                              domain::asset_class::commodity,
-                                                              domain::asset_class::inflation,
-                                                              domain::asset_class::bond,
-                                                              domain::asset_class::cross_asset};
-            return classes[static_cast<std::size_t>(idx) % std::size(classes)];
-        }();
-    r.series_subclass = // Cycled deterministically -- see the asset_class generator above for why.
-        [idx] {
-            static constexpr domain::series_subclass subclasses[] = {
-                domain::series_subclass::spot,
-                domain::series_subclass::forward,
-                domain::series_subclass::volatility,
-                domain::series_subclass::yield,
-                domain::series_subclass::basis,
-                domain::series_subclass::fra,
-                domain::series_subclass::xccy,
-                domain::series_subclass::spread,
-                domain::series_subclass::index_credit,
-                domain::series_subclass::recovery,
-                domain::series_subclass::swap,
-                domain::series_subclass::capfloor,
-                domain::series_subclass::seasonality,
-                domain::series_subclass::price,
-                domain::series_subclass::correlation};
-            return subclasses[static_cast<std::size_t>(idx) % std::size(subclasses)];
-        }();
+    r.oresmd_uri = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.derivation_kind = std::string("OBSERVED");
     r.derivation_config_id = boost::uuids::nil_uuid();
     r.derivation_config_version = 0;

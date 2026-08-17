@@ -31,16 +31,14 @@ namespace ores::marketdata::messaging {
  * @brief Requests the latest-as-of snapshot of a curve/grid series: one observation per
  * point_id, reconstructed from independently-ticking market_observation rows.
  *
- * series_type/metric/qualifier identify the series the same way market_series is looked up
- * elsewhere (e.g. the unified feed ingest loop) -- the caller does not need to know the internal
- * series_id. Always "latest" (now) for the as-of time; no as-of-in-the-past parameter yet.
+ * oresmd_uri identifies the series the same way market_series is looked up elsewhere
+ * (e.g. the feed ingest loop) -- the caller does not need to know the internal series_id.
+ * Always "latest" (now) for the as-of time; no as-of-in-the-past parameter yet.
  */
 struct get_curve_snapshot_request {
     using response_type = struct get_curve_snapshot_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.curve-snapshot.get";
-    std::string series_type;
-    std::string metric;
-    std::string qualifier;
+    std::string oresmd_uri;
 };
 
 struct get_curve_snapshot_response {
@@ -56,9 +54,7 @@ struct get_curve_snapshot_response {
 struct get_curve_snapshot_buckets_request {
     using response_type = struct get_curve_snapshot_buckets_response;
     static constexpr std::string_view nats_subject = "marketdata.v1.curve-snapshot.buckets";
-    std::string series_type;
-    std::string metric;
-    std::string qualifier;
+    std::string oresmd_uri;
     std::int64_t bucket_seconds = 1800;
     std::uint32_t bucket_count = 5;
 };

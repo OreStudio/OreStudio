@@ -43,7 +43,7 @@ struct feed_binding_entity {
     std::string party_id;
 
 
-    std::string ore_key;
+    std::string oresmd_uri;
 
 
     std::string source_name;

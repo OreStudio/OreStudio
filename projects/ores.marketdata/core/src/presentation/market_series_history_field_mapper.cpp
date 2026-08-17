@@ -20,7 +20,6 @@
 #include "ores.marketdata.core/presentation/market_series_history_field_mapper.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
-#include <rfl/enums.hpp>
 
 namespace ores::marketdata::presentation {
 
@@ -31,12 +30,7 @@ render_market_series_fields(const domain::market_series& v) {
 
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Party ID", .value = boost::uuids::to_string(v.party_id)});
-    fields.push_back({.name = "Series Type", .value = v.series_type});
-    fields.push_back({.name = "Metric", .value = v.metric});
-    fields.push_back({.name = "Qualifier", .value = v.qualifier});
-    fields.push_back({.name = "Asset Class", .value = rfl::enum_to_string(v.asset_class)});
-    fields.push_back({.name = "Series Subclass", .value = rfl::enum_to_string(v.series_subclass)});
-    fields.push_back({.name = "Is Scalar", .value = v.is_scalar ? "true" : "false"});
+    fields.push_back({.name = "Oresmd Uri", .value = v.oresmd_uri});
     fields.push_back({.name = "Derivation Kind", .value = v.derivation_kind});
     fields.push_back(
         {.name = "Derivation Config ID", .value = boost::uuids::to_string(v.derivation_config_id)});

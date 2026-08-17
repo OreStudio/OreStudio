@@ -30,11 +30,11 @@ uses URIs.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-11                               |
 
 * Acceptance
@@ -54,9 +54,43 @@ uses URIs.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Implementation order, dependency-driven: the projections library is
+the shared boundary every other step consumes, so it comes first;
+the entity rewrites follow; hand-written consumers and the backfill
+migration land last.
+
+1. =from_index_name= in the projections library: the reverse of
+   =to_index_name=, wiring the fixing boundary the inverse-projection
+   task deferred. =FIXING/RATE/<index-name>= qualifiers (e.g.
+   ="USD-LIBOR-3M"=, ="USD-SOFR"=) become =ir= fixing identifiers.
+   Mirrors the parser's tenor rule: a term family (libor, euribor)
+   without a tenor is rejected — the forward never emits it.
+2. Entity rewrites: =market_series= drops =series_type=/=metric=/
+   =qualifier=/=asset_class=/=series_subclass=/=is_scalar=, gains one
+   =oresmd_uri= column; natural key becomes (party_id, oresmd_uri);
+   classification (asset_class, series_subclass, is_scalar) derives
+   from the URI, as generated columns only where an index needs them;
+   SQL checks and insert-trigger validations on the dropped fields
+   are removed — validation lives in the oresmd layer;
+   =read_latest_by_type= becomes =read_latest_by_uri=. =feed_binding=
+   replaces =ore_key= with =oresmd_uri=; natural key becomes
+   (party_id, oresmd_uri); =asset_class= stays (per the analysis
+   ruling); its Qt key_field and detail fields move to the URI.
+3. Hand-written consumers, URI end-to-end: the three
+   =ores.marketdata= ingest/import paths (=feed_ingest_loop=,
+   =curve_feed_ingest_loop=, =import_service=) and
+   =ores.synthetic='s =feed_controller= convert at their ORE-format
+   edges via =from_ore_key= / =from_index_name= and read/write URIs;
+   =market_data_client= gains =find_series_by_uri=; the wire subject
+   stays ORE-shaped (projected from the URI via =to_quote_key=) —
+   the wire is step 4 of the story. Qt hand-written consumers
+   display and edit URIs.
+4. Backfill migration (one-shot, committed with the feature, per the
+   =synthetic_ir_curve_generation_configs= precedent): add the
+   =oresmd_uri= columns, populate from the inverse projection of the
+   existing =ore_key= / component columns, drop the old columns and
+   the unique indexes that referenced them, recreate the indexes on
+   the URI; rows with no mapping are dropped or rejected.
 
 * Notes
 
@@ -84,3 +118,47 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped on [[id:31C868B9-306E-4282-BA8C-07E647021B34][branch]]
+=feature/identity-core-series-and-bindings= as four commits
+([ores.marketdata,ores.codegen] from_index_name inverse projection,
+[ores.marketdata,ores.sql] series and bindings store URIs,
+[ores.qt,ores.synthetic] consumers, [agile] close-out):
+
+- =market_series= now has one =oresmd_uri= column; =series_type=,
+  =metric=, =qualifier=, =asset_class=, =series_subclass=, and
+  =is_scalar= dropped. Classification (asset_class, series_subclass,
+  is_scalar) derives from the identifier at the edge (is_scalar()) or
+  from the URI host; no generated columns were needed — no index uses
+  them.
+- =feed_binding=: =ore_key= became =oresmd_uri=; =asset_class= stays
+  (the analysis ruling). The Qt key field and detail dialogs show and
+  edit the URI.
+- Natural key is (party, uri): unique indexes on
+  (tenant_id, party_id, oresmd_uri), both tables, filtered on
+  =valid_to= infinity. =read_latest_by_type= became
+  =read_latest_by_uri=.
+- Backfill: the one-shot migration
+  =marketdata_market_series_and_feed_bindings_oresmd_uri_migration.sql=
+  projects existing rows through =from_ore_key= /
+  =from_index_name= / =from_feed_qualifier= (unmappable rows
+  hard-deleted with notices), drops the old columns, checks, delete
+  rules, and indexes, and recreates the indexes on the URI. Rerun on
+  an already-migrated DB is a clean no-op (guarded).
+- End-to-end URI read/write: repositories, both ingest loops,
+  =import_service= (ORE-key and index-name edges convert via the
+  inverse projections; the key reconstruction now carries the point),
+  auto-create, the FOMC populate, =market_data_client= (new
+  =find_series_by_uri=), =ores.synthetic='s =feed_controller= and
+  =ir_curve_feed=, and every Qt consumer.
+- Validation moved to the oresmd layer: the services reject
+  non-canonical URIs via =oresmd_parser::parse=; SQL checks and the
+  insert-trigger validation on the dropped fields are gone.
+
+Acceptance met on all six points. Verification: local build clean
+(linux-clang-debug-make preset, full rebuild, ores.qt.exe linked);
+ctest 69/71 passed (~902 s). The two failures —
+=ores.iam.core.tests= and =ores.synthetic.service.tests= — are
+environmental: the NATS eventing integration tests require a live
+NATS server ("NATS subject_prefix must be set in configuration") and
+fail identically on main; unrelated to this task's surface.

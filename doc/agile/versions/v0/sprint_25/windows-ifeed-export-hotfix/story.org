@@ -38,7 +38,7 @@ Restore the Windows CI build: make ores.marketdata.api.dll export IFeed's defaul
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:175FB3D6-68C9-4ADC-8060-FB32CFAA4F4D][Scaffold story: Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | DONE | 2026-08-16 | 2026-08-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0D8C0297-E102-4D3B-9AD3-BDBD0454DE6E][Implement Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | BACKLOG | | | Initial task for: Hotfix: Windows link fails on missing IFeed ctor/dtor exports |
+| [[id:0D8C0297-E102-4D3B-9AD3-BDBD0454DE6E][Implement Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | STARTED | 2026-08-16 | | Initial task for: Hotfix: Windows link fails on missing IFeed ctor/dtor exports |
 
 * Decisions
 

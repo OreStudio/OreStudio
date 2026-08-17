@@ -22,7 +22,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/MessageBoxHelper.hpp"
 #include <QAbstractItemView>
-#include <QComboBox>
 #include <QFutureWatcher>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -37,38 +36,11 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
-#include <rfl/enums.hpp>
 
 namespace ores::qt {
 
 namespace {
 namespace md = ores::marketdata;
-
-const QStringList& asset_class_names() {
-    static const QStringList names = {
-        "fx", "rates", "credit", "equity", "commodity", "inflation", "bond", "cross_asset"};
-    return names;
-}
-
-const QStringList& subclass_names() {
-    static const QStringList names = {"spot",
-                                      "forward",
-                                      "volatility",
-                                      "yield",
-                                      "basis",
-                                      "fra",
-                                      "xccy",
-                                      "spread",
-                                      "index_credit",
-                                      "recovery",
-                                      "swap",
-                                      "capfloor",
-                                      "seasonality",
-                                      "price",
-                                      "correlation"};
-    return names;
-}
-
 }
 
 MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
@@ -83,13 +55,12 @@ MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
     auto* layout = new QVBoxLayout(this);
 
     filterEdit_ = new QLineEdit(this);
-    filterEdit_->setPlaceholderText(tr("Filter by type, metric or qualifier..."));
+    filterEdit_->setPlaceholderText(tr("Filter by oresmd URI..."));
     connect(filterEdit_, &QLineEdit::textChanged, this, &MarketSeriesPickerDialog::populateTable);
     layout->addWidget(filterEdit_);
 
-    table_ = new QTableWidget(0, 4, this);
-    table_->setHorizontalHeaderLabels(
-        {tr("Series Type"), tr("Metric"), tr("Qualifier"), tr("Subclass")});
+    table_ = new QTableWidget(0, 1, this);
+    table_->setHorizontalHeaderLabels({tr("oresmd URI")});
     table_->horizontalHeader()->setStretchLastSection(true);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -117,13 +88,9 @@ MarketSeriesPickerDialog::MarketSeriesPickerDialog(ClientManager* clientManager,
     statusLabel_->setVisible(false);
     layout->addWidget(statusLabel_);
 
-    if (!options_.initialFilter.isEmpty()) {
+    if (!options_.initialFilter.isEmpty())
         filterEdit_->setText(options_.initialFilter);
-        newQualifierEdit_->setText(options_.initialFilter);
-    }
-    newSeriesTypeEdit_->setText(options_.defaultSeriesType.isEmpty() ? "RATES" :
-                                                                       options_.defaultSeriesType);
-    newMetricEdit_->setText(options_.defaultMetric.isEmpty() ? "YIELD" : options_.defaultMetric);
+    newUriEdit_->setText(options_.defaultUri);
 
     reload();
 }
@@ -136,33 +103,18 @@ QWidget* MarketSeriesPickerDialog::buildCreatePanel() {
         new QLabel(tr("New series (when the one you need doesn't exist yet):"), panel));
 
     auto* row = new QHBoxLayout();
-    // Defaults (RATES/YIELD, or whatever the call site's Options::defaultSeriesType/defaultMetric
-    // say) are applied after construction, once options_ is set -- see the constructor body.
-    newSeriesTypeEdit_ = new QLineEdit(panel);
-    newMetricEdit_ = new QLineEdit(panel);
-    newQualifierEdit_ = new QLineEdit(panel);
-    newQualifierEdit_->setPlaceholderText(tr("Qualifier, e.g. USD/SOFR"));
-    newAssetClassCombo_ = new QComboBox(panel);
-    newAssetClassCombo_->addItems(asset_class_names());
-    newAssetClassCombo_->setCurrentText("rates");
-    newSubclassCombo_ = new QComboBox(panel);
-    newSubclassCombo_->addItems(subclass_names());
-    newSubclassCombo_->setCurrentText("yield");
-    row->addWidget(newSeriesTypeEdit_);
-    row->addWidget(newMetricEdit_);
-    row->addWidget(newQualifierEdit_);
-    row->addWidget(newAssetClassCombo_);
-    row->addWidget(newSubclassCombo_);
+    // The call site's Options::defaultUri is applied after construction, once options_ is set --
+    // see the constructor body.
+    newUriEdit_ = new QLineEdit(panel);
+    newUriEdit_->setPlaceholderText(
+        tr("oresmd URI, e.g. oresmd://ir/usd?index=sofr&type=fixing"));
+    row->addWidget(newUriEdit_);
     auto* createButton = new QPushButton(tr("Create && Select"), panel);
     connect(createButton, &QPushButton::clicked, this, &MarketSeriesPickerDialog::onCreateClicked);
     row->addWidget(createButton);
     outer->addLayout(row);
 
     return panel;
-}
-
-QString MarketSeriesPickerDialog::display_label(const marketdata::domain::market_series& s) {
-    return QString::fromStdString(s.series_type + " / " + s.metric + " / " + s.qualifier);
 }
 
 void MarketSeriesPickerDialog::showError(const QString& shortMessage, const QString& details) {
@@ -221,21 +173,13 @@ void MarketSeriesPickerDialog::populateTable() {
             boost::uuids::to_string(s.id) == options_.excludeSeriesId.toStdString())
             continue;
         if (!filter.isEmpty()) {
-            const QString haystack =
-                QString::fromStdString(s.series_type + " " + s.metric + " " + s.qualifier)
-                    .toLower();
+            const QString haystack = QString::fromStdString(s.oresmd_uri).toLower();
             if (!haystack.contains(filter))
                 continue;
         }
         const int row = table_->rowCount();
         table_->insertRow(row);
-        table_->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(s.series_type)));
-        table_->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(s.metric)));
-        table_->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(s.qualifier)));
-        table_->setItem(
-            row,
-            3,
-            new QTableWidgetItem(QString::fromStdString(rfl::enum_to_string(s.series_subclass))));
+        table_->setItem(row, 0, new QTableWidgetItem(QString::fromStdString(s.oresmd_uri)));
         table_->item(row, 0)->setData(Qt::UserRole,
                                       QString::fromStdString(boost::uuids::to_string(s.id)));
     }
@@ -270,26 +214,16 @@ void MarketSeriesPickerDialog::onCreateClicked() {
         statusLabel_->setVisible(true);
         return;
     }
-    const auto seriesType = newSeriesTypeEdit_->text().trimmed();
-    const auto metric = newMetricEdit_->text().trimmed();
-    if (seriesType.isEmpty() || metric.isEmpty()) {
-        statusLabel_->setText(tr("Series Type and Metric are required to create a new series."));
+    const auto uri = newUriEdit_->text().trimmed();
+    if (uri.isEmpty()) {
+        statusLabel_->setText(tr("The oresmd URI is required to create a new series."));
         statusLabel_->setVisible(true);
         return;
     }
 
     marketdata::domain::market_series series;
     series.id = boost::uuids::random_generator{}();
-    series.series_type = seriesType.toStdString();
-    series.metric = metric.toStdString();
-    series.qualifier = newQualifierEdit_->text().trimmed().toStdString();
-    series.asset_class = rfl::string_to_enum<md::domain::asset_class>(
-                             newAssetClassCombo_->currentText().toStdString())
-                             .value();
-    series.series_subclass = rfl::string_to_enum<md::domain::series_subclass>(
-                                 newSubclassCombo_->currentText().toStdString())
-                                 .value();
-    series.is_scalar = false;
+    series.oresmd_uri = uri.toStdString();
     series.derivation_kind = "OBSERVED";
 
     const auto request = md::messaging::save_market_series_request::from(series);

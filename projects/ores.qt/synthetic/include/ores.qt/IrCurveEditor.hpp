@@ -156,9 +156,10 @@ private:
     // own" rule (userEditedSource_).
     [[nodiscard]] QString defaultSourceName() const;
     void recomputeDefaultSourceName();
-    // Mirrors FxSpotRateEditor::recomputeOreKey(): a selectable label showing the exact
-    // feed_binding.ore_key SyntheticBindingDialog will compute for this config, so the tester
-    // doesn't have to work it out by hand when binding.
+    // Mirrors FxSpotRateEditor::recomputeOreKey(): a selectable label showing the exact ORE wire
+    // key ir_curve_feed publishes this config's ticks under, so the tester doesn't have to work
+    // it out by hand. The wire stays ORE-shaped until story step 4 (binding and series lookups
+    // already go through oresmd URIs).
     void recomputeOreKey();
     void refreshCharts();
     void syncTableFromModel();

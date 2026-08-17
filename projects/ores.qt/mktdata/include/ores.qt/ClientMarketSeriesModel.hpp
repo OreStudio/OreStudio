@@ -48,12 +48,7 @@ private:
 
 public:
     enum Column {
-        SeriesType,
-        Metric,
-        Qualifier,
-        AssetClass,
-        Subclass,
-        IsScalar,
+        Uri,
         Version,
         ModifiedBy,
         RecordedAt,
@@ -74,7 +69,7 @@ public:
 
     void refresh(bool replace = true);
     void load_page(std::uint32_t offset, std::uint32_t limit);
-    void set_series_type_filter(const std::string& series_type);
+    void set_uri_fragment_filter(const std::string& uri_fragment);
 
     const marketdata::domain::market_series* getSeries(int row) const;
     std::uint32_t total_available_count() const {
@@ -102,7 +97,7 @@ private:
     ClientManager* clientManager_;
     std::vector<marketdata::domain::market_series> entries_;
     QFutureWatcher<FetchResult>* watcher_;
-    std::string series_type_filter_;
+    std::string uri_fragment_filter_;
     std::uint32_t page_size_{500};
     std::uint32_t total_available_count_{0};
     bool is_fetching_{false};

@@ -46,11 +46,12 @@ class ImageCache;
 /**
  * @brief Live FX spot grid showing one row per market data series.
  *
- * Rows are populated from the marketdata series registry (series_type "FX",
- * subclass spot). Each row subscribes to the official tenant tick stream for
- * its ORE key and displays live mid, a 24h-change placeholder (see task
- * fx_spot_grid_24h_change), and a staleness-derived status indicator that
- * flashes green/red on each tick.
+ * Rows are populated from FX feed bindings (oresmd fx spot URIs, e.g.
+ * oresmd://fx/eurusd?type=quote&quote=spot). Each row subscribes to the
+ * official tenant tick stream for its wire key -- derived from the URI here
+ * because the wire is still ORE-shaped until story step 4 -- and displays
+ * live mid, a 24h-change placeholder (see task fx_spot_grid_24h_change), and
+ * a staleness-derived status indicator that flashes green/red on each tick.
  */
 class FxSpotGridWindow final : public QWidget {
     Q_OBJECT
@@ -72,7 +73,7 @@ public:
 private:
     struct RowState {
         int row = -1;
-        std::string ore_key;
+        std::string oresmd_uri;
         // Resolved once in buildRows() (direct or reversed lookup against
         // conventionCache_), not re-resolved on every tick -- applyTick() runs
         // on the hot path. See currency_pair_rate_formatter::format_rate's
@@ -119,9 +120,10 @@ private:
     void setupUi();
     void buildRows(const std::vector<marketdata::domain::feed_binding>& bindings);
     void subscribe(RowState& rs);
-    void
-    applyTick(const std::string& ore_key, double mid, std::chrono::system_clock::time_point when);
-    void applyError(const std::string& ore_key, const std::string& reason);
+    void applyTick(const std::string& oresmd_uri,
+                   double mid,
+                   std::chrono::system_clock::time_point when);
+    void applyError(const std::string& oresmd_uri, const std::string& reason);
     static FeedStatus deriveStatus(const RowState& rs);
 
     ClientManager* clientManager_;
@@ -129,7 +131,7 @@ private:
     QTableWidget* table_;
     QTimer* staleTimer_;
     QFutureWatcher<LoadResult>* loadWatcher_;
-    std::map<std::string, RowState> rows_; // keyed by ore_key
+    std::map<std::string, RowState> rows_; // keyed by oresmd_uri
     // Convention-aware rate formatting (decimal places, tick size), same
     // cache/formatter pair CrmCrossRatesMatrixMdiWindow uses -- see the "Rate
     // display conventions" story. Loaded once at construction.

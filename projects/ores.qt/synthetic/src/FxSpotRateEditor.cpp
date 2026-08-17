@@ -22,6 +22,7 @@
 #include "ores.dq.api/domain/change_reason_constants.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.qt/ChangeReasonDialog.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -125,7 +126,9 @@ const EngineInfo* find_engine(const std::string& code) {
 
 // Single source of truth for FX ore_key derivation, shared by the live preview
 // label (recomputeOreKey) and the actual save path (onSaveClicked) -- both
-// must agree with what oresmd_projections::to_quote_key would produce.
+// must agree with what oresmd_projections::to_quote_key would produce. The
+// wire stays ORE-shaped until story step 4; series/feed lookups already go
+// through the canonical oresmd URI instead (see onBrowseVintageClicked).
 std::optional<std::string> oreKeyFor(const std::string& base, const std::string& quote) {
     const marketdata::domain::fx_market_data_identifier id{
         .pair = base + quote, .type = marketdata::domain::instrument_type::quote};
@@ -964,7 +967,11 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
         QMessageBox::warning(this, tr("Incomplete"), tr("Pick base and quote currencies first."));
         return;
     }
-    const std::string qualifier = base + "/" + quote;
+    // The series is looked up by its canonical oresmd URI -- the same serialisation the
+    // oresmd layer emits (see oreKeyFor's sibling projections for the wire-key side).
+    const auto id = marketdata::domain::fx_market_data_identifier{
+        .pair = base + quote, .type = marketdata::domain::instrument_type::quote};
+    const std::string uri = marketdata::core::oresmd_parser::to_uri(id).value;
 
     QPointer<FxSpotRateEditor> self = this;
     auto* cm = clientManager_;
@@ -983,7 +990,7 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
         QString error;
     };
 
-    auto task = [cm, qualifier]() -> FetchResult {
+    auto task = [cm, uri]() -> FetchResult {
         namespace m = ores::marketdata::messaging;
         m::get_market_series_request series_req;
         series_req.limit = 10000;
@@ -995,7 +1002,7 @@ void FxSpotRateEditor::onBrowseVintageClicked() {
 
         std::string series_id;
         for (const auto& s : series_resp->market_series) {
-            if (s.series_type == "FX" && s.metric == "RATE" && s.qualifier == qualifier) {
+            if (s.oresmd_uri == uri) {
                 series_id = boost::uuids::to_string(s.id);
                 break;
             }

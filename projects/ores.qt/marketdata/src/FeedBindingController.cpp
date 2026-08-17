@@ -155,7 +155,7 @@ void FeedBindingController::reloadListWindow() {
 
 void FeedBindingController::onShowDetails(
     const ores::marketdata::domain::feed_binding& feed_binding) {
-    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << feed_binding.ore_key;
+    BOOST_LOG_SEV(lg(), debug) << "Show details for: " << feed_binding.oresmd_uri;
     showDetailWindow(feed_binding);
 }
 
@@ -167,7 +167,7 @@ void FeedBindingController::onAddNewRequested() {
 
 void FeedBindingController::onShowHistory(
     const ores::marketdata::domain::feed_binding& feed_binding) {
-    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << feed_binding.ore_key;
+    BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << feed_binding.oresmd_uri;
     showHistoryWindow(feed_binding);
 }
 
@@ -220,7 +220,7 @@ void FeedBindingController::showAddWindow() {
 void FeedBindingController::showDetailWindow(
     const ores::marketdata::domain::feed_binding& feed_binding) {
 
-    const QString identifier = QString::fromStdString(feed_binding.ore_key);
+    const QString identifier = QString::fromStdString(feed_binding.oresmd_uri);
     const QString key = build_window_key("details", identifier);
 
     if (try_reuse_window(key)) {
@@ -228,7 +228,7 @@ void FeedBindingController::showDetailWindow(
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << feed_binding.ore_key;
+    BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << feed_binding.oresmd_uri;
 
     auto* detailDialog = new FeedBindingDetailDialog(mainWindow_);
     wireDetailDialogCommon(detailDialog);
@@ -279,20 +279,20 @@ void FeedBindingController::showDetailWindow(
 
 void FeedBindingController::showHistoryWindow(
     const ores::marketdata::domain::feed_binding& feed_binding) {
-    const QString code = QString::fromStdString(feed_binding.ore_key);
+    const QString code = QString::fromStdString(feed_binding.oresmd_uri);
     BOOST_LOG_SEV(lg(), info) << "Opening history window for feed binding: "
-                              << feed_binding.ore_key;
+                              << feed_binding.oresmd_uri;
 
     const QString windowKey = build_window_key("history", code);
 
     // Try to reuse existing window
     if (try_reuse_window(windowKey)) {
         BOOST_LOG_SEV(lg(), info) << "Reusing existing history window for: "
-                                  << feed_binding.ore_key;
+                                  << feed_binding.oresmd_uri;
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << feed_binding.ore_key;
+    BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << feed_binding.oresmd_uri;
 
     const QString entityId = QString::fromStdString(boost::uuids::to_string(feed_binding.id));
     auto* historyDialog =
@@ -365,9 +365,9 @@ void FeedBindingController::showHistoryWindow(
 void FeedBindingController::onOpenVersion(
     const ores::marketdata::domain::feed_binding& feed_binding, int versionNumber) {
     BOOST_LOG_SEV(lg(), info) << "Opening historical version " << versionNumber
-                              << " for feed binding: " << feed_binding.ore_key;
+                              << " for feed binding: " << feed_binding.oresmd_uri;
 
-    const QString code = QString::fromStdString(feed_binding.ore_key);
+    const QString code = QString::fromStdString(feed_binding.oresmd_uri);
     const QString windowKey =
         build_window_key("version", QString("%1_v%2").arg(code).arg(versionNumber));
 
@@ -523,7 +523,7 @@ void FeedBindingController::onRevertVersion(
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
     detailWindow->setWidget(detailDialog);
     detailWindow->setWindowTitle(
-        QString("Revert Feed Binding: %1").arg(QString::fromStdString(feed_binding.ore_key)));
+        QString("Revert Feed Binding: %1").arg(QString::fromStdString(feed_binding.oresmd_uri)));
     detailWindow->setWindowIcon(IconUtils::createRecoloredIcon(Icon::ArrowRotateCounterclockwise,
                                                                IconUtils::DefaultIconColor));
 

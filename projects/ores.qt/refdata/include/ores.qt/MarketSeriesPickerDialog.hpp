@@ -29,7 +29,6 @@
 class QLineEdit;
 class QTableWidget;
 class QPushButton;
-class QComboBox;
 class QLabel;
 
 namespace ores::qt {
@@ -54,17 +53,15 @@ public:
     /// otherwise let curve_republish_service reclassify the raw input series as its own output --
     /// see ir_curve_bootstrap_config_service::save_bootstrap_config()'s own guard against this).
     struct Options {
-        /// Pre-fills the search box and the New Series qualifier field, e.g. an index qualifier
-        /// such as "USD/SOFR" -- narrows the list to that index's series by construction, rather
-        /// than showing every FX/rates/credit series in the tenant unfiltered.
+        /// Pre-fills the search box, e.g. an index qualifier such as "USD/SOFR" -- narrows the
+        /// list to that index's series by construction, rather than showing every FX/rates/credit
+        /// series in the tenant unfiltered.
         QString initialFilter;
-        /// Empty means fall back to "RATES" -- kept a plain empty default (rather than "RATES"
-        /// as a default member initializer) since a default member initializer here would need
-        /// Options to be a complete type at the constructor declaration's `= {}` below, which it
-        /// isn't yet inside the enclosing class body.
-        QString defaultSeriesType;
-        /// Empty means fall back to "YIELD" -- see defaultSeriesType's own comment.
-        QString defaultMetric;
+        /// Pre-fills the New Series URI field with the canonical oresmd URI the call site
+        /// expects, e.g. "oresmd://ir/usd?index=sofr&type=fixing" for the raw grid or
+        /// "oresmd://ir/usd?index=sofr&role=discount&type=curve" for the published curve -- empty
+        /// string means the user types the URI by hand.
+        QString defaultUri;
         /// Never shown in the existing-rows list, e.g. the Source series already picked -- empty
         /// string means no exclusion.
         QString excludeSeriesId;
@@ -88,7 +85,6 @@ private slots:
 private:
     QWidget* buildCreatePanel();
     void populateTable();
-    static QString display_label(const marketdata::domain::market_series& s);
     /// Sets the inline status label to @p shortMessage (for in-context visibility) and pops a
     /// standard MessageBoxHelper::critical with @p details in its expandable "Details" section --
     /// used for genuine server-returned technical errors (raw repository/SQL text), which the
@@ -102,11 +98,7 @@ private:
     QPushButton* selectButton_ = nullptr;
     QLabel* statusLabel_ = nullptr;
 
-    QLineEdit* newSeriesTypeEdit_ = nullptr;
-    QLineEdit* newMetricEdit_ = nullptr;
-    QLineEdit* newQualifierEdit_ = nullptr;
-    QComboBox* newAssetClassCombo_ = nullptr;
-    QComboBox* newSubclassCombo_ = nullptr;
+    QLineEdit* newUriEdit_ = nullptr;
 
     std::vector<marketdata::domain::market_series> rows_;
     std::optional<marketdata::domain::market_series> selected_;

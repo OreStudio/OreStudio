@@ -37,9 +37,9 @@ namespace ores::qt {
 /**
  * @brief MDI window listing index fixing series and their historical fixing values.
  *
- * Shows the catalog of index series (series_type = "FIXING"). Double-clicking
- * or pressing "View Fixings" opens the fixing history window for the selected
- * index.
+ * Shows the catalog of IR fixing series (oresmd URIs carrying
+ * type=fixing). Double-clicking or pressing "View Fixings" opens the fixing
+ * history window for the selected index.
  */
 class MarketFixingsMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT

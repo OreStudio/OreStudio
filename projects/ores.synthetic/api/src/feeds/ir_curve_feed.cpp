@@ -23,6 +23,8 @@
 #include "ores.marketdata.api/domain/ir_curve_tick_json_io.hpp" // IWYU pragma: keep.
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.synthetic.api/domain/yield_curve_process_parameter_mapping.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -38,6 +40,9 @@ namespace ores::synthetic::feed {
 using namespace ores::logging;
 
 namespace {
+
+using ores::marketdata::core::oresmd_parser;
+using ores::marketdata::core::oresmd_projections;
 
 auto& lg() {
     static auto instance = ores::logging::make_logger("ores.synthetic.api.ir_curve_feed");
@@ -206,10 +211,21 @@ double resolve_vintage_initial_rate(ores::nats::service::nats_client& auth_nats,
 
     const auto qualifier = ir_curve_qualifier(cfg);
 
+    // The RATES/YIELD series the anchor observation lives on is the raw
+    // grid's fixing series: the qualifier "CCY/INDEX-TENOR" is the index
+    // name with '/' spelled as '-' (e.g. "USD/SOFR-FOMC" → "USD-SOFR-FOMC").
+    std::string index_name = qualifier;
+    std::replace(index_name.begin(), index_name.end(), '/', '-');
+    const auto id = oresmd_projections::from_index_name(index_name);
+    if (!id)
+        throw vintage_data_missing_error("Qualifier '" + qualifier +
+                                         "' has no oresmd URI projection.");
+    const std::string oresmd_uri = oresmd_parser::to_uri(*id).value;
+
     auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
     ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-    auto series = md_client.find_series("RATES", "YIELD", qualifier);
+    auto series = md_client.find_series_by_uri(oresmd_uri);
     if (!series)
         throw vintage_data_missing_error("Failed to look up series for '" + qualifier +
                                          "': " + series.error());

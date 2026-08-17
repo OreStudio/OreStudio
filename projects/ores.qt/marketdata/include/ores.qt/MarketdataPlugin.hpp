@@ -64,8 +64,7 @@ public:
 
 private:
     void showRateCurves();
-    void
-    showCurveSnapshot(const QString& seriesType, const QString& metric, const QString& qualifier);
+    void showCurveSnapshot(const QString& oresmd_uri);
 
     plugin_context ctx_;
     QMenu* marketDataMenu_ = nullptr;

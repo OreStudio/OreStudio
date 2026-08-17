@@ -50,8 +50,8 @@ class ImageCache;
  * per-bucket bp-delta table + overlaid fading chart).
  *
  * Reads market_observation via the curve-snapshot NATS queries, keyed only by the official
- * market_series identity (series_type/metric/qualifier) -- completely independent of how the
- * series was produced (=ores.synthetic= today, a real vendor feed like Bloomberg tomorrow).
+ * market_series identity (the oresmd URI) -- completely independent of how the series was
+ * produced (=ores.synthetic= today, a real vendor feed like Bloomberg tomorrow).
  * Own MDI sub-window (not modal), reload-on-demand only. See task
  * curve-snapshot-builder-viewer for the signed-off requirements this implements.
  */
@@ -70,20 +70,12 @@ private:
 public:
     CurveSnapshotMdiWindow(ClientManager* clientManager,
                            ImageCache* imageCache,
-                           std::string seriesType,
-                           std::string metric,
-                           std::string qualifier,
+                           std::string oresmd_uri,
                            QWidget* parent = nullptr);
     ~CurveSnapshotMdiWindow() override = default;
 
-    const std::string& seriesType() const {
-        return seriesType_;
-    }
-    const std::string& metric() const {
-        return metric_;
-    }
-    const std::string& qualifier() const {
-        return qualifier_;
+    const std::string& oresmd_uri() const {
+        return oresmd_uri_;
     }
 
     QSize sizeHint() const override {
@@ -110,9 +102,7 @@ private:
 
     ClientManager* clientManager_;
     ImageCache* imageCache_;
-    std::string seriesType_;
-    std::string metric_;
-    std::string qualifier_; // official market_series qualifier, e.g. "USD/SOFR"
+    std::string oresmd_uri_; // canonical oresmd URI of the curve series
     std::vector<ores::marketdata::domain::market_observation> lastGridObservations_;
 
     QToolBar* toolbar_;

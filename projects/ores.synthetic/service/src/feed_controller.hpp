@@ -24,6 +24,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.client/market_data_client.hpp"
+#include "ores.marketdata.core/oresmd/oresmd_parser.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
@@ -467,11 +468,21 @@ private:
         return std::format("{:%F}", days);
     }
 
+    // The ORE key (the synthetic service's wire format) projected to the
+    // canonical oresmd URI of the series it names; nullopt when the key has
+    // no oresmd mapping.
+    static std::optional<std::string> ore_key_to_uri(const std::string& ore_key) {
+        const auto id = ores::marketdata::core::oresmd_projections::from_ore_key(ore_key);
+        if (!id)
+            return std::nullopt;
+        return ores::marketdata::core::oresmd_parser::to_uri(*id).value;
+    }
+
     // Auto-creates the marketdata feed_binding for a feed once it is
     // running, so ingestion is wired up without any caller (Qt, ores.shell,
     // a wt workflow step) having to know that bindings are a separate
     // concept from starting a feed. Idempotent — checks for an existing
-    // (ore_key, source_name) binding first, since start() calls this on
+    // (oresmd_uri, source_name) binding first, since start() calls this on
     // every start (including the already-running path) so a feed started
     // once, stopped, then restarted stays bound instead of silently
     // ticking with nothing ingesting it.
@@ -487,6 +498,14 @@ private:
         if (caller_bearer_token.empty())
             return;
 
+        const auto uri = ore_key_to_uri(ore_key);
+        if (!uri) {
+            BOOST_LOG_SEV(lg(), ores::logging::warn)
+                << "Cannot project ORE key '" << ore_key
+                << "' to an oresmd URI; feed binding skipped.";
+            return;
+        }
+
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
 
@@ -498,13 +517,13 @@ private:
             return;
         }
         for (const auto& b : *existing)
-            if (b.ore_key == ore_key && b.source_name == source_name)
+            if (b.oresmd_uri == *uri && b.source_name == source_name)
                 return; // already bound
 
         ores::marketdata::domain::feed_binding b;
         boost::uuids::random_generator uuid_gen;
         b.id = uuid_gen();
-        b.ore_key = ore_key;
+        b.oresmd_uri = *uri;
         b.source_name = source_name;
         b.enabled = true;
         b.change_reason_code = "system.new_record";
@@ -516,7 +535,7 @@ private:
             return;
         }
         BOOST_LOG_SEV(lg(), ores::logging::info)
-            << "Auto-created feed binding: " << ore_key << " <- " << source_name;
+            << "Auto-created feed binding: " << *uri << " <- " << source_name;
     }
 
     // Core vintage-availability check shared by start() and validate(). Uses a
@@ -542,17 +561,16 @@ private:
                    ".";
         };
 
-        const auto key =
-            ores::marketdata::core::oresmd_projections::split_market_series_key(ore_key);
-        if (!key) {
-            error_detail = "Cannot parse ORE key '" + ore_key + "'.";
+        const auto uri = ore_key_to_uri(ore_key);
+        if (!uri) {
+            error_detail = "Cannot project ORE key '" + ore_key + "' to an oresmd URI.";
             return false;
         }
 
         auto delegated_nats = auth_nats_.with_delegation(caller_bearer_token);
         ores::marketdata::client::market_data_client md_client(delegated_nats);
 
-        auto series = md_client.find_series(key->series_type, key->metric, key->qualifier);
+        auto series = md_client.find_series_by_uri(*uri);
         if (!series) {
             error_detail = "Failed to look up series for '" + ore_key + "': " + series.error();
             return false;

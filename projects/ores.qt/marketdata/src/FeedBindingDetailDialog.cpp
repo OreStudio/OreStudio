@@ -70,7 +70,7 @@ ProvenanceWidget* FeedBindingDetailDialog::provenanceWidget() const {
 }
 
 QString FeedBindingDetailDialog::code() const {
-    return QString::fromStdString(feed_binding_.ore_key);
+    return QString::fromStdString(feed_binding_.oresmd_uri);
 }
 
 void FeedBindingDetailDialog::setupUi() {
@@ -93,7 +93,7 @@ void FeedBindingDetailDialog::setupConnections() {
         ui_->closeButton, &QPushButton::clicked, this, &FeedBindingDetailDialog::onCloseClicked);
 
     connect(
-        ui_->oreKeyEdit, &QLineEdit::textChanged, this, &FeedBindingDetailDialog::onCodeChanged);
+        ui_->oresmdUriEdit, &QLineEdit::textChanged, this, &FeedBindingDetailDialog::onCodeChanged);
     connect(
         ui_->sourceEdit, &QLineEdit::textChanged, this, &FeedBindingDetailDialog::onFieldChanged);
     connect(ui_->enabledEdit, &QCheckBox::toggled, this, &FeedBindingDetailDialog::onFieldChanged);
@@ -115,7 +115,7 @@ void FeedBindingDetailDialog::setBinding(
 
 void FeedBindingDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
-    ui_->oreKeyEdit->setReadOnly(!createMode);
+    ui_->oresmdUriEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
@@ -134,7 +134,7 @@ void FeedBindingDetailDialog::markDirty() {
 
 void FeedBindingDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->oreKeyEdit->setReadOnly(true);
+    ui_->oresmdUriEdit->setReadOnly(true);
     ui_->sourceEdit->setReadOnly(readOnly);
     ui_->enabledEdit->setEnabled(!readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -142,7 +142,7 @@ void FeedBindingDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void FeedBindingDetailDialog::updateUiFromBinding() {
-    ui_->oreKeyEdit->setText(QString::fromStdString(feed_binding_.ore_key));
+    ui_->oresmdUriEdit->setText(QString::fromStdString(feed_binding_.oresmd_uri));
     ui_->sourceEdit->setText(QString::fromStdString(feed_binding_.source_name));
     ui_->enabledEdit->setChecked(feed_binding_.enabled);
 
@@ -159,7 +159,7 @@ void FeedBindingDetailDialog::updateUiFromBinding() {
 
 void FeedBindingDetailDialog::updateBindingFromUi() {
     if (createMode_) {
-        feed_binding_.ore_key = ui_->oreKeyEdit->text().trimmed().toStdString();
+        feed_binding_.oresmd_uri = ui_->oresmdUriEdit->text().trimmed().toStdString();
     }
     feed_binding_.source_name = ui_->sourceEdit->text().trimmed().toStdString();
     feed_binding_.enabled = ui_->enabledEdit->isChecked();
@@ -182,10 +182,10 @@ void FeedBindingDetailDialog::updateSaveButtonState() {
 }
 
 bool FeedBindingDetailDialog::validateInput() {
-    const QString ore_key_val = ui_->oreKeyEdit->text().trimmed();
+    const QString oresmd_uri_val = ui_->oresmdUriEdit->text().trimmed();
     const QString source_name_val = ui_->sourceEdit->text().trimmed();
 
-    return true && !ore_key_val.isEmpty() && !source_name_val.isEmpty();
+    return true && !oresmd_uri_val.isEmpty() && !source_name_val.isEmpty();
 }
 
 void FeedBindingDetailDialog::onSaveClicked() {
@@ -211,7 +211,7 @@ void FeedBindingDetailDialog::onSaveClicked() {
 
     updateBindingFromUi();
 
-    BOOST_LOG_SEV(lg(), info) << "Saving feed binding: " << feed_binding_.ore_key;
+    BOOST_LOG_SEV(lg(), info) << "Saving feed binding: " << feed_binding_.oresmd_uri;
 
     QPointer<FeedBindingDetailDialog> self = this;
 
@@ -247,7 +247,7 @@ void FeedBindingDetailDialog::onSaveClicked() {
 
                 if (result.success) {
                     BOOST_LOG_SEV(lg(), info) << "Feed Binding saved successfully";
-                    QString code = QString::fromStdString(self->feed_binding_.ore_key);
+                    QString code = QString::fromStdString(self->feed_binding_.oresmd_uri);
                     self->hasChanges_ = false;
                     self->updateSaveButtonState();
                     emit self->feed_bindingSaved(code);
@@ -271,7 +271,7 @@ void FeedBindingDetailDialog::onDeleteClicked() {
         return;
     }
 
-    QString code = QString::fromStdString(feed_binding_.ore_key);
+    QString code = QString::fromStdString(feed_binding_.oresmd_uri);
     auto reply = MessageBoxHelper::question(
         this,
         "Delete Feed Binding",
@@ -287,7 +287,7 @@ void FeedBindingDetailDialog::onDeleteClicked() {
     if (!crSel)
         return;
 
-    BOOST_LOG_SEV(lg(), info) << "Deleting feed binding: " << feed_binding_.ore_key;
+    BOOST_LOG_SEV(lg(), info) << "Deleting feed binding: " << feed_binding_.oresmd_uri;
 
     QPointer<FeedBindingDetailDialog> self = this;
 

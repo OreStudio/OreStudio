@@ -18,8 +18,6 @@
  *
  */
 #include "ores.qt/RateCurvesMdiWindow.hpp"
-#include "ores.marketdata.api/domain/asset_class.hpp"
-#include "ores.marketdata.api/domain/series_subclass.hpp"
 #include "ores.marketdata.api/messaging/market_series_protocol.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/FlagIconHelper.hpp"
@@ -34,6 +32,9 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QtConcurrent>
+#include <algorithm>
+#include <cctype>
+#include <string_view>
 
 namespace ores::qt {
 
@@ -43,11 +44,21 @@ namespace {
 namespace m = ores::marketdata::messaging;
 namespace md = ores::marketdata::domain;
 
-// For a RATES/YIELD series, qualifier is documented as "currency/index" -- the ORE-key
-// segment structure, a producer contract (see ir_curve_tick::qualifier), not a guess.
-std::string leading_currency_code(const std::string& qualifier) {
-    const auto sep = qualifier.find('/');
-    return sep == std::string::npos ? std::string{} : qualifier.substr(0, sep);
+// GUI-side derivation of the currency code from the oresmd ir URI host
+// (e.g. "eur" from oresmd://ir/eur?role=discount&type=curve), mirroring the
+// oresmd layer -- service-layer code isn't linkable from Qt.
+std::string leading_currency_code(const std::string& uri) {
+    constexpr std::string_view prefix = "oresmd://ir/";
+    if (uri.rfind(prefix, 0) != 0)
+        return {};
+    const auto host_start = prefix.size();
+    const auto host_end = uri.find('?', host_start);
+    auto ccy = uri.substr(
+        host_start, host_end == std::string::npos ? std::string::npos : host_end - host_start);
+    std::transform(ccy.begin(), ccy.end(), ccy.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    return ccy;
 }
 
 }
@@ -82,9 +93,8 @@ void RateCurvesMdiWindow::setupUi() {
     connect(reloadAction_, &QAction::triggered, this, &RateCurvesMdiWindow::reload);
     layout->addWidget(toolbar_);
 
-    model_ = new QStandardItemModel(0, 4, this);
-    model_->setHorizontalHeaderLabels(
-        {tr("Series Type"), tr("Metric"), tr("Qualifier"), tr("Subclass")});
+    model_ = new QStandardItemModel(0, 1, this);
+    model_->setHorizontalHeaderLabels({tr("oresmd URI")});
 
     proxyModel_ = new QSortFilterProxyModel(this);
     proxyModel_->setSourceModel(model_);
@@ -153,16 +163,12 @@ void RateCurvesMdiWindow::reload() {
 
         self->rows_.clear();
         for (const auto& s : result.series) {
-            if (s.asset_class != md::asset_class::rates || s.is_scalar)
+            // IR curves only: the URI host is the asset class's currency and
+            // type=curve marks a whole curve, not a fixing/quote/vol point.
+            if (s.oresmd_uri.rfind("oresmd://ir/", 0) != 0 ||
+                s.oresmd_uri.find("type=curve") == std::string::npos)
                 continue;
-            self->rows_.push_back({s.series_type,
-                                   s.metric,
-                                   s.qualifier,
-                                   s.series_subclass == md::series_subclass::yield ? "yield" :
-                                   s.series_subclass == md::series_subclass::basis ? "basis" :
-                                   s.series_subclass == md::series_subclass::fra   ? "fra" :
-                                   s.series_subclass == md::series_subclass::xccy  ? "xccy" :
-                                                                                     "other"});
+            self->rows_.push_back({s.oresmd_uri});
         }
 
         const bool empty = self->rows_.empty();
@@ -175,19 +181,13 @@ void RateCurvesMdiWindow::reload() {
             const auto& r = self->rows_[i];
             const int row = static_cast<int>(i);
 
-            self->model_->setItem(row, 0, new QStandardItem(QString::fromStdString(r.series_type)));
-            self->model_->setItem(row, 1, new QStandardItem(QString::fromStdString(r.metric)));
-
-            auto* qualifierItem = new QStandardItem(QString::fromStdString(r.qualifier));
+            auto* uriItem = new QStandardItem(QString::fromStdString(r.oresmd_uri));
             if (self->imageCache_) {
-                const auto ccy = leading_currency_code(r.qualifier);
+                const auto ccy = leading_currency_code(r.oresmd_uri);
                 if (!ccy.empty())
-                    qualifierItem->setIcon(currency_flag_icon(*self->imageCache_, ccy));
+                    uriItem->setIcon(currency_flag_icon(*self->imageCache_, ccy));
             }
-            self->model_->setItem(row, 2, qualifierItem);
-
-            self->model_->setItem(
-                row, 3, new QStandardItem(QString::fromStdString(r.series_subclass)));
+            self->model_->setItem(row, 0, uriItem);
         }
         self->tableView_->resizeColumnsToContents();
 
@@ -205,9 +205,7 @@ void RateCurvesMdiWindow::onRowActivated(const QModelIndex& index) {
     if (row < 0 || static_cast<std::size_t>(row) >= rows_.size())
         return;
     const auto& r = rows_[row];
-    emit viewSnapshotRequested(QString::fromStdString(r.series_type),
-                               QString::fromStdString(r.metric),
-                               QString::fromStdString(r.qualifier));
+    emit viewSnapshotRequested(QString::fromStdString(r.oresmd_uri));
 }
 
 }

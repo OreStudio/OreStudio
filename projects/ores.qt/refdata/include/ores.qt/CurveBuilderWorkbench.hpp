@@ -167,8 +167,9 @@ private:
     /// Index are chosen -- used to pre-filter the series pickers and the discount-curve picker.
     [[nodiscard]] QString selectedIndexCode() const;
     /// selectedIndexCode() translated from floating_index_type's dash convention (e.g.
-    /// "USD-SOFR") to market_series.qualifier's slash convention (e.g. "USD/SOFR") -- what the
-    /// series pickers actually need to filter/pre-fill against.
+    /// "USD-SOFR") to a slash convention (e.g. "USD/SOFR") -- what the series pickers' URI
+    /// builders (fixing_uri_of/discount_curve_uri_of) actually need to derive the oresmd URI
+    /// from.
     [[nodiscard]] QString selectedIndexQualifier() const;
     [[nodiscard]] QString selectedCurrency() const;
     /// Prompts via ChangeReasonDialog (same class DetailDialogBase::promptChangeReason() wraps,

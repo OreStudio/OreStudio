@@ -129,7 +129,7 @@ private:
     void applyMode(); // show/hide series + axes for the current mode
 
     marketdata::domain::market_series series_;
-    QString oreKey_;
+    QString wireKey_;
     ClientManager* clientManager_;
     Mode mode_{Mode::Candles};
     qint64 intervalMs_{5000}; // candle width; default 5s

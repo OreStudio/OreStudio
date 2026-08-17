@@ -53,7 +53,7 @@ public:
     /**
      * @brief Enumeration of table columns for type-safe column access.
      */
-    enum Column { OreKey, SourceName, Enabled, Version, ModifiedBy, ColumnCount };
+    enum Column { OresmdUri, SourceName, Enabled, Version, ModifiedBy, ColumnCount };
 
     explicit ClientFeedBindingModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientFeedBindingModel() override = default;

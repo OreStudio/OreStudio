@@ -65,7 +65,7 @@ BootstrapConfigPickerDialog::BootstrapConfigPickerDialog(ClientManager* clientMa
 
     table_ = new QTableWidget(0, 4, this);
     table_->setHorizontalHeaderLabels(
-        {tr("Output Series Id"), tr("Interpolation"), tr("Day Count"), tr("Version")});
+        {tr("Output Series"), tr("Interpolation"), tr("Day Count"), tr("Version")});
     table_->horizontalHeader()->setStretchLastSection(true);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -111,7 +111,7 @@ void BootstrapConfigPickerDialog::reload() {
 
     struct FetchResult {
         std::vector<rd::domain::ir_curve_bootstrap_config> configs;
-        std::unordered_map<std::string, std::string> qualifierById;
+        std::unordered_map<std::string, std::string> uriById;
     };
 
     QPointer<BootstrapConfigPickerDialog> self = this;
@@ -133,7 +133,7 @@ void BootstrapConfigPickerDialog::reload() {
             FetchResult out;
             out.configs = std::move(configResult->bootstrap_configs);
             for (const auto& s : seriesResult->market_series)
-                out.qualifierById.emplace(boost::uuids::to_string(s.id), s.qualifier);
+                out.uriById.emplace(boost::uuids::to_string(s.id), s.oresmd_uri);
             return out;
         });
 
@@ -155,18 +155,18 @@ void BootstrapConfigPickerDialog::reload() {
         }
         self->statusLabel_->setVisible(false);
         self->rows_.clear();
-        std::vector<QString> qualifiers;
+        std::vector<QString> uris;
         for (auto& c : result->configs) {
             if (!self->roleFilter_.isEmpty() &&
                 QString::fromStdString(c.curve_family_role) != self->roleFilter_)
                 continue;
-            const auto it = result->qualifierById.find(boost::uuids::to_string(c.output_series_id));
-            const QString qualifier =
-                it != result->qualifierById.end() ? QString::fromStdString(it->second) : QString();
+            const auto it = result->uriById.find(boost::uuids::to_string(c.output_series_id));
+            const QString uri =
+                it != result->uriById.end() ? QString::fromStdString(it->second) : QString();
             if (!self->currencyFilter_.isEmpty() &&
-                !qualifier.contains(self->currencyFilter_, Qt::CaseInsensitive))
+                !uri.contains(self->currencyFilter_, Qt::CaseInsensitive))
                 continue;
-            qualifiers.push_back(qualifier);
+            uris.push_back(uri);
             self->rows_.push_back(std::move(c));
         }
 
@@ -178,10 +178,10 @@ void BootstrapConfigPickerDialog::reload() {
             self->table_->setItem(
                 row,
                 0,
-                new QTableWidgetItem(
-                    qualifiers[i].isEmpty() ?
-                        QString::fromStdString(boost::uuids::to_string(c.output_series_id)) :
-                        qualifiers[i]));
+                new QTableWidgetItem(uris[i].isEmpty() ?
+                                         QString::fromStdString(boost::uuids::to_string(
+                                             c.output_series_id)) :
+                                         uris[i]));
             self->table_->setItem(
                 row, 1, new QTableWidgetItem(QString::fromStdString(c.interpolation_method)));
             self->table_->setItem(

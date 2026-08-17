@@ -792,12 +792,10 @@ void IrCurveEditor::recomputeOreKey() {
         return;
     }
     // indexNameCombo_ already stores the "<CCY>-" prefix stripped off (see
-    // populateIndexNameCombo()), so ccy + "/" + idx is already the same qualifier
-    // SyntheticBindingDialog::loadConfigs() and ir_curve_feed.cpp compute -- no stripping needed
-    // here, unlike SyntheticBindingDialog's own copy which starts from the full stored
-    // index_name. "RATES/YIELD/" matches ir_curve_feed.cpp's own find_series("RATES", "YIELD",
-    // qualifier) call and FX's equivalent full SERIES_TYPE/METRIC/QUALIFIER shape (e.g.
-    // "FX/RATE/EUR/USD").
+    // populateIndexNameCombo()), so ccy + "/" + idx is already the same qualifier ir_curve_feed
+    // publishes under -- no stripping needed here. The wire stays ORE-shaped until story step 4;
+    // until then the feed key is shown as-is (the series/feed lookup itself already goes through
+    // oresmd URIs).
     oreKeyLabel_->setText(QString::fromStdString("RATES/YIELD/" + ccy + "/" + idx));
 }
 
@@ -1126,9 +1124,23 @@ void IrCurveEditor::onBrowseVintageClicked() {
         return;
     }
     // Mirrors ir_curve_feed.cpp's own strip_currency_prefix(): idx already excludes the
-    // "<CCY>-" prefix (see indexNameCombo_'s own population), so no stripping needed here.
-    const std::string qualifier = ccy + "/" + idx;
-    BOOST_LOG_SEV(lg(), info) << "Fetching vintages for qualifier '" << qualifier << "'.";
+    // "<CCY>-" prefix (see indexNameCombo_'s own population), so no stripping needed here. The
+    // series is looked up by the canonical fixing URI the raw grid series is stored under (the
+    // ir_curve_feed producer contract) -- split/rejoin idx at the oresmd index_family/tenor
+    // boundary, like onSaveClicked does.
+    const auto [family, tenor] = splitIndexFamilyAndTenor(idx);
+    auto ccyLower = ccy;
+    auto tenorLower = tenor;
+    std::transform(ccyLower.begin(), ccyLower.end(), ccyLower.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
+    std::transform(tenorLower.begin(), tenorLower.end(), tenorLower.begin(), [](unsigned char c) {
+        return std::tolower(c);
+    });
+    const std::string uri = "oresmd://ir/" + ccyLower + "?index=" + family +
+                            (tenorLower.empty() ? std::string() : "&tenor=" + tenorLower) +
+                            "&type=fixing";
+    BOOST_LOG_SEV(lg(), info) << "Fetching vintages for URI '" << uri << "'.";
 
     QPointer<IrCurveEditor> self = this;
     auto* cm = clientManager_;
@@ -1147,7 +1159,7 @@ void IrCurveEditor::onBrowseVintageClicked() {
         QString error;
     };
 
-    auto task = [cm, qualifier]() -> FetchResult {
+    auto task = [cm, uri]() -> FetchResult {
         namespace m = ores::marketdata::messaging;
         m::get_market_series_request series_req;
         series_req.limit = 10000;
@@ -1164,18 +1176,17 @@ void IrCurveEditor::onBrowseVintageClicked() {
 
         std::string series_id;
         for (const auto& s : series_resp->market_series) {
-            if (s.series_type == "RATES" && s.metric == "YIELD" && s.qualifier == qualifier) {
+            if (s.oresmd_uri == uri) {
                 series_id = boost::uuids::to_string(s.id);
                 break;
             }
         }
         if (series_id.empty()) {
-            BOOST_LOG_SEV(lg(), info)
-                << "No RATES/YIELD series found for qualifier '" << qualifier << "'.";
+            BOOST_LOG_SEV(lg(), info) << "No series found for URI '" << uri << "'.";
             return {.success = true, .vintages = {}, .error = {}};
         }
         BOOST_LOG_SEV(lg(), debug)
-            << "Matched series_id=" << series_id << " for qualifier '" << qualifier << "'.";
+            << "Matched series_id=" << series_id << " for URI '" << uri << "'.";
 
         m::get_market_observations_by_series_id_request obs_req;
         obs_req.series_id = series_id;
@@ -1203,12 +1214,12 @@ void IrCurveEditor::onBrowseVintageClicked() {
             return std::tie(a.source, a.date) > std::tie(b.source, b.date); // newest first
         });
         BOOST_LOG_SEV(lg(), info) << "Resolved " << vintages.size()
-                                  << " distinct vintage(s) for qualifier '" << qualifier << "'.";
+                                  << " distinct vintage(s) for URI '" << uri << "'.";
         return {.success = true, .vintages = std::move(vintages), .error = {}};
     };
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
-    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher, ccy, idx]() {
+    connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher, uri]() {
         auto result = watcher->result();
         watcher->deleteLater();
         BOOST_LOG_SEV(lg(), debug)
@@ -1224,15 +1235,15 @@ void IrCurveEditor::onBrowseVintageClicked() {
             QMessageBox::information(
                 self,
                 self->tr("No vintages found"),
-                self->tr("No market data has been imported yet for RATES/YIELD/%1/%2. Run an "
-                         "import first, then browse again.")
-                    .arg(QString::fromStdString(ccy), QString::fromStdString(idx)));
+                self->tr("No market data has been imported yet for %1. Run an import first, "
+                         "then browse again.")
+                    .arg(QString::fromStdString(uri)));
             return;
         }
 
         QDialog dialog(self);
-        dialog.setWindowTitle(self->tr("Available vintages for %1/%2")
-                                  .arg(QString::fromStdString(ccy), QString::fromStdString(idx)));
+        dialog.setWindowTitle(
+            self->tr("Available vintages for %1").arg(QString::fromStdString(uri)));
         auto* layout = new QVBoxLayout(&dialog);
         auto* list = new QListWidget(&dialog);
         for (const auto& v : result.vintages) {

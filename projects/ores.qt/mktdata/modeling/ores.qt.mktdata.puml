@@ -54,7 +54,7 @@ namespace ores #F2F2F2 {
             -clientManager_ : ClientManager*
             -entries_ : vector<marketdata::domain::market_series>
             -watcher_ : QFutureWatcher<FetchResult>*
-            -series_type_filter_ : string
+            -uri_fragment_filter_ : string
         }
         class CurrencyMarketTierController {
             +parent : QObject*

@@ -86,6 +86,40 @@ QString to_qstring(std::chrono::year_month_day date) {
     return QString("%1").arg(QString::fromStdString(std::format("{:%F}", date)));
 }
 
+// "USD/SOFR" or "EUR/EURIBOR-3M" (see selectedIndexQualifier) -> the canonical oresmd fixing
+// URI, e.g. "oresmd://ir/usd?index=sofr&type=fixing", with the tenor appended when the
+// qualifier has one. Mirrors the oresmd parser's to_uri() emission; service-layer code isn't
+// linkable from Qt.
+QString fixing_uri_of(const QString& index_qualifier) {
+    const auto parts = index_qualifier.split('/');
+    if (parts.size() != 2)
+        return {};
+    const auto family_tenor = parts[1].split('-');
+    QString uri = QString("oresmd://ir/%1?index=%2")
+                      .arg(parts[0].toLower())
+                      .arg(family_tenor[0].toLower());
+    if (family_tenor.size() > 1)
+        uri += QString("&tenor=%1").arg(family_tenor[1].toLower());
+    uri += "&type=fixing";
+    return uri;
+}
+
+// Same qualifier shape as fixing_uri_of, but for the published discount curve, e.g.
+// "oresmd://ir/usd?index=sofr&role=discount&type=curve".
+QString discount_curve_uri_of(const QString& index_qualifier) {
+    const auto parts = index_qualifier.split('/');
+    if (parts.size() != 2)
+        return {};
+    const auto family_tenor = parts[1].split('-');
+    QString uri = QString("oresmd://ir/%1?index=%2")
+                      .arg(parts[0].toLower())
+                      .arg(family_tenor[0].toLower());
+    if (family_tenor.size() > 1)
+        uri += QString("&tenor=%1").arg(family_tenor[1].toLower());
+    uri += "&role=discount&type=curve";
+    return uri;
+}
+
 }
 
 CurveBuilderWorkbench::CurveBuilderWorkbench(QWidget* parent)
@@ -253,9 +287,9 @@ QString CurveBuilderWorkbench::selectedIndexCode() const {
 
 QString CurveBuilderWorkbench::selectedIndexQualifier() const {
     // floating_index_type codes use a dash after the currency (e.g. "USD-SOFR",
-    // "EUR-EURIBOR-3M"), but market_series.qualifier for rates uses a slash there instead (e.g.
-    // "USD/SOFR", "EUR/EURIBOR-3M" -- see ir_curve_feed.cpp's own qualifier construction). Only
-    // the first dash is currency/family separator; any further dash (the tenor one) stays as-is.
+    // "EUR-EURIBOR-3M"), but the oresmd URI builders want a slash there instead (e.g. "USD/SOFR",
+    // "EUR/EURIBOR-3M" -- see fixing_uri_of/discount_curve_uri_of). Only the first dash is
+    // currency/family separator; any further dash (the tenor one) stays as-is.
     const QString code = selectedIndexCode();
     const int firstDash = code.indexOf('-');
     if (firstDash < 0)
@@ -598,12 +632,15 @@ void CurveBuilderWorkbench::onRemovePillarClicked() {
 }
 
 void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
-    // Source is the raw, externally-fed grid -- RATES/YIELD is the convention every seeded raw
-    // rates row actually uses. The already-picked Output series is excluded, symmetrically with
-    // onBrowseOutputSeriesClicked's own exclusion of Source -- see
-    // ir_curve_bootstrap_config_service::save_bootstrap_config()'s matching server-side guard.
+    // Source is the raw, externally-fed grid -- type=fixing is the convention every seeded raw
+    // rates row actually uses (the ir_curve_feed producer contract). The already-picked Output
+    // series is excluded, symmetrically with onBrowseOutputSeriesClicked's own exclusion of
+    // Source -- see ir_curve_bootstrap_config_service::save_bootstrap_config()'s matching
+    // server-side guard.
     MarketSeriesPickerDialog::Options options;
-    options.initialFilter = selectedIndexQualifier();
+    const QString sourceUri = fixing_uri_of(selectedIndexQualifier());
+    options.initialFilter = sourceUri;
+    options.defaultUri = sourceUri;
     if (!(config_.output_series_id == boost::uuids::nil_uuid()))
         options.excludeSeriesId =
             QString::fromStdString(boost::uuids::to_string(config_.output_series_id));
@@ -618,21 +655,21 @@ void CurveBuilderWorkbench::onBrowseSourceSeriesClicked() {
         return;
     }
     config_.source_series_id = series->id;
-    sourceSeriesIdEdit_->setText(QString::fromStdString(
-        series->series_type + " / " + series->metric + " / " + series->qualifier));
+    sourceSeriesIdEdit_->setText(QString::fromStdString(series->oresmd_uri));
 }
 
 void CurveBuilderWorkbench::onBrowseOutputSeriesClicked() {
-    // Output is the published curve, not the raw grid -- defaults to DISCOUNT/RATE (the
-    // published-curve convention per the oresmd design doc's own worked examples) rather than
-    // RATES/YIELD, so a freshly-created output series is never mistakable for its own raw input.
-    // The already-picked Source series is excluded outright: the two must never resolve to the
-    // same market_series row -- see ir_curve_bootstrap_config_service::save_bootstrap_config()'s
-    // matching server-side guard for why.
+    // Output is the published curve, not the raw grid -- defaults to role=discount&type=curve
+    // (the published-curve convention per the oresmd design doc's own worked examples) rather
+    // than type=fixing, so a freshly-created output series is never mistakable for its own raw
+    // input. The already-picked Source series is excluded outright: the two must never resolve to
+    // the same market_series row -- see
+    // ir_curve_bootstrap_config_service::save_bootstrap_config()'s matching server-side guard for
+    // why.
     MarketSeriesPickerDialog::Options options;
-    options.initialFilter = selectedIndexQualifier();
-    options.defaultSeriesType = "DISCOUNT";
-    options.defaultMetric = "RATE";
+    const QString outputUri = discount_curve_uri_of(selectedIndexQualifier());
+    options.initialFilter = outputUri;
+    options.defaultUri = outputUri;
     if (!(config_.source_series_id == boost::uuids::nil_uuid()))
         options.excludeSeriesId =
             QString::fromStdString(boost::uuids::to_string(config_.source_series_id));
@@ -647,8 +684,7 @@ void CurveBuilderWorkbench::onBrowseOutputSeriesClicked() {
         return;
     }
     config_.output_series_id = series->id;
-    outputSeriesIdEdit_->setText(QString::fromStdString(
-        series->series_type + " / " + series->metric + " / " + series->qualifier));
+    outputSeriesIdEdit_->setText(QString::fromStdString(series->oresmd_uri));
 }
 
 void CurveBuilderWorkbench::onBrowseDiscountCurveConfigClicked() {

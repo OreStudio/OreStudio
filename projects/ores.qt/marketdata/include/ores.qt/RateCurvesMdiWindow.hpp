@@ -39,15 +39,15 @@ class ClientManager;
 class ImageCache;
 
 /**
- * @brief Lists the official market_series catalog entries for asset_class::rates -- the
- * entry point for interest-rate curve analysis, independent of how each series is produced
- * (=ores.synthetic= today, a real vendor feed like Bloomberg tomorrow). Selecting a row opens
- * a CurveSnapshotMdiWindow for that series.
+ * @brief Lists the official market_series catalog entries for IR curves -- the
+ * entry point for interest-rate curve analysis, independent of how each series
+ * is produced (=ores.synthetic= today, a real vendor feed like Bloomberg
+ * tomorrow). Selecting a row opens a CurveSnapshotMdiWindow for that series.
  *
- * The Qualifier column shows a currency flag: for a RATES/YIELD series, market_series.qualifier
- * is documented (see ir_curve_tick::qualifier) as "currency/index" -- the third+ segment of the
- * series' ORE key, the same segment structure feed_binding.ore_key uses -- so its first segment
- * is currency by producer contract, not a guessed convention.
+ * Rows are ir curve series, identified by their oresmd URI
+ * (oresmd://ir/<ccy>?...&type=curve). The single column shows the URI with a
+ * currency flag: the URI host is the currency by construction, so the flag
+ * comes from there, not from a stored column.
  */
 class RateCurvesMdiWindow final : public QWidget {
     Q_OBJECT
@@ -74,9 +74,7 @@ public:
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& message);
-    void viewSnapshotRequested(const QString& seriesType,
-                               const QString& metric,
-                               const QString& qualifier);
+    void viewSnapshotRequested(const QString& oresmd_uri);
 
 private slots:
     void reload();
@@ -86,10 +84,7 @@ private:
     void setupUi();
 
     struct Row {
-        std::string series_type;
-        std::string metric;
-        std::string qualifier;
-        std::string series_subclass;
+        std::string oresmd_uri;
     };
 
     ClientManager* clientManager_;

@@ -31,7 +31,7 @@ using namespace ores::logging;
 
 namespace {
 std::string feed_binding_key_extractor(const ores::marketdata::domain::feed_binding& e) {
-    return e.ore_key;
+    return e.oresmd_uri;
 }
 }
 
@@ -81,8 +81,8 @@ QVariant ClientFeedBindingModel::data(const QModelIndex& index, int role) const 
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case OreKey:
-                return QString::fromStdString(feed_binding.ore_key);
+            case OresmdUri:
+                return QString::fromStdString(feed_binding.oresmd_uri);
             case SourceName:
                 return QString::fromStdString(feed_binding.source_name);
             case Enabled:
@@ -97,7 +97,7 @@ QVariant ClientFeedBindingModel::data(const QModelIndex& index, int role) const 
     }
 
     if (role == Qt::ForegroundRole) {
-        return recency_foreground_color(feed_binding.ore_key);
+        return recency_foreground_color(feed_binding.oresmd_uri);
     }
 
     return {};
@@ -116,8 +116,8 @@ ClientFeedBindingModel::headerData(int section, Qt::Orientation orientation, int
     }
 
     switch (section) {
-        case OreKey:
-            return tr("ORE Key");
+        case OresmdUri:
+            return tr("ORESMD URI");
         case SourceName:
             return tr("Source Name");
         case Enabled:

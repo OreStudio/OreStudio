@@ -40,8 +40,10 @@
 #include <QtCharts/QChart>
 #include <QtConcurrent>
 #include <algorithm>
+#include <cctype>
 #include <chrono>
 #include <cmath>
+#include <string_view>
 
 namespace ores::qt {
 
@@ -61,8 +63,31 @@ constexpr int k_max_line_points = 2'000;
 /// Cap on retained raw samples so a long-lived window does not grow unbounded.
 constexpr int k_max_samples = 20'000;
 
-QString ore_key_of(const marketdata::domain::market_series& s) {
-    return QString::fromStdString(s.series_type + "/" + s.metric + "/" + s.qualifier);
+QString wire_key_of(const marketdata::domain::market_series& s) {
+    // ORE key the ingest loop publishes under for this series, e.g.
+    // "FX/RATE/EUR/USD" for oresmd://fx/eurusd?type=quote&quote=spot. Derived
+    // from the URI's host here (GUI-side, mirroring the oresmd layer's
+    // to_quote_key) because the wire is still ORE-shaped until story step 4.
+    const auto& uri = s.oresmd_uri;
+    constexpr std::string_view prefix = "oresmd://fx/";
+    if (uri.rfind(prefix, 0) != 0)
+        return QString::fromStdString(uri);
+    const auto pair_start = prefix.size();
+    const auto pair_end = uri.find('?', pair_start);
+    const auto host = uri.substr(
+        pair_start, pair_end == std::string::npos ? std::string::npos : pair_end - pair_start);
+    if (host.size() < 2 || host.size() % 2 != 0)
+        return QString::fromStdString(host);
+    const auto half = host.size() / 2;
+    auto base = host.substr(0, half);
+    auto quote = host.substr(half);
+    std::transform(base.begin(), base.end(), base.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    std::transform(quote.begin(), quote.end(), quote.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    return QString::fromStdString("FX/RATE/" + base + "/" + quote);
 }
 
 qint64 to_ms(std::chrono::system_clock::time_point tp) {
@@ -115,11 +140,11 @@ qint64 nice_time_step_ms(qint64 span_ms) {
     return 86'400'000;
 }
 
-QString pretty_pair(const QString& oreKey) {
-    const auto parts = oreKey.split('/');
+QString pretty_pair(const QString& wireKey) {
+    const auto parts = wireKey.split('/');
     if (parts.size() >= 2)
         return parts.mid(parts.size() - 2).join('/');
-    return oreKey;
+    return wireKey;
 }
 
 /// The chart's preferred UI font (Inter) when available, else the application
@@ -140,7 +165,7 @@ FxSpotChartWindow::FxSpotChartWindow(ClientManager* clientManager,
                                      QWidget* parent)
     : QWidget(parent)
     , series_(series)
-    , oreKey_(ore_key_of(series))
+    , wireKey_(wire_key_of(series))
     , clientManager_(clientManager)
     , toolbar_(nullptr)
     , reloadAction_(nullptr)
@@ -158,7 +183,7 @@ FxSpotChartWindow::FxSpotChartWindow(ClientManager* clientManager,
     , flashTimer_(new QTimer(this))
     , backfillWatcher_(new QFutureWatcher<BackfillResult>(this)) {
 
-    BOOST_LOG_SEV(lg(), debug) << "Creating FX spot chart window for " << oreKey_.toStdString();
+    BOOST_LOG_SEV(lg(), debug) << "Creating FX spot chart window for " << wireKey_.toStdString();
     setupUi();
 
     flashTimer_->setInterval(550);
@@ -287,7 +312,7 @@ void FxSpotChartWindow::setupChart() {
     chart->setMargins(QMargins(8, 8, 8, 8));
     chart->setTitleFont(ui_font(10.0, true));
     chart->setTitleBrush(QBrush(labelColor));
-    chart->setTitle(tr("%1 (Mid)").arg(oreKey_));
+    chart->setTitle(tr("%1 (Mid)").arg(wireKey_));
     chart->setPlotAreaBackgroundBrush(plotBg);
     chart->setPlotAreaBackgroundVisible(true);
     chart->addSeries(candleSeries_);
@@ -331,7 +356,7 @@ void FxSpotChartWindow::setupChart() {
     trackerLine_->attachAxis(axisY_);
     posMarker_->attachAxis(axisY_);
 
-    chartView_ = new WatermarkChartView(chart, this, pretty_pair(oreKey_));
+    chartView_ = new WatermarkChartView(chart, this, pretty_pair(wireKey_));
     chartView_->setRenderHint(QPainter::Antialiasing);
 
     // Overlay shown while loading or when no data/error is available.
@@ -426,7 +451,7 @@ void FxSpotChartWindow::onBackfillLoaded() {
         else
             statusOverlay_->hide();
     }
-    emit statusChanged(tr("Backfilled %1 observation(s) for %2").arg(samples_.size()).arg(oreKey_));
+    emit statusChanged(tr("Backfilled %1 observation(s) for %2").arg(samples_.size()).arg(wireKey_));
 
     startLiveSubscription();
 }
@@ -441,7 +466,7 @@ void FxSpotChartWindow::startLiveSubscription() {
         QPointer<FxSpotChartWindow> self = this;
         subscription_ = std::make_unique<marketdata::client::fx_spot_subscription>(
             clientManager_->nats_client(),
-            oreKey_.toStdString(),
+            wireKey_.toStdString(),
             clientManager_->currentTenantId(),
             [self](const marketdata::domain::fx_spot_tick& tick) {
                 const qint64 ms = to_ms(tick.datetime);
@@ -464,7 +489,7 @@ void FxSpotChartWindow::startLiveSubscription() {
                     },
                     Qt::QueuedConnection);
             });
-        BOOST_LOG_SEV(lg(), debug) << "Live subscription started for " << oreKey_.toStdString();
+        BOOST_LOG_SEV(lg(), debug) << "Live subscription started for " << wireKey_.toStdString();
     } catch (const std::exception& e) {
         emit errorOccurred(tr("Failed to subscribe to live ticks: %1").arg(e.what()));
     }
@@ -587,7 +612,7 @@ void FxSpotChartWindow::refreshCandles() {
 
     const double lastClose = visible.back().second.close;
     if (auto* chart = chartView_ ? chartView_->chart() : nullptr)
-        chart->setTitle(tr("%1 (Mid)   %2").arg(oreKey_).arg(lastClose, 0, 'f', 5));
+        chart->setTitle(tr("%1 (Mid)   %2").arg(wireKey_).arg(lastClose, 0, 'f', 5));
 }
 
 void FxSpotChartWindow::refreshLine() {
@@ -637,7 +662,7 @@ void FxSpotChartWindow::refreshLine() {
         {{static_cast<double>(lo), currentPrice}, {pts.back().x(), currentPrice}});
 
     if (auto* chart = chartView_ ? chartView_->chart() : nullptr)
-        chart->setTitle(tr("%1 (Mid)   %2").arg(oreKey_).arg(pts.back().y(), 0, 'f', 5));
+        chart->setTitle(tr("%1 (Mid)   %2").arg(wireKey_).arg(pts.back().y(), 0, 'f', 5));
 }
 
 void FxSpotChartWindow::applyMode() {

@@ -180,14 +180,9 @@ void MarketdataPlugin::showRateCurves() {
     });
 }
 
-void MarketdataPlugin::showCurveSnapshot(const QString& seriesType,
-                                         const QString& metric,
-                                         const QString& qualifier) {
-    auto* snapshotWindow = new CurveSnapshotMdiWindow(ctx_.client_manager,
-                                                      ctx_.image_cache,
-                                                      seriesType.toStdString(),
-                                                      metric.toStdString(),
-                                                      qualifier.toStdString());
+void MarketdataPlugin::showCurveSnapshot(const QString& oresmd_uri) {
+    auto* snapshotWindow =
+        new CurveSnapshotMdiWindow(ctx_.client_manager, ctx_.image_cache, oresmd_uri.toStdString());
     connect(
         snapshotWindow, &CurveSnapshotMdiWindow::statusChanged, this, &PluginBase::statusMessage);
     connect(
@@ -196,7 +191,7 @@ void MarketdataPlugin::showCurveSnapshot(const QString& seriesType,
     auto* subWindow = new DetachableMdiSubWindow(ctx_.main_window);
     subWindow->setAttribute(Qt::WA_DeleteOnClose);
     subWindow->setWidget(snapshotWindow);
-    subWindow->setWindowTitle(tr("Curve Snapshot: %1").arg(qualifier));
+    subWindow->setWindowTitle(tr("Curve Snapshot: %1").arg(oresmd_uri));
     subWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::Chart, IconUtils::DefaultIconColor));
     subWindow->resize(snapshotWindow->sizeHint());

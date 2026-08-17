@@ -225,10 +225,7 @@ void MarketDataController::showObservationWindow(const marketdata::domain::marke
             this,
             &MarketDataController::errorMessage);
 
-    const QString title = tr("%1 / %2 / %3")
-                              .arg(QString::fromStdString(series.series_type))
-                              .arg(QString::fromStdString(series.metric))
-                              .arg(QString::fromStdString(series.qualifier));
+    const QString title = tr("%1").arg(QString::fromStdString(series.oresmd_uri));
 
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(obsWindow);
@@ -265,10 +262,7 @@ void MarketDataController::showFxSpotChartWindow(const marketdata::domain::marke
     connect(
         chartWindow, &FxSpotChartWindow::errorOccurred, this, &MarketDataController::errorMessage);
 
-    const QString title = tr("Chart: %1 / %2 / %3")
-                              .arg(QString::fromStdString(series.series_type))
-                              .arg(QString::fromStdString(series.metric))
-                              .arg(QString::fromStdString(series.qualifier));
+    const QString title = tr("Chart: %1").arg(QString::fromStdString(series.oresmd_uri));
 
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(chartWindow);
@@ -358,9 +352,7 @@ void MarketDataController::showFixingDetailWindow(const marketdata::domain::mark
             this,
             &MarketDataController::errorMessage);
 
-    const QString title = tr("Fixings: %1 / %2")
-                              .arg(QString::fromStdString(series.metric))
-                              .arg(QString::fromStdString(series.qualifier));
+    const QString title = tr("Fixings: %1").arg(QString::fromStdString(series.oresmd_uri));
 
     auto* subWindow = new DetachableMdiSubWindow(mainWindow_);
     subWindow->setWidget(fixingWindow);

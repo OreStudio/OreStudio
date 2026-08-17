@@ -41,17 +41,29 @@ using namespace ores::logging;
 
 namespace {
 
-// Mirrors ir_curve_feed.cpp's own index_display_suffix() (also duplicated client-side in
-// IrCurveEditor.cpp/MarketSimulatorWindow.cpp for the same reason: service-layer code isn't
-// linkable from Qt) to build the same market_series qualifier ir_curve_feed uses.
-std::string index_display_suffix(const synthetic::domain::ir_curve_generation_config& cfg) {
-    auto family = cfg.index_family;
-    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
-        return std::toupper(c);
+// Canonical oresmd URIs for the synthetic configs, built the same way the oresmd parser's
+// to_uri() emits them (GUI-side mirror -- service-layer code isn't linkable from Qt).
+// The FX spot URI host is base+quote concatenated; the IR fixing URI carries
+// index/tenor and type=fixing.
+std::string to_lower_copy(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) {
+        return std::tolower(c);
     });
-    if (cfg.tenor.empty())
-        return family;
-    return family + "-" + cfg.tenor;
+    return s;
+}
+
+std::string fx_spot_uri(const synthetic::domain::fx_spot_generation_config& cfg) {
+    return "oresmd://fx/" + to_lower_copy(cfg.base_currency_code + cfg.quote_currency_code) +
+           "?type=quote&quote=spot";
+}
+
+std::string ir_fixing_uri(const synthetic::domain::ir_curve_generation_config& cfg) {
+    auto uri = "oresmd://ir/" + to_lower_copy(cfg.currency_code) + "?index=" +
+               to_lower_copy(cfg.index_family);
+    if (!cfg.tenor.empty())
+        uri += "&tenor=" + to_lower_copy(cfg.tenor);
+    uri += "&type=fixing";
+    return uri;
 }
 
 }
@@ -76,7 +88,7 @@ SyntheticBindingDialog::SyntheticBindingDialog(ClientManager* clientManager,
                    this));
 
     table_->setColumnCount(4);
-    table_->setHorizontalHeaderLabels({tr(""), tr("Type"), tr("ORE Key"), tr("Source name")});
+    table_->setHorizontalHeaderLabels({tr(""), tr("Type"), tr("oresmd URI"), tr("Source name")});
     table_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     table_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
@@ -140,7 +152,7 @@ void SyntheticBindingDialog::loadConfigs() {
             return {.ok = false};
         for (const auto& cfg : fx_resp->fx_spot_generation_configs)
             configs.push_back(
-                {"FX", cfg.ore_key, cfg.source_name, marketdata::domain::asset_class::fx});
+                {"FX", fx_spot_uri(cfg), cfg.source_name, marketdata::domain::asset_class::fx});
 
         // IR is additive to the pre-existing FX-only flow: if the IR service is
         // unavailable, log and keep going with the FX rows already fetched rather than
@@ -152,18 +164,9 @@ void SyntheticBindingDialog::loadConfigs() {
             BOOST_LOG_SEV(lg(), warn) << "Could not load IR curve generation configs; "
                                          "showing FX rows only.";
         } else {
-            for (const auto& cfg : ir_resp->ir_curve_generation_configs) {
-                // Full SERIES_TYPE/METRIC/QUALIFIER shape, matching FX's own (e.g.
-                // "FX/RATE/EUR/USD") and real ORE market data key conventions (checked against
-                // external/ore/examples/*/Input/marketdata.txt's own FX/RATE/EUR/USD lines).
-                // "RATES/YIELD/" is exactly what ir_curve_feed.cpp's own
-                // find_series("RATES", "YIELD", qualifier) call looks the series up under --
-                // this must match that exactly, not just the bare qualifier.
-                const auto qualifier = cfg.currency_code + "/" + index_display_suffix(cfg);
-                const auto ore_key = "RATES/YIELD/" + qualifier;
+            for (const auto& cfg : ir_resp->ir_curve_generation_configs)
                 configs.push_back(
-                    {"IR", ore_key, cfg.source_name, marketdata::domain::asset_class::rates});
-            }
+                    {"IR", ir_fixing_uri(cfg), cfg.source_name, marketdata::domain::asset_class::rates});
         }
 
         return Result{.ok = true,
@@ -210,7 +213,7 @@ void SyntheticBindingDialog::populateTable(const std::vector<BindableConfig>& co
 
         table_->setItem(row, 0, chk);
         table_->setItem(row, 1, new QTableWidgetItem(QString::fromStdString(cfg.kind)));
-        table_->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(cfg.ore_key)));
+        table_->setItem(row, 2, new QTableWidgetItem(QString::fromStdString(cfg.oresmd_uri)));
         table_->setItem(row, 3, new QTableWidgetItem(QString::fromStdString(cfg.source_name)));
     }
 }
@@ -265,7 +268,7 @@ void SyntheticBindingDialog::createBindings(const std::vector<BindableConfig>& s
         for (const auto& cfg : selected) {
             marketdata::domain::feed_binding b;
             b.id = boost::uuids::random_generator()();
-            b.ore_key = cfg.ore_key;
+            b.oresmd_uri = cfg.oresmd_uri;
             b.source_name = cfg.source_name;
             b.asset_class = cfg.asset_class;
             b.enabled = true;
@@ -277,7 +280,7 @@ void SyntheticBindingDialog::createBindings(const std::vector<BindableConfig>& s
 
             auto resp = cm->process_authenticated_request(req);
             const bool ok = resp && resp->success;
-            results.push_back({cfg.ore_key, ok});
+            results.push_back({cfg.oresmd_uri, ok});
         }
         return results;
     };
@@ -290,7 +293,7 @@ void SyntheticBindingDialog::createBindings(const std::vector<BindableConfig>& s
             return;
 
         int ok = 0, failed = 0;
-        for (const auto& [key, success] : results) {
+        for (const auto& [uri, success] : results) {
             if (success)
                 ++ok;
             else

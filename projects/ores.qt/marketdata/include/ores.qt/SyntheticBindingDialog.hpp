@@ -37,7 +37,7 @@ namespace ores::qt {
  *
  * Queries the synthetic service for all fx_spot_generation_config and
  * ir_curve_generation_config records, presents them together in one
- * checklist (Type + ORE key + source name), and on confirmation
+ * checklist (Type + oresmd URI + source name), and on confirmation
  * bulk-creates save_feed_binding_request messages for each checked row.
  * Rows that already have a binding are pre-ticked and shown as such.
  */
@@ -70,14 +70,14 @@ private slots:
     void onSelectNoneClicked();
 
 private:
-    // FX's ore_key is a stored field, used as-is; an IR curve config has none -- its ore_key is
-    // computed the same way ir_curve_feed.cpp computes its own market_series qualifier
-    // (currency_code + "/" + stripped index_name). This struct is what lets the rest of the
-    // dialog (populateTable/createBindings) stay kind-agnostic instead of duplicating the whole
+    // Each config's canonical oresmd URI, computed from its structured fields the same way
+    // the oresmd parser's to_uri() emits it (GUI-side mirror -- service-layer code isn't
+    // linkable from Qt). This struct is what lets the rest of the dialog
+    // (populateTable/createBindings) stay kind-agnostic instead of duplicating the whole
     // pipeline per config type.
     struct BindableConfig {
         std::string kind; // "FX" or "IR", shown in the table's Type column
-        std::string ore_key;
+        std::string oresmd_uri;
         std::string source_name;
         marketdata::domain::asset_class asset_class;
     };

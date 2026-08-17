@@ -43,7 +43,7 @@ MarketFixingsMdiWindow::MarketFixingsMdiWindow(ClientManager* clientManager,
     , username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating market fixings MDI window";
-    model_->set_series_type_filter("FIXING");
+    model_->set_uri_fragment_filter("type=fixing");
     setupUi();
 }
 

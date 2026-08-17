@@ -26,8 +26,6 @@
 #include "ores.qt/ClientMarketSeriesModel.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include "ores.qt/PaginationWidget.hpp"
-#include "ores.refdata.api/domain/asset_class_info.hpp"
-#include <QComboBox>
 #include <QFutureWatcher>
 #include <QSortFilterProxyModel>
 #include <QTableView>
@@ -40,9 +38,10 @@ namespace ores::qt {
 /**
  * @brief MDI window listing all market series (yield curves, vol surfaces, etc.)
  *
- * Provides asset class / subclass filter combo boxes on the toolbar.
- * Double-clicking or pressing "View Observations" opens the observation
- * time-series window for the selected series.
+ * Classification (asset class, subclass, scalar-ness) derives from each
+ * series' oresmd URI in the oresmd layer, so the toolbar offers no
+ * classification filters. Double-clicking or pressing "View Observations"
+ * opens the observation time-series window for the selected series.
  */
 class MarketSeriesMdiWindow final : public EntityListMdiWindow {
     Q_OBJECT
@@ -88,8 +87,6 @@ private slots:
     void onRowDoubleClicked(const QModelIndex& index);
     void onSelectionChanged();
     void onConnectionStateChanged();
-    void onAssetClassFilterChanged(int index);
-    void onAssetClassesLoaded();
     void viewObservations();
     void viewChart();
 
@@ -97,16 +94,6 @@ private:
     void setupUi();
     void setupToolbar();
     void updateActionStates();
-    void applyAssetClassFilter();
-    void loadAssetClasses();
-    void populateAssetClassCombo(const std::vector<refdata::domain::asset_class_info>& classes);
-
-    struct AssetClassFetchResult {
-        bool success = true;
-        QString error_message;
-        QString error_details;
-        std::vector<refdata::domain::asset_class_info> asset_classes;
-    };
 
     QVBoxLayout* verticalLayout_;
     QTableView* tableView_;
@@ -116,11 +103,9 @@ private:
     QAction* reloadAction_;
     QAction* viewObsAction_;
     QAction* viewChartAction_;
-    QComboBox* assetClassCombo_;
 
     std::unique_ptr<ClientMarketSeriesModel> model_;
     QSortFilterProxyModel* proxyModel_;
-    QFutureWatcher<AssetClassFetchResult>* assetClassWatcher_;
     ClientManager* clientManager_;
     QString username_;
 };

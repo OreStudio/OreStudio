@@ -57,11 +57,7 @@ void MarketFixingDetailMdiWindow::setupUi() {
     verticalLayout_->addWidget(loadingBar());
 
     // Series info banner
-    const QString info = tr("%1 / %2 / %3")
-                             .arg(QString::fromStdString(series_.series_type))
-                             .arg(QString::fromStdString(series_.metric))
-                             .arg(QString::fromStdString(series_.qualifier));
-    seriesInfoLabel_->setText(info);
+    seriesInfoLabel_->setText(QString::fromStdString(series_.oresmd_uri));
     seriesInfoLabel_->setStyleSheet("padding: 4px; font-weight: bold;");
     verticalLayout_->addWidget(seriesInfoLabel_);
 

@@ -33,8 +33,10 @@
 #include <QVBoxLayout>
 #include <QWidget>
 #include <QtConcurrent>
+#include <algorithm>
+#include <cctype>
 #include <chrono>
-#include <sstream>
+#include <string_view>
 
 namespace ores::qt {
 
@@ -170,21 +172,38 @@ static void apply_status_indicator(const StatusIndicator& ind,
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
-static QString pair_from_ore_key(const std::string& ore_key) {
-    std::istringstream ss(ore_key);
-    std::string seg;
-    int skip = 0;
-    std::string qualifier;
-    while (std::getline(ss, seg, '/')) {
-        if (skip < 2) {
-            ++skip;
-            continue;
-        }
-        if (!qualifier.empty())
-            qualifier += '/';
-        qualifier += seg;
-    }
-    return qualifier.empty() ? QString::fromStdString(ore_key) : QString::fromStdString(qualifier);
+// GUI-side derivation from the oresmd fx spot URI (e.g.
+// oresmd://fx/eurusd?type=quote&quote=spot), mirroring the oresmd layer's
+// to_quote_key -- service-layer code isn't linkable from Qt. The host is the
+// base+quote pair concatenated; the wire key stays ORE-shaped ("FX/RATE/...")
+// until the identity story's step 4 moves the wire to URIs.
+static QString pair_from_uri(const std::string& uri) {
+    constexpr std::string_view prefix = "oresmd://fx/";
+    if (uri.rfind(prefix, 0) != 0)
+        return {};
+    const auto pair_start = prefix.size();
+    const auto pair_end = uri.find('?', pair_start);
+    const auto host = uri.substr(
+        pair_start, pair_end == std::string::npos ? std::string::npos : pair_end - pair_start);
+    if (host.size() < 2 || host.size() % 2 != 0)
+        return QString::fromStdString(host);
+    const auto half = host.size() / 2;
+    auto base = host.substr(0, half);
+    auto quote = host.substr(half);
+    std::transform(base.begin(), base.end(), base.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    std::transform(quote.begin(), quote.end(), quote.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    return QString::fromStdString(base + "/" + quote);
+}
+
+static std::string wire_key_of(const std::string& uri) {
+    const auto pair = pair_from_uri(uri);
+    if (pair.isEmpty())
+        return {};
+    return "FX/RATE/" + pair.toStdString();
 }
 
 // This window has no separate base/quote columns to put one flag each on
@@ -250,7 +269,7 @@ FxSpotGridWindow::FxSpotGridWindow(ClientManager* clientManager,
         const auto refreshFlags = [this]() {
             if (!imageCache_)
                 return;
-            for (const auto& [ore_key, rs] : rows_) {
+            for (const auto& [uri, rs] : rows_) {
                 if (auto* item = table_->item(rs.row, ColPair))
                     item->setIcon(pair_icon_for(*imageCache_, item->text()));
             }
@@ -382,12 +401,12 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
 
     int row = 0;
     for (const auto& b : bindings) {
-        const std::string& ore_key = b.ore_key;
+        const std::string& uri = b.oresmd_uri;
         table_->insertRow(row);
 
         // Pair — fixed neutral colour always (see k_pair_label_color's own comment);
         // never recoloured by tick direction or connection status.
-        const QString pairText = pair_from_ore_key(ore_key);
+        const QString pairText = pair_from_uri(uri);
         auto* pairItem = new QTableWidgetItem(pairText);
         QFont pf = pairItem->font();
         pf.setBold(true);
@@ -432,7 +451,7 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
 
         RowState rs;
         rs.row = row;
-        rs.ore_key = ore_key;
+        rs.oresmd_uri = uri;
         if (conventionCache_ && clientManager_) {
             const auto resolved =
                 resolve_convention(*conventionCache_, clientManager_->currentTenantId(), pairText);
@@ -441,7 +460,7 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         }
         rs.status_icon_label = indicator.icon_label;
         rs.status_text_label = indicator.text_label;
-        rows_.emplace(ore_key, std::move(rs));
+        rows_.emplace(uri, std::move(rs));
         ++row;
     }
 
@@ -453,26 +472,31 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
     if (!clientManager_ || !clientManager_->isConnected())
         return;
 
-    const std::string ore_key = rs.ore_key;
+    const std::string uri = rs.oresmd_uri;
+    const std::string wire_key = wire_key_of(uri);
+    if (wire_key.empty()) {
+        BOOST_LOG_SEV(lg(), warn) << "Skipping subscribe, not an fx spot URI: " << uri;
+        return;
+    }
     QPointer<FxSpotGridWindow> self = this;
 
     try {
         rs.subscription = std::make_unique<marketdata::client::fx_spot_subscription>(
             clientManager_->nats_client(),
-            ore_key,
+            wire_key,
             clientManager_->currentTenantId(),
-            [self, ore_key](const marketdata::domain::fx_spot_tick& tick) {
+            [self, uri](const marketdata::domain::fx_spot_tick& tick) {
                 const double mid = tick.mid;
                 const auto when = tick.datetime;
                 QMetaObject::invokeMethod(
                     self,
-                    [self, ore_key, mid, when]() {
+                    [self, uri, mid, when]() {
                         if (self)
-                            self->applyTick(ore_key, mid, when);
+                            self->applyTick(uri, mid, when);
                     },
                     Qt::QueuedConnection);
             },
-            [self, ore_key](const std::string& reason) {
+            [self, uri](const std::string& reason) {
                 // Not rate-limited here either: a consistently-failing
                 // stream (e.g. the wire-format mismatch this callback was
                 // added to catch) is a real, actionable problem, not
@@ -480,7 +504,7 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
                 // own error_handler docstring.
                 QMetaObject::invokeMethod(
                     self,
-                    [self, ore_key, reason]() {
+                    [self, uri, reason]() {
                         if (!self)
                             return;
                         // Persistent per-row indicator, not just the transient
@@ -489,23 +513,23 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
                         // times per second, which floods/overwrites the status
                         // bar faster than a user can read it, leaving the row
                         // stuck showing PENDING with no visible explanation.
-                        self->applyError(ore_key, reason);
+                        self->applyError(uri, reason);
                         emit self->errorOccurred(tr("Failed to parse FX tick for %1: %2")
-                                                     .arg(QString::fromStdString(ore_key),
+                                                     .arg(pair_from_uri(uri),
                                                           QString::fromStdString(reason)));
                     },
                     Qt::QueuedConnection);
             });
-        BOOST_LOG_SEV(lg(), debug) << "Subscribed to " << ore_key;
+        BOOST_LOG_SEV(lg(), debug) << "Subscribed to " << wire_key;
     } catch (const std::exception& e) {
-        BOOST_LOG_SEV(lg(), warn) << "Subscribe failed for " << ore_key << ": " << e.what();
+        BOOST_LOG_SEV(lg(), warn) << "Subscribe failed for " << wire_key << ": " << e.what();
     }
 }
 
-void FxSpotGridWindow::applyTick(const std::string& ore_key,
+void FxSpotGridWindow::applyTick(const std::string& oresmd_uri,
                                  double mid,
                                  std::chrono::system_clock::time_point when) {
-    auto it = rows_.find(ore_key);
+    auto it = rows_.find(oresmd_uri);
     if (it == rows_.end())
         return;
 
@@ -539,8 +563,8 @@ void FxSpotGridWindow::applyTick(const std::string& ore_key,
     }
 }
 
-void FxSpotGridWindow::applyError(const std::string& ore_key, const std::string& reason) {
-    auto it = rows_.find(ore_key);
+void FxSpotGridWindow::applyError(const std::string& oresmd_uri, const std::string& reason) {
+    auto it = rows_.find(oresmd_uri);
     if (it == rows_.end())
         return;
 

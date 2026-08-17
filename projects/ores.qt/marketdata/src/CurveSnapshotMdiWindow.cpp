@@ -56,8 +56,10 @@
 #include <QtConcurrent>
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <string_view>
 #include <iomanip>
 #include <limits>
 #include <map>
@@ -106,11 +108,55 @@ void sort_by_tenor(std::vector<md::market_observation>& obs) {
     });
 }
 
-// For a RATES/YIELD series, qualifier is documented as "currency/index" -- the ORE-key segment
-// structure, a producer contract (see ir_curve_tick::qualifier), not a guess.
-std::string leading_currency_code(const std::string& qualifier) {
-    const auto sep = qualifier.find('/');
-    return sep == std::string::npos ? std::string{} : qualifier.substr(0, sep);
+// GUI-side derivation of the currency code from the oresmd ir URI host
+// (e.g. "eur" from oresmd://ir/eur?role=discount&type=curve), mirroring the
+// oresmd layer -- service-layer code isn't linkable from Qt.
+std::string leading_currency_code(const std::string& uri) {
+    constexpr std::string_view prefix = "oresmd://ir/";
+    if (uri.rfind(prefix, 0) != 0)
+        return {};
+    const auto host_start = prefix.size();
+    const auto host_end = uri.find('?', host_start);
+    auto ccy = uri.substr(
+        host_start, host_end == std::string::npos ? std::string::npos : host_end - host_start);
+    std::transform(ccy.begin(), ccy.end(), ccy.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    return ccy;
+}
+
+std::string query_param(const std::string& uri, const std::string& name) {
+    const auto q = uri.find('?');
+    if (q == std::string::npos)
+        return {};
+    const auto k = uri.find(name + "=", q + 1);
+    if (k == std::string::npos)
+        return {};
+    const auto vstart = k + name.size() + 1;
+    const auto vend = uri.find('&', vstart);
+    return uri.substr(vstart, vend == std::string::npos ? std::string::npos : vend - vstart);
+}
+
+// ORE-shaped curve key this window's ORE export writes, reversing the
+// producer contract -- ir_curve_tick::qualifier is "CCY/FAMILY-TENOR" under
+// series RATES/YIELD. The wire moves to URIs in story step 4; until then the
+// key is rebuilt from the URI here.
+std::string ore_curve_key(const std::string& uri) {
+    const auto ccy = leading_currency_code(uri);
+    if (ccy.empty())
+        return {};
+    auto family = query_param(uri, "index");
+    auto tenor = query_param(uri, "tenor");
+    std::transform(family.begin(), family.end(), family.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    std::transform(tenor.begin(), tenor.end(), tenor.begin(), [](unsigned char c) {
+        return std::toupper(c);
+    });
+    std::string qualifier = ccy;
+    if (!family.empty())
+        qualifier += "/" + family + (tenor.empty() ? std::string{} : "-" + tenor);
+    return "RATES/YIELD/" + qualifier;
 }
 
 // Shades of blue, light (oldest) to dark/saturated (newest) -- same colour family throughout
@@ -183,16 +229,12 @@ void style_axes(QChart* chart, QBarCategoryAxis* axisX, QValueAxis* axisY) {
 
 CurveSnapshotMdiWindow::CurveSnapshotMdiWindow(ClientManager* clientManager,
                                                ImageCache* imageCache,
-                                               std::string seriesType,
-                                               std::string metric,
-                                               std::string qualifier,
+                                               std::string oresmd_uri,
                                                QWidget* parent)
     : QWidget(parent)
     , clientManager_(clientManager)
     , imageCache_(imageCache)
-    , seriesType_(std::move(seriesType))
-    , metric_(std::move(metric))
-    , qualifier_(std::move(qualifier))
+    , oresmd_uri_(std::move(oresmd_uri))
     , toolbar_(nullptr)
     , reloadAction_(nullptr)
     , exportCsvAction_(nullptr)
@@ -297,7 +339,7 @@ QWidget* CurveSnapshotMdiWindow::buildGridTab() {
 
     auto* headerRow = new QHBoxLayout();
     if (imageCache_) {
-        const auto ccy = leading_currency_code(qualifier_);
+        const auto ccy = leading_currency_code(oresmd_uri_);
         if (!ccy.empty()) {
             auto* flagLabel = new QLabel(page);
             flagLabel->setPixmap(
@@ -309,8 +351,7 @@ QWidget* CurveSnapshotMdiWindow::buildGridTab() {
     QFont headerFont = gridHeaderLabel_->font();
     headerFont.setBold(true);
     gridHeaderLabel_->setFont(headerFont);
-    gridHeaderLabel_->setText(
-        QString::fromStdString(seriesType_ + " / " + metric_ + " / " + qualifier_));
+    gridHeaderLabel_->setText(QString::fromStdString(oresmd_uri_));
     headerRow->addWidget(gridHeaderLabel_);
     headerRow->addStretch(1);
     layout->addLayout(headerRow);
@@ -458,9 +499,7 @@ void CurveSnapshotMdiWindow::loadGrid() {
     emit statusChanged(tr("Loading curve snapshot..."));
 
     m::get_curve_snapshot_request req;
-    req.series_type = seriesType_;
-    req.metric = metric_;
-    req.qualifier = qualifier_;
+    req.oresmd_uri = oresmd_uri_;
 
     QPointer<CurveSnapshotMdiWindow> self = this;
     auto* cm = clientManager_;
@@ -550,9 +589,7 @@ void CurveSnapshotMdiWindow::loadGrid() {
 
 void CurveSnapshotMdiWindow::loadHistory() {
     m::get_curve_snapshot_buckets_request req;
-    req.series_type = seriesType_;
-    req.metric = metric_;
-    req.qualifier = qualifier_;
+    req.oresmd_uri = oresmd_uri_;
     const auto unit_seconds = bucketUnitCombo_->currentData().toLongLong();
     req.bucket_seconds = static_cast<std::int64_t>(bucketSizeSpin_->value()) * unit_seconds;
     req.bucket_count = static_cast<std::uint32_t>(bucketCountSpin_->value());
@@ -740,8 +777,8 @@ void CurveSnapshotMdiWindow::loadHistory() {
 }
 
 QString CurveSnapshotMdiWindow::exportFileNameSlug() const {
-    QString slug = QString::fromStdString(seriesType_ + "_" + metric_ + "_" + qualifier_);
-    slug.replace('/', '_').replace(' ', '_');
+    QString slug = QString::fromStdString(oresmd_uri_);
+    slug.replace(':', '_').replace('/', '_').replace('?', '_').replace('=', '_').replace('&', '_');
     return slug;
 }
 
@@ -764,9 +801,9 @@ void CurveSnapshotMdiWindow::exportGridToCsv() {
     try {
         std::ostringstream out;
         out << std::fixed << std::setprecision(6);
-        out << "series_type,metric,qualifier,tenor,rate,observed\n";
+        out << "oresmd_uri,tenor,rate,observed\n";
         for (const auto& o : lastGridObservations_) {
-            out << seriesType_ << ',' << metric_ << ',' << qualifier_ << ',' << o.point_id << ','
+            out << oresmd_uri_ << ',' << o.point_id << ','
                 << std::atof(o.value.c_str()) << ','
                 << format_datetime(o.observation_datetime).toStdString() << '\n';
         }
@@ -805,13 +842,14 @@ void CurveSnapshotMdiWindow::exportGridToOre() {
     if (fileName.isEmpty())
         return;
 
+    const auto curve_key = ore_curve_key(oresmd_uri_);
     std::vector<ores::ore::market::market_datum> data;
     data.reserve(lastGridObservations_.size());
     for (const auto& o : lastGridObservations_) {
         ores::ore::market::market_datum datum;
         datum.date = std::chrono::year_month_day{
             std::chrono::floor<std::chrono::days>(o.observation_datetime)};
-        datum.key = seriesType_ + "/" + metric_ + "/" + qualifier_ + "/" + o.point_id;
+        datum.key = curve_key + "/" + o.point_id;
         datum.value = o.value;
         data.push_back(std::move(datum));
     }

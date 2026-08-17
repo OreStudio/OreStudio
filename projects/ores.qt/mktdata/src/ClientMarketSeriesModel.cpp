@@ -29,70 +29,6 @@ namespace ores::qt {
 
 using namespace ores::logging;
 
-namespace {
-
-QString asset_class_label(marketdata::domain::asset_class ac) {
-    using namespace marketdata::domain;
-    switch (ac) {
-        case asset_class::fx:
-            return "FX";
-        case asset_class::rates:
-            return "Rates";
-        case asset_class::credit:
-            return "Credit";
-        case asset_class::equity:
-            return "Equity";
-        case asset_class::commodity:
-            return "Commodity";
-        case asset_class::inflation:
-            return "Inflation";
-        case asset_class::bond:
-            return "Bond";
-        case asset_class::cross_asset:
-            return "Cross Asset";
-    }
-    return "Unknown";
-}
-
-QString subclass_label(marketdata::domain::series_subclass sc) {
-    using namespace marketdata::domain;
-    switch (sc) {
-        case series_subclass::spot:
-            return "Spot";
-        case series_subclass::forward:
-            return "Forward";
-        case series_subclass::volatility:
-            return "Volatility";
-        case series_subclass::yield:
-            return "Yield";
-        case series_subclass::basis:
-            return "Basis";
-        case series_subclass::fra:
-            return "FRA";
-        case series_subclass::xccy:
-            return "X-Ccy";
-        case series_subclass::spread:
-            return "Spread";
-        case series_subclass::index_credit:
-            return "Credit Index";
-        case series_subclass::recovery:
-            return "Recovery";
-        case series_subclass::swap:
-            return "Swap";
-        case series_subclass::capfloor:
-            return "Cap/Floor";
-        case series_subclass::seasonality:
-            return "Seasonality";
-        case series_subclass::price:
-            return "Price";
-        case series_subclass::correlation:
-            return "Correlation";
-    }
-    return "Unknown";
-}
-
-} // namespace
-
 ClientMarketSeriesModel::ClientMarketSeriesModel(ClientManager* clientManager, QObject* parent)
     : AbstractClientModel(parent)
     , clientManager_(clientManager)
@@ -123,18 +59,8 @@ QVariant ClientMarketSeriesModel::data(const QModelIndex& index, int role) const
 
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
-            case SeriesType:
-                return QString::fromStdString(s.series_type);
-            case Metric:
-                return QString::fromStdString(s.metric);
-            case Qualifier:
-                return QString::fromStdString(s.qualifier);
-            case AssetClass:
-                return asset_class_label(s.asset_class);
-            case Subclass:
-                return subclass_label(s.series_subclass);
-            case IsScalar:
-                return s.is_scalar ? "Yes" : "No";
+            case Uri:
+                return QString::fromStdString(s.oresmd_uri);
             case Version:
                 return s.version;
             case ModifiedBy:
@@ -154,18 +80,8 @@ ClientMarketSeriesModel::headerData(int section, Qt::Orientation orientation, in
         return {};
 
     switch (section) {
-        case SeriesType:
-            return "Type";
-        case Metric:
-            return "Metric";
-        case Qualifier:
-            return "Qualifier";
-        case AssetClass:
-            return "Asset Class";
-        case Subclass:
-            return "Subclass";
-        case IsScalar:
-            return "Scalar";
+        case Uri:
+            return "oresmd URI";
         case Version:
             return "Ver";
         case ModifiedBy:
@@ -183,8 +99,8 @@ const marketdata::domain::market_series* ClientMarketSeriesModel::getSeries(int 
     return &entries_[static_cast<std::size_t>(row)];
 }
 
-void ClientMarketSeriesModel::set_series_type_filter(const std::string& t) {
-    series_type_filter_ = t;
+void ClientMarketSeriesModel::set_uri_fragment_filter(const std::string& t) {
+    uri_fragment_filter_ = t;
 }
 
 void ClientMarketSeriesModel::set_page_size(std::uint32_t size) {
@@ -231,11 +147,13 @@ void ClientMarketSeriesModel::fetch_data(std::uint32_t offset, std::uint32_t lim
                             .error_details = {}};
                 }
                 auto all = std::move(result->market_series);
-                if (!self->series_type_filter_.empty()) {
+                if (!self->uri_fragment_filter_.empty()) {
                     all.erase(std::remove_if(all.begin(),
                                              all.end(),
                                              [&](const auto& s) {
-                                                 return s.series_type != self->series_type_filter_;
+                                                 return s.oresmd_uri.find(
+                                                            self->uri_fragment_filter_) ==
+                                                        std::string::npos;
                                              }),
                               all.end());
                 }

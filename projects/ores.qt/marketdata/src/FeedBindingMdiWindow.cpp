@@ -243,7 +243,7 @@ void FeedBindingMdiWindow::viewHistorySelected() {
     auto sourceIndex = proxyModel_->mapToSource(selected.first());
     if (auto* feed_binding = model_->getBinding(sourceIndex.row())) {
         BOOST_LOG_SEV(lg(), debug)
-            << "Emitting showBindingHistory for code: " << feed_binding->ore_key;
+            << "Emitting showBindingHistory for code: " << feed_binding->oresmd_uri;
         emit showBindingHistory(*feed_binding);
     }
 }
@@ -267,7 +267,7 @@ void FeedBindingMdiWindow::deleteSelected() {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* feed_binding = model_->getBinding(sourceIndex.row())) {
             ids.push_back(boost::uuids::to_string(feed_binding->id));
-            codes.push_back(feed_binding->ore_key);
+            codes.push_back(feed_binding->oresmd_uri);
         }
     }
 

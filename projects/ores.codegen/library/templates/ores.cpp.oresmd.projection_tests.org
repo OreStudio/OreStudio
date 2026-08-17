@@ -633,4 +633,69 @@ TEST_CASE("from_ore_key_rejects_malformed_keys", tags) {
     REQUIRE_FALSE(oresmd_projections::from_ore_key("IR_SWAP/BOGUS/USD/2D/3M/5Y").has_value());
     REQUIRE_FALSE(oresmd_projections::from_ore_key("SWAPTION/BOGUS/EUR/5Y/2Y/ATM").has_value());
 }
+
+/*
+ * from_index_name() — the reverse of to_index_name(): an index-name string (the fixing
+ * boundary's key space, FIXING/RATE/<index-name>) becomes the ir fixing identifier. The
+ * identifier the inverse builds equals the one the parser builds from the corresponding
+ * URI, and the parser's tenor rule is mirrored: a term family without a tenor is
+ * rejected.
+ */
+
+TEST_CASE("from_index_name_term_family_with_tenor", tags) {
+    REQUIRE(oresmd_projections::from_index_name("USD-LIBOR-3M") ==
+            parse("oresmd://ir/usd?index=libor&tenor=3m&type=fixing"));
+    REQUIRE(oresmd_projections::from_index_name("EUR-EURIBOR-6M") ==
+            parse("oresmd://ir/eur?index=euribor&tenor=6m&type=fixing"));
+}
+
+TEST_CASE("from_index_name_overnight_family_without_tenor", tags) {
+    REQUIRE(oresmd_projections::from_index_name("USD-SOFR") ==
+            parse("oresmd://ir/usd?index=sofr&type=fixing"));
+    REQUIRE(oresmd_projections::from_index_name("EUR-ESTR") ==
+            parse("oresmd://ir/eur?index=estr&type=fixing"));
+    REQUIRE(oresmd_projections::from_index_name("CHF-SARON") ==
+            parse("oresmd://ir/chf?index=saron&type=fixing"));
+}
+
+TEST_CASE("from_index_name_round_trips_the_forward", tags) {
+    // The fixing boundary's contract: the inverse accepts every name the forward
+    // emits, and projects it back identically.
+    const char* const names[] = {"USD-LIBOR-3M", "EUR-EURIBOR-6M", "USD-SOFR", "EUR-ESTR"};
+    for (const char* name : names) {
+        const auto id = oresmd_projections::from_index_name(name);
+        REQUIRE(id.has_value());
+        REQUIRE(oresmd_projections::to_index_name(*id) == name);
+    }
+}
+
+TEST_CASE("from_index_name_rejects_malformed_names", tags) {
+    // A term family without a tenor — the forward never emits it and the parser
+    // rejects it.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD-LIBOR").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("EUR-EURIBOR").has_value());
+    // An unrecognised index family.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD-FOO").has_value());
+    // Wrong segment count.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD").has_value());
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD-LIBOR-3M-EXTRA").has_value());
+    // Empty segments.
+    REQUIRE_FALSE(oresmd_projections::from_index_name("USD--SOFR").has_value());
+}
+
+TEST_CASE("is_scalar_true_for_spot_and_fixing_identities", tags) {
+    REQUIRE(oresmd_projections::is_scalar(parse("oresmd://fx/eurusd?type=quote&quote=spot")));
+    REQUIRE(oresmd_projections::is_scalar(parse("oresmd://ir/usd?index=sofr&type=fixing")));
+    REQUIRE(oresmd_projections::is_scalar(parse("oresmd://ir/usd?index=libor&tenor=3m&type=fixing")));
+    REQUIRE(oresmd_projections::is_scalar(parse("oresmd://equity/aapl?ccy=usd&type=quote&quote=spot")));
+}
+
+TEST_CASE("is_scalar_false_for_curves_vols_and_pointed_quotes", tags) {
+    REQUIRE_FALSE(oresmd_projections::is_scalar(
+        parse("oresmd://ir/usd?index=sofr&tenor=fomc&type=curve&role=discount")));
+    REQUIRE_FALSE(oresmd_projections::is_scalar(
+        parse("oresmd://ir/eur?tenor=3m&type=quote&quote=ir_swap&metric=rate&point=5y")));
+    REQUIRE_FALSE(oresmd_projections::is_scalar(
+        parse("oresmd://fx/eurusd?type=quote&quote=fwd&point=1y")));
+}
 #+end_src

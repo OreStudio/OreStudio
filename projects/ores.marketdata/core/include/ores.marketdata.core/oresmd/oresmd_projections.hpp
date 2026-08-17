@@ -109,6 +109,33 @@ public:
     [[nodiscard]] static std::optional<domain::market_data_identifier>
     from_ore_key(const std::string& key,
                  const ores::ore::market::fx_quote_convention_checker& checker);
+
+    /**
+     * @brief The reverse of to_index_name(): an index-name string (e.g. "USD-LIBOR-3M",
+     * "USD-SOFR") becomes the ir fixing identifier it was projected from, wiring the
+     * fixing boundary's key space — FIXING/RATE/<index-name> — that the registry-backed
+     * from_ore_key() does not seed.
+     *
+     * Mirrors the parser's tenor rule: the two-segment form (ccy-family) is only
+     * accepted for overnight families — a term family (libor, euribor) without a tenor
+     * could not have come from a forward projection, and the parser rejects it. Unknown
+     * families and malformed names (wrong segment count, empty segments) yield
+     * std::nullopt.
+     */
+    [[nodiscard]] static std::optional<domain::market_data_identifier>
+    from_index_name(const std::string& index_name);
+
+    /**
+     * @brief Whether observations of @p identifier carry a point coordinate.
+     *
+     * True for spot-style quotes (fx/equity/commodity spot, credit recovery,
+     * correlation) and fixing identities — their observations have no tenor
+     * or surface coordinate, so a consumer defaults the point to "SPOT".
+     * False for curves, vols, and any quote with a point (fx fwd, ir swap
+     * quote, ...), whose observations carry the coordinate explicitly.
+     */
+    [[nodiscard]] static bool
+    is_scalar(const domain::market_data_identifier& identifier);
 };
 
 }

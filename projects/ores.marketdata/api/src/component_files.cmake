@@ -21,6 +21,7 @@ set(files
     "domain/feed_binding_table.cpp"
     "domain/feed_binding_table_io.cpp"
     "domain/fx_spot_tick_json_io.cpp"
+    "domain/i_feed.cpp"
     "domain/ir_curve_tick_json_io.cpp"
     "domain/market_fixing_json_io.cpp"
     "domain/market_fixing_table.cpp"

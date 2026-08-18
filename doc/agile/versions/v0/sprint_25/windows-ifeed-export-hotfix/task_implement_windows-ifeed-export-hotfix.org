@@ -26,11 +26,11 @@ Restore the Windows CI build: make ores.marketdata.api.dll export IFeed's defaul
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:0D71B3BE-9EC4-425E-A86A-AC375E43CDA4][Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-16                               |
 
 * Acceptance
@@ -63,6 +63,15 @@ new export table.
 
 * Notes
 
+- Review round 1 (2026-08-16): claude[bot] approves both heads. One
+  non-blocking observation: =IPlugin= (ores.qt) has the same shape
+  (abstract, exported, inline-defaulted virtual dtor). Declined for
+  this hotfix: the in-tree build is unaffected (PluginBase.cpp defines
+  its ctor out-of-line in the producer, and nothing in-tree destroys
+  IPlugin instances), and the failing target is only
+  ores.synthetic.api.dll. Follow-up candidate if out-of-tree plugin
+  DLLs ever hit it.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -84,6 +93,17 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Same-shape =IPlugin= (ores.qt) flagged as non-blocking follow-up; fix itself approved | — | Not changed | Out of hotfix scope; in-tree build unaffected; tracked in Notes as follow-up |
 
 * Result
+
+=IFeed='s default ctor and virtual dtor are now declared in the header
+and defined out-of-line in the producer (=domain/i_feed.cpp=), so the
+class-level =ORES_MARKETDATA_API_EXPORT= macro exports them from
+=ores.marketdata.api.dll=; consumers (the ores.synthetic.api derived
+feeds) relink unchanged. Linux verification: =ores.marketdata.api.lib=
+and =ores.synthetic.api.lib= (the Windows-failing target) build, =nm=
+shows =IFeed::IFeed()= and both =~IFeed()= variants exported, and
+=ores.synthetic.api.tests= (incl. =feed_factory_tests=) and
+=ores.synthetic.service.tests= pass. The Windows-side confirmation is
+the scheduled Continuous Windows run after merge. Raised as PR #1988.

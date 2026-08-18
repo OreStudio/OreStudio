@@ -21,11 +21,11 @@ Restore the Windows CI build: make ores.marketdata.api.dll export IFeed's defaul
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-08-16                               |
 
 * Acceptance
@@ -38,10 +38,36 @@ Restore the Windows CI build: make ores.marketdata.api.dll export IFeed's defaul
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:175FB3D6-68C9-4ADC-8060-FB32CFAA4F4D][Scaffold story: Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | DONE | 2026-08-16 | 2026-08-16 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:0D8C0297-E102-4D3B-9AD3-BDBD0454DE6E][Implement Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | STARTED | 2026-08-16 | | Initial task for: Hotfix: Windows link fails on missing IFeed ctor/dtor exports |
+| [[id:0D8C0297-E102-4D3B-9AD3-BDBD0454DE6E][Implement Hotfix: Windows link fails on missing IFeed ctor/dtor exports]] | DONE | 2026-08-16 | 2026-08-18 | Initial task for: Hotfix: Windows link fails on missing IFeed ctor/dtor exports |
 
 * Decisions
+
+- Root cause: =IFeed= is =ORES_MARKETDATA_API_EXPORT= (dllimport in
+  consumers) with inline-defaulted default ctor and virtual dtor. The
+  class is abstract and never constructed or destroyed inside the
+  producer, so the producer never emits or exports the special
+  members; consumers (=fx_spot_feed=, =ir_curve_feed=) import them,
+  and Windows fails at the link of =ores.synthetic.api.dll=.
+- Fix: define both special members out-of-line in the producer
+  (=domain/i_feed.cpp=) rather than in the header — the class-level
+  export macro exports them from =ores.marketdata.api.dll=. Consumers
+  unchanged.
+- =IPlugin= (ores.qt) has the same latent shape (abstract, exported,
+  inline-defaulted virtual dtor); the in-tree build is unaffected
+  (the producer odr-uses the ctor via =PluginBase.cpp=), so it is
+  tracked as a follow-up, not part of this hotfix.
 
 * Out of scope
 
 -
+
+* Result
+
+Implemented and merged as PR #1988 (scaffold PR #1987 merged first).
+=IFeed='s default ctor and virtual dtor are defined out-of-line in
+the producer (=domain/i_feed.cpp=), so the class-level export macro
+exports them from =ores.marketdata.api.dll=; the undefined-symbol
+link failure of =ores.synthetic.api.dll= (red for 8 consecutive
+Windows runs) is healed in all three configs. Linux build and tests
+pass; the scheduled Continuous Windows run after merge is the
+Windows-side confirmation.

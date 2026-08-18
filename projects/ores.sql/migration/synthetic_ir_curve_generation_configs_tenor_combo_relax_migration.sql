@@ -34,6 +34,10 @@
  * On a freshly recreated database the check already has the relaxed
  * definition and this script is a guarded no-op.
  *
+ * No tool executes migration scripts; run this by hand against
+ * persistent environments that predate the fix (see ores.sql's schema
+ * upgrade policy in modeling/component_overview.org).
+ *
  * This script is idempotent.
  */
 

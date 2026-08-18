@@ -87,7 +87,7 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Migration script vs. schema-upgrade policy note | projects/ores.sql/modeling/component_overview.org | Accept | One-shot migrations are applied by hand on persistent environments (precedent b36839fd0f; prime_origin DB verified with the relaxed constraint). Policy note updated to document the escape hatch; migration header now states it is run by hand. |
 
 * Result
 

@@ -54,11 +54,20 @@ of IMMUTABLE functions.
 
 * Result
 
-Fixed by syncing the C++ constant MAX_TIMESTAMP from "9999-12-31 23:59:59"
-to "9999-12-31 23:59:59+00" to match ores_utility_infinity_timestamp_fn()
-in the database. The timezone-aware literal remains timezone-independent
-and prevents PostgreSQL's plan-time folding optimization from dropping the
-valid_to filter in non-UTC sessions.
+Fixed timezone-dependent bitemporal queries across three commits:
 
-Commit: f20e2506ae
-File: projects/ores.database/include/ores.database/repository/helpers.hpp
+1. **Sync MAX_TIMESTAMP** (f20e2506ae): Updated constant from "9999-12-31 23:59:59"
+   to "9999-12-31 23:59:59+00" to match ores_utility_infinity_timestamp_fn() in the
+   database. The timezone-aware literal prevents PostgreSQL's plan-time folding
+   optimization from dropping the valid_to filter in non-UTC sessions.
+
+2. **Replace hardcoded SQL** (0214601c01): Changed image_repository.read_latest_by_ids()
+   from hardcoded string '9999-12-31 23:59:59' to call ores_utility_infinity_timestamp_fn()
+   in the SQL query. Ensures consistency across all read_latest methods.
+
+3. **Introduce MAX_TIMESTAMP_NAIVE** (ccb541d803): Added separate constant for C++
+   entity defaults (naive format without timezone), updated image_repository to use it.
+   Eliminates magic literal "9999-12-31 23:59:59" from C++ code.
+
+All files: projects/ores.database/include/ores.database/repository/helpers.hpp
+          projects/ores.assets/core/src/repository/image_repository.cpp

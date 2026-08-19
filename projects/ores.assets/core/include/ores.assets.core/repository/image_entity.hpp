@@ -21,6 +21,7 @@
 #define ORES_ASSETS_REPOSITORY_IMAGE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
+#include "ores.database/repository/helpers.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <string>
@@ -28,6 +29,7 @@
 namespace ores::assets::repository {
 
 using db_timestamp = ores::database::repository::db_timestamp;
+using ores::database::repository::MAX_TIMESTAMP_NAIVE;
 
 /**
  * @brief Represents an image in the database.
@@ -47,8 +49,8 @@ struct image_entity {
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
-    db_timestamp valid_from = "9999-12-31 23:59:59";
-    db_timestamp valid_to = "9999-12-31 23:59:59";
+    db_timestamp valid_from = MAX_TIMESTAMP_NAIVE;
+    db_timestamp valid_to = MAX_TIMESTAMP_NAIVE;
 };
 
 std::ostream& operator<<(std::ostream& s, const image_entity& v);

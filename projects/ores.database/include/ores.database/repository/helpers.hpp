@@ -31,19 +31,6 @@
 namespace ores::database::repository {
 
 /**
- * @brief Maximum timestamp used for bitemporal records (represents "infinity").
- *
- * This constant is used in SQL queries to mark records that are currently valid.
- * In bitemporal databases, a record with valid_to = MAX_TIMESTAMP indicates
- * that the record is still current and has not been superseded or deleted.
- * Must include explicit UTC offset (+00) to match ores_utility_infinity_timestamp_fn()
- * and remain timezone-independent.
- *
- * Use in: SQL WHERE clauses, make_timestamp() calls, comparison queries.
- */
-inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59+00";
-
-/**
  * @brief Naive maximum timestamp for C++ entity default values.
  *
  * Database entities use this as the default value for valid_from and valid_to
@@ -53,8 +40,24 @@ inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59+00";
  * to the UTC-aware version when inserting.
  *
  * Use in: entity field defaults, fallback values in raw query results.
+ * Must stay synchronized with MAX_TIMESTAMP: same date/time, no timezone offset.
  */
 inline constexpr const char* MAX_TIMESTAMP_NAIVE = "9999-12-31 23:59:59";
+
+/**
+ * @brief Maximum timestamp used for bitemporal records (represents "infinity").
+ *
+ * This constant is used in SQL queries to mark records that are currently valid.
+ * In bitemporal databases, a record with valid_to = MAX_TIMESTAMP indicates
+ * that the record is still current and has not been superseded or deleted.
+ * Includes explicit UTC offset (+00) to match ores_utility_infinity_timestamp_fn()
+ * and remain timezone-independent across all session timezones.
+ *
+ * Use in: SQL WHERE clauses, make_timestamp() calls, comparison queries.
+ * IMPORTANT: Must stay synchronized with MAX_TIMESTAMP_NAIVE (same date/time,
+ * with "+00" offset appended). If sentinel date ever changes, update both.
+ */
+inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59+00";
 
 /**
  * @brief Ensures a repository operation result is successful, throwing an exception if not.

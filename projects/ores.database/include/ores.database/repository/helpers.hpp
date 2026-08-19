@@ -36,8 +36,10 @@ namespace ores::database::repository {
  * This constant is used to mark records that are currently valid (not yet ended).
  * In bitemporal databases, a record with valid_to = MAX_TIMESTAMP indicates
  * that the record is still current and has not been superseded or deleted.
+ * Must include explicit UTC offset (+00) to match ores_utility_infinity_timestamp_fn()
+ * and remain timezone-independent.
  */
-inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
+inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59+00";
 
 /**
  * @brief Ensures a repository operation result is successful, throwing an exception if not.

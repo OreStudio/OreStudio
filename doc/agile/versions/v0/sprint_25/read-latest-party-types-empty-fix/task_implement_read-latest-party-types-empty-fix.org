@@ -8,7 +8,7 @@
 #+filetags: :read-latest-party-types-empty-fix:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-read-latest-party-types-empty-fix
-#+pr:
+#+pr: 1989
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-19
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1989][#1989]] | [ores.database] Sync MAX_TIMESTAMP for timezone-independent bitemporal queries |
 
 * Review
 

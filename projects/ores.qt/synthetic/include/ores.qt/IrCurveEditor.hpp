@@ -32,6 +32,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPointer>
 #include <QSpinBox>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -187,33 +188,33 @@ private:
     std::vector<TemplateRow> entries_;
 
     // Tabs.
-    QTabWidget* tabWidget_ = nullptr;
-    QWidget* provenanceTab_ = nullptr;
-    ProvenanceWidget* provenanceWidget_ = nullptr;
+    QPointer<QTabWidget> tabWidget_;
+    QPointer<QWidget> provenanceTab_;
+    QPointer<ProvenanceWidget> provenanceWidget_;
 
     // Instrument tab.
-    QComboBox* currencyCombo_ = nullptr;
-    QComboBox* indexNameCombo_ = nullptr;
-    QComboBox* roleCombo_ = nullptr;
-    QLabel* oreKeyLabel_ = nullptr;
-    QComboBox* fixedLegFrequencyCombo_ = nullptr;
-    QCheckBox* enabledCheck_ = nullptr;
-    QSpinBox* secondsSpin_ = nullptr;
-    QLineEdit* sourceNameEdit_ = nullptr;
+    QPointer<QComboBox> currencyCombo_;
+    QPointer<QComboBox> indexNameCombo_;
+    QPointer<QComboBox> roleCombo_;
+    QPointer<QLabel> oreKeyLabel_;
+    QPointer<QComboBox> fixedLegFrequencyCombo_;
+    QPointer<QCheckBox> enabledCheck_;
+    QPointer<QSpinBox> secondsSpin_;
+    QPointer<QLineEdit> sourceNameEdit_;
     // Price source: mirrors FxSpotRateEditor's own radio-group pattern (see its header's
     // priceSourceGroup_ comment). Checking "Vintage" makes vintageSourceEdit_/vintageDateEdit_
     // authoritative and disables the Process tab's initial-rate parameter row (initialRateSpin_),
     // since the starting rate is then resolved server-side from a real DEPOSIT-tenor observation
     // -- see ir_curve_generation_config.price_source.
-    QRadioButton* fixedRadio_ = nullptr;
-    QRadioButton* vintageRadio_ = nullptr;
-    QButtonGroup* priceSourceGroup_ = nullptr;
-    QLineEdit* vintageSourceEdit_ = nullptr;
-    QLineEdit* vintageDateEdit_ = nullptr;
-    QPushButton* browseVintageButton_ = nullptr;
+    QPointer<QRadioButton> fixedRadio_;
+    QPointer<QRadioButton> vintageRadio_;
+    QPointer<QButtonGroup> priceSourceGroup_;
+    QPointer<QLineEdit> vintageSourceEdit_;
+    QPointer<QLineEdit> vintageDateEdit_;
+    QPointer<QPushButton> browseVintageButton_;
 
     // Process tab.
-    QComboBox* engineCombo_ = nullptr;
+    QPointer<QComboBox> engineCombo_;
     // One table row per yield_curve_process_parameter_definition for the selected engine:
     // read-only parameter name/description (column 0) + a QDoubleSpinBox per value row (column
     // 1), the spin's range clamped to the definition's min/max and its value seeded from the
@@ -221,27 +222,27 @@ private:
     // populateParameterRows() whenever the engine changes -- the single editing surface, precise
     // entry included, so there is no Simple/Advanced split to keep in sync with a dynamic
     // parameter set (4 rows for the one-factor engines, 7 for Two-Factor Gaussian).
-    QTableWidget* parameterTable_ = nullptr;
+    QPointer<QTableWidget> parameterTable_;
     // The initial_rate spin box, looked up when the table is rebuilt -- the one parameter the
     // vintage price source overrides server-side, so its editor control is disabled in vintage
     // mode (see updatePriceSourceEnablement()).
-    QDoubleSpinBox* initialRateSpin_ = nullptr;
-    QLabel* parametersLoadingLabel_ = nullptr;
+    QPointer<QDoubleSpinBox> initialRateSpin_;
+    QPointer<QLabel> parametersLoadingLabel_;
     std::vector<synthetic::domain::yield_curve_process_parameter_definition>
         parameterDefinitions_; // current engine's, sorted by display_order
     std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>
         valueRows_; // the config's existing value rows (edit mode): seeds the table's spins, and
                     // save compares against them to find stale rows for deletion
-    SampleShortRatePathsChart* pathsChart_ = nullptr;
-    CurveShapePreviewChart* shapeChart_ = nullptr;
+    QPointer<SampleShortRatePathsChart> pathsChart_;
+    QPointer<CurveShapePreviewChart> shapeChart_;
 
     // Curve Template tab.
-    QTableWidget* templateTable_ = nullptr;
-    QPushButton* addRowBtn_ = nullptr;
-    QPushButton* removeRowBtn_ = nullptr;
-    QPushButton* moveUpBtn_ = nullptr;
-    QPushButton* moveDownBtn_ = nullptr;
-    QLabel* templateWarningLabel_ = nullptr;
+    QPointer<QTableWidget> templateTable_;
+    QPointer<QPushButton> addRowBtn_;
+    QPointer<QPushButton> removeRowBtn_;
+    QPointer<QPushButton> moveUpBtn_;
+    QPointer<QPushButton> moveDownBtn_;
+    QPointer<QLabel> templateWarningLabel_;
 
     std::vector<std::string> knownCurrencyCodes_;
     // Full floating_index_type codes (e.g. "USD-SOFR") -- overnight-style only (two "-"-delimited

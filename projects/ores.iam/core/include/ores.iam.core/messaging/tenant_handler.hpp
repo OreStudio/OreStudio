@@ -676,8 +676,9 @@ public:
                         },
                         [&](const std::string& instance_id, std::size_t expected) {
                             const auto mkt_label = "system_market_data." + current_sys_mkt_step;
-                            return system_client.wait_for_workflow_instance(
+                            auto wait_result = system_client.wait_for_workflow_instance(
                                 instance_id, std::chrono::seconds{120}, expected, progress(mkt_label));
+                            return wait_result.success;
                         },
                         [&](const auto& step) {
                             current_sys_mkt_step = step.bundle_code;

@@ -60,10 +60,17 @@ inline std::string feed_conflict_key(const std::string& qualifier, const std::st
  * immediately; the tick loop exits asynchronously. All other methods are
  * single-threaded. Feeds publish their ticks to NATS themselves; no
  * handler is invoked by the loop.
+ *
+ * The default ctor and virtual dtor are declared here but defined
+ * out-of-line in the DLL: consumers import them (ORES_MARKETDATA_API_EXPORT
+ * is dllimport on their side), and an abstract class that is never
+ * instantiated in the producer would otherwise never emit or export
+ * them.
  */
 class ORES_MARKETDATA_API_EXPORT IFeed {
 public:
-    virtual ~IFeed() = default;
+    IFeed();
+    virtual ~IFeed();
 
     /**
      * @brief The producer's unique identity, e.g. "eur_usd_gbm_1".

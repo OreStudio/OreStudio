@@ -8,7 +8,7 @@
 #+filetags: :local-checks-for-pr-velocity:sprint_25:v0:
 #+owner: marco
 #+branch: feature/local-review
-#+pr:
+#+pr: 1990
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-12
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1990][#1990]] | [ci] Wire local review into submit-PR flow; retire review workflows |
 
 * Review
 

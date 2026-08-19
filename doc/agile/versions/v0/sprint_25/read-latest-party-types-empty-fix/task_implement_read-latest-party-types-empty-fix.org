@@ -1,0 +1,71 @@
+:PROPERTIES:
+:ID: 449DC2C5-0B62-4280-A597-8E34C1607B8C
+:END:
+#+title: Task: Implement Hotfix: read_latest_party_types returns empty results
+#+description: Initial task for: Hotfix: read_latest_party_types returns empty results
+#+type: task
+#+level: s1
+#+filetags: :read-latest-party-types-empty-fix:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-read-latest-party-types-empty-fix
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-19
+#+updated: 2026-08-19
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:81F46448-9FD2-4D33-A162-67B0D986C4DE][Hotfix: read_latest_party_types returns empty results]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:81F46448-9FD2-4D33-A162-67B0D986C4DE][Hotfix: read_latest_party_types returns empty results]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-19                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

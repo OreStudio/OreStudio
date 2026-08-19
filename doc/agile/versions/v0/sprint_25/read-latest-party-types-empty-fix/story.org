@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 81F46448-9FD2-4D33-A162-67B0D986C4DE
+:END:
+#+title: Story: Hotfix: read_latest_party_types returns empty results
+#+description: party_type_repository::read_latest() returns empty vector despite written records. Temporal field mismatch or trigger malfunction.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-08-19
+#+updated: 2026-08-19
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Fix bitemporal read_latest queries returning empty results in non-UTC sessions.
+
+The C++ constant MAX_TIMESTAMP was misaligned with the database function
+ores_utility_infinity_timestamp_fn(), causing WHERE clauses to drop their
+valid_to filter in non-UTC sessions due to PostgreSQL plan-time folding
+of IMMUTABLE functions.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-08-19                               |
+
+* Acceptance
+
+- read_latest_party_types test passes with non-UTC sessions
+- All bitemporal read_latest queries return correct results across projects
+- No timezone-dependent behavior in repository queries
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:AE555F71-C9D1-4AA7-94CA-423C0CD2684B][Scaffold story: Hotfix: read_latest_party_types returns empty results]] | DONE | 2026-08-19 | 2026-08-19 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:449DC2C5-0B62-4280-A597-8E34C1607B8C][Implement Hotfix: read_latest_party_types returns empty results]] | DONE | 2026-08-19 | 2026-08-19 | Initial task for: Hotfix: read_latest_party_types returns empty results |
+
+* Decisions
+
+* Out of scope
+
+-
+
+* Result
+
+Fixed timezone-dependent bitemporal queries across three commits:
+
+1. **Sync MAX_TIMESTAMP** (f20e2506ae): Updated constant from "9999-12-31 23:59:59"
+   to "9999-12-31 23:59:59+00" to match ores_utility_infinity_timestamp_fn() in the
+   database. The timezone-aware literal prevents PostgreSQL's plan-time folding
+   optimization from dropping the valid_to filter in non-UTC sessions.
+
+2. **Replace hardcoded SQL** (0214601c01): Changed image_repository.read_latest_by_ids()
+   from hardcoded string '9999-12-31 23:59:59' to call ores_utility_infinity_timestamp_fn()
+   in the SQL query. Ensures consistency across all read_latest methods.
+
+3. **Introduce MAX_TIMESTAMP_NAIVE** (ccb541d803): Added separate constant for C++
+   entity defaults (naive format without timezone), updated image_repository to use it.
+   Eliminates magic literal "9999-12-31 23:59:59" from C++ code.
+
+All files: projects/ores.database/include/ores.database/repository/helpers.hpp
+          projects/ores.assets/core/src/repository/image_repository.cpp

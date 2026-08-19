@@ -110,7 +110,7 @@ image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>
     sql << "SELECT image_id, tenant_id, version, key, description, mime_type, data, "
         << "modified_by, performed_by, change_reason_code, change_commentary, "
         << "valid_from, valid_to " << "FROM ores_assets_images_tbl " << "WHERE image_id IN ("
-        << in_clause.str() << ") " << "AND valid_to = '9999-12-31 23:59:59' "
+        << in_clause.str() << ") " << "AND valid_to = ores_utility_infinity_timestamp_fn() "
         << "ORDER BY valid_from DESC";
 
     auto rows =
@@ -143,8 +143,8 @@ image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>
         entity.performed_by = row[8].value_or("");
         entity.change_reason_code = row[9].value_or("");
         entity.change_commentary = row[10].value_or("");
-        entity.valid_from = row[11].value_or("9999-12-31 23:59:59");
-        entity.valid_to = row[12].value_or("9999-12-31 23:59:59");
+        entity.valid_from = row[11].value_or(std::string(MAX_TIMESTAMP_NAIVE));
+        entity.valid_to = row[12].value_or(std::string(MAX_TIMESTAMP_NAIVE));
 
         results.push_back(image_mapper::map(entity));
     }

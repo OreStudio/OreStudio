@@ -220,9 +220,9 @@ domain JSON I/O).
 
 * The Infinity Sentinel
 
-The sentinel value ="9999-12-31 23:59:59"= represents "this record is
-currently valid, with no known expiry date".  It is used in =valid_to=
-for all live bitemporal records.
+The sentinel value represents "this record is currently valid, with no
+known expiry date".  It is used in =valid_to= for all live bitemporal
+records.
 
 *This value must be referenced via its canonical constant or function in
 each layer.  Never hard-code the literal string directly.*
@@ -233,11 +233,13 @@ each layer.  Never hard-code the literal string directly.*
 -- ores.sql/create/utility/utility_functions_create.sql
 CREATE OR REPLACE FUNCTION ores_utility_infinity_timestamp_fn()
 RETURNS timestamptz AS $$
-    SELECT '9999-12-31 23:59:59'::timestamptz;
+    SELECT '9999-12-31 23:59:59+00'::timestamptz;
 $$ LANGUAGE sql IMMUTABLE;
 #+end_src
 
-Every SQL file that references the sentinel — triggers, stored
+The function returns an explicit UTC timestamp (with =+00= offset) to
+remain timezone-independent when PostgreSQL optimizes the predicate at
+plan time.  Every SQL file that references the sentinel — triggers, stored
 procedures, populate scripts, WHERE clauses in raw SQL strings — must
 call =ores_utility_infinity_timestamp_fn()=.  Grep to audit:
 
@@ -246,25 +248,37 @@ call =ores_utility_infinity_timestamp_fn()=.  Grep to audit:
 grep -rn "'9999-12-31" projects/ores.sql --include="*.sql" | grep -v build
 #+end_src
 
-** C++: =MAX_TIMESTAMP= constant
+** C++: =MAX_TIMESTAMP= and =MAX_TIMESTAMP_NAIVE= constants
 
 #+begin_src cpp
 // ores.database/repository/helpers.hpp
-inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59";
+inline constexpr const char* MAX_TIMESTAMP = "9999-12-31 23:59:59+00";
+inline constexpr const char* MAX_TIMESTAMP_NAIVE = "9999-12-31 23:59:59";
 #+end_src
 
-Every C++ repository file that must compare against the sentinel (sqlgen
-WHERE clauses, =make_timestamp= calls) must use =MAX_TIMESTAMP=.  The
-default values in entity structs also use this string:
+The split reflects two distinct use cases:
+
+- *=MAX_TIMESTAMP= (with +00)*: Used in C++ repository WHERE clauses and
+  =make_timestamp= calls to compare against database columns.  The timezone
+  offset matches =ores_utility_infinity_timestamp_fn()='s return value,
+  ensuring timezone-independent comparisons in all session timezones.
+
+- *=MAX_TIMESTAMP_NAIVE= (without offset)*: Used as default values for
+  =db_timestamp= entity fields (=valid_from=, =valid_to=).  The database
+  INSERT trigger always overwrites these defaults with real timestamps, but
+  the default must match the format expected by the db_timestamp parser
+  (format string ="%Y-%m-%d %H:%M:%S"= with no timezone token).
+
+Example entity defaults:
 
 #+begin_src cpp
-db_timestamp valid_from = "9999-12-31 23:59:59";  // matches MAX_TIMESTAMP
-db_timestamp valid_to   = "9999-12-31 23:59:59";  // matches MAX_TIMESTAMP
+db_timestamp valid_from = MAX_TIMESTAMP_NAIVE;  // "9999-12-31 23:59:59"
+db_timestamp valid_to   = MAX_TIMESTAMP_NAIVE;  // "9999-12-31 23:59:59"
 #+end_src
 
-These two constants are the *only* authorised representations of the
-sentinel.  They both resolve to the same value; the split exists because
-PostgreSQL and C++ each have their own canonicalisation mechanism.
+These constants are the *only* authorised representations of the sentinel.
+The two constants must stay in sync: =MAX_TIMESTAMP_NAIVE= is the date/time
+portion of =MAX_TIMESTAMP= with no offset.
 
 * Repository WHERE Clauses
 

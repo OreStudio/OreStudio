@@ -143,8 +143,8 @@ image_repository::read_latest_by_ids(context ctx, const std::vector<std::string>
         entity.performed_by = row[8].value_or("");
         entity.change_reason_code = row[9].value_or("");
         entity.change_commentary = row[10].value_or("");
-        entity.valid_from = row[11].value_or("9999-12-31 23:59:59");
-        entity.valid_to = row[12].value_or("9999-12-31 23:59:59");
+        entity.valid_from = row[11].value_or(std::string(MAX_TIMESTAMP_NAIVE));
+        entity.valid_to = row[12].value_or(std::string(MAX_TIMESTAMP_NAIVE));
 
         results.push_back(image_mapper::map(entity));
     }

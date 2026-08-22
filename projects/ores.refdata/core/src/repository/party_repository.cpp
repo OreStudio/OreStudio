@@ -263,7 +263,8 @@ party_repository::read_descendants(context ctx, const boost::uuids::uuid& root_i
     const std::string sql = "WITH RECURSIVE party_tree AS ("
                             "  SELECT id FROM ores_refdata_parties_tbl"
                             "  WHERE id = '" +
-                            id_str + "' AND valid_to = ores_utility_infinity_timestamp_fn()"
+                            id_str +
+                            "' AND valid_to = ores_utility_infinity_timestamp_fn()"
                             "  UNION ALL"
                             "  SELECT p.id FROM ores_refdata_parties_tbl p"
                             "  JOIN party_tree pt ON p.parent_party_id = pt.id"

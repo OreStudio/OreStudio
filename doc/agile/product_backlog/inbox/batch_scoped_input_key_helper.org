@@ -1,0 +1,46 @@
+:PROPERTIES:
+:ID: 0EED3FC6-4635-4AD8-9E25-90FCF08723B4
+:END:
+#+title: Add a batch-scoped input key helper to compute_storage
+#+description: Add an input_key helper for the batch-scoped shared input bundle so dispatch and download do not hand-build the key.
+#+type: capture
+#+level: cross
+#+filetags: :compute:shell:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+~process_dispatch_batch~ builds the shared input bundle key by hand
+as ~"input/{batch_id}.tar.gz"~
+(~projects/ores.shell/src/app/commands/compute_commands.cpp~), and
+~download-input~ reverses the same string.
+~ores.compute.api/net/compute_storage.hpp~ defines ~input_key~ and
+~input_path~ keyed by workunit id — the only documented key
+convention — so the batch-scoped key silently diverges from it. Add
+a batch-scoped variant (e.g. ~input_key(batch_id)~) or a documented
+batch-bundle helper in ~compute_storage~, and use it in both
+~dispatch-batch~ and ~download-input~.
+
+* Why
+
+A future caller who follows the documented convention computes a
+path that never exists; key drift is silent until a download fails.
+Two review rounds on PR #1992 flagged it. The round documented the
+batch-scoped convention in a comment; the helper itself is this
+follow-up.
+
+* References
+
+- Review finding 4 on PR #1992 (comment 5410154095) and finding 3
+  on comment 5410160036.
+- ~ores.compute.api/net/compute_storage.hpp~ — ~input_key~ /
+  ~input_path~ (workunit-scoped).
+- ~projects/ores.shell/src/app/commands/compute_commands.cpp~ —
+  ~process_dispatch_batch~ and ~process_download_input~.
+
+* See also
+
+- [[id:7FB32716-261C-45D9-A5C9-6A43FF2AD6F5][Task: Add compute read verbs to the shell]] — the PR that surfaced this.

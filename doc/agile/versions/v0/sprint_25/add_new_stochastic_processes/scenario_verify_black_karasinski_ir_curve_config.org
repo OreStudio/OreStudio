@@ -17,13 +17,21 @@ This page documents a test scenario verifying [[id:CDB12DB0-B0FF-4507-B94F-17540
 
 * Before you start
 
-- Database recreated 2026-08-12 from the merged BK head (drift
-  current, =compass db status=) — includes the five process types and
-  the 23 parameter definitions seeded by PR #1980.
+- Database recreated 2026-08-25 from the rebased BK head (HEAD
+  40d2f3d82d, schema 0.0.25) — includes the five process types and the
+  23 parameter definitions seeded by PR #1980. Note: =compass db
+  status= reports "stale" because the drift check compares HEAD's
+  committer date (set by the rebase) against the DB's recorded author
+  date of the same commit — the schema is current, this is a false
+  positive.
 - Acme Corporation holding group provisioned via =compass shell -f
   projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
-  — completed with no failed steps.
-- Services running (=compass services status=: synthetic service up).
+  — all steps completed. The final =bundles publish risk_management
+  --wait= poll failed against a stale workflow service (binaries
+  predated the rebuild); the dispatched workflow itself completed all
+  4 steps, verified via =workflow steps=.
+- Services restarted 2026-08-25 with freshly built binaries (=compass
+  services status=: synthetic service up).
 - The client is launched with this scenario preloaded (System >
   Testing > Scenario Runner).
 
@@ -72,6 +80,12 @@ notes back as a =*** Result= child heading directly under it.
 - After login, confirm the Acme Corporation party is selected and the
   main window opens with the menu bar.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Open the Market Simulator
 
 - Menu: Market Data > Synthetic > Market Simulator.
@@ -79,11 +93,23 @@ notes back as a =*** Result= child heading directly under it.
   the toolbar (Reload, New Feed, New FX Rate, New IR Curve, Edit,
   Delete, Start Feed, Stop Feed).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Create a new feed
 
 - Click the =New Feed= toolbar button.
 - Name it =BK Feature Test= and accept.
 - Confirm the feed appears in the left tree.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
 
 ** Start a new IR curve config
 
@@ -95,6 +121,12 @@ notes back as a =*** Result= child heading directly under it.
   combos must populate with reference data); leave Role and Source
   Name at their defaults.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
 ** Select the Black-Karasinski engine
 
 - On the Process tab, open the =Engine:= combo at the top.
@@ -102,6 +134,13 @@ notes back as a =*** Result= child heading directly under it.
   Vasicek, Cox-Ingersoll-Ross, Hull-White, Two-Factor Gaussian).
 - Select it — the tooltip shows "Black-Karasinski: d ln r = κ(θ−ln
   r)dt + σ dW..." and the parameter table reloads with four rows.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | we get an error: no parameter definitions for engine 'VASICEK' |
 
 ** Check the four BK parameter fields
 
@@ -114,6 +153,12 @@ notes back as a =*** Result= child heading directly under it.
   initial_rate clamps to =1e-6= (strictly positive — 0 is not
   selectable); kappa and theta have no lower bound.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Confirm the live curve preview renders
 
 - On the Process tab, confirm the curve shape chart and the sample
@@ -123,11 +168,23 @@ notes back as a =*** Result= child heading directly under it.
   dispatch or validation failure would show an error banner instead.
 - No error banner is displayed.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Change sigma, save the config
 
 - Set sigma =0.02= (edit the spin box on the sigma row).
 - Click =Save=; enter a change reason if prompted.
 - Confirm the new config appears under =BK Feature Test= in the tree.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
 
 ** Reopen and confirm persistence
 
@@ -138,6 +195,12 @@ notes back as a =*** Result= child heading directly under it.
 - kappa, theta, initial_rate show their saved values (0.5,
   -3.218876, 0.03).
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Regression: Vasicek config unaffected
 
 - With the feed still selected, click =New IR Curve= again.
@@ -146,20 +209,32 @@ notes back as a =*** Result= child heading directly under it.
   and its preview renders.
 - Save it with a change reason, then close the editor.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 ** Delete both test configs
 
 - Select each config in the tree and click =Delete=, confirming the
   prompt.
 - Confirm both disappear from the tree and the feed remains.
 
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
 * Results
 
 | Field         | Value |
 |---------------+-------|
-| Status        |       |
-| Completed at  |       |
-| Branch        |       |
-| Commit        |       |
-| Worktree      |       |
+| Status        | FAILED |
+| Completed at  | 2026-08-25T15:04:29Z |
+| Branch        | feature/bk-feature-test-scenario |
+| Commit        | bcc5c1d740 |
+| Worktree      | eager_maxwell |
 
 * Notes

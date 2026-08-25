@@ -696,7 +696,9 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
     const auto batch_id_str = boost::uuids::to_string(batch->id);
 
     // The shared input bundle: packed once, uploaded once, referenced by
-    // every workunit of the batch.
+    // every workunit of the batch. The key is batch-scoped, so
+    // compute_storage::input_key (workunit-scoped) does not apply;
+    // download-input reverses the same convention.
     const auto key = "input/" + batch_id_str + ".tar.gz";
     const auto input_uri = ores::storage::net::storage_paths::make_object_path(
         ores::compute::net::compute_storage::bucket, key);
@@ -720,26 +722,11 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
     const auto reason_code = std::string(default_reason_code);
     const std::string commentary = "Dispatched via compute dispatch-batch";
 
-    compute::domain::batch dispatched = *batch;
-    dispatched.status = "dispatched";
-    dispatched.modified_by = username;
-    dispatched.performed_by = username;
-    dispatched.change_reason_code = reason_code;
-    dispatched.change_commentary = commentary;
-
-    compute::messaging::save_batch_request batch_req;
-    batch_req.batch = dispatched;
-    batch_req.change_reason_code = reason_code;
-    batch_req.change_commentary = commentary;
-    auto batch_resp = do_request(out, session, batch_req, std::chrono::seconds(30), true);
-    if (!batch_resp || !batch_resp->success) {
-        fail(out) << "Failed to mark batch dispatched: "
-                  << (batch_resp ? batch_resp->message : "no response") << std::endl;
-        return;
-    }
-
     // One workunit per job; each save dispatches to the grid (the
     // backend creates the result rows and publishes the assignments).
+    // The batch stays "open" until every workunit has been saved: if a
+    // save fails partway, the batch can be dispatched again instead of
+    // being stranded mid-flight with no way to finish it.
     for (std::uint32_t i = 0; i < *job_count; ++i) {
         compute::domain::workunit wu;
         wu.id = boost::uuids::random_generator()();
@@ -748,6 +735,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
         wu.input_uri = input_uri;
         wu.priority = 1;
         wu.target_redundancy = 1;
+        wu.canonical_result_id = boost::uuids::uuid{};
         wu.modified_by = username;
         wu.performed_by = username;
         wu.change_reason_code = reason_code;
@@ -765,6 +753,24 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
         }
         BOOST_LOG_SEV(lg(), info) << "Dispatched job " << (i + 1) << "/" << *job_count
                                   << " (workunit " << boost::uuids::to_string(wu.id) << ")";
+    }
+
+    compute::domain::batch dispatched = *batch;
+    dispatched.status = "dispatched";
+    dispatched.modified_by = username;
+    dispatched.performed_by = username;
+    dispatched.change_reason_code = reason_code;
+    dispatched.change_commentary = commentary;
+
+    compute::messaging::save_batch_request batch_req;
+    batch_req.batch = dispatched;
+    batch_req.change_reason_code = reason_code;
+    batch_req.change_commentary = commentary;
+    auto batch_resp = do_request(out, session, batch_req, std::chrono::seconds(30), true);
+    if (!batch_resp || !batch_resp->success) {
+        fail(out) << "Failed to mark batch dispatched: "
+                  << (batch_resp ? batch_resp->message : "no response") << std::endl;
+        return;
     }
 
     out << "Dispatched " << *job_count << " job(s) of batch " << external_ref

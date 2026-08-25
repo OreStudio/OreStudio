@@ -2,7 +2,7 @@
 :ID: 9B56689B-6EB0-448D-A5FA-8C029803B9F5
 :END:
 #+title: Task: Identity core: market_series and feed_binding store oresmd URIs
-#+description: market_series and feed_binding gain oresmd_uri columns; backfill existing rows through the inverse projection; drop series_type/metric/qualifier and ore_key; repositories, registrars, and ingest loops read URIs; auto-create uses identifiers.
+#+description: market_series and feed_binding gain oresmd_uri columns; drop series_type/metric/qualifier and ore_key; repositories, registrars, and ingest loops read URIs; auto-create uses identifiers. Hard cutover: no backfill, fresh databases carry the new schema.
 #+type: task
 #+level: s1
 #+filetags: :adopt-oresmd-native-market-data-identity:sprint_25:v0:
@@ -56,8 +56,7 @@ uses URIs.
 
 Implementation order, dependency-driven: the projections library is
 the shared boundary every other step consumes, so it comes first;
-the entity rewrites follow; hand-written consumers and the backfill
-migration land last.
+the entity rewrites follow; hand-written consumers land last.
 
 1. =from_index_name= in the projections library: the reverse of
    =to_index_name=, wiring the fixing boundary the inverse-projection
@@ -85,12 +84,11 @@ migration land last.
    stays ORE-shaped (projected from the URI via =to_quote_key=) —
    the wire is step 4 of the story. Qt hand-written consumers
    display and edit URIs.
-4. Backfill migration (one-shot, committed with the feature, per the
-   =synthetic_ir_curve_generation_configs= precedent): add the
-   =oresmd_uri= columns, populate from the inverse projection of the
-   existing =ore_key= / component columns, drop the old columns and
-   the unique indexes that referenced them, recreate the indexes on
-   the URI; rows with no mapping are dropped or rejected.
+4. No backfill migration: the cutover is hard, per the story's
+   scope. Fresh databases carry the new schema directly (the
+   =ores.sql= create scripts); environments recreate from scratch.
+   The inverse projections stay — ORE-format import still converts
+   at the boundary.
 
 * Notes
 
@@ -120,10 +118,11 @@ via its "Verifies task" field.
 * Result
 
 Shipped on [[id:31C868B9-306E-4282-BA8C-07E647021B34][branch]]
-=feature/identity-core-series-and-bindings= as four commits
+=feature/identity-core-series-and-bindings= as five commits
 ([ores.marketdata,ores.codegen] from_index_name inverse projection,
 [ores.marketdata,ores.sql] series and bindings store URIs,
-[ores.qt,ores.synthetic] consumers, [agile] close-out):
+[ores.qt,ores.synthetic] consumers, [agile] close-out,
+[ores.marketdata,ores.sql] drop the backfill migration):
 
 - =market_series= now has one =oresmd_uri= column; =series_type=,
   =metric=, =qualifier=, =asset_class=, =series_subclass=, and
@@ -138,13 +137,11 @@ Shipped on [[id:31C868B9-306E-4282-BA8C-07E647021B34][branch]]
   (tenant_id, party_id, oresmd_uri), both tables, filtered on
   =valid_to= infinity. =read_latest_by_type= became
   =read_latest_by_uri=.
-- Backfill: the one-shot migration
-  =marketdata_market_series_and_feed_bindings_oresmd_uri_migration.sql=
-  projects existing rows through =from_ore_key= /
-  =from_index_name= / =from_feed_qualifier= (unmappable rows
-  hard-deleted with notices), drops the old columns, checks, delete
-  rules, and indexes, and recreates the indexes on the URI. Rerun on
-  an already-migrated DB is a clean no-op (guarded).
+- No backfill migration: the cutover is hard, per the story's
+  scope. Fresh databases carry the new schema directly (the
+  =ores.sql= create scripts); environments recreate from scratch.
+  The inverse projections stay — ORE-format import still converts
+  at the boundary.
 - End-to-end URI read/write: repositories, both ingest loops,
   =import_service= (ORE-key and index-name edges convert via the
   inverse projections; the key reconstruction now carries the point),

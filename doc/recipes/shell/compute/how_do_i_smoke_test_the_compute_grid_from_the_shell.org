@@ -39,11 +39,13 @@ EOF
 #+end_src
 
 The batch external reference is =smoke-$SMOKE_REF=; set =SMOKE_REF= to
-anything unique. The job count is 15; the =--smoke= switch bounds it
-to the 10 to 20 range. =grid-stats --watch --smoke= polls every 10
-seconds until the batch drains, then asserts every host online at the
-drain transition was exercised and every result has outcome Success.
-The script fails if either check does not hold.
+anything unique. Set =INPUT_DIR= to the input =tar.gz= tarball;
+=dispatch-batch= uploads it verbatim. The job count is 15; the
+=--smoke= switch bounds it to the 10 to 20 range.
+=grid-stats --watch --smoke= polls every 10 seconds until the batch
+drains, then asserts every host online at the drain transition was
+exercised and every result has outcome Success. The script fails if
+either check does not hold.
 
 * Script
 

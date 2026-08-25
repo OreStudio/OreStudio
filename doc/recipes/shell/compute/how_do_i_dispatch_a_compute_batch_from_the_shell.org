@@ -2,7 +2,7 @@
 :ID: A5834202-A38A-4FB4-B341-CAD621C1D8ED
 :END:
 #+title: How do I dispatch a compute batch from the shell?
-#+description: Pack an input directory, upload it once as the batch input bundle, and dispatch one job per job count from the shell.
+#+description: Upload an input tarball once as the batch input bundle, and dispatch one job per job count from the shell.
 #+type: recipe
 #+level: cross
 #+filetags: :recipe:shell:compute:batch:
@@ -19,7 +19,7 @@ How do I dispatch a compute batch from the shell?
 
 * Answer
 
-Log in as the system super admin, then run =compute dispatch-batch= with the batch external reference, the job count, the app version id and the input directory. The command packs the directory, uploads it once as the batch input bundle, marks the batch dispatched, and saves one workunit per job. Each save dispatches to the grid: the backend creates the result rows and publishes the assignments.
+Log in as the system super admin, then run =compute dispatch-batch= with the batch external reference, the job count, the app version id and the input =tar.gz= tarball. The command uploads the tarball verbatim (as the Qt UI does), marks the batch dispatched, and saves one workunit per job. Each save dispatches to the grid: the backend creates the result rows and publishes the assignments.
 
 #+name: dispatch-compute-batch
 #+begin_src ores-shell :exports none
@@ -36,8 +36,8 @@ exit
 EOF
 #+end_src
 
-The pack-and-upload runs once: every workunit in the batch shares the
-same input bundle, stored as =input/{batch_id}.tar.gz=.
+The upload runs once: every workunit in the batch shares the same
+input bundle, stored as =input/{batch_id}.tar.gz=.
 
 * Script
 

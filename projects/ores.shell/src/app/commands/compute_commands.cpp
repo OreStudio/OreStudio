@@ -277,7 +277,7 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
             process_dispatch_batch(std::ref(out), std::ref(session), args);
         },
         "Dispatch a compute batch's jobs",
-        {"<external_ref> <job_count> <app_version_id> <input_dir>"});
+        {"<external_ref> <job_count> <app_version_id> <input_tarball>"});
 
     compute_menu->Insert(
         "list-workunits",
@@ -646,7 +646,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
     }
     if (parsed->positionals.size() != 4) {
         fail(out) << "Usage: compute dispatch-batch <external_ref> <job_count> "
-                     "<app_version_id> <input_dir>"
+                     "<app_version_id> <input_tarball>"
                   << std::endl;
         return;
     }
@@ -662,7 +662,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
         return;
     }
     const auto& app_version_id = parsed->positionals[2];
-    const auto& input_dir = parsed->positionals[3];
+    const auto& tarball = parsed->positionals[3];
 
     const auto batch = find_batch_by_external_ref(out, session, external_ref);
     if (!batch)
@@ -698,24 +698,24 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
 
     const auto batch_id_str = boost::uuids::to_string(batch->id);
 
-    // The shared input bundle: packed once, uploaded once, referenced by
-    // every workunit of the batch. The key is batch-scoped, so
-    // compute_storage::input_key (workunit-scoped) does not apply;
-    // download-input reverses the same convention.
+    // The shared input bundle: uploaded once, referenced by every workunit
+    // of the batch. The key is batch-scoped, so compute_storage::input_key
+    // (workunit-scoped) does not apply; download-input reverses the same
+    // convention. The tarball is uploaded verbatim, matching the Qt UI
+    // convention of uploading the file as-is.
     const auto key = "input/" + batch_id_str + ".tar.gz";
     const auto input_uri = ores::storage::net::storage_paths::make_object_path(
         ores::compute::net::compute_storage::bucket, key);
 
-    if (!std::filesystem::is_directory(input_dir)) {
-        fail(out) << "Input directory not found: " << input_dir << std::endl;
+    if (!std::filesystem::is_regular_file(tarball)) {
+        fail(out) << "Input tarball not found: " << tarball << std::endl;
         return;
     }
 
     BOOST_LOG_SEV(lg(), info) << "Uploading input bundle " << key << " for batch " << external_ref;
     try {
         ores::storage::net::storage_transfer transfer(default_http_base_url());
-        transfer.pack_and_upload(input_dir, std::string(ores::compute::net::compute_storage::bucket),
-                                 key);
+        transfer.upload(std::string(ores::compute::net::compute_storage::bucket), key, tarball);
     } catch (const std::exception& e) {
         fail(out) << "Input bundle upload failed: " << e.what() << std::endl;
         return;

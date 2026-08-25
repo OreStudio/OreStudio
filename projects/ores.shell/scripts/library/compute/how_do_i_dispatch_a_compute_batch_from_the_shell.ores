@@ -1,5 +1,5 @@
 # How do I dispatch a compute batch from the shell?
-# Pack an input directory, upload it once as the batch input bundle, and dispatch one job per job count from the shell.
+# Upload an input tarball once as the batch input bundle, and dispatch one job per job count from the shell.
 #
 # GENERATED from doc/recipes/shell/compute/how_do_i_dispatch_a_compute_batch_from_the_shell.org — do not edit by hand.
 # Regenerate with: ./compass.sh build --direct tangle_shell_scripts

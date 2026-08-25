@@ -26,11 +26,11 @@ Bootstrap the SOFR OIS short end off consecutive FOMC-meeting-dated pillars with
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                            |
+| State        | DONE                            |
 | Parent story | [[id:23A30224-3C59-44CA-BBF9-5CA875578F65][FOMC-dated OIS short end: calendar-event model and flat-forward pillars]] |
-| Now          | Resumed (2026-08-12) for the end-to-end verification: feed start through the folder cascade, republish chain. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Run the end-to-end verification; fix anything it surfaces. |
+| Next         | Nothing. |
 | Last touched | 2026-08-12                               |
 
 * Acceptance

@@ -84,7 +84,7 @@ parameterisation and conventions.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the authoritative note on pillar quoting (ATM/RR/STR),
   delta conventions and smile models; this note covers only the *driving* of one
   surface from another.
-- [[id:96108D1A-6808-4D68-B226-FD03192C8009][Skew Stickiness Ratio]] — the surface-dynamics assumptions (sticky strike vs
+- [[id:96108D1A-6808-4D68-B226-FD03192C8009][Volatility: Skew Stickiness Ratio]] — the surface-dynamics assumptions (sticky strike vs
   sticky delta) behind rebasing.
 - [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — constraints a (driven) surface must satisfy.
 - [[id:C39E7B78-B305-4E14-A46B-29EF85BFCBCC][Correlation management]] — the correlation inputs this derivation consumes.

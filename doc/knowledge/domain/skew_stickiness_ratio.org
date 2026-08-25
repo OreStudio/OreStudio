@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 96108D1A-6808-4D68-B226-FD03192C8009
 :END:
-#+title: Skew Stickiness Ratio
+#+title: Volatility: Skew Stickiness Ratio
 #+description: How an implied volatility surface moves when spot moves: sticky strike vs sticky delta, the Skew Stickiness Ratio (SSR) that measures ATM-vol response against the ATM skew, and its effect on delta and gamma.
 #+type: knowledge
 #+level: cross
@@ -112,6 +112,33 @@ and, approximately, $K_1 \approx K_0\,(S_1/S_0)$ when $F \propto S$.
 Thus a 10% rise in spot shifts the smile approximately 10% higher in
 strike space.
 
+** A third regime: sticky local volatility
+
+Derman's original paper describes three regimes, not two. The third —
+*sticky local volatility* (also called the sticky implied tree) —
+treats the local volatility $\sigma_{loc}(S, t)$ as a static
+function, so the implied surface depends on spot and strike together,
+$\Sigma = \Sigma(K, S)$. Since implied vol is approximately the
+average of local vols between spot and strike, its behaviour differs
+sharply from both sticky rules:
+
+- Volatility is *anti-correlated with the index*: fixed-strike vol
+  falls as the index rises, and ATM vol falls at roughly twice that
+  rate.
+- In SSR language this is a regime *above* sticky strike:
+  $\text{SSR} \approx 2$ for local volatility with weak skew — which is
+  also the short-maturity limit of classical stochastic-volatility
+  models (see the SSR section below).
+
+Empirically, no pure regime holds for long. Derman's own observation:
+calm, rising markets behave closer to sticky strike; fearful markets
+approach sticky local volatility. And on S&P 500 OTC data, Daglish,
+Hull and Suo (2007) found sticky strike the worst-performing of the
+three rules. A theoretical caveat for sticky strike: Balland (2002)
+shows the only arbitrage-free sticky-strike model is plain
+Black-Scholes — the regimes are practical conventions, not exact
+dynamics.
+
 ** The two rules in plain terms
 
 Draw the smile as a curve on a chart with strike on the horizontal
@@ -165,8 +192,9 @@ Interpreting the number:
 
 ** SSR as a surface-dynamics parameter
 
-The SSR relation can be rearranged to give the local spot-volatility
-dynamics directly:
+The SSR relation can be rearranged to give the local dynamics of the
+*ATM* volatility directly — every derivative below is evaluated at the
+ATM point:
 
 $$\frac{d\sigma}{d\ln S} = \text{SSR}\cdot\frac{\partial\sigma}{\partial\ln K}, \qquad \text{hence} \quad \frac{d\sigma}{dS} = \frac{\text{SSR}}{S}\cdot\frac{\partial\sigma}{\partial\ln K}$$
 
@@ -179,20 +207,61 @@ SSR thus gives a continuous measure between the two classical
 assumptions — and permits values outside $[0, 1]$ when the market is
 more extreme than either.
 
+** SSR in the literature: origin, estimation, and reference values
+
+The Skew Stickiness Ratio was introduced by Lorenzo Bergomi
+(*Stochastic Volatility Modeling*, 2016, ch. 9.4) and is now standard
+vocabulary for the joint dynamics of an asset and its volatility
+(Fukasawa 2026). It is a statistic of that joint dynamics, and in
+practice it must be estimated:
+
+- *Estimation.* Empirically, SSR is the regression coefficient of ATM
+  implied-vol changes on underlying log returns, normalised by the ATM
+  skew — the finite-move approximation above is its informal
+  counterpart. The ratio is well-defined only when the ATM skew is
+  non-zero: it is most reliable where the skew is deep and persistent
+  (equity indices), and needs care where the smile is flat.
+- *Reference values.* SSR $= 0$ and $1$ are the two classical regimes;
+  sticky local volatility with weak skew corresponds to
+  $\text{SSR} \approx 2$, and classical (non-rough)
+  stochastic-volatility models have short-maturity limit 2, declining
+  toward 1 as maturity grows (Vargas, Dao and Bouchaud 2013).
+  Empirically, index markets sit around $\text{SSR} = 3/2$ for tenors
+  from one month to a few years (Bergomi, Euro Stoxx 50 and S&P 500),
+  and can exceed 2 at short maturities (Vargas, Dao and Bouchaud, S&P
+  500 and DAX). Under flat variance-swap curves and time homogeneity,
+  the SSR is model-independently bounded in $[1, 2]$ (Bergomi).
+- *Why it matters.* SSR measures the cross-gamma risk between spot
+  and volatility. A model whose SSR does not match the market's will
+  mis-hedge vega and misprice the spot-vol interaction in scenarios.
+
 ** Surface-aware (adjusted) delta
 
 Substituting the SSR relation into the total spot sensitivity gives
-the *adjusted delta*:
+the *adjusted delta*. For an option *at the money* — the standard
+framing for quoting a delta hedge — the volatility that matters is
+the ATM volatility, whose dynamics the SSR parameterises:
 
 $$\Delta_{adj} = \Delta_{BS} + \text{Vega}\cdot\frac{\text{SSR}}{S}\cdot\frac{\partial\sigma}{\partial\ln K}$$
 
-With SSR $= 0$ (sticky delta), $\Delta_{adj} = \Delta_{BS}$: the
-surface does not move with spot, so the conventional delta is the
-complete answer. With SSR $= 1$ (sticky strike) the surface does move,
-and the vega term contributes through the ATM skew. The adjusted delta
-is the hedge ratio that survives if spot *and* the surface move
-together; hedging with the conventional Black-Scholes delta alone
-ignores the surface-induced component.
+For an ATM option, the limiting cases are:
+
+- SSR $= 0$ (sticky delta): ATM vol does not respond to spot, so
+  $\Delta_{adj} = \Delta_{BS}$ — the conventional delta is the
+  complete answer.
+- SSR $= 1$ (sticky strike): the ATM point slides along the fixed
+  smile, and the vega term contributes through the ATM skew.
+
+*For a fixed-strike option the picture inverts.* Under sticky strike,
+the vol at the option's strike never moves, so the conventional
+Black-Scholes delta is the complete answer; under sticky delta the
+smile translates with spot, the vol at the fixed strike changes
+(by roughly $-\text{skew}\times\Delta\ln S$ at the money), and the
+delta deviates from $\Delta_{BS}$. Derman notes the sticky-delta rule
+is self-referential — the delta is itself a function of volatility.
+The two framings are consistent: the SSR formula above is the ATM
+case, and "the option is at the money" is the standard
+market-maker's assumption when quoting a delta hedge.
 
 ** What about gamma?
 
@@ -208,10 +277,10 @@ $$\Gamma_{adj} = \Gamma_{BS} + 2\,\text{Vanna}\cdot\frac{d\sigma}{dS} + \text{Vo
 where *vanna* $= \partial^2 V/\partial S\,\partial\sigma$ (the
 cross-sensitivity: how delta responds to vol, equivalently how vega
 responds to spot) and *vomma* $= \partial^2 V/\partial\sigma^2$ (the
-curvature of vega in vol). Under sticky delta ($d\sigma/dS = 0$) all
-the extra terms vanish and $\Gamma_{adj} = \Gamma_{BS}$; under any
-non-zero spot-vol dynamics, gamma gains vanna, vomma, and vol-of-vol
-contributions.
+curvature of vega in vol). For an ATM option under sticky delta
+($d\sigma/dS = 0$) all the extra terms vanish and
+$\Gamma_{adj} = \Gamma_{BS}$; under any non-zero spot-vol dynamics,
+gamma gains vanna, vomma, and vol-of-vol contributions.
 
 ** Why the choice matters in practice
 
@@ -229,6 +298,47 @@ contributions.
   observed SSR helps assess its realism (the [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage
   conditions]] page covers how a static surface is constrained, a
   complementary problem to the dynamics here).
+
+** The concepts are not FX-specific
+
+Nothing in the sticky-strike / sticky-delta / SSR machinery is specific
+to FX. The terminology originated in equity option markets, and the same
+question — what happens to the smile when spot moves — is asked in every
+market that trades a vol surface: equity indices and single names, rates
+(swaption markets), commodities, and crypto.
+
+- *Equity (index options).* The classic home of the terminology: Derman's
+  "Regimes of Volatility" framed sticky strike vs sticky delta for equity
+  index options. Equity surfaces are quoted strike-by-strike, so they are
+  sticky strike *by construction* in the same sense as a strike-space FX
+  surface — the smile does not move when spot moves unless the desk
+  re-quotes it. Empirically, no pure regime holds: measured index SSRs
+  sit around 3/2 (see the SSR section), and at short maturities they
+  can exceed 2 — more ATM-vol response than any classical regime
+  predicts (Vargas, Dao and Bouchaud, S&P 500 and DAX). The regime
+  also flips with market conditions: in a sharp sell-off, ATM vol
+  typically rises by more than the static skew predicts, an SSR above 1
+  (the 2008 and 2020 crash vol spikes are extreme examples). The SSR
+  framing is standard in the equity vol literature; Bergomi's
+  *Stochastic Volatility Modeling* develops the index version in
+  detail.
+
+- *Rates (swaption markets).* Swaption vol surfaces are anchored to ATM
+  forward swap rates, and the standard models — SABR on forward rates,
+  the (L)MM family — attach volatility to the forward rate level, which
+  is sticky delta in spirit. Rate vol desks face the same spot-vol
+  co-movement question whenever the underlying swap rate moves.
+
+- *Commodities and crypto.* Surfaces exist per underlying and are quoted
+  in strike, moneyness, or delta space depending on the venue; the
+  framework above applies unchanged once the parameterisation is known.
+
+The practical takeaway: the framework is asset-class agnostic. For any
+market you need two things — (1) the parameterisation convention (strike
+vs delta/moneyness space; the [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] page's delta and
+ATM conventions are the FX instance of a general question), and (2) the
+empirical SSR, which you can estimate from a time series of ATM vols and
+spot moves via the finite-move approximation above.
 
 ** A simple numerical example
 
@@ -260,60 +370,44 @@ sticky-delta-like. The same phenomenon appears in [[id:0C37CE80-6795-4DEB-A318-9
 driving]]: a derived surface must be *rebased as spot moves*, and the
 page flags large driver/derived spot divergence as "a known
 sticky-strike limitation" — the limitation this page's mechanics
-describe.
+describe. The same construction holds beyond FX: QuantLib's
+=BlackVarianceSurface=, which ORE uses for rates and equity vol, stores
+vols in strike space, so it is sticky strike by construction — see the
+[[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] page's class table.
 
 * Source
 
-#+begin_quote
-Spot moves. What happens to your volatility smile?
+The content of this page is inspired by a
+[[https://www.linkedin.com/feed/update/urn:li:activity:7497155997451554818][LinkedIn post]] by Kshitij
+Anand, with a detailed slide deck on this subject: *Sticky Strike and
+Sticky Delta — How Implied Volatility Surfaces Move When Spot Moves*
+(August 23, 2026, 18 slides) —
+[[https://media.licdn.com/dms/document/media/v2/D561FAQFCB916Jbnx2A/feedshare-document-url-metadata-scrapper-pdf/B56aAs_MwsIAA8-/0/1787461161164?e=1788256800&v=beta&t=mA__7MQpCNna3A9kTRFN2CpNmlAQc7JaUHeyoJYpfto][PDF]]. The
+definitions, the SSR ratio, the adjusted-delta and total-gamma
+formulas, the comparison table, and the numerical example all follow
+the deck.
 
-Sticky Strike -> the IV stays attached to the strike.
+This page deliberately does not rest on a single author. Further
+sources:
 
-Sticky Delta -> the IV stays attached to the option's delta.
-
-Understanding this distinction is essential for understanding how spot
-and implied volatility interact.
-
-But real markets are rarely perfectly Sticky Strike or perfectly
-Sticky Delta.
-
-This is where the Skew Stickiness Ratio (SSR) comes in.
-
-SSR measures how much ATM implied volatility actually moves when spot
-moves, relative to the ATM-volatility move predicted by Sticky Strike.
-
-In simple terms:
-
-- SSR = 0 -> Sticky Delta
-- SSR = 1 -> Sticky Strike
-- 0 < SSR < 1 -> behaviour between the two
-- SSR > 1 -> ATM vol moves more than the Sticky Strike prediction
-
-And this isn't just about how we visualize the volatility surface.
-
-The assumed spot-volatility dynamics directly affect the delta we
-hedge with.
-
-If spot moves and implied volatility moves with it, the resulting
-change in option value is not captured by the conventional
-Black-Scholes delta alone. Vega also contributes through the movement
-of the volatility surface.
-
-This matters for:
-
-- Delta hedging
-- P&L attribution
-- Scenario analysis
-- Stress testing
-- Volatility surface modelling
-#+end_quote
-
-This page's content is adapted from the LinkedIn post above and its
-attached slide deck, *Sticky Strike and Sticky Delta — How Implied
-Volatility Surfaces Move When Spot Moves* (Kshitij Anand, August 23,
-2026, 18 slides). The post text is reproduced above in full; the
-definitions, SSR ratio, adjusted-delta and total-gamma formulas, the
-comparison table, and the numerical example all follow the deck.
+- E. Derman, "Regimes of Volatility", *Risk* 12(4), 55–59 (1999) — the
+  origin of the sticky-strike / sticky-delta / sticky-local-volatility
+  terminology; lecture version:
+  [[https://emanuelderman.com/wp-content/uploads/2013/09/smile-lecture9.pdf][smile-lecture9.pdf]].
+- L. Bergomi, *Stochastic Volatility Modeling*, CRC Press (2016),
+  ch. 9.4 — where the SSR is introduced and developed.
+- M. Fukasawa, "On the Skew Stickiness Ratio",
+  [[https://arxiv.org/abs/2602.05241][arXiv:2602.05241]] (2026).
+- V. Vargas, T.-L. Dao, J.-P. Bouchaud, "Skew and implied leverage
+  effect: smile dynamics revisited",
+  [[https://arxiv.org/abs/1311.4078][arXiv:1311.4078]] (2013).
+- P. Balland, "Deterministic implied volatility models", *Quantitative
+  Finance* 2(1), 31–44 (2002) — the no-arbitrage caveat for sticky
+  strike:
+  [[https://www.tandfonline.com/doi/abs/10.1088/1469-7688/2/1/303][link]].
+- T. Daglish, J. Hull, W. Suo, "Volatility surfaces: theory, rules of
+  thumb, and empirical evidence", *Quantitative Finance* 7(5) (2007) —
+  the sticky-strike test on S&P 500 OTC data.
 
 * See also
 

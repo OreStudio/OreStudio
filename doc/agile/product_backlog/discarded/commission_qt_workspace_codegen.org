@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :qt:workspace:codegen:commissioning:product_backlog:discarded:
 #+created: 2026-07-21
-#+updated: 2026-07-21
+#+updated: 2026-08-08
 #+environment:
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -40,7 +40,7 @@ component migrated before it can proceed.
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
 | Next          | Inventory the component's entities first. |
-| Last touched  | 2026-07-21                               |
+| Last touched  | 2026-08-08                               |
 
 * Acceptance
 
@@ -61,3 +61,15 @@ component migrated before it can proceed.
 * Out of scope
 
 -
+
+* Superseded
+
+Folded into [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Story: Workspaces:
+finish the feature]] on 2026-08-08: its Goal -- inventory
+=ores.qt.workspace= entities, run full-stack codegen for the
+component, migrate history dialogs to the generic =HistoryDialog= --
+is carried as an acceptance item of that story ("the three open
+codegen follow-up items are resolved: ... and =ores.qt.workspace=
+fully commissioned into codegen"). Moved to =discarded/= without a
+supersession note at the time; recording the fold here so the
+capture's fate is unambiguous.

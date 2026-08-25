@@ -94,8 +94,9 @@ public:
     /**
      * @brief List compute platforms: compute list-platforms
      *
-     * Renders the known platform triplets (code, display name, OS,
-     * CPU arch) as a table.
+     * Prints the known platform rows (id, code, display name, OS,
+     * CPU arch) as provisional raw rows until the drift story lands
+     * the generated platform table_io.
      */
     static void process_list_platforms(std::ostream& out,
                                        ores::nats::service::nats_client& session);

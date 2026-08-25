@@ -18,6 +18,9 @@
  *
  */
 #include "ores.shell/app/commands/compute_commands.hpp"
+
+#include <unordered_set>
+
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/domain/app_table_io.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
@@ -183,6 +186,9 @@ results_of_batch(std::ostream& out, nats_client& session, const boost::uuids::uu
     auto wus = workunits_of_batch(out, session, batch_id);
     if (!wus)
         return std::nullopt;
+    std::unordered_set<boost::uuids::uuid> workunit_ids;
+    for (const auto& w : *wus)
+        workunit_ids.insert(w.id);
     compute::messaging::list_results_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
@@ -190,12 +196,8 @@ results_of_batch(std::ostream& out, nats_client& session, const boost::uuids::uu
         return std::nullopt;
     std::vector<compute::domain::result> result;
     for (const auto& r : resp->results) {
-        for (const auto& w : *wus) {
-            if (r.workunit_id == w.id) {
-                result.push_back(r);
-                break;
-            }
-        }
+        if (workunit_ids.contains(r.workunit_id))
+            result.push_back(r);
     }
     return result;
 }

@@ -46,6 +46,12 @@ Finance concepts the codebase relies on, grouped by topic.
 - [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — pillar quoting (ATM/RR/STR), delta
   conventions, smile models (SABR, BS, spline), and cross-time
   interpolation.
+- [[id:96108D1A-6808-4D68-B226-FD03192C8009][Volatility: Skew Stickiness Ratio]] — what happens to the smile when spot moves:
+  sticky strike vs sticky delta, and the SSR that measures a market's
+  observed ATM-vol response against the ATM skew.
+- [[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][Volatility surface driving]] — the driver/derived (proxy) pattern
+  applied to FX vol surfaces: correlation vs basis proxying, marks,
+  tenor propagation, and rebasing as spot moves.
 - [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — a comparative analysis of
   five schemes: RIC, Bloomberg ticker, the ORE canonical/quote key, MDDL, and
   FIX — origin, ownership, formal specification status, and

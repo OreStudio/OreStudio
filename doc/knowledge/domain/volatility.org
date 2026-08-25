@@ -33,7 +33,9 @@ observed option price rather than measured directly. This page is the
 foundation for the more specific volatility documents in this
 knowledge base: [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] (how implied vol is quoted and
 structured across strike and tenor), [[id:351CB816-28F5-428A-A289-414B6F4B9F36][Volatility clustering and GARCH
-models]] (how realised vol evolves through time), and [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface
+models]] (how realised vol evolves through time),
+[[id:96108D1A-6808-4D68-B226-FD03192C8009][Volatility: Skew Stickiness Ratio]] (how the smile moves when spot
+moves), and [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface
 no-arbitrage conditions]] (constraints an implied vol surface must
 satisfy).
 
@@ -196,6 +198,9 @@ moved. It does not tell you how stable the law that moved it is.
   how realised volatility itself evolves.
 - [[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol surface no-arbitrage conditions]] — the constraints an implied
   vol surface must satisfy before it can be used for pricing.
+- [[id:96108D1A-6808-4D68-B226-FD03192C8009][Volatility: Skew Stickiness Ratio]] — how the smile moves when spot moves:
+  sticky strike vs sticky delta, and the SSR that measures the gap
+  between them.
 - [[id:A3F7C2E1-84B9-4D56-9E2A-1F6D05B38C47][Probability measures: P (real-world) and Q (risk-neutral)]] —
   realised vol is naturally a P-measure (real-world) quantity;
   implied vol is inherently a Q-measure (risk-neutral) one.

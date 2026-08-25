@@ -8,7 +8,7 @@
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
 #+branch: feature/read-verbs
-#+pr:
+#+pr: 1992
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
@@ -109,7 +109,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1992][#1992]] | [ores.shell] Add compute read verbs: list apps, app versions, platforms, hosts, batches |
 
 * Review
 

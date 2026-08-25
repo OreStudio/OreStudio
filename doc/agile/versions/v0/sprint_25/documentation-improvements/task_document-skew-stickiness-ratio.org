@@ -8,7 +8,7 @@
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
 #+branch: feature/volatility-documentation
-#+pr:
+#+pr: 1996
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-25
@@ -73,7 +73,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1996][#1996]] | [doc] Volatility: Skew Stickiness Ratio knowledge page |
 
 * Review
 

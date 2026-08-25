@@ -160,6 +160,39 @@ At a glance:
 | Surface response | $d\sigma/dS = 0$ at fixed $K$ | $d\sigma_{ATM}/dS \approx 0$           |
 | Typical use    | one simple surface-dynamics assumption | natural for delta-quoted markets (e.g. FX) |
 
+** How the two deltas are used on a desk
+
+The two rules are also two practical ways to *compute* a delta. Desks
+call them "smile delta" conventions — the delta-quoting side of the
+same choice (see the delta conventions on the [[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]]
+page).
+
+*Sticky strike as a computation.* Revalue the option with its own
+implied vol at its strike, then keep that vol fixed as spot moves:
+the delta is Black-Scholes delta at $\sigma(K)$. This is the easiest
+convention to compute, hence the most widely used. Its weakness: it
+implies the strike is always repriced at the original vol.
+
+*Sticky delta as a computation.* Keep the smile attached to the
+delta: an option at 15$\Delta$ always trades at the same implied
+vol, but the strike behind that delta changes as spot moves. The
+convention mirrors the idea that, locally, ATM vol and the smile do
+not move. Its weakness: ATM and RR do not actually stay fixed when
+spot moves, so the convention is only a local approximation. Its
+practical virtue: for small spot moves it avoids "local headaches" —
+no per-strike revaluation is needed.
+
+*Neither rule is taken literally.* Traders compensate for the flaws
+with a *spot ladder* — revaluing the book's vega at a set of spot
+levels — and adjust the delta from their experience of how spot, vol
+and RR actually co-move. That experience is the informal counterpart
+of the SSR: the SSR is the same spot/vol/RR co-movement, measured
+and expressed as a number (next section).
+
+A third, cruder convention exists for context: the *flat-smile
+delta* — one single vol for all strikes, which is just Black-Scholes
+delta. It is acknowledged as wrong once a smile exists.
+
 ** The Skew Stickiness Ratio (SSR)
 
 Real-world ATM volatility is not perfectly sticky-strike or perfectly

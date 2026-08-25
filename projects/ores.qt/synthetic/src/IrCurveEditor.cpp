@@ -118,6 +118,10 @@ QString joinIndexFamilyAndTenor(const std::string& index_family, const std::stri
 
 } // namespace
 
+ProvenanceWidget* IrCurveEditor::provenanceWidget() const {
+    return provenanceWidget_;
+}
+
 IrCurveEditor::IrCurveEditor(ClientManager* cm,
                              ImageCache* imageCache,
                              ChangeReasonCache* crCache,

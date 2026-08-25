@@ -117,9 +117,7 @@ protected:
     QWidget* provenanceTab() const override {
         return provenanceTab_;
     }
-    ProvenanceWidget* provenanceWidget() const override {
-        return provenanceWidget_;
-    }
+    ProvenanceWidget* provenanceWidget() const override;
 
 private slots:
     void onSaveClicked();

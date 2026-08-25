@@ -8,7 +8,7 @@
 #+filetags: :eventing_chain_hardening:sprint_25:v0:
 #+owner: marco
 #+branch: feature/eventing-chain-hardening
-#+pr:
+#+pr: 1995
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-25
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1995][#1995]] | [agile] Scaffold story: eventing chain hardening |
 
 * Review
 

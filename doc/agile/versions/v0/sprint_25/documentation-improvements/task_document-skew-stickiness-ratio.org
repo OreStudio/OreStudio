@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 374CFD96-B8B0-4812-9870-FF91168EE828
+:END:
+#+title: Task: Document Skew Stickiness Ratio knowledge page
+#+description: Add a knowledge page on how implied volatility surfaces move when spot moves: sticky strike vs sticky delta, the Skew Stickiness Ratio (SSR) that measures ATM-vol response against the ATM skew, and its effect on delta and gamma.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch: feature/volatility-documentation
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add a knowledge page under doc/knowledge/domain explaining what
+happens to an implied volatility surface when spot moves: the two
+classical rules (sticky strike, sticky delta), the third regime
+(sticky local volatility), the Skew Stickiness Ratio that measures
+where a real market sits between them, the adjusted delta and gamma,
+and the desk-practice view of computing smile deltas. Wire the page
+into the knowledge index and the related volatility pages.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- A new knowledge page titled "Volatility: Skew Stickiness Ratio" exists under doc/knowledge/domain with Summary, Detail, Source and See also sections.
+- The page defines sticky strike, sticky delta, sticky local volatility and the SSR, with the maths in LaTeX, without redefining concepts covered by existing pages.
+- The page is linked from the knowledge index and from the Volatility, FX Volatility Surface, and Volatility surface driving pages as appropriate.
+- The page cites more than one source: the LinkedIn post and deck by Kshitij Anand plus the standard literature (Derman, Bergomi, Fukasawa, Vargas/Dao/Bouchaud, Balland, Daglish/Hull/Suo).
+- The site builds and serves the page.
+
+* Plan
+
+- Scaffold the page with compass, following the knowledge-doc recipe.
+- Research the concept across the web (Derman's regimes, Bergomi's SSR
+  literature, arXiv) so the page does not rest on a single source.
+- Review rounds with the user, then a site build served over LAN for
+  visual review.
+- Retrofitted as a task when the out-of-band branch became a PR.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Knowledge page [[id:96108D1A-6808-4D68-B226-FD03192C8009][Volatility: Skew Stickiness Ratio]] added under
+doc/knowledge/domain, wired into the knowledge index, the Volatility
+page and the Volatility surface driving page. The page covers the two
+classical surface-dynamics rules plus Derman's third regime, the SSR
+and its literature (Bergomi ch. 9.4, Fukasawa, Vargas/Dao/Bouchaud),
+the adjusted delta and total gamma with the ATM vs fixed-strike
+framings, asset-class notes, desk practice (smile-delta conventions,
+spot ladders), a numerical example and ORE Studio storage notes.
+Sourced from the Anand post/deck and the standard literature. Site
+build clean and served for review.

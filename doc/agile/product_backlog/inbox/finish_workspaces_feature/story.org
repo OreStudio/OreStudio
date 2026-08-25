@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :workspace:codegen:qt:product_backlog:inbox:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-08-25
 #+environment: clever_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -83,14 +83,14 @@ workspace activation in the Qt client.
 
 * Status
 
-| Field         | Value                                  |
-|---------------+----------------------------------------|
-| State         | STARTED                              |
-| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]] |
-| Now           | Trading instrument codegen pilot landed (equity_position_instrument); the three instrument-port tasks have been re-parented to the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story in Sprint 25 (see Decisions). |
-| Waiting on    | Nothing directly.                       |
-| Next          | Continue workspace-specific follow-ups (audit-driven items); instrument conversions now track in their own story. |
-| Last touched  | 2026-08-08                               |
+| Field         | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| State         | STARTED                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Parent sprint | [[id:1B2C3D4E-5F6A-7B8C-9D0E-1F2A3B4C5D6E][Product backlog — inbox]]                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| Now           | Unblocked. The three codegen follow-ups are closed: EF349D87 (workspace entity model drift) and 950FB9D4 (safe drift to workspace-cpp) are DONE; C02D4D5F (commission ores.qt.workspace) is superseded, its goal absorbed by this story's acceptance. Instrument conversions track in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story: 15/19 landed; the rest (bond, commodity, credit, scripted, leg-bearing entities) deferred to its BACKLOG task 2548EE95 on codegen template gaps. |
+| Waiting on    | Nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Next          | Verify the Live workspace end-to-end for every workspace-aware entity, especially the newly converted instruments; confirm stand-alone workspace import still holds; then close the story.                                                                                                                                                                                                                                                                                                                                         |
+| Last touched  | 2026-08-25                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 
 * Acceptance
 
@@ -115,10 +115,10 @@ workspace activation in the Qt client.
 
 * Tasks
 
-| Task | State | Start | End | Description |
-|------+-------+-------+-----+-------------|
-| [[id:6F7F9183-A104-4EF9-BDD6-A28D997971E1][Audit: current state of the workspace feature (backend + UI)]] | DONE | 2026-08-04 | 2026-08-04 | Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free. |
-| [[id:3B718FE6-7CE1-43E1-93D0-E1957A59106F][Upgrade repository template: exact-match workspace_id to resolution-order inheritance]] | DONE | 2026-08-04 | 2026-08-05 | The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities. |
+| Task                                                                                                                               | State | Start      | End        | Description                                                                                                                                                                                                                                                                                                                                                                                                            |
+|------------------------------------------------------------------------------------------------------------------------------------|-------|------------|------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [[id:6F7F9183-A104-4EF9-BDD6-A28D997971E1][Audit: current state of the workspace feature (backend + UI)]]                          | DONE  | 2026-08-04 | 2026-08-04 | Establish where we actually are before scoping further workspace work: inventory every entity impacted by workspace_id, whether it has a codegen-generated workspace-aware widget (analogous to page/pagination support), what is hand-crafted vs generated, and what common hand-crafted logic should be pulled into codegen so future entities get workspace support for free.                                       |
+| [[id:3B718FE6-7CE1-43E1-93D0-E1957A59106F][Upgrade repository template: exact-match workspace_id to resolution-order inheritance]] | DONE  | 2026-08-04 | 2026-08-05 | The cpp_domain_type_repository.cpp.mustache has_workspace_id block generates workspace_id == wid (exact match) instead of workspace_id = ANY(:resolution_order) with DISTINCT ON deduplication -- so single-parent workspace inheritance, the headline feature of the whole design, does not function for any entity today. Upgrade the template and re-verify against every one of the 21 currently-covered entities. |
 
 * Decisions
 
@@ -220,6 +220,17 @@ workspace activation in the Qt client.
   tracks. This story keeps its workspace-specific tasks (audit,
   inheritance query). The decision record itself stays here as
   history.
+- *Unblocked; follow-ups closed* (2026-08-25): this story no longer
+  waits on the instrument conversions -- they track in their own
+  story (FBBC0235) and the earlier blocker framing was dropped. All
+  three acceptance codegen follow-ups are now closed: EF349D87
+  (workspace entity model drift) and 950FB9D4 (safe drift to
+  workspace-cpp) are DONE, and C02D4D5F (commission
+  ores.qt.workspace) was marked superseded in discarded/ -- its Goal
+  is absorbed by this story's acceptance. Remaining acceptance work:
+  end-to-end verification of the Live workspace for every
+  workspace-aware entity (especially the newly converted trading
+  instruments) and the stand-alone workspace import regression check.
 
 * Out of scope
 

@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: FC10CB2F-9237-457F-BA54-C9DFE86FC1AE
+:END:
+#+title: Test Scenario: Verify the Live workspace across workspace-aware entities
+#+description: Verify the Live workspace end-to-end for one representative entity per coverage mechanism -- a refdata convention, a book/portfolio, a newly converted trading instrument, and a trade -- then confirm a stand-alone workspace ORE sample import stays isolated from Live data.
+#+type: test_scenario
+#+level: s1
+#+filetags: :finish_workspaces_feature:inbox:product_backlog:
+#+target_dialog:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment:
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:B0A57246-FFA4-4F7E-96D4-3C7B6474464B][Task: Verify the Live workspace end-to-end across workspace-aware entities]] in [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+# System-readiness prerequisites (build, database state, provisioning)
+# belong here, performed by *you* (build/recreate/provision yourself,
+# never hand this to the tester) before opening the client with this
+# scenario -- not folded into Step 1 as a conditional the tester has to
+# evaluate. By the time the tester opens this doc, the system must
+# already be in the state Step 1 assumes. See [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an
+# environment?]] for the standard confirm/recreate/provision sequence.
+# Delete this whole section if the scenario has no such prerequisites
+# (e.g. it only reads static reference data).
+
+- The database must be freshly provisioned with the Acme Corporation
+  holding group: =compass db recreate --kill --yes= then
+  =compass shell -f projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=.
+  Confirm the run completes with no failed steps before starting.
+- The service fleet must be running: =compass services start=.
+- The ORE sample used by step 7 exists at
+  =assets/test_data/domain_roundtrip/Legacy/Example_1= (the canonical
+  sample the ore import planner tests scan).
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:B0A57246-FFA4-4F7E-96D4-3C7B6474464B][Task: Verify the Live workspace end-to-end across workspace-aware entities]] |
+| Parent story  | [[id:603F4845-B4A0-41EB-ACF9-B0FC1387E1C4][Workspaces: finish the feature]]   |
+| Target dialog | (Qt dialog class under test, if any.)   |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant admin
+
+- Start the Qt client with this scenario loaded:
+  =compass client start --open-scenario doc/agile/product_backlog/inbox/finish_workspaces_feature/scenario_verify-live-workspace-e2e.org=.
+- Log in with username =tenant_admin@acme_corporation= and password
+  =Secure-Password-123=.
+- Open the Trades list window and confirm its workspace selector
+  (bottom bar) shows =Live= and is enabled.
+
+** Create a CDS convention under Live
+
+- Open the CDS Conventions list window (Reference Data menu → CDS
+  Conventions).
+- Confirm the bottom-bar workspace selector shows =Live=.
+- Click New CDS Convention. Fill in: identifier =E2E-CDS-001=,
+  calendar (e.g. =GBP=), frequency (e.g. =Q=), day count fraction
+  (e.g. =ACT/360=), and settlement days (e.g. =1=).
+- Save and confirm =E2E-CDS-001= appears in the list.
+
+** Browse the provisioned portfolio tree
+
+- Open the business unit / portfolio tree for the Acme party.
+- Confirm the provisioned Acme business units, portfolios, and books
+  are listed (the =acme_group.*= set, including =acme_group.books=).
+- Open one book's detail view and confirm it loads its fields.
+
+** Book a trade with an FX forward
+
+- Open the Trades list window (Trading menu → Trades).
+- Confirm the workspace selector shows =Live=.
+- Click New Trade. In the Instrument tab, select the FX Forward
+  instrument type and fill its fields (identifier, underlying currency
+  pair, maturity date).
+- Fill the trade's required fields and save.
+- Confirm the new trade appears in the Trades list.
+
+** Create a temporary workspace
+
+- Open the Workspaces window (Data Transfer menu → Workspaces).
+- Click New Workspace, name it =E2E Temp=, and save.
+- Confirm =E2E Temp= appears in the workspace list and in the Trades
+  window's workspace selector.
+
+** Confirm the temp workspace starts empty
+
+- In the Trades window, switch the workspace selector from =Live= to
+  =E2E Temp=.
+- Confirm the Trades list is empty: the Live trade does not leak in.
+- Open the CDS Conventions list and confirm it is also empty under
+  =E2E Temp=.
+
+** Import the ORE sample into the temp workspace
+
+- With the workspace selector still on =E2E Temp=, launch the ORE
+  import wizard (Data Transfer menu → Import ORE sample).
+- On the "Select ORE Directory" page, choose
+  =assets/test_data/domain_roundtrip/Legacy/Example_1= and wait for
+  the scan to complete.
+- Accept the defaults on the remaining pages and complete the wizard;
+  wait for the import to finish.
+- Confirm the imported portfolios and trades appear under =E2E Temp=.
+
+** Confirm Live data is untouched
+
+- Switch the Trades workspace selector back to =Live=.
+- Confirm the imported trades are absent and the trade booked in step
+  4 is still listed.
+- Open the CDS Conventions list and confirm =E2E-CDS-001= is still
+  listed under =Live=.
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        |       |
+| Completed at  |       |
+| Branch        |       |
+| Commit        |       |
+| Worktree      |       |
+
+* Notes

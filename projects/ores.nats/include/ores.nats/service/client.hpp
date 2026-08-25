@@ -264,6 +264,11 @@ public:
 private:
     struct impl;
     std::unique_ptr<impl> impl_;
+
+    /**
+     * @brief Log a publish with throttling: first subject at info, later at trace.
+     */
+    static void log_publish(impl& impl, std::string_view op, const std::string& full_subject);
 };
 
 }

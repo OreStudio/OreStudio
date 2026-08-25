@@ -664,10 +664,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
 
     ores::nats::service::client nats(cfg.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url << " (namespace: '"
-                              << (cfg.nats.subject_prefix.empty() ? "(none)" :
-                                                                    cfg.nats.subject_prefix)
-                              << "')";
 
     // Ensure the durable compute assignments stream exists. Idempotent.
     try {
@@ -712,7 +708,6 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         service_name,
         [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group, this](
             auto& n, auto /*verifier*/) {
-            BOOST_LOG_SEV(lg(), info) << "Subscribing to: " << work_subject;
             auto sub = n.js_queue_subscribe(
                 work_subject,
                 durable_name,

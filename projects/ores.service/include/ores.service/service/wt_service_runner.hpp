@@ -53,8 +53,6 @@ void run_wt_impl(ores::nats::service::client& nats,
     }();
 
     BOOST_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
-    for (const auto& sub : subs)
-        BOOST_LOG_SEV(lg, info) << "NATS subscribe: " << sub.subject();
 
     // Phase 2: restart the io_context and run it on a background thread so
     // that the heartbeat and any NATS coroutines are serviced while Wt blocks

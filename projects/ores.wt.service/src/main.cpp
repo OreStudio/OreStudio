@@ -162,10 +162,6 @@ int run(int argc, char* argv[]) {
     // Construct NATS client.
     ores::nats::service::client nats(opts.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg, info) << "Connected to NATS: " << opts.nats.url << " (namespace: '"
-                            << (opts.nats.subject_prefix.empty() ? "(none)" :
-                                                                   opts.nats.subject_prefix)
-                            << "')";
 
     ores::service::service::run_wt(
         nats,

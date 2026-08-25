@@ -31,8 +31,6 @@ nats_client::nats_client(client& nats, token_provider provider)
     , token_provider_(std::move(provider)) {}
 
 void nats_client::connect(config::nats_options opts) {
-    const std::string url = opts.url;
-    const std::string prefix = opts.subject_prefix.empty() ? "(none)" : opts.subject_prefix;
     owned_client_ = std::make_shared<client>(std::move(opts));
     try {
         owned_client_->connect();
@@ -40,8 +38,6 @@ void nats_client::connect(config::nats_options opts) {
         owned_client_.reset();
         throw;
     }
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS at " << url << " (namespace: '" << prefix
-                              << "')";
 }
 
 void nats_client::disconnect() {

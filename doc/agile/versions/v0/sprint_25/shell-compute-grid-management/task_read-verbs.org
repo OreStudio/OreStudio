@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-10
+#+updated: 2026-08-25
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,11 +30,11 @@ can be inspected from the shell with no UI.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | All five verbs verified live against brave_hopper; five shell recipes added, tangled and wired into the inventory. ~list-platforms~ streams raw rows pending the generated renderer (see Notes). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR; the story's reconciliation task swaps the raw rows for the generated table_io. |
+| Next         | Nothing. |
 | Last touched | 2026-08-10                               |
 
 * Acceptance
@@ -59,16 +59,16 @@ codegen changes. Implementation lives in the existing
 ~compute_commands.{hpp,cpp}~ next to ~publish-package~, following its
 shape: require a login, send the list request authenticated, log the
 row count, print the table. ~compute_platform~ has no table renderer
-(it is hand-written, not model-owned), so ~list-platforms~ renders a
-small aligned table with ~<iomanip>~ directly in the shell.
+(it is hand-written, not model-owned), so ~list-platforms~ renders
+raw rows until the drift story generates the renderer (see Notes).
 
 * Notes
 
 - Live proof (2026-08-10): scripted session against brave_hopper with
   all 23 services up. ~compute list-apps~ returned the ORE and hello
   apps; ~list-app-versions~ two versions; ~list-platforms~ six triplets
-  (hand-rolled table; display-name column widened to 36 chars after a
-  live alignment check); ~list-hosts~ six registered nodes; ~list-batches~
+  (hand-rolled table at the time, replaced by raw rows later — see the
+  provisional-output note below); ~list-hosts~ six registered nodes; ~list-batches~
   the remote-compute-node-join-proof batch (closed).
 - The compute grid is controlled by the system super admin, not by a
   tenant; the ~.env~ auto-login defaults (~tenant_admin@acme_corporation~)
@@ -118,3 +118,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Five read-only verbs shipped in ~compute_commands.{hpp,cpp}~:
+  ~list-apps~, ~list-app-versions~, ~list-platforms~, ~list-hosts~,
+  ~list-batches~. All reuse existing NATS subjects and codegen table
+  renderers; no backend or codegen changes.
+- All acceptance criteria met, verified live against brave_hopper:
+  2 apps, 2 app versions, 6 platforms, 6 hosts, 1 batch. Empty
+  domains render a header-only table, not an error.
+- ~list-platforms~ prints provisional raw rows; the reconciliation
+  task swaps the loop for the generated ~table_io~ once the drift
+  story ships the platform renderer.
+- Five recipes added under =doc/recipes/shell/compute/=, tangled into
+  =projects/ores.shell/scripts/library/compute/= and indexed in the
+  =Compute= section of =doc/recipes/shell/shell.org=.

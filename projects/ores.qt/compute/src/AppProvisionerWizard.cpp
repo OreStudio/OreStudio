@@ -24,6 +24,7 @@
 #include "ores.compute.api/domain/compute_platform.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
+#include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.client/client/package_publisher.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -732,11 +733,9 @@ bool AppProvisionerWizard::submit() {
     app.change_commentary = commentary;
 
     compute::messaging::save_app_request app_req;
-    app_req.app = std::move(app);
-    app_req.change_reason_code = reason_code;
-    app_req.change_commentary = commentary;
+    app_req.data = std::move(app);
 
-    BOOST_LOG_SEV(lg(), info) << "Provisioning app: " << app_req.app.name;
+    BOOST_LOG_SEV(lg(), info) << "Provisioning app: " << app_req.data.name;
 
     const auto app_resp = client_manager_->process_authenticated_request(std::move(app_req));
 
@@ -779,13 +778,10 @@ bool AppProvisionerWizard::submit() {
         }
 
         compute::messaging::save_app_version_request ver_req;
-        ver_req.app_version = std::move(ver);
-        ver_req.platforms = std::move(platform_rows);
-        ver_req.change_reason_code = reason_code;
-        ver_req.change_commentary = commentary;
+        ver_req.data = std::move(ver);
 
         BOOST_LOG_SEV(lg(), info) << "Provisioning app_version: "
-                                  << ver_req.app_version.wrapper_version;
+                                  << ver_req.data.wrapper_version;
 
         const auto ver_resp = client_manager_->process_authenticated_request(std::move(ver_req));
 
@@ -797,6 +793,30 @@ bool AppProvisionerWizard::submit() {
             BOOST_LOG_SEV(lg(), error) << "App version save failed: " << msg.toStdString();
             MessageBoxHelper::critical(this, tr("Version Create Failed"), msg);
             return false;
+        }
+
+        // Platforms are a junction: swap the version's full platform row set
+        // through the junction's replace-by-app-version flow
+        // (compute.v1.app_version_platforms.replace_by_app_version_id).
+        if (!platform_rows.empty()) {
+            compute::messaging::replace_app_version_platforms_by_app_version_request plat_req;
+            plat_req.app_version_id = boost::uuids::to_string(app_version_id_);
+            plat_req.app_version_platforms = std::move(platform_rows);
+            plat_req.modified_by = username;
+            plat_req.performed_by = username;
+            plat_req.change_reason_code = reason_code;
+            plat_req.change_commentary = commentary;
+
+            const auto plat_resp =
+                client_manager_->process_authenticated_request(std::move(plat_req));
+            if (!plat_resp || !plat_resp->success) {
+                const QString msg = plat_resp ? QString::fromStdString(plat_resp->message) :
+                                                tr("No response from server");
+                BOOST_LOG_SEV(lg(), error) << "App version platforms save failed: "
+                                           << msg.toStdString();
+                MessageBoxHelper::critical(this, tr("Version Create Failed"), msg);
+                return false;
+            }
         }
     }
 

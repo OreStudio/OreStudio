@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 639008BB-03A6-4675-AF2F-90A4A699729C
+:END:
+#+title: Story: Harden the eventing chain against transient notification loss
+#+description: Follow-up to the eventing integration test flake hotfix: fix the production loss windows the tests now tolerate — the postgres listener reconnect path drops in-flight NOTIFYs, and NATS publish failures are swallowed by publish_entity_event and the event_bus.
+#+type: story
+#+level: s2
+#+filetags: :eventing:resilience:sprint_25:v0:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The eventing chain (postgres_listener_service, postgres_event_source, event_bus, NATS publish) silently loses notifications in two windows: the listener's reconnect path (consume_input failure, 1-5s doubling backoff, re-LISTEN) drops NOTIFYs in flight during the outage, and NATS publish failures are caught and logged by publish_entity_event and the event_bus instead of surfacing. The eventing integration tests (hotfix story AE32C594-8E9B-4C58-B3D2-B93BB7C219E1) now tolerate these losses by re-driving writes; production has no such protection. This story hardens the chain so a notification is either delivered or its loss is reported.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-25                               |
+
+* Acceptance
+
+- A listener reconnect (consume_input failure, backoff, re-LISTEN) no longer drops notifications in flight: the loss is recovered or surfaced.
+- NATS publish failures are visible: publish_entity_event and the event_bus no longer swallow them silently.
+- All 85 eventing integration tests stay green; no regression in the test family.
+- A dropped notification is diagnosable from logs without code changes.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BD63D4C8-4AA2-4613-A63D-DC5969576469][Scaffold story: Harden the eventing chain against transient notification loss]] | STARTED | 2026-08-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:C9B8F903-27A4-456E-90E7-157507FFC024][Implement eventing chain hardening]] | BACKLOG | | | Initial task for: Harden the eventing chain against transient notification loss |
+
+* Decisions
+
+* Out of scope
+
+-

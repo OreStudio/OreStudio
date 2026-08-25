@@ -20,22 +20,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Story scaffolding rides this task: the story and task documents, the
+sprint Stories wiring, and the scaffold PR.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          |                                       |
+| Waiting on   |                                       |
+| Next         |                                       |
 | Last touched | 2026-08-25                               |
 
 * Acceptance
 
--
+- Story and task documents exist under sprint_25/eventing_chain_hardening/.
+- The story is wired into the sprint's Stories table.
+- The implementation task is BACKLOG, ready for pickup.
 
 * Plan
 
@@ -69,3 +72,9 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Scaffolded 2026-08-25. story.org, task_scaffold_*.org, and
+task_implement_*.org were created via compass story new, off
+origin/main (post-hotfix merge c189321d18). Sprint 25's Stories table
+wired (BACKLOG); the implement task waits for pickup via compass task
+start implement_eventing_chain_hardening.

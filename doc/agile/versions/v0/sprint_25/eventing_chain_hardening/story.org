@@ -39,7 +39,7 @@ The eventing chain (postgres_listener_service, postgres_event_source, event_bus,
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BD63D4C8-4AA2-4613-A63D-DC5969576469][Scaffold story: Harden the eventing chain against transient notification loss]] | STARTED | 2026-08-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:BD63D4C8-4AA2-4613-A63D-DC5969576469][Scaffold story: Harden the eventing chain against transient notification loss]] | DONE | 2026-08-25 | 2026-08-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:C9B8F903-27A4-456E-90E7-157507FFC024][Implement eventing chain hardening]] | BACKLOG | | | Initial task for: Harden the eventing chain against transient notification loss |
 
 * Decisions

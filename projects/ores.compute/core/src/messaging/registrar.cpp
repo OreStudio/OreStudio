@@ -27,16 +27,17 @@
 #include "ores.compute.api/messaging/telemetry_protocol.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.api/messaging/workunit_protocol.hpp"
-#include "ores.compute.core/messaging/app_handler.hpp"
-#include "ores.compute.core/messaging/app_version_handler.hpp"
-#include "ores.compute.core/messaging/batch_handler.hpp"
-#include "ores.compute.core/messaging/host_handler.hpp"
+#include "ores.compute.core/messaging/app_registrar.hpp"
+#include "ores.compute.core/messaging/app_version_platform_registrar.hpp"
+#include "ores.compute.core/messaging/app_version_registrar.hpp"
+#include "ores.compute.core/messaging/batch_registrar.hpp"
+#include "ores.compute.core/messaging/host_registrar.hpp"
 #include "ores.compute.core/messaging/platform_handler.hpp"
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
-#include "ores.compute.core/messaging/result_handler.hpp"
+#include "ores.compute.core/messaging/result_registrar.hpp"
 #include "ores.compute.core/messaging/telemetry_handler.hpp"
 #include "ores.compute.core/messaging/work_handler.hpp"
-#include "ores.compute.core/messaging/workunit_handler.hpp"
+#include "ores.compute.core/messaging/workunit_registrar.hpp"
 #include "ores.reporting.api/messaging/report_execution_protocol.hpp"
 #include <memory>
 #include <optional>
@@ -49,103 +50,23 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
 
-    // ----------------------------------------------------------------
-    // Hosts
-    // ----------------------------------------------------------------
-    auto hh = std::make_shared<host_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        list_hosts_request::nats_subject, "ores.compute.service", [hh](ores::nats::message msg) {
-            hh->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        save_host_request::nats_subject, "ores.compute.service", [hh](ores::nats::message msg) {
-            hh->save(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        delete_host_request::nats_subject, "ores.compute.service", [hh](ores::nats::message msg) {
-            hh->remove(std::move(msg));
-        }));
-
-    // ----------------------------------------------------------------
-    // Apps
-    // ----------------------------------------------------------------
-    auto ah = std::make_shared<app_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        list_apps_request::nats_subject, "ores.compute.service", [ah](ores::nats::message msg) {
-            ah->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        save_app_request::nats_subject, "ores.compute.service", [ah](ores::nats::message msg) {
-            ah->save(std::move(msg));
-        }));
-    subs.push_back(
-        nats.queue_subscribe(get_app_history_request::nats_subject,
-                             "ores.compute.service",
-                             [ah](ores::nats::message msg) { ah->history(std::move(msg)); }));
-
-    // ----------------------------------------------------------------
-    // App versions
-    // ----------------------------------------------------------------
-    auto avh = std::make_shared<app_version_handler>(nats, ctx, verifier);
-    subs.push_back(
-        nats.queue_subscribe(list_app_versions_request::nats_subject,
-                             "ores.compute.service",
-                             [avh](ores::nats::message msg) { avh->list(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(save_app_version_request::nats_subject,
-                             "ores.compute.service",
-                             [avh](ores::nats::message msg) { avh->save(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(get_app_version_history_request::nats_subject,
-                             "ores.compute.service",
-                             [avh](ores::nats::message msg) { avh->history(std::move(msg)); }));
-    subs.push_back(nats.queue_subscribe(
-        list_app_version_platforms_request::nats_subject,
-        "ores.compute.service",
-        [avh](ores::nats::message msg) { avh->list_platforms(std::move(msg)); }));
-
-    // ----------------------------------------------------------------
-    // Batches
-    // ----------------------------------------------------------------
-    auto bh = std::make_shared<batch_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        list_batches_request::nats_subject, "ores.compute.service", [bh](ores::nats::message msg) {
-            bh->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        save_batch_request::nats_subject, "ores.compute.service", [bh](ores::nats::message msg) {
-            bh->save(std::move(msg));
-        }));
-    subs.push_back(
-        nats.queue_subscribe(get_batch_history_request::nats_subject,
-                             "ores.compute.service",
-                             [bh](ores::nats::message msg) { bh->history(std::move(msg)); }));
-
-    // ----------------------------------------------------------------
-    // Workunits
-    // ----------------------------------------------------------------
-    auto wuh = std::make_shared<workunit_handler>(nats, ctx, verifier);
-    subs.push_back(
-        nats.queue_subscribe(list_workunits_request::nats_subject,
-                             "ores.compute.service",
-                             [wuh](ores::nats::message msg) { wuh->list(std::move(msg)); }));
-    subs.push_back(
-        nats.queue_subscribe(save_workunit_request::nats_subject,
-                             "ores.compute.service",
-                             [wuh](ores::nats::message msg) { wuh->save(std::move(msg)); }));
-
-    // ----------------------------------------------------------------
-    // Results
-    // ----------------------------------------------------------------
-    auto rh = std::make_shared<result_handler>(nats, ctx, verifier);
-    subs.push_back(nats.queue_subscribe(
-        list_results_request::nats_subject, "ores.compute.service", [rh](ores::nats::message msg) {
-            rh->list(std::move(msg));
-        }));
-    subs.push_back(nats.queue_subscribe(
-        submit_result_request::nats_subject, "ores.compute.service", [rh](ores::nats::message msg) {
-            rh->submit(std::move(msg));
-        }));
+    // Generated per-entity registrars (hosts, apps, app versions, the
+    // app-version/platform junction, batches, workunits, results). Each wires
+    // the standard CRUD surface -- list/save/delete/history -- plus the
+    // per-FK list-by reads, all to the generated handler. subscription is
+    // move-only, so fold each returned vector in with move iterators.
+    const auto fold = [&subs](std::vector<ores::nats::service::subscription> s) {
+        subs.insert(subs.end(),
+                    std::make_move_iterator(s.begin()),
+                    std::make_move_iterator(s.end()));
+    };
+    fold(register_host_handlers(nats, ctx, verifier));
+    fold(register_app_handlers(nats, ctx, verifier));
+    fold(register_app_version_handlers(nats, ctx, verifier));
+    fold(register_app_version_platform_handlers(nats, ctx, verifier));
+    fold(register_batch_handlers(nats, ctx, verifier));
+    fold(register_workunit_handlers(nats, ctx, verifier));
+    fold(register_result_handlers(nats, ctx, verifier));
 
     // ----------------------------------------------------------------
     // Work (pull/heartbeat/reap)

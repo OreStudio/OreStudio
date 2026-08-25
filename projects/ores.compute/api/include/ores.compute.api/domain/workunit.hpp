@@ -17,12 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_DOMAIN_WORKUNIT_HPP
-#define ORES_COMPUTE_DOMAIN_WORKUNIT_HPP
+#ifndef ORES_COMPUTE_API_DOMAIN_WORKUNIT_HPP
+#define ORES_COMPUTE_API_DOMAIN_WORKUNIT_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include <string_view>
 
 namespace ores::compute::domain {
 
@@ -72,12 +73,12 @@ struct workunit final {
     /**
      * @brief Scheduling priority; higher values are dispatched sooner.
      */
-    int priority;
+    int priority = 0;
 
     /**
      * @brief Number of independent results required before this workunit is complete.
      */
-    int target_redundancy;
+    int target_redundancy = 0;
 
     /**
      * @brief FK to the validated canonical result; NULL until the Validator accepts a result.
@@ -111,6 +112,16 @@ struct workunit final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for workunit, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const workunit&) {
+    return "ores.compute.workunit";
+}
 
 }
 

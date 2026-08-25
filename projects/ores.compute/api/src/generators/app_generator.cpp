@@ -19,8 +19,11 @@
  */
 #include "ores.compute.api/generators/app_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::compute::generators {
 
@@ -28,16 +31,17 @@ using ores::utility::generation::generation_keys;
 
 domain::app generate_synthetic_app(utility::generation::generation_context& ctx) {
     static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::app r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value();
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.name = std::string("APP_") + std::to_string(idx);
-    r.description = std::string("Synthetic compute application ") + std::to_string(idx);
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

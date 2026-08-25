@@ -18,7 +18,11 @@
  *
  */
 #include "ores.compute.core/service/host_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::compute::service {
 
@@ -27,35 +31,65 @@ using namespace ores::logging;
 host_service::host_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::host> host_service::list() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all hosts";
-    return repo_.read_latest(ctx_);
+std::vector<domain::host> host_service::list_hosts(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all compute hosts";
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::host> host_service::find(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding host: " << id;
+std::uint32_t host_service::count_hosts() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total compute hosts count";
+    return repo_.get_total_host_count(ctx_);
+}
+
+
+std::optional<domain::host> host_service::get_host_at_version(const std::string& id,
+                                                              std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting compute host at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::optional<domain::host> host_service::get_host(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting compute host. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-void host_service::save(const domain::host& v) {
+void host_service::save_host(const domain::host& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Host id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving host: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved host: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving compute host. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved compute host. " << "id: " << v.id;
 }
 
-void host_service::remove(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing host: " << id;
+void host_service::save_hosts(const std::vector<domain::host>& hosts) {
+    for (const auto& e : hosts)
+        if (e.id.is_nil())
+            throw std::invalid_argument("Host id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << hosts.size() << " compute hosts";
+    auto ts = hosts;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void host_service::delete_host(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing compute host. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed host: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed compute host. " << "id: " << id;
 }
 
-std::vector<domain::host> host_service::history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for host: " << id;
+void host_service::delete_hosts(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
+std::vector<domain::host> host_service::get_host_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for compute host. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

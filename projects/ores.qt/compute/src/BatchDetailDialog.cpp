@@ -25,9 +25,9 @@
 #include "ui_BatchDetailDialog.h"
 #include <QFutureWatcher>
 #include <QMessageBox>
-#include <QPlainTextEdit>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -41,6 +41,16 @@ BatchDetailDialog::BatchDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 BatchDetailDialog::~BatchDetailDialog() {
@@ -57,6 +67,10 @@ QWidget* BatchDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* BatchDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString BatchDetailDialog::code() const {
+    return QString::fromStdString(batch_.external_ref);
 }
 
 void BatchDetailDialog::setupUi() {
@@ -78,10 +92,6 @@ void BatchDetailDialog::setupConnections() {
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &BatchDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BatchDetailDialog::onFieldChanged);
-    connect(ui_->descriptionEdit,
-            &QPlainTextEdit::textChanged,
-            this,
-            &BatchDetailDialog::onFieldChanged);
 }
 
 void BatchDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -109,19 +119,22 @@ void BatchDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void BatchDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void BatchDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
-    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void BatchDetailDialog::updateUiFromBatch() {
     ui_->codeEdit->setText(QString::fromStdString(batch_.external_ref));
-    ui_->nameEdit->setText(QString::fromStdString(batch_.status));
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(batch_.status));
+    ui_->nameEdit->setText(QString::fromStdString(batch_.name));
 
     populateProvenance(batch_.version,
                        batch_.modified_by,
@@ -138,10 +151,8 @@ void BatchDetailDialog::updateBatchFromUi() {
     if (createMode_) {
         batch_.external_ref = ui_->codeEdit->text().trimmed().toStdString();
     }
-    batch_.status = ui_->nameEdit->text().trimmed().toStdString();
-    batch_.status = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
+    batch_.name = ui_->nameEdit->text().trimmed().toStdString();
     batch_.modified_by = username_;
-    batch_.performed_by = username_;
 }
 
 void BatchDetailDialog::onCodeChanged(const QString& /* text */) {
@@ -163,7 +174,7 @@ bool BatchDetailDialog::validateInput() {
     const QString external_ref_val = ui_->codeEdit->text().trimmed();
     const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return !external_ref_val.isEmpty() && !name_val.isEmpty();
+    return true && !external_ref_val.isEmpty() && !name_val.isEmpty();
 }
 
 void BatchDetailDialog::onSaveClicked() {
@@ -178,7 +189,6 @@ void BatchDetailDialog::onSaveClicked() {
         return;
     }
 
-    updateBatchFromUi();
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -188,46 +198,58 @@ void BatchDetailDialog::onSaveClicked() {
     batch_.change_reason_code = crSel->reason_code;
     batch_.change_commentary = crSel->commentary;
 
+    updateBatchFromUi();
+
     BOOST_LOG_SEV(lg(), info) << "Saving compute batch: " << batch_.external_ref;
 
-    using FutureResult = std::pair<bool, std::string>;
     QPointer<BatchDetailDialog> self = this;
-    const compute::domain::batch batchToSave = batch_;
 
-    QFuture<FutureResult> future = QtConcurrent::run([self, batchToSave]() -> FutureResult {
-        if (!self)
-            return {false, ""};
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, batch = batch_]() -> SaveResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
 
         compute::messaging::save_batch_request request;
-        request.batch = batchToSave;
+        request.data = batch;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!result)
+        if (!response_result) {
             return {false, "Failed to communicate with server"};
-        return {result->success, result->message};
-    });
-
-    auto* watcher = new QFutureWatcher<FutureResult>(this);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, batchToSave]() {
-        if (!self)
-            return;
-        auto [success, message] = watcher->result();
-        watcher->deleteLater();
-
-        if (success) {
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->batchSaved(QString::fromStdString(batchToSave.external_ref));
-            self->notifySaveSuccess(
-                tr("Batch '%1' saved").arg(QString::fromStdString(batchToSave.external_ref)));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "Batch save failed: " << message;
-            emit self->errorMessage(
-                QString("Failed to save batch: %1").arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(message));
         }
-    });
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
+
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "Batch saved successfully";
+                    QString code = QString::fromStdString(self->batch_.external_ref);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->batchSaved(code);
+                    self->notifySaveSuccess(tr("Batch '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
+
+    QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
@@ -250,15 +272,57 @@ void BatchDetailDialog::onDeleteClicked() {
     }
 
     const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute batch: " << batch_.external_ref;
 
-    // Delete not yet implemented for compute entities
-    MessageBoxHelper::warning(
-        this, "Not Implemented", "Delete operation is not yet implemented for this entity.");
+    QPointer<BatchDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, id_str = boost::uuids::to_string(batch_.id)]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        compute::messaging::delete_batch_request request;
+        request.ids = {id_str};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "Batch deleted successfully";
+            emit self->statusMessage(QString("Batch '%1' deleted").arg(code));
+            emit self->batchDeleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
+
 
 }

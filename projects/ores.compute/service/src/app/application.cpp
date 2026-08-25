@@ -21,6 +21,7 @@
 #include "ores.compute.api/eventing/app_changed_event.hpp"
 #include "ores.compute.api/eventing/app_version_changed_event.hpp"
 #include "ores.compute.api/eventing/batch_changed_event.hpp"
+#include "ores.compute.api/eventing/host_changed_event.hpp"
 #include "ores.compute.api/eventing/result_changed_event.hpp"
 #include "ores.compute.api/eventing/workunit_changed_event.hpp"
 #include "ores.compute.core/messaging/registrar.hpp"
@@ -114,6 +115,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         event_source, "ores.compute.workunit", "ores_compute_workunits");
     ev::service::registrar::register_mapping<cev::result_changed_event>(
         event_source, "ores.compute.result", "ores_compute_results");
+    ev::service::registrar::register_mapping<cev::host_changed_event>(
+        event_source, "ores.compute.host", "ores_compute_hosts");
 
     auto app_sub =
         event_bus.subscribe<cev::app_changed_event>([&nats](const cev::app_changed_event& e) {
@@ -121,7 +124,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                  "ores.compute.app_changed",
                                  ev::domain::entity_change_event{.entity = "ores.compute.app",
                                                                  .timestamp = e.timestamp,
-                                                                 .entity_ids = e.ids,
+                                                                 .entity_ids = e.app_ids,
                                                                  .tenant_id = e.tenant_id});
         });
 
@@ -132,7 +135,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                 "ores.compute.app_version_changed",
                 ev::domain::entity_change_event{.entity = "ores.compute.app_version",
                                                 .timestamp = e.timestamp,
-                                                .entity_ids = e.ids,
+                                                .entity_ids = e.app_version_ids,
                                                 .tenant_id = e.tenant_id});
         });
 
@@ -142,7 +145,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                  "ores.compute.batch_changed",
                                  ev::domain::entity_change_event{.entity = "ores.compute.batch",
                                                                  .timestamp = e.timestamp,
-                                                                 .entity_ids = e.ids,
+                                                                 .entity_ids = e.batch_ids,
                                                                  .tenant_id = e.tenant_id});
         });
 
@@ -152,7 +155,7 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                  "ores.compute.workunit_changed",
                                  ev::domain::entity_change_event{.entity = "ores.compute.workunit",
                                                                  .timestamp = e.timestamp,
-                                                                 .entity_ids = e.ids,
+                                                                 .entity_ids = e.workunit_ids,
                                                                  .tenant_id = e.tenant_id});
         });
 
@@ -162,7 +165,17 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                  "ores.compute.result_changed",
                                  ev::domain::entity_change_event{.entity = "ores.compute.result",
                                                                  .timestamp = e.timestamp,
-                                                                 .entity_ids = e.ids,
+                                                                 .entity_ids = e.result_ids,
+                                                                 .tenant_id = e.tenant_id});
+        });
+
+    auto host_sub =
+        event_bus.subscribe<cev::host_changed_event>([&nats](const cev::host_changed_event& e) {
+            publish_entity_event(nats,
+                                 "ores.compute.host_changed",
+                                 ev::domain::entity_change_event{.entity = "ores.compute.host",
+                                                                 .timestamp = e.timestamp,
+                                                                 .entity_ids = e.host_ids,
                                                                  .tenant_id = e.tenant_id});
         });
 

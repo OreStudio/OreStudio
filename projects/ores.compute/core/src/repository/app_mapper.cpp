@@ -35,7 +35,9 @@ domain::app app_mapper::map(const app_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.name = v.name;
+
     r.description = v.description.value_or("");
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -54,7 +56,9 @@ app_entity app_mapper::map(const domain::app& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.name = v.name;
+
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

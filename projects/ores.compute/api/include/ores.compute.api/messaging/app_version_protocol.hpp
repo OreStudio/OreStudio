@@ -17,36 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_APP_VERSION_PROTOCOL_HPP
-#define ORES_COMPUTE_MESSAGING_APP_VERSION_PROTOCOL_HPP
+#ifndef ORES_COMPUTE_API_MESSAGING_APP_VERSION_PROTOCOL_HPP
+#define ORES_COMPUTE_API_MESSAGING_APP_VERSION_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/app_version.hpp"
-#include "ores.compute.api/domain/app_version_platform.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-struct list_app_versions_request {
-    using response_type = struct list_app_versions_response;
-    static constexpr std::string_view nats_subject = "compute.v1.app-versions.list";
-    int offset = 0;
-    int limit = 100;
+struct get_app_versions_request {
+    using response_type = struct get_app_versions_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_versions.list";
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
-struct list_app_versions_response {
+struct get_app_versions_response {
     std::vector<ores::compute::domain::app_version> app_versions;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_app_version_request {
     using response_type = struct save_app_version_response;
-    static constexpr std::string_view nats_subject = "compute.v1.app-versions.save";
-    ores::compute::domain::app_version app_version;
-    std::vector<ores::compute::domain::app_version_platform> platforms;
-    std::string change_reason_code;
-    std::string change_commentary;
+    static constexpr std::string_view nats_subject = "compute.v1.app_versions.save";
+    ores::compute::domain::app_version data;
+
+    static save_app_version_request from(ores::compute::domain::app_version v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_app_version_response {
@@ -54,28 +56,27 @@ struct save_app_version_response {
     std::string message;
 };
 
+struct delete_app_version_request {
+    using response_type = struct delete_app_version_response;
+    static constexpr std::string_view nats_subject = "compute.v1.app_versions.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_app_version_response {
+    bool success = false;
+    std::string message;
+};
+
 struct get_app_version_history_request {
     using response_type = struct get_app_version_history_response;
-    static constexpr std::string_view nats_subject = "compute.v1.app-versions.history";
+    static constexpr std::string_view nats_subject = "compute.v1.app_versions.history";
     std::string id;
 };
 
 struct get_app_version_history_response {
-    bool success = true;
+    std::vector<ores::compute::domain::app_version> history;
+    bool success = false;
     std::string message;
-    std::vector<ores::compute::domain::app_version> versions;
-};
-
-struct list_app_version_platforms_request {
-    using response_type = struct list_app_version_platforms_response;
-    static constexpr std::string_view nats_subject = "compute.v1.app-versions.platforms.list";
-    std::string app_version_id;
-};
-
-struct list_app_version_platforms_response {
-    bool success = true;
-    std::string message;
-    std::vector<ores::compute::domain::app_version_platform> platforms;
 };
 
 }

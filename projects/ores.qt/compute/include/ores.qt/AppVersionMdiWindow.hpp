@@ -32,6 +32,7 @@
 
 namespace ores::qt {
 
+
 /**
  * @brief MDI window for displaying and managing app versions.
  *
@@ -56,9 +57,6 @@ public:
                                  QWidget* parent = nullptr);
     ~AppVersionMdiWindow() override = default;
 
-public slots:
-    void doReload() override;
-
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
@@ -66,12 +64,21 @@ signals:
     void addNewRequested();
     void app_versionDeleted(const QString& code);
     void showVersionHistory(const compute::domain::app_version& app_version);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();

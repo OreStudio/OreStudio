@@ -20,19 +20,12 @@
 #ifndef ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 #define ORES_QT_APP_VERSION_DETAIL_DIALOG_HPP
 
-#include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
-#include "ores.compute.api/domain/app_version_platform.hpp"
-#include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include <QString>
-#include <QUrl>
-#include <functional>
 #include <vector>
 
-class QNetworkAccessManager;
 
 namespace Ui {
 class AppVersionDetailDialog;
@@ -68,7 +61,16 @@ public:
     void setVersion(const compute::domain::app_version& app_version);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
-    void setHttpBaseUrl(const std::string& url);
+
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
 
 signals:
     void app_versionSaved(const QString& code);
@@ -79,10 +81,6 @@ private slots:
     void onDeleteClicked();
     void onCodeChanged(const QString& text);
     void onFieldChanged();
-    void onAddPlatformClicked();
-    void onRemovePlatformClicked();
-    void onBrowsePackageRowClicked();
-    void onRetryPackageRowClicked();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -91,70 +89,24 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
-    struct AppEntry {
-        std::string id; // UUID string
-        std::string name;
-    };
-
-    struct PlatformEntry {
-        std::string id; // UUID string
-        std::string code;
-        std::string display_name;
-    };
-
-    /**
-     * @brief Per-row state on the Packages tab.
-     *
-     * Each PackageRow tracks a single (app_version, platform) binding and
-     * the associated .tar.gz file's lifecycle through Save: a user-selected
-     * local file that still needs to be PUT to storage, or an already-
-     * uploaded URI that can be submitted as-is.
-     */
-    struct PackageRow {
-        enum class State { NoFile, Selected, Uploading, Uploaded, Failed };
-
-        std::string platform_id;
-        std::string platform_code;
-        std::string platform_name;
-        QString local_file; // selected local path, empty until Browse
-        QString remote_uri; // set after successful PUT or on preload
-        State state = State::NoFile;
-        QString error;
-    };
-
     void setupUi();
     void setupConnections();
-    void loadApps();
-    void loadPlatforms();
-    void loadAssignedPlatforms(const std::string& app_version_id);
-    void populateAppCombo();
-    void populatePlatformsTab();
-    void syncPackagesTab();
-    void updatePackagesTableRow(int row);
-    void setPackageRowState(int row, PackageRow::State state, const QString& error = {});
     void updateUiFromVersion();
     void updateVersionFromUi();
     void updateSaveButtonState();
     bool validateInput();
 
-    void uploadPendingPackages(std::function<void(bool, QString)> done);
-    void submitSave();
 
     Ui::AppVersionDetailDialog* ui_;
     ClientManager* clientManager_;
-    QNetworkAccessManager* networkManager_;
     std::string username_;
-    QUrl httpBaseUrl_;
     compute::domain::app_version app_version_;
-    std::vector<PackageRow> package_rows_;
-    std::vector<AppEntry> appEntries_;
-    std::vector<PlatformEntry> availablePlatforms_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};
-    bool saveInProgress_{false};
 };
 
 }

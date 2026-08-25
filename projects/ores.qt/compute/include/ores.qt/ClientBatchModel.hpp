@@ -26,7 +26,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -35,7 +34,7 @@ namespace ores::qt {
 /**
  * @brief Model for displaying compute batches fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches compute batch
+ * This model extends AbstractClientModel and fetches compute batch
  * data asynchronously using the ores.comms client.
  */
 class ClientBatchModel final : public AbstractClientModel {
@@ -79,6 +78,7 @@ public:
      */
     const compute::domain::batch* getBatch(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */
@@ -103,17 +103,8 @@ public:
         return total_available_count_;
     }
 
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
-
 private slots:
-    void onBatchsLoaded();
+    void onBatchesLoaded();
     void onPulseStateChanged(bool isOn);
     void onPulsingComplete();
 

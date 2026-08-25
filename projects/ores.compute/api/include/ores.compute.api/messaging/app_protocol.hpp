@@ -17,37 +17,52 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_APP_PROTOCOL_HPP
-#define ORES_COMPUTE_MESSAGING_APP_PROTOCOL_HPP
+#ifndef ORES_COMPUTE_API_MESSAGING_APP_PROTOCOL_HPP
+#define ORES_COMPUTE_API_MESSAGING_APP_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/app.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-struct list_apps_request {
-    using response_type = struct list_apps_response;
+struct get_apps_request {
+    using response_type = struct get_apps_response;
     static constexpr std::string_view nats_subject = "compute.v1.apps.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
-struct list_apps_response {
+struct get_apps_response {
     std::vector<ores::compute::domain::app> apps;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_app_request {
     using response_type = struct save_app_response;
     static constexpr std::string_view nats_subject = "compute.v1.apps.save";
-    ores::compute::domain::app app;
-    std::string change_reason_code;
-    std::string change_commentary;
+    ores::compute::domain::app data;
+
+    static save_app_request from(ores::compute::domain::app v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_app_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_app_request {
+    using response_type = struct delete_app_response;
+    static constexpr std::string_view nats_subject = "compute.v1.apps.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_app_response {
     bool success = false;
     std::string message;
 };
@@ -59,9 +74,9 @@ struct get_app_history_request {
 };
 
 struct get_app_history_response {
-    bool success = true;
+    std::vector<ores::compute::domain::app> history;
+    bool success = false;
     std::string message;
-    std::vector<ores::compute::domain::app> versions;
 };
 
 }

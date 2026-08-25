@@ -115,7 +115,7 @@ void UploadEnginesDialog::reload_apps() {
     app_combo_->clear();
     apps_.clear();
 
-    compute::messaging::list_apps_request req;
+    compute::messaging::get_apps_request req;
     req.limit = 1000;
     const auto resp = client_manager_->process_authenticated_request(std::move(req));
     if (!resp)
@@ -158,7 +158,7 @@ void UploadEnginesDialog::reload_versions() {
         return;
     const auto& app = apps_[idx];
 
-    compute::messaging::list_app_versions_request req;
+    compute::messaging::get_app_versions_request req;
     req.limit = 1000;
     const auto resp = client_manager_->process_authenticated_request(std::move(req));
     if (!resp)
@@ -227,7 +227,7 @@ void UploadEnginesDialog::on_upload() {
     // rather than proceed if the fetch itself failed -- treating a fetch
     // failure as "no platforms yet" would silently wipe every previously
     // published platform on save.
-    compute::messaging::list_app_version_platforms_request existing_req;
+    compute::messaging::get_app_version_platforms_by_app_version_request existing_req;
     existing_req.app_version_id = boost::uuids::to_string(version.id);
     const auto existing_resp =
         client_manager_->process_authenticated_request(std::move(existing_req));
@@ -245,7 +245,8 @@ void UploadEnginesDialog::on_upload() {
         return;
     }
 
-    std::vector<compute::domain::app_version_platform> platform_rows = existing_resp->platforms;
+    std::vector<compute::domain::app_version_platform> platform_rows =
+        existing_resp->app_version_platforms;
     std::erase_if(platform_rows, [&](const auto& p) { return p.platform_code == platform.code; });
 
     compute::domain::app_version_platform row;
@@ -269,11 +270,7 @@ void UploadEnginesDialog::on_upload() {
     ver.change_reason_code = reason_code;
     ver.change_commentary = "Published via Upload Engines dialog";
 
-    compute::messaging::save_app_version_request ver_req;
-    ver_req.app_version = ver;
-    ver_req.platforms = std::move(platform_rows);
-    ver_req.change_reason_code = reason_code;
-    ver_req.change_commentary = ver.change_commentary;
+    auto ver_req = compute::messaging::save_app_version_request::from(ver);
 
     const auto ver_resp = client_manager_->process_authenticated_request(std::move(ver_req));
 
@@ -284,6 +281,26 @@ void UploadEnginesDialog::on_upload() {
     if (!ver_resp || !ver_resp->success) {
         const QString msg =
             ver_resp ? QString::fromStdString(ver_resp->message) : tr("No response from server");
+        status_label_->setText(tr("Save failed."));
+        MessageBoxHelper::critical(this, tr("Save Failed"), msg);
+        return;
+    }
+
+    // Platforms are saved through the junction's replace-by-app-version flow
+    // (compute.v1.app_version_platforms.replace_by_app_version_id), which
+    // swaps the full platform row set for the version in one operation.
+    compute::messaging::replace_app_version_platforms_by_app_version_request plat_req;
+    plat_req.app_version_id = boost::uuids::to_string(ver.id);
+    plat_req.app_version_platforms = std::move(platform_rows);
+    plat_req.modified_by = username;
+    plat_req.performed_by = username;
+    plat_req.change_reason_code = reason_code;
+    plat_req.change_commentary = ver.change_commentary;
+
+    const auto plat_resp = client_manager_->process_authenticated_request(std::move(plat_req));
+    if (!plat_resp || !plat_resp->success) {
+        const QString msg =
+            plat_resp ? QString::fromStdString(plat_resp->message) : tr("No response from server");
         status_label_->setText(tr("Save failed."));
         MessageBoxHelper::critical(this, tr("Save Failed"), msg);
         return;

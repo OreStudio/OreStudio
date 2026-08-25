@@ -17,50 +17,80 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_APP_VERSION_PLATFORM_REPOSITORY_HPP
-#define ORES_COMPUTE_REPOSITORY_APP_VERSION_PLATFORM_REPOSITORY_HPP
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_APP_VERSION_PLATFORM_REPOSITORY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_APP_VERSION_PLATFORM_REPOSITORY_HPP
 
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
+#include "ores.logging/make_logger.hpp"
+#include <boost/uuid/uuid.hpp>
+#include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
 
 namespace ores::compute::repository {
 
 /**
- * @brief Reads and writes the (app_version, platform) → package_uri junction
- * table.
- *
- * The orchestrator uses @c list_for_version at workunit dispatch time to find
- * which packaged bundles are available for an app version and pick the URI
- * matching the target host's triplet. @c replace_for_version is called from
- * the save_app_version handler to sync the junction rows for an app version
- * in one pass.
+ * @brief Reads and writes app version platforms to data storage.
  */
 class ORES_COMPUTE_CORE_EXPORT app_version_platform_repository {
+private:
+    inline static std::string_view logger_name =
+        "ores.compute.repository.app_version_platform_repository";
+
+    [[nodiscard]] static auto& lg() {
+        using namespace ores::logging;
+        static auto instance = make_logger(logger_name);
+        return instance;
+    }
+
 public:
+    using context = ores::database::context;
+
+    explicit app_version_platform_repository(context ctx);
+
+    std::string sql();
+
+    void write(const domain::app_version_platform& app_version_platform);
+    void write(const std::vector<domain::app_version_platform>& app_version_platforms);
+
+    std::vector<domain::app_version_platform> read_latest();
+    std::vector<domain::app_version_platform>
+    read_latest_by_app_version(const boost::uuids::uuid& app_version_id);
     /**
-     * @brief Return all active junction rows for a given app version, with
-     * the platform code denormalised from ores_compute_platforms_tbl.
+     * @brief Reads latest app version platforms filtered by app_version_id, with pagination.
      */
-    std::vector<domain::app_version_platform> list_for_version(database::context ctx,
-                                                               const std::string& app_version_id);
+    std::vector<domain::app_version_platform> read_latest_by_app_version(
+        const boost::uuids::uuid& app_version_id, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Replace all active junction rows for the given app version with
-     * the supplied set. Existing active rows that are not in @p rows are
-     * soft-deleted; rows in @p rows are upserted via the bitemporal insert
-     * trigger which closes any pre-existing active row for the same
-     * (app_version, platform) pair.
+     * @brief Gets the total count of active app version platforms filtered by app_version_id.
      */
-    void replace_for_version(database::context ctx,
-                             const std::string& app_version_id,
-                             const std::vector<domain::app_version_platform>& rows,
-                             const std::string& modified_by,
-                             const std::string& performed_by,
-                             const std::string& change_reason_code,
-                             const std::string& change_commentary);
+    std::uint32_t
+    get_total_app_version_platform_count_by_app_version(const boost::uuids::uuid& app_version_id);
+    std::vector<domain::app_version_platform>
+    read_latest_by_platform(const boost::uuids::uuid& platform_id);
+
+    void remove(const boost::uuids::uuid& app_version_id, const boost::uuids::uuid& platform_id);
+    void remove_by_app_version(const boost::uuids::uuid& app_version_id);
+    /**
+     * @brief Replaces the active app version platforms for a app version.
+     *
+     * Soft-closes the currently active rows for the given
+     * app version and inserts the rows in @p app_version_platforms,
+     * so the active set exactly matches the caller's list.
+     */
+    void
+    replace_by_app_version(const boost::uuids::uuid& app_version_id,
+                           const std::vector<domain::app_version_platform>& app_version_platforms,
+                           const std::string& modified_by,
+                           const std::string& performed_by,
+                           const std::string& change_reason_code,
+                           const std::string& change_commentary);
+
+private:
+    context ctx_;
 };
 
 }

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_GENERATORS_HOST_GENERATOR_HPP
-#define ORES_COMPUTE_GENERATORS_HOST_GENERATOR_HPP
+#ifndef ORES_COMPUTE_API_GENERATORS_HOST_GENERATOR_HPP
+#define ORES_COMPUTE_API_GENERATORS_HOST_GENERATOR_HPP
 
 #include "ores.compute.api/domain/host.hpp"
 #include "ores.compute.api/export.hpp"
@@ -28,13 +28,13 @@
 namespace ores::compute::generators {
 
 /**
- * @brief Generates a synthetic compute host.
+ * @brief Generates a synthetic host.
  */
 ORES_COMPUTE_API_EXPORT domain::host
 generate_synthetic_host(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic compute hosts.
+ * @brief Generates N synthetic hosts.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::host>
 generate_synthetic_hosts(std::size_t n, utility::generation::generation_context& ctx);

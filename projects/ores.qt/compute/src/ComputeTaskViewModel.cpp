@@ -207,7 +207,7 @@ void ComputeTaskViewModel::fetch_tasks() {
                     return {.success = false, .error_message = "Model was destroyed"};
 
                 // --- Batches ---
-                compute::messaging::list_batches_request breq;
+                compute::messaging::get_batches_request breq;
                 breq.limit = 1000;
                 auto br = self->clientManager_->process_authenticated_request(std::move(breq));
                 if (!br)
@@ -225,7 +225,7 @@ void ComputeTaskViewModel::fetch_tasks() {
                 }
 
                 // --- Workunits ---
-                compute::messaging::list_workunits_request wreq;
+                compute::messaging::get_workunits_request wreq;
                 wreq.limit = 1000;
                 auto wr = self->clientManager_->process_authenticated_request(std::move(wreq));
                 if (!wr)
@@ -238,7 +238,7 @@ void ComputeTaskViewModel::fetch_tasks() {
                     wu_map.emplace(boost::uuids::to_string(w.id), std::move(w));
 
                 // --- Results ---
-                compute::messaging::list_results_request rreq;
+                compute::messaging::get_results_request rreq;
                 rreq.limit = 1000;
                 auto rr = self->clientManager_->process_authenticated_request(std::move(rreq));
                 if (!rr)

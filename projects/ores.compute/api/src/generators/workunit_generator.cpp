@@ -19,32 +19,29 @@
  */
 #include "ores.compute.api/generators/workunit_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::compute::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::workunit generate_synthetic_workunit(const boost::uuids::uuid& batch_id,
-                                             const boost::uuids::uuid& app_version_id,
-                                             utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+domain::workunit generate_synthetic_workunit(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::workunit r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value();
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.batch_id = batch_id;
-    r.app_version_id = app_version_id;
-    r.input_uri = std::string("s3://inputs/wu-") + std::to_string(idx) + ".zip";
-    r.config_uri = std::string("s3://configs/wu-") + std::to_string(idx) + ".xml";
-    r.priority = 0;
-    r.target_redundancy = 1;
-    r.canonical_result_id = boost::uuids::uuid{};
+    r.batch_id = ctx.generate_uuid();
+    r.app_version_id = ctx.generate_uuid();
+    r.input_uri = std::string(faker::word::noun());
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
@@ -54,14 +51,11 @@ domain::workunit generate_synthetic_workunit(const boost::uuids::uuid& batch_id,
 }
 
 std::vector<domain::workunit>
-generate_synthetic_workunits(std::size_t n,
-                             const boost::uuids::uuid& batch_id,
-                             const boost::uuids::uuid& app_version_id,
-                             utility::generation::generation_context& ctx) {
+generate_synthetic_workunits(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::workunit> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_workunit(batch_id, app_version_id, ctx));
+        r.push_back(generate_synthetic_workunit(ctx));
     return r;
 }
 

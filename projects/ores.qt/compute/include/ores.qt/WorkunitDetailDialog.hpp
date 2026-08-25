@@ -20,15 +20,12 @@
 #ifndef ORES_QT_WORKUNIT_DETAIL_DIALOG_HPP
 #define ORES_QT_WORKUNIT_DETAIL_DIALOG_HPP
 
-#include "ores.compute.api/domain/app_version.hpp"
-#include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/domain/workunit.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
-#include <QString>
-#include <QUrl>
 #include <vector>
+
 
 namespace Ui {
 class WorkunitDetailDialog;
@@ -37,11 +34,11 @@ class WorkunitDetailDialog;
 namespace ores::qt {
 
 /**
- * @brief Dialog for submitting a new workunit to the compute grid.
+ * @brief Detail dialog for viewing and editing workunit records.
  *
- * Allows the user to specify the batch and app version UUIDs, upload
- * input and config files, and set scheduling parameters. On submit,
- * files are uploaded via HTTP and the workunit is registered via NATS.
+ * This dialog allows viewing, creating, and editing workunits.
+ * It supports both create mode (for new records) and edit mode (for
+ * existing records).
  */
 class WorkunitDetailDialog final : public DetailDialogBase {
     Q_OBJECT
@@ -61,21 +58,29 @@ public:
 
     void setClientManager(ClientManager* clientManager);
     void setUsername(const std::string& username);
-    void setHttpBaseUrl(const std::string& url);
     void setWorkunit(const compute::domain::workunit& workunit);
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
+
 signals:
-    void workunitSaved(const QString& id);
-    void workunitDeleted(const QString& id);
+    void workunitSaved(const QString& code);
+    void workunitDeleted(const QString& code);
 
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
+    void onCodeChanged(const QString& text);
     void onFieldChanged();
-    void onBrowseInputClicked();
-    void onBrowseConfigClicked();
 
 protected:
     QTabWidget* tabWidget() const override;
@@ -84,34 +89,21 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
-    struct IdEntry {
-        std::string id;
-        std::string label;
-    };
-
     void setupUi();
     void setupConnections();
-    void loadBatches();
-    void loadAppVersions();
-    void populateBatchCombo();
-    void populateAppVersionCombo();
     void updateUiFromWorkunit();
     void updateWorkunitFromUi();
     void updateSaveButtonState();
     bool validateInput();
-    void saveWorkunitViaNats();
+
 
     Ui::WorkunitDetailDialog* ui_;
     ClientManager* clientManager_;
     std::string username_;
-    QUrl httpBaseUrl_;
     compute::domain::workunit workunit_;
-    std::vector<IdEntry> batchEntries_;
-    std::vector<IdEntry> appVersionEntries_;
-    QString selectedInputFilePath_;
-    QString selectedConfigFilePath_;
     bool createMode_{true};
     bool readOnly_{false};
     bool hasChanges_{false};

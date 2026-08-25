@@ -19,16 +19,22 @@
  */
 #include "ores.qt/AppVersionController.hpp"
 #include "ores.compute.api/eventing/app_version_changed_event.hpp"
+#include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.qt/AppVersionDetailDialog.hpp"
-#include "ores.qt/AppVersionHistoryDialog.hpp"
 #include "ores.qt/AppVersionMdiWindow.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
 #include "ores.qt/DetachableMdiSubWindow.hpp"
+#include "ores.qt/HistoryDialog.hpp"
 #include "ores.qt/IconUtils.hpp"
+#include "ores.qt/UiPersistence.hpp"
+#include <QFutureWatcher>
 #include <QMdiSubWindow>
 #include <QMessageBox>
 #include <QPointer>
+#include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 
 namespace ores::qt {
 
@@ -51,10 +57,6 @@ AppVersionController::AppVersionController(QMainWindow* mainWindow,
     , listMdiSubWindow_(nullptr) {
 
     BOOST_LOG_SEV(lg(), debug) << "AppVersionController created";
-}
-
-void AppVersionController::setHttpBaseUrl(const std::string& url) {
-    httpBaseUrl_ = url;
 }
 
 void AppVersionController::showListWindow() {
@@ -106,6 +108,8 @@ void AppVersionController::showListWindow() {
     // Track window
     track_window(key, listMdiSubWindow_);
     register_detachable_window(listMdiSubWindow_);
+    listMdiSubWindow_->setGeometryKey(key);
+    UiPersistence::restoreMdiGeometry(key, listMdiSubWindow_);
 
     // Cleanup when closed
     connect(listMdiSubWindow_,
@@ -154,21 +158,17 @@ void AppVersionController::onAddNewRequested() {
     showAddWindow();
 }
 
+
 void AppVersionController::onShowHistory(const compute::domain::app_version& app_version) {
     BOOST_LOG_SEV(lg(), debug) << "Show history requested for: " << app_version.wrapper_version;
     showHistoryWindow(app_version);
 }
 
-void AppVersionController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new app version";
-
-    auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
+void AppVersionController::wireDetailDialogCommon(AppVersionDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setHttpBaseUrl(httpBaseUrl_);
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &AppVersionDetailDialog::statusMessage,
@@ -178,6 +178,15 @@ void AppVersionController::showAddWindow() {
             &AppVersionDetailDialog::errorMessage,
             this,
             &AppVersionController::errorMessage);
+}
+
+void AppVersionController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new app version";
+
+    auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &AppVersionDetailDialog::app_versionSaved,
             this,
@@ -214,22 +223,10 @@ void AppVersionController::showDetailWindow(const compute::domain::app_version& 
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << app_version.wrapper_version;
 
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
-    detailDialog->setHttpBaseUrl(httpBaseUrl_);
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setVersion(app_version);
 
-    connect(detailDialog,
-            &AppVersionDetailDialog::statusMessage,
-            this,
-            &AppVersionController::statusMessage);
-    connect(detailDialog,
-            &AppVersionDetailDialog::errorMessage,
-            this,
-            &AppVersionController::errorMessage);
     connect(detailDialog,
             &AppVersionDetailDialog::app_versionSaved,
             this,
@@ -259,6 +256,7 @@ void AppVersionController::showDetailWindow(const compute::domain::app_version& 
     // Track window
     track_window(key, detailWindow);
     register_detachable_window(detailWindow);
+    detailWindow->setGeometryKey(key);
 
     QPointer<AppVersionController> self = this;
     connect(detailWindow, &QObject::destroyed, this, [self, key]() {
@@ -287,11 +285,15 @@ void AppVersionController::showHistoryWindow(const compute::domain::app_version&
 
     BOOST_LOG_SEV(lg(), info) << "Creating new history window for: " << app_version.wrapper_version;
 
+    const QString entityId = QString::fromStdString(boost::uuids::to_string(app_version.id));
     auto* historyDialog =
-        new AppVersionHistoryDialog(app_version.id, code, clientManager_, mainWindow_);
+        new HistoryDialog(std::string(entity_type_of(compute::domain::app_version{})),
+                          entityId.toStdString(),
+                          clientManager_,
+                          mainWindow_);
 
     connect(historyDialog,
-            &AppVersionHistoryDialog::statusChanged,
+            &HistoryDialog::statusChanged,
             this,
             [self = QPointer<AppVersionController>(this)](const QString& message) {
                 if (!self)
@@ -299,7 +301,7 @@ void AppVersionController::showHistoryWindow(const compute::domain::app_version&
                 emit self->statusMessage(message);
             });
     connect(historyDialog,
-            &AppVersionHistoryDialog::errorOccurred,
+            &HistoryDialog::errorOccurred,
             this,
             [self = QPointer<AppVersionController>(this)](const QString& message) {
                 if (!self)
@@ -307,13 +309,23 @@ void AppVersionController::showHistoryWindow(const compute::domain::app_version&
                 emit self->errorMessage(message);
             });
     connect(historyDialog,
-            &AppVersionHistoryDialog::revertVersionRequested,
+            &HistoryDialog::revertVersionRequested,
             this,
-            &AppVersionController::onRevertVersion);
+            [self = QPointer<AppVersionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onRevertHistoryVersion(entityId, version);
+            });
     connect(historyDialog,
-            &AppVersionHistoryDialog::openVersionRequested,
+            &HistoryDialog::openVersionRequested,
             this,
-            &AppVersionController::onOpenVersion);
+            [self = QPointer<AppVersionController>(this)](
+                const QString& /*entityType*/, const QString& entityId, int version) {
+                if (!self)
+                    return;
+                self->onOpenHistoryVersion(entityId, version);
+            });
 
     // Load history data
     historyDialog->loadHistory();
@@ -324,10 +336,12 @@ void AppVersionController::showHistoryWindow(const compute::domain::app_version&
     historyWindow->setWindowTitle(QString("App Version History: %1").arg(code));
     historyWindow->setWindowIcon(
         IconUtils::createRecoloredIcon(Icon::History, IconUtils::DefaultIconColor));
+    connect_dialog_close(historyDialog, historyWindow);
 
     // Track this history window
     track_window(windowKey, historyWindow);
     register_detachable_window(historyWindow);
+    historyWindow->setGeometryKey(windowKey);
 
     QPointer<AppVersionController> self = this;
     connect(historyWindow, &QObject::destroyed, this, [self, windowKey]() {
@@ -355,29 +369,9 @@ void AppVersionController::onOpenVersion(const compute::domain::app_version& app
     }
 
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setVersion(app_version);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &AppVersionDetailDialog::statusMessage,
-            this,
-            [self = QPointer<AppVersionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &AppVersionDetailDialog::errorMessage,
-            this,
-            [self = QPointer<AppVersionController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -401,26 +395,108 @@ void AppVersionController::onOpenVersion(const compute::domain::app_version& app
     show_managed_window(detailWindow, listMdiSubWindow_, QPoint(60, 60));
 }
 
+void AppVersionController::fetchAppVersionHistory(
+    const QString& entityId,
+    std::function<void(std::expected<std::vector<compute::domain::app_version>, QString>)>
+        callback) {
+    compute::messaging::get_app_version_history_request request;
+    request.id = entityId.toStdString();
+
+    using FetchResult = std::expected<std::vector<compute::domain::app_version>, QString>;
+
+    QPointer<AppVersionController> self = this;
+    QPointer<ClientManager> clientManager = clientManager_;
+    auto future = QtConcurrent::run([clientManager, request = std::move(request)]() -> FetchResult {
+        if (!clientManager || !clientManager->isConnected())
+            return std::unexpected(QString("Not connected to server"));
+        auto result = clientManager->process_authenticated_request(std::move(request));
+        if (!result)
+            return std::unexpected(QString::fromStdString(result.error()));
+        if (!result->success)
+            return std::unexpected(QString::fromStdString(result->message));
+        return std::move(result->history);
+    });
+
+    auto* watcher = new QFutureWatcher<FetchResult>(this);
+    connect(watcher,
+            &QFutureWatcher<FetchResult>::finished,
+            this,
+            [self, watcher, callback = std::move(callback)]() mutable {
+                auto result = watcher->result();
+                watcher->deleteLater();
+                if (!self)
+                    return;
+                callback(std::move(result));
+            });
+    watcher->setFuture(future);
+}
+
+void AppVersionController::onOpenHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<AppVersionController> self = this;
+    fetchAppVersionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<compute::domain::app_version>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onOpenVersion(*it, versionNumber);
+        });
+}
+
+void AppVersionController::onRevertHistoryVersion(const QString& entityId, int versionNumber) {
+    QPointer<AppVersionController> self = this;
+    fetchAppVersionHistory(
+        entityId,
+        [self, entityId, versionNumber](
+            std::expected<std::vector<compute::domain::app_version>, QString> result) {
+            if (!self)
+                return;
+            if (!result) {
+                emit self->errorMessage(QString("Failed to load history for '%1': %2")
+                                            .arg(entityId)
+                                            .arg(result.error()));
+                return;
+            }
+            const auto& history = *result;
+            const auto it = std::find_if(history.begin(), history.end(), [&](const auto& v) {
+                return v.version == versionNumber;
+            });
+            if (it == history.end()) {
+                emit self->errorMessage(
+                    QString("Version %1 not found for '%2'").arg(versionNumber).arg(entityId));
+                return;
+            }
+            self->onRevertVersion(*it);
+        });
+}
+
 void AppVersionController::onRevertVersion(const compute::domain::app_version& app_version) {
     BOOST_LOG_SEV(lg(), info) << "Reverting app version to version: " << app_version.version;
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new AppVersionDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
-    detailDialog->setVersion(app_version);
+    wireDetailDialogCommon(detailDialog);
+    auto reverted_app_version = app_version;
+    reverted_app_version.version = 0;
+    detailDialog->setVersion(reverted_app_version);
     detailDialog->setCreateMode(false);
+    detailDialog->markDirty();
 
-    connect(detailDialog,
-            &AppVersionDetailDialog::statusMessage,
-            this,
-            &AppVersionController::statusMessage);
-    connect(detailDialog,
-            &AppVersionDetailDialog::errorMessage,
-            this,
-            &AppVersionController::errorMessage);
     connect(detailDialog,
             &AppVersionDetailDialog::app_versionSaved,
             this,
@@ -449,6 +525,28 @@ void AppVersionController::onRevertVersion(const compute::domain::app_version& a
 
 EntityListMdiWindow* AppVersionController::listWindow() const {
     return listWindow_;
+}
+
+void AppVersionController::notifyOpenDialogs(const QStringList& entityIds) {
+    for (auto it = managed_windows_.begin(); it != managed_windows_.end(); ++it) {
+        auto* window = it.value();
+        if (!window)
+            continue;
+
+        if (it.key().startsWith("details.")) {
+            if (auto* dialog = qobject_cast<DetailDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        } else if (it.key().startsWith("history.")) {
+            if (auto* dialog = qobject_cast<HistoryDialogBase*>(window->widget())) {
+                if (entityIds.isEmpty() || entityIds.contains(dialog->code())) {
+                    dialog->markAsStale();
+                }
+            }
+        }
+    }
 }
 
 }

@@ -17,12 +17,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_APP_VERSION_HANDLER_HPP
-#define ORES_COMPUTE_MESSAGING_APP_VERSION_HANDLER_HPP
+#ifndef ORES_COMPUTE_CORE_MESSAGING_APP_VERSION_HANDLER_HPP
+#define ORES_COMPUTE_CORE_MESSAGING_APP_VERSION_HANDLER_HPP
 
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
-#include "ores.compute.core/export.hpp"
-#include "ores.compute.core/repository/app_version_platform_repository.hpp"
 #include "ores.compute.core/service/app_version_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -31,10 +29,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/uuid/uuid_io.hpp>
 #include <optional>
-#include <rfl/json.hpp>
-#include <stdexcept>
 
 namespace ores::compute::messaging {
 
@@ -46,12 +41,15 @@ inline auto& app_version_handler_lg() {
 } // namespace
 
 using ores::service::messaging::reply;
-using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
+using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_COMPUTE_CORE_EXPORT app_version_handler {
+/**
+ * @brief NATS message handler for app version operations.
+ */
+class app_version_handler {
 public:
     app_version_handler(ores::nats::service::client& nats,
                         ores::database::context ctx,
@@ -62,109 +60,121 @@ public:
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::app_version_service svc(ctx);
-        list_app_versions_response resp;
-        try {
-            if (auto req = decode<list_app_versions_request>(msg)) {
-                resp.app_versions = svc.list();
-                resp.total_available_count = static_cast<int>(resp.app_versions.size());
-            }
-        } catch (...) {
-        }
-        reply(nats_, msg, resp);
-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void save(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "compute::apps:write")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        if (auto req = decode<save_app_version_request>(msg)) {
+        const auto& req_ctx = *req_ctx_expected;
+        service::app_version_service svc(req_ctx);
+        get_app_versions_response resp;
+        if (auto req = decode<get_app_versions_request>(msg)) {
             try {
-                service::app_version_service svc(ctx);
-                svc.save(req->app_version);
-
-                // Sync the per-platform junction rows in the same request so
-                // Qt / CLI callers only need to make one round-trip.
-                repository::app_version_platform_repository avp_repo;
-                avp_repo.replace_for_version(ctx,
-                                             boost::uuids::to_string(req->app_version.id),
-                                             req->platforms,
-                                             req->app_version.modified_by,
-                                             req->app_version.performed_by,
-                                             req->app_version.change_reason_code,
-                                             req->app_version.change_commentary);
-
-                reply(nats_, msg, save_app_version_response{.success = true});
+                resp.app_versions = svc.list_app_versions(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_app_versions());
+                resp.success = true;
             } catch (const std::exception& e) {
-                reply(nats_, msg, save_app_version_response{.success = false, .message = e.what()});
+                BOOST_LOG_SEV(app_version_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
         } else {
-            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
-        }
-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void history(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        get_app_version_history_response resp;
-        try {
-            if (auto req = decode<get_app_version_history_request>(msg)) {
-                service::app_version_service svc(ctx);
-                resp.versions = svc.history(req->id);
-            }
-        } catch (const std::exception& e) {
-            resp.success = false;
-            resp.message = e.what();
-        }
-        reply(nats_, msg, resp);
-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void list_platforms(ores::nats::message msg) {
-        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        auto req = decode<list_app_version_platforms_request>(msg);
-        if (!req) {
             BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
             error_reply(nats_, msg, ores::service::error_code::bad_request);
             return;
         }
-        list_app_version_platforms_response resp;
-        try {
-            repository::app_version_platform_repository avp_repo;
-            resp.platforms = avp_repo.list_for_version(ctx, req->app_version_id);
-        } catch (const std::exception& e) {
-            resp.success = false;
-            resp.message = e.what();
-        }
-        reply(nats_, msg, resp);
         BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void save(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "compute::app_versions:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::app_version_service svc(req_ctx);
+        if (auto req = decode<save_app_version_request>(msg)) {
+            try {
+                svc.save_app_version(req->data);
+                BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_app_version_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(app_version_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, save_app_version_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::app_version_service svc(req_ctx);
+        if (auto req = decode<get_app_version_history_request>(msg)) {
+            try {
+                auto hist = svc.get_app_version_history(req->id);
+                BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(
+                    nats_,
+                    msg,
+                    get_app_version_history_response{.history = std::move(hist), .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(app_version_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_app_version_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "compute::app_versions:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::app_version_service svc(req_ctx);
+        if (auto req = decode<delete_app_version_request>(msg)) {
+            try {
+                svc.delete_app_versions(req->ids);
+                BOOST_LOG_SEV(app_version_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_app_version_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(app_version_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, delete_app_version_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(app_version_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
     }
 
 private:

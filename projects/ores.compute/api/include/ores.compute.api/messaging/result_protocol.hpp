@@ -17,39 +17,79 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_RESULT_PROTOCOL_HPP
-#define ORES_COMPUTE_MESSAGING_RESULT_PROTOCOL_HPP
+#ifndef ORES_COMPUTE_API_MESSAGING_RESULT_PROTOCOL_HPP
+#define ORES_COMPUTE_API_MESSAGING_RESULT_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/result.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-struct list_results_request {
-    using response_type = struct list_results_response;
+struct get_results_request {
+    using response_type = struct get_results_response;
     static constexpr std::string_view nats_subject = "compute.v1.results.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
-struct list_results_response {
+struct get_results_response {
     std::vector<ores::compute::domain::result> results;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
-struct submit_result_request {
-    using response_type = struct submit_result_response;
-    static constexpr std::string_view nats_subject = "compute.v1.results.submit";
-    std::string result_id;
-    std::string host_id; // UUID string of the wrapper node that ran the job
-    std::string output_uri;
-    int outcome = 0;
-    std::string error_message; // Human-readable failure reason; empty on success
+struct save_result_request {
+    using response_type = struct save_result_response;
+    static constexpr std::string_view nats_subject = "compute.v1.results.save";
+    ores::compute::domain::result data;
+
+    static save_result_request from(ores::compute::domain::result v) {
+        return {.data = std::move(v)};
+    }
 };
 
-struct submit_result_response {
+struct save_result_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_result_request {
+    using response_type = struct delete_result_response;
+    static constexpr std::string_view nats_subject = "compute.v1.results.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_result_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_result_history_request {
+    using response_type = struct get_result_history_response;
+    static constexpr std::string_view nats_subject = "compute.v1.results.history";
+    std::string id;
+};
+
+struct get_result_history_response {
+    std::vector<ores::compute::domain::result> history;
+    bool success = false;
+    std::string message;
+};
+
+struct get_results_by_workunit_id_request {
+    using response_type = struct get_results_by_workunit_id_response;
+    static constexpr std::string_view nats_subject = "compute.v1.results.list_by_workunit_id";
+    std::string workunit_id;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
+};
+
+struct get_results_by_workunit_id_response {
+    std::vector<ores::compute::domain::result> results;
+    int total_available_count = 0;
     bool success = false;
     std::string message;
 };

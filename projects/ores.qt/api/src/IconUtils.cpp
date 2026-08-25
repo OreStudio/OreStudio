@@ -40,6 +40,8 @@ static IconDef getIconDef(Icon icon) {
             return {"ic_fluent_add_20", "add-circle.svg"};
         case Icon::Anchor:
             return {"ic_fluent_pin_20", "pin.svg"};
+        case Icon::Apps:
+            return {"ic_fluent_apps_20", "widget.svg"};
         case Icon::Archive:
             return {"ic_fluent_archive_20", "archive.svg"};
         case Icon::ArrowClockwise:
@@ -114,6 +116,8 @@ static IconDef getIconDef(Icon icon) {
             return {"ic_fluent_delete_20", "trash-bin-trash.svg"};
         case Icon::DeleteDismiss:
             return {"ic_fluent_delete_dismiss_20", "trash-bin-trash.svg"};
+        case Icon::Desktop:
+            return {"ic_fluent_desktop_20", "monitor.svg"};
         case Icon::Dismiss:
             return {"ic_fluent_dismiss_20", "close-circle.svg"};
         case Icon::DismissCircle:
@@ -144,6 +148,8 @@ static IconDef getIconDef(Icon icon) {
             return {"ic_fluent_hourglass_20", "hourglass.svg"};
         case Icon::Flag:
             return {"ic_fluent_flag_20", "flag.svg"};
+        case Icon::FlashFlow:
+            return {"ic_fluent_flash_flow_20", "bolt.svg"};
         case Icon::Folder:
             return {"ic_fluent_folder_20", "folder.svg"};
         case Icon::FolderOpen:
@@ -236,6 +242,8 @@ static IconDef getIconDef(Icon icon) {
             return {"ic_fluent_tasks_app_20", "clipboard-list.svg"};
         case Icon::Terminal:
             return {"ic_fluent_window_console_20", "programming.svg"};
+        case Icon::TextBulletListSquare:
+            return {"ic_fluent_text_bullet_list_square_20", "list-check.svg"};
         case Icon::Wand:
             return {"ic_fluent_wand_20", "magic-stick-3.svg"};
         case Icon::Warning:

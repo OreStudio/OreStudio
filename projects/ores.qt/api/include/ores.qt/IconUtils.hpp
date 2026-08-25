@@ -38,6 +38,7 @@ namespace ores::qt {
 enum class Icon {
     Add,
     Anchor,
+    Apps,
     Archive,
     ArrowClockwise,
     ArrowDownload,
@@ -74,6 +75,7 @@ enum class Icon {
     Database,
     Delete,
     DeleteDismiss,
+    Desktop,
     Dismiss,
     DismissCircle,
     DismissCircleFilled,
@@ -88,6 +90,7 @@ enum class Icon {
     FeedPending, ///< Market data feed not yet connected
     FeedStale,   ///< Market data feed has not updated recently
     Flag,
+    FlashFlow,
     Folder,
     FolderOpen,
     Globe,
@@ -135,6 +138,7 @@ enum class Icon {
     Tag,
     TasksApp,
     Terminal,
+    TextBulletListSquare,
     Wand,
     Warning
 };

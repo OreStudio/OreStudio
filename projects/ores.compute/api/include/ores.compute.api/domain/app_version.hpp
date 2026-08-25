@@ -17,12 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_DOMAIN_APP_VERSION_HPP
-#define ORES_COMPUTE_DOMAIN_APP_VERSION_HPP
+#ifndef ORES_COMPUTE_API_DOMAIN_APP_VERSION_HPP
+#define ORES_COMPUTE_API_DOMAIN_APP_VERSION_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <string>
+#include <string_view>
 
 namespace ores::compute::domain {
 
@@ -30,9 +31,9 @@ namespace ores::compute::domain {
  * @brief A versioned wrapper+engine bundle for a compute grid application.
  *
  * Combines a specific wrapper version with a specific engine version. The BOINC
- * equivalent of 'app_version'. Per-platform package artefacts are tracked via
- * ores_compute_app_version_platforms_tbl — each (app_version, platform) row
- * owns the URI of its own packaged bundle.
+ * equivalent of 'app_version'. Per-platform package artefacts are tracked in
+ * ores_compute_app_version_platforms_tbl — each (app_version, platform) row owns
+ * the URI of its own packaged bundle.
  */
 struct app_version final {
     /**
@@ -68,7 +69,7 @@ struct app_version final {
     /**
      * @brief Minimum RAM in MB required by the node to run this app version.
      */
-    int min_ram_mb;
+    int min_ram_mb = 0;
 
     /**
      * @brief Username of the person who last modified this app version.
@@ -97,6 +98,16 @@ struct app_version final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for app_version, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const app_version&) {
+    return "ores.compute.app_version";
+}
 
 }
 

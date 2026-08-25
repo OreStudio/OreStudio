@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_GENERATORS_APP_GENERATOR_HPP
-#define ORES_COMPUTE_GENERATORS_APP_GENERATOR_HPP
+#ifndef ORES_COMPUTE_API_GENERATORS_APP_GENERATOR_HPP
+#define ORES_COMPUTE_API_GENERATORS_APP_GENERATOR_HPP
 
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/export.hpp"
@@ -28,13 +28,13 @@
 namespace ores::compute::generators {
 
 /**
- * @brief Generates a synthetic compute app.
+ * @brief Generates a synthetic app.
  */
 ORES_COMPUTE_API_EXPORT domain::app
 generate_synthetic_app(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic compute apps.
+ * @brief Generates N synthetic apps.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::app>
 generate_synthetic_apps(std::size_t n, utility::generation::generation_context& ctx);

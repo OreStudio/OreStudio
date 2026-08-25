@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_HOST_ENTITY_HPP
-#define ORES_COMPUTE_REPOSITORY_HOST_ENTITY_HPP
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_HOST_ENTITY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_HOST_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -40,13 +40,15 @@ struct host_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+
     std::string external_id;
-    std::optional<std::string> display_name;
+
     std::optional<std::string> location;
-    int cpu_count;
+    int cpu_count = 0;
     std::int64_t ram_mb;
     std::optional<std::string> gpu_type;
-    std::optional<db_timestamp> last_rpc_time;
+    std::optional<std::string> display_name;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_rpc_time;
     double credit_total;
     std::string modified_by;
     std::string performed_by;

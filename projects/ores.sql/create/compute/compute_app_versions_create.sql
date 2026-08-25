@@ -22,12 +22,12 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * App Version Table
  *
  * Combines a specific wrapper version with a specific engine version. The BOINC
  * equivalent of 'app_version'. Per-platform package artefacts are tracked in
- * ores_compute_app_version_platforms_tbl — each (app_version, platform) row
- * owns the URI of its own packaged bundle.
+ * ores_compute_app_version_platforms_tbl — each (app_version, platform) row owns
+ * the URI of its own packaged bundle.
  */
 
 create table if not exists "ores_compute_app_versions_tbl" (
@@ -67,10 +67,6 @@ create index if not exists app_versions_tenant_idx
 on "ores_compute_app_versions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists app_versions_app_id_idx
-on "ores_compute_app_versions_tbl" (tenant_id, app_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_compute_app_versions_insert_fn()
 returns trigger as $$
 declare
@@ -78,6 +74,20 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate app_id (soft FK to ores_compute_apps_tbl)
+    if not exists (
+        select 1 from ores_compute_apps_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.app_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid app_id: %. No active app found with this id.', NEW.app_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -94,36 +104,39 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_compute_app_versions_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
-
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_compute_app_versions_insert_trg
 before insert on "ores_compute_app_versions_tbl"
 for each row execute function ores_compute_app_versions_insert_fn();
 
 create or replace rule ores_compute_app_versions_delete_rule as
-on delete to "ores_compute_app_versions_tbl" do instead
+on delete to "ores_compute_app_versions_tbl" do instead (
     update "ores_compute_app_versions_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

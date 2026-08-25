@@ -20,14 +20,17 @@
 #include "ores.compute.core/repository/result_mapper.hpp"
 #include "ores.compute.api/domain/result_json_io.hpp" // IWYU pragma: keep.
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <format>
+#include <sstream>
 
 namespace ores::compute::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
-using ores::platform::time::datetime;
 
 domain::result result_mapper::map(const result_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -39,13 +42,15 @@ domain::result result_mapper::map(const result_entity& v) {
     r.workunit_id = boost::lexical_cast<boost::uuids::uuid>(v.workunit_id);
     r.host_id = v.host_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.host_id) :
                                         boost::uuids::uuid{};
-    r.pgmq_msg_id = v.pgmq_msg_id.value_or(0LL);
+    r.pgmq_msg_id = v.pgmq_msg_id.value_or({});
     r.server_state = v.server_state;
-    r.outcome = v.outcome.value_or(0);
+    r.outcome = v.outcome.value_or({});
     r.output_uri = v.output_uri.value_or("");
     r.error_message = v.error_message.value_or("");
-    r.received_at = v.received_at ? timestamp_to_timepoint(*v.received_at) :
-                                    std::chrono::system_clock::time_point{};
+    if (v.received_at)
+        r.received_at = timestamp_to_timepoint(*v.received_at);
+    else
+        r.received_at = {};
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -64,7 +69,7 @@ result_entity result_mapper::map(const domain::result& v) {
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
     r.workunit_id = boost::uuids::to_string(v.workunit_id);
-    r.host_id = (v.host_id == boost::uuids::uuid{}) ?
+    r.host_id = v.host_id == boost::uuids::uuid{} ?
                     std::nullopt :
                     std::optional(boost::uuids::to_string(v.host_id));
     r.pgmq_msg_id = v.pgmq_msg_id == 0 ? std::nullopt : std::optional(v.pgmq_msg_id);
@@ -72,9 +77,9 @@ result_entity result_mapper::map(const domain::result& v) {
     r.outcome = v.outcome == 0 ? std::nullopt : std::optional(v.outcome);
     r.output_uri = v.output_uri.empty() ? std::nullopt : std::optional(v.output_uri);
     r.error_message = v.error_message.empty() ? std::nullopt : std::optional(v.error_message);
-    r.received_at = (v.received_at == std::chrono::system_clock::time_point{}) ?
-                        std::nullopt :
-                        std::optional(datetime::to_db_string(v.received_at));
+    r.received_at = v.received_at != std::chrono::system_clock::time_point{} ?
+                        std::optional(ores::platform::time::datetime::to_db_string(v.received_at)) :
+                        std::nullopt;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

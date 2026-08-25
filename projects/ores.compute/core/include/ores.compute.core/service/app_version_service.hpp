@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_SERVICE_APP_VERSION_SERVICE_HPP
-#define ORES_COMPUTE_SERVICE_APP_VERSION_SERVICE_HPP
+#ifndef ORES_COMPUTE_CORE_SERVICE_APP_VERSION_SERVICE_HPP
+#define ORES_COMPUTE_CORE_SERVICE_APP_VERSION_SERVICE_HPP
 
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/app_version_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -32,7 +34,10 @@
 namespace ores::compute::service {
 
 /**
- * @brief Service for managing compute application versions.
+ * @brief Service for managing app versions.
+ *
+ * Provides a higher-level interface for app version operations,
+ * wrapping the underlying repository.
  */
 class ORES_COMPUTE_CORE_EXPORT app_version_service {
 private:
@@ -47,15 +52,79 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a app_version_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit app_version_service(context ctx);
 
-    std::vector<domain::app_version> list();
+    /**
+     * @brief Lists app versions with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of app versions for the requested page.
+     */
+    std::vector<domain::app_version> list_app_versions(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::app_version> find(const std::string& id);
+    /**
+     * @brief Gets the total count of active app versions.
+     *
+     * @return Total number of active app versions.
+     */
+    std::uint32_t count_app_versions();
 
-    void save(const domain::app_version& v);
 
-    std::vector<domain::app_version> history(const std::string& id);
+    /**
+     * @brief Retrieves a single app version as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The app version at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::app_version> get_app_version_at_version(const std::string& id,
+                                                                  std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single app version by its primary key.
+     *
+     * @return The app version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::app_version> get_app_version(const std::string& id);
+
+    /**
+     * @brief Saves a app version (creates or updates).
+     *
+     * @param app_version The app version to save.
+     * @throws std::exception on failure.
+     */
+    void save_app_version(const domain::app_version& app_version);
+
+    /**
+     * @brief Saves a batch of app versions.
+     *
+     * @param app_versions The app versions to save.
+     * @throws std::exception on failure.
+     */
+    void save_app_versions(const std::vector<domain::app_version>& app_versions);
+
+    /**
+     * @brief Deletes a app version by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_app_version(const std::string& id);
+
+    /**
+     * @brief Deletes app versions by their primary keys.
+     */
+    void delete_app_versions(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a app version.
+     */
+    std::vector<domain::app_version> get_app_version_history(const std::string& id);
 
 private:
     context ctx_;

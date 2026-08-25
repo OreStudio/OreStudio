@@ -1487,7 +1487,7 @@ void application::add_compute_app_version(
         }
 
         compute::domain::app_version_platform avp;
-        avp.tenant_id = context_.tenant_id();
+        avp.tenant_id = context_.tenant_id().to_string();
         avp.app_version_id = record.id;
         avp.platform_id = it->second;
         avp.platform_code = it->first;
@@ -1496,14 +1496,13 @@ void application::add_compute_app_version(
         junction_rows.push_back(std::move(avp));
     }
 
-    compute::repository::app_version_platform_repository avp_repo;
-    avp_repo.replace_for_version(context_,
-                                 boost::uuids::to_string(record.id),
-                                 junction_rows,
-                                 cfg.modified_by,
-                                 cfg.modified_by,
-                                 record.change_reason_code,
-                                 "Initial import");
+    compute::repository::app_version_platform_repository avp_repo(context_);
+    avp_repo.replace_by_app_version(record.id,
+                                    junction_rows,
+                                    cfg.modified_by,
+                                    cfg.modified_by,
+                                    record.change_reason_code,
+                                    "Initial import");
 
     output_stream_ << "Successfully added compute app version: " << record.wrapper_version << "/"
                    << record.engine_version << std::endl;

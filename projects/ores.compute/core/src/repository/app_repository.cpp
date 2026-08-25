@@ -38,7 +38,7 @@ std::string app_repository::sql() {
 }
 
 void app_repository::write(context ctx, const domain::app& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing compute app: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Writing compute app. " << "id: " << v.id;
     execute_write_query(ctx, app_mapper::map(v), lg(), "Writing compute app to database.");
 }
 
@@ -48,7 +48,7 @@ void app_repository::write(context ctx, const std::vector<domain::app>& v) {
 }
 
 std::vector<domain::app> app_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query =
@@ -65,8 +65,8 @@ std::vector<domain::app> app_repository::read_latest(context ctx) {
 }
 
 std::vector<domain::app> app_repository::read_latest(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute app. id: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute app. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_entity>> |
@@ -81,13 +81,14 @@ std::vector<domain::app> app_repository::read_latest(context ctx, const std::str
         "Reading latest compute app by id.");
 }
 
+
 std::vector<domain::app> app_repository::read_all(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all compute app versions. id: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all compute app versions. " << "id: " << id;
     const auto tid = ctx.tenant_id().to_string();
     static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
     const auto query = sqlgen::read<std::vector<app_entity>> |
                        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<app_entity, domain::app>(
         ctx,
@@ -97,14 +98,89 @@ std::vector<domain::app> app_repository::read_all(context ctx, const std::string
         "Reading all compute app versions by id.");
 }
 
+std::optional<domain::app>
+app_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading compute app at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query = sqlgen::read<std::vector<app_entity>> |
+                       where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "id"_c == id &&
+                             "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<app_entity, domain::app>(
+        ctx,
+        query,
+        [](const auto& entities) { return app_mapper::map(entities); },
+        lg(),
+        "Reading compute app at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void app_repository::remove(context ctx, const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing compute app: " << id;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Removing compute app. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::delete_from<app_entity> |
                        where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     execute_delete_query(ctx, query, lg(), "Removing compute app from database.");
 }
+
+std::vector<domain::app>
+app_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest compute apps with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::read<std::vector<app_entity>> |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<app_entity, domain::app>(
+        ctx,
+        query,
+        [](const auto& entities) { return app_mapper::map(entities); },
+        lg(),
+        "Reading latest compute apps with pagination.");
+}
+
+std::uint32_t app_repository::get_total_app_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active compute app count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    static const std::string sys(ores::database::service::tenant_context::system_tenant_id);
+    const auto query =
+        sqlgen::select_from<app_entity>(sqlgen::count().as<"count">()) |
+        where(("tenant_id"_c == tid || "tenant_id"_c == sys) && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active compute app count: " << count;
+    return count;
+}
+
+void app_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<app_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing compute apps.");
+}
+
 
 }

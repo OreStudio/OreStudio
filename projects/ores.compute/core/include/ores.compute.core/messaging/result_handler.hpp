@@ -17,30 +17,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_RESULT_HANDLER_HPP
-#define ORES_COMPUTE_MESSAGING_RESULT_HANDLER_HPP
+#ifndef ORES_COMPUTE_CORE_MESSAGING_RESULT_HANDLER_HPP
+#define ORES_COMPUTE_CORE_MESSAGING_RESULT_HANDLER_HPP
 
 #include "ores.compute.api/messaging/result_protocol.hpp"
-#include "ores.compute.core/export.hpp"
-#include "ores.compute.core/service/batch_service.hpp"
 #include "ores.compute.core/service/result_service.hpp"
-#include "ores.compute.core/service/workunit_service.hpp"
 #include "ores.database/domain/context.hpp"
-#include "ores.dq.api/domain/change_reason.hpp"
-#include "ores.dq.api/domain/change_reason_codes.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <optional>
-#include <rfl/json.hpp>
-#include <stdexcept>
 
 namespace ores::compute::messaging {
 
@@ -52,13 +41,15 @@ inline auto& result_handler_lg() {
 } // namespace
 
 using ores::service::messaging::reply;
-using ores::service::messaging::error_reply;
 using ores::service::messaging::decode;
-using ores::service::messaging::stamp;
 using ores::service::messaging::error_reply;
+using ores::service::messaging::has_permission;
 using namespace ores::logging;
 
-class ORES_COMPUTE_CORE_EXPORT result_handler {
+/**
+ * @brief NATS message handler for compute result operations.
+ */
+class result_handler {
 public:
     result_handler(ores::nats::service::client& nats,
                    ores::database::context ctx,
@@ -69,114 +60,144 @@ public:
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::result_service svc(ctx);
-        list_results_response resp;
-        try {
-            if (auto req = decode<list_results_request>(msg)) {
-                resp.results = svc.list();
-                resp.total_available_count = static_cast<int>(resp.results.size());
-            }
-        } catch (...) {
-        }
-        reply(nats_, msg, resp);
-        BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
-    }
-
-    void submit(ores::nats::message msg) {
-        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
-        // submit_result is called by trusted wrapper nodes without a JWT;
-        // use the service context directly (same pattern as heartbeat handler).
-        const auto& ctx = ctx_;
-        if (auto req = decode<submit_result_request>(msg)) {
+        const auto& req_ctx = *req_ctx_expected;
+        service::result_service svc(req_ctx);
+        get_results_response resp;
+        if (auto req = decode<get_results_request>(msg)) {
             try {
-                service::result_service result_svc(ctx);
-                auto existing = result_svc.find(req->result_id);
-                if (!existing) {
-                    reply(nats_,
-                          msg,
-                          submit_result_response{.success = false,
-                                                 .message = "Result not found: " + req->result_id});
-                    return;
-                }
-                auto r = *existing;
-                r.server_state = 5; // Done
-                r.output_uri = req->output_uri;
-                r.received_at = std::chrono::system_clock::now();
-                r.outcome = req->outcome;
-                if (!req->host_id.empty()) {
-                    try {
-                        r.host_id = boost::lexical_cast<boost::uuids::uuid>(req->host_id);
-                    } catch (const boost::bad_lexical_cast& e) {
-                        BOOST_LOG_SEV(result_handler_lg(), warn)
-                            << "Invalid host_id in submit_result_request: " << req->host_id << " ("
-                            << e.what() << ")";
-                    }
-                }
-                r.error_message = req->error_message;
-                r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                r.change_commentary = req->error_message.empty() ? "Output received from wrapper" :
-                                                                   req->error_message;
-                stamp(r, ctx);
-                result_svc.save(r);
-
-                // Validator: if we now have enough successful results,
-                // set the canonical_result_id on the workunit.
-                service::workunit_service wu_svc(ctx);
-                const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
-                const auto wu_opt = wu_svc.find(wu_id_str);
-                if (wu_opt && wu_opt->canonical_result_id == boost::uuids::uuid{}) {
-                    const auto wu_results = result_svc.list_by_workunit(wu_id_str);
-                    const int done = static_cast<int>(std::ranges::count_if(
-                        wu_results, [](const auto& res) { return res.server_state == 5; }));
-                    if (done >= wu_opt->target_redundancy) {
-                        auto wu = *wu_opt;
-                        wu.canonical_result_id = r.id;
-                        wu.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                        wu.change_commentary = "Canonical result accepted";
-                        stamp(wu, ctx);
-                        wu_svc.save(wu);
-                        BOOST_LOG_SEV(result_handler_lg(), info)
-                            << "Validator: canonical result set for workunit " << wu_id_str;
-
-                        // Assimilator: if all workunits in the batch have a
-                        // canonical result, close the batch.
-                        const auto batch_id_str = boost::uuids::to_string(wu.batch_id);
-                        const auto batch_wus = wu_svc.list_by_batch(batch_id_str);
-                        const bool all_done = std::ranges::all_of(batch_wus, [](const auto& w) {
-                            return w.canonical_result_id != boost::uuids::uuid{};
-                        });
-                        if (all_done) {
-                            service::batch_service batch_svc(ctx);
-                            const auto batch_opt = batch_svc.find(batch_id_str);
-                            if (batch_opt) {
-                                auto batch = *batch_opt;
-                                batch.status = "closed";
-                                batch.change_reason_code =
-                                    ores::dq::domain::change_reasons::system_new_record;
-                                batch.change_commentary = "All workunits complete";
-                                stamp(batch, ctx);
-                                batch_svc.save(batch);
-                                BOOST_LOG_SEV(result_handler_lg(), info)
-                                    << "Assimilator: batch " << batch_id_str << " closed";
-                            }
-                        }
-                    }
-                }
-
-                reply(nats_, msg, submit_result_response{.success = true});
+                resp.results = svc.list_results(req->offset, req->limit);
+                resp.total_available_count = static_cast<int>(svc.count_results());
+                resp.success = true;
             } catch (const std::exception& e) {
-                reply(nats_, msg, submit_result_response{.success = false, .message = e.what()});
+                BOOST_LOG_SEV(result_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
         } else {
             BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
+        reply(nats_, msg, resp);
+    }
+
+    void save(ores::nats::message msg) {
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "compute::results:write")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::result_service svc(req_ctx);
+        if (auto req = decode<save_result_request>(msg)) {
+            try {
+                svc.save_result(req->data);
+                BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, save_result_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(result_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, save_result_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void history(ores::nats::message msg) {
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::result_service svc(req_ctx);
+        if (auto req = decode<get_result_history_request>(msg)) {
+            try {
+                auto hist = svc.get_result_history(req->id);
+                BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_result_history_response{.history = std::move(hist), .success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(result_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(
+                    nats_, msg, get_result_history_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "compute::results:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::result_service svc(req_ctx);
+        if (auto req = decode<delete_result_request>(msg)) {
+            try {
+                svc.delete_results(req->ids);
+                BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_result_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(result_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(nats_, msg, delete_result_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void list_by_workunit_id(ores::nats::message msg) {
+        BOOST_LOG_SEV(result_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::result_service svc(req_ctx);
+        if (auto req = decode<get_results_by_workunit_id_request>(msg)) {
+            get_results_by_workunit_id_response resp;
+            try {
+                resp.results =
+                    svc.list_results_by_workunit_id(req->workunit_id, req->offset, req->limit);
+                resp.total_available_count =
+                    static_cast<int>(svc.count_results_by_workunit_id(req->workunit_id));
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(result_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
+            }
+            BOOST_LOG_SEV(result_handler_lg(), debug) << "Completed " << msg.subject;
+            reply(nats_, msg, resp);
+        } else {
+            BOOST_LOG_SEV(result_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
     }
 
 private:

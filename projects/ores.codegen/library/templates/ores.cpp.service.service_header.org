@@ -450,6 +450,55 @@ public:
         const std::string& {{right.column}});
 {{/right.is_uuid}}
 
+{{#left.replace_by}}
+    /**
+     * @brief Replaces the {{name_words}} for a {{left.column_title_lower}}.
+     *
+     * Soft-closes the currently active rows for the given
+     * {{left.column_title_lower}} and inserts the rows in @p {{name_short}},
+     * so the active set exactly matches the caller's list.
+     *
+     * @param {{left.column}} The {{left.column_title_lower}}
+     * @param {{name_short}} The rows that make up the new active set
+     */
+    void replace_{{name_short}}_by_{{left.column_short}}(
+{{#left.is_uuid}}
+        const boost::uuids::uuid& {{left.column}},
+{{/left.is_uuid}}
+{{^left.is_uuid}}
+        const std::string& {{left.column}},
+{{/left.is_uuid}}
+        const std::vector<domain::{{name_singular}}>& {{name_short}},
+        const std::string& modified_by,
+        const std::string& performed_by,
+        const std::string& change_reason_code,
+        const std::string& change_commentary);
+{{/left.replace_by}}
+{{#right.replace_by}}
+    /**
+     * @brief Replaces the {{name_words}} for a {{right.column_title_lower}}.
+     *
+     * Soft-closes the currently active rows for the given
+     * {{right.column_title_lower}} and inserts the rows in @p {{name_short}},
+     * so the active set exactly matches the caller's list.
+     *
+     * @param {{right.column}} The {{right.column_title_lower}}
+     * @param {{name_short}} The rows that make up the new active set
+     */
+    void replace_{{name_short}}_by_{{right.column_short}}(
+{{#right.is_uuid}}
+        const boost::uuids::uuid& {{right.column}},
+{{/right.is_uuid}}
+{{^right.is_uuid}}
+        const std::string& {{right.column}},
+{{/right.is_uuid}}
+        const std::vector<domain::{{name_singular}}>& {{name_short}},
+        const std::string& modified_by,
+        const std::string& performed_by,
+        const std::string& change_reason_code,
+        const std::string& change_commentary);
+{{/right.replace_by}}
+
 private:
     repository::{{name_singular}}_repository repo_;
 };

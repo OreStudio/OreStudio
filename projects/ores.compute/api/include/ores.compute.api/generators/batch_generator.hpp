@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_GENERATORS_BATCH_GENERATOR_HPP
-#define ORES_COMPUTE_GENERATORS_BATCH_GENERATOR_HPP
+#ifndef ORES_COMPUTE_API_GENERATORS_BATCH_GENERATOR_HPP
+#define ORES_COMPUTE_API_GENERATORS_BATCH_GENERATOR_HPP
 
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.api/export.hpp"
@@ -28,13 +28,13 @@
 namespace ores::compute::generators {
 
 /**
- * @brief Generates a synthetic compute batch.
+ * @brief Generates a synthetic batch.
  */
 ORES_COMPUTE_API_EXPORT domain::batch
 generate_synthetic_batch(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic compute batches.
+ * @brief Generates N synthetic batches.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::batch>
 generate_synthetic_batches(std::size_t n, utility::generation::generation_context& ctx);

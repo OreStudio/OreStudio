@@ -17,34 +17,38 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_HOST_PROTOCOL_HPP
-#define ORES_COMPUTE_MESSAGING_HOST_PROTOCOL_HPP
+#ifndef ORES_COMPUTE_API_MESSAGING_HOST_PROTOCOL_HPP
+#define ORES_COMPUTE_API_MESSAGING_HOST_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/host.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-struct list_hosts_request {
-    using response_type = struct list_hosts_response;
+struct get_hosts_request {
+    using response_type = struct get_hosts_response;
     static constexpr std::string_view nats_subject = "compute.v1.hosts.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
-struct list_hosts_response {
+struct get_hosts_response {
     std::vector<ores::compute::domain::host> hosts;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_host_request {
     using response_type = struct save_host_response;
     static constexpr std::string_view nats_subject = "compute.v1.hosts.save";
-    ores::compute::domain::host host;
-    std::string change_reason_code;
-    std::string change_commentary;
+    ores::compute::domain::host data;
+
+    static save_host_request from(ores::compute::domain::host v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_host_response {
@@ -55,12 +59,22 @@ struct save_host_response {
 struct delete_host_request {
     using response_type = struct delete_host_response;
     static constexpr std::string_view nats_subject = "compute.v1.hosts.delete";
-    std::string id;
-    std::string change_reason_code;
-    std::string change_commentary;
+    std::vector<std::string> ids;
 };
 
 struct delete_host_response {
+    bool success = false;
+    std::string message;
+};
+
+struct get_host_history_request {
+    using response_type = struct get_host_history_response;
+    static constexpr std::string_view nats_subject = "compute.v1.hosts.history";
+    std::string id;
+};
+
+struct get_host_history_response {
+    std::vector<ores::compute::domain::host> history;
     bool success = false;
     std::string message;
 };

@@ -35,7 +35,9 @@ domain::batch batch_mapper::map(const batch_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.external_ref = v.external_ref;
+
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -54,7 +56,9 @@ batch_entity batch_mapper::map(const domain::batch& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.external_ref = v.external_ref;
+
     r.status = v.status;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

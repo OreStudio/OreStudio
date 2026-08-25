@@ -475,7 +475,7 @@ void ComputeConsoleWindow::refresh() {
         if (!self || !self->client_manager_)
             return {};
 
-        compute::messaging::list_hosts_request req;
+        compute::messaging::get_hosts_request req;
         auto resp = self->client_manager_->process_authenticated_request(std::move(req));
 
         if (!resp) {

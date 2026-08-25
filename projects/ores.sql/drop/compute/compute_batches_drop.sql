@@ -18,7 +18,7 @@
  *
  */
 
-drop trigger if exists ores_compute_batches_insert_trg on "ores_compute_batches_tbl";
 drop rule if exists ores_compute_batches_delete_rule on "ores_compute_batches_tbl";
+drop trigger if exists ores_compute_batches_insert_trg on "ores_compute_batches_tbl";
 drop function if exists ores_compute_batches_insert_fn;
 drop table if exists "ores_compute_batches_tbl";

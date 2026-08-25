@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_DOMAIN_RESULT_HPP
-#define ORES_COMPUTE_DOMAIN_RESULT_HPP
+#ifndef ORES_COMPUTE_API_DOMAIN_RESULT_HPP
+#define ORES_COMPUTE_API_DOMAIN_RESULT_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace ores::compute::domain {
 
@@ -34,6 +35,19 @@ namespace ores::compute::domain {
  * Bridges the workunit definition and the actual execution on a grid node.
  * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
  * and the location of output data. The BOINC equivalent of 'result'.
+ *
+ * Change-reason exception (recorded in the codegen drift loop): result is a
+ * machine-written, list-only entity — the grid machinery writes results and
+ * there is no human edit flow — so has_change_reason_cache is explicitly
+ * false, overriding the profile default.
+ *
+ * Generator-signature exception (recorded in the codegen drift loop): the
+ * pre-drift handcrafted generator took a workunit_id parameter
+ * (generate_synthetic_result(workunit_id, ctx)). The template signature
+ * takes only the generation context, and the sole consumer (the result
+ * eventing integration test) now links the FK by member assignment after
+ * generation. No model knob or paste block is needed for the parameterized
+ * overload; the template shape is the sanctioned surface.
  */
 struct result final {
     /**
@@ -69,7 +83,7 @@ struct result final {
     /**
      * @brief State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
      */
-    int server_state;
+    int server_state = 0;
 
     /**
      * @brief Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
@@ -118,6 +132,16 @@ struct result final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for result, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const result&) {
+    return "ores.compute.result";
+}
 
 }
 

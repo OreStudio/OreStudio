@@ -58,7 +58,7 @@ void batch_workflow_bridge::poll_once() {
                 ores::database::service::tenant_context::with_tenant(ctx_, link.tenant_id);
 
             ores::compute::service::batch_service batch_svc(std::move(tenant_ctx));
-            const auto batch = batch_svc.find(batch_id);
+            const auto batch = batch_svc.get_batch(batch_id);
 
             if (!batch) {
                 BOOST_LOG_SEV(lg(), warn) << "Batch not found, removing stale link: " << batch_id;

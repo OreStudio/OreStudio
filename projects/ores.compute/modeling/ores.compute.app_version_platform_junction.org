@@ -13,15 +13,26 @@
 #+brief: Links an app version to a supported platform and its package URI.
 #+product: ores
 #+schema: public
-#+has_tenant_id: true
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-08-11
 
 Associates app versions with the platforms they support, and carries the URI
 of the per-platform packaged bundle (a .tar.gz containing the wrapper+engine
 binaries built for that target triplet). Each (app_version, platform) row
 owns its own package_uri, so the orchestrator can dispatch per-triplet
 assignments without the wrapper needing to negotiate package selection.
+
+The junction uses the full generated stack: NATS protocol, handler
+and registrar. The generated list_by_app_version op returns the
+platform rows enriched with the platform code, and
+replace_by_app_version replaces the active platform set of an app
+version. Both are consumed by the desktop console and by the
+repository tests.
+
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
 
 * Left
 :PROPERTIES:
@@ -31,6 +42,8 @@ assignments without the wrapper needing to negotiate package selection.
 :type:          uuid
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for looking up platforms for an app version
+:list_by:       true
+:replace_by:    true
 :END:
 
 FK reference to ores_compute_app_versions_tbl.
@@ -49,6 +62,9 @@ ctx.generate_uuid()
 :type:          uuid
 :cpp_type:      boost::uuids::uuid
 :index_comment: Index for finding app versions supporting a platform
+:enrich_code:   true
+:references:    ores_compute_platforms_tbl
+:code_column:   code
 :END:
 
 FK reference to ores_compute_platforms_tbl.
@@ -123,6 +139,23 @@ std::string(faker::crypto::sha256())
 #+begin_src cpp :name includes
 #include <string>
 #include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Domain custom members
+
+Non-persisted members on the junction domain class: present in the C++
+struct and in json_io output (rfl reflection covers all members), but
+with no corresponding column in the junction table.
+
+#+begin_src cpp :name members :implements B1E09FE1-51D0-49DF-BDF4-2610598C8A1C
+    /**
+     * @brief Code of the joined platform row.
+     *
+     * Populated by the generated list_by_app_version op via the
+     * enrichment query. Never written to the junction table -- the
+     * table has no code column.
+     */
+    std::string platform_code;
 #+end_src
 
 ** Entity includes

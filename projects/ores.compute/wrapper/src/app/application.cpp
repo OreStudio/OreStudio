@@ -29,6 +29,7 @@
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
 #include "ores.utility/crypto/sha256.hpp"
+#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/connect_pipe.hpp>
@@ -38,6 +39,8 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/writable_pipe.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/uuid/uuid.hpp>
 #include <boost/process/v2/process.hpp>
 #include <boost/process/v2/start_dir.hpp>
 #include <boost/process/v2/stdio.hpp>
@@ -320,30 +323,39 @@ private:
 
 /**
  * @brief Submit a result back to the compute service.
+ *
+ * The result is sent as a full domain entity via the generated save flow
+ * (compute.v1.results.save). The server-side save_result stamps the audit
+ * fields from the request context; the wrapper only supplies the fields
+ * the node itself knows.
  */
 void submit_result(ores::nats::service::client& nats,
                    const std::string& result_id,
+                   const std::string& workunit_id,
                    const std::string& host_id,
                    const std::string& output_uri,
                    int outcome,
                    const std::string& error_message,
                    auto& lg) {
 
-    compute::messaging::submit_result_request req;
-    req.result_id = result_id;
-    req.host_id = host_id;
-    req.output_uri = output_uri;
-    req.outcome = outcome;
-    req.error_message = error_message;
+    compute::domain::result v;
+    v.id = boost::lexical_cast<boost::uuids::uuid>(result_id);
+    v.workunit_id = boost::lexical_cast<boost::uuids::uuid>(workunit_id);
+    v.host_id = boost::lexical_cast<boost::uuids::uuid>(host_id);
+    v.server_state = 5; // Done
+    v.outcome = outcome;
+    v.output_uri = output_uri;
+    v.error_message = error_message;
 
     const auto& codec = ores::nats::default_wire_codec();
-    const auto reply = nats.request_sync(compute::messaging::submit_result_request::nats_subject,
+    const auto req = compute::messaging::save_result_request::from(v);
+    const auto reply = nats.request_sync(compute::messaging::save_result_request::nats_subject,
                                          codec.encode(req));
 
-    const auto resp = codec.decode<compute::messaging::submit_result_response>(reply.data);
+    const auto resp = codec.decode<compute::messaging::save_result_response>(reply.data);
     if (!resp || !resp->success) {
         const std::string msg = resp ? resp->message : "failed to deserialize response";
-        BOOST_LOG_SEV(lg, error) << "results.submit failed: " << msg;
+        BOOST_LOG_SEV(lg, error) << "results.save failed: " << msg;
     } else {
         BOOST_LOG_SEV(lg, info) << "Result submitted: " << result_id;
     }
@@ -641,7 +653,14 @@ void process_assignment(ores::nats::service::client& nats,
             reporter->record_task_failed();
     }
 
-    submit_result(nats, evt.result_id, cfg.host_id, output_uri, outcome, error_message, lg);
+    submit_result(nats,
+                  evt.result_id,
+                  evt.workunit_id,
+                  cfg.host_id,
+                  output_uri,
+                  outcome,
+                  error_message,
+                  lg);
 }
 
 } // namespace

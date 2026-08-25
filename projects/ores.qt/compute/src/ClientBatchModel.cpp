@@ -43,7 +43,7 @@ ClientBatchModel::ClientBatchModel(ClientManager* clientManager, QObject* parent
     , pulseManager_(new RecencyPulseManager(this)) {
 
     connect(
-        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientBatchModel::onBatchsLoaded);
+        watcher_, &QFutureWatcher<FetchResult>::finished, this, &ClientBatchModel::onBatchesLoaded);
 
     connect(pulseManager_,
             &RecencyPulseManager::pulse_state_changed,
@@ -100,8 +100,15 @@ QVariant ClientBatchModel::data(const QModelIndex& index, int role) const {
 }
 
 QVariant ClientBatchModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case ExternalRef:
@@ -185,7 +192,7 @@ void ClientBatchModel::fetch_batches(std::uint32_t offset, std::uint32_t limit) 
                             .error_details = {}};
                 }
 
-                compute::messaging::list_batches_request request;
+                compute::messaging::get_batches_request request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -193,13 +200,27 @@ void ClientBatchModel::fetch_batches(std::uint32_t offset, std::uint32_t limit) 
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch compute batches: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .batches = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch compute batches: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .batches = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
@@ -219,7 +240,7 @@ void ClientBatchModel::fetch_batches(std::uint32_t offset, std::uint32_t limit) 
     watcher_->setFuture(future);
 }
 
-void ClientBatchModel::onBatchsLoaded() {
+void ClientBatchModel::onBatchesLoaded() {
     is_fetching_ = false;
 
     const auto result = watcher_->result();
@@ -271,6 +292,7 @@ const compute::domain::batch* ClientBatchModel::getBatch(int row) const {
         return nullptr;
     return &batches_[idx];
 }
+
 
 QVariant ClientBatchModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

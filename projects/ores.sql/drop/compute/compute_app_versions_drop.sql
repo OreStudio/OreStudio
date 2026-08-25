@@ -18,7 +18,7 @@
  *
  */
 
-drop trigger if exists ores_compute_app_versions_insert_trg on "ores_compute_app_versions_tbl";
 drop rule if exists ores_compute_app_versions_delete_rule on "ores_compute_app_versions_tbl";
+drop trigger if exists ores_compute_app_versions_insert_trg on "ores_compute_app_versions_tbl";
 drop function if exists ores_compute_app_versions_insert_fn;
 drop table if exists "ores_compute_app_versions_tbl";

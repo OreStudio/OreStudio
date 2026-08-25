@@ -8,11 +8,11 @@
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
 #+branch: feature/read-verbs
-#+pr:
+#+pr: 1992
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-11
+#+updated: 2026-08-25
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,12 +30,12 @@ whole lifecycle driven from a script with no UI.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | All four verbs implemented and proven live against brave_hopper: a 10-job batch created, dispatched and drained with all results Success. Recipes added, tangled and wired into the inventory. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
-| Last touched | 2026-08-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-25                               |
 
 * Acceptance
 
@@ -106,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1992][#1992]] | [ores.shell] Add compute grid management verbs to the shell |
 
 * Review
 
@@ -115,3 +115,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Four lifecycle verbs shipped in ~compute_commands.{hpp,cpp}~:
+  ~add-batch~, ~dispatch-batch~, ~list-workunits~ and ~list-results~.
+  All reuse existing NATS subjects and codegen table renderers; no
+  backend or codegen changes.
+- Acceptance met, verified live against brave_hopper (2026-08-11):
+  ~add-batch smoke-20260810 10 --smoke~ created the batch;
+  ~dispatch-batch~ packed and uploaded the input bundle once and
+  saved 10 workunits, each dispatched via JetStream; the batch
+  drained in ~2 seconds with all 10 results outcome Success (server
+  state Done), spread across the five real wrappers; ~list-workunits~
+  and ~list-results~ render the generated tables and =--batch=
+  filters to the batch's rows.
+- Hardened in the PR #1992 review round: the batch is marked
+  "dispatched" only after every workunit save succeeds, so a partial
+  failure leaves it open and re-dispatchable; each new workunit sets
+  the nil ~canonical_result_id~ sentinel.
+- Recipes live in =doc/recipes/shell/compute/= (one per verb),
+  tangled into =projects/ores.shell/scripts/library/compute/=,
+  indexed under the =Compute= section of =doc/recipes/shell/shell.org=.

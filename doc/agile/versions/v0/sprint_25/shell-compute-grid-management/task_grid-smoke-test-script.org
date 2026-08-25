@@ -8,11 +8,11 @@
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
 #+branch: feature/read-verbs
-#+pr:
+#+pr: 1992
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-11
+#+updated: 2026-08-25
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -30,12 +30,12 @@ Success. The script is the grid's end-to-end health check.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Library script and recipe in place; proven live against brave_hopper: the batch drained with all results Success, and the smoke assert correctly FAILED on the phantom host, aborting the script as designed. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR. A fully green run requires the phantom host (192.168.1.22) to stop heartbeating — see Notes. |
-| Last touched | 2026-08-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-25                               |
 
 * Acceptance
 
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1992][#1992]] | [ores.shell] Add compute grid management verbs to the shell |
 
 * Review
 
@@ -105,3 +105,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The library script (tangled from
+  =how_do_i_smoke_test_the_compute_grid_from_the_shell=) drives the
+  whole grid end-to-end: =add-batch --smoke= (count bounded to 10 to
+  20), =dispatch-batch=, then =grid-stats --watch --smoke= until the
+  batch drains.
+- Proven live against brave_hopper (2026-08-11): the 10-job batch
+  drained in ~2 seconds with all results Success; the smoke assert
+  then correctly FAILED on the phantom host (online, zero results in
+  the batch) and the script aborted as designed — the assert
+  machinery proven end-to-end.
+- A fully green run requires the phantom driver host to stop
+  heartbeating; the node telemetry codec defect is recorded with the
+  monitoring task. Recipe and script live in
+  =doc/recipes/shell/compute/= and
+  =projects/ores.shell/scripts/library/compute/=, indexed under the
+  =Compute= section of =doc/recipes/shell/shell.org=.

@@ -11,7 +11,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-11
+#+updated: 2026-08-25
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -29,12 +29,12 @@ grid actually consumed and produced.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Both verbs implemented and proven live against brave_hopper: the smoke batch's input and two of its outputs round-tripped byte-for-byte. Recipes added, tangled and wired into the inventory. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Open the PR.                           |
-| Last touched | 2026-08-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-25                               |
 
 * Acceptance
 
@@ -84,6 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1992][#1992]] | [ores.shell] Add compute grid management verbs to the shell |
 
 * Review
 
@@ -92,3 +93,17 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Two download verbs shipped in ~compute_commands.{hpp,cpp}~:
+  ~download-input~ and ~download-output~, reusing
+  ~ores.storage.net.storage_transfer~.
+- Acceptance met, verified live against brave_hopper (2026-08-11):
+  the smoke batch's input bundle round-tripped byte-for-byte
+  (=input.txt=, 38 bytes) and two outputs from two different hosts
+  round-tripped (=result.txt=, 42 bytes each).
+- The PR #1992 review round documented the batch-scoped input-key
+  convention at the dispatch site; a batch-scoped ~input_key~ helper
+  in ~compute_storage~ is captured as a follow-up.
+- Recipes live in =doc/recipes/shell/compute/= (one per verb),
+  tangled into =projects/ores.shell/scripts/library/compute/=,
+  indexed under the =Compute= section of =doc/recipes/shell/shell.org=.

@@ -11,7 +11,7 @@
 #+entity_plural: workunits
 #+entity_title: Workunit
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-11
 
 Defines the problem to be solved: which app version to use, where the input
 data lives, and how many times to run it for redundancy. The BOINC equivalent
@@ -19,24 +19,22 @@ of 'workunit'. Does not track execution state — that belongs to results.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     compute
-:has_tenant_id: true
+:schema:    public
+:product:   ores
+:component: compute
+:profile:   uuid-identified-lookup
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID primary key for the workunit.
-
-* Natural keys
-
-* Columns
 
 ** batch_id
 :PROPERTIES:
@@ -103,6 +101,33 @@ Number of independent results required before this workunit is complete.
 
 FK to the validated canonical result; NULL until the Validator accepts a result.
 
+* Foreign keys
+
+** batch_id
+:PROPERTIES:
+:table:         ores_compute_batches_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid batch_id: %. No active batch found with this id.
+:list_by:       true
+:END:
+
+** app_version_id
+:PROPERTIES:
+:table:         ores_compute_app_versions_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid app_version_id: %. No active app version found with this id.
+:END:
+
+** canonical_result_id
+:PROPERTIES:
+:table:         ores_compute_results_tbl
+:target_column: id
+:nullable:      true
+:error_message: Invalid canonical_result_id: %. No active result found with this id.
+:END:
+
 * SQL
 
 ** Flags
@@ -139,19 +164,32 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 
 ** Qt
 :PROPERTIES:
-:domain_include:       ores.compute/domain/workunit.hpp
-:domain_class:         compute::domain::workunit
-:protocol_include:     ores.compute/messaging/workunit_protocol.hpp
-:collection_name:      workunits
-:item_var:             workunit
-:key_field:            input_uri
-:has_uuid_primary_key: true
-:has_pagination:       true
-:get_request_class:    compute::messaging::list_workunits_request
-:get_response_class:   compute::messaging::list_workunits_response
-:settings_group:       WorkunitListWindow
-:window_title:         Workunits
-:icon:                 FlashFlow
+:domain_include:          ores.compute.api/domain/workunit.hpp
+:domain_class:            compute::domain::workunit
+:protocol_include:        ores.compute.api/messaging/workunit_protocol.hpp
+:collection_name:         workunits
+:item_var:                workunit
+:key_field:               input_uri
+:has_uuid_primary_key:    true
+:get_request_class:       compute::messaging::get_workunits_request
+:get_response_class:      compute::messaging::get_workunits_response
+:get_message_type:        get_workunits_request
+:save_request_class:      compute::messaging::save_workunit_request
+:save_response_class:     compute::messaging::save_workunit_response
+:save_message_type:       save_workunit_request
+:delete_request_class:    compute::messaging::delete_workunit_request
+:delete_response_class:   compute::messaging::delete_workunit_response
+:delete_message_type:     delete_workunit_request
+:history_request_class:   compute::messaging::get_workunit_history_request
+:history_response_class:  compute::messaging::get_workunit_history_response
+:history_message_type:    get_workunit_history_request
+:settings_group:          WorkunitListWindow
+:window_title:            Workunits
+:icon:                    FlashFlow
+:changed_event_class:     compute::eventing::workunit_changed_event
+:changed_event_include:   ores.compute.api/eventing/workunit_changed_event.hpp
+:has_change_reason_cache: true
+:has_pagination:          true
 :END:
 
 *** Columns (Qt model)

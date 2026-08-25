@@ -67,7 +67,7 @@ workunit_entity workunit_mapper::map(const domain::workunit& v) {
     r.config_uri = v.config_uri.empty() ? std::nullopt : std::optional(v.config_uri);
     r.priority = v.priority;
     r.target_redundancy = v.target_redundancy;
-    r.canonical_result_id = (v.canonical_result_id == boost::uuids::uuid{}) ?
+    r.canonical_result_id = v.canonical_result_id == boost::uuids::uuid{} ?
                                 std::nullopt :
                                 std::optional(boost::uuids::to_string(v.canonical_result_id));
     r.modified_by = v.modified_by;

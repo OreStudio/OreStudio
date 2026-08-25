@@ -50,8 +50,6 @@ AppMdiWindow::AppMdiWindow(ClientManager* clientManager, const QString& username
 
     setupUi();
     setupConnections();
-
-    // Initial load
     reload();
 }
 
@@ -60,6 +58,7 @@ void AppMdiWindow::setupUi() {
 
     setupToolbar();
     layout->addWidget(toolbar_);
+    layout->addWidget(loadingBar());
 
     setupTable();
     layout->addWidget(tableView_);
@@ -77,7 +76,7 @@ void AppMdiWindow::setupToolbar() {
     reloadAction_ = toolbar_->addAction(
         IconUtils::createRecoloredIcon(Icon::ArrowClockwise, IconUtils::DefaultIconColor),
         tr("Reload"));
-    connect(reloadAction_, &QAction::triggered, this, &AppMdiWindow::reload);
+    connect(reloadAction_, &QAction::triggered, this, &EntityListMdiWindow::reload);
 
     initializeStaleIndicator(reloadAction_, IconUtils::iconPath(Icon::ArrowClockwise));
 
@@ -121,14 +120,20 @@ void AppMdiWindow::setupTable() {
     tableView_->setAlternatingRowColors(true);
     tableView_->verticalHeader()->setVisible(false);
 
-    initializeTableSettings(
-        tableView_, model_, "AppListWindow", {ClientAppModel::Description}, {900, 400}, 1);
+
+    initializeTableSettings(tableView_,
+                            model_,
+                            "AppListWindow",
+                            {
+                                ClientAppModel::Description,
+                            },
+                            {900, 400},
+                            1);
 }
 
 void AppMdiWindow::setupConnections() {
     connect(model_, &ClientAppModel::dataLoaded, this, &AppMdiWindow::onDataLoaded);
     connect(model_, &ClientAppModel::loadError, this, &AppMdiWindow::onLoadError);
-    connectModel(model_);
 
     connect(tableView_->selectionModel(),
             &QItemSelectionModel::selectionChanged,
@@ -146,6 +151,7 @@ void AppMdiWindow::setupConnections() {
         const auto total = model_->total_available_count();
         if (total > 0 && total <= 1000) {
             model_->set_page_size(total);
+            paginationWidget_->reset_page();
             model_->refresh();
         }
     });
@@ -155,12 +161,15 @@ void AppMdiWindow::setupConnections() {
         &PaginationWidget::page_requested,
         this,
         [this](std::uint32_t offset, std::uint32_t limit) { model_->load_page(offset, limit); });
+
+    connectModel(model_);
 }
 
 void AppMdiWindow::doReload() {
     BOOST_LOG_SEV(lg(), debug) << "Reloading compute apps";
+    clearStaleIndicator();
     emit statusChanged(tr("Loading compute apps..."));
-    model_->refresh();
+    model_->load_page(paginationWidget_->current_offset(), paginationWidget_->page_size());
 }
 
 void AppMdiWindow::onDataLoaded() {
@@ -245,12 +254,12 @@ void AppMdiWindow::deleteSelected() {
         return;
     }
 
-    std::vector<boost::uuids::uuid> ids;
+    std::vector<std::string> ids;
     std::vector<std::string> codes; // For display purposes
     for (const auto& index : selected) {
         auto sourceIndex = proxyModel_->mapToSource(index);
         if (auto* app = model_->getApp(sourceIndex.row())) {
-            ids.push_back(app->id);
+            ids.push_back(boost::uuids::to_string(app->id));
             codes.push_back(app->name);
         }
     }
@@ -279,9 +288,86 @@ void AppMdiWindow::deleteSelected() {
         return;
     }
 
-    // Delete not yet implemented for compute entities
-    MessageBoxHelper::warning(
-        this, "Not Implemented", "Delete operation is not yet implemented for this entity.");
+    QPointer<AppMdiWindow> self = this;
+    using DeleteResult = std::vector<std::tuple<std::string, std::string, bool, std::string>>;
+
+    auto task = [self, ids, codes]() -> DeleteResult {
+        DeleteResult results;
+        if (!self)
+            return {};
+
+        BOOST_LOG_SEV(lg(), debug) << "Making delete request for " << ids.size() << " compute apps";
+
+        compute::messaging::delete_app_request request;
+        request.ids = ids;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            BOOST_LOG_SEV(lg(), error) << "Failed to send batch delete request";
+            for (std::size_t i = 0; i < ids.size(); ++i) {
+                results.push_back({ids[i], codes[i], false, "Failed to communicate with server"});
+            }
+            return results;
+        }
+
+        for (std::size_t i = 0; i < ids.size(); ++i) {
+            results.push_back(
+                {ids[i], codes[i], response_result->success, response_result->message});
+        }
+
+        return results;
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, watcher]() {
+        auto results = watcher->result();
+        watcher->deleteLater();
+
+        int success_count = 0;
+        int failure_count = 0;
+        QString first_error;
+
+        for (const auto& [id, code, success, message] : results) {
+            if (success) {
+                BOOST_LOG_SEV(lg(), debug) << "App deleted: " << code;
+                success_count++;
+                emit self->appDeleted(QString::fromStdString(code));
+            } else {
+                BOOST_LOG_SEV(lg(), error) << "App deletion failed: " << code << " - " << message;
+                failure_count++;
+                if (first_error.isEmpty()) {
+                    first_error = QString::fromStdString(message);
+                }
+            }
+        }
+
+        self->model_->load_page(self->paginationWidget_->current_offset(),
+                                self->paginationWidget_->page_size());
+
+        if (failure_count == 0) {
+            QString msg = success_count == 1 ?
+                              "Successfully deleted 1 compute app" :
+                              QString("Successfully deleted %1 compute apps").arg(success_count);
+            emit self->statusChanged(msg);
+        } else if (success_count == 0) {
+            QString msg = QString("Failed to delete %1 %2: %3")
+                              .arg(failure_count)
+                              .arg(failure_count == 1 ? "compute app" : "compute apps")
+                              .arg(first_error);
+            emit self->errorOccurred(msg);
+            MessageBoxHelper::critical(self, "Delete Failed", msg);
+        } else {
+            QString msg =
+                QString("Deleted %1, failed to delete %2").arg(success_count).arg(failure_count);
+            emit self->statusChanged(msg);
+            MessageBoxHelper::warning(self, "Partial Success", msg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
+
 
 }

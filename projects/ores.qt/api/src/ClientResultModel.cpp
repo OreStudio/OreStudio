@@ -255,7 +255,7 @@ void ClientResultModel::fetch_results(std::uint32_t offset, std::uint32_t limit)
                             .error_details = {}};
                 }
 
-                compute::messaging::list_results_request request;
+                compute::messaging::get_results_request request;
                 request.offset = offset;
                 request.limit = limit;
 

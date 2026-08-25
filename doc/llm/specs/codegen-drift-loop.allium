@@ -16,7 +16,20 @@
 --   - Diff kinds: (a) improved generated code -- accept and sign off;
 --     (b) lost handcrafted code -- fix the model (missing variability
 --     options or other model mistakes), capture it as a paste block,
---     or move it to a hand-crafted service class
+--     or move it to a hand-crafted service class -- service-class
+--     extraction is reserved for genuinely bespoke units; a thin CRUD
+--     facade (a hand-written list/find/save/history service over the
+--     repository with no bespoke logic) is brought under codegen
+--     instead: the generated standard-CRUD service replaces it
+--   - Standard protocol conformance: a current-format model names the
+--     standard codegen'd message class set in its Qt drawer
+--     (get/save/delete/history request, response and message_type per
+--     the refdata/dq convention) plus changed_event and change-reason
+--     keys per capability. A hand-crafted protocol (list_Xs_request
+--     naming, missing delete classes) is drift: the model is fixed to
+--     produce the standard classes -- the protocol, handlers and
+--     services regenerate from the model's keys; the model is never
+--     fitted around a hand-crafted protocol
 --   - The convergence gate: a component regenerates with zero diffs
 --     and joins the CI drift check's --components coverage
 --   - The CI drift gate: regenerate every covered component on each
@@ -120,6 +133,23 @@ entity CodegenModel {
     -- no-match record keeps these values -- never silently dropped.
     needs: Set<FeatureAssignment>
     enabled_spaces: Set<PhysicalSpace>
+    -- Protocol conformance: the Qt drawer names the standard codegen'd
+    -- message class set (get/save/delete/history request, response and
+    -- message_type per the refdata/dq convention). A hand-crafted
+    -- protocol (list_Xs_request, missing delete classes) is false.
+    protocol_is_standard: Boolean
+    -- Survey finding: the entity has a human save flow (a detail
+    -- dialog or a service save path an actor drives).
+    save_capable: Boolean
+    -- Recorded reason when a save-capable entity still lacks the
+    -- change-reason cache (e.g. machine-written list-only entities:
+    -- grid machinery writes results, no human edit flow).
+    change_reason_exception: String?
+    -- The Qt drawer carries a changed_event class key for this entity.
+    has_changed_event: Boolean
+    -- Resolution of an orphan notify trigger: subscribed (a service
+    -- consumes the channel) or removed (the trigger is dropped).
+    notify_resolution: pending | subscribed | removed
 
     is_classified: classification = profile_bound
         or (classification = recorded_no_match and no_match_reason != null)
@@ -140,7 +170,8 @@ entity Diff {
     component: Component
     kind: unclassified | improved_code | lost_code
     state: open | resolved
-    resolution: unresolved | signed_off | model_fixed | paste_block_added | service_class_extracted
+    resolution: unresolved | signed_off | model_fixed | paste_block_added
+        | service_class_extracted | brought_under_codegen
     sign_off_note: String?
 
     transitions state {
@@ -175,6 +206,24 @@ entity ProfileProposal {
     feature_assignments: Set<FeatureAssignment>
     enabled_spaces: Set<PhysicalSpace>
     analysis: String?
+    state: proposed | approved | rejected
+
+    transitions state {
+        proposed -> approved
+        proposed -> rejected
+    }
+}
+
+-- A rare proposal to extend the template feature vocabulary: a
+-- variability knob the templates do not branch on yet, whose need
+-- recurs across entities (e.g. a system-tenant union read scope:
+-- system-tenant rows visible to every tenant). Until the feature
+-- lands, the hand-crafted repository it would generate stays a
+-- recorded, excluded ServiceClass -- the proposal keeps that
+-- exclusion honest rather than permanent.
+entity TemplateFeatureProposal {
+    feature: String
+    rationale: String?
     state: proposed | approved | rejected
 
     transitions state {
@@ -308,6 +357,27 @@ rule ApproveNewProfile {
     ensures: proposal.state = approved
 }
 
+-- A template feature is proposed the same rare way: a recurring need
+-- no template branch covers yet, with the rationale on record. The
+-- proposal is the trigger for the template change; until the feature
+-- lands, the artefacts it would generate stay excluded ServiceClasses.
+rule ProposeTemplateFeature {
+    when: TemplateFeatureProposed(engineer, feature, rationale)
+    requires: (TemplateFeatureProposal where feature = feature).count = 0
+        and rationale != ""
+    ensures: TemplateFeatureProposal.created(
+        feature: feature,
+        rationale: rationale,
+        state: proposed
+    )
+}
+
+rule ApproveTemplateFeature {
+    when: TemplateFeatureApproved(engineer, proposal)
+    requires: proposal.state = proposed
+    ensures: proposal.state = approved
+}
+
 -- The loop's entry: regenerate the component's models. The engine's
 -- output is one diff per artefact whose generated content differs
 -- from what is checked in.
@@ -412,10 +482,11 @@ rule AddPasteBlock {
 }
 
 -- Path (b3): the code is a coherent hand-crafted unit the templates
--- cannot express (e.g. a service's minimal list/find/save/history
--- API). It moves to a service class -- a hand-crafted artefact,
--- excluded from the generation set with the exclusion recorded
--- against it.
+-- cannot express -- a genuinely bespoke flow, not entity CRUD (e.g. a
+-- report-submission handler). It moves to a service class -- a
+-- hand-crafted artefact, excluded from the generation set with the
+-- exclusion recorded against it. A thin CRUD facade service is NOT
+-- this path: it is brought under codegen (BringThinFacadeUnderCodegen).
 rule ExtractServiceClass {
     when: ServiceClassExtracted(engineer, diff, path, purpose)
     requires: diff.state = open
@@ -430,6 +501,66 @@ rule ExtractServiceClass {
     )
     ensures: diff.artefact.is_excluded = true
     ensures: diff.resolution = service_class_extracted
+}
+
+-- Path (b4): the lost code is a thin CRUD facade -- a hand-written
+-- service whose list/find/save/history methods only delegate to the
+-- repository (id-nil validation, stamp, read_latest/read_all) and
+-- carry no bespoke logic. The generated standard-CRUD service covers
+-- that API exactly (list_*s with pagination, count_*s, find_*s by
+-- uuid, save_*s, delete_*s, remove_*, get_*_history); custom reads
+-- map to FK :list_by: flags. The hand-written files are replaced by
+-- generated ones -- no exclusion, no artefact survives it.
+rule BringThinFacadeUnderCodegen {
+    when: ThinFacadeVerified(engineer, diff)
+    requires: diff.state = open
+        and diff.kind = lost_code
+    ensures: diff.resolution = brought_under_codegen
+}
+
+-- Protocol conformance: a hand-crafted message protocol (list_Xs
+-- request naming, a partial capability set, missing delete classes)
+-- is drift in the model, not a design input. The model's Qt drawer is
+-- modernized to name the standard class set (get/save/delete/history
+-- request, response and message_type per the refdata/dq convention);
+-- protocol, handlers and services regenerate from those keys.
+rule StandardizeProtocolClasses {
+    when: ProtocolStandardized(engineer, model)
+    requires: model.format = current
+        and model.protocol_is_standard = false
+    ensures: model.protocol_is_standard = true
+}
+
+-- Change-reason policy: every save-capable entity carries the
+-- change-reason cache (has_change_reason_cache) unless the survey
+-- records a genuine exception -- a machine-written, list-only entity
+-- with no human edit flow (e.g. grid machinery writing results).
+rule SaveCapableNeedsChangeReasonCache {
+    when: ChangeReasonPolicyApplied(engineer, model, exception)
+    requires: model.save_capable = true
+    ensures: (model.needs where feature.name = "has_change_reason_cache"
+            and value = true).count = 1
+        or model.change_reason_exception = exception
+}
+
+-- Eventing consistency: an entity with the eventing-integration-test
+-- space enabled carries a changed_event class in its Qt drawer and a
+-- service subscription on its notify channel. An enabled entity
+-- without either is drift.
+rule EventingNeedsChangedEvent {
+    when: EventingConsistencyChecked(engineer, model)
+    requires: (model.enabled_spaces where address = "ores.cpp.eventing-integration-test").count = 1
+    ensures: model.has_changed_event = true
+}
+
+-- An orphan notify trigger -- a trigger with no service consumer -- is
+-- drift either way it is fixed: subscribe the service to the channel,
+-- or remove the trigger. The resolution is recorded on the model.
+rule NotifyTriggerOrphanResolved {
+    when: NotifyTriggerOrphanResolved(engineer, model, action)
+    requires: action in {subscribed, removed}
+        and model.notify_resolution = pending
+    ensures: model.notify_resolution = action
 }
 
 -- The check itself can be wrong: when the engineer finds a drift
@@ -526,6 +657,30 @@ invariant LostCodeTakesAFixPath {
         d.resolution = model_fixed
             or d.resolution = paste_block_added
             or d.resolution = service_class_extracted
+            or d.resolution = brought_under_codegen
+}
+
+-- A current-format model names the standard codegen'd message class
+-- set: a hand-crafted protocol is itself drift, fixed in the model.
+invariant CurrentFormatNamesStandardClasses {
+    for m in CodegenModels where m.format = current:
+        m.protocol_is_standard = true
+}
+
+-- Eventing is consistent: an entity with the eventing facet enabled
+-- carries a changed_event class for its consumers to receive.
+invariant EventingEnabledModelsCarryChangedEvent {
+    for m in CodegenModels where (m.enabled_spaces where address = "ores.cpp.eventing-integration-test").count = 1:
+        m.has_changed_event = true
+}
+
+-- The change-reason policy holds: save-capable entities carry the
+-- cache, or a recorded exception explains why not. A save flow with
+-- no change reasons is never silent.
+invariant SaveCapableModelsCarryChangeReasonCache {
+    for m in CodegenModels where m.save_capable = true:
+        (m.needs where feature.name = "has_change_reason_cache" and value = true).count = 1
+            or m.change_reason_exception != null
 }
 
 -- Excluded artefacts are always backed by a recorded service class:
@@ -572,12 +727,20 @@ surface CodegenDriftLoop {
             m.bound_profile?.slug
             m.no_match_reason
             m.needs.count
+            m.protocol_is_standard
+            m.save_capable
+            m.change_reason_exception
+            m.has_changed_event
+            m.notify_resolution
         for p in Profiles:
             p.slug
             for s in p.enabled_spaces:
                 s.address
         for p in ProfileProposals:
             p.slug
+            p.state
+        for p in TemplateFeatureProposals:
+            p.feature
             p.state
         for g in DriftCheckGaps:
             g.description
@@ -591,11 +754,18 @@ surface CodegenDriftLoop {
         ModelFormatModernized(engineer, model)
         NewProfileProposed(engineer, slug, assignments, spaces)
         NewProfileApproved(engineer, proposal)
+        TemplateFeatureProposed(engineer, feature, rationale)
+        TemplateFeatureApproved(engineer, proposal)
         DiffClassified(diff, kind)
         ImprovementSignedOff(engineer, diff, note)
         ModelCorrectionApplied(engineer, diff, correction)
         PasteBlockAdded(engineer, diff, uuid, body)
         ServiceClassExtracted(engineer, diff, path, purpose)
+        ThinFacadeVerified(engineer, diff)
+        ProtocolStandardized(engineer, model)
+        ChangeReasonPolicyApplied(engineer, model, exception)
+        EventingConsistencyChecked(engineer, model)
+        NotifyTriggerOrphanResolved(engineer, model, action)
         DriftCheckGapRecorded(engineer, description)
         DriftCheckGapResolved(engineer, gap)
 
@@ -672,3 +842,55 @@ surface CIDriftGate {
 --     (AdmitComponent). The component is an external input -- the
 --     loop does not create components, it admits them once, from the
 --     component catalogue.
+
+-- Decisions (2026-08-11), from the ores.compute survey:
+--   Q8 thin facades: the 6 hand-written compute service files are
+--     thin CRUD facades (list/find/save/history over the repository,
+--     id-nil validation, stamp, read_latest/read_all -- no bespoke
+--     logic). They are brought under codegen: the generated
+--     standard-CRUD service replaces them (BringThinFacadeUnderCodegen).
+--     The compute survey corrected the earlier assumption that a
+--     minimal list/find/save/history API is service-class material:
+--     that API is exactly what the standard-CRUD template generates.
+--   Q9 standard class set: the conformance bar is the refdata/dq
+--     convention -- get/save/delete/history request, response and
+--     message_type classes plus changed_event, change-reason,
+--     pagination and uuid-primary-key keys. A hand-crafted protocol
+--     (compute's list_apps_request naming, per-entity capability
+--     gaps: app save+history no delete, host save+delete no history,
+--     result nothing) is drift fixed in the model, never preserved.
+--     The model is the source of the protocol, handlers and services.
+--   Q10 change-reason policy: save-capable entities carry
+--     has_change_reason_cache. The exception is a machine-written,
+--     list-only entity with no human edit flow (compute result: grid
+--     machinery writes results). The exception is recorded on the
+--     model -- never silent (SaveCapableModelsCarryChangeReasonCache).
+--   Q11 eventing consistency: an entity with the eventing facet
+--     enabled carries a changed_event class and a service
+--     subscription. Compute's host had a notify trigger and no
+--     changed event and no subscription -- drift, fixed by adding
+--     host_changed_event and subscribing application.cpp to
+--     ores_compute_hosts. The junction's orphan notify trigger is
+--     drift either way it is fixed: subscribe or remove
+--     (NotifyTriggerOrphanResolved).
+--   Q12 custom reads map to FK :list_by: flags: result's
+--     read_by_workunit and workunit's read_by_batch are generated by
+--     :list_by: true on the FK columns -- the model-fix path, not
+--     hand-written repository code.
+--   Q13 the system-tenant union read (compute app/app_version: the
+--     system tenant's apps are visible to every tenant) is a genuine
+--     business rule with no template branch. It is recorded as a
+--     TemplateFeatureProposal (:system_tenant_visible:); until the
+--     feature lands the two repositories stay excluded, recorded
+--     ServiceClasses.
+--   Q14 machine-written saves: compute host/result/workunit save
+--     without stamping, unlike app/app_version/batch. The difference
+--     is triaged per entity at regen -- the generated service stamps
+--     when the table carries audit columns; a genuine behavioural
+--     difference is a model key or a recorded decision, never a
+--     silent hand-maintained divergence.
+--   Q15 history migration: legacy per-entity HistoryDialogs
+--     (compute AppHistoryDialog, AppVersionHistoryDialog + .ui) are
+--     superseded by the generic ores::qt::HistoryDialog; the entities
+--     bind to it via the standard history class keys. Their removal
+--     is a signed-off improvement with a migration note.

@@ -11,7 +11,7 @@
 #+entity_plural: app_versions
 #+entity_title: App Version
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-11
 
 Combines a specific wrapper version with a specific engine version. The BOINC
 equivalent of 'app_version'. Per-platform package artefacts are tracked in
@@ -20,24 +20,22 @@ the URI of its own packaged bundle.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     compute
-:has_tenant_id: true
+:schema:    public
+:product:   ores
+:component: compute
+:profile:   uuid-identified-lookup
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID primary key for the app version.
-
-* Natural keys
-
-* Columns
 
 ** app_id
 :PROPERTIES:
@@ -76,6 +74,16 @@ Version of the underlying engine, e.g. 'ORE-Studio-7.1'.
 
 Minimum RAM in MB required by the node to run this app version.
 
+* Foreign keys
+
+** app_id
+:PROPERTIES:
+:table:         ores_compute_apps_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid app_id: %. No active app found with this id.
+:END:
+
 * SQL
 
 ** Flags
@@ -96,7 +104,12 @@ Minimum RAM in MB required by the node to run this app version.
 :entity_plural_short:   app_versions
 :entity_singular_words: app version
 :entity_plural_words:   app versions
+:system_tenant_visible: true
 :END:
+
+App versions inherit their parent app's system-tenant visibility: the
+platform's canonical apps ship with platform-managed versions, and every
+tenant must see them in reads. Mutations stay own-tenant scoped.
 
 ** Domain includes
 
@@ -112,19 +125,32 @@ Minimum RAM in MB required by the node to run this app version.
 
 ** Qt
 :PROPERTIES:
-:domain_include:       ores.compute/domain/app_version.hpp
-:domain_class:         compute::domain::app_version
-:protocol_include:     ores.compute/messaging/app_version_protocol.hpp
-:collection_name:      app_versions
-:item_var:             app_version
-:key_field:            wrapper_version
-:has_uuid_primary_key: true
-:has_pagination:       true
-:get_request_class:    compute::messaging::list_app_versions_request
-:get_response_class:   compute::messaging::list_app_versions_response
-:settings_group:       AppVersionListWindow
-:window_title:         App Versions
-:icon:                 Code
+:domain_include:          ores.compute.api/domain/app_version.hpp
+:domain_class:            compute::domain::app_version
+:protocol_include:        ores.compute.api/messaging/app_version_protocol.hpp
+:collection_name:         app_versions
+:item_var:                app_version
+:key_field:               wrapper_version
+:has_uuid_primary_key:    true
+:get_request_class:       compute::messaging::get_app_versions_request
+:get_response_class:      compute::messaging::get_app_versions_response
+:get_message_type:        get_app_versions_request
+:save_request_class:      compute::messaging::save_app_version_request
+:save_response_class:     compute::messaging::save_app_version_response
+:save_message_type:       save_app_version_request
+:delete_request_class:    compute::messaging::delete_app_version_request
+:delete_response_class:   compute::messaging::delete_app_version_response
+:delete_message_type:     delete_app_version_request
+:history_request_class:   compute::messaging::get_app_version_history_request
+:history_response_class:  compute::messaging::get_app_version_history_response
+:history_message_type:    get_app_version_history_request
+:settings_group:          AppVersionListWindow
+:window_title:            App Versions
+:icon:                    Code
+:changed_event_class:     compute::eventing::app_version_changed_event
+:changed_event_include:   ores.compute.api/eventing/app_version_changed_event.hpp
+:has_change_reason_cache: true
+:has_pagination:          true
 :END:
 
 *** Columns (Qt model)

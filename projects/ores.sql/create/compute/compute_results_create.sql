@@ -22,11 +22,24 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Result Table
  *
  * Bridges the workunit definition and the actual execution on a grid node.
  * Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
  * and the location of output data. The BOINC equivalent of 'result'.
+ *
+ * Change-reason exception (recorded in the codegen drift loop): result is a
+ * machine-written, list-only entity — the grid machinery writes results and
+ * there is no human edit flow — so has_change_reason_cache is explicitly
+ * false, overriding the profile default.
+ *
+ * Generator-signature exception (recorded in the codegen drift loop): the
+ * pre-drift handcrafted generator took a workunit_id parameter
+ * (generate_synthetic_result(workunit_id, ctx)). The template signature
+ * takes only the generation context, and the sole consumer (the result
+ * eventing integration test) now links the FK by member assignment after
+ * generation. No model knob or paste block is needed for the parameterized
+ * overload; the template shape is the sanctioned surface.
  */
 
 create table if not exists "ores_compute_results_tbl" (
@@ -90,6 +103,33 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate workunit_id (soft FK to ores_compute_workunits_tbl)
+    if not exists (
+        select 1 from ores_compute_workunits_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.workunit_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid workunit_id: %. No active workunit found with this id.', NEW.workunit_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate host_id (optional soft FK to ores_compute_hosts_tbl)
+    if NEW.host_id is not null then
+        if not exists (
+            select 1 from ores_compute_hosts_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.host_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid host_id: %. No active host found with this id.', NEW.host_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
     -- Version management
     select version into current_version
     from "ores_compute_results_tbl"
@@ -105,36 +145,39 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_compute_results_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
-
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_compute_results_insert_trg
 before insert on "ores_compute_results_tbl"
 for each row execute function ores_compute_results_insert_fn();
 
 create or replace rule ores_compute_results_delete_rule as
-on delete to "ores_compute_results_tbl" do instead
+on delete to "ores_compute_results_tbl" do instead (
     update "ores_compute_results_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

@@ -24,6 +24,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include <vector>
+
 
 namespace Ui {
 class AppDetailDialog;
@@ -60,6 +62,16 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
+
 signals:
     void appSaved(const QString& code);
     void appDeleted(const QString& code);
@@ -67,6 +79,7 @@ signals:
 private slots:
     void onSaveClicked();
     void onDeleteClicked();
+    void onCodeChanged(const QString& text);
     void onFieldChanged();
 
 protected:
@@ -76,6 +89,7 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();
@@ -84,6 +98,7 @@ private:
     void updateAppFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
 
     Ui::AppDetailDialog* ui_;
     ClientManager* clientManager_;

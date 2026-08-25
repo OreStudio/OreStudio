@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_EVENTING_BATCH_CHANGED_EVENT_HPP
-#define ORES_COMPUTE_EVENTING_BATCH_CHANGED_EVENT_HPP
+#ifndef ORES_COMPUTE_API_EVENTING_BATCH_CHANGED_EVENT_HPP
+#define ORES_COMPUTE_API_EVENTING_BATCH_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -28,14 +28,25 @@
 namespace ores::compute::eventing {
 
 /**
- * @brief Domain event indicating that compute batch data has changed.
+ * @brief Domain event indicating that batch data has changed.
  *
- * This event is published when any compute batch entity is created, updated,
- * or deleted in the database.
+ * Published when any batch entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct batch_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
     std::chrono::system_clock::time_point timestamp;
-    std::vector<std::string> ids;
+
+    /**
+     * @brief Changed batch UUIDs (as strings).
+     */
+    std::vector<std::string> batch_ids;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
     std::string tenant_id;
 };
 
@@ -43,6 +54,9 @@ struct batch_changed_event final {
 
 namespace ores::eventing::domain {
 
+/**
+ * @brief Event traits specialization for batch_changed_event.
+ */
 template <>
 struct event_traits<ores::compute::eventing::batch_changed_event> {
     static constexpr std::string_view name = "ores.compute.batch_changed";

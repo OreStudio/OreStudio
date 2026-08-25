@@ -17,33 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_GENERATORS_WORKUNIT_GENERATOR_HPP
-#define ORES_COMPUTE_GENERATORS_WORKUNIT_GENERATOR_HPP
+#ifndef ORES_COMPUTE_API_GENERATORS_WORKUNIT_GENERATOR_HPP
+#define ORES_COMPUTE_API_GENERATORS_WORKUNIT_GENERATOR_HPP
 
 #include "ores.compute.api/domain/workunit.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <vector>
 
 namespace ores::compute::generators {
 
 /**
- * @brief Generates a synthetic workunit for the given batch and app version.
+ * @brief Generates a synthetic workunit.
  */
 ORES_COMPUTE_API_EXPORT domain::workunit
-generate_synthetic_workunit(const boost::uuids::uuid& batch_id,
-                            const boost::uuids::uuid& app_version_id,
-                            utility::generation::generation_context& ctx);
+generate_synthetic_workunit(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic workunits for the given batch and app version.
+ * @brief Generates N synthetic workunits.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::workunit>
-generate_synthetic_workunits(std::size_t n,
-                             const boost::uuids::uuid& batch_id,
-                             const boost::uuids::uuid& app_version_id,
-                             utility::generation::generation_context& ctx);
+generate_synthetic_workunits(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

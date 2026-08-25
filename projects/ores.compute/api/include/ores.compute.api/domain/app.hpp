@@ -17,11 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_DOMAIN_APP_HPP
-#define ORES_COMPUTE_DOMAIN_APP_HPP
+#ifndef ORES_COMPUTE_API_DOMAIN_APP_HPP
+#define ORES_COMPUTE_API_DOMAIN_APP_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <string>
+#include <string_view>
 
 namespace ores::compute::domain {
 
@@ -84,6 +85,16 @@ struct app final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for app, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const app&) {
+    return "ores.compute.app";
+}
 
 }
 

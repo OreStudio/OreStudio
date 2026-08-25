@@ -27,10 +27,14 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class AppMdiWindow;
+class AppDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -64,12 +68,14 @@ public:
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const compute::domain::app& app);
@@ -77,13 +83,36 @@ private slots:
     void onShowHistory(const compute::domain::app& app);
     void onRevertVersion(const compute::domain::app& app);
     void onOpenVersion(const compute::domain::app& app, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const compute::domain::app& app);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * AppDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(AppDetailDialog* detailDialog);
     void showHistoryWindow(const compute::domain::app& app);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
+    /**
+     * @brief Fetches the full typed compute app history (the
+     * existing per-entity compute::messaging::get_app_history_request/
+     * compute::messaging::get_app_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed compute app, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchAppHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<compute::domain::app>, QString>)> callback);
+
+    ChangeReasonCache* changeReasonCache_;
     AppMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

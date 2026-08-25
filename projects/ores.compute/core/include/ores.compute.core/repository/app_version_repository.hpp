@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_APP_VERSION_REPOSITORY_HPP
-#define ORES_COMPUTE_REPOSITORY_APP_VERSION_REPOSITORY_HPP
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_APP_VERSION_REPOSITORY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_APP_VERSION_REPOSITORY_HPP
 
 #include "ores.compute.api/domain/app_version.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -46,16 +49,70 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes app versions to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::app_version& v);
     void write(context ctx, const std::vector<domain::app_version>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest app versions, possibly filtered by primary key.
+     */
+    /**@{*/
     std::vector<domain::app_version> read_latest(context ctx);
     std::vector<domain::app_version> read_latest(context ctx, const std::string& id);
+    /**@}*/
+
+    /**
+     * @brief Reads all app versions, possibly filtered by primary key.
+     */
     std::vector<domain::app_version> read_all(context ctx, const std::string& id);
 
+    /**
+     * @brief Reads a single app version as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::app_version>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
+
+
+    /**
+     * @brief Reads latest app versions with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::app_version>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active app versions.
+     * @param ctx Repository context with database connection
+     * @return Total number of active app versions
+     */
+    std::uint32_t get_total_app_version_count(context ctx);
+
+    /**
+     * @brief Deletes a app version by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& id);
+
+    /**
+     * @brief Deletes app versions by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

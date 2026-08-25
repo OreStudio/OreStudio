@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_WORKUNIT_ENTITY_HPP
-#define ORES_COMPUTE_REPOSITORY_WORKUNIT_ENTITY_HPP
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_WORKUNIT_ENTITY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_WORKUNIT_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -44,8 +44,8 @@ struct workunit_entity {
     std::string app_version_id;
     std::string input_uri;
     std::optional<std::string> config_uri;
-    int priority;
-    int target_redundancy;
+    int priority = 0;
+    int target_redundancy = 0;
     std::optional<std::string> canonical_result_id;
     std::string modified_by;
     std::string performed_by;

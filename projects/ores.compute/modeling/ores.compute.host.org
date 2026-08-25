@@ -11,39 +11,38 @@
 #+entity_plural: hosts
 #+entity_title: Host
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-11
 
 Represents a physical or virtual machine that participates in the BOINC-inspired
 compute grid. Tracks hardware capabilities, heartbeat, and accumulated credit.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     compute
-:has_tenant_id: true
+:schema:    public
+:product:   ores
+:component: compute
+:profile:   uuid-identified-lookup
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID primary key for the host.
 
-* Natural keys
-
 ** external_id
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
 :END:
 
 User-defined name or hostname for the node.
-
-* Columns
 
 ** location
 :PROPERTIES:
@@ -82,6 +81,20 @@ Total system memory in megabytes.
 :END:
 
 GPU model identifier, e.g. 'A100' or NULL if no GPU.
+
+** display_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Whimsical adjective+animal display name assigned on first registration.
+Display-only; never used as a key.
+
+#+begin_src cpp :name generator
+std::string(faker::word::noun()) + "-host-" + std::to_string(idx)
+#+end_src
 
 ** last_rpc_time
 :PROPERTIES:
@@ -139,36 +152,68 @@ Accumulated work units successfully processed by this host.
 
 ** Qt
 :PROPERTIES:
-:domain_include:       ores.compute/domain/host.hpp
-:domain_class:         compute::domain::host
-:protocol_include:     ores.compute/messaging/host_protocol.hpp
-:collection_name:      hosts
-:item_var:             host
-:key_field:            external_id
-:has_uuid_primary_key: true
-:has_pagination:       true
-:get_request_class:    compute::messaging::list_hosts_request
-:get_response_class:   compute::messaging::list_hosts_response
-:settings_group:       HostListWindow
-:window_title:         Compute Hosts
-:icon:                 Desktop
+:domain_include:          ores.compute.api/domain/host.hpp
+:domain_class:            compute::domain::host
+:protocol_include:        ores.compute.api/messaging/host_protocol.hpp
+:collection_name:         hosts
+:item_var:                host
+:key_field:               external_id
+:has_uuid_primary_key:    true
+:get_request_class:       compute::messaging::get_hosts_request
+:get_response_class:      compute::messaging::get_hosts_response
+:get_message_type:        get_hosts_request
+:save_request_class:      compute::messaging::save_host_request
+:save_response_class:     compute::messaging::save_host_response
+:save_message_type:       save_host_request
+:delete_request_class:    compute::messaging::delete_host_request
+:delete_response_class:   compute::messaging::delete_host_response
+:delete_message_type:     delete_host_request
+:history_request_class:   compute::messaging::get_host_history_request
+:history_response_class:  compute::messaging::get_host_history_response
+:history_message_type:    get_host_history_request
+:settings_group:          HostListWindow
+:window_title:            Compute Hosts
+:icon:                    Desktop
+:changed_event_class:     compute::eventing::host_changed_event
+:changed_event_include:   ores.compute.api/eventing/host_changed_event.hpp
+:has_change_reason_cache: true
+:has_pagination:          true
 :END:
 
 *** Columns (Qt model)
 
-| enum_name   | field         | header         | type      | width |
-|-------------+---------------+----------------+-----------+-------|
-| ExternalId  | external_id   | Host ID        | string    | 180   |
-| Location    | location      | Location       | string    | 120   |
-| CpuCount    | cpu_count     | CPUs           | int       | 60    |
-| RamMb       | ram_mb        | RAM (MB)       | int       | 80    |
-| GpuType     | gpu_type      | GPU            | string    | 100   |
-| LastRpcTime | last_rpc_time | Last Heartbeat | timestamp | 140   |
-| CreditTotal | credit_total  | Credits        | int       | 80    |
-| Version     | version       | Version        | int       | 60    |
-| ModifiedBy  | modified_by   | Modified By    | string    | 120   |
+| enum_name   | field         | header         | type      | width | tooltip_field | data_paste                           |
+|-------------+---------------+----------------+-----------+-------+---------------+-------------------------------------|
+| DisplayName | display_name  | Name           | string    | 160   | external_id   | B7A4E9F2-6C3D-4E8F-9A1B-5C7D2E8F4A6B |
+| ExternalId  | external_id   | Host ID        | string    | 180   |               |                                     |
+| Location    | location      | Location       | string    | 120   |               |                                     |
+| CpuCount    | cpu_count     | CPUs           | int       | 60    |               |                                     |
+| RamMb       | ram_mb        | RAM (MB)       | int       | 80    |               |                                     |
+| GpuType     | gpu_type      | GPU            | string    | 100   |               |                                     |
+| LastRpcTime | last_rpc_time | Last Heartbeat | timestamp | 140   |               |                                     |
+| CreditTotal | credit_total  | Credits        | int       | 80    |               |                                     |
+| Version     | version       | Version        | int       | 60    |               |                                     |
+| ModifiedBy  | modified_by   | Modified By    | string    | 120   |               |                                     |
 
 ** Custom repository methods
+
+*** Client model DisplayName data
+
+The =DisplayName= column shows the whimsical =display_name= when set,
+falling back to a short-ID (first 8 hex chars of the external_id) for
+hosts registered before display names existed. The per-row tooltip
+reveals the full external_id. This is wired through the
+=tooltip_field= and =data_paste= per-column knobs on the Qt columns
+table above; the data-paste body is pasted verbatim into the generated
+=data()= case for the column (see the ores.cpp.qt meta-model for the
+knob contract).
+
+#+begin_src cpp :name display_name_data :implements B7A4E9F2-6C3D-4E8F-9A1B-5C7D2E8F4A6B
+            if (!host.display_name.empty())
+                return QString::fromStdString(host.display_name);
+            // Short-ID fallback: first 8 hex chars of the UUID.
+            return QString::fromStdString(host.external_id).left(8);
+#+end_src
 
 * See also
 

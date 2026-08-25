@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_EVENTING_RESULT_CHANGED_EVENT_HPP
-#define ORES_COMPUTE_EVENTING_RESULT_CHANGED_EVENT_HPP
+#ifndef ORES_COMPUTE_API_EVENTING_RESULT_CHANGED_EVENT_HPP
+#define ORES_COMPUTE_API_EVENTING_RESULT_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -28,15 +28,25 @@
 namespace ores::compute::eventing {
 
 /**
- * @brief Domain event indicating that compute result data has changed.
+ * @brief Domain event indicating that result data has changed.
  *
- * This event is published when any compute result entity is created, updated,
- * or deleted in the database. Subscribers can use the timestamp to query for
- * changes since that point.
+ * Published when any result entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct result_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
     std::chrono::system_clock::time_point timestamp;
-    std::vector<std::string> ids;
+
+    /**
+     * @brief Changed result UUIDs (as strings).
+     */
+    std::vector<std::string> result_ids;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
     std::string tenant_id;
 };
 
@@ -44,6 +54,9 @@ struct result_changed_event final {
 
 namespace ores::eventing::domain {
 
+/**
+ * @brief Event traits specialization for result_changed_event.
+ */
 template <>
 struct event_traits<ores::compute::eventing::result_changed_event> {
     static constexpr std::string_view name = "ores.compute.result_changed";

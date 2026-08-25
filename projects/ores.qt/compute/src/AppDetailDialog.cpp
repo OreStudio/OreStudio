@@ -28,6 +28,7 @@
 #include <QPlainTextEdit>
 #include <QtConcurrent>
 #include <boost/uuid/random_generator.hpp>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -41,6 +42,16 @@ AppDetailDialog::AppDetailDialog(QWidget* parent)
     ui_->setupUi(this);
     setupUi();
     setupConnections();
+    // Hierarchy tree seam: a future :implements 9B165431-2921-4CAC-A2E8-2C186741E523
+    // block is expected to construct a HierarchyModelBuilder-derived model
+    // for this entity, wrap it in a HierarchyTreeWidget, and insert that
+    // widget into this dialog's layout (e.g. a dedicated tab). Left empty
+    // when no entity implements this kind.
+    // Composite child-entity tables seam: an :implements
+    // 7E4A2C8D-9F1B-4E6A-8D3C-5B2A7E9F1C4D block constructs one QTableWidget
+    // + QToolBar per embedded child entity (e.g. identifiers, contact
+    // information), wraps each in a tab, and inserts it into this dialog's
+    // tab widget. Left empty when no entity implements this kind.
 }
 
 AppDetailDialog::~AppDetailDialog() {
@@ -57,6 +68,10 @@ QWidget* AppDetailDialog::provenanceTab() const {
 
 ProvenanceWidget* AppDetailDialog::provenanceWidget() const {
     return ui_->provenanceWidget;
+}
+
+QString AppDetailDialog::code() const {
+    return QString::fromStdString(app_.name);
 }
 
 void AppDetailDialog::setupUi() {
@@ -76,6 +91,7 @@ void AppDetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this, &AppDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &AppDetailDialog::onCloseClicked);
 
+    connect(ui_->codeEdit, &QLineEdit::textChanged, this, &AppDetailDialog::onCodeChanged);
     connect(ui_->nameEdit, &QLineEdit::textChanged, this, &AppDetailDialog::onFieldChanged);
     connect(
         ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, &AppDetailDialog::onFieldChanged);
@@ -96,6 +112,7 @@ void AppDetailDialog::setApp(const compute::domain::app& app) {
 
 void AppDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->codeEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
@@ -105,8 +122,14 @@ void AppDetailDialog::setCreateMode(bool createMode) {
     updateSaveButtonState();
 }
 
+void AppDetailDialog::markDirty() {
+    hasChanges_ = true;
+    updateSaveButtonState();
+}
+
 void AppDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
+    ui_->codeEdit->setReadOnly(true);
     ui_->nameEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
@@ -114,6 +137,7 @@ void AppDetailDialog::setReadOnly(bool readOnly) {
 }
 
 void AppDetailDialog::updateUiFromApp() {
+    ui_->codeEdit->setText(QString::fromStdString(app_.name));
     ui_->nameEdit->setText(QString::fromStdString(app_.name));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(app_.description));
 
@@ -129,10 +153,17 @@ void AppDetailDialog::updateUiFromApp() {
 }
 
 void AppDetailDialog::updateAppFromUi() {
+    if (createMode_) {
+        app_.name = ui_->codeEdit->text().trimmed().toStdString();
+    }
     app_.name = ui_->nameEdit->text().trimmed().toStdString();
     app_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     app_.modified_by = username_;
-    app_.performed_by = username_;
+}
+
+void AppDetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
 }
 
 void AppDetailDialog::onFieldChanged() {
@@ -146,7 +177,10 @@ void AppDetailDialog::updateSaveButtonState() {
 }
 
 bool AppDetailDialog::validateInput() {
-    return !ui_->nameEdit->text().trimmed().isEmpty();
+    const QString name_val = ui_->codeEdit->text().trimmed();
+    const QString name_val = ui_->nameEdit->text().trimmed();
+
+    return true && !name_val.isEmpty() && !name_val.isEmpty();
 }
 
 void AppDetailDialog::onSaveClicked() {
@@ -161,7 +195,6 @@ void AppDetailDialog::onSaveClicked() {
         return;
     }
 
-    updateAppFromUi();
 
     const auto crOpType = createMode_ ? ChangeReasonDialog::OperationType::Create :
                                         ChangeReasonDialog::OperationType::Amend;
@@ -171,46 +204,58 @@ void AppDetailDialog::onSaveClicked() {
     app_.change_reason_code = crSel->reason_code;
     app_.change_commentary = crSel->commentary;
 
+    updateAppFromUi();
+
     BOOST_LOG_SEV(lg(), info) << "Saving compute app: " << app_.name;
 
-    using FutureResult = std::pair<bool, std::string>;
     QPointer<AppDetailDialog> self = this;
-    const compute::domain::app appToSave = app_;
 
-    QFuture<FutureResult> future = QtConcurrent::run([self, appToSave]() -> FutureResult {
-        if (!self)
-            return {false, ""};
+    struct SaveResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, app = app_]() -> SaveResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
 
         compute::messaging::save_app_request request;
-        request.app = appToSave;
+        request.data = app;
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
 
-        auto result = self->clientManager_->process_authenticated_request(std::move(request));
-
-        if (!result)
+        if (!response_result) {
             return {false, "Failed to communicate with server"};
-        return {result->success, result->message};
-    });
-
-    auto* watcher = new QFutureWatcher<FutureResult>(this);
-    connect(watcher, &QFutureWatcher<FutureResult>::finished, self, [self, watcher, appToSave]() {
-        if (!self)
-            return;
-        auto [success, message] = watcher->result();
-        watcher->deleteLater();
-
-        if (success) {
-            self->hasChanges_ = false;
-            self->updateSaveButtonState();
-            emit self->appSaved(QString::fromStdString(appToSave.name));
-            self->notifySaveSuccess(
-                tr("App '%1' saved").arg(QString::fromStdString(appToSave.name)));
-        } else {
-            BOOST_LOG_SEV(lg(), error) << "App save failed: " << message;
-            emit self->errorMessage(
-                QString("Failed to save app: %1").arg(QString::fromStdString(message)));
-            MessageBoxHelper::critical(self, "Save Failed", QString::fromStdString(message));
         }
-    });
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<SaveResult>(self);
+    connect(watcher,
+            &QFutureWatcher<SaveResult>::finished,
+            self,
+            [self, watcher, crReasonCode = crSel->reason_code, crCommentary = crSel->commentary]() {
+                auto result = watcher->result();
+                watcher->deleteLater();
+
+                if (result.success) {
+                    BOOST_LOG_SEV(lg(), info) << "App saved successfully";
+                    QString code = QString::fromStdString(self->app_.name);
+                    self->hasChanges_ = false;
+                    self->updateSaveButtonState();
+                    emit self->appSaved(code);
+                    self->notifySaveSuccess(tr("App '%1' saved").arg(code));
+                } else {
+                    BOOST_LOG_SEV(lg(), error) << "Save failed: " << result.message;
+                    QString errorMsg = QString::fromStdString(result.message);
+                    emit self->errorMessage(errorMsg);
+                    MessageBoxHelper::critical(self, "Save Failed", errorMsg);
+                }
+            });
+
+    QFuture<SaveResult> future = QtConcurrent::run(task);
     watcher->setFuture(future);
 }
 
@@ -233,15 +278,57 @@ void AppDetailDialog::onDeleteClicked() {
     }
 
     const auto crSel =
-        promptChangeReason(ChangeReasonDialog::OperationType::Delete, true, "common");
+        promptChangeReason(ChangeReasonDialog::OperationType::Delete, false, "common");
     if (!crSel)
         return;
 
     BOOST_LOG_SEV(lg(), info) << "Deleting compute app: " << app_.name;
 
-    // Delete not yet implemented for compute entities
-    MessageBoxHelper::warning(
-        this, "Not Implemented", "Delete operation is not yet implemented for this entity.");
+    QPointer<AppDetailDialog> self = this;
+
+    struct DeleteResult {
+        bool success;
+        std::string message;
+    };
+
+    auto task = [self, id_str = boost::uuids::to_string(app_.id)]() -> DeleteResult {
+        if (!self || !self->clientManager_) {
+            return {false, "Dialog closed"};
+        }
+
+        compute::messaging::delete_app_request request;
+        request.ids = {id_str};
+        auto response_result =
+            self->clientManager_->process_authenticated_request(std::move(request));
+
+        if (!response_result) {
+            return {false, "Failed to communicate with server"};
+        }
+
+        return {response_result->success, response_result->message};
+    };
+
+    auto* watcher = new QFutureWatcher<DeleteResult>(self);
+    connect(watcher, &QFutureWatcher<DeleteResult>::finished, self, [self, code, watcher]() {
+        auto result = watcher->result();
+        watcher->deleteLater();
+
+        if (result.success) {
+            BOOST_LOG_SEV(lg(), info) << "App deleted successfully";
+            emit self->statusMessage(QString("App '%1' deleted").arg(code));
+            emit self->appDeleted(code);
+            self->requestClose();
+        } else {
+            BOOST_LOG_SEV(lg(), error) << "Delete failed: " << result.message;
+            QString errorMsg = QString::fromStdString(result.message);
+            emit self->errorMessage(errorMsg);
+            MessageBoxHelper::critical(self, "Delete Failed", errorMsg);
+        }
+    });
+
+    QFuture<DeleteResult> future = QtConcurrent::run(task);
+    watcher->setFuture(future);
 }
+
 
 }

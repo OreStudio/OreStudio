@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_SERVICE_APP_SERVICE_HPP
-#define ORES_COMPUTE_SERVICE_APP_SERVICE_HPP
+#ifndef ORES_COMPUTE_CORE_SERVICE_APP_SERVICE_HPP
+#define ORES_COMPUTE_CORE_SERVICE_APP_SERVICE_HPP
 
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/app_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -32,7 +34,10 @@
 namespace ores::compute::service {
 
 /**
- * @brief Service for managing compute applications.
+ * @brief Service for managing compute apps.
+ *
+ * Provides a higher-level interface for compute app operations,
+ * wrapping the underlying repository.
  */
 class ORES_COMPUTE_CORE_EXPORT app_service {
 private:
@@ -47,15 +52,78 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a app_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit app_service(context ctx);
 
-    std::vector<domain::app> list();
+    /**
+     * @brief Lists compute apps with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of compute apps for the requested page.
+     */
+    std::vector<domain::app> list_apps(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::app> find(const std::string& id);
+    /**
+     * @brief Gets the total count of active compute apps.
+     *
+     * @return Total number of active compute apps.
+     */
+    std::uint32_t count_apps();
 
-    void save(const domain::app& v);
 
-    std::vector<domain::app> history(const std::string& id);
+    /**
+     * @brief Retrieves a single compute app as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The compute app at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::app> get_app_at_version(const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single compute app by its primary key.
+     *
+     * @return The compute app if found, std::nullopt otherwise.
+     */
+    std::optional<domain::app> get_app(const std::string& id);
+
+    /**
+     * @brief Saves a compute app (creates or updates).
+     *
+     * @param app The compute app to save.
+     * @throws std::exception on failure.
+     */
+    void save_app(const domain::app& app);
+
+    /**
+     * @brief Saves a batch of compute apps.
+     *
+     * @param apps The compute apps to save.
+     * @throws std::exception on failure.
+     */
+    void save_apps(const std::vector<domain::app>& apps);
+
+    /**
+     * @brief Deletes a compute app by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_app(const std::string& id);
+
+    /**
+     * @brief Deletes compute apps by their primary keys.
+     */
+    void delete_apps(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a compute app.
+     */
+    std::vector<domain::app> get_app_history(const std::string& id);
 
 private:
     context ctx_;

@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:ui:icons:design:
 #+created: 2026-05-21
-#+updated: 2026-06-04
+#+updated: 2026-08-12
 
 #+startup: inlineimages
 ORE Studio's icon catalogue lives here as a single visual-language
@@ -672,6 +672,55 @@ Financial data, multi-currency, monetary values.
 
 *Usage*: Currency fields, financial data, monetary transactions.
 
+** Compute & Execution
+
+Icons representing compute infrastructure entities and executable work.
+
+*** Apps
+Application modules, compute applications.
+
+- Fluent Regular: ic_fluent_apps_20_regular.svg
+- Fluent Filled: ic_fluent_apps_20_filled.svg
+- Solar Linear: widget.svg
+- Solar Bold: widget.svg
+
+*Usage*: Compute application management (ores.compute =app= entity, e.g. an
+application such as ores.analytics.quant). A grid of squares representing a
+set of application modules.
+
+*** Text Bullet List Square
+Batches, collections of work units.
+
+- Fluent Regular: ic_fluent_text_bullet_list_square_20_regular.svg
+- Fluent Filled: ic_fluent_text_bullet_list_square_20_filled.svg
+- Solar Linear: list-check.svg
+- Solar Bold: list-check.svg
+
+*Usage*: Compute batch management (ores.compute =batch= entity). A square
+with a bulleted text list representing a collection of work units.
+
+*** Desktop
+Host machines, compute hosts.
+
+- Fluent Regular: ic_fluent_desktop_20_regular.svg
+- Fluent Filled: ic_fluent_desktop_20_filled.svg
+- Solar Linear: monitor.svg
+- Solar Bold: monitor.svg
+
+*Usage*: Compute host management (ores.compute =host= entity). A desktop
+monitor representing a machine that runs work.
+
+*** Flash Flow
+Work units, executable units of work.
+
+- Fluent Regular: ic_fluent_flash_flow_20_regular.svg
+- Fluent Filled: ic_fluent_flash_flow_20_filled.svg
+- Solar Linear: bolt.svg
+- Solar Bold: bolt.svg
+
+*Usage*: Compute work unit management (ores.compute =workunit= entity). A
+lightning bolt with a flow arrow representing a unit of executable work.
+
 ** Time & History
 
 Icons for temporal concepts.
@@ -821,6 +870,10 @@ Text validation, spell check, language processing.
 | Publish              | arrow_upload_20                  | Default | Active |
 | Terminal             | window_console_20                | Default | Active |
 | Notepad (Log Viewer) | notepad_20                       | Default | Active |
+| Apps/Application     | apps_20                          | Default | Active |
+| Batch/Work List      | text_bullet_list_square_20       | Default | Active |
+| Host/Desktop         | desktop_20                       | Default | Active |
+| Work Unit/Flash Flow | flash_flow_20                    | Default | Active |
 
 * Adding New Icons
 
@@ -849,27 +902,27 @@ Copy the icons to the correct locations:
 #+begin_example
 # Fluent UI icons (regular and filled variants)
 cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_regular.svg" \
-   projects/ores.qt/resources/icons/
+   projects/ores.qt/application/resources/icons/fluentui/regular/
 
 cp ".../Arrow Upload/SVG/ic_fluent_arrow_upload_20_filled.svg" \
-   projects/ores.qt/resources/icons/
+   projects/ores.qt/application/resources/icons/fluentui/filled/
 
 # Solar icons (Linear and Bold variants)
 cp ".../arrows-action/Linear/upload-square.svg" \
-   projects/ores.qt/resources/icons/solarized/Linear/
+   projects/ores.qt/application/resources/icons/solarized/Linear/
 
 cp ".../arrows-action/Bold/upload-square.svg" \
-   projects/ores.qt/resources/icons/solarized/Bold/
+   projects/ores.qt/application/resources/icons/solarized/Bold/
 #+end_example
 
 ** Step 3: Update Resource File
 
-Add the new icons to =projects/ores.qt/resources/resources.qrc=:
+Add the new icons to =projects/ores.qt/application/resources/resources.qrc=:
 
 #+begin_src xml
 <!-- Fluent UI icons -->
-<file>icons/ic_fluent_arrow_upload_20_regular.svg</file>
-<file>icons/ic_fluent_arrow_upload_20_filled.svg</file>
+<file>icons/fluentui/regular/ic_fluent_arrow_upload_20_regular.svg</file>
+<file>icons/fluentui/filled/ic_fluent_arrow_upload_20_filled.svg</file>
 
 <!-- Solar icons -->
 <file>icons/solarized/Linear/upload-square.svg</file>

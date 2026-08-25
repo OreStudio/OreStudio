@@ -27,11 +27,14 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
-#include <string>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class AppVersionMdiWindow;
+class AppVersionDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -64,7 +67,7 @@ public:
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
-    void setHttpBaseUrl(const std::string& url);
+
 
 signals:
     void statusMessage(const QString& message);
@@ -72,6 +75,7 @@ signals:
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const compute::domain::app_version& app_version);
@@ -79,16 +83,39 @@ private slots:
     void onShowHistory(const compute::domain::app_version& app_version);
     void onRevertVersion(const compute::domain::app_version& app_version);
     void onOpenVersion(const compute::domain::app_version& app_version, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const compute::domain::app_version& app_version);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * AppVersionDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(AppVersionDetailDialog* detailDialog);
     void showHistoryWindow(const compute::domain::app_version& app_version);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
+    /**
+     * @brief Fetches the full typed app version history (the
+     * existing per-entity compute::messaging::get_app_version_history_request/
+     * compute::messaging::get_app_version_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed app version, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchAppVersionHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<compute::domain::app_version>, QString>)>
+            callback);
+
+    ChangeReasonCache* changeReasonCache_;
     AppVersionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
-    std::string httpBaseUrl_;
 };
 
 }

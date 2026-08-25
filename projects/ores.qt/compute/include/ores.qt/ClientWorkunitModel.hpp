@@ -26,7 +26,6 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
 #include <vector>
 
@@ -35,7 +34,7 @@ namespace ores::qt {
 /**
  * @brief Model for displaying workunits fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches workunit
+ * This model extends AbstractClientModel and fetches workunit
  * data asynchronously using the ores.comms client.
  */
 class ClientWorkunitModel final : public AbstractClientModel {
@@ -88,6 +87,7 @@ public:
      */
     const compute::domain::workunit* getWorkunit(int row) const;
 
+
     /**
      * @brief Load a specific page of data.
      */
@@ -111,15 +111,6 @@ public:
     std::uint32_t total_available_count() const {
         return total_available_count_;
     }
-
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
-
-    /**
-     * @brief Emitted when an error occurs during data loading.
-     */
 
 private slots:
     void onWorkunitsLoaded();

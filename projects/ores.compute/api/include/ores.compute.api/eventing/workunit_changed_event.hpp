@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_EVENTING_WORKUNIT_CHANGED_EVENT_HPP
-#define ORES_COMPUTE_EVENTING_WORKUNIT_CHANGED_EVENT_HPP
+#ifndef ORES_COMPUTE_API_EVENTING_WORKUNIT_CHANGED_EVENT_HPP
+#define ORES_COMPUTE_API_EVENTING_WORKUNIT_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -28,15 +28,25 @@
 namespace ores::compute::eventing {
 
 /**
- * @brief Domain event indicating that compute workunit data has changed.
+ * @brief Domain event indicating that workunit data has changed.
  *
- * This event is published when any compute workunit entity is created, updated,
- * or deleted in the database. Subscribers can use the timestamp to query for
- * changes since that point.
+ * Published when any workunit entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct workunit_changed_event final {
+    /**
+     * @brief The timestamp of when the change occurred (in UTC).
+     */
     std::chrono::system_clock::time_point timestamp;
-    std::vector<std::string> ids;
+
+    /**
+     * @brief Changed workunit UUIDs (as strings).
+     */
+    std::vector<std::string> workunit_ids;
+
+    /**
+     * @brief The tenant that owns the changed entity.
+     */
     std::string tenant_id;
 };
 
@@ -44,6 +54,9 @@ struct workunit_changed_event final {
 
 namespace ores::eventing::domain {
 
+/**
+ * @brief Event traits specialization for workunit_changed_event.
+ */
 template <>
 struct event_traits<ores::compute::eventing::workunit_changed_event> {
     static constexpr std::string_view name = "ores.compute.workunit_changed";

@@ -17,37 +17,52 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_MESSAGING_BATCH_PROTOCOL_HPP
-#define ORES_COMPUTE_MESSAGING_BATCH_PROTOCOL_HPP
+#ifndef ORES_COMPUTE_API_MESSAGING_BATCH_PROTOCOL_HPP
+#define ORES_COMPUTE_API_MESSAGING_BATCH_PROTOCOL_HPP
 
 #include "ores.compute.api/domain/batch.hpp"
+#include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::compute::messaging {
 
-struct list_batches_request {
-    using response_type = struct list_batches_response;
+struct get_batches_request {
+    using response_type = struct get_batches_response;
     static constexpr std::string_view nats_subject = "compute.v1.batches.list";
-    int offset = 0;
-    int limit = 100;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
-struct list_batches_response {
+struct get_batches_response {
     std::vector<ores::compute::domain::batch> batches;
     int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_batch_request {
     using response_type = struct save_batch_response;
     static constexpr std::string_view nats_subject = "compute.v1.batches.save";
-    ores::compute::domain::batch batch;
-    std::string change_reason_code;
-    std::string change_commentary;
+    ores::compute::domain::batch data;
+
+    static save_batch_request from(ores::compute::domain::batch v) {
+        return {.data = std::move(v)};
+    }
 };
 
 struct save_batch_response {
+    bool success = false;
+    std::string message;
+};
+
+struct delete_batch_request {
+    using response_type = struct delete_batch_response;
+    static constexpr std::string_view nats_subject = "compute.v1.batches.delete";
+    std::vector<std::string> ids;
+};
+
+struct delete_batch_response {
     bool success = false;
     std::string message;
 };
@@ -59,9 +74,9 @@ struct get_batch_history_request {
 };
 
 struct get_batch_history_response {
-    bool success = true;
+    std::vector<ores::compute::domain::batch> history;
+    bool success = false;
     std::string message;
-    std::vector<ores::compute::domain::batch> versions;
 };
 
 }

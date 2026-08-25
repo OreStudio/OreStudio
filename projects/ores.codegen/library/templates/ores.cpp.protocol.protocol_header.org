@@ -223,7 +223,44 @@ struct get_{{name}}_by_{{right.column_short}}_response {
 };
 
 {{/right.list_by}}
-<<paste:5C3C5DBB-684A-4947-9A35-25D33ED7A222>>
+{{#left.replace_by}}
+struct replace_{{name}}_by_{{left.column_short}}_request {
+    using response_type = struct replace_{{name}}_by_{{left.column_short}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{name}}.replace_by_{{left.column}}";
+    std::string {{left.column}};
+    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct replace_{{name}}_by_{{left.column_short}}_response {
+    bool success = false;
+    std::string message;
+};
+
+{{/left.replace_by}}
+{{#right.replace_by}}
+struct replace_{{name}}_by_{{right.column_short}}_request {
+    using response_type = struct replace_{{name}}_by_{{right.column_short}}_response;
+    static constexpr std::string_view nats_subject =
+        "{{component}}.v1.{{name}}.replace_by_{{right.column}}";
+    std::string {{right.column}};
+    std::vector<ores::{{component}}::domain::{{name_singular}}> {{name}};
+    std::string modified_by;
+    std::string performed_by;
+    std::string change_reason_code;
+    std::string change_commentary;
+};
+
+struct replace_{{name}}_by_{{right.column_short}}_response {
+    bool success = false;
+    std::string message;
+};
+
+{{/right.replace_by}}
 }
 
 #endif

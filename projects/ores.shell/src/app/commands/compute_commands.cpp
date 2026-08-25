@@ -28,6 +28,7 @@
 #include "ores.compute.api/domain/result_table_io.hpp"
 #include "ores.compute.api/domain/workunit_table_io.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.api/messaging/host_protocol.hpp"
@@ -72,7 +73,7 @@ std::string default_http_base_url() {
 
 std::optional<compute::domain::app>
 find_app_by_name(std::ostream& out, nats_client& session, const std::string& name) {
-    compute::messaging::list_apps_request req;
+    compute::messaging::get_apps_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -89,7 +90,7 @@ std::optional<compute::domain::app_version> find_app_version(std::ostream& out,
                                                              const boost::uuids::uuid& app_id,
                                                              const std::string& engine_version,
                                                              const std::string& wrapper_version) {
-    compute::messaging::list_app_versions_request req;
+    compute::messaging::get_app_versions_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -108,12 +109,12 @@ std::optional<compute::domain::app_version> find_app_version(std::ostream& out,
 // wipes every previously published platform on the next save.
 std::optional<std::vector<compute::domain::app_version_platform>> existing_platforms(
     std::ostream& out, nats_client& session, const boost::uuids::uuid& app_version_id) {
-    compute::messaging::list_app_version_platforms_request req;
+    compute::messaging::get_app_version_platforms_by_app_version_request req;
     req.app_version_id = boost::uuids::to_string(app_version_id);
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp || !resp->success)
         return std::nullopt;
-    return resp->platforms;
+    return resp->app_version_platforms;
 }
 
 std::optional<boost::uuids::uuid>
@@ -397,10 +398,7 @@ void compute_commands::process_publish_package(std::ostream& out,
     app.change_reason_code = reason_code;
     app.change_commentary = commentary;
 
-    compute::messaging::save_app_request app_req;
-    app_req.app = app;
-    app_req.change_reason_code = reason_code;
-    app_req.change_commentary = commentary;
+    auto app_req = compute::messaging::save_app_request::from(app);
 
     auto app_resp = do_request(out, session, app_req, std::chrono::seconds(30), true);
     if (!app_resp || !app_resp->success) {
@@ -450,16 +448,30 @@ void compute_commands::process_publish_package(std::ostream& out,
     std::erase_if(platform_rows, [&](const auto& p) { return p.platform_code == platform_code; });
     platform_rows.push_back(row);
 
-    compute::messaging::save_app_version_request ver_req;
-    ver_req.app_version = ver;
-    ver_req.platforms = std::move(platform_rows);
-    ver_req.change_reason_code = reason_code;
-    ver_req.change_commentary = commentary;
+    auto ver_req = compute::messaging::save_app_version_request::from(ver);
 
     auto ver_resp = do_request(out, session, ver_req, std::chrono::seconds(30), true);
     if (!ver_resp || !ver_resp->success) {
         fail(out) << "Failed to save app version: "
                   << (ver_resp ? ver_resp->message : "no response") << std::endl;
+        return;
+    }
+
+    // Platforms are saved through the junction's replace-by-app-version flow
+    // (compute.v1.app_version_platforms.replace_by_app_version_id), which
+    // swaps the full platform row set for the version in one operation.
+    compute::messaging::replace_app_version_platforms_by_app_version_request plat_req;
+    plat_req.app_version_id = boost::uuids::to_string(ver.id);
+    plat_req.app_version_platforms = std::move(platform_rows);
+    plat_req.modified_by = username;
+    plat_req.performed_by = username;
+    plat_req.change_reason_code = reason_code;
+    plat_req.change_commentary = commentary;
+
+    auto plat_resp = do_request(out, session, plat_req, std::chrono::seconds(30), true);
+    if (!plat_resp || !plat_resp->success) {
+        fail(out) << "Failed to save platforms for app version: "
+                  << (plat_resp ? plat_resp->message : "no response") << std::endl;
         return;
     }
 

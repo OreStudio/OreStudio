@@ -21,7 +21,7 @@ The eventing chain (postgres_listener_service, postgres_event_source, event_bus,
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BACKLOG                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -46,4 +46,4 @@ The eventing chain (postgres_listener_service, postgres_event_source, event_bus,
 
 * Out of scope
 
--
+- Test-side tolerances and re-drive logic in the eventing integration tests: already delivered by the flake hotfix (AE32C594-8E9B-4C58-B3D2-B93BB7C219E1).

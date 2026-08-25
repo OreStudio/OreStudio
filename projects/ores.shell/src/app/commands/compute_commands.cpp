@@ -128,11 +128,12 @@ resolve_platform_id(std::ostream& out, nats_client& session, const std::string& 
     return std::nullopt;
 }
 
-// The wrapper heartbeats every 30s by default; three missed beats
-// (90s) declare the host offline. Mirrors the spec's
-// config.heartbeat_timeout and the ComputeHost.online derived
-// property.
-constexpr std::chrono::seconds heartbeat_timeout{90};
+// The server's grid-stats function counts a host as online when
+// last_rpc_time is within the last 5 minutes
+// (ores_compute_grid_stats_fn_create.sql). Keep the shell's online
+// window on the same value so the smoke assertion and the
+// delete-host guard agree with the server's online_hosts count.
+constexpr std::chrono::seconds online_window{300};
 
 // Smoke-test job-count bounds, mirroring the spec's
 // config.smoke_min_jobs / config.smoke_max_jobs.
@@ -144,7 +145,7 @@ constexpr std::uint32_t smoke_max_jobs = 20;
 constexpr int outcome_success = 1;
 
 bool is_online(const compute::domain::host& h) {
-    return std::chrono::system_clock::now() - h.last_rpc_time <= heartbeat_timeout;
+    return std::chrono::system_clock::now() - h.last_rpc_time <= online_window;
 }
 
 std::optional<compute::domain::batch>
@@ -891,6 +892,9 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
     // loop because the .ores script language has no flow control.
     std::uint32_t workunit_count = 0;
     std::uint32_t terminal_count = 0;
+    // Hosts online when the batch drains; the smoke assertion must
+    // judge that set, not whoever is online after the wait loop.
+    std::vector<compute::domain::host> online_hosts_at_drain;
     if (batch) {
         const auto deadline = std::chrono::steady_clock::now() + *timeout;
         while (true) {
@@ -904,6 +908,16 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
             if (workunit_count > 0 && terminal_count == workunit_count) {
                 BOOST_LOG_SEV(lg(), info) << "Batch " << batch_ref << " drained (" << terminal_count
                                           << "/" << workunit_count << " workunits).";
+                compute::messaging::list_hosts_request hosts_req;
+                hosts_req.limit = 1000;
+                auto hosts_resp = do_request(out, session, hosts_req, std::chrono::seconds(30),
+                                             true);
+                if (!hosts_resp)
+                    return;
+                for (const auto& h : hosts_resp->hosts) {
+                    if (is_online(h))
+                        online_hosts_at_drain.push_back(h);
+                }
                 break;
             }
             if (workunit_count == 0) {
@@ -971,16 +985,9 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
         }
         const bool all_success = !results->empty() && success_count == results->size();
 
-        compute::messaging::list_hosts_request hosts_req;
-        hosts_req.limit = 1000;
-        auto hosts_resp = do_request(out, session, hosts_req, std::chrono::seconds(30), true);
-        if (!hosts_resp)
-            return;
-        std::vector<compute::domain::host> online_hosts;
-        for (const auto& h : hosts_resp->hosts) {
-            if (is_online(h))
-                online_hosts.push_back(h);
-        }
+        // The host set captured when the batch drained (see the watch
+        // loop above); a fresh fetch here could judge a different set.
+        const auto& online_hosts = online_hosts_at_drain;
         std::vector<compute::domain::host> unexercised;
         for (const auto& h : online_hosts) {
             const bool exercised = std::any_of(results->begin(), results->end(),

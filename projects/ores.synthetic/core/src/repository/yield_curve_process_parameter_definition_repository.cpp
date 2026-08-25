@@ -143,7 +143,6 @@ yield_curve_process_parameter_definition_repository::read_at_version(context ctx
     return entities.front();
 }
 
-
 void yield_curve_process_parameter_definition_repository::remove(context ctx,
                                                                  const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Removing yield curve process parameter definition. "

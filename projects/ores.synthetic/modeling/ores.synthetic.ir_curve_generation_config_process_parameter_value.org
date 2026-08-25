@@ -78,7 +78,7 @@ uuid_gen()
 :END:
 
 The =yield_curve_process_parameter_definition= this value instantiates
-(soft FK to =ores_synthetic_yield_curve_process_parameter_definitions_tbl=,
+(soft FK to =ores_synthetic_process_parameter_definitions_tbl=,
 validated via the generated validation function). The definition
 supplies the parameter's name, description and validation bounds; only
 the value itself lives here.
@@ -135,7 +135,7 @@ conventions doc for the codegen-side rule.
 
 ** parameter_definition_id
 :PROPERTIES:
-:table:             ores_synthetic_yield_curve_process_parameter_definitions_tbl
+:table:             ores_synthetic_process_parameter_definitions_tbl
 :error_message:     Invalid parameter_definition_id: %. No active yield_curve_process_parameter_definition found with this id.
 :nullable:          false
 :use_system_tenant: true

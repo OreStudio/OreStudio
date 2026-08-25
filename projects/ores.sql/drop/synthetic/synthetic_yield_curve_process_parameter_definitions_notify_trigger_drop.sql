@@ -18,5 +18,5 @@
  *
  */
 
-drop trigger if exists ores_synthetic_yield_curve_process_parameter_definitions_notify_trg on "ores_synthetic_yield_curve_process_parameter_definitions_tbl";
-drop function if exists ores_synthetic_yield_curve_process_parameter_definitions_notify_fn;
+drop trigger if exists ores_synthetic_process_parameter_definitions_notify_trg on "ores_synthetic_process_parameter_definitions_tbl";
+drop function if exists ores_synthetic_process_parameter_definitions_notify_fn;

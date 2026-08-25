@@ -38,7 +38,7 @@ register_yield_curve_process_parameter_definition_event_mapping(
         synthetic::eventing::yield_curve_process_parameter_definition_changed_event>(
         event_source,
         "ores.synthetic.yield_curve_process_parameter_definition",
-        "ores_synthetic_yield_curve_process_parameter_definitions");
+        "ores_synthetic_process_parameter_definitions");
 
     return event_bus.subscribe<
         synthetic::eventing::yield_curve_process_parameter_definition_changed_event>(

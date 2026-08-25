@@ -11,7 +11,7 @@
 #+entity_title: Yield Curve Process Parameter Definition
 #+brief: Reference data: named parameters each yield curve process type accepts.
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-08-25
 
 Reference data table describing, per =yield_curve_process_type=, the
 named parameters that process accepts and their validation bounds. This
@@ -42,6 +42,7 @@ edit definitions, only the values of their own configs.
 :component: synthetic
 :has_tenant_id:    true
 :has_workspace_id: false
+:system_tenant_validation: true
 :END:
 
 * Columns
@@ -175,8 +176,19 @@ faker::number::integer(1, 10)
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_synthetic_yield_curve_process_parameter_definitions_tbl
+:tablename: ores_synthetic_process_parameter_definitions_tbl
 :END:
+
+The =:tablename:= is the base every SQL object name for this entity is
+composed from (table, insert/notify/delete functions, triggers, delete
+rule, pg_notify channel). The conventional
+=ores_synthetic_yield_curve_process_parameter_definitions_tbl= would
+make the derived names exceed PostgreSQL's 63-byte identifier limit,
+so the least specific leading qualifier =yield_curve_= is dropped —
+the =process_parameter_definitions= remainder keeps the process scope
+and mirrors the sibling =ores_synthetic_config_process_parameter_values_tbl=
+(same 48-character shape). See the SQL naming conventions doc for the
+codegen-side rule.
 
 ** Checks
 

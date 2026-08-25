@@ -37,7 +37,7 @@
 
 \echo '--- Yield Curve Process Parameter Definitions ---'
 
-insert into ores_synthetic_yield_curve_process_parameter_definitions_tbl (
+insert into ores_synthetic_process_parameter_definitions_tbl (
     tenant_id, id, version, process_type_code, parameter_name, description,
     data_type, default_value, min_value, max_value, display_order,
     modified_by, performed_by, change_reason_code, change_commentary
@@ -150,4 +150,4 @@ do nothing;
 
 -- Summary
 select 'synthetic_yield_curve_process_parameter_definitions' as entity, count(*) as count
-from ores_synthetic_yield_curve_process_parameter_definitions_tbl;
+from ores_synthetic_process_parameter_definitions_tbl;

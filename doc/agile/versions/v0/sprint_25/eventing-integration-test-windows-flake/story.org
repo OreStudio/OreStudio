@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: AE32C594-8E9B-4C58-B3D2-B93BB7C219E1
+:END:
+#+title: Story: Hotfix: eventing integration test flakes on Windows CI
+#+description: The eventing integration test occasionally fails on Windows CI because a transient notification drop exceeds the poll budget.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:eventing:sprint_25:v0:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The eventing integration test (the write_*_publishes_nats_changed_event
+family, one per entity) fails intermittently on Windows CI: the NATS
+notification does not arrive at the observer within the test's 5-second
+poll budget. The failing entity and job rotate run to run (day_count_fraction_type
+on 2026-08-22, party_id_scheme on 2026-08-25). This story restores a
+green Windows CI by making the test resilient to transient
+infrastructure drops: on timeout, the test re-drives the write (which
+re-fires the DB notify trigger) within a bounded overall budget, and on
+exhaustion it reports what it did receive so the loss is diagnosable.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Fix implemented in the org template and verified locally (62/62 refdata eventing tests green). |
+| Waiting on    | Nothing.                               |
+| Next          | PR review.                             |
+| Last touched  | 2026-08-25                               |
+
+* Acceptance
+
+- The eventing integration tests pass on Linux, macOS, and Windows CI.
+- The test still asserts the end-to-end chain: a write produces a NATS
+  change notification carrying the written entity id.
+- A genuinely broken chain still fails the test (with diagnostics)
+  within the overall budget.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2E225865-46FE-45DF-A415-1FCCFAF6EA3C][Scaffold story: Hotfix: eventing integration test flakes on Windows CI]] | STARTED | 2026-08-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D1407AE0-A323-4EA4-963A-ADA206EAE299][Implement Hotfix: eventing integration test flakes on Windows CI]] | STARTED | 2026-08-25 | | Initial task for: Hotfix: eventing integration test flakes on Windows CI |
+
+* Decisions
+
+* Out of scope
+
+-

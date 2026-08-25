@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 954B9DB9-B75C-413C-A0CD-807E4FDEB9A6
+:END:
+#+title: Eventing integration tests traffic-light on any CI platform
+#+description: The write_*_publishes_nats_changed_event family bets wall-clock on a real distributed chain; transient notification loss makes the failing entity rotate across platforms and jobs
+#+type: memory
+#+memory_subtype: project
+#+level: cross
+#+filetags: :memory:project:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+
+The eventing integration tests (write_*_publishes_nats_changed_event, one per entity, generated from the ores.cpp.eventing-integration-test org template) bet wall-clock time on a real chain: DB write, notify trigger, pg_notify, 100ms listener poll, event_bus, NATS, observer buffer. Under CI load a transient (listener reconnect with 1-5s backoff, or a NATS publish hiccup) loses the in-flight notification forever; the test sees only an empty poll. The failing entity rotates run to run and across platforms: day_count_fraction_type on 2026-08-22, party_id_scheme on Windows 2026-08-25, instrument_code on macOS. That rotation is a traffic light, not an entity bug.
+
+*Why:* Five CI failures in a week (Windows three, macOS two) shared the same signature: same template, same line-140 empty-vector assertion, same zero-duration report artifact, sibling eventing tests green around them.
+
+*How to apply:* Treat any future failure in this test family as the same pattern: check whether the entity is new to the rotation before suspecting the entity. The resilience lives in the org template (bounded re-drive of the write plus diagnostics on exhaustion); fix the template, never a single generated file. Do not change the production chain; the loss windows are environment transients.

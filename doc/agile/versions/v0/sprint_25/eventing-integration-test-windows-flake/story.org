@@ -48,10 +48,20 @@ exhaustion it reports what it did receive so the loss is diagnosable.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2E225865-46FE-45DF-A415-1FCCFAF6EA3C][Scaffold story: Hotfix: eventing integration test flakes on Windows CI]] | STARTED | 2026-08-25 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:D1407AE0-A323-4EA4-963A-ADA206EAE299][Implement Hotfix: eventing integration test flakes on Windows CI]] | STARTED | 2026-08-25 | | Initial task for: Hotfix: eventing integration test flakes on Windows CI |
+| [[id:2E225865-46FE-45DF-A415-1FCCFAF6EA3C][Scaffold story: Hotfix: eventing integration test flakes on Windows CI]] | DONE | 2026-08-25 | 2026-08-25 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:D1407AE0-A323-4EA4-963A-ADA206EAE299][Implement Hotfix: eventing integration test flakes on Windows CI]] | DONE | 2026-08-25 | 2026-08-25 | Initial task for: Hotfix: eventing integration test flakes on Windows CI |
 
 * Decisions
+
+- Resilience lives in the test, not the production chain: the loss
+  windows (listener reconnect backoff 1-5s, NATS publish catch-and-log)
+  are environment transients; the chain itself is correct, so no
+  production code changes.
+- Fix the generated template, never a single generated file: one org
+  edit re-tangles and re-generates all 85 tests, keeping the fix and
+  its diagnostics uniform.
+- The flake is cross-platform (Windows and macOS, rotating entities),
+  so the fix must not be platform-specific.
 
 * Out of scope
 

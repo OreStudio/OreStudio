@@ -30,11 +30,11 @@ exhaustion. Change only the test; do not change the production chain.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:AE32C594-8E9B-4C58-B3D2-B93BB7C219E1][Hotfix: eventing integration test flakes on Windows CI]] |
-| Now          | Fix verified locally: all 62 refdata eventing tests pass on Linux; re-drive recovery observed on a cold chain (14.5s first run). |
-| Waiting on   | Nothing.                               |
-| Next         | Raise PR.                              |
+| Now          |                                       |
+| Waiting on   |                                       |
+| Next         |                                       |
 | Last touched | 2026-08-25                               |
 
 * Acceptance
@@ -111,3 +111,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Implemented and verified 2026-08-25. The org template
+ores.cpp.eventing-integration-test.nats_integration_test.org polls in
+bounded re-drive attempts: write, poll ~2.5s, re-drive on empty (a new
+bitemporal version row re-fires the AFTER INSERT notify trigger),
+bounded at 4 attempts. On exhaustion the test logs the observer's
+final snapshot (decoded entity, subject, size) so a genuinely broken
+chain is diagnosable. Regenerated all 85 eventing test files across
+iam/refdata/reporting/trading; no production code changed. Verified
+locally: 62/62 refdata eventing tests green (186 assertions); a cold
+chain right after a build recovered via re-drive (14.5s first run)
+where the old single-budget poll would have failed. The flake is
+cross-platform (Windows and macOS), so the template fix is the common
+strategy; the pattern is captured as memory
+eventing_integration_tests_traffic_light.

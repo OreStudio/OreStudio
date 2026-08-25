@@ -8,7 +8,7 @@
 #+filetags: :eventing-integration-test-windows-flake:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-eventing-integration-test-windows-flake
-#+pr:
+#+pr: 1993
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-25
@@ -102,7 +102,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1993][#1993]] | [codegen] Re-drive eventing test writes on notification timeout |
 
 * Review
 

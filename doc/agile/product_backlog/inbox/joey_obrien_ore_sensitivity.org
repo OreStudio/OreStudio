@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: ED9FD952-C4B1-4A1F-9BD6-B431CF1B5F82
+:END:
+#+title: Process Joey O'Brien's ORE sensitivity analysis post
+#+description: Joey O'Brien's worked example of ORE sensitivity analysis — zero-rate deltas converted to par-rate deltas via a Jacobian change of basis, verified by a manual market-quote bump — to be processed into the knowledge base.
+#+type: capture
+#+level: cross
+#+filetags: :ore:sensitivity:research:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Work through Joey O'Brien's blog post "Sensitivity Analysis in ORE"
+(https://obrienjoey.github.io/post/ore_sensitivity) and distil it
+into the knowledge base. The post walks the full sensitivity pipeline
+end to end on a single teaching trade (a 20-year EUR-ESTER OIS,
+10M notional): the zero-domain config (=simulation.xml= 10-tenor grid,
+=sensitivity.xml= absolute 1bp shifts on DiscountCurve/EUR and
+IndexCurve/EUR-ESTER), reading =sensitivity.csv= zero deltas, adding a
+=ParConversion= block (OIS/IRS/DEP/FRA/TBS/XBS/FXF instruments,
+=SingleCurve=true) that produces =parsensitivity.csv= plus
+=jacobi.csv=/=jacobi_inverse.csv=, the Jacobian change of basis
+($\nabla_z V = J^T \nabla_c V$, inverted as $(J^{-1})^T$), and
+verification: bumping the actual 15Y OIS market quote ±1bp and
+re-bootstrapping gives −7,195.31 by central difference vs −7,147.46
+by the Jacobian par delta (0.67% gap, linearisation vs full
+non-linear recalibration). The takeaway: par conversion is accurate
+enough for hedge instructions, VaR and stress testing, and it is
+built only from ORE's own MarketRisk examples. Relevant to ORE
+Studio's sensitivity reporting support.
+
+* Why
+
+ORE Studio does not yet expose sensitivity analysis; this post is a
+complete, verifiable worked example (config files, output tables,
+mathematics, independent verification) that would anchor a knowledge
+page and inform the product design. It is one of a series of ORE
+posts by the same author that are best processed together.
+
+* References
+
+- https://obrienjoey.github.io/post/ore_sensitivity — the post.
+- Related posts by the same author, to process in one go:
+  - https://obrienjoey.github.io/post/ore_sofr_bootstrap/ — bootstrapping a SOFR curve in ORE (already referenced by the
+    [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] story).
+  - https://obrienjoey.github.io/post/ore_model_validation/ — validating derivative pricing in ORE.
+  - https://obrienjoey.github.io/post/ore_trade_translation/ — from CSV to ORE: automating trade translation with Python.
+
+* See also
+
+- [[id:0BB7EC81-B2A1-4160-AA8D-A21E011F562D][IR curve bootstrapping + official curve republish]] — the sprint-25 story that already cites the author's SOFR bootstrapping post.
+- [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine]] — the external knowledge page on ORE itself.

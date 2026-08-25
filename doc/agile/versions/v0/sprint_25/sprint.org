@@ -9,7 +9,7 @@
 #+created: 2026-08-03
 #+start_date: 2026-08-03
 #+end_date: 2026-08-10
-#+updated: 2026-08-11
+#+updated: 2026-08-25
 #+todo: STARTED | DONE
 
 This page documents a [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]] (*Sprint 25*) of ORE Studio. It captures the sprint's mission, current status, and the stories that compose it. For the surrounding context — version goals, sprint order, and product identity — see [[id:E6FD30ED-963E-4705-B414-91BF471C23D0][Version 0]].
@@ -31,7 +31,7 @@ Resolve sprint drift on as many components as possible and progress IR curves wo
 | Waiting on     | Nothing.                               |
 | Next           | Pick the first story.                  |
 | Release Notes  | Added at end of sprint.                |
-| Last touched   | 2026-08-11                               |
+| Last touched   | 2026-08-25                               |
 
 * Stories
 
@@ -87,6 +87,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] | BACKLOG | | | We spend too long waiting for GitHub PR checks. Absorb their cost locally: classify each change and run only the checks it needs; review code locally as a skill with findings registered on the task; submit builds to CDash as experimental. GitHub keeps the continuous builds and nightlies. |
 | [[id:E62808C1-D692-4877-835D-3A512A9F4160][Adopt oresmd as the native market data identity across simulator, UIs, and shell]] | STARTED | 2026-08-11 | | Make oresmd the single native market data identifier across the market simulator, all Qt UIs, and ores.shell, abandoning ORE-shaped representations on persisted entities. First task: the analysis that decides fields-vs-URI storage. |
 | [[id:B00412FD-10E4-4B85-A6BF-2096076E0911][party/counterparty_identifier_generator tests assert stale version/change_reason_code]] | DONE | 2026-08-11 | 2026-08-11 | generators_tests.cpp still expects version==1/system.new for party_identifier and counterparty_identifier generators, but the generators produce version==0/system.test — same stale-expectation pattern already fixed for the contact_information generators. Investigation confirmed the fix already landed on main (90ad8693be, c113b851e, 123ca2bfa, d0458e500); closed as done elsewhere. |
+| [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] | BACKLOG | | | Follow-up to the eventing integration test flake hotfix: fix the production loss windows the tests now tolerate — the postgres listener reconnect path drops in-flight NOTIFYs, and NATS publish failures are swallowed by publish_entity_event and the event_bus. |
 
 ** Hotfixes
 

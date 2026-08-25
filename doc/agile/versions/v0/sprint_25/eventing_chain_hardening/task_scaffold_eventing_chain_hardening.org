@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: BD63D4C8-4AA2-4613-A63D-DC5969576469
+:END:
+#+title: Task: Scaffold story: Harden the eventing chain against transient notification loss
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :eventing_chain_hardening:sprint_25:v0:
+#+owner: marco
+#+branch: feature/eventing-chain-hardening
+#+pr: 1995
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Story scaffolding rides this task: the story and task documents, the
+sprint Stories wiring, and the scaffold PR.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] |
+| Now          |                                       |
+| Waiting on   |                                       |
+| Next         |                                       |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- Story and task documents exist under sprint_25/eventing_chain_hardening/.
+- The story is wired into the sprint's Stories table.
+- The implementation task is BACKLOG, ready for pickup.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1995][#1995]] | [agile] Scaffold story: eventing chain hardening |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Stale heartbeat fields (#+updated, Last touched) | sprint.org | Accept | Bumped both to 2026-08-25. |
+| 2 | Story row filed under Hotfixes | sprint.org | Accept | Moved to the Product table. |
+| 3 | Empty Out of scope section | story.org | Accept | Populated with the hotfix-delivered test re-drive scope. |
+| 4 | Story state mismatch (STARTED vs BACKLOG) | story.org | Accept | Set to BACKLOG; the sprint row was correct. |
+
+* Result
+
+Scaffolded 2026-08-25. story.org, task_scaffold_*.org, and
+task_implement_*.org were created via compass story new, off
+origin/main (post-hotfix merge c189321d18). Sprint 25's Stories table
+wired (BACKLOG); the implement task waits for pickup via compass task
+start implement_eventing_chain_hardening.

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: C9B8F903-27A4-456E-90E7-157507FFC024
+:END:
+#+title: Task: Implement eventing chain hardening
+#+description: Initial task for: Harden the eventing chain against transient notification loss
+#+type: task
+#+level: s1
+#+filetags: :eventing_chain_hardening:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The eventing chain (postgres_listener_service, postgres_event_source, event_bus, NATS publish) silently loses notifications in two windows: the listener's reconnect path (consume_input failure, 1-5s doubling backoff, re-LISTEN) drops NOTIFYs in flight during the outage, and NATS publish failures are caught and logged by publish_entity_event and the event_bus instead of surfacing. The eventing integration tests (hotfix story AE32C594-8E9B-4C58-B3D2-B93BB7C219E1) now tolerate these losses by re-driving writes; production has no such protection. This story hardens the chain so a notification is either delivered or its loss is reported.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- A listener reconnect (consume_input failure, backoff, re-LISTEN) no longer drops notifications in flight: the loss is recovered or surfaced.
+- NATS publish failures are visible: publish_entity_event and the event_bus no longer swallow them silently.
+- All 85 eventing integration tests stay green; no regression in the test family.
+- A dropped notification is diagnosable from logs without code changes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

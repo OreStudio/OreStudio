@@ -142,20 +142,34 @@ TEST_CASE("write_fx_vanilla_option_instrument_publishes_nats_changed_event", tag
     fx_vanilla_option_instrument_repository repo;
     repo.write(party_ctx, v);
 
-    // 4. Poll the observer's buffer for the notification. Generous
-    // timeout: trigger -> pg_notify -> 100ms listener poll -> event_bus
-    // -> NATS round trip, all real, no mocks.
+    // 4. Poll the observer's buffer for the notification. The chain --
+    // trigger -> pg_notify -> 100ms listener poll -> event_bus -> NATS
+    // round trip -- is real, no mocks. Under CI load the listener or
+    // NATS connection can hiccup once (reconnect backoff 1-5s) and the
+    // notification in flight is lost forever; a lost notification never
+    // arrives, so re-drive the write -- a new version row re-fires the
+    // notify trigger. Bounded: 4 attempts, each polling ~2.5s.
+    constexpr int max_attempts = 4;
+    constexpr int polls_per_attempt = 25;
     std::vector<ores::nats::message> received;
-    for (int i = 0; i < 50 && received.empty(); ++i) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        auto snap = observer.snapshot();
-        for (const auto& msg : snap) {
-            auto decoded =
-                ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(msg.data);
-            if (decoded && decoded->entity == "ores.trading.fx_vanilla_option_instrument") {
-                for (const auto& changed_id : decoded->entity_ids) {
-                    if (changed_id == id_str)
-                        received.push_back(msg);
+    for (int attempt = 1; attempt <= max_attempts && received.empty(); ++attempt) {
+        if (attempt > 1) {
+            BOOST_LOG_SEV(lg, warn) << "No matching notification yet; re-driving write"
+                                    << " (attempt " << attempt << " of " << max_attempts << ")";
+            repo.write(party_ctx, v);
+        }
+        for (int i = 0; i < polls_per_attempt && received.empty(); ++i) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            auto snap = observer.snapshot();
+            for (const auto& msg : snap) {
+                auto decoded =
+                    ores::nats::default_wire_codec().decode<ev::domain::entity_change_event>(
+                        msg.data);
+                if (decoded && decoded->entity == "ores.trading.fx_vanilla_option_instrument") {
+                    for (const auto& changed_id : decoded->entity_ids) {
+                        if (changed_id == id_str)
+                            received.push_back(msg);
+                    }
                 }
             }
         }
@@ -163,6 +177,17 @@ TEST_CASE("write_fx_vanilla_option_instrument_publishes_nats_changed_event", tag
 
     event_source.stop();
 
+    if (received.empty()) {
+        // Exhausted the budget: report what the observer did see so a
+        // genuinely broken chain is diagnosable, not a bare empty check.
+        const auto final_snapshot = observer.snapshot();
+        BOOST_LOG_SEV(lg, error) << "No notification for fx_vanilla_option_instrument " << id_str
+                                 << " after " << max_attempts << " writes; observer received "
+                                 << final_snapshot.size() << " message(s) in total";
+        for (const auto& msg : final_snapshot)
+            BOOST_LOG_SEV(lg, error) << "  unexpected message on subject '" << msg.subject << "', "
+                                     << msg.data.size() << " bytes";
+    }
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for fx_vanilla_option_instrument "

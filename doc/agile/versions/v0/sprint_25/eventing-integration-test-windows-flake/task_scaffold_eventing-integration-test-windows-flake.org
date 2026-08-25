@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 2E225865-46FE-45DF-A415-1FCCFAF6EA3C
+:END:
+#+title: Task: Scaffold story: Hotfix: eventing integration test flakes on Windows CI
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :eventing-integration-test-windows-flake:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/eventing-integration-test-windows-flake
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AE32C594-8E9B-4C58-B3D2-B93BB7C219E1][Hotfix: eventing integration test flakes on Windows CI]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Story scaffolding rides this task: the story and task documents, the
+sprint Hotfixes wiring, and the PR raising the fix.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:AE32C594-8E9B-4C58-B3D2-B93BB7C219E1][Hotfix: eventing integration test flakes on Windows CI]] |
+| Now          |                                       |
+| Waiting on   |                                       |
+| Next         |                                       |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- Story and task documents exist under sprint_25/eventing-integration-test-windows-flake/.
+- The story is wired into the sprint's Hotfixes table.
+- The implementation task is STARTED with a branch.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Scaffolded 2026-08-25. story.org and
+task_implement_eventing-integration-test-windows-flake.org were created
+via compass story new --kind hotfix; sprint 25's Hotfixes row moved
+BACKLOG -> STARTED; the implement task carries the
+feature/implement-eventing-integration-test-windows-flake branch and
+its PR. The scaffold documents rode the implementing commit, so this
+task closes at PR-raise time with no separate scaffold PR.

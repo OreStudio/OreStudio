@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: D1407AE0-A323-4EA4-963A-ADA206EAE299
+:END:
+#+title: Task: Implement Hotfix: eventing integration test flakes on Windows CI
+#+description: Initial task for: Hotfix: eventing integration test flakes on Windows CI
+#+type: task
+#+level: s1
+#+filetags: :eventing-integration-test-windows-flake:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-eventing-integration-test-windows-flake
+#+pr: 1993
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:AE32C594-8E9B-4C58-B3D2-B93BB7C219E1][Hotfix: eventing integration test flakes on Windows CI]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the eventing integration test resilient to transient
+infrastructure drops on Windows CI: re-drive the write on timeout
+(within a bounded overall budget) so a notification lost to a listener
+or NATS reconnect is recovered, and report received traffic on
+exhaustion. Change only the test; do not change the production chain.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:AE32C594-8E9B-4C58-B3D2-B93BB7C219E1][Hotfix: eventing integration test flakes on Windows CI]] |
+| Now          |                                       |
+| Waiting on   |                                       |
+| Next         |                                       |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- The test passes locally (Linux) with the retry path exercised.
+- The test still fails when the chain is genuinely broken.
+- No production code changes.
+
+* Plan
+
+Diagnosis (2026-08-25): the failing test is write_party_id_scheme_publishes_nats_changed_event;
+the read_latest_party_identifier_by_id line in the CI output was a
+passing test that ran immediately before. The CI log shows the failure
+~4.4 s after the test started — the full 50x100 ms poll budget burned.
+The same binary ran ~25 sibling eventing tests (before and after) green,
+so the loss is a per-test transient, not a systemic outage. The same
+template failed on day_count_fraction_type on 2026-08-22 (clang-release)
+and party_id_scheme on 2026-08-25 (clang-debug): the failing entity and
+job rotate — a timing/health flake, not an entity bug. The test was
+added 2026-08-09; Windows CI has been red or cancelled since, so "worked
+before on Windows" predates the test.
+
+Verified loss windows in the chain (no fix here, they are environment
+transients): the postgres listener's reconnect path (consume_input
+failure -> 1-5s doubling backoff -> re-LISTEN) loses notifications
+in flight during the outage; NATS publish failures are caught and logged
+silently by publish_entity_event and the event_bus. Both are invisible
+to the test — it only sees an empty poll.
+
+Fix: per-test re-drive. Write -> poll ~2.5 s; if no matching message,
+write again (a new bitemporal version row with the same code re-fires
+the AFTER INSERT trigger; the observer matches on entity_ids). Bound at
+4 attempts / ~10 s total. On exhaustion, log what the observer did
+receive (decoded entity-change events, any NATS messages) so a future
+failure names the loss.
+
+* Notes
+
+Result (2026-08-25): implemented and verified. The org template
+(ores.cpp.eventing-integration-test.nats_integration_test.org) now
+polls in bounded re-drive attempts: write, poll ~2.5s, re-drive on
+empty (a new bitemporal version row re-fires the AFTER INSERT notify
+trigger), bounded at 4 attempts; on exhaustion it logs the observer's
+final snapshot so a genuinely broken chain is diagnosable. Regenerated
+all 85 eventing test files across iam/refdata/reporting/trading from
+the template. Verified on Linux: 62/62 refdata eventing tests green
+(186 assertions). First run after a cold build took 14.5s and recovered
+via re-drive -- the exact transient the fix targets; re-runs take
+0.3-1.7s. macOS failures (instrument_code, counterparty_contact_information,
+day_count_fraction_type) confirmed the flake is cross-platform; pattern
+captured as project memory eventing_integration_tests_traffic_light.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1993][#1993]] | [codegen] Re-drive eventing test writes on notification timeout |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Retry budget doc mismatch: "~20 s total" vs actual ~10 s | task doc * Plan | FIXED | Raised by both bot reviews; Plan corrected to ~10 s |
+| 2 | Worst-case per-test wall time ~10 s (2x old budget) across 85 tests | poll loop in template | NOT CHANGED | Informational; watch CI suite duration after merge |
+| 3 | Production silent-loss path (listener reconnect, NATS publish) | event bus / listener | NOT CHANGED | Deliberate scope: change only the test; candidate follow-up story |
+
+* Result
+
+Implemented and verified 2026-08-25. The org template
+ores.cpp.eventing-integration-test.nats_integration_test.org polls in
+bounded re-drive attempts: write, poll ~2.5s, re-drive on empty (a new
+bitemporal version row re-fires the AFTER INSERT notify trigger),
+bounded at 4 attempts. On exhaustion the test logs the observer's
+final snapshot (decoded entity, subject, size) so a genuinely broken
+chain is diagnosable. Regenerated all 85 eventing test files across
+iam/refdata/reporting/trading; no production code changed. Verified
+locally: 62/62 refdata eventing tests green (186 assertions); a cold
+chain right after a build recovered via re-drive (14.5s first run)
+where the old single-budget poll would have failed. The flake is
+cross-platform (Windows and macOS), so the template fix is the common
+strategy; the pattern is captured as memory
+eventing_integration_tests_traffic_light.

@@ -8,7 +8,7 @@
 #+level: cross
 #+filetags: :llm:memory:reference:bearings:
 #+created: 2026-05-28
-#+updated: 2026-06-04
+#+updated: 2026-08-10
 
 The =compass.sh= wrapper lives at [[proj:projects/ores.compass/compass.sh][=./projects/ores.compass/compass.sh=]].
 Core commands:
@@ -22,6 +22,9 @@ Core commands:
 
 - *Show* (read a doc by title or UUID prefix):
   =compass.sh show "How do I create a memory?"=
+  Use =--full= to see the complete body contents; without it, show
+  prints only metadata and links:
+  =compass.sh show <id> --full=
 
 - *Where* (current sprint/story/task context):
   =compass.sh where=

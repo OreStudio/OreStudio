@@ -8,7 +8,7 @@
 #+filetags: :fomc-dated-ois-short-end:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fomc-bootstrap-segment
-#+pr: 1953
+#+pr: 1994
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
@@ -70,6 +70,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1994][#1994]] | [agile] Close FOMC bootstrap segment task and story |
 | [[https://github.com/OreStudio/OreStudio/pull/1953][#1953]] | [marketdata,refdata,synthetic] FOMC bootstrap segment: SPOT-1F..8F-1Y pillars |
 
 * Review

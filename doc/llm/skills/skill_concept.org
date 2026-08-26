@@ -1,0 +1,206 @@
+:PROPERTIES:
+:ID: 87D41A08-0B37-41CE-8483-B59B36BA87FA
+:END:
+#+title: The skill in the compass framework
+#+description: The received notion of a skill, the three respects in which it is too weak to build on, and the tightened definition this framework adopts: one action, one typed target, one level, one plane.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:definition:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+* Summary
+
+This page fixes what the word *skill* means in this framework. It states
+the received notion, gives three respects in which that notion is too
+weak to build on, and sets out the tightened definition that the rest of
+the framework depends on.
+
+* Detail
+
+** The received notion
+
+[[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records the definition the format supplies. A skill is a
+directory holding a =SKILL.md= file. Its frontmatter carries a name and
+a description. Its body holds instructions the assistant follows.
+
+The project [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] adds one distinction. A skill is /task-shaped/: it
+is invoked in one session to perform a unit of work. A [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] is
+/role-shaped/: it describes what someone does and lists the skills that
+role draws on.
+
+The literature reaches a similar verdict on the received notion. Liu,
+Ming, Joty and Zhao find the prevailing representation "largely
+/advisory/", because "a textual skill can express what the agent should
+do in principle, but not precisely /when/ it should activate inside the
+policy loop, /how/ it should alter the next decision". Their answer is
+to give a skill an explicit activation predicate. [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records
+the argument in full.
+
+Both definitions state what a skill /is/. Neither states what it acts
+/upon/, how large it may be, or whether it must be executable. Three
+problems follow, and each is a problem the received notion cannot solve
+from within. The first of the three is the same deficiency the
+literature names, reached from a different direction: a skill with no
+declared object has no condition under which it fires.
+
+** Three insufficiencies
+
+*** The object is unnamed
+
+The received notion defines a skill by its capability. It does not say
+what artefact the capability applies to. This is the deficiency the
+literature names as advisory: without a declared object there is no
+predicate that decides when the skill applies.
+
+An agent that holds an artefact therefore cannot ask what may be done
+with it. It must already know the name of the skill it wants. Selection
+is by recall rather than by lookup, and recall fails as the collection
+grows.
+
+The consequence compounds. A collection that does not register skills
+against an artefact type must write out one skill for each pairing of
+verb and type by hand. The collection then grows as the product of the
+two, and every pairing nobody writes is a capability that cannot be
+found.
+
+*** Execution is assumed
+
+The received notion calls a skill an executable capability. That
+excludes two kinds of material a working collection needs.
+
+The first is a rule an agent should cite when making a choice, rather
+than run. Such a rule has no steps and produces no artefact, so it fails
+the definition, yet the published collections all carry them.
+
+The second is an approach to a class of work rather than to an artefact.
+It sequences other skills and issues no command of its own.
+
+A definition that admits only executable capabilities gives neither a
+home. In practice they are then either written as pseudo-procedures, or
+not written at all.
+
+*** Scope is unbounded
+
+The received notion fixes no size. A skill may be two lines or several
+hundred, and nothing in the definition says which is correct.
+
+Two skills may therefore overlap without either being wrong. Nothing
+detects the overlap, because nothing states what a single skill is
+supposed to cover.
+
+** The tightened definition
+
+In this framework a skill is *one action, applied to one typed target,
+at a stated level, in exactly one plane*.
+
+Each clause repairs one insufficiency, and the fourth binds them.
+
+- *One action.* The skill performs a single operation. Two operations
+  are two skills. This bounds scope.
+- *On one typed target.* The skill declares the artefact type it applies
+  to. This makes the object explicit.
+- *At a stated level.* The skill declares the [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][cybernetic level]] it serves.
+  This decides which sessions see it by default.
+- *In exactly one plane.* The skill declares its [[id:F5CB5A45-6557-410B-9E4F-542957561A16][plane]], which fixes the
+  relation an agent bears to it. This admits material that is cited
+  rather than run.
+
+** Consequences
+
+*** Dispatch becomes computable
+
+Because the target type is declared, the operations that apply to a
+target can be computed from its type rather than remembered. The
+collection no longer grows as the product of verbs and types, because a
+verb is registered once against a type and inherited by every target of
+that type. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] sets out the mechanism.
+
+*** Judgement gains a place
+
+Because the plane is declared, and because one plane holds material that
+is cited rather than run, a rule of judgement can be written as a skill
+without pretending to be a procedure. This is the one respect in which
+this framework relaxes the received notion rather than tightening it,
+and the relaxation is confined to that plane.
+
+*** Placement becomes a procedure
+
+Because every skill declares an action, a target type, a level and a
+plane, deciding where a new artefact belongs is a matter of answering
+four questions rather than exercising taste. [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] carries the
+procedure.
+
+*** Overlap becomes detectable
+
+Because a skill covers one action on one type, two skills covering the
+same pairing are visibly redundant. The pairing is the key, and a key
+admits one entry.
+
+** Terminology
+
+The framework introduces terms of its own. The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] is the register
+of record; this table fixes usage within the framework and names the
+words it retires.
+
+One word per concept.
+
+#+ATTR_HTML: :class hug-leading
+| Concept                          | Word      | Not                                  |
+|----------------------------------+-----------+--------------------------------------|
+| A unit of work an agent executes | task      | ticket, issue, unit, slice           |
+| A body of related tasks          | story     | epic, spec, map                      |
+| A recorded idea, not yet work    | capture   | backlog item, inbox item             |
+| The approach to a kind of work   | method    | playbook, flow                       |
+| The sticky posture for a session | mode      | stance skill, style, persona         |
+| A rule that is cited, not run    | principle | rule, guideline                      |
+| A durable fact about the domain  | knowledge | research note, doc, ADR              |
+| Intended behaviour, checkable    | spec      | never used for a story plan          |
+| The role a session adopts        | function  | persona, agent type, role            |
+| Any LLM process doing work       | agent     | bot, assistant                       |
+| The agent a human talks to       | session   | main agent, parent, the LLM          |
+| An agent spawned by another      | delegate  | subagent, worker, child agent        |
+| The typed thing acted upon       | target    | object, candidate, entity            |
+| The operation applied to it      | action    | command, verb, skill                 |
+
+Three traps. *Spec* means an Allium specification and nothing else; a
+story's plan is a *plan*. *Persona* means a Council member and nothing
+else; a session's role is a *function*. *Agent* is the general word for
+any LLM process, so it never names a role — the S1 level is called
+"Agent" but it is a function, and a session or a delegate adopts it.
+
+** Why the catalogue is arranged as it is
+
+A catalogue of any size presents its user with a selection problem, and
+a catalogue that grows presents a worsening one. Three failures compound
+in a flat list of skills.
+
+The first is combinatorial. A catalogue that writes out one skill per
+pairing of verb and artefact type grows as the product of the two, so
+adding an artefact type obliges someone to write a row of new skills by
+hand, and every cell nobody writes is a capability the agent cannot
+find. The second is the absence of dispatch: an agent holding an
+identifier, a branch name or a failing test has no way to ask what may
+be done with it, and must already know a skill's name to use it. The
+third is that a catalogue of actions has nowhere to put judgement, so
+rules an agent should cite rather than run, and approaches to a class of
+work rather than to an artefact, simply do not get written.
+
+The three classifications answer these in order. Registering verbs
+against types removes the product. Computing the applicable verbs
+supplies the dispatch. Sorting artefacts by the agent's relation to them
+makes room for the kinds that are cited rather than run.
+
+* See also
+
+- [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] — the received notion this page tightens.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the register of record for the terms above.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory of what exists.
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — how a skill is named and attributed.

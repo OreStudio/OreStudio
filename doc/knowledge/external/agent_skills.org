@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8
 :END:
-#+title: Agent skills
-#+description: The skill as a construct in agent tooling: the SKILL.md format, its frontmatter, the invocation distinction, progressive disclosure, and how published collections organise their skills. Reference material about a format ORE Studio does not own.
+#+title: Agent Skills
+#+description: The skill as a construct in agent tooling: its purpose, the structure the format specifies, empirical observations of how published collections use it, and the boundary between a skill and a tool. Reference material about a format ORE Studio does not own.
 #+type: knowledge
 #+level: cross
 #+filetags: :external:llm:claude_code:skills:reference:
@@ -11,57 +11,118 @@
 
 * Summary
 
-A *skill* in agent tooling is a document that an assistant loads to perform a
-kind of work. The assistant is a [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][LLM]] driving a tool loop, and the properties of
-that substrate, given externally on its own page, explain why the construct
-exists: a model recalls its training unreliably and holds only what its context
-window carries, so reusable know-how must be supplied as text it can read.
-Anthropic defines the format for Claude Code: a directory holding a =SKILL.md=
-file, whose frontmatter carries a name and a description, and whose body holds
-the instructions the assistant follows. Other agent tools read the same format.
+A *skill* in agent tooling is a document that an assistant loads in order to
+perform a kind of work. Anthropic specifies the format used by Claude Code: a
+directory containing a =SKILL.md= file, whose frontmatter carries a name and a
+description and whose body holds the instructions the assistant follows. Other
+agent tools read the same format.
 
-This page records the received notion and the conventions that have grown around
-it. ORE Studio does not own the format. For the narrower definition this project
-works to, see [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]].
+This page separates two things that are easily conflated. The first is the
+*specification*: what the format requires, published informally as prose
+documentation rather than as a grammar. The second is a set of *empirical
+observations* about how published collections use it, none of which the
+specification requires. ORE Studio owns neither, and the page states no project
+policy. For the narrower definition this project adopts, and for the academic
+and practitioner literature on the construct, see [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill
+Framework]].
 
 * Detail
 
-** The format
+** Purpose
+
+The construct exists because of two properties of the underlying [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][LLM]]. A model
+recalls its training imperfectly and cannot distinguish a confident recollection
+from an absent one. It also holds only what its context window carries, and
+retains nothing between sessions.
+
+Procedural knowledge that an assistant must apply reliably therefore cannot be
+left to recall. It must be supplied as text the model reads at the moment it is
+needed. A skill is that text, together with the conditions under which it should
+be read.
+
+** The Specification
 
 A skill is a directory. It contains a =SKILL.md= file and any supporting files
-that file refers to. The frontmatter carries two required fields. The =name=
-field gives the identifier a user types. The =description= field states what the
-skill does and when to reach for it.
+to which that file refers.
 
-The body holds the instructions. Its length is not fixed by the format, and
-published skills range from two lines to several hundred.
+The frontmatter carries two required fields. The =name= field supplies the
+identifier a user types. The =description= field states what the skill does and
+the circumstances in which it applies. A =disable-model-invocation= flag
+restricts the skill to invocation by a person.
 
-** Invocation
+The body holds the instructions. The specification fixes no length, imposes no
+internal structure, and requires no relationship between one skill and another.
 
-Published collections separate skills by who may invoke them. A *user-invoked*
-skill runs only when a person types its name. A *model-invoked* skill may also
-be reached by the assistant when the task matches its description. Claude Code
-expresses the first with a =disable-model-invocation= flag.
+That permissiveness is what makes the next section necessary.
 
-The distinction matters because the description does different work in each
-case. For a model-invoked skill the description is the trigger, and its wording
-decides how reliably the skill fires. For a user-invoked skill the description
-is documentation.
+** Empirical Observations
 
-** Progressive disclosure
+In this section we identify several approaches found in published skill
+collections, none of which the specification requires. The specification defines
+a container and leaves its contents to the author, so how a skill is written
+cannot be derived from it and must instead be observed.
 
-A skill body sits in the assistant's context whenever the skill runs. Long
-bodies therefore cost attention. The common answer is to move material into
-sibling files and refer to them from the body, so the assistant loads them only
-when it needs them.
+Our observations are drawn from Claude Code's own documentation and from three
+collections: [[https://github.com/cursor/plugins/tree/main/pstack][pstack]], the [[https://github.com/mattpocock/skills][Matt Pocock skills]], and the [[https://github.com/0xnyk/council-of-high-intelligence][Council of High
+Intelligence]]. We examine three axes on which the collections make choices: how
+they organise a collection by invocation, how they manage the cost a skill body
+imposes on the context window, and what length they settle on. The sample is
+small and the field is a few years old, so we report regularities rather than
+established practice.
 
-The technique has a cost of its own. Material behind a reference is reached only
-if the referring sentence is worded well enough to trigger the read.
+*** Invocation as an Organising Axis
+
+The specification supplies the =disable-model-invocation= flag. Practitioners
+have made a design principle of it, dividing a collection into skills a person
+invokes and skills the assistant may select for itself.
+
+The division determines what the description does. For a skill the assistant may
+select, the description is the activation condition, and its wording governs the
+reliability with which the skill fires. Where invocation is restricted to a
+person, the description serves only as documentation.
+
+*** Progressive Disclosure
+
+A skill body occupies the assistant's context window for as long as the skill is
+active, and competes there with everything else the assistant must attend to.
+The established response is to relocate material into sibling files and refer to
+them from the body, so that the assistant loads each only when the work requires
+it. The specification permits the supporting files; it does not prescribe this
+use of them.
+
+The technique introduces a dependency. Material held behind a reference is
+retrieved only when the referring sentence is phrased precisely enough to prompt
+the retrieval, so a poorly phrased reference silently withholds the material it
+names.
+
+*** Length
+
+Published skills in the sample range from a few lines to several hundred. The
+specification constrains neither bound, and the sample shows no convergence.
+
+** Skills and Tools
+
+A skill and a *tool* are distinct constructs, and agent frameworks provide both.
+
+A tool is a callable capability. The assistant emits a structured request, a
+caller executes it, and the result returns into the context. A tool extends what
+the assistant can do.
+
+A skill is text the assistant reads. It changes how the assistant proceeds, and
+what it does with the tools already available. A skill confers no capability
+that the assistant lacked.
 
 * See also
 
-- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] — the narrower definition this project
-  works to.
+- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] — the narrower definition this project
+  adopts, and the literature on the construct.
 - [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the substrate, defined externally.
+- [[https://github.com/cursor/plugins/tree/main/pstack][pstack]] — a published collection, which divides its skills into principles,
+  playbooks and workflow tools, and routes work to them through a sticky mode.
+- [[https://github.com/mattpocock/skills][Matt Pocock skills]] — a published collection organised on the invocation axis,
+  where user-invoked skills orchestrate and model-invoked skills hold the
+  reusable discipline.
+- [[https://github.com/0xnyk/council-of-high-intelligence][Council of High Intelligence]] — a published collection of one coordinating
+  skill and eighteen sub-agents, each supplying a distinct analytical lens.
 - [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the tool that loads these skills.
 - [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External]] — the reference cluster this page belongs to.

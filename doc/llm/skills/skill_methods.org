@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: E8311826-9900-4932-AFFB-A8AF663414DF
+:END:
+#+title: Methods and the mode
+#+description: How work is driven from an unverified beginning to a verified end: the catalogue of methods, the phase discipline they share, and the sticky mode that routes work to them.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:methods:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+A method carries a piece of work from an unverified beginning to a
+verified end. This page holds the catalogue of methods, the discipline
+their phases share, and the mode that routes work to them.
+
+The mode is a convenience over methods rather than a precondition for
+them. A method is invocable directly, and so is an action; the entry
+points are set out in [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
+
+* Detail
+
+
+#+caption: =compass-helm= from a request to verified work.
+[[proj:doc/llm/skills/skill_helm_flow.png]]
+
+=compass-helm= is the sticky entry point. Entered once, it stays on
+across turns, applying itself when a method matches and staying out of
+the way otherwise.
+
+1. Declares the session's function, which attenuates the catalogue.
+2. Matches the request to a method and copies that method's phases into
+   the todo list *verbatim*, before any task-specific reasoning. A phase
+   deliberately skipped stays in the list with a stated reason.
+3. Reads the principles index at task start.
+4. Routes to actions and recipes as the phases fire, and to deliberation
+   at a fork the evidence cannot settle.
+5. Spawns delegates as named *functions*, never as generic agents, so
+   the discipline survives the delegation boundary. The mode and its
+   delegate function share one definition; there is no second place for
+   the rules to drift.
+
+Step 2 carries the value. The failure it guards against is an agent
+reading a method and then writing a bespoke plan that quietly drops the
+method's named phases.
+
+** How to address it
+
+#+begin_example
+compass-helm <what you observed, or what you want>
+Done means <something the agent can run or inspect>.
+Keep <the behaviour that must not change>.
+#+end_example
+
+The finish condition names a *result*, not an amount of effort: "zero
+old callers and every parser fixture passes", never "work on this for a
+while".
+
+Do not list the skills you want run. State the goal and the constraints;
+the method owns the sequence. An agent handed both a goal and a
+step-list follows the step-list and drops the method's gates.
+
+** When not to use it
+
+The machinery has a cost, and a mode that fires on everything trains
+people to route around it. Moving a date, fixing a sentence, changing
+one configuration value, answering a question — none of these need a
+declared function, a matched method, a grounding phase and a decision
+trail. Reach for the plain action skills.
+
+The mode earns its cost when a plausible diff is not enough: work that
+must be reproduced before it is fixed, a design decision expensive to
+reverse, a run long enough that a human reviews it after the fact, or a
+domain the agent has not grounded itself in.
+
+
+** How a session runs
+
+
+The pages above are reference. This is the order in which they are
+reached during a piece of work, and it doubles as a reading order for
+someone meeting the framework for the first time.
+
+A session opens with =agile-find-bearings= and declares its *function*,
+which fixes the level and attenuates the catalogue ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Agents]]). It picks
+up work with =agile-find-heading= and =agile-start-task=, inheriting the
+sprint mission and story goal as constraints from above.
+
+It then enters =compass-helm=, which matches the work to a *method* and
+copies that method's phases in (the method plane). The method opens by
+grounding itself in the domain, resolving each concept it touches to a
+knowledge document and treating an unresolved one as the first task
+([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Planes]]). It states a finish condition, backed by a *specification*
+where behaviour is involved.
+
+The method's phases cite *principles* for judgement calls and call
+*actions* for anything touching an artefact, reaching for a *recipe*
+whenever a command is needed ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Planes]]). Where an artefact turns out to
+be generated, the edit goes to its model or template rather than its
+output ([[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]). At a fork the evidence cannot settle,
+the method convenes *deliberation* and records the verdict on the task.
+
+Verification climbs the ladder as far as the work requires, routing
+first to the checkers that do not share the session model's priors
+([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]). The session closes with =agile-close-task= and
+=pr-raise=, and what generalises is routed into a memory, a principle or
+a skill edit, with approval rather than automatically.
+
+* See also
+
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this architecture governs.
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the closed registers.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the function axis.
+- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — variety, feedback and regulation.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — the role-shaped counterpart to skills.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — where the terminology is governed.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline this page follows as a structure note.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the same architecture, built for code.
+
+** Inventory
+
+# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
+Every method, the shape of work it covers, and the verification rungs it must climb. Populated when the method plane lands.
+# END generated inventory

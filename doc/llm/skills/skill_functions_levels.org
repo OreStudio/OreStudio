@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9
+:END:
+#+title: Functions and levels
+#+description: Who is acting: the actor vocabulary, the function a session or delegate adopts, the cybernetic level that attenuates what each sees, and the difference between advisory and binding attenuation.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:functions:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+This page concerns identity and authority: what an actor is, what role
+it adopts, and what that role permits it to see and to change. It holds
+whether or not anything is running.
+
+For how an agent is configured, isolated and left to run, see
+[[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]].
+
+* Detail
+
+** The words: agent, session, delegate
+
+Everyone says "agent", and it is overloaded three ways in this project.
+The ladder, from general to specific:
+
+#+ATTR_HTML: :class hug-leading
+| Word         | Means                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| *Agent*      | Any LLM process doing work. The general word; use it when the distinction does not matter |
+| *Session*    | The agent a human is talking to. It has a conversation and an operator |
+| *Delegate*   | An agent spawned by another agent to do a bounded piece of work and report back. It has no operator, only a brief |
+| *Function*   | The /role/ either one adopts. Not a process at all                    |
+
+A delegate is what the harness and most other tooling call a
+*subagent*. We say delegate because the relationship is what matters
+here — it was given a brief by something that stays responsible for the
+result — and because "sub" implies a hierarchy of importance rather than
+of scope. Read the two as synonyms when reading anyone else's
+documentation.
+
+The trap worth naming: *the S1 level is called "Agent", and it is a
+function, not a process.* "The S1 Agent" is a role a session or a
+delegate adopts, in the same way "S3* Auditor" is. When it matters,
+write "a session operating at S1" rather than "the S1 agent".
+
+The owning rule: a session owns its delegates' work. A delegate's
+summary of what it did is not evidence; the artefact it produced is.
+Review the diff, not the report.
+
+
+
+
+A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][function]] once, at the start. That sets the
+cybernetic level, and the level selects the slice of the catalogue in
+scope by default.
+
+#+ATTR_HTML: :class hug-leading
+| Level | Function         | Horizon    | Sees                                                       |
+|-------+------------------+------------+------------------------------------------------------------|
+| S1    | Agent            | Hours      | Action plane in full, methods, stance, specification        |
+| S2    | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
+| S3    | Sprint Planner   | Weeks      | Sprint and backlog actions, planning and review methods     |
+| S3*   | Auditor          | Continuous | Read-only and audit actions only                            |
+| S4    | Version Planner  | Months     | Version and release actions, strategy deliberation          |
+| S5    | Identity Steward | Indefinite | Identity and backlog-fit actions, deliberation              |
+
+Attenuation has two strengths, and they must not be confused.
+
+- *Advisory*, for S1, S2, S3, S4 and S5. Default visibility only.
+  Nothing is forbidden and an agent may reach outside its level by
+  saying so. The point is ergonomics: a default small enough to choose
+  from well.
+- *Binding*, for S3*. The auditor may not mutate a work item. An audit
+  channel that can be talked into editing what it observes is not an
+  audit channel. This row is enforced.
+
+Constraint flows down and signal flows up, unchanged from the [[id:926B916E-A57E-498E-99AB-720B583C0362][levels
+model]]: a method at S1 inherits the story goal from S2, which inherited
+the sprint mission from S3; a task result becomes a story result becomes
+a sprint retrospective.
+
+** Delegates adopt functions too
+
+The levels above are functions a *session* adopts. The same artefact
+serves a second purpose: a function is also what a *delegate* adopts
+when a session spawns one.
+
+This matters because delegation is where discipline is most easily lost.
+A session that has declared its function, loaded the principles and
+copied a method's phases in can hand work to a delegate that has done
+none of those things, and the delegate will produce something plausible
+that satisfies none of the gates. The fix is structural: *a delegate is
+spawned as a named function, never as a generic agent*. If a spawn names
+no function, the discipline stops at the boundary.
+
+A function definition therefore states what the delegate must read
+before it begins, and what it may do.
+
+*** Read-only functions bind
+
+The advisory-versus-binding distinction that separates S3* from the
+other levels applies to delegates too, and here it is easier to enforce.
+
+A reviewing function is *unable* to write, not asked not to. A comment
+reviewer touches comments and names refactor targets; it never writes
+application code. An auditor reports; it never mutates the thing it
+observes. Stating the boundary in the function definition and enforcing
+it at spawn time is worth more than any instruction inside the prompt,
+because a delegate under pressure to finish will reinterpret an
+instruction and cannot reinterpret a capability it does not have.
+
+*** A finding may name a structural fix
+
+A read-only function that cannot change the code is not thereby limited
+to complaining. It can name the *structural* change that would remove
+the problem, and that naming is often the more valuable output.
+
+The pattern worth generalising: when a reviewer finds prose explaining a
+surprise in our own code, the prose is the symptom. The comment goes,
+and the reviewer flags the exact symbol for the rename, extraction,
+retype or rearchitecture that would make the behaviour obvious without
+prose. Only surprises forced by something outside our control — a
+platform, a vendor, a protocol we cannot reshape — earn a comment
+instead of a fix.
+
+That is the =encode-lessons-in-structure= principle made operational: a
+finding that ends in a structural flag outlives a finding that ends in a
+deletion.
+
+
+** Inventory
+
+# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
+Every function, its level, the planes it sees, and whether it may mutate. Populated when levels are assigned.
+# END generated inventory
+
+* See also
+
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the model this axis applies.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — the role-shaped counterpart to skills.

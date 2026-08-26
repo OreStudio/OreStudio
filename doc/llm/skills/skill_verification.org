@@ -1,0 +1,235 @@
+:PROPERTIES:
+:ID: DEE49C55-1626-470D-BB0F-D58A11D35769
+:END:
+#+title: Verification and evaluation
+#+description: How we establish that work is correct: the verification ladder from generated structure to interface, the checkers that do not share the session model priors, and how a change to a skill is evaluated.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:verification:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+Verification establishes whether a claim about the work is true. This
+page holds the ladder that governs how far a piece of work must climb,
+the checkers each rung uses, and the separate question of how a change
+to a skill is itself evaluated.
+
+* Detail
+
+
+Verification is not a phase at the end. It is a ladder, and each rung
+has a different job. Work climbs only as far as it needs to, but it
+never skips a rung below where it stops.
+
+#+ATTR_HTML: :class hug-leading
+| Rung | Question                                        | Mechanism                    | When |
+|------+-------------------------------------------------+------------------------------+------|
+| 0    | Is the structure generated rather than written? | ores.codegen                 | Always |
+| 1    | Did only the expected things change?            | The drift checks             | Always, after generating |
+| 2    | Does the behaviour do what it should?           | Catch2 unit and integration tests | Feature work |
+| 3    | Does the system do what the task claimed?       | A scripted =ores.shell= scenario | Every task and story |
+| 4    | Does the interface do what the system does?     | Qt verification              | Only when Qt is affected |
+
+** Rung 0: generate the structure, or extend the generator
+
+Anything structural is generated. If the generator cannot express it,
+that is a gap in the generator, not a licence to hand-write around it.
+
+The discipline when the gap appears mid-task is a *stack*, and it uses
+mechanisms we already have rather than new ones:
+
+1. File the gap as a *discovered task*.
+2. Set the current task =BLOCKED= with =#+blocked_on:= naming it.
+3. Take the discovered task to =DONE= with its own pull request.
+4. Resume the original task, which now regenerates cleanly.
+
+The discovered task gets its own branch and its own pull request. It is
+tempting to fix the generator inside the current branch and carry on,
+and that is wrong twice over: it produces a diff a reviewer cannot
+separate into "the feature" and "the generator change", and it hides a
+generator improvement that every other component wants inside a feature
+nobody else is reading.
+
+A hand-written workaround for a generator gap is the failure this rung
+exists to prevent. See [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
+
+** Rung 1: prove only the expected things changed
+
+Regeneration is only trustworthy if its blast radius is known. After
+generating, verify that the diff contains exactly what the change should
+have produced and nothing else.
+
+Drift takes the same stack discipline as a generator gap. Drift found
+mid-task is a discovered task, the current task blocks on it, the drift
+is resolved on its own branch, and only then does the original resume.
+Carrying pre-existing drift forward inside a feature branch is how a
+component's drift backlog becomes invisible: it gets absorbed, one
+feature at a time, into diffs nobody reviews as drift.
+
+** Rung 2: unit tests, which may also be integration tests
+
+Feature work has tests. The unit-versus-integration distinction is not
+load-bearing here: what matters is that a test fails before the change
+and passes after, and that it exercises the real path rather than a
+mock of it. A test that would pass without the feature is not a test.
+
+** Rung 3: system behaviour through =ores.shell=
+
+Every task and story is verified by a *scripted shell scenario* — the
+system driven through its real interface, non-interactively, with the
+script committed so a reviewer can re-run it.
+
+This rung is where the architecture's claim about independent checkers
+becomes concrete. The shell does not share the session model's priors,
+does not care how convincing the reasoning was, and produces the same
+verdict for a reviewer as for the agent. It is worth more than any
+amount of self-report.
+
+A scenario that cannot be scripted is a signal, not an exemption: it
+usually means the system has no non-interactive path to the behaviour,
+which is a gap worth closing on its own terms.
+
+** Rung 4: Qt
+
+Only when the work affects the Qt client. The rule that governs the
+choice of mechanism:
+
+*Assert on state, not on pixels.* An agent needs a predicate it can
+evaluate. Widget state, model contents and signal emissions are
+predicates; a screenshot is not. Screenshots are *evidence for a human*
+and belong in the record, but they do not verify anything on their own,
+because an agent comparing images either accepts noise or rejects on it.
+
+That gives three layers, in preference order:
+
+1. *Widget-level tests* under Qt's own test framework, running with the
+   offscreen platform so they need no display and run in CI beside the
+   other tests. In-process, so they assert on state directly.
+2. *A scripted control surface inside the application*, the Qt sibling
+   of =ores.shell -f=: a driver that opens windows, invokes actions and
+   reports state, driven by a committed script. The application already
+   captures its own screenshots in-process, so the evidence trail comes
+   free.
+3. *External screen automation* only for pixel-parity work — manual
+   screenshots and visual comparison — where a human reviews the output
+   anyway.
+
+External automation is deliberately last. It is brittle against layout,
+theme and timing; it needs a real display; it fails opaquely; and it can
+only see pixels, so it cannot answer the question an agent actually has.
+
+* Evaluating skills
+
+A skill is a prompt, so changing one changes agent behaviour in a way
+reading the diff cannot show.
+
+The protocol is pstack's, and it is good. The one part that does not
+port is the judge, for the reason that recurs throughout this document:
+it wants a judge on a different model family and we have one family.
+
+** The observer effect is the central problem
+
+An agent that knows it is being evaluated behaves differently. That
+single fact drives the whole design, and it means blinding is not a
+nicety — it is the experiment.
+
+Blinding, concretely:
+
+- No occurrence of /eval/, /test/, /judge/, /rubric/, /score/,
+  /compare/, /benchmark/ or /candidate/ in any directory, file or
+  prompt the candidate sees.
+- The prompt reads as an organic user request. State the goal, never the
+  meta: "build me a small import tool", not "show me how you follow the
+  method chain".
+- *No chain-eliciting cues.* Do not ask a candidate which skills or
+  principles it applied. That question inflates the very behaviour being
+  measured.
+- Sanitised names. Project-shaped directory names a user might pick,
+  never =candidate-1=.
+- The candidate is not told other candidates exist.
+
+Blinding matters *more* to us than to pstack, not less. pstack can
+correct a biased judge with a second model family. We cannot, so
+preventing the candidate from performing for the grader is the only
+defence we have left on that side.
+
+** Grade from transcripts, not from self-report
+
+The sharpest rule in the protocol, and one this architecture needs
+independently of any eval:
+
+#+begin_quote
+Citing a principle is not reading its leaf skill, and reading it is not
+applying it.
+#+end_quote
+
+Grade chain-following from which files the agent *actually opened*, read
+from its transcript, plus the shape of the work it produced. Never from
+its own account of what it did.
+
+This closes a hole elsewhere in this document. Methods cite principles
+and the mode reads a principles index, but nothing so far checked
+whether any of that was read. Transcript inspection is that check, and
+it is mechanical rather than a judgement.
+
+** Where we diverge: mechanical verdicts instead of a cross-model judge
+
+pstack spawns candidates across model families and a blinded judge on a
+different family again. We have one family, so a judge of ours scoring
+our own output measures agreement, not quality.
+
+Our substitute is that *our work already carries mechanical verdicts*.
+It compiles or it does not; the drift check is clean or it is not; the
+shell scenario passes or it does not. So the fixture for an eval is a
+closed task whose outcome is recorded: re-run it in a throwaway worktree
+under the changed skill and compare against what actually landed, graded
+by the independent checkers.
+
+The composite we run:
+
+#+ATTR_HTML: :class hug-leading
+| Step                         | Source   | Note                                        |
+|------------------------------+----------+---------------------------------------------|
+| Blinded, organic prompt      | pstack   | Ports unchanged, and matters more here      |
+| Sanitised environments       | pstack   | Ports unchanged                             |
+| Chain check from transcripts | pstack   | Ports unchanged; mechanical                 |
+| Cross-model candidates       | pstack   | *Does not port.* One family                 |
+| Cross-model blinded judge    | pstack   | *Does not port.* Replaced below             |
+| Mechanical verdict on a closed task | ours | Compilation, tests, drift, shell scenario |
+
+Where no mechanical verdict exists, say so. A judge of the same family
+is a weak instrument and must be labelled one; a skill change that
+cannot be evaluated is a judgement call and should be made and named as
+one rather than dressed in a number.
+
+** Two kinds of evidence, for two kinds of change
+
+- *Continuous.* Every real session records which skills were visible,
+  which was chosen and whether it was corrected. Free, and it is what
+  tells us whether the catalogue works at all.
+- *Deliberate.* A blinded fixture eval before promoting a change.
+
+The second is expensive and stochastic at the sample sizes we can
+afford, so it is reserved for skills the whole system leans on: the
+mode, the methods, the principles index, the dispatcher. An ordinary
+action-skill edit does not earn one; the evidence that it works is that
+it was used and the work landed.
+
+
+** Inventory
+
+# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
+Every independent checker, what it proves, and where it is enforced. Populated when the ladder lands.
+# END generated inventory
+
+* See also
+
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]] — the first two rungs of the ladder.
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what decides how far the ladder is climbed.

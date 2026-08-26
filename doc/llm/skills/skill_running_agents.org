@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 54AD5986-34A0-4B19-9F20-D9A024225036
+:END:
+#+title: Running agents
+#+description: How an agent is configured, isolated and bounded: why delegation happens at all, the worktree discipline, the five fields that configure an agent, and the four things an unattended run needs.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:running:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+This page concerns operation rather than authority. It covers why work
+is delegated, how parallel writers are kept apart, what configures an
+agent, and what an agent needs before it can be left running without a
+person watching.
+
+For the actor vocabulary and what each role may see and change, see
+[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]].
+
+* Detail
+
+
+The purpose of this framework is that the mode ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]])
+can be started on an agent and left to run. Everything above serves that: the levels
+decide what an agent can see, the methods decide what it does in what
+order, the recipes are what it reaches for, and the independent checkers
+are how it knows it succeeded. This section states how agents are
+configured and bounded.
+
+
+** Why delegate at all
+
+Three reasons, and they are the only three.
+
+- *Context.* Bulk reading belongs in a delegate, with a summary
+  returned to the parent. A parent that reads a hundred files has spent
+  its context on material it will not use again.
+- *Parallelism.* Genuinely independent slices of work run at the same
+  time, one delegate per slice, with the results aggregated.
+- *Isolation.* Work that must not touch the parent's working tree gets
+  its own.
+
+*Not* a reason: hoping a second attempt will be better than the first.
+Every delegate runs the same model as its parent, by policy, so a
+re-attempt varies the sampling and nothing else. Where a genuine second
+perspective is needed the answer is deliberation or an independent
+checker, not another agent.
+
+That is the single-model correction to the pattern this is borrowed
+from. Fan-out for *coverage* survives intact, because its value is
+parallelism. Fan-out for *competition* — several attempts at one brief,
+judged and grafted — does not, because its value was model diversity and
+we have none. Use coverage freely; reach for competition only on design
+questions, and prefer the deliberation plane there.
+
+** Isolation is a hard constraint, not a preference
+
+Parallel writers get their own worktree. This is not tidiness: two
+agents in one tree corrupt each other's work in ways that are hard to
+attribute afterwards, and the failure surfaces long after the cause.
+
+Each environment carries its own worktree, its own ports, its own
+=.env=, and its own database, provisioned through compass rather than by
+hand. =compass fleet= is the supervisor's view: what every worktree is
+doing, which branch, which task, which pull request.
+
+Two shared resources cut across the isolation and must be handled
+explicitly, because a worktree does not protect them: the *git stash
+stack*, which is shared across every worktree in the repository, and any
+*remote* the agents push to. Neither is a place for a delegate to
+improvise.
+
+** What configures an agent
+
+Five fields, and the model is deliberately not among them.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Decides                                          |
+|-----------------+--------------------------------------------------|
+| Function        | The role: what it must read first, what it may do |
+| Level           | Which slice of the catalogue it sees             |
+| Environment     | Which worktree and database it may write to      |
+| Finish condition | When it is done, checkable by the agent itself  |
+| Authority       | What it may do without asking                    |
+
+The model is inherited from the session that spawned the agent. We do
+not route roles to model tiers: the operator chooses one model and every
+delegate uses it. This costs the model-diversity benefits described
+above, and the substitution is stated where it matters rather than
+papered over.
+
+** Unattended runs
+
+An agent left running needs four things the attended case can do
+without.
+
+*** A finish condition the agent can check itself
+
+"Work on this for a while" measures motion. "Zero old callers remain and
+every parser fixture passes" measures a result, and the agent can
+evaluate it without asking. An unattended run without such a condition
+does not terminate; it drifts until something interrupts it.
+
+*** An authority boundary, granted in advance
+
+By default, irreversible and outward-facing actions stop and ask:
+pushing to a shared branch, deploying, deleting data, raising a pull
+request, anything that leaves the machine. That default is right when a
+human is present and fatal when one is not — the run stalls at the first
+gate and the night is wasted.
+
+So authority is granted *explicitly and in advance*, in the request that
+starts the run, and it is granted narrowly. "Commit and push to this
+branch without asking; do not open a pull request; do not touch main"
+is an authority grant. "Be autonomous" is not, and an agent should treat
+it as an instruction to proceed on reversible work only.
+
+An agent that reaches the edge of its authority stops and says so. It
+does not widen its own grant.
+
+*** A decision trail
+
+The human was not watching, so the run must be reconstructable
+afterwards: what was decided, why, on what evidence, and what was
+discarded. Prefer evidence a reviewer can re-run — a script, a recipe, a
+test — over a claim in prose. The trail plus the diff is what makes an
+unattended result trustworthy rather than merely finished.
+
+*** Liveness, failure and resumption
+
+- *Liveness.* A silent agent and a stuck agent look identical from
+  outside. Progress must be visible in the trail, so a supervisor can
+  tell one from the other without interrupting.
+- *Failure.* On a genuine dead end an agent stops and explains, and does
+  not thrash. Repeatedly retrying a failing approach burns the budget
+  and buries the cause.
+- *Resumption.* A run may be paused at an atomic boundary and resumed
+  later from its trail and branch, by a different agent. A run that can
+  only be abandoned and restarted is not automation.
+
+** What this means for the rest of the framework
+
+The parts of this architecture that matter most to an unattended run
+are the ones that bind rather than advise: the finish condition, the
+authority boundary, the read-only functions, the isolation, and the
+independent checkers. Everything advisory — the plane vocabulary, the
+default visibility at most levels — helps an agent choose well while
+someone is watching, and does nothing at three in the morning.
+
+
+** Inventory
+
+The fleet is live state rather than a table. =compass fleet= reports
+what every worktree is currently doing: its branch, its task, its open
+pull request and its synchronisation with the trunk. That report is the
+inventory, and a written copy of it would be wrong within the hour.
+
+* See also
+
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] — the roles an agent adopts.
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what an unattended agent is running.

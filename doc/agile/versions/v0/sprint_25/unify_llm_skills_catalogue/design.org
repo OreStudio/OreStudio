@@ -19,7 +19,8 @@ catalogue]] story and lives with it, so that it leaves the default
 grounding path when this sprint closes.
 
 *For how the framework works, read [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] instead.* That is
-the durable document this design produces, named by =#+outcome:= below.
+the durable document this design produces, named by =#+outcome:= below,
+and it is the hub of a six-page cluster carrying the detail.
 It states the target state without the argument or the route.
 
 When the story closes, this document goes =LANDED=. Do not read it as a

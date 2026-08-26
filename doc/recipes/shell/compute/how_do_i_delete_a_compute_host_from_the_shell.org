@@ -19,7 +19,7 @@ How do I delete a compute host from the shell?
 
 * Answer
 
-Log in as the system super admin, then run =compute delete-host= with the host id to remove the host row. The command refuses to delete a host that is online (it heartbeated within the 90 second heartbeat timeout); stop its wrapper first. An offline host row is removed.
+Log in as the system super admin, then run =compute delete-host= with the host id to remove the host row. The command refuses to delete a host that is online (it heartbeated within the 300 second (5 minute) heartbeat timeout); stop its wrapper first. An offline host row is removed.
 
 #+name: delete-compute-host
 #+begin_src ores-shell :exports none

@@ -54,8 +54,8 @@ id, refusing hosts that are online.
 - ~compute grid-stats --timeout <seconds>~ bounds the wait (default
   300).
 - ~compute delete-host <host_id>~ refuses a host that is online (it
-  heartbeated within the 90 second heartbeat timeout) and removes an
-  offline host row.
+  heartbeated within the 300 second (5 minute) heartbeat timeout) and
+  removes an offline host row.
 
 * Plan
 
@@ -65,7 +65,7 @@ Both verbs live in ~compute_commands.{hpp,cpp}~. ~grid-stats~ sends
 until the batch has no workunit without a canonical result, then
 evaluates the smoke asserts against the results of the batch and the
 online hosts at the drain transition. Online is defined as
-=last_rpc_time= within 90 seconds of now. ~delete-host~ sends
+=last_rpc_time= within 300 seconds (5 minutes) of now. ~delete-host~ sends
 ~delete_host_request~; the backend refuses online hosts, so the shell
 verb needs no extra guard.
 

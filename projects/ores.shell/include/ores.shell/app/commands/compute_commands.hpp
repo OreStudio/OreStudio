@@ -183,7 +183,7 @@ public:
      * @brief Remove a host row: compute delete-host <host_id>
      *
      * Refuses to delete a host that is online (heartbeated within the
-     * 90s heartbeat timeout); an offline host row is removed.
+     * 300s heartbeat timeout); an offline host row is removed.
      */
     static void process_delete_host(std::ostream& out,
                                     ores::nats::service::nats_client& session,

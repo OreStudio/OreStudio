@@ -60,32 +60,105 @@ the read.
 
 ** In the literature
 
-The construct has begun to receive formal treatment. Liu, Ming, Joty and
-Zhao characterise the prevailing representation and find it wanting.
-Skills, they write, "are injected into prompts, retrieved as advice, or
-used indirectly to shape rewards during post-training", and are
-therefore "largely /advisory/". The deficiency they name is precise:
+The construct has an academic lineage, and the lineage divides.
+
+*** Two lineages
+
+One line stores skills as *executable routines*. Wang and colleagues'
+Voyager builds an open-ended embodied agent that accumulates a library
+of programs it has written and can retrieve and compose them later. A
+skill here is code.
+
+A second line stores skills as *verbal lessons*. Shinn and colleagues'
+Reflexion has an agent write down what it learned from a failure and
+carry that text into later episodes. Zhao and colleagues' ExpeL
+generalises across episodes into experiential rules. A skill here is
+prose.
+
+Liu, Ming, Joty and Zhao group all three together as systems that
+"store verbal lessons, memories, or routines", and observe that "most
+prior methods reuse experience as prompt text or task-specific
+routines".
+
+The =SKILL.md= format belongs to the second line. It is prose that an
+assistant reads.
+
+#+begin_note
+The characterisation of Voyager, Reflexion and ExpeL above is taken from
+the related-work section of the paper discussed below. The primary
+sources have not been read for this page. Read them before treating this
+section as settled.
+#+end_note
+
+*** The critique of the textual form
+
+Liu, Ming, Joty and Zhao state the deficiency of the second line
+precisely:
 
 #+begin_quote
 A textual skill can express what the agent should do in principle, but
-not precisely /when/ it should activate inside the policy loop, /how/ it
-should alter the next decision.
+not precisely when it should activate inside the policy loop, how it
+should alter the next decision, and it is often ignored by the model in
+practice.
 #+end_quote
 
-They state the gap as one "between reusable experience expressed in
+They locate the gap as one "between reusable experience expressed in
 language and reusable experience that can reliably and explicitly
-control agent behavior", and survey prior systems as reusing "experience
-as prompt text or task-specific routines".
+control agent behavior".
 
-Their own proposal replaces the text with an executable module carrying
-two methods: =should_activate=, "which decides whether the skill should
-fire", and =intervene=, "which returns the repair". Intervention takes
-one of two forms, either modifying the next proposed action or injecting
-corrective context into the agent's reasoning.
+Their example is worth quoting in full, because it names the exact form
+this project's stance plane takes:
 
-The paper is cited here for its characterisation of the received notion
-rather than for its architecture, which addresses model training and
-lies outside this project's concerns.
+#+begin_quote
+Instead of merely stating a principle such as "avoid repeated searches,"
+a PF specifies both when that principle applies and how the next
+decision should change.
+#+end_quote
+
+*** Program functions
+
+Their proposal is the *program function*, abbreviated PF: "a reusable
+state–action intervention function" that, "given the current agent state
+and a candidate next action, decides whether intervention is needed and,
+if so, explicitly modifies or augments the policy".
+
+A PF exposes two methods. =should_activate= "decides whether the skill
+should fire". =intervene= "returns the repair". The returned object
+carries one of three types:
+
+- =MODIFY_ACTION= rewrites or refines the next action.
+- =INJECT_CONTEXT= appends text the policy sees in its next observation.
+- =NOOP= abstains from changing the decision, and still emits an audit
+  record.
+
+The design "separates choosing the next action from correcting it: the
+policy proposes what to do next, while PFs determine whether the
+proposed action should be executed as is, revised into a better action,
+or augmented with additional context".
+
+Two implementation details are worth recording. PFs extend =SKILL.md=
+rather than replacing it: phase instructions are "declared in the YAML
+frontmatter of =SKILL.md=" and attach reminders to named reasoning
+phases. And the runtime caps how often a PF may fire, "to prevent
+oscillation".
+
+*** Prompt-equivalent skills
+
+The paper defines a precise term for the boundary between the two forms.
+A PF is *prompt-equivalent* when both conditions hold: its =intervene=
+method emits only =INJECT_CONTEXT=, and the injected text "is a fixed
+literal string with no runtime substitution". Such a PF "does nothing
+beyond pasting a constant reminder into the next observation", which a
+prompt declaration would do equally well.
+
+The distinction is narrower than it first appears. A skill that builds
+its injected text from runtime state is *not* prompt-equivalent, because
+it adds capability "that no prompt-only declaration can match". Neither
+is one that rewrites the action.
+
+The empirical result attached to the term is measured and modest. Adding
+prompt-equivalent skills on top of the executable library has an effect
+that is "small and mixed across datasets".
 
 ** How published collections organise skills
 
@@ -109,19 +182,18 @@ None of the three registers a skill against the kind of artefact it acts
 on. Each organises by what the skill /is/, rather than by what it acts
 /upon/.
 
-In the vocabulary of the paper cited above, all three consist of
-/prompt-only/ skills. None carries an activation predicate that the
-runtime can evaluate; each relies on the assistant reading a description
-and judging that it applies. The paper reserves the term /program
-function/ for a skill that carries such a predicate, and reports that
-its own libraries mix the two kinds rather than using one exclusively.
+None carries an activation predicate that a runtime can evaluate. Each
+relies on the assistant reading a description and judging that it
+applies. In the terms above, all three belong to the textual lineage,
+and none contains a program function.
 
 One of the three anticipates the finding. The pstack collection includes
 a principle named /encode lessons in structure/, whose rule is to
 express a recurring correction "as a lint, metadata flag, runtime check,
 or script instead of more text". That is the paper's thesis reached
-independently by a practitioner, and stated as advice within a
-prompt-only skill, which is the position it argues against.
+independently by a practitioner. It is also stated as prose advice,
+which is the form the paper argues against, so the principle does not
+satisfy its own rule.
 
 * See also
 
@@ -131,6 +203,18 @@ prompt-only skill, which is the position it argues against.
 
 * References
 
-- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /HASP: Harnessing LLM
-  Agents with Skill Programs/. arXiv:2605.17734.
+- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents
+  with Skill Programs/. arXiv:2605.17734.
   [[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
+- Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L.
+  and Anandkumar, A. (2023). /Voyager: an open-ended embodied agent with
+  large language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Not read directly.
+- Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K. and
+  Yao, S. (2023). /Reflexion: language agents with verbal reinforcement
+  learning/. [[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Not read directly.
+- Zhao, A., Huang, D., Xu, Q., Lin, M., Liu, Y. and Huang, G. (2024).
+  /ExpeL: llm agents are experiential learners/. [[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Not
+  read directly.
+- Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K. and Cao,
+  Y. (2023). /ReAct: synergizing reasoning and acting in language
+  models/. [[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Not read directly.

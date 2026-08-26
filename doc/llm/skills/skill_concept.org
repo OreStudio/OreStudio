@@ -35,13 +35,16 @@ is invoked in one session to perform a unit of work. A [[id:66F2A9E8-0385-4D56-B
 /role-shaped/: it describes what someone does and lists the skills that
 role draws on.
 
-The literature reaches a similar verdict on the received notion. Liu,
-Ming, Joty and Zhao find the prevailing representation "largely
-/advisory/", because "a textual skill can express what the agent should
-do in principle, but not precisely /when/ it should activate inside the
-policy loop, /how/ it should alter the next decision". Their answer is
-to give a skill an explicit activation predicate. [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records
-the argument in full.
+The literature reaches the same verdict, and states it more sharply.
+Liu, Ming, Joty and Zhao find that a textual skill "can express what the
+agent should do in principle, but not precisely when it should activate
+inside the policy loop, how it should alter the next decision, and it is
+often ignored by the model in practice". Their remedy is to give a skill
+an explicit activation predicate. Their illustration names the form our
+own stance plane takes: "instead of merely stating a principle such as
+'avoid repeated searches,' a PF specifies both when that principle
+applies and how the next decision should change". [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records
+the argument and the lineage behind it.
 
 Both definitions state what a skill /is/. Neither states what it acts
 /upon/, how large it may be, or whether it must be executable. Three

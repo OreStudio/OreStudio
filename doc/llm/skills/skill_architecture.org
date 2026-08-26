@@ -17,7 +17,7 @@ current catalogue disagree, the catalogue is what runs.
 
 * Summary
 
-A [[id:166CBCA9-112E-4949-8D5A-CE0FC55E4A08][skill]] is one action applied to one typed target, and the catalogue is
+A [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][skill]] is one action applied to one typed target, and the catalogue is
 arranged so that an agent can find the right one without reading all of
 them. The arrangement rests on three classifications, each useful
 without the others.
@@ -69,7 +69,7 @@ they do not.
 #+ATTR_HTML: :class hug-leading
 | Page | Answers |
 |------+---------|
-| [[id:166CBCA9-112E-4949-8D5A-CE0FC55E4A08][The skill catalogue]] | What is a skill, what is it called, and where does a new artefact go? |
+| [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] | What is a skill here, and why is the received notion too weak? |
 | [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] | What kinds of artefact exist, and how do they differ? |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] | Given a thing in hand, what may I do to it? |
 | [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] | Who is acting, and what may they see and do? |
@@ -85,6 +85,8 @@ session actually reaches them.
 * See also
 
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this architecture governs.
+- [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] — the received notion of a skill, which this framework tightens.
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — naming and attribution.
 - [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the function axis.
 - [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — variety, feedback and regulation.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline this page follows as a structure note.

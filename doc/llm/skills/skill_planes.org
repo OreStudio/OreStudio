@@ -239,6 +239,36 @@ an error. Error detection routes instead to the checkers set out in
 [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]], which do not share those priors.
 
 
+** Placement
+
+The planes above give the taxonomy. This procedure applies it. Take the
+first match.
+
+The placement procedure. Take the first match.
+
+1. A durable fact about the domain goes to a *knowledge document*. If it
+   is the entry point to a cluster, a *structure note*.
+2. An account of how one operation is performed here, with a runnable
+   script, goes to a *recipe*. This is also where a method's missing
+   effector goes.
+3. A correction that must not be repeated goes to a *memory*. Keep these
+   scarce: each is paid for by every session.
+4. A rule that is cited rather than run goes to a *principle*.
+5. Intended behaviour that should be checkable goes to a *specification*.
+6. A sequence of phases ending in a verified state, not tied to one
+   artefact type, goes to a *method*.
+7. A change to a *generated* artefact goes to its model or its template,
+   never to the output.
+8. An operation on one artefact type goes to an *action*, at the pairing
+   of type and verb. The action holds the judgement; the recipe holds
+   the command.
+9. A contested judgement goes to *deliberation*, and its verdict is
+   recorded against the work.
+10. A role a session or a delegate adopts goes to a *function*, tagged
+    by level, stating what it must read first and what it may do.
+11. The argument for a change, spanning many tasks, goes to a *design*
+    in the story's own folder rather than to the durable tree.
+
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)

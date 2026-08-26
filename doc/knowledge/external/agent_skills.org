@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8
+:END:
+#+title: Agent skills
+#+description: The skill as a construct in agent tooling: the SKILL.md format, its frontmatter, the invocation distinction, progressive disclosure, and how published collections organise their skills. Reference material about a format ORE Studio does not own.
+#+type: knowledge
+#+level: cross
+#+filetags: :external:llm:claude_code:skills:reference:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+* Summary
+
+A *skill* in agent tooling is a document that an assistant loads to
+perform a kind of work. Anthropic defines the format for Claude Code:
+a directory holding a =SKILL.md= file, whose frontmatter carries a name
+and a description, and whose body holds the instructions the assistant
+follows. Other agent tools read the same format.
+
+This page records the received notion and the conventions that have
+grown around it. ORE Studio does not own the format. For the narrower
+definition this project works to, see [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass
+framework]].
+
+* Detail
+
+** The format
+
+A skill is a directory. It contains a =SKILL.md= file and any supporting
+files that file refers to. The frontmatter carries two required fields.
+The =name= field gives the identifier a user types. The =description=
+field states what the skill does and when to reach for it.
+
+The body holds the instructions. Its length is not fixed by the format,
+and published skills range from two lines to several hundred.
+
+** Invocation
+
+Published collections separate skills by who may invoke them. A
+*user-invoked* skill runs only when a person types its name. A
+*model-invoked* skill may also be reached by the assistant when the task
+matches its description. Claude Code expresses the first with a
+=disable-model-invocation= flag.
+
+The distinction matters because the description does different work in
+each case. For a model-invoked skill the description is the trigger, and
+its wording decides how reliably the skill fires. For a user-invoked
+skill the description is documentation.
+
+** Progressive disclosure
+
+A skill body sits in the assistant's context whenever the skill runs.
+Long bodies therefore cost attention. The common answer is to move
+material into sibling files and refer to them from the body, so the
+assistant loads them only when it needs them.
+
+The technique has a cost of its own. Material behind a reference is
+reached only if the referring sentence is worded well enough to trigger
+the read.
+
+** In the literature
+
+The construct has begun to receive formal treatment. Liu, Ming, Joty and
+Zhao characterise the prevailing representation and find it wanting.
+Skills, they write, "are injected into prompts, retrieved as advice, or
+used indirectly to shape rewards during post-training", and are
+therefore "largely /advisory/". The deficiency they name is precise:
+
+#+begin_quote
+A textual skill can express what the agent should do in principle, but
+not precisely /when/ it should activate inside the policy loop, /how/ it
+should alter the next decision.
+#+end_quote
+
+They state the gap as one "between reusable experience expressed in
+language and reusable experience that can reliably and explicitly
+control agent behavior", and survey prior systems as reusing "experience
+as prompt text or task-specific routines".
+
+Their own proposal replaces the text with an executable module carrying
+two methods: =should_activate=, "which decides whether the skill should
+fire", and =intervene=, "which returns the repair". Intervention takes
+one of two forms, either modifying the next proposed action or injecting
+corrective context into the agent's reasoning.
+
+The paper is cited here for its characterisation of the received notion
+rather than for its architecture, which addresses model training and
+lies outside this project's concerns.
+
+** How published collections organise skills
+
+Three public collections show three different organising choices.
+
+The *pstack* collection divides its skills into three kinds. Twenty-one
+/principles/ each state one rule. Twenty-two /playbooks/ each give the
+steps for a shape of work. The remaining skills are workflow tools. One
+skill, a sticky mode, routes work to the others.
+
+The *Matt Pocock* collection divides on invocation. User-invoked skills
+are thin and orchestrate; model-invoked skills hold the reusable
+discipline. A user-invoked skill may call a model-invoked one, and never
+another user-invoked one.
+
+The *Council of High Intelligence* ships one skill and eighteen
+subagents. The skill is a coordinator. Each subagent supplies one
+analytical lens.
+
+None of the three registers a skill against the kind of artefact it acts
+on. Each organises by what the skill /is/, rather than by what it acts
+/upon/.
+
+In the vocabulary of the paper cited above, all three consist of
+/prompt-only/ skills. None carries an activation predicate that the
+runtime can evaluate; each relies on the assistant reading a description
+and judging that it applies. The paper reserves the term /program
+function/ for a skill that carries such a predicate, and reports that
+its own libraries mix the two kinds rather than using one exclusively.
+
+One of the three anticipates the finding. The pstack collection includes
+a principle named /encode lessons in structure/, whose rule is to
+express a recurring correction "as a lint, metadata flag, runtime check,
+or script instead of more text". That is the paper's thesis reached
+independently by a practitioner, and stated as advice within a
+prompt-only skill, which is the position it argues against.
+
+* See also
+
+- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] — the narrower definition this project works to.
+- [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the tool that loads these skills.
+- [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External]] — the reference cluster this page belongs to.
+
+* References
+
+- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /HASP: Harnessing LLM
+  Agents with Skill Programs/. arXiv:2605.17734.
+  [[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]

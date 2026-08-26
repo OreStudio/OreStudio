@@ -905,6 +905,39 @@ setup skill. The in-progress and misc buckets. =research= folds into
 =doc-add-knowledge=; =handoff= and =wait-what= are thin wrappers whose
 content is a sentence each.
 
+*** What the literature says about the stance plane
+
+[[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records a finding that bears directly on one of our
+choices, and it does not favour us.
+
+Liu, Ming, Joty and Zhao report that skills expressed as text are
+"largely /advisory/", because such a skill states what an agent should
+do in principle but not when it should fire or how it should alter the
+next decision. They reserve the term /prompt-only skill/ for that form,
+and contrast it with a /program function/ carrying an activation
+predicate the runtime can evaluate.
+
+Our stance plane consists entirely of prompt-only skills by design. A
+principle has no steps, produces no artefact, and fires only when an
+agent reads its name and judges that it applies. That is the weak form
+the paper identifies.
+
+Two considerations qualify the finding without dissolving it. The
+paper's own libraries mix both kinds rather than eliminating the
+prompt-only ones, so the argument is about proportion rather than
+prohibition. And a principle differs from the skills the paper measures:
+it constrains a judgement rather than repairing an action, and there may
+be no predicate that decides when a judgement call has been made badly.
+
+The mitigation is one the imported collections already name. pstack's
+/encode lessons in structure/ principle says to express a recurring
+correction as a check rather than as more text, and our own memory about
+fixing codegen templates says the same for one case. The rule that
+follows for us is that *a principle which can be encoded as a check
+should be*, and the stance plane holds only what genuinely cannot. We
+should expect the stance plane to shrink as the checks are written, and
+treat a plane that never shrinks as evidence that nobody is trying.
+
 *** From the thesis-writing skill
 
 Source: [[https://github.com/santifs/thesis-writing-skill][santifs/thesis-writing-skill]], MIT.

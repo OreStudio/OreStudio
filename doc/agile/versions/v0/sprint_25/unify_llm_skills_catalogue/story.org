@@ -48,7 +48,8 @@ in when history is genuinely needed.
 |----------+------+---------|
 | [[id:C7473361-9825-43DF-8610-EBB028A250BE][Design: Unify the LLM skills catalogue]] | design, transitional | The argument: current state, the three mental models integrated, the council review, and the route to the target |
 | [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] | knowledge, durable | Hub: the overview, the entry points, and the map of the cluster |
-| [[id:166CBCA9-112E-4949-8D5A-CE0FC55E4A08][The skill catalogue]] | knowledge, durable | What a skill is, what it is called, and where a new artefact goes |
+| [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] | knowledge, durable, external | The received notion of a skill, with the academic and practitioner prior art |
+| [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] | knowledge, durable | Why the received notion is too weak, and the tightened definition |
 | [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] | knowledge, durable | What kinds of artefact exist and how they differ |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] | knowledge, durable | Given a thing in hand, what may be done to it |
 | [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] | knowledge, durable | Who is acting, and what they may see and change |

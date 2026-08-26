@@ -40,6 +40,8 @@ The stance plane holds rules an agent cites rather than runs. Port the pstack pr
 - never-block-on-the-human is reconciled against our conventions on irreversible actions and unrequested pull requests, and the resolution is recorded.
 - An index lists the principles by group so a method can read the set at task start.
 - Every ported principle carries its upstream repository, path and commit.
+- Each candidate principle is tested against the encode-as-a-check rule before it is ported: a principle that can be expressed as a lint, a metadata flag, a runtime check or a script is written that way instead, and the stance plane holds only what genuinely cannot be checked.
+- The principles that were encoded as checks rather than ported are listed, with what checks them.
 
 * Plan
 

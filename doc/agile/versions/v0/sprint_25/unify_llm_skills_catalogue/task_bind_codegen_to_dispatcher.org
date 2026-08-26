@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 628EA44F-1136-426F-AFD1-F28844AB048B
+:END:
+#+title: Task: Make generated-ness a target property the dispatcher enforces
+#+description: Teach the dispatcher that an artefact is generated, so hand-editing is never an offered verb, and fold profile selection into the register-matching discipline.
+#+type: task
+#+level: s1
+#+filetags: :codegen:skills:dispatch:profiles:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Codegen is the clearest working instance of this architecture, built independently and further along: meta-types are typed targets, the eleven named profiles are a closed register, the twenty-five features are the axes it is built from, generated-versus-hand-written is a target property that gates legal operations, and zero-diff regeneration is a falsifiable predicate. Bind the two together. The dispatcher must resolve generated-ness before it offers any verb, and must not offer hand-editing on a generated artefact; the edit goes to the model or the template. Profile selection joins method selection as a match-against-a-closed-register decision with the same fallback discipline: exact match, else nearest by Hamming distance, then read the diff as either a gap to close or a novel combination worth naming. Promote the fix-the-template memory into a principle so a method can cite it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- The dispatcher resolves whether a target is generated before offering verbs.
+- Hand-editing is never offered on a generated artefact; the model and the template are offered instead.
+- Profile selection follows the register discipline: exact match, nearest match, then gap or new profile named.
+- No entity is left with loose knobs and no profile, and the rule is stated where an author will meet it.
+- Fix the template, never the output is a principle in the stance plane, not only a memory.
+- Where this architecture and the variability model disagree, the variability model wins and the divergence is recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

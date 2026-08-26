@@ -1,0 +1,73 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+@startuml
+
+title The six planes — what an agent loads, and what it runs
+
+skinparam rectangle {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam note {
+    BackgroundColor #1A1A1E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam ArrowColor #8AB4F8
+skinparam ArrowFontColor #E3E3E6
+skinparam BackgroundColor transparent
+skinparam DefaultFontColor #E3E3E6
+skinparam TitleFontColor #E3E3E6
+skinparam TitleFontSize 16
+skinparam ArrowFontColor #C9D1D9
+skinparam ArrowFontSize 12
+skinparam activity {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+    DiamondBackgroundColor #1A1A1E
+    DiamondBorderColor #58A6FF
+    DiamondFontColor #E3E3E6
+}
+
+rectangle "GROUNDING\nloaded, not run" as G #1A1A1E {
+  rectangle "Knowledge\nwhat is this?" as K
+  rectangle "Recipe\nhow do I operate it?" as R
+  rectangle "Memory\nwhat must I not repeat?" as M
+}
+
+rectangle "Stance\na rule I cite" as S
+rectangle "Method\nhow I approach the work" as ME
+rectangle "Action\nwhat I do to an artefact" as A
+rectangle "Specification\nwhat the result must do" as SP
+rectangle "Deliberation\nhow I decide a contested fork" as D
+
+ME -up-> S      : cites
+ME -up-> K      : grounds in
+ME -right-> SP  : states predicate
+ME --> A        : calls
+ME --> D        : escalates a fork
+A -up-> R       : delegates the command
+A -up-> M       : always loaded
+
+note bottom of ME
+  A method is control flow
+  with no effectors.
+  An action is an effector
+  with no control flow.
+  They fit without either
+  being rewritten.
+end note
+
+@enduml

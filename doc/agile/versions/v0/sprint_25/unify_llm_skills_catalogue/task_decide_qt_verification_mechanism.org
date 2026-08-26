@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: B0768518-B564-407A-87CD-9C0D9168126E
+:END:
+#+title: Task: Decide and build the Qt verification mechanism
+#+description: Settle how Qt work is verified: widget tests under the offscreen platform, a scripted in-app control surface, and external screen automation only for pixel work.
+#+type: task
+#+level: s1
+#+filetags: :qt:testing:verification:automation:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Qt verification today is a human driving the client while the QA Validation Runner records the result. That does not survive an unattended run. Settle the mechanism against one rule: assert on state, not on pixels, because an agent needs a predicate it can evaluate and a screenshot is not one. Build the layers in preference order. Widget-level tests under Qt's own test framework with the offscreen platform, so they need no display and run in CI beside the other tests. A scripted control surface inside the application, the Qt sibling of ores.shell run with a script file, which opens windows, invokes actions and reports state; the application already captures its own screenshots in-process so the evidence trail comes free. External screen automation only for pixel-parity work such as manual screenshots, where a human reviews the output anyway. Prove the choice on one real Qt feature before adopting it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- Widget-level tests run headless under the offscreen platform and are part of the normal test run, needing no display.
+- A committed script can drive the Qt client non-interactively and report state a checker can assert on.
+- Screenshots are recorded as evidence for humans and are never the basis of a pass or fail verdict.
+- External screen automation is used only for pixel-parity work, and the reason is documented where an author will meet it.
+- The QA Validation Runner keeps its human-driven role; the scripted path complements it rather than replacing it.
+- One real Qt feature is verified end to end through the new mechanism before the task closes.
+- The decision, the options rejected and why, are recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

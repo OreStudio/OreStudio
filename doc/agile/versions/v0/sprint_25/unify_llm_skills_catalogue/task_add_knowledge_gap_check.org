@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 894E9BD8-6808-403A-9878-ABFA51710A74
+:END:
+#+title: Task: Add a knowledge gap check for domain work
+#+description: A compass check that extracts the domain concepts a work item names and reports which have no resolving knowledge document.
+#+type: task
+#+level: s1
+#+filetags: :llm:knowledge:compass:grounding:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The architecture makes domain grounding an obligation: a method's framing phase names the concepts the work touches, resolves each to a knowledge document, and treats an unresolved concept as a gap whose closure is the first task. That obligation needs a mechanism or it stays aspirational. The anchors already exist. The glossary holds our terms, the modeling documents hold entity names, and the graph holds the links. Build a check that takes a story or task, extracts the domain concepts it names, tests each for a resolving knowledge document or structure note, and emits the misses as captures or tasks.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- A compass command takes a work item and reports the domain concepts it names that have no resolving knowledge document.
+- The check draws its vocabulary from the glossary and the modeling documents rather than a hand-written list.
+- Misses can be filed as captures or tasks in one step.
+- The check is exercised against at least three existing stories and its findings are reviewed for false positives.
+- The method plane's grounding phase names this check as how the gap list is produced.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

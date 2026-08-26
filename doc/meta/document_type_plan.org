@@ -24,3 +24,15 @@ page carries only what is specific to =plan=.
   story closes; distilled content moves to =* Decisions= on the
   parent story. Plans do not outlive their task.
 
+* Not to be confused with =design=
+
+A plan is /how we will do this work/. A [[id:7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866][design]] is /what the target
+state is, and why/ — the argument that produced the tasks, rather than
+the strategy for executing one of them.
+
+When a story-scoped argument spans many tasks, precedes them, and will
+be distilled into a durable document, it outgrows a =* Plan= section and
+becomes a =design.org= in the story folder. Everything else stays a
+section, as above. A design that produces no durable outcome was a plan
+all along.
+

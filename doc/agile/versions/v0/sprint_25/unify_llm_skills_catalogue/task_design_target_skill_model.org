@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF
+:END:
+#+title: Task: Land the skill architecture into policy
+#+description: Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:naming:convention:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The [[id:C7473361-9825-43DF-8610-EBB028A250BE][design]] document states the model; this task makes it
+binding. Amend the [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][skill naming conventions]] to carry the compass-
+prefix, the six planes, the =principle-= and =method-= segments, the
+verbs the ported methods need, and the mandatory =#+level:= keyword.
+Land the terminology table in the [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] so it governs every document,
+not only skills. Amend the rule forbidding reference-only skills to
+exempt the stance plane. Record every register extension in the
+decision log, as the policy already demands.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- The naming conventions document carries the compass- prefix rule, the six planes, and the =principle-= and =method-= segments.
+- =#+level:= is mandatory on every skill, and the level-to-scope table from the architecture is recorded.
+- The verb register gains every verb the ported methods need, each with its decision-log entry.
+- The terminology table lands in the glossary, naming the retired synonyms and the two traps: spec means an Allium spec, persona means a Council member.
+- The reference-only-skills rule is amended to exempt the stance plane, with the reasoning recorded.
+- The placement procedure from the architecture is reproduced where an author will meet it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

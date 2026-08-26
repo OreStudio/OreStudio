@@ -24,10 +24,29 @@ describes a state which no longer exists. That is the same failure the
 design document type exists to prevent, reaching the reader by a
 different route.
 
-Two known cases share the shape. The skills deployment does not remove
+The extent was measured on 2026-08-26. The site holds 5241 built pages.
+Of these, *242 have no source file*, which is about one page in
+twenty-two.
+
+The largest groups are agile artefacts that moved. Ninety-nine are
+backlog captures that were promoted out of the inbox, and their old
+pages still serve alongside the stories they became. Twenty-three belong
+to a sprint 24 story whose folder was reorganised. Four are the modelling
+pages of =ores.controller=, a component decommissioned in commit
+10e66ed7c4, which still publishes a component overview describing a
+service that no longer exists.
+
+Two related cases share the shape. The skills deployment does not remove
 stale directories from the deployed skills folder either, which the
-skills inventory already warns about. A single sweep that removes built
-output with no source would cover both.
+skills inventory already warns about. The org-roam graph has the
+converse fault, recorded separately: an entire knowledge cluster exists
+on disk and does not resolve.
+
+A single sweep that removes built output with no source would cover the
+site and the skills bundle. The check is cheap: list the built pages,
+map each back to its source path, and report the ones with no source. It
+should run in the audit channel rather than on demand, because nobody
+notices this class of fault from the inside.
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
 

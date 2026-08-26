@@ -34,7 +34,7 @@ since that mapping is what the method plane is built from.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -48,6 +48,39 @@ since that mapping is what the method plane is built from.
 - Each adopted method names the recipes its steps call, and flags the steps that need a recipe written.
 - The dispositions taken from README descriptions in the earlier pass are re-checked against the files, and the changes are called out.
 - No skill file changes in this task.
+
+* Result
+
+Read every pstack playbook and every Matt Pocock skill as files rather
+than from their READMEs. The dispositions are recorded in the story's
+[[id:C7473361-9825-43DF-8610-EBB028A250BE][design]] under /What we take, and what we leave/.
+
+Ten first-pass judgements changed, all in the same direction: items
+dismissed from a one-line description carried the ideas worth having.
+The largest reversal is =writing-for-agents=, first judged as material
+to fold into =skill-add=; it is a theory of agent-facing documentation
+and supersedes =skill-add= instead.
+
+Four findings apply to our own work rather than to the imports:
+
+- *Negation is a failure mode.* Steering by prohibition makes the
+  forbidden behaviour more available, not less. Our design and
+  architecture documents are written largely in prohibitions and need a
+  pass to state positive targets.
+- *Anti-shortcut clauses* name the ways an agent games its own gate, and
+  we have none. They matter most on the drift checks, where editing the
+  checker is easier than fixing the drift.
+- *A verdict expires when the code under it changes.* We have no notion
+  of a verification's scope.
+- *Sprawl and sediment* are named failure modes for documents. The
+  architecture page is long enough for the first, and =doc/plans/= is
+  ninety-four instances of the second.
+
+Skipped deliberately: pstack's =orchestrate= and both autopilots were
+read but assessed rather than mined, since they assume Graphite and a
+cloud VM fleet; Matt's =ask-matt= and =teach= were skimmed, since the
+first is a router we replace and the second is multi-session tutoring
+with no bearing on this work.
 
 * Plan
 

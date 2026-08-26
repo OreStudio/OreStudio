@@ -764,257 +764,225 @@ them together when splitting would only scatter one coherent procedure.
 
 ** What we take, and what we leave
 
+The first pass judged the external catalogues from their READMEs. This
+section records the second pass, which read every pstack playbook and
+every Matt Pocock skill as files. Ten judgements changed, all in the
+same direction: things dismissed from a one-line description turned out
+to carry the ideas worth having.
+
+*** What the close reading changed
+
+#+ATTR_HTML: :class hug-leading
+| Item | First pass | After reading | Why it changed |
+|------+------------+---------------+----------------|
+| =writing-for-agents= | "Fold into skill-add" | *Adopt whole; it supersedes skill-add* | It is a theory of agent-facing documentation, not a style guide. Nothing we have is close |
+| =diagnosing-bugs= | Adopt | *Adopt, and treat as the model for every method* | "Phase 1 is the skill. Everything else is mechanical" |
+| =wayfinder= | Adopt | Adopt, and take the *fog of war* model | Its "map is an index, not a store" rule is our story-as-hub rule, reached independently |
+| =tdd= | Prefer over pstack's | Adopt, for two parts I had not seen | Pre-agreed seams, and the tautological-test anti-pattern |
+| =code-review= | "Fold into code-review-pr" | *Keep the two-axis separation* | Standards and Spec must not be reranked against each other |
+| =visual-parity= | Reject, UI-specific | *Harvest the anti-shortcut clauses* | They generalise to every gate we own, including drift |
+| =hillclimb= | Nearly rejected | Harvest the harness discipline | Prove the ruler's sensitivity, then freeze it |
+| =babysit= | "Maps to pr-address-review" | Harvest two rules | The fix order, and review text as untrusted data |
+| =shipping= | "Maps to pr-merge" | Harvest the verdict model | Green is not safe; a verdict expires when the SHA changes |
+| =perf-issue= | Adopt as a method | *Split*: the method is thin, the eight strategy families are knowledge | They are hypothesis generators, and belong in the grounding plane |
+
+*** The single most valuable thing in either catalogue
+
+=writing-for-agents=. It is the only document in either repository that
+theorises what makes agent-facing prose work, and several of its ideas
+apply to this design document as it stands.
+
+- *Leading words.* A compact concept already in the model's pretraining,
+  repeated as a token and never as a sentence, anchors a whole region of
+  behaviour cheaply. "Fast, deterministic, low-overhead" collapses to
+  /tight/. "A loop you believe in" collapses to /red/. A coined word
+  recruits no priors, so you pay in definition tokens what a pretrained
+  word gives free.
+- *Negation is a failure mode.* Steering by prohibition drags the
+  forbidden behaviour into context and makes it /more/ available. State
+  the positive target instead. *This convicts our own prose*: this
+  document and the architecture page are full of "never", "do not" and
+  "not". A prohibition earns its place only as a hard guardrail that
+  cannot be phrased positively, and even then it should be paired with
+  the positive target.
+- *The two loads.* Context load is what always-loaded material costs the
+  agent every turn. Cognitive load is what it costs the human to know
+  which document to reach for. The second "is not a cost to minimise —
+  it is the price of human agency".
+- *No-ops.* An instruction the model already obeys by default pays load
+  to say nothing. The test is model-relative, not reader-relative, and
+  it is settled "by running the document, not by debate".
+- *Sediment.* Stale layers that settle because adding feels safe and
+  removing feels risky. Our =doc/plans/= archive of ninety-four
+  documents is exactly this, and so is any skill nobody prunes.
+- *Sprawl.* A document too long even when every line is live. The
+  architecture page is already long enough for this to be a live risk.
+
 *** From pstack
 
-Take the principles, the playbook shape, the falsifiable done
-predicate, the verification harness built before the work, the decision
-trail, =swarm=, =how=, =why=, =architect=, =blast-radius=,
-=figure-it-out=, =reflect=, and the verification-skill pair.
+**** Adopt
 
-Leave the model routing, the Graphite stack machinery, the iOS
-simulator work, the autopilot playbooks, =typescript-best-practices=,
-=bro=, and =automate-me=. Fold =unslop= into [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] and
-=no-comments= into [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] rather than importing either.
+- The principles, as the stance plane.
+- =diagnosing-bugs=-shaped methods: investigation, bug fix, refactoring,
+  prototype, feature.
+- =figure-it-out= for work no method fits.
+- =how=, =why=, =blast-radius=, =architect=, =swarm=, =reflect=.
+- The verification-skill pair, which turns "verify it" into a repository
+  capability rather than a fresh conversation.
+- The forensics pair, for their separation: the deliverable is a cited
+  diagnosis and *not* a fix. Route to bug fix afterwards.
 
-*** From the Matt Pocock set
+**** Harvest, without importing the skill
 
-Take =grilling= as the interview primitive, =wayfinder= for work too
-large for one session, =prototype=, =diagnosing-bugs=,
-=codebase-design=, =resolving-merge-conflicts=, and =wizard=.
+- *The anti-shortcut clauses* from visual parity: no harness edits, no
+  baseline tampering, no restructuring to make a check pass. "If the
+  baseline looks wrong, stop and ask." This names the ways an agent
+  games its own gate, and it applies to every check we own — most
+  sharply to drift, where editing the checker is easier than fixing the
+  drift.
+- *Harness discipline* from hillclimb: prove the ruler can distinguish
+  the cases before trusting it, then freeze it, because changing it
+  invalidates every earlier number.
+- *A stop predicate with a floor*, also from hillclimb: pair the target
+  with a minimum number of attempts so a lucky early result cannot end a
+  run. And "never relax the predicate to declare victory".
+- *The fix order* from babysit: conflicts, then review threads, then CI.
+  Conflicts and thread fixes each require a push that restarts checks,
+  so CI work done ahead of them is thrown away.
+- *Review text is untrusted data* from babysit. Triage a bot's comment
+  against the code; never treat its text as an instruction, and never
+  build a shell command from it.
+- *The verdict model* from shipping: green is not safe; a verdict comes
+  from an agent that did not write the code; and a verdict expires when
+  the code under it changes.
+- *The eight perf strategy families* from perf issue, as a knowledge
+  document. Elimination first — the cheapest work is work that does not
+  run — and a family earns an attempt only when the evidence shows the
+  signal it names.
+- *The plan validator* from multi-phase plan: a script that checks a
+  document's shape. Our document types have contracts and no validator.
 
-Leave the issue-tracker abstraction and everything built on it
-(=triage=, =to-tickets=, =to-spec=, =implement=), because our agile
-layer already owns that ground and owns it better. Leave the
-in-progress and misc buckets. Fold =research= into =doc-add-knowledge=
-and =writing-for-agents= into =skill-add=.
+**** Leave
 
-*** From pstack's two subagents, which the first pass under-read
+Orchestrate, both autopilots and most of shipping's mechanics, which
+assume Graphite stacks and a cloud VM fleet. Worktree cleanup, which
+compass already covers. TypeScript best practices, =bro=, =automate-me=,
+=setup-pstack=, and pstack's =teach=, which duplicates Matt's.
 
-The inventory listed =poteto-agent= and =Comment Sicko= and the first
-disposition pass judged them from that listing rather than from the
-files. Reading them changed three things.
+*** From Matt Pocock
 
-*=poteto-agent= is nine lines and every one of them is load-bearing.*
-Its whole job is that the mode and the delegate route through *one*
-definition: a delegate spawned as a generic agent skips the read of the
-principles index and drifts. That is a hole in our design as it stood.
-=compass-helm= was specified as a session-level mode only, so a session
-that declared its function, loaded the principles and copied a method's
-phases in could hand work to a generic delegate that had done none of
-it. The discipline would evaporate exactly where the work happens. Fix:
-the mode and its delegate function share one definition, and helm spawns
-that function rather than a generic agent. Its second rule — resume an
-existing delegate rather than spawning a sibling — matters to us for the
-same reason it matters to pstack, and more so given the worktree fleet.
+**** Adopt
 
-*=Comment Sicko= is worth harvesting for three things that are not the
-persona.* The persona itself we reject: theatrical derangement is a
-compliance device for one model, it is not our register, and it would
-read badly beside ASD-STE100 prose. What is worth taking:
+- =writing-for-agents=, whole, as the authority on skill prose.
+- =grilling= as the interview primitive.
+- =wayfinder=, including the fog-of-war model and the "state the
+  question precisely now" test for what can be ticketed.
+- =diagnosing-bugs=, whole.
+- =codebase-design= as a knowledge document — it is a glossary, so it
+  grounds rather than acts.
+- =tdd=, for pre-agreed seams and the anti-patterns.
+- =prototype=, =wizard=, =resolving-merge-conflicts=.
+- The two-axis separation from =code-review=.
 
-1. *A read-only function whose inability to act is the point.* "I touch
-   comments and identify refactor targets. I never write application
-   code." That is the binding-versus-advisory distinction applied to
-   delegates, and it is easier to enforce there than anywhere else,
-   because a capability withheld cannot be reinterpreted by a delegate
-   under pressure to finish.
-2. *A finding that names a structural fix.* When a comment explains a
-   surprise in /our own/ code, the comment dies and the exact symbol is
-   flagged for the rename, extraction or retype that makes the behaviour
-   obvious without prose. Only surprises forced by something outside our
-   control earn a comment instead. This is =encode-lessons-in-structure=
-   made operational, and our [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] skill has nothing like
-   it today.
-3. *An enumerated keep-list with a tie-break.* Legal headers;
-   externally-forced behaviour; lint suppressions whose rule is genuinely
-   faulty; doc comments defining a public API contract; issue or RFC
-   links expressing a constraint code cannot. Then: when in doubt
-   whether a keep clause applies, the comment goes. Our skill states
-   principles where this states cases, and cases are what an agent can
-   actually apply.
+**** Harvest
 
-It also independently arrives at our grounding rule: before judging a
-comment's claim it reads the surrounding code, and escalates to the
-subsystem-tracing skills when the claim is not obvious there. A reviewer
-that grounds itself before deciding is the same obligation this design
-places on methods, reached from a different direction.
+- *The ADR gate* from domain modelling: record a decision only when it
+  is hard to reverse, surprising without context, and the result of a
+  real trade-off. If any of the three is missing, skip it.
+- *Seam sketching before implementation* from =to-spec=: prefer existing
+  seams, use the highest seam possible, and check them with the user.
+- *"Make the change easy, then make the easy change"* from =to-tickets=.
+- *The disclaimer rule* from =triage=: machine-written comments on a
+  shared surface say so.
 
-*The category this exposed.* Neither file is a skill; both are
-=agents/=. Our six planes had nowhere to put a delegate definition,
-which is why the first pass slid past them. They are *functions* —
-role-shaped, the counterpart to task-shaped skills — and our function
-concept already exists but has only ever been used for the cybernetic
-levels. Extending it to delegates costs nothing and closes the gap.
+**** Leave
 
-*** From the Council
+The issue-tracker abstraction and everything built on it — =triage=,
+=to-tickets=, =to-spec=, =implement= — because our agile layer owns that
+ground and owns it better. =ask-matt=, replaced by our own router. The
+setup skill. The in-progress and misc buckets. =research= folds into
+=doc-add-knowledge=; =handoff= and =wait-what= are thin wrappers whose
+content is a sentence each.
 
-Take it whole, as a consumed plugin. It is the deliberation plane and
-we do not need to reimplement it.
+*** From the thesis-writing skill
 
-*** From Allium
+Source: [[https://github.com/santifs/thesis-writing-skill][santifs/thesis-writing-skill]], MIT.
 
-Already taken. The work is to wire it into the method plane's framing
-and verification phases so specs stop being optional.
+The skill targets empirical theses, and most of it does not apply to us:
+the chapter templates, the hypothesis ordering, the separation of
+Results from Discussion, and the citation and bibliography machinery all
+presuppose a genre we do not write in. Its =writing-guide.md= and
+=review-checklist.md= are a different matter, and they supply what
+neither of our other writing authorities does.
 
-** How a session actually runs
+What we take is a standard for *exposition*. A paragraph advances one
+point, and carries a topic sentence, development, interpretation and
+local closure; a paragraph with no point is split, moved or cut.
+Terminology stays constant and every term is defined at first use.
+Hedging is matched to the strength of the evidence rather than to the
+strength of the claim, which supplies a vocabulary we have been lacking:
+/demonstrates/ and /shows/ for strong evidence, /suggests/ and /is
+consistent with/ for moderate, /may suggest/ and /raises the
+possibility/ for weak. Transitions state a logical relation rather than
+decorating the prose.
 
-The narrative, end to end.
+The last of these convicts our own writing. This design and the
+architecture page both assert things we have not tested — that
+attenuation improves selection, that the dispatcher can be generated —
+in the register reserved for things we have shown. Matching the hedge to
+the evidence is the correction.
 
-1. The session opens with [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] and declares its
-   *function*. That sets the level and attenuates the catalogue.
-2. It picks up work with =agile-find-heading= and =agile-start-task=.
-   Constraint arrives from above: the sprint mission, the story goal.
-3. It selects a *method* for the shape of the work. The method's first
-   phase is *domain grounding*: name the concepts the work touches,
-   resolve each to a knowledge document or its structure note, and file
-   any gap as the first task. Only then does it frame the problem and
-   state a falsifiable predicate, backed by an *Allium spec* where
-   behaviour is involved.
-4. Method phases cite *principles* for the judgement calls, and call
-   *actions* for anything that touches an artefact. An action that
-   needs a command reaches for its *recipe*; a step with no recipe
-   writes one rather than improvising.
-5. At a fork the evidence cannot settle, it convenes *deliberation* and
-   records the verdict on the task.
-6. Verification runs against the independent checkers first: compiler,
-   tests, schema validation, CI, review bot.
-7. It closes with =agile-close-task= and =pr-raise=. Signal flows up:
-   the task result becomes the story result.
-8. Anything learned that generalises is routed by =reflect= into a
-   *memory*, a *principle*, or a skill edit.
+*** Three writing standards, and what each reading is for
 
-** Consequences we should accept up front
-
-- *The catalogue shrinks before it grows.* Collapsing uniform verbs
-  into polymorphic skills removes rows. That should happen before the
-  imports land, or we will port cells we are about to delete.
-- *The dispatcher must be generated.* A hand-maintained verb table
-  will drift within a sprint. If we cannot generate it, we should not
-  build it.
-- *Levels on skills are a real migration.* Every skill needs a
-  considered =#+level:=, and a wrong one hides a capability.
-- *Persona deliberation is not a bug finder.* If we let the Council
-  stand in for CI, we will ship confident and wrong.
-- *Structure notes are work nobody has done yet.* Six clusters, each
-  needing an argued reading order rather than a list. This is the
-  precondition for the grounding phase being useful rather than
-  ceremonial.
-
-** Codegen: the architecture already exists, in the code
-
-Codegen is this project's largest automation surface and the document
-said nothing about it. That was a serious omission, and closing it turns
-out to strengthen the architecture rather than complicate it, because
-*codegen is the clearest working instance of everything proposed here* —
-built independently, for code rather than for skills, and further along.
-
-Look at what the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][variability model]] already has:
+Adopting the thesis guide leaves us holding three standards at once, and
+they give different advice. The division between them is not by genre,
+because a single document mixes genres, and it is not by document type,
+because a single document mixes those too. It is by *what the reading is
+for*.
 
 #+ATTR_HTML: :class hug-leading
-| Codegen has                                                   | Which is this architecture's |
-|---------------------------------------------------------------+------------------------------|
-| Meta-types: =domain_entity=, =lookup_entity=, =junction=, =field_group=, =service_registry= | Typed targets |
-| A closed register of eleven named [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]]                    | A closed register, like the verb register |
-| Roughly twenty-five named [[id:82394CFF-712C-45FF-84A5-6ED17A990568][features]]                        | The axes a register is built from |
-| Generated versus hand-written, which changes what you may do to a file | A target property that gates the legal verbs |
-| "Fix the template, never the output" ([[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][memory]])                | A principle, in the stance plane |
-| Zero-diff regeneration                                        | A falsifiable predicate |
+| Standard | The reading is for | Optimises for | Governs |
+|----------+--------------------+---------------+---------|
+| ASD-STE100 | Being informed now | Fast, unambiguous parsing, including by a non-native reader | The agent's replies to a person |
+| Thesis prose | Understanding durably | Comprehension of an argument read once, months later | Knowledge, meta, component and investigation documents; expository sections anywhere |
+| Writing for agents | Acting reliably | The agent taking the same process on every run | Skills, memories, CLAUDE.md, specifications, plans, acceptance criteria |
 
-Codegen is to the code what this architecture is to the skills. Where
-the two disagree, codegen is probably right, because it has been through
-a pilot and nineteen components of rollout while this document has been
-through one council.
+That criterion earns its place by explaining why the three do not
+conflict. ASD-STE100 asks for short sentences carrying one idea each;
+thesis prose asks for subordination and hedged qualification. Applied to
+the same text these are contradictory. They are never applied to the
+same text, because a conversational reply and a durable argument are
+read for different purposes, and stating the division as purpose of
+reading makes that a consequence rather than a coincidence.
 
-#+caption: The codegen decision procedure: generated-ness gates the verbs, the profile names the variability, regeneration proves it.
-[[proj:doc/llm/skills/skill_codegen_decision.png]]
+**** The standards compose within a document
 
-*** The three questions, as one decision procedure
+A rule assigning one standard per document would be wrong. A recipe
+opens with an expository account of what the operation is for and then
+gives executable steps: the first is read to understand and the second
+to act, so the recipe is thesis prose above and writing-for-agents
+below. A task divides the same way, its =* Goal= being exposition and
+its =* Acceptance= being written to be checked. The boundary is the
+section rather than the file.
 
-**** Is this entity generated?
+**** What none of them governs
 
-Ask before touching any artefact, because the answer decides which verbs
-are legal at all.
+Some artefacts carry their own conventions and take none of the three.
+Commit messages follow the project's git conventions, code comments
+follow [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]], and frontmatter, tables and generated
+blocks follow their document type's contract. This exclusion already
+exists in embryo: CLAUDE.md mandates ASD-STE100 for user-facing prose
+and exempts structured output. Making the list explicit is part of the
+work.
 
-1. Does a codegen model exist at
-   =projects/ores.<component>/modeling/ores.<component>.<slug>.org=?
-2. Does the artefact itself carry the generated-file marker?
+**** The consequence for our existing skill
 
-If generated, *hand-editing is not a legal verb*. The dispatcher should
-not offer it. The edit goes to the model, or to the template, and the
-distinction between those two is the next question down. This is the
-first place the =(type, verb)= table earns its keep on real work: it is
-not a convenience, it is a guard.
-
-**** Which profile does it bind to?
-
-The profile is a named bundle of feature values — the same idea as a
-method, one level down. Choosing one is the same shape of decision.
-
-1. Compute the entity's actual feature-value combination.
-2. Exact match against the eleven named profiles → bind it and stop.
-3. No exact match → find the nearest profile by Hamming distance over
-   the shared feature set, and read the diff. The diff is one of two
-   things, and saying which is the whole job: a *gap to close*, where
-   the entity should have matched and does not, or a *genuinely novel
-   combination* worth naming as a twelfth profile.
-
-The rule that makes this work: *never leave an entity with loose knobs
-and no profile*. Unnamed variability is indistinguishable from drift,
-and an entity nobody has classified is one nobody can tell is broken.
-Naming the combination is what converts twenty-seven loose knobs into
-one comparable signal per entity.
-
-**** Is it drifting?
-
-Three kinds of drift, and they are not the same failure.
-
-#+ATTR_HTML: :class hug-leading
-| Kind           | What happened                                              | Detected by                    | Enforced? |
-|----------------+------------------------------------------------------------+--------------------------------+-----------|
-| Artefact drift | A generated file was hand-edited                           | =check_component_drift.py=     | *No*      |
-| Template drift | A =.mustache= was edited instead of its literate org source | =template-drift.yml=           | Yes, in CI |
-| Model drift    | An entity's features no longer match its bound profile      | Nothing                        | *No*      |
-
-*** The finding this section produced
-
-Two of the three drift kinds are unguarded, and one of the gaps is worse
-than a gap because something asserts the opposite.
-
-=check_component_drift.py= exists, works, and is invoked by no workflow.
-Meanwhile the =nightly-includes= workflow raises pull requests whose body
-tells the reader that "hand-edited generated output would fail the local
-component drift check". That claim is currently false: nothing in CI
-runs it, so hand-edited generated output fails nothing. A checker that
-exists but is not wired is not a checker, and a checker the
-documentation claims is running is worse than one everybody knows is
-absent.
-
-Model drift has no checker at all. Nothing tells us that an entity has
-silently stopped matching the profile it is bound to, which is precisely
-the signal the classification work exists to produce.
-
-This lands squarely on the document's own argument about verification.
-Codegen drift checks are exactly the kind of *genuinely independent
-checker* that does not share the session model's priors — mechanical,
-falsifiable, indifferent to how convincing the agent's reasoning was.
-Routing verification to them is worth more than any amount of persona
-deliberation, and two of the three are not routed anywhere.
-
-*** What this changes in the architecture
-
-- *Generated-ness is a first-class target property*, alongside type and
-  level. It gates verbs, and the dispatcher must know it before it
-  offers anything.
-- *Profile selection joins method selection* as a match-against-a-closed-register
-  decision, with the same fallback discipline: nearest match, read the
-  diff, and name a new register entry rather than tolerating an
-  unclassified case.
-- *"Fix the template, never the output" is a principle*, not a memory.
-  It is =fix-root-causes= specialised to generated code, and it belongs
-  in the stance plane where a method can cite it.
-- *The drift checks are S3\* work.* Continuous, from outside, and
-  binding — the one place attenuation is a constraint rather than
-  ergonomics.
+[[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] currently claims all user-facing agent prose. Under
+this division that is nearly right but stated too broadly: its subject
+is the agent's conversational output, and applying it to a knowledge
+document would flatten the argued structure that makes the document
+worth reading. Narrowing its scope, and saying what it does not cover,
+is part of the same work.
 
 ** Council review: findings and dispositions
 

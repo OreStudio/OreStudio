@@ -61,7 +61,7 @@ Tasks are listed in intended execution order.
 |------+-------+-------+-----+-------------|
 | [[id:FE910755-16F8-4854-BA3D-D780BE5AFB64][Fix the invisible knowledge cluster and audit graph integrity]] | BACKLOG | | | The whole doc/knowledge/external cluster does not resolve in the graph; diagnose, fix, and add a continuous S3-star check so it cannot recur. Unblocks domain grounding. |
 | [[id:37BC3547-4FE9-4D13-B3E7-5C071C5155B9][Instrument skill selection so the baseline accrues forward]] | BACKLOG | | | Record selection events as they happen rather than scoring past tasks, so skill-choice quality becomes measurable and reportable from now on. |
-| [[id:9388A184-1EFA-4855-8C0B-7FDFE93C3647][Decide the disposition of every external skill]] | BACKLOG | | | Read every pstack and Matt Pocock skill in full and record a per-skill disposition against the skill architecture: adopt, adapt, harvest or reject, with the reason. |
+| [[id:9388A184-1EFA-4855-8C0B-7FDFE93C3647][Decide the disposition of every external skill]] | DONE | 2026-08-26 | 2026-08-26 | Read every pstack and Matt Pocock skill in full and record a per-skill disposition against the skill architecture: adopt, adapt, harvest or reject, with the reason. |
 | [[id:F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF][Land the skill architecture into policy]] | BACKLOG | | | Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword. |
 | [[id:1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE][Define the upstream attribution contract for imported skills]] | BACKLOG | | | Give every imported skill a recorded upstream source, path, commit and divergence note, backed by a manifest and a drift check. Provenance lives in the org source, never in the name. |
 | [[id:629B48C7-BC7E-44A8-8979-3E05D6DA5BFE][Collapse the uniform verbs into polymorphic actions]] | BACKLOG | | | Shrink the action plane before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table. |
@@ -82,6 +82,7 @@ Tasks are listed in intended execution order.
 | [[id:B0768518-B564-407A-87CD-9C0D9168126E][Decide and build the Qt verification mechanism]] | BACKLOG | | | Settle how Qt work is verified: widget tests under the offscreen platform, a scripted in-app control surface, and external screen automation only for pixel work. |
 | [[id:D03D90DB-BDEB-4E98-A44A-384CCA790903][Implement the verification ladder and its stack discipline]] | BACKLOG | | | Codegen first, then drift, then tests, then a scripted shell scenario, then Qt; with generator gaps and drift handled as blocking discovered tasks. |
 | [[id:0829C5A8-A104-44CA-ADC5-819EFC5F31A1][Add a skill eval harness driven by mechanical verdicts]] | BACKLOG | | | Re-run closed tasks in a throwaway worktree under a changed skill and grade against what actually landed, using the independent checkers rather than a judge model. |
+| [[id:96FCA6C1-7E9C-4D25-BFE1-ADB308E58172][Establish the writing standards and the genres they govern]] | BACKLOG | | | Three writing authorities now apply: ASD-STE100 for instructions, thesis prose for knowledge documents, and writing-for-agents for skills. Settle which governs what and port the two imports. |
 
 * Decisions
 

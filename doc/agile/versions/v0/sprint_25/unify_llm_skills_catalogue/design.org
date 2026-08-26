@@ -910,22 +910,24 @@ content is a sentence each.
 [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records a finding that bears directly on one of our
 choices, and it does not favour us.
 
-Liu, Ming, Joty and Zhao report that skills expressed as text are
-"largely /advisory/", because such a skill states what an agent should
-do in principle but not when it should fire or how it should alter the
-next decision. They reserve the term /prompt-only skill/ for that form,
-and contrast it with a /program function/ carrying an activation
-predicate the runtime can evaluate.
+Liu, Ming, Joty and Zhao find that a textual skill states what an agent
+should do in principle but not when it should fire or how it should
+alter the next decision, and that it "is often ignored by the model in
+practice". Their illustration names our case exactly: "instead of merely
+stating a principle such as 'avoid repeated searches,' a PF specifies
+both when that principle applies and how the next decision should
+change".
 
-Our stance plane consists entirely of prompt-only skills by design. A
+Our stance plane consists entirely of such principles by design. A
 principle has no steps, produces no artefact, and fires only when an
-agent reads its name and judges that it applies. That is the weak form
-the paper identifies.
+agent reads its name and judges that it applies.
 
 Two considerations qualify the finding without dissolving it. The
-paper's own libraries mix both kinds rather than eliminating the
-prompt-only ones, so the argument is about proportion rather than
-prohibition. And a principle differs from the skills the paper measures:
+paper's measured claim is narrower than its rhetoric: it reports that
+adding /prompt-equivalent/ skills on top of an executable library has an
+effect that is "small and mixed across datasets", which is evidence
+about marginal value rather than about principles being worthless. And a
+principle differs from the skills the paper measures:
 it constrains a judgement rather than repairing an action, and there may
 be no predicate that decides when a judgement call has been made badly.
 

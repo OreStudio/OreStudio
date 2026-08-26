@@ -2,7 +2,7 @@
 :ID: F5CB5A45-6557-410B-9E4F-542957561A16
 :END:
 #+title: Skill planes
-#+description: The six classes of artefact in the skills catalogue, distinguished by the relation an agent bears to each: grounding is loaded, stance is cited, method is sequenced, action is executed, specification is declared, deliberation is convened.
+#+description: The criterion by which artefacts in the catalogue are classified, the six classes it admits, the contrasts between the pairs most easily confused, and the procedure that assigns a new artefact to one of them.
 #+type: knowledge
 #+level: cross
 #+startup: inlineimages
@@ -10,39 +10,227 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-A *plane* is a class of artefact, distinguished from the others by the relation
-an agent bears to it. This page defines the six, contrasts the pairs that are
-easily confused, and lists which artefacts fall where.
+* Summary
 
-For why the catalogue is organised this way at all, and for the placement
-procedure that decides where a new artefact goes, see [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
+A *plane* is a class of artefact, distinguished from the others by the relation
+an agent bears to it.
+
+This document states the criterion behind that classification and defends the
+choice of criterion, derives the six classes it admits, treats each in turn with
+attention to the pairs most easily confused, and closes with the procedure that
+assigns a new artefact to a plane.
+
+** Artefacts, Documents and Targets
+
+Three terms are easily run together and are distinguished here once.
+
+An *artefact*, in the sense [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] gives the word, is a file or a directory
+belonging to a software project. The planes classify a subset of the project's
+artefacts: those the skills catalogue holds. Every one of them is a document, so
+within this page artefact and document may be read interchangeably; the wider
+term is retained because the classification would apply equally to a
+non-document file were the catalogue ever to hold one.
+
+A *target* is what an action acts upon, and targets are broader than artefacts.
+A task and an entity model are artefacts, being files. A branch, a pull request,
+a service and a failing test are targets and are not artefacts, since none is a
+file or a directory. Targets are therefore never classified into planes: the
+criterion below asks what relation an agent bears to a thing, and an agent
+neither loads nor cites nor sequences a branch, it acts on one. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]
+treats targets and the operations registered against them.
+
+A *document type* classifies a document by its contract: the frontmatter it
+carries, the sections it must contain, its lifecycle and its location. This is
+orthogonal to the plane, which classifies by the agent's relation, and the two
+stand in a many-to-many relation. The grounding plane spans three document types
+— knowledge, recipe and memory — while the skill document type spans three
+planes, since a skill may be a principle, a method or an action. The plane
+cannot therefore be inferred from the document type, which is why the definition
+requires it to be declared. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] carries the type ontology.
 
 * Detail
 
 #+caption: The six planes. Grounding is loaded; the other five are run.
 [[proj:doc/llm/skills/skill_planes.png]]
 
-A *plane* is a class of artefact, distinguished from the others by the relation
-an agent bears to it. That single criterion generates all six: an agent loads
-grounding, cites a stance, sequences a method, executes an action, declares a
-specification, and convenes a deliberation. The planes are consequently tags
-rather than a partition. Most artefacts bear one relation and carry one tag; a
-few, of which the router is the clearest case, legitimately bear several.
+** The Classification Criterion
 
-The distinction that does the most work is the first one. Grounding is the only
-plane an agent *loads*; the remaining five it *runs*. An artefact that is loaded
-contributes to what the agent knows before it decides anything, and it has no
-procedure of its own. An artefact that is run contributes to what the agent
-does, and it always has one.
+The classification is not freely chosen. [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]
+defines a skill as one action applied to one typed target, at a stated level, in
+exactly one plane, and derives the last of those clauses from a limitation of
+the specification: a construct admitting only executable instructions has no
+place for a rule that is cited rather than run, nor for an approach to a class
+of work that issues no command of its own. The plane clause repairs that
+omission, and the present document supplies the taxonomy the clause presupposes.
 
-** Grounding
+What remains open is which classes the taxonomy should contain, and on what
+basis. A taxonomy is answerable to the question it is built to serve. The question here
+is what an agent should do with an artefact it has encountered, and that
+constrains the choice of criterion more than it might appear.
+
+Classification by subject matter cannot answer it. Knowing that a document
+concerns interest rate curves says nothing about whether the agent should read
+it, follow it, or run it. Classification by author or by age fares no better.
+The classification must be by *the relation the agent bears to the artefact*,
+because that relation is precisely what the agent does with it, and a
+classification by what an agent does is directly actionable where a
+classification by what an artefact contains is not.
+
+*** Methodological Precedent
+
+Classifying artefacts by the role they play is the analytical move [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] is
+built on, and the framework's treatment of the skills catalogue follows it
+closely enough that the correspondence is worth setting out.
+
+MASD's physical modelling process has five steps: sample representative
+hand-written artefacts, decompose each into its parts, label and classify them
+into /parts/ and /facets/, reconstruct each pattern as an archetype, then
+catalogue the archetype and expose its variability. The analysis behind this
+framework took the same five steps against a different population. It sampled
+our own catalogue together with three published collections, decomposed each
+skill into the judgement, sequence, command and fact it carried, classified
+those into planes, reconstructed the uniform cases as a computed table, and
+catalogued the result with the declarations that parameterise it.
+
+The correspondence holds at three further points.
+
+A *facet* in MASD is "an arbitrary partitioning/taxonomy of the logical space",
+a choice about how to classify entities "by the role each artefact plays". A
+plane is the same kind of object, and MASD's candour about arbitrariness is
+worth adopting rather than resisting: a taxonomy of this kind is a modelling
+choice justified by what it makes possible, not a natural kind discovered in the
+material. That is the ground on which the planes are offered as tags rather than
+as a partition.
+
+MASD addresses an artefact by a four-segment path, =[technical space].[part].
+[facet].[archetype]=, so that its location follows from its classification
+rather than from memory. The framework addresses an operation by the pair of
+target type and verb for the same reason, and [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats the
+consequence.
+
+Most directly, MASD's central object is the /Schematic and Repetitive Pattern in
+Physical Space/: content that "varies predictably across entities but is
+otherwise mechanically identical", and which is therefore generated rather than
+written by hand. A catalogue holding one skill for each pairing of verb and
+target type is such a pattern. The limitation the definition addresses is
+consequently an SRPP in the skills catalogue, and the response the framework
+makes to it is the response MASD prescribes.
+
+The test is operational in both cases. MASD holds that "one determines if a
+physical pattern is schematic and repetitive by reproducing it by automated
+means"; the framework holds that a verb table which cannot be generated is a
+table that should not be built.
+
+One MASD principle bears on the section that follows. /Evolve Gradually/ directs
+that coverage grow "driven by concrete practice rather than up-front design",
+which is the ground for declining to claim the six values below are exhaustive.
+
+*** Planes and Facets
+
+If a plane is the same kind of object as a MASD facet, the framework owes an
+account of why it does not simply declare six facets and stop. There are three
+reasons, and the first is a matter of fact rather than of theory.
+
+**** The Facet Slot Is Occupied
+
+Documents already have facets in this project's physical space. The =ores.doc=
+facet group holds four: =ores.doc.knowledge=, =ores.doc.agile=,
+=ores.doc.modeling= and =ores.doc.template=. That partition is by area of the
+documentation, and it is a perfectly good one, but it is not the partition the
+skills catalogue needs. A second partition of the same artefacts along a second
+axis cannot occupy the same slot in a four-segment address.
+
+**** The Two Classifications Answer Different Questions
+
+The deeper reason is that a facet and a plane are asked different things.
+
+A facet answers a question about *production*. MASD's physical space describes
+how artefacts come to exist: one logical entity projects into many artefacts,
+and the facet records which projection a given artefact is, so that grouping all
+the artefacts giving a type its serialisation is exactly what a facet is for.
+
+A plane answers a question about *consumption*. It records what an agent does
+with an artefact once the artefact exists, which is a property of the reader
+rather than of the generator.
+
+Both are true of the same file and neither follows from the other. A knowledge
+document is an artefact of the =ores.doc.knowledge= facet and a member of the
+grounding plane; the first fact concerns how it was produced, the second how it
+is used.
+
+**** No Mapping Exists Between Them
+
+Were the two axes to coincide, one could be derived from the other and only one
+would be needed. They do not.
+
+Most artefacts of the =ores.doc.agile= facet, being stories and tasks, belong to
+no plane at all: they are targets that actions act upon rather than members of
+the catalogue. Conversely one document type spans three planes, since a skill
+may be a principle, a method or an action, so a facet-to-plane function would
+have to be many-valued. And some plane members lie outside the physical space
+entirely, an Allium specification and the deliberation plugin being neither
+generated by this project nor addressed within it.
+
+**** Harmonisation
+
+The framework therefore extends MASD's move rather than duplicating its
+vocabulary. MASD classifies artefacts by role for the purpose of generating
+them; compass classifies a subset of the same artefacts by role for the purpose
+of using them. The method is MASD's, the population overlaps, and the consumer
+differs, which is why a distinct term is warranted and why the two
+classifications coexist on the same file without competing.
+
+*** Values of the Criterion
+
+The criterion admits six values. An agent may *load* an artefact into what it
+knows, *cite* it in reaching a judgement, *sequence* its steps, *execute* it
+against a target, *declare* it as intended behaviour, or *convene* it as a
+procedure among several participants.
+
+These six are the values the framework has required. In keeping with the
+principle cited above, we do not claim the list is exhaustive. A seventh
+relation would be admitted on the same terms as the others: it would have to
+name something an agent does with an artefact that none of the six describes.
+
+*** The Primary Division
+
+The first division the criterion makes is between loading and everything else,
+and it is the one that carries the most consequence.
+
+An artefact that is loaded contributes to what an agent knows before it decides
+anything, and it has no procedure of its own. An artefact that is run
+contributes to what the agent does, and it always has one. Grounding is the only
+loaded plane; the remaining five are run.
+
+*** Tags Rather Than a Partition
+
+The planes are tags rather than a partition. Most artefacts bear one relation
+and carry one tag, but an artefact may legitimately bear several, and the router
+is the clearest instance: it declares a function, matches a method, and
+dispatches, so it is at once sequenced and executed.
+
+A partition would be the stronger claim and the framework does not need it.
+What it needs is that every artefact bear at least one relation, which the
+criterion guarantees, since an artefact bearing no relation to an agent has no
+place in a catalogue an agent uses.
+
+** The Planes
+
+Five of the six are simple classes. Grounding alone divides further, into three
+members that differ in the question they answer and in the condition under which
+they load; that asymmetry reflects the plane rather than an oversight, since
+loading is the only relation an agent bears to an artefact before it has decided
+anything, and the material it loads is correspondingly varied.
+
+*** Grounding
 
 Grounding is the body of material an agent brings into working knowledge before
-it acts. It divides into three members which differ both in the question they
-answer and in the condition under which they load, and conflating them is why
-none of them currently participates in the work.
+it acts. Its three members differ in the question they answer and in the
+condition under which they load, and the distinctions between them are
+load-bearing: a framework that treats them alike cannot say when each should be
+consulted.
 
-*** Knowledge
+**** Knowledge
 
 A knowledge document states a durable fact about the domain or the system: what
 a thing is, how it behaves, and why it is so. It is *descriptive*. Its claims
@@ -56,7 +244,7 @@ the curve cluster and nothing else, which is only possible if something can tell
 it which cluster that is. That is what a structure note does, and the
 [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] page records the discipline.
 
-*** Recipes
+**** Recipes
 
 A [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][recipe]] states how one operation is performed in this system. It is
 *operational* where knowledge is conceptual, and it is invariant: the same steps
@@ -69,7 +257,7 @@ Recipes load at the moment an action needs a command. Their fuller role, and the
 boundary that separates them from methods, is set out under /Methods and
 recipes/ below.
 
-*** Memories
+**** Memories
 
 A memory records a correction that must not be repeated. It is *prescriptive*
 where knowledge is descriptive: it does not describe the world but constrains
@@ -83,30 +271,31 @@ every session, so each one competes for attention with every other. A correction
 that applies to one domain is better recorded as knowledge in that domain and
 reached when the domain is.
 
-*** The obligation to ground
+**** The Grounding Obligation
 
-Knowledge documents are not reference material sitting beside the work; they are
-the agent's model of the domain it is regulating. Beer's argument transfers
+A knowledge document is not an accompaniment to the work. It is the agent's
+model of the domain it is regulating. Beer's argument transfers
 without modification. A regulator requires a model of the system it regulates,
 and an agent that has not loaded one lacks the variety to act well within it.
 The failure this produces is characteristic: the agent does not stall or refuse,
 it produces something fluent and wrong, and it has no means of noticing.
 
-Grounding is therefore a precondition rather than a courtesy. Every method opens
-by naming the domain concepts its work touches and resolving each to a knowledge
-document or a structure note. A concept that resolves to nothing is a *knowledge
-gap*, and on domain-related work closing that gap is the first task, ahead of
-design and ahead of code. A method that proceeds without grounding records the
-omission and its reason, in the same way any other skipped phase is recorded.
+Grounding is therefore a precondition of the work rather than an adjunct to it.
+Every method opens by naming the domain concepts its work touches and resolving
+each to a knowledge document or a structure note. A concept that resolves to
+nothing is a *knowledge gap*, and on domain-related work closing that gap is the
+first task, ahead of design and ahead of code. A method that proceeds without
+grounding records the omission and its reason, in the same way any other skipped
+phase is recorded.
 
-** Stance
+*** Stance
 
 A stance is a general rule of judgement. It constrains how a choice is made
 without prescribing what is done, which is why it has no procedure and produces
 no artefact: there is nothing in a stance to execute. An agent invokes one by
-*citing* it against a specific decision, and the citation carries weight only
-when it names the choice the rule changed. A principle named without a decision
-behind it is decoration.
+*citing* it against a specific decision, and the citation is admissible only
+when it names the choice the rule changed. A principle cited without an
+accompanying decision records nothing and may be disregarded.
 
 Two contrasts fix the boundary. A stance differs from a method in that a method
 orders actions through time whereas a stance constrains the choices made within
@@ -120,7 +309,17 @@ nevertheless a skill. That exemption is deliberate and narrow: a principle which
 cannot be loaded by name cannot be cited by a method, and a rule that cannot be
 cited cannot be shown to have been applied.
 
-** Method
+The academic literature reviewed in [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] bears
+on this plane, and it does not favour it. That review finds a rule expressed as
+text states what an agent should do in principle without stating when it
+applies, and reports such rules being disregarded in practice. The plane is
+therefore constituted as a residue rather than as a preference: a rule that can
+be expressed as a check, whether a lint, a validator or a test, is written as
+one and does not enter the plane, which holds only what cannot be checked. A
+stance plane that fails to shrink as checks accumulate is evidence that the
+requirement is not being applied.
+
+*** Method
 
 A method is an ordered sequence of phases carrying a piece of work from an
 unverified beginning to a verified end. It is defined over a *shape of work* — a
@@ -128,14 +327,20 @@ defect to be diagnosed, a behaviour to be added, a structure to be changed —
 rather than over any particular artefact, and it therefore names no specific
 command. A method is control flow without effectors.
 
+Indexing by shape of work is the axis on which the pstack collection organises
+its entire catalogue, as the review of industrial collections in [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the
+Compass Skill Framework]] records. Here it governs one plane among six, the
+artefact axis being carried by actions, so the two axes compose rather than
+compete.
+
 The phases of a method are adaptive rather than fixed. Which of them run and in
 what order depends on what the work reveals as it proceeds, so a method's
 correctness is a property of the judgement it encodes rather than of the system
-it runs against. This is the deepest difference between a method and a recipe,
-and it is worth stating separately because the two are the most confusable
-artefacts in the catalogue.
+it runs against. This is the principal difference between a method and a
+recipe. The two are treated together below, since the distinction between them
+accounts for most misclassification in practice.
 
-*** Methods and recipes
+**** Methods and Recipes
 
 A recipe answers /how is this operation performed here?/ A method answers /how
 is this class of work approached?/ From that difference the rest follows.
@@ -163,7 +368,7 @@ should be run, judgement has leaked downward and belongs to a method. Where a
 method finds itself spelling out a command, an effector has leaked upward and
 belongs to a recipe.
 
-** Action
+*** Action
 
 An action is a single operation applied to one typed artefact, together with the
 judgement governing its use: what must hold before it runs, what state it leaves
@@ -182,7 +387,7 @@ generated type table; where its procedure genuinely differs per type it keeps a
 skill of its own. The test is whether the *procedure* differs, not whether the
 artefact does.
 
-** Specification
+*** Specification
 
 A specification states intended behaviour in a form a machine can check, and
 from which tests are generated. Its defining property is that it is *normative*:
@@ -197,7 +402,7 @@ done falsifiable rather than rhetorical. A method's framing phase writes or
 extends a rule; its verification phase runs the tests propagated from that rule.
 In this project specifications are written in Allium.
 
-** Deliberation
+*** Deliberation
 
 Deliberation is the procedure by which a contested judgement is settled when the
 available evidence cannot settle it. A method convenes one at a fork it cannot

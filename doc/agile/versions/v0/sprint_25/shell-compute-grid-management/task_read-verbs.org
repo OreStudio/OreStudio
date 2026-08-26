@@ -124,6 +124,13 @@ via its "Verifies task" field.
 | 7 | list-platforms header comment says "as a table" (5410159838) | compute_commands.hpp | Fixed | Comment now states provisional raw rows until the drift story lands table_io (01ad6a94e3) |
 | 8 | is_online 90s window disagrees with the server's 5-minute grid-stats window (5410160036) | compute_commands.cpp | Fixed | online_window{300} aligned with ores_compute_grid_stats_fn_create.sql (67406e0ea2) |
 | 9 | O(n×m) match in results_of_batch (5410160036) | compute_commands.cpp | Fixed | std::unordered_set<uuid> lookup, O(n+m) (01ad6a94e3) |
+| 10 | dispatch-batch retry after a partial failure duplicates already-dispatched jobs (5411538471) | compute_commands.cpp | Declined | Inherent to the leave-open-and-redispatch design: a re-run mints job_count new workunits; accepted risk, documented in the reply |
+| 11 | limit = 1000 without pagination on batch-scoped lookups (5411538471) | compute_commands.cpp | Declined | Same as row 3; tracked as follow-up (paginate_compute_list_requests.org) |
+| 12 | delete-host docstring says 90s heartbeat window (5411538471) | compute_commands.hpp | Fixed | Doc now states 300s, matching online_window{300} (0dc9f4a13b) |
+| 13 | Stale 90s heartbeat text in the header doc and the delete-host recipe (5411583598) | compute_commands.hpp, delete-host recipe | Fixed | Both now state 300 seconds (5 minutes), matching online_window{300} (0dc9f4a13b) |
+| 14 | split_storage_uri hardcodes "/api/v1/storage/" (5412188603) | compute_commands.cpp | Fixed | Prefix derived from storage_paths::prefix, in sync with make_object_path (58761e0ffa) |
+| 15 | Stale 90s heartbeat in the monitoring task doc Acceptance/Plan (5412188603) | task_grid-monitoring-verbs.org | Fixed | Aligned with the Result section's 5 minutes (0dc9f4a13b) |
+| 16 | Smoke recipe variable INPUT_DIR stale for the tarball input (5418263168) | recipes, .ores scripts | Fixed | Renamed to INPUT_TARBALL in the smoke and dispatch recipes, retangled (bb0b13bcd7) |
 
 * Result
 

@@ -79,6 +79,36 @@ The mode is a convenience over methods rather than a precondition for them: a
 method may be invoked directly, as may an action. Separating the three in this
 way allows each to be exercised and tested on its own.
 
+** Terminology
+
+The framework uses a fixed vocabulary. The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] is the register of record;
+the table below fixes usage within the framework and names the terms it retires.
+
+#+ATTR_HTML: :class hug-leading
+| Concept                          | Term      | Retired synonyms                     |
+|----------------------------------+-----------+--------------------------------------|
+| A unit of work an agent executes | task      | ticket, issue, unit, slice           |
+| A body of related tasks          | story     | epic, spec, map                      |
+| A recorded idea, not yet work    | capture   | backlog item, inbox item             |
+| The approach to a kind of work   | method    | playbook, flow                       |
+| The sticky posture for a session | mode      | stance skill, style, persona         |
+| A rule that is cited, not run    | principle | rule, guideline                      |
+| A durable fact about the domain  | knowledge | research note, doc, ADR              |
+| Intended behaviour, checkable    | spec      | never used for a story plan          |
+| The role a session adopts        | function  | persona, agent type, role            |
+| Any LLM process doing work       | agent     | bot, assistant                       |
+| The agent a human talks to       | session   | main agent, parent, the LLM          |
+| An agent spawned by another      | delegate  | subagent, worker, child agent        |
+| The typed thing acted upon       | target    | object, candidate, entity            |
+| The operation applied to it      | action    | command, verb, skill                 |
+
+Three terms admit a misreading and are worth stating negatively. /Spec/ denotes
+an Allium specification and nothing else; a story's plan is a *plan*. /Persona/
+denotes a Council member and nothing else; the role a session adopts is a
+*function*. /Agent/ is the general term for any process of this kind and
+therefore names no role: the level designated S1 is called Agent, but it is a
+function, adopted by a session or a delegate.
+
 ** The Framework in Detail
 
 The detail is distributed across several pages, each answering a question a

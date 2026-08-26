@@ -9,77 +9,96 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-#+begin_note
-*Status: target state.* This page describes the framework we are
-building, not the catalogue as it stands today. Where this page and the
-current catalogue disagree, the catalogue is what runs.
-#+end_note
-
 * Summary
 
-A [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][skill]] is one action applied to one typed target, and the catalogue is
-arranged so that an agent can find the right one without reading all of
-them. The arrangement rests on three classifications, each useful
-without the others.
+This document is the hub of the /compass skill framework/. The objective of the
+framework is to define an ontology of core domain concepts and associated
+operational processes. These aim to establish the computational primitives
+required for both human and [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][LLMs]] to operate agent harnesses in an autonomous or
+semi-autonomous manner. The framework is build on top of academic foundations
+such as [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], but also rests on empirical foundations such as
+[[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skills]] used by other developers. We have tried to attribute provenance
+adequately, but if any citations are missing please report it.
 
-Artefacts are sorted into [[id:F5CB5A45-6557-410B-9E4F-542957561A16][planes]] by the relation an agent bears to
-them: it loads grounding, cites a stance, sequences a method, executes
-an action, declares a specification, and convenes a deliberation.
-Operations are registered against a target's *type* rather than against
-the command that produced the target, which allows the applicable verbs
-to be [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][computed]] rather than remembered, and removes the combinatorial
-growth a hand-written catalogue suffers. Actors declare a [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][function]],
-whose cybernetic level attenuates how much of the catalogue is in scope,
-binding at the audit level and advisory elsewhere.
-
-Work is carried from an unverified beginning to a verified end by a
-[[id:E8311826-9900-4932-AFFB-A8AF663414DF][method]], whose phases cite the principles that govern their judgement and
-call the actions that touch artefacts. How far that work must climb the
-[[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification]] ladder depends on what it changed, and anything structural
-is [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][generated]] rather than written. An agent can be configured and
-[[id:54AD5986-34A0-4B19-9F20-D9A024225036][left running]] against a checkable finish condition.
+The objective of the hub page is to provide a summary introduction to the key
+actors, and link to the spoke pages where these are treated in more detail. The
+document starts by defining the key concepts of the framework, moves on to it's
+entry points and concludes with an index of all the pages relevant to the
+framework.
 
 * Detail
 
-** Entry points
+** Key Concepts
 
-The composition model is prior to any particular way of using it. Types
-and verbs compose whether or not something routes them, levels attenuate
-whether or not a mode declared them, and the planes classify regardless.
-There are consequently three ways in, and each is legitimate.
+"A *skill* in agent tooling is a document that an assistant loads to perform a
+/kind/ of work" (/c.f./ [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]]). A /skill/ as understood by the compass
+[[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][skill]] framework is a refinement of this general concept: in simple terms, it is
+one /action/ applied to one /typed target/. A skill is defined in compass via a
+specific document type, one of many of the [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][documentation ontology]]. As we shall
+see, this very same ontology then facilitates the definition of the type
+targets. The compass skill framework builds on top ideas from [[https://flaviocopes.com/pstack/][pstack]] and other
+open source tooling such as [[https://karthinks.com/software/fifteen-ways-to-use-embark/][Emacs' embark]], which were analysed as prior art and
+in some cases copied /verbatim/.
 
-The most direct is to *invoke an action*, when the operation and its
-target are both already known. The second is to *dispatch on a target*
-with =compass-act=, when the target is known and the operation is not.
-The third is to *enter the mode*, =compass-helm=, which declares a
-function, matches the work to a method, and routes to the other two as
-the method's phases fire.
+This analysis led us to try to create a small but consistent action model,
+composed of three core concepts:
 
-The mode is a convenience over methods rather than a precondition for
-them, and this is worth stating because the reverse reading would make
-the mode a single point of failure for the whole catalogue. A method is
-invocable on its own; so is an action.
+- *[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Planes]]*. Artefacts are classified into planes by the relation an agent bears
+  to them: the agent /loads/ grounding, /cites/ a stance, /sequences/ a method,
+  /executes/ an action, /declares/ a specification, and /convenes/ a
+  deliberation. The [[id:F5CB5A45-6557-410B-9E4F-542957561A16][planes]] document explains in detail its taxonomy and
+  rationale.
+- *[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Dispatching]]*. Operations are registered against a target's /type/ rather than
+  against the command that produced the target. This allows applicable verbs to
+  be computed rather than remembered, and removes the combinatorial growth a
+  hand-written catalogue tends to suffer.
+- *[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions]]*. Actors declare a function. The function's [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Level]]
+  determines the relevant subset of the skills catalogue. FIXME: what does this
+  mean: "binding at the audit level and advisory elsewhere."
 
-** The framework, page by page
+To attain its automation goal, the framework uses these core concepts to convert
+a "unit of work" --- often a [[id:31C868B9-306E-4282-BA8C-07E647021B34][Task]], but not always. Units of work start from an
+unverified beginning and are lead through well-defined flows, themselves
+determined dynamically, to a verified end state via a [[id:E8311826-9900-4932-AFFB-A8AF663414DF][method]]. The method's
+phases cite the principles that govern their judgement and call the actions that
+act on relevant artefacts. In this process, [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][code generation]] is preferred where
+possible. How far that work must climb the [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification]] ladder depends on what
+it changed. An agent can be configured and [[id:54AD5986-34A0-4B19-9F20-D9A024225036][left running]] against a checkable
+finish condition.
 
-The detail is distributed across eight pages. Each answers a question a
-reader can arrive with independently, and this page holds no content
-they do not.
+** Entry Points
+
+The composition model was designed to be independent of specific use cases.
+There are three use cases we have in mind, of equal importance. The most direct
+is to *invoke an action*, when the operation and its target are both already
+known. The second is to *dispatch on a target* with =compass-act=, when the
+target is known and the operation is not. The third is to *enter the mode*,
+=compass-helm=, which declares a function, matches the work to a method, and
+routes to the other two as the method's phases fire.
+
+The =compass-helm= mode is a convenience over methods rather than a precondition
+for them. A method is invocable on its own; so is an action. This layered
+approach allows us to test each part individually.
+
+** The framework in Detail
+
+The detail is distributed across several pages. Each answers a question a reader
+can arrive with independently.
 
 #+ATTR_HTML: :class hug-leading
-| Page | Answers |
-|------+---------|
+| Page                               | Answers                                                        |
+|------------------------------------+----------------------------------------------------------------|
 | [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] | What is a skill here, and why is the received notion too weak? |
-| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] | What kinds of artefact exist, and how do they differ? |
-| [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] | Given a thing in hand, what may I do to it? |
-| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] | Who is acting, and what may they see and do? |
-| [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]] | How is an agent configured, isolated and left to run? |
-| [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] | How is a piece of work driven from start to finish? |
-| [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] | How do we know it worked? |
-| [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]] | How is generated structure kept correct? |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]]                       | What kinds of artefact exist, and how do they differ?          |
+| [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]                     | Given a thing in hand, what may I do to it?                    |
+| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]]               | Who is acting, and what may they see and do?                   |
+| [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]                     | How is an agent configured, isolated and left to run?          |
+| [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]               | How is a piece of work driven from start to finish?            |
+| [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]]        | How do we know it worked?                                      |
+| [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]                | How is generated structure kept correct?                       |
 
 Read them in that order to meet the framework for the first time. The
-walkthrough in [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] shows the same pieces in the order a
+walk-through in [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] shows the same pieces in the order a
 session actually reaches them.
 
 * See also

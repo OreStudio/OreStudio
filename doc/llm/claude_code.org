@@ -12,7 +12,9 @@
 * Summary
 
 Claude Code is Anthropic's official CLI for Claude — the AI assistant
-that drives ORE Studio's day-to-day development. It runs inside the
+that drives ORE Studio's day-to-day development. Claude is a [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][large
+language model]], and the properties of that class of system, described
+externally on its own page, set the limits this tool works within. It runs inside the
 repository, reads =CLAUDE.md= at session start, and has access to a
 curated set of tools and permissions defined in
 [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]. Project-specific configuration lives under
@@ -55,6 +57,8 @@ literate org document and generated via org-babel tangle. Never edit
 [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]].
 
 * See also
+
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the technology this tool provides an interface to, defined externally.
 
 - [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — permission allow-list and sandbox configuration.
 - [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first system]] — the philosophy behind LLM-driven development.

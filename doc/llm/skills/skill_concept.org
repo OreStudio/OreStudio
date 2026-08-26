@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 87D41A08-0B37-41CE-8483-B59B36BA87FA
 :END:
-#+title: The skill in the compass framework
+#+title: Skills in the Compass Skill Framework
 #+description: The received notion of a skill, the three respects in which it is too weak to build on, and the tightened definition this framework adopts: one action, one typed target, one level, one plane.
 #+type: knowledge
 #+level: cross
@@ -9,148 +9,271 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-#+begin_note
-*Status: target state.* This page describes the framework we are
-building, not the catalogue as it stands today. Where this page and the
-current catalogue disagree, the catalogue is what runs.
-#+end_note
-
 * Summary
 
-This page fixes what the word *skill* means in this framework. It states
-the received notion, gives three respects in which that notion is too
-weak to build on, and sets out the tightened definition that the rest of
-the framework depends on.
+This page fixes what the word *skill* means within the compass framework. It
+states the received notion, gives three respects in which that notion is too
+weak to build on, and sets out the tightened definition that the rest of the
+framework depends on.
 
 * Detail
 
-** The received notion
+** Context
 
-[[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records the definition the format supplies. A skill is a
-directory holding a =SKILL.md= file. Its frontmatter carries a name and
-a description. Its body holds instructions the assistant follows.
+To understand the generally understood notion of a skill in an LLM and agent
+harness context, see [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][agent skills]]. In brief, a skill is a directory holding a
+=SKILL.md= file. Its frontmatter carries a name and a description. Its body
+holds instructions the assistant follows.
 
-The project [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] adds one distinction. A skill is /task-shaped/: it
-is invoked in one session to perform a unit of work. A [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] is
-/role-shaped/: it describes what someone does and lists the skills that
-role draws on.
+In ORE Studio, the project [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] adds one distinction. A skill is
+/task-shaped/: it is invoked in one session to perform a unit of work. A
+[[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] is /role-shaped/: it describes what someone does and lists the skills
+that role draws on.
 
-The literature reaches the same verdict, and states it more sharply.
-Liu, Ming, Joty and Zhao find that a textual skill "can express what the
-agent should do in principle, but not precisely when it should activate
-inside the policy loop, how it should alter the next decision, and it is
-often ignored by the model in practice". Their remedy is to give a skill
-an explicit activation predicate. Their illustration names the form our
-own stance plane takes: "instead of merely stating a principle such as
-'avoid repeated searches,' a PF specifies both when that principle
-applies and how the next decision should change". [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records
-the argument and the lineage behind it.
+** Literature Review
 
-Both definitions state what a skill /is/. Neither states what it acts
-/upon/, how large it may be, or whether it must be executable. Three
-problems follow, and each is a problem the received notion cannot solve
-from within. The first of the three is the same deficiency the
-literature names, reached from a different direction: a skill with no
-declared object has no condition under which it fires.
+The compass approach is based on findings in the broader literature, both from
+academia and industry. The next sections discuss our findings.
 
-** Three insufficiencies
+*** Academic Literature Review
 
-*** The object is unnamed
+The construct has an academic lineage. We performed a cursory literature review
+and found two distinct lineages.
 
-The received notion defines a skill by its capability. It does not say
-what artefact the capability applies to. This is the deficiency the
-literature names as advisory: without a declared object there is no
-predicate that decides when the skill applies.
+**** Lineages
 
-An agent that holds an artefact therefore cannot ask what may be done
-with it. It must already know the name of the skill it wants. Selection
-is by recall rather than by lookup, and recall fails as the collection
-grows.
+One line stores skills as *executable routines*. Wang and colleagues' Voyager
+builds an open-ended embodied agent that accumulates a library of programs it
+has written and can retrieve and compose them later. A skill here is code.
 
-The consequence compounds. A collection that does not register skills
-against an artefact type must write out one skill for each pairing of
-verb and type by hand. The collection then grows as the product of the
-two, and every pairing nobody writes is a capability that cannot be
-found.
+A second line stores skills as *verbal lessons*. Shinn and colleagues' Reflexion
+has an agent write down what it learned from a failure and carry that text into
+later episodes. Zhao and colleagues' ExpeL generalises across episodes into
+experiential rules. A skill here is prose.
 
-*** Execution is assumed
+Liu, Ming, Joty and Zhao group all three together as systems that "store verbal
+lessons, memories, or routines", and observe that "most prior methods reuse
+experience as prompt text or task-specific routines".
 
-The received notion calls a skill an executable capability. That
-excludes two kinds of material a working collection needs.
+The =SKILL.md= format belongs to the second line. It is prose that an assistant
+reads.
 
-The first is a rule an agent should cite when making a choice, rather
-than run. Such a rule has no steps and produces no artefact, so it fails
-the definition, yet the published collections all carry them.
+#+begin_note
+The characterisation of Voyager, Reflexion and ExpeL above is taken from the
+related-work section of the paper discussed below. The primary sources have not
+been read for this page. Read them before treating this section as settled.
+#+end_note
 
-The second is an approach to a class of work rather than to an artefact.
-It sequences other skills and issues no command of its own.
+**** The critique of the textual form
 
-A definition that admits only executable capabilities gives neither a
-home. In practice they are then either written as pseudo-procedures, or
-not written at all.
+Liu, Ming, Joty and Zhao state the deficiency of the second line precisely:
 
-*** Scope is unbounded
+#+begin_quote
+A textual skill can express what the agent should do in principle, but not
+precisely when it should activate inside the policy loop, how it should alter
+the next decision, and it is often ignored by the model in practice.
+#+end_quote
 
-The received notion fixes no size. A skill may be two lines or several
-hundred, and nothing in the definition says which is correct.
+They locate the gap as one "between reusable experience expressed in language
+and reusable experience that can reliably and explicitly control agent
+behavior".
 
-Two skills may therefore overlap without either being wrong. Nothing
-detects the overlap, because nothing states what a single skill is
-supposed to cover.
+Their example is worth quoting in full, because it names the exact form this
+project's stance plane takes:
 
-** The tightened definition
+#+begin_quote
+Instead of merely stating a principle such as "avoid repeated searches," a PF
+specifies both when that principle applies and how the next decision should
+change.
+#+end_quote
 
-In this framework a skill is *one action, applied to one typed target,
-at a stated level, in exactly one plane*.
+**** Program functions
+
+Their proposal is the *program function*, abbreviated PF: "a reusable
+state–action intervention function" that, "given the current agent state and a
+candidate next action, decides whether intervention is needed and, if so,
+explicitly modifies or augments the policy".
+
+A PF exposes two methods. =should_activate= "decides whether the skill should
+fire". =intervene= "returns the repair". The returned object carries one of
+three types:
+
+- =MODIFY_ACTION= rewrites or refines the next action.
+- =INJECT_CONTEXT= appends text the policy sees in its next observation.
+- =NOOP= abstains from changing the decision, and still emits an audit
+  record.
+
+The design "separates choosing the next action from correcting it: the policy
+proposes what to do next, while PFs determine whether the proposed action should
+be executed as is, revised into a better action, or augmented with additional
+context".
+
+Two implementation details are worth recording. PFs extend =SKILL.md= rather
+than replacing it: phase instructions are "declared in the YAML frontmatter of
+=SKILL.md=" and attach reminders to named reasoning phases. And the runtime caps
+how often a PF may fire, "to prevent oscillation".
+
+**** Prompt-equivalent skills
+
+The paper defines a precise term for the boundary between the two forms. A PF is
+*prompt-equivalent* when both conditions hold: its =intervene= method emits only
+=INJECT_CONTEXT=, and the injected text "is a fixed literal string with no
+runtime substitution". Such a PF "does nothing beyond pasting a constant
+reminder into the next observation", which a prompt declaration would do equally
+well.
+
+The distinction is narrower than it first appears. A skill that builds its
+injected text from runtime state is *not* prompt-equivalent, because it adds
+capability "that no prompt-only declaration can match". Neither is one that
+rewrites the action.
+
+The empirical result attached to the term is measured and modest. Adding
+prompt-equivalent skills on top of the executable library has an effect that is
+"small and mixed across datasets".
+
+*** Empirical Literature Review
+
+In addition to academia, there is also a large corpus of practitioner
+collections on skills. We decided to look at at three public collections and
+their organising choices.
+
+- The [[https://github.com/cursor/plugins/tree/main/pstack][pstack]] collection divides its skills into three kinds. Twenty-one
+  /principles/ each state one rule. Twenty-two /playbooks/ each give the steps
+  for a shape of work. The remaining skills are workflow tools. One skill, a
+  sticky mode, routes work to the others.
+- The [[https://github.com/mattpocock/skills][Matt Pocock]] collection divides on invocation. User-invoked skills are thin
+  and orchestrate; model-invoked skills hold the reusable discipline. A
+  user-invoked skill may call a model-invoked one, and never another
+  user-invoked one.
+- The [[https://github.com/0xnyk/council-of-high-intelligence][Council of High Intelligence]] ships one skill and eighteen sub-agents. The
+  skill is a coordinator. Each subagent supplies one analytical lens.
+
+None of the three registers a skill against the kind of artefact it acts on.
+Each organises by what the skill /is/, rather than by what it acts /upon/.
+
+None carries an activation predicate that a runtime can evaluate. Each relies on
+the assistant reading a description and judging that it applies. In the terms
+above, all three belong to the textual lineage, and none contains a program
+function.
+
+One of the three anticipates the finding. The pstack collection includes a
+principle named /encode lessons in structure/, whose rule is to express a
+recurring correction "as a lint, metadata flag, runtime check, or script instead
+of more text". That is the paper's thesis reached independently by a
+practitioner. It is also stated as prose advice, which is the form the paper
+argues against, so the principle does not satisfy its own rule.
+
+** Literature Gap Analysis
+
+Liu, Ming, Joty and Zhao find that a textual skill "can express what the agent
+should do in principle, but not precisely /when/ it should activate inside the
+policy loop, how it should alter the next decision, and it is often ignored by
+the model in practice". Their remedy is to give a skill an explicit activation
+predicate: "instead of merely stating a principle such as 'avoid repeated
+searches,' a PF specifies both when that principle applies and how the next
+decision should change". On the other hand, pstack opts for an approach that is
+centered around verification. However, both definitions state what a skill /is/.
+Neither states what it acts /upon/, how large it may be, or whether it must be
+executable.
+
+*** Identified Gaps
+
+Three problems follow, and each is a problem the received notion cannot solve
+from within. The first of the three is the same deficiency the literature names,
+reached from a different direction: a skill with no declared object has no
+condition under which it fires.
+
+**** Unnamed Objects
+
+The received notion defines a skill by its capability. It does not say what
+artefact the capability applies to. This is the deficiency the literature names
+as advisory: without a declared object there is no predicate that decides when
+the skill applies.
+
+An agent that holds an artefact therefore cannot ask what may be done with it.
+It must already know the name of the skill it wants. Selection is by recall
+rather than by lookup, and recall fails as the collection grows.
+
+The consequence compounds. A collection that does not register skills against an
+artefact type must write out one skill for each pairing of verb and type by
+hand. The collection then grows as the product of the two, and every pairing
+nobody writes is a capability that cannot be found.
+
+**** Assumed Execution
+
+The received notion calls a skill an executable capability. That excludes two
+kinds of material a working collection needs.
+
+The first is a rule an agent should cite when making a choice, rather than run.
+Such a rule has no steps and produces no artefact, so it fails the definition,
+yet the published collections all carry them.
+
+The second is an approach to a class of work rather than to an artefact. It
+sequences other skills and issues no command of its own.
+
+A definition that admits only executable capabilities gives neither a home. In
+practice they are then either written as pseudo-procedures, or not written at
+all.
+
+**** Unbounded Scope
+
+The received notion fixes no size. A skill may be two lines or several hundred,
+and nothing in the definition says which is correct.
+
+Two skills may therefore overlap without either being wrong. Nothing detects the
+overlap, because nothing states what a single skill is supposed to cover.
+
+** Proposed Tightened Definition
+
+In this framework a skill is *one action, applied to one typed target, at a
+stated level, in exactly one plane*.
 
 Each clause repairs one insufficiency, and the fourth binds them.
 
-- *One action.* The skill performs a single operation. Two operations
-  are two skills. This bounds scope.
-- *On one typed target.* The skill declares the artefact type it applies
-  to. This makes the object explicit.
-- *At a stated level.* The skill declares the [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][cybernetic level]] it serves.
-  This decides which sessions see it by default.
-- *In exactly one plane.* The skill declares its [[id:F5CB5A45-6557-410B-9E4F-542957561A16][plane]], which fixes the
-  relation an agent bears to it. This admits material that is cited
-  rather than run.
+- *One action.* The skill performs a single operation. Two operations are two
+  skills. This bounds scope.
+- *On one typed target.* The skill declares the artefact type it applies to.
+  This makes the object explicit.
+- *At a stated level.* The skill declares the [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][cybernetic level]] it serves. This
+  decides which sessions see it by default.
+- *In exactly one plane.* The skill declares its [[id:F5CB5A45-6557-410B-9E4F-542957561A16][plane]], which fixes the relation
+  an agent bears to it. This admits material that is cited rather than run.
 
-** Consequences
+*** Consequences
 
-*** Dispatch becomes computable
+**** Computable Dispatch
 
-Because the target type is declared, the operations that apply to a
-target can be computed from its type rather than remembered. The
-collection no longer grows as the product of verbs and types, because a
-verb is registered once against a type and inherited by every target of
-that type. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] sets out the mechanism.
+Because the target type is declared, the operations that apply to a target can
+be computed from its type rather than remembered. The collection no longer grows
+as the product of verbs and types, because a verb is registered once against a
+type and inherited by every target of that type. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] sets out the
+mechanism.
 
-*** Judgement gains a place
+**** Defined Judgement
 
-Because the plane is declared, and because one plane holds material that
-is cited rather than run, a rule of judgement can be written as a skill
-without pretending to be a procedure. This is the one respect in which
-this framework relaxes the received notion rather than tightening it,
-and the relaxation is confined to that plane.
+Because the plane is declared, and because one plane holds material that is
+cited rather than run, a rule of judgement can be written as a skill without
+pretending to be a procedure. This is the one respect in which this framework
+relaxes the received notion rather than tightening it, and the relaxation is
+confined to that plane.
 
-*** Placement becomes a procedure
+**** Placement Procedure
 
-Because every skill declares an action, a target type, a level and a
-plane, deciding where a new artefact belongs is a matter of answering
-four questions rather than exercising taste. [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] carries the
-procedure.
+Because every skill declares an action, a target type, a level and a plane,
+deciding where a new artefact belongs is a matter of answering four questions
+rather than exercising taste. [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] carries the procedure.
 
-*** Overlap becomes detectable
+**** Detectable Overlap
 
-Because a skill covers one action on one type, two skills covering the
-same pairing are visibly redundant. The pairing is the key, and a key
-admits one entry.
+Because a skill covers one action on one type, two skills covering the same
+pairing are visibly redundant. The pairing is the key, and a key admits one
+entry.
 
 ** Terminology
 
-The framework introduces terms of its own. The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] is the register
-of record; this table fixes usage within the framework and names the
-words it retires.
+The framework introduces terms of its own. The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] is the register of
+record; this table fixes usage within the framework and names the words it
+retires.
 
 One word per concept.
 
@@ -172,11 +295,11 @@ One word per concept.
 | The typed thing acted upon       | target    | object, candidate, entity            |
 | The operation applied to it      | action    | command, verb, skill                 |
 
-Three traps. *Spec* means an Allium specification and nothing else; a
-story's plan is a *plan*. *Persona* means a Council member and nothing
-else; a session's role is a *function*. *Agent* is the general word for
-any LLM process, so it never names a role — the S1 level is called
-"Agent" but it is a function, and a session or a delegate adopts it.
+Three traps. *Spec* means an Allium specification and nothing else; a story's
+plan is a *plan*. *Persona* means a Council member and nothing else; a session's
+role is a *function*. *Agent* is the general word for any LLM process, so it
+never names a role — the S1 level is called "Agent" but it is a function, and a
+session or a delegate adopts it.
 
 ** Why the catalogue is arranged as it is
 
@@ -199,6 +322,22 @@ The three classifications answer these in order. Registering verbs
 against types removes the product. Computing the applicable verbs
 supplies the dispatch. Sorting artefacts by the agent's relation to them
 makes room for the kinds that are cited rather than run.
+
+* References
+
+- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents with
+  Skill Programs/. arXiv:2605.17734. [[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
+- Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L. and
+  Anandkumar, A. (2023). /Voyager: an open-ended embodied agent with large
+  language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Not read directly.
+- Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K. and Yao, S.
+  (2023). /Reflexion: language agents with verbal reinforcement learning/.
+  [[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Not read directly.
+- Zhao, A., Huang, D., Xu, Q., Lin, M., Liu, Y. and Huang, G. (2024). /ExpeL:
+  llm agents are experiential learners/. [[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Not read directly.
+- Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K. and Cao, Y.
+  (2023). /ReAct: synergizing reasoning and acting in language models/.
+  [[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Not read directly.
 
 * See also
 

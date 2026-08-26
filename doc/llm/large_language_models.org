@@ -1,0 +1,103 @@
+:PROPERTIES:
+:ID: 0D919421-2B73-4322-9F79-9FDA38A67EA1
+:END:
+#+title: Large language models
+#+description: The received definition of a large language model: next-token prediction, tokens and the context window, training and its cut-off, sampling, correlated errors, and tool use. Reference material about a technology ORE Studio does not own.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:reference:external:knowledge:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*External reference.* This page states the received definition of a
+large language model, the way the technology is described by those who
+build it. ORE Studio does not own the technology and this page states no
+project policy. It sits under [[proj:doc/llm][=doc/llm/=]] rather than under external
+knowledge because every other page in that folder depends on it.
+
+For how this project organises work around these properties, see
+[[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first]]. For the tool it uses, see [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]].
+#+end_note
+
+* Summary
+
+A *large language model* is a neural network trained to predict the next
+token in a sequence of text. Trained on a large corpus, it acquires a
+statistical model of language and of much of what that corpus describes.
+Given a prompt, it generates a continuation one token at a time.
+
+That single mechanism accounts for both the capability and the failure
+modes. The model holds no separate store of facts to consult, and it
+runs no process that checks its own output. It produces the continuation
+its training makes likely, which is usually the correct one and is
+sometimes a fluent invention.
+
+This page describes the class of system rather than any particular
+model, and confines itself to the properties that bear on how such a
+system is used.
+
+* Detail
+
+** Tokens and the context window
+
+Text is divided into *tokens*, sub-word units the model operates on. The
+*context window* is the number of tokens the model can attend to at
+once. It holds everything the model knows about the current situation:
+the instructions it was given, the conversation so far, any files read,
+and the output of any tool it called.
+
+The window is finite. Material placed in it competes with everything
+else for attention, and material outside it does not exist for the
+model. The window is therefore the scarce resource in any extended piece
+of work.
+
+** Training and its cut-off
+
+Training proceeds in stages. *Pre-training* fits the model to a large
+corpus by next-token prediction. *Post-training* then shapes the result
+toward useful and safe behaviour, using supervised examples and feedback
+on the model's own outputs.
+
+The corpus has a cut-off date. The model knows nothing later than that
+date except what its prompt supplies, and it cannot distinguish a
+confident recollection from an absent one.
+
+** Sampling
+
+The model emits a probability distribution over the next token, and a
+token is drawn from that distribution. The same prompt can therefore
+produce different output on different runs.
+
+The degree of variation is controllable but not removable. A result
+observed once is consequently weak evidence about the process that
+produced it.
+
+** Correlated errors
+
+A model's errors are not random. They follow from what its training made
+likely, so the same model tends to err in the same way in the same kind
+of situation.
+
+Two consequences follow. A model checking its own work is a weak check,
+because the check shares the priors that produced the error. And varying
+the persona a model adopts varies its framing rather than its priors, so
+a panel of personas drawn from one model surfaces alternatives well and
+detects errors poorly.
+
+** Tool use
+
+A model may be given a set of *tools*, described in its prompt, and may
+emit a structured request to call one. A caller executes the tool and
+returns the result into the context. Repeating this loop is what turns a
+model into an *agent*.
+
+The model executes nothing itself. Every effect on the world passes
+through the caller, which decides whether to permit it.
+
+* See also
+
+- [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first]] — how this project organises work around these properties.
+- [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the tool this project uses.
+- [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] — the construct built on top of the model.
+- [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] — the component overview this page sits under.

@@ -18,6 +18,7 @@ when to use it, and where to find it.
 
 | Component    | Grain              | Shape                       | Example                                                   |
 |--------------+--------------------+-----------------------------+-----------------------------------------------------------|
+| [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] | Substrate | The technology, defined externally | Next-token prediction; a finite context window; sampled output |
 | [[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first]]   | Philosophy          | How LLMs drive development  | LLMs execute; humans direct; docs serve both audiences    |
 | [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]]  | Primary tool        | Anthropic CLI for Claude     | Reads =CLAUDE.md=; edits code, opens PRs, runs commands   |
 | [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][Instructions]] | Entry point         | Session-level rules and links | Mandatory first read for every LLM session                |

@@ -5,269 +5,249 @@
 #+description: The six classes of artefact in the skills catalogue, distinguished by the relation an agent bears to each: grounding is loaded, stance is cited, method is sequenced, action is executed, specification is declared, deliberation is convened.
 #+type: knowledge
 #+level: cross
+#+startup: inlineimages
 #+filetags: :llm:skills:claude_code:architecture:planes:
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-#+begin_note
-*Status: target state.* This page describes the framework we are
-building, not the catalogue as it stands today. Where this page and the
-current catalogue disagree, the catalogue is what runs.
-#+end_note
+A *plane* is a class of artefact, distinguished from the others by the relation
+an agent bears to it. This page defines the six, contrasts the pairs that are
+easily confused, and lists which artefacts fall where.
 
-A *plane* is a class of artefact, distinguished from the others by the
-relation an agent bears to it. This page defines the six, contrasts the
-pairs that are easily confused, and lists which artefacts fall where.
-
-For why the catalogue is organised this way at all, and for the
-placement procedure that decides where a new artefact goes, see
-[[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
+For why the catalogue is organised this way at all, and for the placement
+procedure that decides where a new artefact goes, see [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
 
 * Detail
-
 
 #+caption: The six planes. Grounding is loaded; the other five are run.
 [[proj:doc/llm/skills/skill_planes.png]]
 
-A *plane* is a class of artefact, distinguished from the others by the
-relation an agent bears to it. That single criterion generates all six:
-an agent loads grounding, cites a stance, sequences a method, executes
-an action, declares a specification, and convenes a deliberation. The
-planes are consequently tags rather than a partition. Most artefacts
-bear one relation and carry one tag; a few, of which the router is the
-clearest case, legitimately bear several.
+A *plane* is a class of artefact, distinguished from the others by the relation
+an agent bears to it. That single criterion generates all six: an agent loads
+grounding, cites a stance, sequences a method, executes an action, declares a
+specification, and convenes a deliberation. The planes are consequently tags
+rather than a partition. Most artefacts bear one relation and carry one tag; a
+few, of which the router is the clearest case, legitimately bear several.
 
-The distinction that does the most work is the first one. Grounding is
-the only plane an agent *loads*; the remaining five it *runs*. An
-artefact that is loaded contributes to what the agent knows before it
-decides anything, and it has no procedure of its own. An artefact that
-is run contributes to what the agent does, and it always has one.
+The distinction that does the most work is the first one. Grounding is the only
+plane an agent *loads*; the remaining five it *runs*. An artefact that is loaded
+contributes to what the agent knows before it decides anything, and it has no
+procedure of its own. An artefact that is run contributes to what the agent
+does, and it always has one.
 
 ** Grounding
 
-Grounding is the body of material an agent brings into working
-knowledge before it acts. It divides into three members which differ
-both in the question they answer and in the condition under which they
-load, and conflating them is why none of them currently participates in
-the work.
+Grounding is the body of material an agent brings into working knowledge before
+it acts. It divides into three members which differ both in the question they
+answer and in the condition under which they load, and conflating them is why
+none of them currently participates in the work.
 
 *** Knowledge
 
-A knowledge document states a durable fact about the domain or the
-system: what a thing is, how it behaves, and why it is so. It is
-*descriptive*. Its claims are answerable against the world, and where
-the world and the document disagree it is the document that is wrong.
-Knowledge is atomic, addressed by identifier, and outlives any sprint,
-which distinguishes it from every artefact scoped to a piece of work.
+A knowledge document states a durable fact about the domain or the system: what
+a thing is, how it behaves, and why it is so. It is *descriptive*. Its claims
+are answerable against the world, and where the world and the document disagree
+it is the document that is wrong. Knowledge is atomic, addressed by identifier,
+and outlives any sprint, which distinguishes it from every artefact scoped to a
+piece of work.
 
-Knowledge loads by relevance. An agent about to touch interest rate
-curves loads the curve cluster and nothing else, which is only possible
-if something can tell it which cluster that is. That is what a structure
-note does, and the [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] page records the discipline.
+Knowledge loads by relevance. An agent about to touch interest rate curves loads
+the curve cluster and nothing else, which is only possible if something can tell
+it which cluster that is. That is what a structure note does, and the
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] page records the discipline.
 
 *** Recipes
 
 A [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][recipe]] states how one operation is performed in this system. It is
-*operational* where knowledge is conceptual, and it is invariant: the
-same steps produce the same result on every run, so its correctness is a
-property of the system rather than of the situation in which it is
-invoked. A recipe carries a runnable script and is tested, which is what
-allows a reviewer to re-run it rather than take a claim on trust.
+*operational* where knowledge is conceptual, and it is invariant: the same steps
+produce the same result on every run, so its correctness is a property of the
+system rather than of the situation in which it is invoked. A recipe carries a
+runnable script and is tested, which is what allows a reviewer to re-run it
+rather than take a claim on trust.
 
-Recipes load at the moment an action needs a command. Their fuller role,
-and the boundary that separates them from methods, is set out under
-/Methods and recipes/ below.
+Recipes load at the moment an action needs a command. Their fuller role, and the
+boundary that separates them from methods, is set out under /Methods and
+recipes/ below.
 
 *** Memories
 
-A memory records a correction that must not be repeated. It is
-*prescriptive* where knowledge is descriptive: it does not describe the
-world but constrains the agent's behaviour in it, and it is written
-because something went wrong once. The catalogue is [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]].
+A memory records a correction that must not be repeated. It is *prescriptive*
+where knowledge is descriptive: it does not describe the world but constrains
+the agent's behaviour in it, and it is written because something went wrong
+once. The catalogue is [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]].
 
-Memories load unconditionally, in every session, whether or not the work
-touches what they concern. That is what makes them expensive in a way
-the other two are not, and it is the argument for keeping them scarce: a
-memory is paid for by every session, so each one competes for attention
-with every other. A correction that applies to one domain is better
-recorded as knowledge in that domain and reached when the domain is.
+Memories load unconditionally, in every session, whether or not the work touches
+what they concern. That is what makes them expensive in a way the other two are
+not, and it is the argument for keeping them scarce: a memory is paid for by
+every session, so each one competes for attention with every other. A correction
+that applies to one domain is better recorded as knowledge in that domain and
+reached when the domain is.
 
 *** The obligation to ground
 
-Knowledge documents are not reference material sitting beside the work;
-they are the agent's model of the domain it is regulating. Beer's
-argument transfers without modification. A regulator requires a model of
-the system it regulates, and an agent that has not loaded one lacks the
-variety to act well within it. The failure this produces is
-characteristic: the agent does not stall or refuse, it produces
-something fluent and wrong, and it has no means of noticing.
+Knowledge documents are not reference material sitting beside the work; they are
+the agent's model of the domain it is regulating. Beer's argument transfers
+without modification. A regulator requires a model of the system it regulates,
+and an agent that has not loaded one lacks the variety to act well within it.
+The failure this produces is characteristic: the agent does not stall or refuse,
+it produces something fluent and wrong, and it has no means of noticing.
 
-Grounding is therefore a precondition rather than a courtesy. Every
-method opens by naming the domain concepts its work touches and
-resolving each to a knowledge document or a structure note. A concept
-that resolves to nothing is a *knowledge gap*, and on domain-related
-work closing that gap is the first task, ahead of design and ahead of
-code. A method that proceeds without grounding records the omission and
-its reason, in the same way any other skipped phase is recorded.
+Grounding is therefore a precondition rather than a courtesy. Every method opens
+by naming the domain concepts its work touches and resolving each to a knowledge
+document or a structure note. A concept that resolves to nothing is a *knowledge
+gap*, and on domain-related work closing that gap is the first task, ahead of
+design and ahead of code. A method that proceeds without grounding records the
+omission and its reason, in the same way any other skipped phase is recorded.
 
 ** Stance
 
-A stance is a general rule of judgement. It constrains how a choice is
-made without prescribing what is done, which is why it has no procedure
-and produces no artefact: there is nothing in a stance to execute. An
-agent invokes one by *citing* it against a specific decision, and the
-citation carries weight only when it names the choice the rule changed.
-A principle named without a decision behind it is decoration.
+A stance is a general rule of judgement. It constrains how a choice is made
+without prescribing what is done, which is why it has no procedure and produces
+no artefact: there is nothing in a stance to execute. An agent invokes one by
+*citing* it against a specific decision, and the citation carries weight only
+when it names the choice the rule changed. A principle named without a decision
+behind it is decoration.
 
-Two contrasts fix the boundary. A stance differs from a method in that
-a method orders actions through time whereas a stance constrains the
-choices made within them; the two compose, and a method's phases
-routinely cite several. A stance differs from a recipe in that a recipe
-is executed and leaves the system changed, whereas a stance leaves no
-trace except in the reasoning that produced a decision.
+Two contrasts fix the boundary. A stance differs from a method in that a method
+orders actions through time whereas a stance constrains the choices made within
+them; the two compose, and a method's phases routinely cite several. A stance
+differs from a recipe in that a recipe is executed and leaves the system
+changed, whereas a stance leaves no trace except in the reasoning that produced
+a decision.
 
-The stance plane is the one place where an artefact that cannot be run
-is nevertheless a skill. That exemption is deliberate and narrow: a
-principle which cannot be loaded by name cannot be cited by a method,
-and a rule that cannot be cited cannot be shown to have been applied.
+The stance plane is the one place where an artefact that cannot be run is
+nevertheless a skill. That exemption is deliberate and narrow: a principle which
+cannot be loaded by name cannot be cited by a method, and a rule that cannot be
+cited cannot be shown to have been applied.
 
 ** Method
 
-A method is an ordered sequence of phases carrying a piece of work from
-an unverified beginning to a verified end. It is defined over a *shape
-of work* — a defect to be diagnosed, a behaviour to be added, a
-structure to be changed — rather than over any particular artefact, and
-it therefore names no specific command. A method is control flow without
-effectors.
+A method is an ordered sequence of phases carrying a piece of work from an
+unverified beginning to a verified end. It is defined over a *shape of work* — a
+defect to be diagnosed, a behaviour to be added, a structure to be changed —
+rather than over any particular artefact, and it therefore names no specific
+command. A method is control flow without effectors.
 
-The phases of a method are adaptive rather than fixed. Which of them run
-and in what order depends on what the work reveals as it proceeds, so a
-method's correctness is a property of the judgement it encodes rather
-than of the system it runs against. This is the deepest difference
-between a method and a recipe, and it is worth stating separately
-because the two are the most confusable artefacts in the catalogue.
+The phases of a method are adaptive rather than fixed. Which of them run and in
+what order depends on what the work reveals as it proceeds, so a method's
+correctness is a property of the judgement it encodes rather than of the system
+it runs against. This is the deepest difference between a method and a recipe,
+and it is worth stating separately because the two are the most confusable
+artefacts in the catalogue.
 
 *** Methods and recipes
 
-A recipe answers /how is this operation performed here?/ A method
-answers /how is this class of work approached?/ From that difference the
-rest follows.
+A recipe answers /how is this operation performed here?/ A method answers /how
+is this class of work approached?/ From that difference the rest follows.
 
 #+ATTR_HTML: :class hug-leading
-| | Recipe | Method |
-|---+--------+--------|
-| Question | How is this operation performed? | How is this class of work approached? |
-| Scope | One operation | One shape of work, many operations |
-| Content | Commands and a script, tested | Phases, gates and judgement |
-| Behaviour | Invariant: the same steps every run | Adaptive: steps follow what the work reveals |
-| Correctness is a property of | The system | The judgement |
-| Fails when | The underlying command changes | The shape of the work was misjudged |
-| Example | /How is a pull request merged?/ | /Diagnose a defect, then fix it/ |
+|                              | Recipe                              | Method                                       |
+|------------------------------+-------------------------------------+----------------------------------------------|
+| Question                     | How is this operation performed?    | How is this class of work approached?        |
+| Scope                        | One operation                       | One shape of work, many operations           |
+| Content                      | Commands and a script, tested       | Phases, gates and judgement                  |
+| Behaviour                    | Invariant: the same steps every run | Adaptive: steps follow what the work reveals |
+| Correctness is a property of | The system                          | The judgement                                |
+| Fails when                   | The underlying command changes      | The shape of the work was misjudged          |
+| Example                      | /How is a pull request merged?/     | /Diagnose a defect, then fix it/             |
 
-Two tests settle any case that remains unclear. The first is
-determinism: where the steps are the same on every run the artefact is a
-recipe, and where they depend on what is found it is a method. A method
-that never branches is a recipe that has acquired phases it does not
-need; a recipe qualified throughout by "it depends" is a method that has
-not yet been written.
+Two tests settle any case that remains unclear. The first is determinism: where
+the steps are the same on every run the artefact is a recipe, and where they
+depend on what is found it is a method. A method that never branches is a recipe
+that has acquired phases it does not need; a recipe qualified throughout by "it
+depends" is a method that has not yet been written.
 
-The second test is direction of dependence. A method's phase cites a
-recipe; a recipe never cites a method. Where a recipe finds itself
-explaining /when/ it should be run, judgement has leaked downward and
-belongs to a method. Where a method finds itself spelling out a command,
-an effector has leaked upward and belongs to a recipe.
+The second test is direction of dependence. A method's phase cites a recipe; a
+recipe never cites a method. Where a recipe finds itself explaining /when/ it
+should be run, judgement has leaked downward and belongs to a method. Where a
+method finds itself spelling out a command, an effector has leaked upward and
+belongs to a recipe.
 
 ** Action
 
-An action is a single operation applied to one typed artefact, together
-with the judgement governing its use: what must hold before it runs,
-what state it leaves behind, and what to do when its guards refuse. The
-command it issues belongs to a recipe, which the action delegates to;
-what the action itself owns is the decision to issue it.
+An action is a single operation applied to one typed artefact, together with the
+judgement governing its use: what must hold before it runs, what state it leaves
+behind, and what to do when its guards refuse. The command it issues belongs to
+a recipe, which the action delegates to; what the action itself owns is the
+decision to issue it.
 
-The three run-planes therefore divide cleanly. A recipe holds the
-command, an action holds the judgement about that command, and a method
-holds the sequence in which such judgements are made. Each has exactly
-one source of truth, and drift in any of them has exactly one place to
-appear.
+The three run-planes therefore divide cleanly. A recipe holds the command, an
+action holds the judgement about that command, and a method holds the sequence
+in which such judgements are made. Each has exactly one source of truth, and
+drift in any of them has exactly one place to appear.
 
-Actions are the plane where uniformity is worth exploiting. Where a verb
-behaves the same way across artefact types it becomes a single skill
-driven by a generated type table; where its procedure genuinely differs
-per type it keeps a skill of its own. The test is whether the
-*procedure* differs, not whether the artefact does.
+Actions are the plane where uniformity is worth exploiting. Where a verb behaves
+the same way across artefact types it becomes a single skill driven by a
+generated type table; where its procedure genuinely differs per type it keeps a
+skill of its own. The test is whether the *procedure* differs, not whether the
+artefact does.
 
 ** Specification
 
-A specification states intended behaviour in a form a machine can check,
-and from which tests are generated. Its defining property is that it is
-*normative*: it says what the system ought to do, which is what
-separates it from knowledge, whose claims are descriptive. The
-consequence matters. Where a knowledge document disagrees with the
-system the document is wrong and is corrected; where a specification
-disagrees with the system, which of the two is wrong is an open
+A specification states intended behaviour in a form a machine can check, and
+from which tests are generated. Its defining property is that it is *normative*:
+it says what the system ought to do, which is what separates it from knowledge,
+whose claims are descriptive. The consequence matters. Where a knowledge
+document disagrees with the system the document is wrong and is corrected; where
+a specification disagrees with the system, which of the two is wrong is an open
 question, and the disagreement is a finding rather than an error.
 
-That property is what allows a specification to make a method's
-definition of done falsifiable rather than rhetorical. A method's
-framing phase writes or extends a rule; its verification phase runs the
-tests propagated from that rule. In this project specifications are
-written in Allium.
+That property is what allows a specification to make a method's definition of
+done falsifiable rather than rhetorical. A method's framing phase writes or
+extends a rule; its verification phase runs the tests propagated from that rule.
+In this project specifications are written in Allium.
 
 ** Deliberation
 
-Deliberation is the procedure by which a contested judgement is settled
-when the available evidence cannot settle it. A method convenes one at a
-fork it cannot resolve, and the product is a verdict recorded against
-the work, never a silent change to the code.
+Deliberation is the procedure by which a contested judgement is settled when the
+available evidence cannot settle it. A method convenes one at a fork it cannot
+resolve, and the product is a verdict recorded against the work, never a silent
+change to the code.
 
-The contrast with verification is what fixes deliberation's place.
-Verification establishes whether a claim is true and is answerable by a
-checker; deliberation decides what should be done where no checker can
-yet answer, and its output is a reasoned position rather than a fact.
-Confusing the two in either direction is costly. Sending a checkable
-question to deliberation wastes it, and sending an unanswerable one to a
-checker produces a confident verdict with nothing behind it.
+The contrast with verification is what fixes deliberation's place. Verification
+establishes whether a claim is true and is answerable by a checker; deliberation
+decides what should be done where no checker can yet answer, and its output is a
+reasoned position rather than a fact. Confusing the two in either direction is
+costly. Sending a checkable question to deliberation wastes it, and sending an
+unanswerable one to a checker produces a confident verdict with nothing behind
+it.
 
-Deliberation in this project is provided by the Council of High
-Intelligence, consumed as an external plugin. Its instrument is a panel
-of analytically distinct personas, and the limitation that follows
-should be stated wherever it is relied upon: personas vary framing but
-share the priors of the single model beneath them, so deliberation is a
-strong instrument for surfacing a tradeoff and a weak one for detecting
-an error. Error detection routes instead to the checkers set out in
-[[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]], which do not share those priors.
-
+Deliberation in this project is provided by the Council of High Intelligence,
+consumed as an external plugin. Its instrument is a panel of analytically
+distinct personas, and the limitation that follows should be stated wherever it
+is relied upon: personas vary framing but share the priors of the single [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][model]]
+beneath them, so deliberation is a strong instrument for surfacing a tradeoff
+and a weak one for detecting an error. Error detection routes instead to the
+checkers set out in [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]], which do not share those
+priors.
 
 ** Placement
 
-The planes above give the taxonomy. This procedure applies it. Take the
-first match.
+The planes above give the taxonomy. This procedure applies it. Take the first
+match.
 
 The placement procedure. Take the first match.
 
-1. A durable fact about the domain goes to a *knowledge document*. If it
-   is the entry point to a cluster, a *structure note*.
-2. An account of how one operation is performed here, with a runnable
-   script, goes to a *recipe*. This is also where a method's missing
-   effector goes.
-3. A correction that must not be repeated goes to a *memory*. Keep these
-   scarce: each is paid for by every session.
+1. A durable fact about the domain goes to a *knowledge document*. If it is the
+   entry point to a cluster, a *structure note*.
+2. An account of how one operation is performed here, with a runnable script,
+   goes to a *recipe*. This is also where a method's missing effector goes.
+3. A correction that must not be repeated goes to a *memory*. Keep these scarce:
+   each is paid for by every session.
 4. A rule that is cited rather than run goes to a *principle*.
 5. Intended behaviour that should be checkable goes to a *specification*.
-6. A sequence of phases ending in a verified state, not tied to one
-   artefact type, goes to a *method*.
-7. A change to a *generated* artefact goes to its model or its template,
-   never to the output.
-8. An operation on one artefact type goes to an *action*, at the pairing
-   of type and verb. The action holds the judgement; the recipe holds
-   the command.
-9. A contested judgement goes to *deliberation*, and its verdict is
-   recorded against the work.
-10. A role a session or a delegate adopts goes to a *function*, tagged
-    by level, stating what it must read first and what it may do.
-11. The argument for a change, spanning many tasks, goes to a *design*
-    in the story's own folder rather than to the durable tree.
+6. A sequence of phases ending in a verified state, not tied to one artefact
+   type, goes to a *method*.
+7. A change to a *generated* artefact goes to its model or its template, never
+   to the output.
+8. An operation on one artefact type goes to an *action*, at the pairing of type
+   and verb. The action holds the judgement; the recipe holds the command.
+9. A contested judgement goes to *deliberation*, and its verdict is recorded
+   against the work.
+10. A role a session or a delegate adopts goes to a *function*, tagged by level,
+    stating what it must read first and what it may do.
+11. The argument for a change, spanning many tasks, goes to a *design* in the
+    story's own folder rather than to the durable tree.
 
 ** Inventory
 

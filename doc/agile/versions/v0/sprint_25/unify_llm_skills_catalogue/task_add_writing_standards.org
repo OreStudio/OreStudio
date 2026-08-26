@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 96FCA6C1-7E9C-4D25-BFE1-ADB308E58172
+:END:
+#+title: Task: Establish the writing standards and the genres they govern
+#+description: Three writing authorities now apply: ASD-STE100 for instructions, thesis prose for knowledge documents, and writing-for-agents for skills. Settle which governs what and port the two imports.
+#+type: task
+#+level: s1
+#+filetags: :doc:writing:skills:knowledge:attribution:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+We are about to hold three writing standards at once and they give
+different advice, so the first job is to say which governs what rather
+than leaving an author to guess. The division is by what the reading is
+for. ASD-STE100 governs the agent's replies to a person, where the
+reading is to be informed now and the demand is fast unambiguous
+parsing. Thesis prose governs the org-roam documentation, where the
+reading is to understand durably and the demand is an argued paragraph,
+a definition at first use, constant terminology, and hedging matched to
+the strength of the evidence rather than the strength of the claim.
+Writing for agents governs anything loaded to change agent behaviour —
+skills, memories, CLAUDE.md, specifications, plans and acceptance
+criteria — where the reading is to act reliably and the demand is
+context economy, progressive disclosure, clear completion criteria and
+positive targets.
+
+The standards compose within a document rather than one per file: a
+recipe is exposition above and executable steps below, and a task
+divides the same way between its goal and its acceptance. Some artefacts
+take none of the three, and that exclusion list needs stating.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- A single page states which standard governs what, divided by what the reading is for, and an author meets it before choosing how to write.
+- The page says that standards compose within a document, and gives the recipe and task cases as worked examples.
+- The exclusion list is explicit: commit messages, code comments, frontmatter, tables and generated blocks follow their own conventions and take none of the three.
+- Thesis prose is adopted for the org-roam documentation, with the empirical-thesis chapter structure, hypothesis ordering and citation machinery excluded as out of scope for us.
+- Writing for agents is adopted for skills, memories and CLAUDE.md as well as specifications and plans, and supersedes the prose guidance currently in skill-add.
+- doc-review-ste100 is narrowed to the agent's conversational output and states what it does not cover.
+- Both imports carry their upstream repository, path, commit and licence per the attribution contract. Thesis writing is https://github.com/santifs/thesis-writing-skill, MIT.
+- The rule against steering by prohibition is applied to our own documents: the architecture page and this design are swept for negations that should state a positive target.
+- Hedging in our own documents is matched to the evidence: claims we have not tested are stated as proposals rather than as findings.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

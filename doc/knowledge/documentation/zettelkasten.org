@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :zettelkasten:documentation:knowledge:org_roam:
 #+created: 2026-05-28
-#+updated: 2026-05-28
+#+updated: 2026-08-26
 
 * Summary
 
@@ -70,8 +70,47 @@ weakly — the document types (knowledge, recipe, component overview, task,
 story) are each scoped to a single subject — but within each type the author
 must resist the temptation to include tangential detail.
 
+** Structure notes
+
+Luhmann's slip-box contained a second kind of card. Alongside the
+atomic notes sat /Überblicksnotizen/ — overview notes, usually rendered
+in English as *structure notes* — whose content was not an idea of their
+own but an ordering of other people's. A structure note names a cluster
+and lists its notes in an argued sequence, saying how each follows from
+the last and why the order is the one it is.
+
+The distinction is between two kinds of address. An atomic note is
+addressable because it has an identifier; a structure note makes a
+cluster /approachable/, which is a different property. A reader who
+knows an identifier can reach any note directly, but a reader who knows
+only a subject has no way in. Search returns the notes that mention a
+term, ranked by resemblance; it cannot say which of them to read first,
+nor which three of forty are load-bearing. That judgement is authored,
+not computed, and the structure note is where it is written down.
+
+The resulting shape is a hub with spokes. The hub carries no content
+that the spokes do not already hold, which is the discipline that keeps
+it honest: a structure note that restates its cluster becomes a second
+copy to maintain and drift away from. It gists and links, and the detail
+stays in exactly one place. The same rule governs any index in this
+graph, including this one.
+
+Structure notes are also what make the collection navigable to an agent
+rather than merely searchable. An agent grounding itself in a domain
+before doing work has the reader's problem in an acute form: it knows
+the subject and not the identifiers, and the cost of reading the wrong
+five pages is paid in context it cannot recover.
+
+ORE Studio does not yet have them. [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][The knowledge index]] is a flat list
+of topics, which tells a reader that a page exists without telling them
+where to start or in what order to continue. Writing one structure note
+per domain cluster is tracked work, and the links it would order already
+exist — what is missing is the argued sequence.
+
 * See also
 
 - [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — the Emacs package that implements Zettelkasten over =.org= files in ORE Studio.
 - [[id:DF6F1D17-2199-472C-868E-1E50D0887AAD][Emacs]] — the editor that hosts org-roam and drives all documentation builds.
 - [[https://www.orgroam.com/manual.html#A-Brief-Introduction-to-the-Zettelkasten-Method][org-roam manual: A Brief Introduction to the Zettelkasten Method]] — the method described from the org-roam perspective.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this graph's structure notes will hang from.
+- [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — the sibling collection, held under a different discipline: unconditional rather than addressed.

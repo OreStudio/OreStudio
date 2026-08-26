@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 7DFA4343-E553-4D3A-B71F-057329821EE5
+:END:
+#+title: Task: Rename every skill into the compass- namespace
+#+description: Mechanical rename of all 79 skills, with every incoming link, catalogue row, runbook, memory and settings entry updated.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:naming:refactor:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The compass- prefix separates our skills from every plugin skill the harness also loads. The rename touches the source directory, the deployed directory, the name field in each skill's frontmatter, the generated catalogue, the org-roam links that reach each skill, the runbooks, the memories, CLAUDE.md, and the settings file. Deployment does not remove stale directories, so each old deployed directory must be deleted by hand. Build the rename as a script rather than by hand, so a reviewer can re-run it and so the next rename is cheap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- Every skill directory, frontmatter name field and deployed directory carries the compass- prefix.
+- Every incoming link, catalogue row, runbook, memory and settings entry points at the new name.
+- No stale directory remains under the deployed skills directory.
+- The rename is performed by a committed script a reviewer can re-run.
+- The bundle builds, deploys, and every renamed skill loads.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

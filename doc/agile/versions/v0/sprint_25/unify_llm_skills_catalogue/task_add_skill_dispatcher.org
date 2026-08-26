@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: 07902231-6549-4012-8B2C-30684044E42E
+:END:
+#+title: Task: Build the target-and-action dispatcher
+#+description: compass-act, compass-act-all and compass-export: resolve a target's type, look up the verbs registered against it, and run the chosen one.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:compass:dispatch:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An agent holding a UUID, a PR number, a branch, a component or a failing test has no way to ask what it can do with it; it must already know the skill's name. Build Embark's act for our catalogue. Given a target, resolve its type from the type keyword or from compass for the non-document targets, look up the verbs registered against that type filtered by the session's level, present them with a recommendation, and run the chosen action. Add act-all to fan one action over a collection, and export to hand a result set to the artefact type that owns that payload. The verb table must be generated from the catalogue, the way the skills inventory already is; a hand-maintained table will drift within a sprint, and if we cannot generate it we should not build this.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- compass-act resolves a target's type for documents, branches, pull requests, worktrees, services and test failures.
+- The verb table is generated from the catalogue, and a new action appears in the dispatcher without anyone editing a table.
+- The presented verbs are filtered by the session's declared level.
+- compass-act-all fans one action over a collection.
+- compass-export hands a result set to the artefact type that owns the payload, and never invents a new container.
+- The division against agile-find-heading is documented: heading picks the work, act picks the verb.
+- Blocking, from the council review: every non-document target kind is enumerated with the source its type comes from, before any dispatcher code is written. A target whose type cannot be resolved is out of scope until it can be.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -322,6 +322,7 @@ Each type's contract lives on its own page:
 - [[id:B4DD4BE2-CF51-4C2B-8A73-9803CAEB811D][manual]]
 - [[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][knowledge]]
 - [[id:A0844CC9-9D7C-4A87-9D65-8143614E76A6][plan]]
+- [[id:7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866][design]]
 - [[id:8C6D8D83-C78F-4A18-A481-A8398058BE84][decision]]
 - [[id:CE9E4F7C-D14B-46C4-AD3D-39881C466914][retrospective, release_note, audit_report]]
 - [[id:1366553A-4E0F-496F-91DD-19171C003631][investigation]]

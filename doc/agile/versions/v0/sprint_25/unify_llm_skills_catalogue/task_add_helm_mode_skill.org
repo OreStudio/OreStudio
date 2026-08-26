@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: 60C7573C-763F-466D-A174-61C3A78616AF
+:END:
+#+title: Task: Build compass-helm, the sticky mode
+#+description: One sticky entry point that declares the session function, matches work to a method, copies its phases in verbatim, and routes to actions, recipes and deliberation.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:mode:pstack:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+pstack's most valuable structural idea is that one skill is sticky: entered once, it stays on across turns, matching each request to a method and staying quiet when none applies. Without it every method is something an agent must remember to reach for, and the one it forgets is the one it needed. Build our version. It declares the session function, which attenuates the catalogue by level; matches the request to a method and copies that method's phases into the todo list verbatim before reasoning about the task; reads the principles index at task start; routes to actions and recipes as phases fire, and to deliberation at a fork the evidence cannot settle. The verbatim copy is the part that carries the value and the part most easily lost, because the known failure mode is an agent reading a method and then writing a bespoke plan that quietly drops its named phases.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- The mode is sticky across turns and can be opted out of at any time.
+- Entering it declares the session function and attenuates the catalogue accordingly.
+- A matched method's phases are copied into the todo list verbatim, before any task-specific reasoning.
+- A phase deliberately skipped stays in the list with a stated reason; silent skipping is refused.
+- The principles index is read at task start.
+- The name is recorded in the naming decision log as a bare-noun register extension, with the rejected alternative noted.
+- The mode is exercised on real work end to end before the task closes.
+- Blocking, from the council review: the matching predicate is specified before the mode ships — the rule that maps a request to a method, the arbitration rule when two methods match, and the null case when none does.
+- The mode can decline. It states when the heavy path is not worth its cost and falls through to the plain action skills.
+- The request shape is documented: goal, then a finish condition naming a result rather than an effort, then the behaviour that must not change.
+- The mode and its delegate function share one definition. The mode spawns that function, never a generic agent, so the discipline survives the delegation boundary.
+- An existing delegate is resumed rather than a sibling spawned alongside it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

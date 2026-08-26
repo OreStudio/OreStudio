@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: BC52784C-64A6-47D2-AE13-BA8530C34507
+:END:
+#+title: Task: Bind the Council as the deliberation plane
+#+description: Wire the Council of High Intelligence in as the deliberation plane, and route error detection to the checkers that are genuinely independent.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:deliberation:council:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Claude Code runs one model per session, so we cannot copy pstack's multi-model rigor. The Council substitutes persona diversity for model diversity, which is a good substitute where the value is framing and a poor one where the value is independent error detection, because eighteen personas over one model share that model's blind spots. Bind the Council as the deliberation plane for design forks and contested judgements, and at the same time make the architecture's other half real: route error detection to the checkers that genuinely do not share the session model's priors, which are the compiler, the test suite, the schema validators, CI and the review bot. Record the verdict on the task, never as a silent change to the code.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- A method at a fork it cannot settle from evidence convenes the Council, and the verdict is recorded on the task.
+- The Council is consumed as an external plugin and recorded in the attribution manifest rather than reimplemented.
+- The substitution table is documented: which pstack device each Council mode replaces and how strong the substitution is.
+- Verification routes to the independent checkers first and to deliberation second, and the skills say so.
+- The limitation is stated where an agent will meet it: persona deliberation is not a bug finder.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

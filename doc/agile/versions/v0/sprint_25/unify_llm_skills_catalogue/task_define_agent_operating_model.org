@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 92D846C1-253F-47EA-A7F6-9A737FF1145B
+:END:
+#+title: Task: Define the agent operating model for unattended runs
+#+description: How agents are configured, isolated, bounded and recovered when compass-helm is started on them and left running.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:agents:automation:autonomy:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The purpose of this framework is that the mode can be started on an agent and left to run. That case is the least specified part of it. Settle and implement the operating model: the five fields that configure an agent, which are function, level, environment, finish condition and authority, with the model inherited rather than routed; isolation through a worktree per parallel writer, including the two resources a worktree does not protect, the shared git stash stack and any remote; and the four things an unattended run needs that an attended one does not, which are a finish condition the agent can check itself, an authority grant made explicitly in advance and narrowly, a decision trail that makes the result reconstructable, and liveness, failure and resumption behaviour. Delegation is for context, parallelism and isolation only; it is never for a second opinion, because every delegate runs the same model as its parent.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- The five configuration fields are implemented, and an agent cannot be started without a function, a level, an environment and a finish condition.
+- Authority is granted explicitly and narrowly in the request that starts a run; an agent that reaches the edge of its authority stops and says so rather than widening its own grant.
+- Be autonomous is not treated as an authority grant; it permits reversible work only.
+- Every parallel writer has its own worktree and environment, provisioned through compass.
+- The shared git stash stack and any remote are handled explicitly rather than left to a delegate to improvise.
+- A run leaves a decision trail sufficient to reconstruct it, preferring evidence a reviewer can re-run over claims in prose.
+- A supervisor can distinguish a working agent from a stuck one without interrupting it.
+- A run can be paused at an atomic boundary and resumed later by a different agent from its trail and branch.
+- An agent at a genuine dead end stops and explains rather than retrying a failing approach.
+- The model is inherited from the spawning session and never routed per role.
+- One real unattended run completes end to end before the task closes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

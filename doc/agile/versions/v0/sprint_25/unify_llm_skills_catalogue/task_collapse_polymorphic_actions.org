@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 629B48C7-BC7E-44A8-8979-3E05D6DA5BFE
+:END:
+#+title: Task: Collapse the uniform verbs into polymorphic actions
+#+description: Shrink the action plane before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:refactor:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The catalogue is an N-by-M table written out by hand. Seven add skills are one verb over seven artefact types; six show skills are one verb over six. Embark's lesson is that actions register against the type, not against a source command, so a verb that behaves uniformly becomes one skill plus a type table. Do this before the imports land, or we will port cells we are about to delete. The test is whether the procedure differs, not whether the artefact differs: agile-close-task earns its own skill because closing a task is genuinely its own procedure; doc-show and agile-show-sprint do not.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- Every verb in the register is classified as uniform or type-specific, with the reason.
+- Uniform verbs are collapsed into one polymorphic skill each, driven by a type table rather than by prose.
+- The type table is generated from the document types rather than hand-maintained.
+- Type-specific skills that survive state why their procedure differs.
+- Retired skills go through skill-delete so incoming links are re-pointed and deployed copies purged.
+- The catalogue count before and after is recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

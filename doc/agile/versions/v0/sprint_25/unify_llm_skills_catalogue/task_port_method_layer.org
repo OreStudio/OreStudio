@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 08F7F925-49B2-40E0-A298-E300353CAE2E
+:END:
+#+title: Task: Port the method plane and bind it to recipes and actions
+#+description: Import the adopted playbooks and interview skills as compass-method skills, with every step bound to one of our actions or recipes.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:methods:pstack:grilling:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The method plane is control flow with no effectors; our actions and recipes are effectors with no control flow. This task joins them. Port the adopted pstack playbooks and the Matt Pocock interview and design skills, rewriting every step that assumed a foreign host. Each method opens with the domain grounding phase, states a falsifiable predicate backed by an Allium spec where behaviour is involved, cites principles for the judgement calls, calls actions for anything touching an artefact, and reaches for a recipe rather than improvising a command. Steps that assumed Graphite stacks, model routing or an issue-tracker abstraction are dropped, because our agile layer already owns that ground.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- Every ported method opens with the domain grounding phase and states a falsifiable predicate.
+- Every method step names the action or recipe it calls; no step improvises a command inline.
+- Steps that assumed a foreign host are dropped or rewritten, and the choice is recorded.
+- The interview primitive is ported once and shared by the methods that need it.
+- Every ported method carries its upstream repository, path and commit.
+- At least one method is run end to end on real work before the task closes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

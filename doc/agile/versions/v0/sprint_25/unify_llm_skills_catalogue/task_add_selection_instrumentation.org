@@ -1,0 +1,76 @@
+:PROPERTIES:
+:ID: 37BC3547-4FE9-4D13-B3E7-5C071C5155B9
+:END:
+#+title: Task: Instrument skill selection so the baseline accrues forward
+#+description: Record selection events as they happen rather than scoring past tasks, so skill-choice quality becomes measurable and reportable from now on.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:measurement:instrumentation:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+We know skill mis-selection is a real problem because it has been corrected by hand repeatedly over months. What is missing is not the knowledge but the quantification and the reporting. The council asked for a retrospective study of thirty past tasks as a gate on the whole migration; we reject the gate, because half this work is new capability and you cannot measure the failure rate of something not yet built. What we accept is the honest half: we have no instrument. Build one that records selection events forward, so the measurement accrues while the work proceeds and keeps working after the migration lands, which a one-off scoring exercise would not. Record for each session the skills offered, the skill chosen, whether it was corrected, and the correction reason. Report on it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- Every skill invocation records the skills that were visible, the one chosen, and whether the user or the agent corrected it.
+- A correction records a one-word cause: description, catalogue-size, level, or none.
+- A compass command reports selection quality over a window, including the correction rate and the causes ranked.
+- The instrument runs without the agent having to remember to use it.
+- The report distinguishes sessions run under the attenuated catalogue from sessions run without it, so the level axis can be judged on evidence.
+- First report is produced and reviewed before the method plane lands.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

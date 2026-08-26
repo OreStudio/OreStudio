@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: A7BCF024-9222-40C3-9151-AFE9C9B4BDBE
+:END:
+#+title: Task: Port the principles into the stance plane
+#+description: Import the adopted pstack principles as compass-principle skills, adapted from TypeScript to our stack, with attribution.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:principles:pstack:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The stance plane holds rules an agent cites rather than runs. Port the pstack principles the audit adopted, each as its own loadable skill so a method can cite it by name. Several need adaptation rather than copying: type-system-discipline is written for TypeScript and must be recast for C++; never-block-on-the-human argues against confirmation in a way that conflicts with our own conventions on irreversible actions and unrequested pull requests, so it must be reconciled explicitly rather than imported as written. Each principle carries its upstream attribution and a divergence note.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- Every adopted principle is a loadable skill named after its rule.
+- Principles written for another language or host are adapted, and the adaptation is recorded as a divergence.
+- never-block-on-the-human is reconciled against our conventions on irreversible actions and unrequested pull requests, and the resolution is recorded.
+- An index lists the principles by group so a method can read the set at task start.
+- Every ported principle carries its upstream repository, path and commit.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: C4ADAD7A-949E-48D3-941D-706E7B71D30D
+:END:
+#+title: Task: Verify the rebuilt skill catalogue end to end
+#+description: Regenerate, rebuild, deploy and prove the whole catalogue loads and dispatches, with no stale directories left behind.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:verification:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The architecture is only real if it loads. Regenerate the skills catalogue and the dispatcher's verb table, rebuild the bundle, deploy it, and prove every skill loads under its new name. Prove the attenuation works by declaring each function in turn and checking the slice it sees. Prove the dispatcher resolves each target type. Prove the grounding phase can reach the knowledge graph, including the cluster that was invisible. Deployment does not remove stale directories, so check that none survive. Verify against the real artefacts rather than a self-report.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- The catalogue and the verb table are regenerated from source, not hand-edited.
+- The bundle builds and deploys, and every skill loads under its compass- name.
+- No stale directory remains under the deployed skills directory.
+- Each declared function sees the slice the level table says it should.
+- The dispatcher resolves every registered target type against a real target.
+- The knowledge graph resolves every id reference, including the previously invisible cluster.
+- Every check is run against the real artefact and its output recorded.
+- The architecture document is reconciled against what actually shipped, and its target-state banner is removed only when it describes the catalogue as it runs.
+- The design document goes LANDED with its outcome naming the architecture document; no transitional content remains in the durable tree.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

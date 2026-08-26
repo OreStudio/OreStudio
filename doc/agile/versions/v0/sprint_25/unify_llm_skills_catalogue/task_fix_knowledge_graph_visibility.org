@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: FE910755-16F8-4854-BA3D-D780BE5AFB64
+:END:
+#+title: Task: Fix the invisible knowledge cluster and audit graph integrity
+#+description: The whole doc/knowledge/external cluster does not resolve in the graph; diagnose, fix, and add a continuous S3-star check so it cannot recur.
+#+type: task
+#+level: s1
+#+filetags: :llm:knowledge:zettelkasten:audit:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The knowledge index carries eight id references that do not resolve, and all eight target files exist on disk. They are the entire external knowledge cluster: QuantLib, the Open Source Risk Engine, FpML, coding schemes, standing settlement instructions, PostgreSQL row-level security, and shared-library symbol visibility. That cluster is invisible to compass search and to graph traversal, so an agent asking what we know about QuantLib is told nothing while the page sits there. Diagnose the cause, which is either a stale index or a subtree the indexer never walks, fix it, then add the invariant to the audit channel so nobody has to notice by hand again. Domain grounding cannot become an obligation until the graph it reads from is trustworthy.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- The cause of the unresolved cluster is diagnosed and recorded, not guessed.
+- All eight external knowledge documents resolve in the graph and appear in compass search.
+- A check reports every id reference in the documentation that does not resolve, and it runs continuously rather than on request.
+- The check is wired into the audit channel and its first full run is recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

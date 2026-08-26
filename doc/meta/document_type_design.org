@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: 7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866
+:END:
+#+title: Document type: design
+#+description: The contract for the design document type: a story-scoped argument from a current state to a target state, which expires when the story lands.
+#+type: meta
+#+level: cross
+#+filetags: :meta:document_types:design:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+This page defines the =design= document type — one entry in the
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] taxonomy. The general contract every document follows
+(frontmatter, state, linking, tags) lives on the taxonomy page; this
+page carries only what is specific to =design=.
+
+* Contract
+
+- Lives in its story's folder as =design.org=, beside =story.org= and
+  the task files. One design per story at most.
+- Level :: =s2=. A design belongs to a story, never to a sprint: a
+  story that carries into the next sprint takes its design with it,
+  where a sprint-scoped design would orphan.
+- State :: =#+todo: DRAFT STARTED | LANDED SUPERSEDED ABANDONED=.
+- =#+outcome:= :: the UUID of the durable document the design produced.
+  Mandatory once the state is =LANDED=.
+- Opens with a note saying it describes a transition rather than the
+  current state, and that it must not be linked from durable
+  documentation.
+- Links run *one way*, and the *story is the hub*. A design links
+  forward to the durable document it produces, so a reader who lands on
+  the design is redirected. The durable document links back to neither
+  the design nor the story: a durable page pointing at transitional
+  content walks an agent grounding itself straight into a description of
+  a state that no longer exists, and most work never needs the history
+  at all. The story carries a =* Documents= table naming everything it
+  produced, which is the way in when history is genuinely wanted, and
+  the design's =#+outcome:= is the machine-readable trail.
+
+* When to use it, against =plan=
+
+A [[id:A0844CC9-9D7C-4A87-9D65-8143614E76A6][plan]] is /how we will do this work/: the working strategy, written
+when a task or story starts, transient, cleared or summarised at close.
+It is a section, never a file.
+
+A design is /what the target state is, and why/: the argument that
+produced the tasks rather than the strategy for executing one. Reach for
+it only when both hold:
+
+1. The argument spans many tasks, so no single task's =* Plan= owns it,
+   and it precedes the tasks rather than describing how to run one.
+2. It will be distilled into a durable document — knowledge, an
+   architecture page, a manual chapter — which the =#+outcome:= names.
+
+If only the first holds, the content belongs in the story's =* Plan=. If
+neither holds, it belongs in the task's =* Plan=. A design that produces
+no durable outcome was a plan all along.
+
+* The story is the hub
+
+A durable document is about the target state. It carries no pointer to
+how it came to be, because in the great majority of sessions that
+history is a distraction, and following it costs an agent a description
+of the world as it used to be.
+
+The path back exists, but it must be walked deliberately. The story's
+=* Documents= table names every document the work produced, durable and
+transitional alike, with what each is for. An agent that genuinely needs
+the reasoning goes to the story and finds it; an agent that needs the
+framework reads the durable page and never learns the story exists.
+
+* Why it lives with the story and not in =doc/=
+
+A transitional document in the durable tree is a trap: an agent
+grounding itself finds a confident description of a state that no longer
+exists, which is worse than finding nothing. Ninety-four such documents
+accumulated under [[proj:doc/plans][=doc/plans/=]] before we stopped writing them there.
+
+Keeping the design in its story folder solves this with machinery that
+already exists rather than new machinery: =compass search= excludes
+past-sprint documents by default, so a design drops out of the default
+grounding path the moment its sprint closes. Nothing has to remember to
+retire it.
+
+* Lifecycle
+
+1. =DRAFT= while the argument is being built.
+2. =STARTED= once tasks are executing against it.
+3. =LANDED= when the story closes, with =#+outcome:= naming the durable
+   document distilled from it. The design is never deleted; it stays as
+   the record of why the durable document says what it says.
+4. =SUPERSEDED= if a later design replaces it before the work lands.
+5. =ABANDONED= if the work is dropped.
+
+A design whose story is =DONE= but whose =#+outcome:= is empty is drift,
+and belongs to the audit channel alongside the link-integrity checks.
+
+* See also
+
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] — the taxonomy this type belongs to.
+- [[id:A0844CC9-9D7C-4A87-9D65-8143614E76A6][Document type: plan]] — the transient sibling this type is not.
+- [[id:DF81C4F0-9EB6-408B-9828-1A33BCC7769A][Document type: story]] — the parent a design is always scoped to.

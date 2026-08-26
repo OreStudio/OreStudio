@@ -27,6 +27,13 @@ that proposed writing its taxonomy to =doc/plans/YYYY-MM-DD-*.org=.
 (taxonomies, migration strategies, architecture decisions), put the
 analysis and the working tables in the task body and the settled choices
 in the story's =* Decisions=. Only reference [[proj:doc/plans][=doc/plans/=]] to read
-historical plans; never direct new live design output there. Earlier
+historical plans; never direct new live design output there.
+
+*The one exception:* an argument that spans many tasks, precedes them,
+and will be distilled into a durable document outgrows any single
+=* Plan=. That is a [[id:7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866][design]] document — =design.org= in the story's own
+folder, never in [[proj:doc/plans][=doc/plans/=]] and never in the durable tree. It carries
+=#+outcome:= naming the document it produced, and it leaves the default
+grounding path when its sprint closes. Earlier
 docs (e.g. the compass CLI UX taxonomy) used [[proj:doc/plans][=doc/plans/=]] — follow their
 /content shape/, not their location.

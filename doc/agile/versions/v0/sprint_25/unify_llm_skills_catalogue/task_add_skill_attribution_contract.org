@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE
+:END:
+#+title: Task: Define the upstream attribution contract for imported skills
+#+description: Give every imported skill a recorded upstream source, path, commit and divergence note, backed by a manifest and a drift check.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:attribution:licensing:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+We import skills from two repositories that keep moving. Without a recorded origin we cannot tell an intentional divergence from an accidental one, and we cannot pull an upstream improvement. Define the contract: frontmatter keywords naming the upstream repository, the path within it, the commit we imported from, and the date; a body section stating how we diverged and why. Add a manifest document listing every imported skill. Add a compass check that reports which imports are behind their upstream. Both source repositories are MIT licensed, so settle how their licence ships alongside ours.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- The attribution contract is documented and applied to at least one worked example.
+- A manifest document lists every imported skill with its upstream repository, path and commit.
+- A compass command reports which imported skills are behind their upstream.
+- The MIT licence of each source repository ships with the imported skills, alongside ours.
+- The skill-add skill enforces the contract when the new skill is an import.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

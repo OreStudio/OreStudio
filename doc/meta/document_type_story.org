@@ -31,6 +31,12 @@ page carries only what is specific to =story=.
   - =* Status= — table; rows =State / Parent sprint / Now / Waiting on
     / Next / Last touched=.
   - =* Acceptance= — when is this story done?
+  - =* Documents= — /optional; required once the story produces any
+    document beyond its own tasks./ A table naming every document the
+    story produced or reasons from, with its kind and purpose. Durable
+    documents deliberately do not link back to the story, so this table
+    is the only way in when the history is genuinely needed. See
+    [[id:7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866][design]] § "The story is the hub".
   - =* Tasks= — id-links to its child tasks, in execution order.
   - =* Decisions= — distilled from plans as tasks land.
   - =* Out of scope= — what we explicitly /chose/ not to include.

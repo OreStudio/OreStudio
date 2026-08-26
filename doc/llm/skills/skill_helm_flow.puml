@@ -1,0 +1,90 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+@startuml
+
+title compass-helm — from a request to verified work
+
+skinparam rectangle {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam note {
+    BackgroundColor #1A1A1E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam ArrowColor #8AB4F8
+skinparam ArrowFontColor #E3E3E6
+skinparam BackgroundColor transparent
+skinparam DefaultFontColor #E3E3E6
+skinparam TitleFontColor #E3E3E6
+skinparam TitleFontSize 16
+skinparam ArrowFontColor #C9D1D9
+skinparam ArrowFontSize 12
+skinparam activity {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+    DiamondBackgroundColor #1A1A1E
+    DiamondBorderColor #58A6FF
+    DiamondFontColor #E3E3E6
+}
+
+start
+:Your request;
+:Declare the session function;
+note right
+  Sets the cybernetic level.
+  Attenuates the catalogue.
+end note
+:Read the principles index;
+if (Does a method match?) then (yes)
+  :Copy the method's phases
+  into the todo list verbatim;
+else (no)
+  :Design a bespoke method;
+endif
+:Ground the domain;
+note right
+  Name the concepts.
+  Resolve each to knowledge.
+  A gap is the first task.
+end note
+:State the finish condition;
+note right
+  Checkable, not motion.
+  "Zero old callers and
+  every fixture passes",
+  not "work on it for a while".
+end note
+repeat
+  :Run the next phase;
+  :Call actions and recipes;
+  if (Fork the evidence
+  cannot settle?) then (yes)
+    :Convene deliberation;
+    :Record the verdict
+    on the task;
+  else (no)
+  endif
+  :Verify against the
+  independent checkers;
+repeat while (Finish condition met?) is (no)
+->yes;
+:Close the task, raise the PR;
+:Route what generalises
+into a memory or a skill edit;
+stop
+
+@enduml

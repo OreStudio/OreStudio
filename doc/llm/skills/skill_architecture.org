@@ -1,0 +1,839 @@
+:PROPERTIES:
+:ID: AEBC2BC9-A854-4CEC-BA88-1602490AC762
+:END:
+#+title: Skill architecture
+#+description: How the ORE Studio skill framework works: six planes of artefact, a target-and-action dispatcher, cybernetic levels that attenuate what a session sees, and one sticky mode that routes work through them.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:cybernetics:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+* Summary
+
+A skill is one *action* on one *typed target*, and the catalogue is
+arranged so that an agent can find the right one without reading all of
+them.
+
+Artefacts sit in six *planes*, each naming the agent's relation to it:
+*grounding* is loaded, *stance* is cited, *method* is sequenced,
+*action* is executed, *specification* is declared, and *deliberation*
+decides. Crossing the six is the *function* axis — the [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]]
+a session declares, which decides how much of the catalogue is in scope.
+
+Actions register against a target's *type*, not against the command
+that produced the target, so a dispatcher can compute which verbs apply
+to anything an agent is holding. One sticky mode, =compass-helm=, ties
+it together: it declares the function, matches the work to a method,
+and routes to actions, recipes and deliberation as the method's phases
+fire.
+
+* Detail
+
+** What a skill is
+
+A skill is *task-shaped*: the playbook a session loads to perform one
+unit of work. Compare with a [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][function]], which is *role-shaped* — a
+description of what someone does, listing the skills that role draws on.
+
+Every skill lives at =doc/llm/skills/<slug>/SKILL.org= and deploys to
+=.claude/skills/<slug>/SKILL.md=. The slug, the directory and the
+=name:= frontmatter field are always identical.
+
+** The six planes
+
+#+caption: The six planes. Grounding is loaded; the other five are run.
+[[proj:doc/llm/skills/skill_planes.png]]
+
+The planes are cut by one principle: *the relation between the agent and
+the artefact*. They are tags rather than a partition — most artefacts
+carry one, and a few legitimately carry more.
+
+*** Grounding — loaded, not run
+
+What must be true before an agent acts. Three members, with different
+use cases.
+
+#+ATTR_HTML: :class hug-leading
+| Member    | Answers                       | Loads                          |
+|-----------+-------------------------------+--------------------------------|
+| [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] | What /is/ this? Why is it so? | By relevance to the work       |
+| [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipe]]    | How do I operate this system? | When an action needs a command |
+| Memory    | What must I not do again?     | Unconditionally, every session |
+
+Memory is paid for by every session whether relevant or not, which is
+why memories stay few. Knowledge and recipes are paid for only when the
+work touches them.
+
+**** Domain grounding is an obligation, not a reading list
+
+Knowledge documents are the agent's model of the domain. A regulator
+needs a model of the system it regulates, so an agent that starts work
+without loading the relevant knowledge does not have the variety to do
+it well, and will produce something plausible and wrong without knowing.
+
+Every method opens with a grounding phase: name the domain concepts the
+work touches, resolve each to a knowledge document or its structure
+note, and treat an unresolved concept as a *knowledge gap* whose closure
+is the first task. A method that skips this records =skip:= and a
+reason.
+
+The knowledge graph is a Zettelkasten (see [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]]): atomic notes,
+a UUID on every file, =id:= links, and *structure notes* that give each
+domain cluster an argued reading order. Search finds a page; a structure
+note builds a model.
+
+**** Recipes are the operational vocabulary
+
+A recipe answers one operational question about this system, carries a
+=* Script= section, and is tested. Recipes are what method steps reach
+for: a step that needs an effector uses a recipe, and a step that finds
+no recipe *writes one* rather than improvising a command inline. The
+method plane therefore accumulates capability instead of re-deriving it.
+
+The boundary with actions is strict. The recipe holds the command; the
+action holds the judgement — when to reach for it, what must hold first,
+what to do when the guard rails refuse. One source of truth each, which
+gives [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] exactly one place to detect drift.
+
+*** Stance — a rule that is cited
+
+One rule per skill, named after the rule, with no steps and no
+artefacts. A method step cites a principle by name and the agent loads
+it to know what the rule means here. This is the one plane exempt from
+the rule against reference-only skills, because a principle that cannot
+be loaded by name cannot be cited.
+
+*** Method — how a kind of work is approached
+
+A sequence of phases ending in a verifiable state, expressed without
+naming a specific artefact type. A method is *control flow with no
+effectors*: it knows that a change must be proved, not how to open a PR.
+
+**** Method against recipe
+
+#+ATTR_HTML: :class hug-leading
+| | Recipe | Method |
+|---+--------+--------|
+| Answers | How do I /operate/ this system? | How do I /approach/ this kind of work? |
+| Scope | One operation | One shape of work, many operations |
+| Content | Commands and a script, tested | Phases, gates and judgement |
+| Determinism | Same steps every time | Steps chosen by what the work reveals |
+| Fails when | The command changes | The shape of the work was misjudged |
+
+Two tests settle any case. *Determinism*: same steps every time is a
+recipe; steps that depend on what you find is a method. *Dependency*: a
+method cites a recipe, never the reverse.
+
+*** Action — what is done to an artefact
+
+The verb applied to a typed target. An action is *an effector with no
+control flow*: it knows exactly which command to run and what state to
+leave behind, and does not decide whether it should have been run.
+
+A verb that behaves uniformly across types is one polymorphic skill plus
+a generated type table. A verb whose procedure genuinely differs per
+type keeps its own skill. The test is whether the *procedure* differs,
+not whether the artefact does.
+
+*** Specification — what the result must do
+
+An Allium specification: the durable, checkable statement of intended
+behaviour, from which tests are generated. This is what makes a method's
+definition of done falsifiable rather than rhetorical. A method's
+framing phase writes or extends a rule; its verification phase runs the
+tests propagated from it.
+
+*** Deliberation — deciding a contested fork
+
+The Council of High Intelligence, consumed as an external plugin. A
+method convenes it at a fork the evidence cannot settle. The output is a
+verdict recorded on the task, never a silent change to the code.
+
+Deliberation is not a bug finder. Personas vary framing, not priors, so
+error detection routes first to checkers that genuinely do not share the
+session model's assumptions: the compiler, the test suite, the schema
+validators, the codegen drift checks, CI, and the review bot.
+
+** Targets and actions
+
+#+caption: =compass-act= resolves a target's type, then offers the verbs registered against it.
+[[proj:doc/llm/skills/skill_dispatch.png]]
+
+Actions register against a target's *type*, never against the command
+that produced the target. A new source of targets therefore inherits
+every action for the types it yields, and a new action appears wherever
+its type does, without anyone editing a table.
+
+Documents carry their type in =#+type:= frontmatter. Non-document
+targets — a branch, a pull request, a worktree, a service, a build
+target, a test failure, a database — resolve their kind through compass.
+A target whose type cannot be resolved is out of scope for dispatch.
+
+Three skills implement the model:
+
+- =compass-act= — resolve a target's type, look up the verbs registered
+  against it, filter by the session's level, run the chosen one.
+- =compass-act-all= — fan one action over a collection.
+- =compass-export= — hand a result set to the artefact type that owns
+  that payload. Review findings become tasks on a story; backlog
+  candidates become captures; drift findings become tasks. Never invent
+  a new container when an artefact type already exists for the payload.
+
+The verb table is *generated* from the catalogue. A hand-maintained
+table drifts within a sprint; if it cannot be generated, the dispatcher
+is not built.
+
+=agile-find-heading= and =compass-act= answer different questions.
+Heading picks *which work to do*; act picks *which verb applies to this
+noun*.
+
+** Functions, levels and delegates
+
+A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][function]] once, at the start. That sets the
+cybernetic level, and the level selects the slice of the catalogue in
+scope by default.
+
+#+ATTR_HTML: :class hug-leading
+| Level | Function         | Horizon    | Sees                                                       |
+|-------+------------------+------------+------------------------------------------------------------|
+| S1    | Agent            | Hours      | Action plane in full, methods, stance, specification        |
+| S2    | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
+| S3    | Sprint Planner   | Weeks      | Sprint and backlog actions, planning and review methods     |
+| S3*   | Auditor          | Continuous | Read-only and audit actions only                            |
+| S4    | Version Planner  | Months     | Version and release actions, strategy deliberation          |
+| S5    | Identity Steward | Indefinite | Identity and backlog-fit actions, deliberation              |
+
+Attenuation has two strengths, and they must not be confused.
+
+- *Advisory*, for S1, S2, S3, S4 and S5. Default visibility only.
+  Nothing is forbidden and an agent may reach outside its level by
+  saying so. The point is ergonomics: a default small enough to choose
+  from well.
+- *Binding*, for S3*. The auditor may not mutate a work item. An audit
+  channel that can be talked into editing what it observes is not an
+  audit channel. This row is enforced.
+
+Constraint flows down and signal flows up, unchanged from the [[id:926B916E-A57E-498E-99AB-720B583C0362][levels
+model]]: a method at S1 inherits the story goal from S2, which inherited
+the sprint mission from S3; a task result becomes a story result becomes
+a sprint retrospective.
+
+*** Delegates adopt functions too
+
+The levels above are functions a *session* adopts. The same artefact
+serves a second purpose: a function is also what a *delegate* adopts
+when a session spawns one.
+
+This matters because delegation is where discipline is most easily lost.
+A session that has declared its function, loaded the principles and
+copied a method's phases in can hand work to a delegate that has done
+none of those things, and the delegate will produce something plausible
+that satisfies none of the gates. The fix is structural: *a delegate is
+spawned as a named function, never as a generic agent*. If a spawn names
+no function, the discipline stops at the boundary.
+
+A function definition therefore states what the delegate must read
+before it begins, and what it may do.
+
+**** Read-only functions bind
+
+The advisory-versus-binding distinction that separates S3* from the
+other levels applies to delegates too, and here it is easier to enforce.
+
+A reviewing function is *unable* to write, not asked not to. A comment
+reviewer touches comments and names refactor targets; it never writes
+application code. An auditor reports; it never mutates the thing it
+observes. Stating the boundary in the function definition and enforcing
+it at spawn time is worth more than any instruction inside the prompt,
+because a delegate under pressure to finish will reinterpret an
+instruction and cannot reinterpret a capability it does not have.
+
+**** A finding may name a structural fix
+
+A read-only function that cannot change the code is not thereby limited
+to complaining. It can name the *structural* change that would remove
+the problem, and that naming is often the more valuable output.
+
+The pattern worth generalising: when a reviewer finds prose explaining a
+surprise in our own code, the prose is the symptom. The comment goes,
+and the reviewer flags the exact symbol for the rename, extraction,
+retype or rearchitecture that would make the behaviour obvious without
+prose. Only surprises forced by something outside our control — a
+platform, a vendor, a protocol we cannot reshape — earn a comment
+instead of a fix.
+
+That is the =encode-lessons-in-structure= principle made operational: a
+finding that ends in a structural flag outlives a finding that ends in a
+deletion.
+
+** The mode
+
+#+caption: =compass-helm= from a request to verified work.
+[[proj:doc/llm/skills/skill_helm_flow.png]]
+
+=compass-helm= is the sticky entry point. Entered once, it stays on
+across turns, applying itself when a method matches and staying out of
+the way otherwise.
+
+1. Declares the session's function, which attenuates the catalogue.
+2. Matches the request to a method and copies that method's phases into
+   the todo list *verbatim*, before any task-specific reasoning. A phase
+   deliberately skipped stays in the list with a stated reason.
+3. Reads the principles index at task start.
+4. Routes to actions and recipes as the phases fire, and to deliberation
+   at a fork the evidence cannot settle.
+5. Spawns delegates as named *functions*, never as generic agents, so
+   the discipline survives the delegation boundary. The mode and its
+   delegate function share one definition; there is no second place for
+   the rules to drift.
+
+Step 2 carries the value. The failure it guards against is an agent
+reading a method and then writing a bespoke plan that quietly drops the
+method's named phases.
+
+*** How to address it
+
+#+begin_example
+compass-helm <what you observed, or what you want>
+Done means <something the agent can run or inspect>.
+Keep <the behaviour that must not change>.
+#+end_example
+
+The finish condition names a *result*, not an amount of effort: "zero
+old callers and every parser fixture passes", never "work on this for a
+while".
+
+Do not list the skills you want run. State the goal and the constraints;
+the method owns the sequence. An agent handed both a goal and a
+step-list follows the step-list and drops the method's gates.
+
+*** When not to use it
+
+The machinery has a cost, and a mode that fires on everything trains
+people to route around it. Moving a date, fixing a sentence, changing
+one configuration value, answering a question — none of these need a
+declared function, a matched method, a grounding phase and a decision
+trail. Reach for the plain action skills.
+
+The mode earns its cost when a plausible diff is not enough: work that
+must be reproduced before it is fixed, a design decision expensive to
+reverse, a run long enough that a human reviews it after the fact, or a
+domain the agent has not grounded itself in.
+
+** Agents: delegation, isolation and unattended runs
+
+The purpose of this framework is that =compass-helm= can be started on
+an agent and left to run. Everything above serves that: the levels
+decide what an agent can see, the methods decide what it does in what
+order, the recipes are what it reaches for, and the independent checkers
+are how it knows it succeeded. This section states how agents are
+configured and bounded.
+
+*** The words: agent, session, delegate
+
+Everyone says "agent", and it is overloaded three ways in this project.
+The ladder, from general to specific:
+
+#+ATTR_HTML: :class hug-leading
+| Word         | Means                                                                 |
+|--------------+-----------------------------------------------------------------------|
+| *Agent*      | Any LLM process doing work. The general word; use it when the distinction does not matter |
+| *Session*    | The agent a human is talking to. It has a conversation and an operator |
+| *Delegate*   | An agent spawned by another agent to do a bounded piece of work and report back. It has no operator, only a brief |
+| *Function*   | The /role/ either one adopts. Not a process at all                    |
+
+A delegate is what the harness and most other tooling call a
+*subagent*. We say delegate because the relationship is what matters
+here — it was given a brief by something that stays responsible for the
+result — and because "sub" implies a hierarchy of importance rather than
+of scope. Read the two as synonyms when reading anyone else's
+documentation.
+
+The trap worth naming: *the S1 level is called "Agent", and it is a
+function, not a process.* "The S1 Agent" is a role a session or a
+delegate adopts, in the same way "S3* Auditor" is. When it matters,
+write "a session operating at S1" rather than "the S1 agent".
+
+The owning rule: a session owns its delegates' work. A delegate's
+summary of what it did is not evidence; the artefact it produced is.
+Review the diff, not the report.
+
+*** Why delegate at all
+
+Three reasons, and they are the only three.
+
+- *Context.* Bulk reading belongs in a delegate, with a summary
+  returned to the parent. A parent that reads a hundred files has spent
+  its context on material it will not use again.
+- *Parallelism.* Genuinely independent slices of work run at the same
+  time, one delegate per slice, with the results aggregated.
+- *Isolation.* Work that must not touch the parent's working tree gets
+  its own.
+
+*Not* a reason: hoping a second attempt will be better than the first.
+Every delegate runs the same model as its parent, by policy, so a
+re-attempt varies the sampling and nothing else. Where a genuine second
+perspective is needed the answer is deliberation or an independent
+checker, not another agent.
+
+That is the single-model correction to the pattern this is borrowed
+from. Fan-out for *coverage* survives intact, because its value is
+parallelism. Fan-out for *competition* — several attempts at one brief,
+judged and grafted — does not, because its value was model diversity and
+we have none. Use coverage freely; reach for competition only on design
+questions, and prefer the deliberation plane there.
+
+*** Isolation is a hard constraint, not a preference
+
+Parallel writers get their own worktree. This is not tidiness: two
+agents in one tree corrupt each other's work in ways that are hard to
+attribute afterwards, and the failure surfaces long after the cause.
+
+Each environment carries its own worktree, its own ports, its own
+=.env=, and its own database, provisioned through compass rather than by
+hand. =compass fleet= is the supervisor's view: what every worktree is
+doing, which branch, which task, which pull request.
+
+Two shared resources cut across the isolation and must be handled
+explicitly, because a worktree does not protect them: the *git stash
+stack*, which is shared across every worktree in the repository, and any
+*remote* the agents push to. Neither is a place for a delegate to
+improvise.
+
+*** What configures an agent
+
+Five fields, and the model is deliberately not among them.
+
+#+ATTR_HTML: :class hug-leading
+| Field           | Decides                                          |
+|-----------------+--------------------------------------------------|
+| Function        | The role: what it must read first, what it may do |
+| Level           | Which slice of the catalogue it sees             |
+| Environment     | Which worktree and database it may write to      |
+| Finish condition | When it is done, checkable by the agent itself  |
+| Authority       | What it may do without asking                    |
+
+The model is inherited from the session that spawned the agent. We do
+not route roles to model tiers: the operator chooses one model and every
+delegate uses it. This costs the model-diversity benefits described
+above, and the substitution is stated where it matters rather than
+papered over.
+
+*** Unattended runs
+
+An agent left running needs four things the attended case can do
+without.
+
+**** A finish condition the agent can check itself
+
+"Work on this for a while" measures motion. "Zero old callers remain and
+every parser fixture passes" measures a result, and the agent can
+evaluate it without asking. An unattended run without such a condition
+does not terminate; it drifts until something interrupts it.
+
+**** An authority boundary, granted in advance
+
+By default, irreversible and outward-facing actions stop and ask:
+pushing to a shared branch, deploying, deleting data, raising a pull
+request, anything that leaves the machine. That default is right when a
+human is present and fatal when one is not — the run stalls at the first
+gate and the night is wasted.
+
+So authority is granted *explicitly and in advance*, in the request that
+starts the run, and it is granted narrowly. "Commit and push to this
+branch without asking; do not open a pull request; do not touch main"
+is an authority grant. "Be autonomous" is not, and an agent should treat
+it as an instruction to proceed on reversible work only.
+
+An agent that reaches the edge of its authority stops and says so. It
+does not widen its own grant.
+
+**** A decision trail
+
+The human was not watching, so the run must be reconstructable
+afterwards: what was decided, why, on what evidence, and what was
+discarded. Prefer evidence a reviewer can re-run — a script, a recipe, a
+test — over a claim in prose. The trail plus the diff is what makes an
+unattended result trustworthy rather than merely finished.
+
+**** Liveness, failure and resumption
+
+- *Liveness.* A silent agent and a stuck agent look identical from
+  outside. Progress must be visible in the trail, so a supervisor can
+  tell one from the other without interrupting.
+- *Failure.* On a genuine dead end an agent stops and explains, and does
+  not thrash. Repeatedly retrying a failing approach burns the budget
+  and buries the cause.
+- *Resumption.* A run may be paused at an atomic boundary and resumed
+  later from its trail and branch, by a different agent. A run that can
+  only be abandoned and restarted is not automation.
+
+*** What this means for the rest of the framework
+
+The parts of this architecture that matter most to an unattended run
+are the ones that bind rather than advise: the finish condition, the
+authority boundary, the read-only functions, the isolation, and the
+independent checkers. Everything advisory — the plane vocabulary, the
+default visibility at most levels — helps an agent choose well while
+someone is watching, and does nothing at three in the morning.
+
+** Codegen
+
+#+caption: Generated-ness gates the verbs, the profile names the variability, regeneration proves it.
+[[proj:doc/llm/skills/skill_codegen_decision.png]]
+
+Codegen is the same architecture applied to code rather than to skills,
+and it is further along. Its meta-types are typed targets, its eleven
+named [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]] are a closed register, its features are the axes that
+register is built from, and zero-diff regeneration is a falsifiable
+predicate. Where this page and the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][variability model]] disagree, the
+variability model wins.
+
+*** Is this artefact generated?
+
+Ask before touching anything, because the answer decides which verbs are
+legal. A codegen model at
+=projects/ores.<component>/modeling/ores.<component>.<slug>.org=, or a
+generated-file marker on the artefact, means the artefact is generated.
+
+*Hand-editing a generated artefact is not a legal verb*, and the
+dispatcher does not offer it. The edit goes to the model or to the
+template — see [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
+
+*** Which profile does it bind to?
+
+Exact match against the named profiles binds. No exact match means the
+nearest profile by Hamming distance over the shared feature set, and the
+diff is one of two things: a *gap to close*, or a *genuinely novel
+combination* worth naming as a new profile.
+
+Never leave an entity with loose knobs and no profile. Unnamed
+variability is indistinguishable from drift, and an entity nobody has
+classified is one nobody can tell is broken.
+
+*** Is it drifting?
+
+#+ATTR_HTML: :class hug-leading
+| Kind           | What happened                                               | Guarded by                 |
+|----------------+-------------------------------------------------------------+----------------------------|
+| Artefact drift | A generated file was hand-edited                            | =check_component_drift.py= |
+| Template drift | A =.mustache= was edited instead of its literate org source | =template-drift.yml=       |
+| Model drift    | An entity no longer matches its bound profile                | The model-drift check      |
+
+These are S3* work: continuous, from outside, and binding. They are also
+the most valuable verification available, because they are mechanical
+and indifferent to how convincing an agent's reasoning was.
+
+** Verification
+
+Verification is not a phase at the end. It is a ladder, and each rung
+has a different job. Work climbs only as far as it needs to, but it
+never skips a rung below where it stops.
+
+#+ATTR_HTML: :class hug-leading
+| Rung | Question                                        | Mechanism                    | When |
+|------+-------------------------------------------------+------------------------------+------|
+| 0    | Is the structure generated rather than written? | ores.codegen                 | Always |
+| 1    | Did only the expected things change?            | The drift checks             | Always, after generating |
+| 2    | Does the behaviour do what it should?           | Catch2 unit and integration tests | Feature work |
+| 3    | Does the system do what the task claimed?       | A scripted =ores.shell= scenario | Every task and story |
+| 4    | Does the interface do what the system does?     | Qt verification              | Only when Qt is affected |
+
+*** Rung 0: generate the structure, or extend the generator
+
+Anything structural is generated. If the generator cannot express it,
+that is a gap in the generator, not a licence to hand-write around it.
+
+The discipline when the gap appears mid-task is a *stack*, and it uses
+mechanisms we already have rather than new ones:
+
+1. File the gap as a *discovered task*.
+2. Set the current task =BLOCKED= with =#+blocked_on:= naming it.
+3. Take the discovered task to =DONE= with its own pull request.
+4. Resume the original task, which now regenerates cleanly.
+
+The discovered task gets its own branch and its own pull request. It is
+tempting to fix the generator inside the current branch and carry on,
+and that is wrong twice over: it produces a diff a reviewer cannot
+separate into "the feature" and "the generator change", and it hides a
+generator improvement that every other component wants inside a feature
+nobody else is reading.
+
+A hand-written workaround for a generator gap is the failure this rung
+exists to prevent. See [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
+
+*** Rung 1: prove only the expected things changed
+
+Regeneration is only trustworthy if its blast radius is known. After
+generating, verify that the diff contains exactly what the change should
+have produced and nothing else.
+
+Drift takes the same stack discipline as a generator gap. Drift found
+mid-task is a discovered task, the current task blocks on it, the drift
+is resolved on its own branch, and only then does the original resume.
+Carrying pre-existing drift forward inside a feature branch is how a
+component's drift backlog becomes invisible: it gets absorbed, one
+feature at a time, into diffs nobody reviews as drift.
+
+*** Rung 2: unit tests, which may also be integration tests
+
+Feature work has tests. The unit-versus-integration distinction is not
+load-bearing here: what matters is that a test fails before the change
+and passes after, and that it exercises the real path rather than a
+mock of it. A test that would pass without the feature is not a test.
+
+*** Rung 3: system behaviour through =ores.shell=
+
+Every task and story is verified by a *scripted shell scenario* — the
+system driven through its real interface, non-interactively, with the
+script committed so a reviewer can re-run it.
+
+This rung is where the architecture's claim about independent checkers
+becomes concrete. The shell does not share the session model's priors,
+does not care how convincing the reasoning was, and produces the same
+verdict for a reviewer as for the agent. It is worth more than any
+amount of self-report.
+
+A scenario that cannot be scripted is a signal, not an exemption: it
+usually means the system has no non-interactive path to the behaviour,
+which is a gap worth closing on its own terms.
+
+*** Rung 4: Qt
+
+Only when the work affects the Qt client. The rule that governs the
+choice of mechanism:
+
+*Assert on state, not on pixels.* An agent needs a predicate it can
+evaluate. Widget state, model contents and signal emissions are
+predicates; a screenshot is not. Screenshots are *evidence for a human*
+and belong in the record, but they do not verify anything on their own,
+because an agent comparing images either accepts noise or rejects on it.
+
+That gives three layers, in preference order:
+
+1. *Widget-level tests* under Qt's own test framework, running with the
+   offscreen platform so they need no display and run in CI beside the
+   other tests. In-process, so they assert on state directly.
+2. *A scripted control surface inside the application*, the Qt sibling
+   of =ores.shell -f=: a driver that opens windows, invokes actions and
+   reports state, driven by a committed script. The application already
+   captures its own screenshots in-process, so the evidence trail comes
+   free.
+3. *External screen automation* only for pixel-parity work — manual
+   screenshots and visual comparison — where a human reviews the output
+   anyway.
+
+External automation is deliberately last. It is brittle against layout,
+theme and timing; it needs a real display; it fails opaquely; and it can
+only see pixels, so it cannot answer the question an agent actually has.
+
+** Evaluating skills
+
+A skill is a prompt, so changing one changes agent behaviour in a way
+reading the diff cannot show.
+
+The protocol is pstack's, and it is good. The one part that does not
+port is the judge, for the reason that recurs throughout this document:
+it wants a judge on a different model family and we have one family.
+
+*** The observer effect is the central problem
+
+An agent that knows it is being evaluated behaves differently. That
+single fact drives the whole design, and it means blinding is not a
+nicety — it is the experiment.
+
+Blinding, concretely:
+
+- No occurrence of /eval/, /test/, /judge/, /rubric/, /score/,
+  /compare/, /benchmark/ or /candidate/ in any directory, file or
+  prompt the candidate sees.
+- The prompt reads as an organic user request. State the goal, never the
+  meta: "build me a small import tool", not "show me how you follow the
+  method chain".
+- *No chain-eliciting cues.* Do not ask a candidate which skills or
+  principles it applied. That question inflates the very behaviour being
+  measured.
+- Sanitised names. Project-shaped directory names a user might pick,
+  never =candidate-1=.
+- The candidate is not told other candidates exist.
+
+Blinding matters *more* to us than to pstack, not less. pstack can
+correct a biased judge with a second model family. We cannot, so
+preventing the candidate from performing for the grader is the only
+defence we have left on that side.
+
+*** Grade from transcripts, not from self-report
+
+The sharpest rule in the protocol, and one this architecture needs
+independently of any eval:
+
+#+begin_quote
+Citing a principle is not reading its leaf skill, and reading it is not
+applying it.
+#+end_quote
+
+Grade chain-following from which files the agent *actually opened*, read
+from its transcript, plus the shape of the work it produced. Never from
+its own account of what it did.
+
+This closes a hole elsewhere in this document. Methods cite principles
+and the mode reads a principles index, but nothing so far checked
+whether any of that was read. Transcript inspection is that check, and
+it is mechanical rather than a judgement.
+
+*** Where we diverge: mechanical verdicts instead of a cross-model judge
+
+pstack spawns candidates across model families and a blinded judge on a
+different family again. We have one family, so a judge of ours scoring
+our own output measures agreement, not quality.
+
+Our substitute is that *our work already carries mechanical verdicts*.
+It compiles or it does not; the drift check is clean or it is not; the
+shell scenario passes or it does not. So the fixture for an eval is a
+closed task whose outcome is recorded: re-run it in a throwaway worktree
+under the changed skill and compare against what actually landed, graded
+by the independent checkers.
+
+The composite we run:
+
+#+ATTR_HTML: :class hug-leading
+| Step                         | Source   | Note                                        |
+|------------------------------+----------+---------------------------------------------|
+| Blinded, organic prompt      | pstack   | Ports unchanged, and matters more here      |
+| Sanitised environments       | pstack   | Ports unchanged                             |
+| Chain check from transcripts | pstack   | Ports unchanged; mechanical                 |
+| Cross-model candidates       | pstack   | *Does not port.* One family                 |
+| Cross-model blinded judge    | pstack   | *Does not port.* Replaced below             |
+| Mechanical verdict on a closed task | ours | Compilation, tests, drift, shell scenario |
+
+Where no mechanical verdict exists, say so. A judge of the same family
+is a weak instrument and must be labelled one; a skill change that
+cannot be evaluated is a judgement call and should be made and named as
+one rather than dressed in a number.
+
+*** Two kinds of evidence, for two kinds of change
+
+- *Continuous.* Every real session records which skills were visible,
+  which was chosen and whether it was corrected. Free, and it is what
+  tells us whether the catalogue works at all.
+- *Deliberate.* A blinded fixture eval before promoting a change.
+
+The second is expensive and stochastic at the sample sizes we can
+afford, so it is reserved for skills the whole system leans on: the
+mode, the methods, the principles index, the dispatcher. An ordinary
+action-skill edit does not earn one; the evidence that it works is that
+it was used and the work landed.
+
+** Naming
+
+Every skill we own carries the =compass-= prefix, which separates ours
+from every plugin skill the harness also loads.
+
+#+begin_example
+compass-helm                                  the sticky mode
+compass-principle-<rule>                      stance
+compass-method-<kind>                         method
+compass-<domain>-<verb>[-<object>]            action
+compass-act, compass-act-all, compass-export  dispatch
+#+end_example
+
+The domain and verb registers are closed and defined in [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][skill naming
+conventions]]. Every skill carries a =#+level:=.
+
+** Terminology
+
+One word per concept.
+
+#+ATTR_HTML: :class hug-leading
+| Concept                          | Word      | Not                                  |
+|----------------------------------+-----------+--------------------------------------|
+| A unit of work an agent executes | task      | ticket, issue, unit, slice           |
+| A body of related tasks          | story     | epic, spec, map                      |
+| A recorded idea, not yet work    | capture   | backlog item, inbox item             |
+| The approach to a kind of work   | method    | playbook, flow                       |
+| The sticky posture for a session | mode      | stance skill, style, persona         |
+| A rule that is cited, not run    | principle | rule, guideline                      |
+| A durable fact about the domain  | knowledge | research note, doc, ADR              |
+| Intended behaviour, checkable    | spec      | never used for a story plan          |
+| The role a session adopts        | function  | persona, agent type, role            |
+| Any LLM process doing work       | agent     | bot, assistant                       |
+| The agent a human talks to       | session   | main agent, parent, the LLM          |
+| An agent spawned by another      | delegate  | subagent, worker, child agent        |
+| The typed thing acted upon       | target    | object, candidate, entity            |
+| The operation applied to it      | action    | command, verb, skill                 |
+
+Three traps. *Spec* means an Allium specification and nothing else; a
+story's plan is a *plan*. *Persona* means a Council member and nothing
+else; a session's role is a *function*. *Agent* is the general word for
+any LLM process, so it never names a role — the S1 level is called
+"Agent" but it is a function, and a session or a delegate adopts it.
+
+** Where things go
+
+Take the first match.
+
+1. A durable fact about the domain → *knowledge document*. If it is the
+   entry point to a cluster, a *structure note*.
+2. "How do I operate X in this system?", with a runnable script →
+   *recipe*. Also where a method's missing effector goes.
+3. A correction we must not repeat → *memory*. Keep these scarce.
+4. A rule you cite but never run → *principle*.
+5. Intended behaviour that should be checkable → *Allium spec*.
+6. A sequence of phases ending in a verifiable state, not tied to one
+   artefact type → *method*.
+7. A change to a *generated* artefact → the *model* or the *template*,
+   never the output.
+8. An operation on one artefact type → *action*, at cell =(type,
+   verb)=. The action holds the judgement; the recipe holds the command.
+9. A contested judgement → *deliberation*, verdict recorded on the task.
+10. A role a session or a delegate adopts → *function*, tagged by level,
+    stating what it must read first and what it may do.
+11. The argument for a change, spanning many tasks → a *design* in the
+    story's folder, never in the durable tree.
+
+** How a session runs
+
+1. Open with [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] and declare the *function*. The level
+   attenuates the catalogue.
+2. Pick up work with =agile-find-heading= and =agile-start-task=.
+   Constraint arrives from above: the sprint mission, the story goal.
+3. Enter =compass-helm=. It matches a *method* and copies its phases in.
+4. The method grounds itself in the domain, then states a falsifiable
+   predicate, backed by an *Allium spec* where behaviour is involved.
+5. Phases cite *principles* for judgement calls, call *actions* for
+   anything touching an artefact, and reach for *recipes* for commands.
+6. Verification runs against the independent checkers first.
+7. Close with =agile-close-task= and =pr-raise=. Signal flows up.
+8. What generalises is routed into a *memory*, a *principle*, or a skill
+   edit — with approval, never automatically.
+
+** Provenance
+
+Imported skills are not prefixed by their origin. The name is the
+developer's interface and says what the skill does, nothing else.
+
+Provenance lives in the org source: the upstream repository, the path
+within it, the commit imported from, the date, and a divergence note. A
+manifest lists every import and a check reports which have fallen behind
+upstream. None of it appears in the exported skill.
+
+Because the name carries no origin, the frontmatter and the manifest are
+the *only* record that a skill was imported, which is why =skill-add=
+enforces the contract at authoring time.
+
+* See also
+
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this architecture governs.
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the closed registers.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the function axis.
+- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — variety, feedback and regulation.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — the role-shaped counterpart to skills.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — where the terminology is governed.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the same architecture, built for code.

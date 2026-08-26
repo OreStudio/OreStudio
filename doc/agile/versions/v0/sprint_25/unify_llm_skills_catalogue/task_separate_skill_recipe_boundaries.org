@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: F4EF0C2D-B32E-4705-AE0F-AAC3E027FF59
+:END:
+#+title: Task: Separate skill judgement from recipe commands
+#+description: Make every action delegate its commands to a recipe and keep only the judgement, so each has one source of truth.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:recipes:refactor:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Skills and recipes restate each other today. pr-merge the skill and the merge-a-PR recipe both carry the command. Under the architecture the recipe holds the command, tested and runnable by a human, and the skill holds the judgement: when to reach for it, what must hold first, what to do when the guard rails refuse. Sweep the action plane and enforce that split. Where a skill carries a command with no recipe behind it, write the recipe. This is also what makes the method plane work, because a method step that needs an effector reaches for a recipe rather than improvising a shell command inline, and the next method inherits it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- No action skill carries a command that a recipe should own.
+- Every action's Recipes section names the recipes it delegates to, and every Reference section names the knowledge it assumes.
+- Commands found in skills with no backing recipe have had that recipe written.
+- doc-sync-recipes detects drift in exactly one place after the sweep.
+- The method plane's rule is documented: a missing effector becomes a recipe, never an inline command.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

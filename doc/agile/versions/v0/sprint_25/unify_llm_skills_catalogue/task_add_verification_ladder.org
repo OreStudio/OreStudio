@@ -1,0 +1,77 @@
+:PROPERTIES:
+:ID: D03D90DB-BDEB-4E98-A44A-384CCA790903
+:END:
+#+title: Task: Implement the verification ladder and its stack discipline
+#+description: Codegen first, then drift, then tests, then a scripted shell scenario, then Qt; with generator gaps and drift handled as blocking discovered tasks.
+#+type: task
+#+level: s1
+#+filetags: :verification:codegen:drift:testing:shell:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Verification is a ladder, not a final phase, and work never skips a rung below where it stops. Rung zero is that anything structural is generated; a generator that cannot express something is a gap in the generator, never a licence to hand-write around it. Rung one is that regeneration changed only what it should. Rungs zero and one share a stack discipline built from mechanisms we already have: the gap or the drift is filed as a discovered task, the current task goes BLOCKED with blocked_on naming it, the discovered task is taken to DONE on its own branch and pull request, and only then does the original resume. Fixing a generator inside a feature branch is wrong twice: the reviewer cannot separate the feature from the generator change, and an improvement every component wants is buried inside a feature nobody else reads. Rung two is tests that fail before the change and pass after, exercising the real path. Rung three is a committed ores.shell script verifying every task and story through the real interface. Rung four is Qt, only when Qt is affected.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- The ladder is implemented in the method plane: a method cannot report done having skipped a rung below where it stopped.
+- A generator gap found mid-task produces a discovered task, blocks the current task, and is landed on its own pull request before the original resumes.
+- Drift found mid-task follows the same discipline and is never carried forward inside a feature branch.
+- Every task and story carries a committed ores.shell scenario that a reviewer can re-run.
+- A behaviour that cannot be scripted through the shell is recorded as a gap rather than waived.
+- Qt verification runs only when the work affects Qt, through the mechanism settled by its own task.
+- The ladder is exercised end to end on one real feature before the task closes.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

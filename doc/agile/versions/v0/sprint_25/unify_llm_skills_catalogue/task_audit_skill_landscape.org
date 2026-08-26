@@ -1,0 +1,83 @@
+:PROPERTIES:
+:ID: 9388A184-1EFA-4855-8C0B-7FDFE93C3647
+:END:
+#+title: Task: Decide the disposition of every external skill
+#+description: Read every pstack and Matt Pocock skill in full and record a per-skill disposition against the skill architecture: adopt, adapt, harvest or reject, with the reason.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:analysis:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The [[id:C7473361-9825-43DF-8610-EBB028A250BE][design]] already records the three mental models and the
+collisions between them, so that part of the original scope is done.
+What remains is the per-skill judgement, and it needs the files read
+rather than their README one-liners. Read all 44 pstack skills, its 29
+playbooks, and all 35 Matt Pocock skills, and record for each a
+disposition — adopt, adapt, harvest into an existing skill, or reject —
+the plane it lands in, and the reason. Note in particular which pstack
+playbook steps map onto an existing recipe and which need a new one,
+since that mapping is what the method plane is built from.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-25                               |
+
+* Acceptance
+
+- Every pstack skill, pstack playbook and Matt Pocock skill carries a disposition and a one-line reason.
+- Each adopted item names the plane it lands in.
+- Each adopted method names the recipes its steps call, and flags the steps that need a recipe written.
+- The dispositions taken from README descriptions in the earlier pass are re-checked against the files, and the changes are called out.
+- No skill file changes in this task.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

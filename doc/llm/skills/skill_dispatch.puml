@@ -1,0 +1,75 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+@startuml
+
+title compass-act — a target chooses its verbs
+
+skinparam rectangle {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam note {
+    BackgroundColor #1A1A1E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam ArrowColor #8AB4F8
+skinparam ArrowFontColor #E3E3E6
+skinparam BackgroundColor transparent
+skinparam DefaultFontColor #E3E3E6
+skinparam TitleFontColor #E3E3E6
+skinparam TitleFontSize 16
+skinparam ArrowFontColor #C9D1D9
+skinparam ArrowFontSize 12
+skinparam activity {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+    DiamondBackgroundColor #1A1A1E
+    DiamondBorderColor #58A6FF
+    DiamondFontColor #E3E3E6
+}
+
+start
+:A target;
+note right
+  A UUID, a PR number,
+  a branch, a component,
+  a service, a failing test.
+end note
+if (Does it carry #+type:?) then (yes)
+  :Read the type
+  from frontmatter;
+else (no)
+  :Ask compass
+  for the target kind;
+endif
+:Look up the verbs
+registered for that type;
+note right
+  Generated from the catalogue.
+  A new action appears here
+  without anyone editing a table.
+end note
+:Filter by the session's level;
+if (Exactly one verb applies?) then (yes)
+  :Run it;
+else (no)
+  :Present the verbs
+  with a recommendation;
+  :Run the chosen action;
+endif
+stop
+
+@enduml

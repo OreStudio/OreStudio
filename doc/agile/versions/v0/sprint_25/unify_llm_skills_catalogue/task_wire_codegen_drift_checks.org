@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 2DF7DE1E-77CA-419E-90E6-E70DF5223314
+:END:
+#+title: Task: Wire the codegen drift checks into CI and close the false claim
+#+description: check_component_drift.py exists but no workflow runs it, while a nightly PR body tells readers it does; model drift has no checker at all.
+#+type: task
+#+level: s1
+#+filetags: :codegen:drift:ci:verification:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Three kinds of codegen drift exist and only one is enforced. Template drift is guarded in CI by template-drift.yml. Artefact drift, where a generated file was hand-edited, is detected by check_component_drift.py, which works and which no workflow invokes; worse, the nightly-includes workflow raises pull requests whose body tells the reader that hand-edited generated output would fail that check. That claim is false today. Model drift, where an entity's features no longer match the profile it is bound to, has no checker at all. These checks are the genuinely independent verification the architecture argues we should route to first: mechanical, falsifiable and indifferent to how convincing an agent's reasoning was. Two of the three are routed nowhere.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- check_component_drift.py runs in CI over the components already verified zero-diff, and fails the build on artefact drift.
+- The nightly-includes pull request body no longer claims a check that does not run; it is corrected or the check is wired, and the two are consistent.
+- A model-drift check reports entities whose feature combination no longer matches their bound profile.
+- Each component is added to the enforced set only once it is verified zero-diff, so the check stays trustworthy.
+- The three drift kinds are documented with which check guards each and whether it is enforced.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

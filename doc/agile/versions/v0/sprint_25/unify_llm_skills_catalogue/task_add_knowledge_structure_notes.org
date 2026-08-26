@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 6766A23C-0357-4873-B5BF-B5A71BF0B1D5
+:END:
+#+title: Task: Add structure notes to the knowledge Zettelkasten
+#+description: Give each domain cluster an entry-point note listing its pages in an argued reading order, so grounding loads a model rather than a search result.
+#+type: task
+#+level: s1
+#+filetags: :llm:knowledge:zettelkasten:documentation:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Luhmann's slip-box had structure notes, the entry points that list a cluster's notes in an argued order with the relationships spelled out. Ours has none. The knowledge index is a flat list of eighty-eight entries; it tells an agent that a page exists but not which seven to read, in what order, to be competent at interest rate curves. Search finds a page; a structure note builds a model. Write one structure note per domain cluster, starting with market data, IR curves, volatility, entity lifecycle, codegen and identity management. The links already exist, so the work is the argued ordering and the relationships, not new research.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- Each named domain cluster has a structure note giving an argued reading order and the relationships between its pages.
+- Every structure note is reachable from the knowledge index and from the documents it orders.
+- A structure note explains why the order is what it is; a bare list is not acceptable.
+- The Zettelkasten knowledge page documents structure notes as part of how we hold the graph.
+- The grounding phase of the method plane can name a cluster and get a reading path.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

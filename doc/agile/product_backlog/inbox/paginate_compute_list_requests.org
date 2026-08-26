@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: C70600A2-817B-4FE3-8D7D-09F2A2327484
+:END:
+#+title: Paginate the compute list requests
+#+description: Compute list requests cap at 1000 rows and never check total_available_count; paginate so a large grid does not silently drop rows.
+#+type: capture
+#+level: cross
+#+filetags: :compute:shell:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The shell's compute list verbs (~list-apps~, ~list-app-versions~,
+~list-platforms~, ~list-hosts~, ~list-batches~) and the batch-scoped
+lookups in ~projects/ores.shell/src/app/commands/compute_commands.cpp~
+(~find_batch_by_external_ref~, ~workunits_of_batch~,
+~results_of_batch~) send list requests with ~limit = 1000~ and never
+check ~total_available_count~ in the responses. Once a grid
+accumulates more than 1000 batches, workunits or results, a page can
+silently exclude rows; ~list-workunits --batch~, ~list-results
+--batch~ and ~grid-stats --watch --smoke~ could then report empty or
+missing data for a batch that has records. Paginate the requests (or
+at least check ~total_available_count~ and page over it) so the
+verbs stay exact as the grid grows.
+
+* Why
+
+The list verbs are the operational interface to the grid. A silent
+row cap turns into false "no data" reports exactly when the grid
+grows large enough to need the tooling. Declined in the PR #1992
+review round because the cap matches the existing convention across
+the crm/provision/accounts commands; a sweep of all commands is the
+follow-up.
+
+* References
+
+- Review finding 3 on PR #1992 (comment 5410154095): the 1000-row
+  ceiling on the list requests.
+- ~projects/ores.shell/src/app/commands/compute_commands.cpp~ — the
+  list requests and the batch-scoped lookups.
+
+* See also
+
+- [[id:7FB32716-261C-45D9-A5C9-6A43FF2AD6F5][Task: Add compute read verbs to the shell]] — the PR that surfaced this.

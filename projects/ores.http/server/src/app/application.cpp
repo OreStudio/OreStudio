@@ -65,13 +65,8 @@ boost::asio::awaitable<void> application::run(asio::io_context& io_ctx,
                                           "http://localhost:" + std::to_string(cfg.server.port) :
                                           cfg.http_base_url;
 
-    BOOST_LOG_SEV(lg(), info) << "Connecting to NATS: " << cfg.nats.url;
     nats::service::client nats(cfg.nats);
     nats.connect();
-    BOOST_LOG_SEV(lg(), info) << "Connected to NATS: " << cfg.nats.url << " (namespace: '"
-                              << (cfg.nats.subject_prefix.empty() ? "(none)" :
-                                                                    cfg.nats.subject_prefix)
-                              << "')";
 
     BOOST_LOG_SEV(lg(), info) << "Initializing database connection...";
     database::context_factory::configuration db_cfg{

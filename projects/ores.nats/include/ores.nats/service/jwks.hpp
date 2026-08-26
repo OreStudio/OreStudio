@@ -45,7 +45,7 @@ namespace ores::nats::service {
  */
 ORES_NATS_EXPORT boost::asio::awaitable<std::string>
 fetch_jwks_public_key(client& nats,
-                      std::chrono::seconds per_request_timeout = std::chrono::seconds(10));
+                      std::chrono::seconds per_request_timeout = std::chrono::seconds(60));
 
 } // namespace ores::nats::service
 

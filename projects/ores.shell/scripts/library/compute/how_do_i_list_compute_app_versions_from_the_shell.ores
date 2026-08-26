@@ -1,0 +1,10 @@
+# How do I list compute app versions from the shell?
+# List compute app versions (app id, wrapper and engine version, min RAM) from the shell as a table.
+#
+# GENERATED from doc/recipes/shell/compute/how_do_i_list_compute_app_versions_from_the_shell.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute list-app-versions
+logout

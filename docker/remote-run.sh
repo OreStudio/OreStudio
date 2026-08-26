@@ -76,6 +76,8 @@ if [[ "$ROLE" == "compute" ]]; then
     chmod -R u+rwX,go-rwx "$volume_mountpoint"
 
     mkdir -p "$work_dir"
+    log_dir="$REMOTE_ROOT/compute/log"
+    mkdir -p "$log_dir"
 
     echo "=== Recreating compute node container '$container' ==="
     podman rm -f "$container" >/dev/null 2>&1 || true
@@ -89,13 +91,15 @@ if [[ "$ROLE" == "compute" ]]; then
         --env-file "$compute_env" \
         -v "$certs_volume:$keys_dir:ro" \
         -v "$work_dir:$work_dir:rw" \
+        -v "$log_dir:/app/log:rw" \
         "$image" \
+        --log-enabled --log-level info --log-directory ../log --log-replica-index 0 \
         --host-id "$host_id" --tenant-id "$tenant_id" \
         --work-dir "$work_dir" "${extra_args[@]}" >/dev/null
 
     echo
     echo "Compute node '$container' started (NATS: $ORES_COMPUTE_WRAPPER_NATS_URL)."
-    echo "  Logs : podman logs -f $container"
+    echo "  Logs : $log_dir/*.log (podman logs -f $container for stdout)"
     echo "  Stop : compass env deploy <host> --role compute --stop"
     exit 0
 fi

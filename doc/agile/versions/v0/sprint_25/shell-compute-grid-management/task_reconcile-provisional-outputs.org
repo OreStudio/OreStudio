@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 36537C3D-5A34-40CF-8A74-6AB974D0B4A7
+:END:
+#+title: Task: Reconcile provisional shell outputs with the codegenerated tables
+#+description: Swap the provisional raw-row outputs for the codegen table renderers once the ores.compute drift story lands: list-platforms streams the generated platform table (out streams the platforms vector) and grid-stats renders the node-sample tables, matching the other verbs.
+#+type: task
+#+level: s1
+#+filetags: :shell-compute-grid-management:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: A97F58CC-6C2D-4138-AE4C-60D8C53B88A7
+#+blocked_since: 2026-08-10
+#+created: 2026-08-10
+#+updated: 2026-08-10
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every compute verb the shell exposes renders through its codegen table renderer. Platform and the telemetry samples lack renderers today; the drift story generates them, then this task swaps the provisional raw rows for the tables.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] |
+| Next         | Begin implementation once the drift task generates the renderers. |
+| Last touched | 2026-08-10                               |
+
+* Acceptance
+
+- compute list-platforms streams the generated platform table renderer (out streams the platforms vector), replacing the provisional raw rows.
+- compute grid-stats renders the per-node telemetry table from the generated node-sample renderers.
+- The shell formats no compute row itself: every render goes through the generated table_io.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

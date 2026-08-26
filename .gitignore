@@ -106,7 +106,7 @@ node_modules/
 /package-lock.json
 
 # compass tool local cache (generated at repo root)
-/.compass.db
+/.compass.db*
 
 # LaTeX intermediate artefacts from deploy_manual
 doc/manual/user_guide/user_manual.tex

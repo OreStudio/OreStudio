@@ -1,0 +1,10 @@
+# How do I list compute platforms from the shell?
+# List the compute platform triplets (id, code, display name, OS, CPU arch) from the shell as a table.
+#
+# GENERATED from doc/recipes/shell/compute/how_do_i_list_compute_platforms_from_the_shell.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute list-platforms
+logout

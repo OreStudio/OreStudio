@@ -42,6 +42,7 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <unordered_set>
 #include <vector>
 
 namespace ores::nats::service {
@@ -122,7 +123,24 @@ struct client::impl {
     natsConnection* conn = nullptr;
     jsCtx* js = nullptr;
     std::atomic<bool> connected{false};
+    std::mutex publish_log_mu;
+    std::unordered_set<std::string> logged_publish_subjects;
 };
+
+// NATS subject logging lives here, in the common client, so a single grep
+// across all service logs shows both sides of every subject: publishers log
+// "NATS publish"/"NATS js-publish", listeners log "NATS subscribe" variants.
+// The full (prefixed) subject is always logged, so one grep term matches both
+// sides. Publishes are throttled: the first publish on a subject logs at info
+// (establishing the publisher side); later publishes log at trace so
+// high-frequency feeds don't flood the log.
+void client::log_publish(impl& impl, std::string_view op, const std::string& full_subject) {
+    std::lock_guard lock(impl.publish_log_mu);
+    if (impl.logged_publish_subjects.insert(full_subject).second)
+        BOOST_LOG_SEV(lg(), info) << op << ": " << full_subject;
+    else
+        BOOST_LOG_SEV(lg(), trace) << op << ": " << full_subject;
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers (anonymous namespace)
@@ -461,6 +479,8 @@ void client::connect() {
     }
 
     impl_->connected.store(true, std::memory_order_release);
+    BOOST_LOG_SEV(lg(), info) << "NATS connect: " << impl_->opts.url << " (subject prefix: '"
+                              << impl_->opts.subject_prefix << "')";
 }
 
 void client::disconnect() {
@@ -507,7 +527,10 @@ void client::publish(std::string_view subject,
                      std::span<const std::byte> data,
                      std::unordered_map<std::string, std::string> headers) {
 
-    natsMsg* msg = make_msg(make_subject(subject), data, headers);
+    const std::string full_subject(make_subject(subject));
+    log_publish(*impl_, "NATS publish", full_subject);
+
+    natsMsg* msg = make_msg(full_subject, data, headers);
     const natsStatus s = natsConnection_PublishMsg(impl_->conn, msg);
     natsMsg_Destroy(msg);
     if (s != NATS_OK)
@@ -519,7 +542,10 @@ message client::request_sync(std::string_view subject,
                              std::unordered_map<std::string, std::string> headers,
                              std::chrono::milliseconds timeout) {
 
-    natsMsg* req = make_msg(make_subject(subject), data, headers);
+    const std::string full_subject(make_subject(subject));
+    BOOST_LOG_SEV(lg(), info) << "NATS request: " << full_subject;
+
+    natsMsg* req = make_msg(full_subject, data, headers);
     natsMsg* reply = nullptr;
     const natsStatus s =
         natsConnection_RequestMsg(&reply, impl_->conn, req, static_cast<int64_t>(timeout.count()));
@@ -578,9 +604,12 @@ subscription client::subscribe(std::string_view subject, message_handler handler
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
 
+    const std::string full_subject(make_subject(subject));
+    BOOST_LOG_SEV(lg(), info) << "NATS subscribe: " << full_subject;
+
     natsSubscription* sub = nullptr;
-    const natsStatus s = natsConnection_Subscribe(
-        &sub, impl_->conn, make_subject(subject).c_str(), on_msg, cl.get());
+    const natsStatus s =
+        natsConnection_Subscribe(&sub, impl_->conn, full_subject.c_str(), on_msg, cl.get());
 
     if (s != NATS_OK)
         throw std::runtime_error(std::string("natsConnection_Subscribe failed: ") +
@@ -615,10 +644,14 @@ subscription client::queue_subscribe(std::string_view subject,
     auto cl = std::make_unique<sub_closure>();
     cl->handler = std::move(handler);
 
+    const std::string full_subject(make_subject(subject));
+    BOOST_LOG_SEV(lg(), info) << "NATS queue-subscribe: " << full_subject
+                              << " (group: " << queue_group << ")";
+
     natsSubscription* sub = nullptr;
     const natsStatus s = natsConnection_QueueSubscribe(&sub,
                                                        impl_->conn,
-                                                       make_subject(subject).c_str(),
+                                                       full_subject.c_str(),
                                                        std::string(queue_group).c_str(),
                                                        on_msg,
                                                        cl.get());
@@ -637,7 +670,10 @@ void client::js_publish(std::string_view subject,
                         std::span<const std::byte> data,
                         std::unordered_map<std::string, std::string> headers) {
 
-    natsMsg* msg = make_msg(make_subject(subject), data, headers);
+    const std::string full_subject(make_subject(subject));
+    log_publish(*impl_, "NATS js-publish", full_subject);
+
+    natsMsg* msg = make_msg(full_subject, data, headers);
     jsPubAck* ack = nullptr;
     // js_PublishMsg(jsPubAck**, jsCtx*, natsMsg*, jsPubOptions*, jsErrCode*)
     const natsStatus s = js_PublishMsg(&ack, impl_->js, msg, nullptr, nullptr);
@@ -658,6 +694,9 @@ subscription client::js_subscribe(std::string_view subject,
 
     const std::string subj_str(make_subject(subject));
     const std::string durable_str(durable_name);
+
+    BOOST_LOG_SEV(lg(), info) << "NATS js-subscribe: " << subj_str << " (durable: " << durable_str
+                              << ")";
 
     jsSubOptions sub_opts;
     jsSubOptions_Init(&sub_opts);
@@ -688,6 +727,9 @@ subscription client::js_queue_subscribe(std::string_view subject,
     const std::string subj_str(make_subject(subject));
     const std::string durable_str(durable_name);
     const std::string queue_str(queue_group);
+
+    BOOST_LOG_SEV(lg(), info) << "NATS js-queue-subscribe: " << subj_str
+                              << " (durable: " << durable_str << ", group: " << queue_str << ")";
 
     jsSubOptions sub_opts;
     jsSubOptions_Init(&sub_opts);

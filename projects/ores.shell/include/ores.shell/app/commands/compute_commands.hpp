@@ -74,6 +74,142 @@ public:
     static void process_publish_package(std::ostream& out,
                                         ores::nats::service::nats_client& session,
                                         const std::vector<std::string>& args);
+
+    /**
+     * @brief List compute apps: compute list-apps
+     *
+     * Renders the app catalogue (id, name, description) as a table.
+     */
+    static void process_list_apps(std::ostream& out, ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute app versions: compute list-app-versions
+     *
+     * Renders the registered app versions (wrapper/engine version,
+     * min RAM) as a table.
+     */
+    static void process_list_app_versions(std::ostream& out,
+                                          ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute platforms: compute list-platforms
+     *
+     * Prints the known platform rows (id, code, display name, OS,
+     * CPU arch) as provisional raw rows until the drift story lands
+     * the generated platform table_io.
+     */
+    static void process_list_platforms(std::ostream& out,
+                                       ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute hosts: compute list-hosts
+     *
+     * Renders the registered grid nodes (id, display name, hardware,
+     * last RPC time, credit) as a table.
+     */
+    static void process_list_hosts(std::ostream& out, ores::nats::service::nats_client& session);
+
+    /**
+     * @brief List compute batches: compute list-batches
+     *
+     * Renders the batches (id, external ref, status) as a table.
+     */
+    static void process_list_batches(std::ostream& out, ores::nats::service::nats_client& session);
+
+    /**
+     * @brief Create a compute batch: compute add-batch <external_ref>
+     * <job_count> [--smoke]
+     *
+     * Creates a batch row with status "open". The job count is session
+     * knowledge -- the batch row stores no count -- and is passed again
+     * at dispatch. --smoke bounds the count to the config range
+     * (10..20), which is what the grid smoke-test script passes.
+     */
+    static void process_add_batch(std::ostream& out,
+                                  ores::nats::service::nats_client& session,
+                                  const std::vector<std::string>& args);
+
+    /**
+     * @brief Dispatch a batch's jobs: compute dispatch-batch
+     * <external_ref> <job_count> <app_version_id> <input_dir>
+     *
+     * Packs the input directory and uploads it once as the batch's
+     * shared input bundle, marks the batch "dispatched", then saves one
+     * workunit per job (each save dispatches to the grid: the backend
+     * creates the result rows and publishes the JetStream assignments).
+     */
+    static void process_dispatch_batch(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::vector<std::string>& args);
+
+    /**
+     * @brief List workunits: compute list-workunits [--batch <external_ref>]
+     *
+     * Renders the workunits as a table, optionally filtered to one
+     * batch (matched by external ref).
+     */
+    static void process_list_workunits(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::vector<std::string>& args);
+
+    /**
+     * @brief List results: compute list-results [--batch <external_ref>]
+     *
+     * Renders the submitted results as a table, optionally filtered to
+     * one batch (matched by external ref via its workunits).
+     */
+    static void process_list_results(std::ostream& out,
+                                     ores::nats::service::nats_client& session,
+                                     const std::vector<std::string>& args);
+
+    /**
+     * @brief Grid telemetry: compute grid-stats [--watch <external_ref>]
+     * [--smoke] [--timeout <seconds>]
+     *
+     * Renders the grid summary and per-node rows. With --watch, polls
+     * every 10 seconds until every workunit of the batch (matched by
+     * external ref) has a canonical result, then renders the final
+     * snapshot. With --watch --smoke, additionally asserts the smoke
+     * guarantees on the drained batch: every result has outcome
+     * Success and every host online at the drain transition has at
+     * least one result in the batch; the command fails if either
+     * check does not hold.
+     */
+    static void process_grid_stats(std::ostream& out,
+                                   ores::nats::service::nats_client& session,
+                                   const std::vector<std::string>& args);
+
+    /**
+     * @brief Remove a host row: compute delete-host <host_id>
+     *
+     * Refuses to delete a host that is online (heartbeated within the
+     * 300s heartbeat timeout); an offline host row is removed.
+     */
+    static void process_delete_host(std::ostream& out,
+                                    ores::nats::service::nats_client& session,
+                                    const std::vector<std::string>& args);
+
+    /**
+     * @brief Download a job's input bundle: compute download-input
+     * <workunit_id> <dest_dir>
+     *
+     * Fetches the batch's shared input bundle referenced by the
+     * workunit and unpacks the tar.gz into the destination directory.
+     */
+    static void process_download_input(std::ostream& out,
+                                       ores::nats::service::nats_client& session,
+                                       const std::vector<std::string>& args);
+
+    /**
+     * @brief Download a result's output bundle: compute download-output
+     * <result_id> <dest_dir>
+     *
+     * Fetches the output bundle the node uploaded with the result and
+     * unpacks the tar.gz into the destination directory.
+     */
+    static void process_download_output(std::ostream& out,
+                                        ores::nats::service::nats_client& session,
+                                        const std::vector<std::string>& args);
 };
 
 }

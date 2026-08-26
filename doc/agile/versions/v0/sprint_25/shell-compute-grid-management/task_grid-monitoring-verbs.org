@@ -7,43 +7,100 @@
 #+level: s1
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-verbs
+#+pr: 1992
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-10
-#+environment:
+#+updated: 2026-08-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The shell's ~compute~ menu gains two grid monitoring verbs:
+~grid-stats~ and ~delete-host~. ~grid-stats~ renders the telemetry
+grid summary (host and online counts, workunit and result counts,
+outcome counts) plus per-node rows, and can watch a batch drain and
+assert the smoke guarantees on it. ~delete-host~ removes a host row by
+id, refusing hosts that are online.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-10                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-25                               |
 
 * Acceptance
 
--
+- ~compute grid-stats~ renders the grid summary: host count, online
+  count, workunit and result counts, outcome counts, and the per-node
+  rows.
+- ~compute grid-stats --watch <external_ref>~ polls every 10 seconds
+  until the batch drains (every workunit has a canonical result),
+  then renders the final snapshot.
+- ~compute grid-stats --watch <external_ref> --smoke~ additionally
+  asserts the smoke guarantees on the drained batch: every result has
+  outcome Success, and every host online at the drain transition has
+  at least one result in the batch. The command fails if either check
+  does not hold.
+- ~compute grid-stats --timeout <seconds>~ bounds the wait (default
+  300).
+- ~compute delete-host <host_id>~ refuses a host that is online (it
+  heartbeated within the 300 second (5 minute) heartbeat timeout) and
+  removes an offline host row.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Both verbs live in ~compute_commands.{hpp,cpp}~. ~grid-stats~ sends
+~get_grid_stats_request~ and renders the response's summary and
+~node_summaries~; in watch mode it loops the request every 10 seconds
+until the batch has no workunit without a canonical result, then
+evaluates the smoke asserts against the results of the batch and the
+online hosts at the drain transition. Online is defined as
+=last_rpc_time= within 300 seconds (5 minutes) of now. ~delete-host~ sends
+~delete_host_request~; the backend refuses online hosts, so the shell
+verb needs no extra guard.
 
 * Notes
+
+- Live proof (2026-08-11): scripted session against brave_hopper.
+  ~compute grid-stats~ rendered the summary and per-node rows;
+  ~grid-stats --watch smoke-20260810 --smoke~ drained the 10-job
+  batch in ~2 seconds and the smoke assert then FAILED on the phantom
+  host ~clever-echidna~ (=1cefaf85-e89a-4126-b5af-3548c4e5bef9=) —
+  online (heartbeats every 30 s) with zero results in the batch —
+  aborting the script as designed. The assert machinery is proven;
+  the acceptance cannot pass live while that host is online.
+- Phantom host (environment finding): ~clever-echidna~ heartbeats
+  from NATS connection cid 58, a remote client on 192.168.1.22 (this
+  machine is 192.168.1.172) with only ~_INBOX~ subscriptions — it
+  saves host rows via ~hosts.save~ and publishes node samples, but
+  never pulls work. It is a driver, not a wrapper; it cannot be
+  stopped from this machine.
+- Node telemetry bug (backend, environment finding): wrappers publish
+  node samples via =ores::nats::default_wire_codec()=, which defaults
+  to msgpack (ores.nats wire_codec.hpp:133), but the core decodes with
+  a hardcoded ~rfl::json::read<node_sample_message>~
+  (telemetry_handler.hpp:139). Every sample fails to decode, so
+  ~ores_compute_node_samples_tbl~ is empty and grid-stats node rows
+  are empty in this build. The fix is a backend one-liner (decode with
+  the default codec); it is out of this story's scope but the
+  reconciliation task's generated node table depends on it.
+- ~delete-host~ live proof: refused =1cefaf85-…= (online); deleted the
+  synthetic offline host =aaaaaaaa-1111-2222-3333-444444444444= — the
+  row is closed temporally (valid_to = delete time), verified via
+  =compass sql=.
+- Recipe lives in =doc/recipes/shell/compute/=, tangled into
+  =projects/ores.shell/scripts/library/compute/=, indexed under the
+  =Compute= section of =doc/recipes/shell/shell.org=.
 
 * Test Scenarios
 
@@ -60,7 +117,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1992][#1992]] | [ores.shell] Add compute grid management verbs to the shell |
 
 * Review
 
@@ -69,3 +126,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Two monitoring verbs shipped in ~compute_commands.{hpp,cpp}~:
+  ~grid-stats~ (summary + per-node rows, =--watch=, =--smoke=,
+  =--timeout=) and ~delete-host~.
+- Acceptance met, verified live against brave_hopper (2026-08-11):
+  ~grid-stats~ rendered the summary and per-node rows; =--watch=
+  drained the 10-job batch in ~2 seconds; the =--smoke= assert
+  machinery correctly flagged the phantom host and aborted the
+  script as designed; ~delete-host~ refused an online host and
+  deleted an offline one (the row is closed temporally, verified via
+  =compass sql=).
+- Environment findings (recorded in Notes): the phantom driver host
+  (192.168.1.22) heartbeats but never pulls work, so a fully green
+  live smoke run requires it to stop; the node telemetry codec
+  mismatch (msgpack publish vs JSON decode) leaves ~node_samples~
+  empty in this build — a backend one-liner, out of this story's
+  scope, that the reconciliation task depends on.
+- Aligned with the server in the PR #1992 review round: the online
+  window now matches the grid-stats definition (5 minutes), and the
+  smoke host set is captured at the drain transition.
+- Recipe lives in =doc/recipes/shell/compute/=, tangled into
+  =projects/ores.shell/scripts/library/compute/=, indexed under the
+  =Compute= section of =doc/recipes/shell/shell.org=.

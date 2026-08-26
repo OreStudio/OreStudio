@@ -96,8 +96,6 @@ boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
 
     auto subs = register_fn(nats, std::move(ctx), std::move(verifier));
     BOOST_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
-    for (const auto& sub : subs)
-        BOOST_LOG_SEV(lg, info) << "NATS subscribe: " << sub.subject();
 
     if (on_started)
         on_started(io_ctx);
@@ -163,8 +161,6 @@ boost::asio::awaitable<void> run(boost::asio::io_context& io_ctx,
 
     auto subs = register_fn(nats, std::move(verifier));
     BOOST_LOG_SEV(lg, info) << "Registered " << subs.size() << " subscription(s).";
-    for (const auto& sub : subs)
-        BOOST_LOG_SEV(lg, info) << "NATS subscribe: " << sub.subject();
 
     if (on_started)
         on_started(io_ctx);

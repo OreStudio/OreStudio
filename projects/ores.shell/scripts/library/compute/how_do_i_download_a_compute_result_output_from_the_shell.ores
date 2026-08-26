@@ -1,0 +1,10 @@
+# How do I download a compute result output from the shell?
+# Fetch a result output bundle from compute storage and unpack the tar.gz into a target directory.
+#
+# GENERATED from doc/recipes/shell/compute/how_do_i_download_a_compute_result_output_from_the_shell.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute download-output $RESULT_ID $DEST_DIR
+logout

@@ -1,0 +1,56 @@
+:PROPERTIES:
+:ID: 43217FF8-2359-4C99-8E1D-6344E50C47EE
+:END:
+#+title: Consolidate the duplicated tarball archivers into one shared utility
+#+description: Move the libarchive pack/unpack archiver to a shared home (ores.utility) and consolidate the two duplicate implementations
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Two libarchive-based =archiver= classes duplicate each other:
+~ores::storage::filesystem::archiver~ (~projects/ores.storage/src/filesystem/archiver.cpp~,
+~include/ores.storage/filesystem/archiver.hpp~) and
+~ores::compute::wrapper::filesystem::archiver~
+(~projects/ores.compute/wrapper/src/filesystem/archiver.cpp~,
+~include/ores.compute.wrapper/filesystem/archiver.hpp~). Both expose
+~pack~ and ~extract~ for .tar.gz trees and both link LibArchive
+privately. Move one canonical implementation to a shared low-level
+home (e.g. ~ores.utility/compression/archiver~ or a new
+~ores.utility/filesystem~), link LibArchive there, and have the
+storage and wrapper archivers delegate to it (or delete them and
+update the four call sites). Keep the existing wrapper
+~filesystem_archiver_tests~ and storage tests, relocating them with
+the code.
+
+* Why
+
+Future work will create input tarballs on the fly (e.g. repacking a
+workunit's files before dispatch). A single shared pack/unpack
+utility gives that work one implementation to call instead of two
+near-identical copies. The wrapper copy exists because the wrapper
+cannot depend on ~ores.storage~; moving the archiver to ~ores.utility~
+(which ~ores.storage~ already depends on privately) lets both use it.
+The shell's ~dispatch-batch~ now takes a tarball verbatim (matching
+the Qt UI), so the shell no longer needs ~storage_transfer::pack~;
+~pack_and_upload~ remains in use by the report package handler and
+the Ore import wizard.
+
+* References
+
+- ~ores.storage/include/ores.storage/filesystem/archiver.hpp~ — ~pack~
+  / ~extract~ (libarchive, cross-platform path handling).
+- ~ores.compute/wrapper/include/ores.compute.wrapper/filesystem/archiver.hpp~ —
+  duplicate of the above.
+- ~projects/ores.shell/src/app/commands/compute_commands.cpp~ —
+  ~process_dispatch_batch~ (tarball-only since 2026-08-26).
+
+* See also
+
+- [[id:0EED3FC6-4635-4AD8-9E25-90FCF08723B4][Add a batch-scoped input key helper to compute_storage]] — related batch
+  input bundle work.

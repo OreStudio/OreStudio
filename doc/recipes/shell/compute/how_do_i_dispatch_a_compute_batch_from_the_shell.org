@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: A5834202-A38A-4FB4-B341-CAD621C1D8ED
+:END:
+#+title: How do I dispatch a compute batch from the shell?
+#+description: Upload an input tarball once as the batch input bundle, and dispatch one job per job count from the shell.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:compute:batch:
+#+created: 2026-08-11
+#+updated: 2026-08-11
+
+The compute grid verbs live in the shell's =compute= menu. They talk
+to the ~ores.compute~ service over NATS; the domain shapes and table
+renderers come from ~ores.compute.api~.
+
+* Question
+
+How do I dispatch a compute batch from the shell?
+
+* Answer
+
+Log in as the system super admin, then run =compute dispatch-batch= with the batch external reference, the job count, the app version id and the input =tar.gz= tarball. The command uploads the tarball verbatim (as the Qt UI does), marks the batch dispatched, and saves one workunit per job. Each save dispatches to the grid: the backend creates the result rows and publishes the assignments.
+
+#+name: dispatch-compute-batch
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute dispatch-batch $BATCH_REF $JOB_COUNT $APP_VERSION_ID $INPUT_TARBALL
+logout
+exit
+#+end_src
+
+#+begin_src sh :noweb yes :results output :wrap example
+./ores.shell ${log_args} ${connect_args} << 'EOF'
+<<dispatch-compute-batch>>
+EOF
+#+end_src
+
+The upload runs once: every workunit in the batch shares the same
+input bundle, stored as =input/{batch_id}.tar.gz=.
+
+* Script
+
+=projects/ores.shell/scripts/library/compute/how_do_i_dispatch_a_compute_batch_from_the_shell.ores= -- generated from this recipe by =compass build --direct tangle_shell_scripts= (do not edit the =.ores= by hand).
+
+* Tested by
+
+Manual: =compass shell -f how_do_i_dispatch_a_compute_batch_from_the_shell.ores= against a live serving environment.
+
+* See also
+
+- [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]]
+- [[id:95D4148C-45C3-4DAE-B672-F910E47FEF54][How do I list compute workunits from the shell?]]
+- [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]]

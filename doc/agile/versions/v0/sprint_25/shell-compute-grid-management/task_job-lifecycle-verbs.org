@@ -7,43 +7,89 @@
 #+level: s1
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/read-verbs
+#+pr: 1992
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-10
-#+updated: 2026-08-10
-#+environment:
+#+updated: 2026-08-25
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The shell's ~compute~ menu gains four job lifecycle verbs:
+~add-batch~, ~dispatch-batch~, ~list-workunits~ and ~list-results~.
+Together they create a batch, dispatch a run of consecutive jobs from
+it, and inspect the resulting workunits and results as tables — the
+whole lifecycle driven from a script with no UI.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-10                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-25                               |
 
 * Acceptance
 
--
+- ~compute add-batch <external_ref> <job_count>~ creates a batch and
+  prints its id; =--smoke= bounds the count to the grid smoke range
+  (10 to 20 jobs).
+- ~compute dispatch-batch <external_ref> <job_count> <app_version_id>
+  <input_dir>~ packs the input directory, uploads it once as the batch
+  input bundle (=input/{batch_id}.tar.gz=), marks the batch
+  dispatched, and saves one workunit per job; each save dispatches to
+  the grid via JetStream.
+- ~compute list-workunits [--batch <external_ref>]~ renders the
+  workunits table (id, batch id, app version id, input uri, priority,
+  target redundancy); =--batch= filters to one batch.
+- ~compute list-results [--batch <external_ref>]~ renders the results
+  table (id, workunit id, host id, server state, outcome, output uri,
+  error message); =--batch= filters to one batch.
+- Every verb works against a live serving environment; empty domains
+  render a header-only table, not an error.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The four verbs reuse existing NATS subjects (batch add/dispatch,
+workunit save/list, result list) and the codegen table renderers in
+~ores.compute.api~; no backend or codegen changes. Implementation
+lives in ~compute_commands.{hpp,cpp}~ next to ~publish-package~,
+following its shape: require a login, send the request authenticated,
+log the row count, print the table. ~dispatch-batch~ packs and uploads
+the input bundle once, then loops the job count calling
+~save_workunit~; the batch external reference is the script-friendly
+handle, so the verbs look a batch up by external ref where the wire
+protocol needs its id.
 
 * Notes
+
+- Live proof (2026-08-11): scripted session against brave_hopper
+  (all 23 services up). ~compute add-batch smoke-20260810 10 --smoke~
+  created batch =6b1efd4c-…=; ~compute dispatch-batch smoke-20260810
+  10 840f6194-2f11-4142-996a-2c90efabe053 <input_dir>~ (hello 1.0.0,
+  x64-linux) packed and uploaded the input bundle once and saved 10
+  workunits; each save dispatched via JetStream.
+- The batch drained in ~2 seconds: all 10 results have outcome 1
+  (Success) and server state 5 (Done), spread across the five real
+  wrappers (amber-capybara 3, brave-caracal 2, eager-tapir 2,
+  bumbling-dhole 2, upbeat-iguana 1).
+- ~list-workunits~ / ~list-results~ render the generated tables;
+  =--batch= filters to the 10 rows of the smoke batch (11 unfiltered,
+  one workunit/result pair from the earlier join-proof batch).
+- The workspace tables are temporal (valid_from/valid_to): every
+  heartbeat inserts a new host version; the list verbs read the
+  current versions only, so a running grid shows no duplicate rows.
+- Recipes live in =doc/recipes/shell/compute/= (one per verb), tangled
+  into =projects/ores.shell/scripts/library/compute/=, indexed under
+  the =Compute= section of =doc/recipes/shell/shell.org=.
 
 * Test Scenarios
 
@@ -60,7 +106,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1992][#1992]] | [ores.shell] Add compute grid management verbs to the shell |
 
 * Review
 
@@ -69,3 +115,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- Four lifecycle verbs shipped in ~compute_commands.{hpp,cpp}~:
+  ~add-batch~, ~dispatch-batch~, ~list-workunits~ and ~list-results~.
+  All reuse existing NATS subjects and codegen table renderers; no
+  backend or codegen changes.
+- Acceptance met, verified live against brave_hopper (2026-08-11):
+  ~add-batch smoke-20260810 10 --smoke~ created the batch;
+  ~dispatch-batch~ packed and uploaded the input bundle once and
+  saved 10 workunits, each dispatched via JetStream; the batch
+  drained in ~2 seconds with all 10 results outcome Success (server
+  state Done), spread across the five real wrappers; ~list-workunits~
+  and ~list-results~ render the generated tables and =--batch=
+  filters to the batch's rows.
+- Hardened in the PR #1992 review round: the batch is marked
+  "dispatched" only after every workunit save succeeds, so a partial
+  failure leaves it open and re-dispatchable; each new workunit sets
+  the nil ~canonical_result_id~ sentinel.
+- Recipes live in =doc/recipes/shell/compute/= (one per verb),
+  tangled into =projects/ores.shell/scripts/library/compute/=,
+  indexed under the =Compute= section of =doc/recipes/shell/shell.org=.

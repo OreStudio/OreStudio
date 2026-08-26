@@ -9,12 +9,6 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-#+begin_note
-*Status: target state.* This page describes the framework we are
-building, not the catalogue as it stands today. Where this page and the
-current catalogue disagree, the catalogue is what runs.
-#+end_note
-
 This page concerns identity and authority: what an actor is, what role
 it adopts, and what that role permits it to see and to change. It holds
 whether or not anything is running.
@@ -30,12 +24,12 @@ Everyone says "agent", and it is overloaded three ways in this project.
 The ladder, from general to specific:
 
 #+ATTR_HTML: :class hug-leading
-| Word         | Means                                                                 |
-|--------------+-----------------------------------------------------------------------|
-| *Agent*      | Any LLM process doing work. The general word; use it when the distinction does not matter |
-| *Session*    | The agent a human is talking to. It has a conversation and an operator |
-| *Delegate*   | An agent spawned by another agent to do a bounded piece of work and report back. It has no operator, only a brief |
-| *Function*   | The /role/ either one adopts. Not a process at all                    |
+| Word       | Means                                                                                                             |
+|------------+-------------------------------------------------------------------------------------------------------------------|
+| *Agent*    | Any LLM process doing work. The general word; use it when the distinction does not matter                         |
+| *Session*  | The agent a human is talking to. It has a conversation and an operator                                            |
+| *Delegate* | An agent spawned by another agent to do a bounded piece of work and report back. It has no operator, only a brief |
+| *Function* | The /role/ either one adopts. Not a process at all                                                                |
 
 A delegate is what the harness and most other tooling call a
 *subagent*. We say delegate because the relationship is what matters
@@ -53,16 +47,13 @@ The owning rule: a session owns its delegates' work. A delegate's
 summary of what it did is not evidence; the artefact it produced is.
 Review the diff, not the report.
 
-
-
-
 A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][function]] once, at the start. That sets the
 cybernetic level, and the level selects the slice of the catalogue in
 scope by default.
 
 #+ATTR_HTML: :class hug-leading
-| Level | Function         | Horizon    | Sees                                                       |
-|-------+------------------+------------+------------------------------------------------------------|
+| Level | Function         | Horizon    | Sees                                                        |
+|-------+------------------+------------+-------------------------------------------------------------|
 | S1    | Agent            | Hours      | Action plane in full, methods, stance, specification        |
 | S2    | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
 | S3    | Sprint Planner   | Weeks      | Sprint and backlog actions, planning and review methods     |

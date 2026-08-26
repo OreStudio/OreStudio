@@ -11,210 +11,57 @@
 
 * Summary
 
-A *skill* in agent tooling is a document that an assistant loads to
-perform a kind of work. Anthropic defines the format for Claude Code:
-a directory holding a =SKILL.md= file, whose frontmatter carries a name
-and a description, and whose body holds the instructions the assistant
-follows. Other agent tools read the same format.
+A *skill* in agent tooling is a document that an assistant loads to perform a
+kind of work. The assistant is a [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][LLM]] driving a tool loop, and the properties of
+that substrate, given externally on its own page, explain why the construct
+exists: a model recalls its training unreliably and holds only what its context
+window carries, so reusable know-how must be supplied as text it can read.
+Anthropic defines the format for Claude Code: a directory holding a =SKILL.md=
+file, whose frontmatter carries a name and a description, and whose body holds
+the instructions the assistant follows. Other agent tools read the same format.
 
-This page records the received notion and the conventions that have
-grown around it. ORE Studio does not own the format. For the narrower
-definition this project works to, see [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass
-framework]].
+This page records the received notion and the conventions that have grown around
+it. ORE Studio does not own the format. For the narrower definition this project
+works to, see [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]].
 
 * Detail
 
 ** The format
 
-A skill is a directory. It contains a =SKILL.md= file and any supporting
-files that file refers to. The frontmatter carries two required fields.
-The =name= field gives the identifier a user types. The =description=
-field states what the skill does and when to reach for it.
+A skill is a directory. It contains a =SKILL.md= file and any supporting files
+that file refers to. The frontmatter carries two required fields. The =name=
+field gives the identifier a user types. The =description= field states what the
+skill does and when to reach for it.
 
-The body holds the instructions. Its length is not fixed by the format,
-and published skills range from two lines to several hundred.
+The body holds the instructions. Its length is not fixed by the format, and
+published skills range from two lines to several hundred.
 
 ** Invocation
 
-Published collections separate skills by who may invoke them. A
-*user-invoked* skill runs only when a person types its name. A
-*model-invoked* skill may also be reached by the assistant when the task
-matches its description. Claude Code expresses the first with a
-=disable-model-invocation= flag.
+Published collections separate skills by who may invoke them. A *user-invoked*
+skill runs only when a person types its name. A *model-invoked* skill may also
+be reached by the assistant when the task matches its description. Claude Code
+expresses the first with a =disable-model-invocation= flag.
 
-The distinction matters because the description does different work in
-each case. For a model-invoked skill the description is the trigger, and
-its wording decides how reliably the skill fires. For a user-invoked
-skill the description is documentation.
+The distinction matters because the description does different work in each
+case. For a model-invoked skill the description is the trigger, and its wording
+decides how reliably the skill fires. For a user-invoked skill the description
+is documentation.
 
 ** Progressive disclosure
 
-A skill body sits in the assistant's context whenever the skill runs.
-Long bodies therefore cost attention. The common answer is to move
-material into sibling files and refer to them from the body, so the
-assistant loads them only when it needs them.
+A skill body sits in the assistant's context whenever the skill runs. Long
+bodies therefore cost attention. The common answer is to move material into
+sibling files and refer to them from the body, so the assistant loads them only
+when it needs them.
 
-The technique has a cost of its own. Material behind a reference is
-reached only if the referring sentence is worded well enough to trigger
-the read.
-
-** In the literature
-
-The construct has an academic lineage, and the lineage divides.
-
-*** Two lineages
-
-One line stores skills as *executable routines*. Wang and colleagues'
-Voyager builds an open-ended embodied agent that accumulates a library
-of programs it has written and can retrieve and compose them later. A
-skill here is code.
-
-A second line stores skills as *verbal lessons*. Shinn and colleagues'
-Reflexion has an agent write down what it learned from a failure and
-carry that text into later episodes. Zhao and colleagues' ExpeL
-generalises across episodes into experiential rules. A skill here is
-prose.
-
-Liu, Ming, Joty and Zhao group all three together as systems that
-"store verbal lessons, memories, or routines", and observe that "most
-prior methods reuse experience as prompt text or task-specific
-routines".
-
-The =SKILL.md= format belongs to the second line. It is prose that an
-assistant reads.
-
-#+begin_note
-The characterisation of Voyager, Reflexion and ExpeL above is taken from
-the related-work section of the paper discussed below. The primary
-sources have not been read for this page. Read them before treating this
-section as settled.
-#+end_note
-
-*** The critique of the textual form
-
-Liu, Ming, Joty and Zhao state the deficiency of the second line
-precisely:
-
-#+begin_quote
-A textual skill can express what the agent should do in principle, but
-not precisely when it should activate inside the policy loop, how it
-should alter the next decision, and it is often ignored by the model in
-practice.
-#+end_quote
-
-They locate the gap as one "between reusable experience expressed in
-language and reusable experience that can reliably and explicitly
-control agent behavior".
-
-Their example is worth quoting in full, because it names the exact form
-this project's stance plane takes:
-
-#+begin_quote
-Instead of merely stating a principle such as "avoid repeated searches,"
-a PF specifies both when that principle applies and how the next
-decision should change.
-#+end_quote
-
-*** Program functions
-
-Their proposal is the *program function*, abbreviated PF: "a reusable
-state–action intervention function" that, "given the current agent state
-and a candidate next action, decides whether intervention is needed and,
-if so, explicitly modifies or augments the policy".
-
-A PF exposes two methods. =should_activate= "decides whether the skill
-should fire". =intervene= "returns the repair". The returned object
-carries one of three types:
-
-- =MODIFY_ACTION= rewrites or refines the next action.
-- =INJECT_CONTEXT= appends text the policy sees in its next observation.
-- =NOOP= abstains from changing the decision, and still emits an audit
-  record.
-
-The design "separates choosing the next action from correcting it: the
-policy proposes what to do next, while PFs determine whether the
-proposed action should be executed as is, revised into a better action,
-or augmented with additional context".
-
-Two implementation details are worth recording. PFs extend =SKILL.md=
-rather than replacing it: phase instructions are "declared in the YAML
-frontmatter of =SKILL.md=" and attach reminders to named reasoning
-phases. And the runtime caps how often a PF may fire, "to prevent
-oscillation".
-
-*** Prompt-equivalent skills
-
-The paper defines a precise term for the boundary between the two forms.
-A PF is *prompt-equivalent* when both conditions hold: its =intervene=
-method emits only =INJECT_CONTEXT=, and the injected text "is a fixed
-literal string with no runtime substitution". Such a PF "does nothing
-beyond pasting a constant reminder into the next observation", which a
-prompt declaration would do equally well.
-
-The distinction is narrower than it first appears. A skill that builds
-its injected text from runtime state is *not* prompt-equivalent, because
-it adds capability "that no prompt-only declaration can match". Neither
-is one that rewrites the action.
-
-The empirical result attached to the term is measured and modest. Adding
-prompt-equivalent skills on top of the executable library has an effect
-that is "small and mixed across datasets".
-
-** How published collections organise skills
-
-Three public collections show three different organising choices.
-
-The *pstack* collection divides its skills into three kinds. Twenty-one
-/principles/ each state one rule. Twenty-two /playbooks/ each give the
-steps for a shape of work. The remaining skills are workflow tools. One
-skill, a sticky mode, routes work to the others.
-
-The *Matt Pocock* collection divides on invocation. User-invoked skills
-are thin and orchestrate; model-invoked skills hold the reusable
-discipline. A user-invoked skill may call a model-invoked one, and never
-another user-invoked one.
-
-The *Council of High Intelligence* ships one skill and eighteen
-subagents. The skill is a coordinator. Each subagent supplies one
-analytical lens.
-
-None of the three registers a skill against the kind of artefact it acts
-on. Each organises by what the skill /is/, rather than by what it acts
-/upon/.
-
-None carries an activation predicate that a runtime can evaluate. Each
-relies on the assistant reading a description and judging that it
-applies. In the terms above, all three belong to the textual lineage,
-and none contains a program function.
-
-One of the three anticipates the finding. The pstack collection includes
-a principle named /encode lessons in structure/, whose rule is to
-express a recurring correction "as a lint, metadata flag, runtime check,
-or script instead of more text". That is the paper's thesis reached
-independently by a practitioner. It is also stated as prose advice,
-which is the form the paper argues against, so the principle does not
-satisfy its own rule.
+The technique has a cost of its own. Material behind a reference is reached only
+if the referring sentence is worded well enough to trigger the read.
 
 * See also
 
-- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] — the narrower definition this project works to.
+- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] — the narrower definition this project
+  works to.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the substrate, defined externally.
 - [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the tool that loads these skills.
 - [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][External]] — the reference cluster this page belongs to.
-
-* References
-
-- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents
-  with Skill Programs/. arXiv:2605.17734.
-  [[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
-- Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L.
-  and Anandkumar, A. (2023). /Voyager: an open-ended embodied agent with
-  large language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Not read directly.
-- Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K. and
-  Yao, S. (2023). /Reflexion: language agents with verbal reinforcement
-  learning/. [[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Not read directly.
-- Zhao, A., Huang, D., Xu, Q., Lin, M., Liu, Y. and Huang, G. (2024).
-  /ExpeL: llm agents are experiential learners/. [[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Not
-  read directly.
-- Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K. and Cao,
-  Y. (2023). /ReAct: synergizing reasoning and acting in language
-  models/. [[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Not read directly.

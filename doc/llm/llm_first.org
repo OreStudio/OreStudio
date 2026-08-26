@@ -65,6 +65,8 @@ contributing model (=Co-Authored-By:= with the model name and
 
 * See also
 
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the technology this philosophy responds to, defined externally.
+
 - [[id:F9AD7932-8E11-433C-A812-B57DBC9BF5D8][LLM instructions]] — mandatory first read for every LLM session.
 - [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]] — the primary development tool.
 - [[id:94F9949A-1580-4D47-9331-AA0597543C99][LLM Configuration and Artefacts]] — the full LLM support stack.

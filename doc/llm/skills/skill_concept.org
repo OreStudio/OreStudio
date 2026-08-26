@@ -14,12 +14,13 @@
 This document establishes what the term *skill* denotes within the compass
 framework.
 
-It proceeds in four parts. The first reviews the academic and industrial
+It proceeds in three parts. The first reviews the academic and industrial
 literature, establishing what is known about skills and how existing collections
 organise them. The second measures the specification against that literature and
 identifies four things it does not require, each of which this framework needs.
-The third states the definition adopted here and shows that it supplies all
-four. The fourth derives the implications of adopting it.
+The third states the definition adopted here and defends it on three grounds:
+that it answers each limitation, that it discriminates, and that mechanisms
+follow from it.
 
 * Detail
 
@@ -252,12 +253,39 @@ irrelevant entry competes with the relevant ones.
 The gap matters more than the preceding three for autonomous operation, where
 the catalogue must be attenuated without a person present to narrow it.
 
-** Definition
+** The Definition
+
+Two conclusions carry forward from the preceding sections. The literature review
+established that a specification defining a container cannot state when its
+contents apply, and that every collection surveyed supplies that condition by
+some mechanism of its own devising. The analysis of the specification then
+identified four properties it does not require: a declared object, a declared
+audience, a bounded scope, and the admission of material that is cited rather
+than executed.
+
+Taking the two together, a definition adequate to this framework must supply all
+four properties, and must supply them as declarations rather than as prose. The
+second requirement follows from the first conclusion: a condition stated in
+prose can only be judged by a reader, whereas a condition declared in a field
+can be computed.
+
+This section states the definition and then defends it on three grounds. It is
+/adequate/ if it answers each limitation identified above. It is /discriminating/
+if it rules material out as well as in. It is /productive/ if mechanisms follow
+from it that were unavailable before. A definition failing any of the three
+would be worth abandoning: an inadequate one leaves the problem, an
+indiscriminate one admits everything, and an unproductive one imposes a
+constraint that buys nothing.
+
+*** Statement
 
 Within this framework a skill is *one action, applied to one typed target, at a
 stated level, in exactly one plane*.
 
-*** Coverage of the Limitations
+Each clause is a declaration carried in the skill's own frontmatter, and each is
+therefore available to a mechanism without a reader's interpretation.
+
+*** Adequacy
 
 Each clause corresponds to one limitation identified above.
 
@@ -271,9 +299,14 @@ Each clause corresponds to one limitation identified above.
   [[id:F5CB5A45-6557-410B-9E4F-542957561A16][plane]], which fixes the relation an agent bears to it, and one plane holds
   material that is cited rather than run.
 
-*** Exclusions
+The correspondence is one to one, which is a property of the construction rather
+than a coincidence: the clauses were derived from the limitations and no clause
+was added for any other reason.
 
-A definition is sharpened by the cases it rejects.
+*** Boundary
+
+A definition admitting everything discriminates nothing. Three classes of
+material fall outside this one.
 
 A document stating a durable fact is excluded, because it names no action; such
 material is knowledge. A procedure composing several operations is excluded,
@@ -282,12 +315,18 @@ applying to no particular artefact type is excluded, because it declares no
 target; such material is either a stance, if it constrains judgement, or a
 memory, if it records a correction.
 
-The exclusions are not rejections of the material. Each names the document type
-that receives it, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] carries the procedure that assigns them.
+The exclusions are not rejections. Each names the document type that receives
+the material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] carries the procedure that assigns it.
+The definition is therefore narrow without being lossy: it excludes by
+redirecting.
 
-** Implications
+*** Derived Properties
 
-*** Dispatch Computability
+Four mechanisms follow from the definition, each depending on one of its
+clauses. Together they are the framework's account of why the constraint is
+worth accepting.
+
+**** Dispatch Computability
 
 Because the target type is declared, the operations applying to a target are
 computed from its type rather than recalled. A collection no longer grows as the
@@ -295,7 +334,7 @@ product of operations and types, since an operation is registered once against a
 type and inherited by every target of that type. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] sets out the
 mechanism.
 
-*** Admissibility of Judgement
+**** Admissibility of Judgement
 
 Because the plane is declared, and because one plane holds material that is
 cited rather than executed, a rule of judgement may be written as a skill
@@ -308,7 +347,7 @@ is the form it finds unreliable. The framework's response is the requirement
 that a rule expressible as a check be written as one, leaving the plane to hold
 only what cannot be checked.
 
-*** Catalogue Attenuation
+**** Catalogue Attenuation
 
 Because the level is declared, a session that has declared its function sees a
 subset of the collection rather than the whole. At most levels the filter is a
@@ -316,7 +355,7 @@ default that may be overridden on request; at the audit level it is a
 constraint, since an auditor that can be persuaded to modify what it observes is
 not an auditor. [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] treats the mechanism.
 
-*** Overlap Detection
+**** Overlap Detection
 
 Because a skill covers one action on one type, two skills covering the same
 pairing are redundant by construction, and the redundancy is detectable by

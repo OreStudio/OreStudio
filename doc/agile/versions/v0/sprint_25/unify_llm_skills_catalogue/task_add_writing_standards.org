@@ -59,6 +59,9 @@ take none of the three, and that exclusion list needs stating.
 - Thesis prose is adopted for the org-roam documentation, with the empirical-thesis chapter structure, hypothesis ordering and citation machinery excluded as out of scope for us.
 - Writing for agents is adopted for skills, memories and CLAUDE.md as well as specifications and plans, and supersedes the prose guidance currently in skill-add.
 - doc-review-ste100 is narrowed to the agent's conversational output and states what it does not cover.
+- ASD-STE100 governs every conversational reply, including design discussion. It is not relaxed for a native speaker or for a technical exchange. Decided 2026-08-26 after the agent broke the rule repeatedly in this story's own discussion.
+- The scope note says plainly that metaphor and borrowed jargon are out of scope for replies, and gives examples: write "essential" rather than "load-bearing", and "is worth its cost" rather than "earns its keep".
+- Leading words are named as a technique for documents an agent reads. The scope note forbids carrying them into replies.
 - Both imports carry their upstream repository, path, commit and licence per the attribution contract. Thesis writing is https://github.com/santifs/thesis-writing-skill, MIT.
 - The rule against steering by prohibition is applied to our own documents: the architecture page and this design are swept for negations that should state a positive target.
 - Hedging in our own documents is matched to the evidence: claims we have not tested are stated as proposals rather than as findings.

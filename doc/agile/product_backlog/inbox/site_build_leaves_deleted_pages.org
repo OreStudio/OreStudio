@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: C43CA3B9-E615-4718-97F6-85C406F46749
+:END:
+#+title: Site build leaves pages whose source was deleted
+#+description: The site build does not remove built HTML when its org source is deleted, so a renamed or split document keeps serving its old version.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:site:build:drift:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+
+The site build publishes every org file it finds, but it does not delete
+built HTML whose source has gone. A page that is renamed, split or
+retired keeps serving its old content from the previous build.
+
+Found on 2026-08-26. The skill architecture page was split into a hub and
+eight spokes. One spoke, =skill_agents.org=, was then split again and its
+file deleted. Its built page kept serving until it was removed by hand.
+
+This matters more than a stale file usually would. The graph is held as
+a Zettelkasten, and a reader who follows an old link reaches a page that
+describes a state which no longer exists. That is the same failure the
+design document type exists to prevent, reaching the reader by a
+different route.
+
+Two known cases share the shape. The skills deployment does not remove
+stale directories from the deployed skills folder either, which the
+skills inventory already warns about. A single sweep that removes built
+output with no source would cover both.
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

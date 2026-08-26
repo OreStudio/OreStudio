@@ -202,10 +202,12 @@ results_of_batch(std::ostream& out, nats_client& session, const boost::uuids::uu
     return result;
 }
 
-// Stored storage URIs look like "/api/v1/storage/<bucket>/<key>";
-// split them back into the bucket/key pair the transfer client takes.
+// Stored storage URIs look like "<api-prefix>/<bucket>/<key>"; split
+// them back into the bucket/key pair the transfer client takes. The
+// prefix derives from storage_paths so this stays in sync with
+// make_object_path.
 std::optional<std::pair<std::string, std::string>> split_storage_uri(const std::string& uri) {
-    constexpr std::string_view prefix = "/api/v1/storage/";
+    const std::string prefix = std::string(ores::storage::net::storage_paths::prefix) + "/";
     if (uri.rfind(prefix, 0) != 0)
         return std::nullopt;
     const auto rest = uri.substr(prefix.size());

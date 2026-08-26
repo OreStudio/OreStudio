@@ -1,0 +1,69 @@
+:PROPERTIES:
+:ID: 3018B7FE-2DF7-49E5-A57F-A75C02C4D498
+:END:
+#+title: Skill dispatch
+#+description: How an operation is selected for an artefact: target types, the verbs registered against each, and the dispatcher that computes the pairing.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:dispatch:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+Given a thing in hand, whether a document, a branch, a pull request or
+a failing test, this page answers what may be done to it, and how that
+is computed rather than remembered.
+
+For the classes of artefact themselves see [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
+
+* Detail
+
+
+#+caption: =compass-act= resolves a target's type, then offers the verbs registered against it.
+[[proj:doc/llm/skills/skill_dispatch.png]]
+
+Actions register against a target's *type*, never against the command
+that produced the target. A new source of targets therefore inherits
+every action for the types it yields, and a new action appears wherever
+its type does, without anyone editing a table.
+
+Documents carry their type in =#+type:= frontmatter. Non-document
+targets — a branch, a pull request, a worktree, a service, a build
+target, a test failure, a database — resolve their kind through compass.
+A target whose type cannot be resolved is out of scope for dispatch.
+
+Three skills implement the model:
+
+- =compass-act= — resolve a target's type, look up the verbs registered
+  against it, filter by the session's level, run the chosen one.
+- =compass-act-all= — fan one action over a collection.
+- =compass-export= — hand a result set to the artefact type that owns
+  that payload. Review findings become tasks on a story; backlog
+  candidates become captures; drift findings become tasks. Never invent
+  a new container when an artefact type already exists for the payload.
+
+The verb table is *generated* from the catalogue. A hand-maintained
+table drifts within a sprint; if it cannot be generated, the dispatcher
+is not built.
+
+=agile-find-heading= and =compass-act= answer different questions.
+Heading picks *which work to do*; act picks *which verb applies to this
+noun*.
+
+
+** Inventory
+
+# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
+Target type against verb, with the source each type resolves from. Populated when the dispatcher lands.
+# END generated inventory
+
+* See also
+
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] — the classes of artefact a target may belong to.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] — the level that filters the verbs on offer.

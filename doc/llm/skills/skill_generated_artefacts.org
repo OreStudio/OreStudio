@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: D8CB6EED-1F6A-4EE5-840B-2FE28DE17911
+:END:
+#+title: Generated artefacts
+#+description: How generated structure is kept correct: whether an artefact is generated, which profile its model binds to, and the three kinds of drift that can separate the two.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:codegen:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+#+begin_note
+*Status: target state.* This page describes the framework we are
+building, not the catalogue as it stands today. Where this page and the
+current catalogue disagree, the catalogue is what runs.
+#+end_note
+
+Anything structural is generated. This page answers the three questions
+that follow: whether a given artefact is generated, which profile its
+model binds to, and whether the two have drifted apart.
+
+The variability model owns the profiles and features themselves; this
+page owns the decision procedure that consumes them.
+
+* Detail
+
+
+#+caption: Generated-ness gates the verbs, the profile names the variability, regeneration proves it.
+[[proj:doc/llm/skills/skill_codegen_decision.png]]
+
+Codegen is the same architecture applied to code rather than to skills,
+and it is further along. Its meta-types are typed targets, its eleven
+named [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]] are a closed register, its features are the axes that
+register is built from, and zero-diff regeneration is a falsifiable
+predicate. Where this page and the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][variability model]] disagree, the
+variability model wins.
+
+** Is this artefact generated?
+
+Ask before touching anything, because the answer decides which verbs are
+legal. A codegen model at
+=projects/ores.<component>/modeling/ores.<component>.<slug>.org=, or a
+generated-file marker on the artefact, means the artefact is generated.
+
+*Hand-editing a generated artefact is not a legal verb*, and the
+dispatcher does not offer it. The edit goes to the model or to the
+template — see [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
+
+** Which profile does it bind to?
+
+Exact match against the named profiles binds. No exact match means the
+nearest profile by Hamming distance over the shared feature set, and the
+diff is one of two things: a *gap to close*, or a *genuinely novel
+combination* worth naming as a new profile.
+
+Never leave an entity with loose knobs and no profile. Unnamed
+variability is indistinguishable from drift, and an entity nobody has
+classified is one nobody can tell is broken.
+
+** Is it drifting?
+
+#+ATTR_HTML: :class hug-leading
+| Kind           | What happened                                               | Guarded by                 |
+|----------------+-------------------------------------------------------------+----------------------------|
+| Artefact drift | A generated file was hand-edited                            | =check_component_drift.py= |
+| Template drift | A =.mustache= was edited instead of its literate org source | =template-drift.yml=       |
+| Model drift    | An entity no longer matches its bound profile                | The model-drift check      |
+
+These are S3* work: continuous, from outside, and binding. They are also
+the most valuable verification available, because they are mechanical
+and indifferent to how convincing an agent's reasoning was.
+
+
+** Inventory
+
+# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
+Model type, the profile it binds to, and the drift check guarding it. Populated when the drift checks are wired.
+# END generated inventory
+
+* See also
+
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the features and profiles this page consumes.
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — the closed register a model binds to.
+- [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] — where drift sits in the ladder.

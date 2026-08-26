@@ -47,7 +47,15 @@ in when history is genuinely needed.
 | Document | Kind | Purpose |
 |----------+------+---------|
 | [[id:C7473361-9825-43DF-8610-EBB028A250BE][Design: Unify the LLM skills catalogue]] | design, transitional | The argument: current state, the three mental models integrated, the council review, and the route to the target |
-| [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] | knowledge, durable | The outcome: how the framework works, target state only, no history |
+| [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] | knowledge, durable | Hub: the overview, the entry points, and the map of the cluster |
+| [[id:166CBCA9-112E-4949-8D5A-CE0FC55E4A08][The skill catalogue]] | knowledge, durable | What a skill is, what it is called, and where a new artefact goes |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] | knowledge, durable | What kinds of artefact exist and how they differ |
+| [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] | knowledge, durable | Given a thing in hand, what may be done to it |
+| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] | knowledge, durable | Who is acting, and what they may see and change |
+| [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]] | knowledge, durable | How an agent is configured, isolated and left to run |
+| [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] | knowledge, durable | How work is driven from start to finish |
+| [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] | knowledge, durable | How we know it worked |
+| [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]] | knowledge, durable | How generated structure is kept correct |
 
 The design goes =LANDED= when this story closes, with its =#+outcome:=
 naming the architecture document. The architecture document loses its

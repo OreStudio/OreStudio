@@ -55,7 +55,7 @@ The script is generated from the recipe
 =how_do_i_smoke_test_the_compute_grid_from_the_shell= by the standard
 tangle. Its ores-shell block chains the verbs: =add-batch
 smoke-$SMOKE_REF 15 --smoke=, =dispatch-batch smoke-$SMOKE_REF 15
-$APP_VERSION_ID $INPUT_DIR=, =grid-stats --watch smoke-$SMOKE_REF
+$APP_VERSION_ID $INPUT_TARBALL=, =grid-stats --watch smoke-$SMOKE_REF
 --smoke=. The job count is 15; the =--smoke= switches bound it to the
 10 to 20 range and turn on the assert machinery. The assert lives in
 the grid-stats verb (see the monitoring task): outcome Success on

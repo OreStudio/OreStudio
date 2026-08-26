@@ -6,5 +6,5 @@
 #
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
-compute dispatch-batch $BATCH_REF $JOB_COUNT $APP_VERSION_ID $INPUT_DIR
+compute dispatch-batch $BATCH_REF $JOB_COUNT $APP_VERSION_ID $INPUT_TARBALL
 logout

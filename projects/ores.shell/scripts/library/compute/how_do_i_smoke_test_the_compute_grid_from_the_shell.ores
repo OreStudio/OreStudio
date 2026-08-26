@@ -7,6 +7,6 @@
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
 compute add-batch smoke-$SMOKE_REF 15 --smoke
-compute dispatch-batch smoke-$SMOKE_REF 15 $APP_VERSION_ID $INPUT_DIR
+compute dispatch-batch smoke-$SMOKE_REF 15 $APP_VERSION_ID $INPUT_TARBALL
 compute grid-stats --watch smoke-$SMOKE_REF --smoke
 logout

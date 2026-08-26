@@ -26,7 +26,7 @@ Run the library script =ores.shell/scripts/library/compute/how_do_i_smoke_test_t
 connect $ORES_NATS_URL
 login super_admin@localhost Secure-Password-123
 compute add-batch smoke-$SMOKE_REF 15 --smoke
-compute dispatch-batch smoke-$SMOKE_REF 15 $APP_VERSION_ID $INPUT_DIR
+compute dispatch-batch smoke-$SMOKE_REF 15 $APP_VERSION_ID $INPUT_TARBALL
 compute grid-stats --watch smoke-$SMOKE_REF --smoke
 logout
 exit
@@ -39,7 +39,7 @@ EOF
 #+end_src
 
 The batch external reference is =smoke-$SMOKE_REF=; set =SMOKE_REF= to
-anything unique. Set =INPUT_DIR= to the input =tar.gz= tarball;
+anything unique. Set =INPUT_TARBALL= to the input =tar.gz= tarball;
 =dispatch-batch= uploads it verbatim. The job count is 15; the
 =--smoke= switch bounds it to the 10 to 20 range.
 =grid-stats --watch --smoke= polls every 10 seconds until the batch

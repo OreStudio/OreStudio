@@ -16,8 +16,8 @@ page carries only what is specific to =sprint=.
 
 * Contract
 
-- Affords :: loading, recording. See
-  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
+- Implements :: loading, recording. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]].
 - Folder :: =versions/<v>/<sprint_NN>/sprint.org=
 - Title :: =Sprint NN= — no prefix (the word "Sprint" is already in the
   title).

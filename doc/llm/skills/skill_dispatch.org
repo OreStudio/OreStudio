@@ -50,7 +50,7 @@ offers each where the container is resolved, which is also where a person would
 look for it: holding a story, one asks what may be done with it, and adding a
 task is among the answers.
 
-[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]] treats the distinction between a target and an output, and the
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] treats the distinction between a target and an output, and the
 reason creation forces it.
 
 ** The Skills
@@ -83,5 +83,5 @@ Target type against verb, with the source each type resolves from. Populated whe
 * See also
 
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
-- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]] — the classes of artefact a target may belong to.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] — the classes of artefact a target may belong to.
 - [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] — the level that filters the verbs on offer.

@@ -35,7 +35,7 @@ register is built from, and zero-diff regeneration is a falsifiable
 predicate. Where this page and the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][variability model]] disagree, the
 variability model wins.
 
-** Is this artefact generated?
+** Generated or Hand-written
 
 Ask before touching anything, because the answer decides which verbs are
 legal. A codegen model at
@@ -46,7 +46,7 @@ generated-file marker on the artefact, means the artefact is generated.
 dispatcher does not offer it. The edit goes to the model or to the
 template — see [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
 
-** Which profile does it bind to?
+** Profile Selection
 
 Exact match against the named profiles binds. No exact match means the
 nearest profile by Hamming distance over the shared feature set, and the
@@ -57,7 +57,7 @@ Never leave an entity with loose knobs and no profile. Unnamed
 variability is indistinguishable from drift, and an entity nobody has
 classified is one nobody can tell is broken.
 
-** Is it drifting?
+** Drift
 
 #+ATTR_HTML: :class hug-leading
 | Kind           | What happened                                               | Guarded by                 |

@@ -16,8 +16,8 @@ page carries only what is specific to =decision=.
 
 * Contract
 
-- Affords :: loading, citation. See
-  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
+- Implements :: loading, citation. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]].
 - Lives as the =* Decisions= section inside =story.org=, or — when the
   list grows large — pulled out into =decisions.org= alongside it.
 - Level :: =s2=.

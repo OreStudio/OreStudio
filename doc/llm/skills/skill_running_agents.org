@@ -34,7 +34,7 @@ are how it knows it succeeded. This section states how agents are
 configured and bounded.
 
 
-** Why delegate at all
+** Grounds for Delegation
 
 Three reasons, and they are the only three.
 
@@ -57,9 +57,9 @@ from. Fan-out for *coverage* survives intact, because its value is
 parallelism. Fan-out for *competition* — several attempts at one brief,
 judged and grafted — does not, because its value was model diversity and
 we have none. Use coverage freely; reach for competition only on design
-questions, and prefer the deliberation affordance there.
+questions, and prefer the deliberation trait there.
 
-** Isolation is a hard constraint, not a preference
+** Isolation
 
 Parallel writers get their own worktree. This is not tidiness: two
 agents in one tree corrupt each other's work in ways that are hard to
@@ -76,7 +76,7 @@ stack*, which is shared across every worktree in the repository, and any
 *remote* the agents push to. Neither is a place for a delegate to
 improvise.
 
-** What configures an agent
+** Configuration
 
 Five fields, and the model is deliberately not among them.
 
@@ -95,19 +95,19 @@ delegate uses it. This costs the model-diversity benefits described
 above, and the substitution is stated where it matters rather than
 papered over.
 
-** Unattended runs
+** Unattended Runs
 
 An agent left running needs four things the attended case can do
 without.
 
-*** A finish condition the agent can check itself
+*** The Finish Condition
 
 "Work on this for a while" measures motion. "Zero old callers remain and
 every parser fixture passes" measures a result, and the agent can
 evaluate it without asking. An unattended run without such a condition
 does not terminate; it drifts until something interrupts it.
 
-*** An authority boundary, granted in advance
+*** The Authority Boundary
 
 By default, irreversible and outward-facing actions stop and ask:
 pushing to a shared branch, deploying, deleting data, raising a pull
@@ -124,7 +124,7 @@ it as an instruction to proceed on reversible work only.
 An agent that reaches the edge of its authority stops and says so. It
 does not widen its own grant.
 
-*** A decision trail
+*** The Decision Trail
 
 The human was not watching, so the run must be reconstructable
 afterwards: what was decided, why, on what evidence, and what was
@@ -132,7 +132,7 @@ discarded. Prefer evidence a reviewer can re-run — a script, a recipe, a
 test — over a claim in prose. The trail plus the diff is what makes an
 unattended result trustworthy rather than merely finished.
 
-*** Liveness, failure and resumption
+*** Liveness, Failure and Resumption
 
 - *Liveness.* A silent agent and a stuck agent look identical from
   outside. Progress must be visible in the trail, so a supervisor can
@@ -144,12 +144,12 @@ unattended result trustworthy rather than merely finished.
   later from its trail and branch, by a different agent. A run that can
   only be abandoned and restarted is not automation.
 
-** What this means for the rest of the framework
+** Consequences for the Framework
 
 The parts of this architecture that matter most to an unattended run
 are the ones that bind rather than advise: the finish condition, the
 authority boundary, the read-only functions, the isolation, and the
-independent checkers. Everything advisory — the affordance vocabulary, the
+independent checkers. Everything advisory — the trait vocabulary, the
 default visibility at most levels — helps an agent choose well while
 someone is watching, and does nothing at three in the morning.
 

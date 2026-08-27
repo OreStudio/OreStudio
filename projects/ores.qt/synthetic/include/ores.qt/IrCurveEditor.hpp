@@ -40,9 +40,12 @@
 #include <string>
 #include <vector>
 
+class QButtonGroup;
 class QDoubleSpinBox;
 class QPushButton;
 class QRadioButton;
+class QSlider;
+class QStackedWidget;
 class QTableWidget;
 
 namespace ores::qt {
@@ -174,6 +177,17 @@ private:
     // preview charts' setParameters() and the mapping layer consume.
     [[nodiscard]] std::vector<ores::synthetic::messaging::parameter_spec> currentParameters() const;
 
+    // Simple/Advanced split, mirroring FxSpotRateEditor's: both pages edit the same
+    // definitions-driven parameter set, with the Advanced page's spins as the single source of
+    // truth (currentParameters() and the save path read them). The Simple page is a per-row
+    // slider + precise spin combo, rebuilt from the Advanced page whenever it becomes visible.
+    QWidget* buildSimpleParameterPage();
+    void rebuildSimpleParameterTable();
+    void onModeChanged();
+    void syncSimpleRowToAdvanced(int row, double value);
+    [[nodiscard]] QSlider* simpleSliderAt(int row) const;
+    [[nodiscard]] QDoubleSpinBox* simpleSpinAt(int row) const;
+
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString username_;
@@ -213,14 +227,26 @@ private:
 
     // Process tab.
     QPointer<QComboBox> engineCombo_;
+    // Segmented Simple/Advanced toggle (mirrors FxSpotRateEditor's) driving modeStack_: id 0 =
+    // Simple page (slider + precise spin per parameter row), id 1 = Advanced page (the parameter
+    // table below). Both pages edit the same definitions-driven set; the Advanced page's spins
+    // stay the single source of truth (see onModeChanged()).
+    QPointer<QButtonGroup> modeGroup_;
+    QPointer<QStackedWidget> modeStack_;
     // One table row per yield_curve_process_parameter_definition for the selected engine:
     // read-only parameter name/description (column 0) + a QDoubleSpinBox per value row (column
     // 1), the spin's range clamped to the definition's min/max and its value seeded from the
     // config's value row (edit mode) or the definition's default_value. Rebuilt by
-    // populateParameterRows() whenever the engine changes -- the single editing surface, precise
-    // entry included, so there is no Simple/Advanced split to keep in sync with a dynamic
-    // parameter set (4 rows for the one-factor engines, 7 for Two-Factor Gaussian).
+    // populateParameterRows() whenever the engine changes (4 rows for the one-factor engines, 7
+    // for Two-Factor Gaussian).
     QPointer<QTableWidget> parameterTable_;
+    // Simple-mode page (modeStack_ index 0): same 2-column shape as the Advanced table, but each
+    // value cell is a slider + precise spin combo. Slider ranges are derived from the
+    // definition's bounds, falling back to a window around the current value when unbounded so
+    // the slider stays usable (the Advanced spin remains the exact-entry surface for extremes).
+    // Rebuilt by rebuildSimpleParameterTable() whenever the Advanced table is rebuilt or the
+    // Simple page becomes visible.
+    QPointer<QTableWidget> simpleParameterTable_;
     // The initial_rate spin box, looked up when the table is rebuilt -- the one parameter the
     // vintage price source overrides server-side, so its editor control is disabled in vintage
     // mode (see updatePriceSourceEnablement()).

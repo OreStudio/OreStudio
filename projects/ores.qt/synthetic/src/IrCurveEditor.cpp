@@ -50,11 +50,14 @@
 #include <QLabel>
 #include <QListWidget>
 #include <QMessageBox>
+#include <QPalette>
 #include <QPointer>
 #include <QPushButton>
 #include <QRadioButton>
+#include <QSlider>
 #include <QSizePolicy>
 #include <QSplitter>
+#include <QStackedWidget>
 #include <QTableWidget>
 #include <QTimer>
 #include <QtConcurrent>
@@ -64,7 +67,9 @@
 #include <algorithm>
 #include <cctype>
 #include <chrono>
+#include <cmath>
 #include <format>
+#include <limits>
 #include <map>
 #include <set>
 #include <tuple>
@@ -116,6 +121,23 @@ QString joinIndexFamilyAndTenor(const std::string& index_family, const std::stri
     return QString::fromStdString(family + "-" + tenor);
 }
 
+// Simple-mode slider <-> double conversion: sliders are integer-valued while parameters are real
+// numbers, so scale by 1e6 both ways (matching the spins' 6-decimal precision). The scale can
+// overflow int for unbounded parameters near the ±1e6 spin fallback, so conversions clamp to the
+// slider's representable range -- extremes stay the preserve of the precise spins.
+constexpr int kSimpleSliderScale = 1'000'000;
+
+int doubleToSliderValue(double v) {
+    return static_cast<int>(std::clamp(
+        std::llround(v * kSimpleSliderScale),
+        static_cast<long long>(std::numeric_limits<int>::min()),
+        static_cast<long long>(std::numeric_limits<int>::max())));
+}
+
+double sliderValueToDouble(int sv) {
+    return static_cast<double>(sv) / kSimpleSliderScale;
+}
+
 } // namespace
 
 ProvenanceWidget* IrCurveEditor::provenanceWidget() const {
@@ -155,9 +177,11 @@ IrCurveEditor::IrCurveEditor(ClientManager* cm,
                               << boost::uuids::to_string(parentFeedId) << ".";
 
     // Seed a sensible default 3-entry template (short deposit, FRA, swap).
-    entries_.push_back(TemplateRow{{}, "SPOT", "3M", "Deposit"});
-    entries_.push_back(TemplateRow{{}, "3M", "6M", "ForwardRateAgreement"});
-    entries_.push_back(TemplateRow{{}, "SPOT", "2Y", "Swap"});
+    // Instrument codes are the refdata catalogue's mnemonics (DEPO/FRA/IRS), not
+    // display names -- the curve preview resolves them strictly by code.
+    entries_.push_back(TemplateRow{{}, "SPOT", "3M", "DEPO"});
+    entries_.push_back(TemplateRow{{}, "3M", "6M", "FRA"});
+    entries_.push_back(TemplateRow{{}, "SPOT", "2Y", "IRS"});
 
     buildUi();
     syncTableFromModel();
@@ -411,8 +435,9 @@ void IrCurveEditor::buildProcessTab() {
     layout->setContentsMargins(12, 12, 12, 12);
     layout->setSpacing(8);
 
-    // ===== 1. Header row: engine + segmented Simple/Advanced toggle -- copied verbatim from
-    // FxSpotRateEditor::buildBehaviourTab(), no IR-specific reason for this affordance to differ.
+    // ===== 1. Header row: engine combo + segmented Simple/Advanced toggle (the toggle's
+    // construction is copied from FxSpotRateEditor::buildBehaviourTab(), no IR-specific reason
+    // for the affordance to differ).
     auto* headerRow = new QHBoxLayout();
     headerRow->addWidget(new QLabel(tr("Engine:"), tab));
     engineCombo_ = new QComboBox(tab);
@@ -452,23 +477,56 @@ void IrCurveEditor::buildProcessTab() {
     updateEngineTooltip(engineCombo_->currentIndex());
     connect(engineCombo_, &QComboBox::currentIndexChanged, this, updateEngineTooltip);
     headerRow->addWidget(engineCombo_);
-    // The parameter table below is the single editing surface (precise entry included), so there
-    // is no Simple/Advanced toggle to lay out here -- FX's split exists because its slider set
-    // targets a fixed 4-scalar shape, which the row-based architecture replaces with
-    // definitions-driven rows of any count.
+
+    // Prominent segmented Simple/Advanced toggle (right) -- mirrors FxSpotRateEditor's: both
+    // pages edit the same definitions-driven parameter set, with the Advanced page's spins as
+    // the single source of truth (currentParameters() and the save path read them).
+    auto* simpleBtn = new QPushButton(tr("Simple"), tab);
+    auto* advancedBtn = new QPushButton(tr("Advanced"), tab);
+    const QColor accent = palette().color(QPalette::Highlight);
+    const QColor accentText = palette().color(QPalette::HighlightedText);
+    const QString segStyle =
+        QStringLiteral("QPushButton { min-height: 30px; min-width: 110px; font-weight: bold; "
+                       "padding: 4px 16px; border: 1px solid %1; }"
+                       "QPushButton:checked { background: %1; color: %2; }")
+            .arg(accent.name(), accentText.name());
+    simpleBtn->setStyleSheet(
+        segStyle + "QPushButton { border-top-right-radius: 0; border-bottom-right-radius: 0; }");
+    advancedBtn->setStyleSheet(
+        segStyle + "QPushButton { border-top-left-radius: 0; border-bottom-left-radius: 0; "
+                   "border-left: none; }");
+    for (auto* b : {simpleBtn, advancedBtn}) {
+        b->setCheckable(true);
+        b->setAutoExclusive(true);
+        b->setCursor(Qt::PointingHandCursor);
+    }
+    advancedBtn->setChecked(true); // Advanced is the default: the exact-entry surface, and the
+                                   // mode the test scenario's spin-box steps exercise
+    modeGroup_ = new QButtonGroup(this);
+    modeGroup_->setExclusive(true);
+    modeGroup_->addButton(simpleBtn, 0);
+    modeGroup_->addButton(advancedBtn, 1);
+    connect(modeGroup_, &QButtonGroup::idClicked, this, [this](int) { onModeChanged(); });
+
+    auto* segRow = new QHBoxLayout();
+    segRow->setSpacing(0); // connected segments
+    segRow->addWidget(simpleBtn);
+    segRow->addWidget(advancedBtn);
     headerRow->addStretch(1);
+    headerRow->addLayout(segRow);
     layout->addLayout(headerRow);
 
-    // ===== 2. Parameter table: one row per yield_curve_process_parameter_definition for the
-    // selected engine (4 for the one-factor engines, 7 for Two-Factor Gaussian) -- read-only
-    // parameter cell (the definition's description as tooltip) + QDoubleSpinBox per value, its
-    // range clamped to the definition's min/max (NULL = unbounded) and seeded from the config's
-    // value row (edit mode) or the definition's default_value. Rows are rebuilt by
-    // populateParameterRows() whenever the engine changes; values are plain, real annualised
-    // numbers -- the mapping layer threads dt (1/365 for this feed's day-per-tick convention, see
-    // ir_curve_template_resolver's own doc) through separately, so nothing here is pre-scaled.
-    // This single table is the one editing surface (precise entry included) -- there is no
-    // Simple/Advanced split to keep in sync with a dynamic parameter set.
+    // ===== 2. Parameter table (Advanced mode): one row per
+    // yield_curve_process_parameter_definition for the selected engine (4 for the one-factor
+    // engines, 7 for Two-Factor Gaussian) -- read-only parameter cell (the definition's
+    // description as tooltip) + QDoubleSpinBox per value, its range clamped to the definition's
+    // min/max (NULL = unbounded) and seeded from the config's value row (edit mode) or the
+    // definition's default_value. Rows are rebuilt by populateParameterRows() whenever the
+    // engine changes; values are plain, real annualised numbers -- the mapping layer threads dt
+    // (1/365 for this feed's day-per-tick convention, see ir_curve_template_resolver's own doc)
+    // through separately, so nothing here is pre-scaled. These spins are the single source of
+    // truth for both modes: the Simple page's sliders write through to them, and
+    // currentParameters()/the save path read only them.
     parameterTable_ = new QTableWidget(0, 2, tab);
     parameterTable_->setHorizontalHeaderLabels({tr("Parameter"), tr("Value")});
     parameterTable_->verticalHeader()->setVisible(false);
@@ -477,17 +535,24 @@ void IrCurveEditor::buildProcessTab() {
     parametersLoadingLabel_ = new QLabel(tr("Loading parameters…"), tab);
     parametersLoadingLabel_->setStyleSheet("color: gray; font-style: italic;");
 
-    // ===== 3. Middle row: parameter table (left, compact) | curve-shape chart (right, dominant
-    // -- a full LIBOR-style Curve Template can carry 10-12 tenor points now, e.g. legacy
-    // USD-LIBOR-3M's DEPO/FRA-strip/swap-ladder grid, and needs real horizontal room for its
-    // tenor-axis labels not to overlap).
+    // ===== 3. Middle row: Simple/Advanced mode stack (left, compact) | curve-shape chart
+    // (right, dominant -- a full LIBOR-style Curve Template can carry 10-12 tenor points now,
+    // e.g. legacy USD-LIBOR-3M's DEPO/FRA-strip/swap-ladder grid, and needs real horizontal
+    // room for its tenor-axis labels not to overlap).
     auto* middleRow = new QHBoxLayout();
     middleRow->setSpacing(12);
-    auto* paramColumn = new QVBoxLayout();
-    paramColumn->addWidget(parameterTable_, 1);
-    paramColumn->addWidget(parametersLoadingLabel_);
-    middleRow->addLayout(paramColumn, 0);
-    parameterTable_->setMaximumWidth(400);
+
+    modeStack_ = new QStackedWidget(tab);
+    modeStack_->addWidget(buildSimpleParameterPage()); // index 0
+    auto* advancedPage = new QWidget(tab);
+    auto* advancedPageLayout = new QVBoxLayout(advancedPage);
+    advancedPageLayout->setContentsMargins(0, 0, 0, 0);
+    advancedPageLayout->addWidget(parameterTable_, 1);
+    advancedPageLayout->addWidget(parametersLoadingLabel_);
+    modeStack_->addWidget(advancedPage); // index 1
+    modeStack_->setCurrentIndex(1);      // Advanced is the default mode (see the toggle above)
+    modeStack_->setMaximumWidth(400);
+    middleRow->addWidget(modeStack_, 0);
 
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
     shapeBox->setMinimumWidth(480);
@@ -837,9 +902,23 @@ void IrCurveEditor::updatePriceSourceEnablement() {
     // The server resolves the initial_rate parameter from a real observation when price_source
     // is "vintage" (see ir_curve_generation_config.price_source), so its row's spin box is
     // read-only then; every other parameter stays editable. rebuildParameterTable() re-runs this
-    // after each population, so the spin may not exist yet on the earliest calls.
+    // after each population, so the spin may not exist yet on the earliest calls. The Simple
+    // page's initial_rate row follows the same rule.
     if (initialRateSpin_)
         initialRateSpin_->setEnabled(!vintage);
+    // buildInstrumentTab() runs this before the Process tab exists, so the simple table may not
+    // be built yet on the earliest calls -- same guard as the widgets above.
+    if (simpleParameterTable_) {
+        for (int row = 0; row < simpleParameterTable_->rowCount(); ++row) {
+            if (auto* nameItem = simpleParameterTable_->item(row, 0);
+                nameItem && nameItem->text() == QStringLiteral("initial_rate")) {
+                if (auto* slider = simpleSliderAt(row))
+                    slider->setEnabled(!vintage);
+                if (auto* spin = simpleSpinAt(row))
+                    spin->setEnabled(!vintage);
+            }
+        }
+    }
 }
 
 void IrCurveEditor::populateParameterRows() {
@@ -905,6 +984,7 @@ void IrCurveEditor::populateParameterRows() {
     parametersLoadingLabel_->setVisible(true);
     parametersLoadingLabel_->setText(tr("Loading parameters…"));
     parameterTable_->setEnabled(false);
+    simpleParameterTable_->setEnabled(false);
 
     auto* watcher = new QFutureWatcher<FetchResult>(self);
     connect(watcher, &QFutureWatcher<FetchResult>::finished, self, [self, watcher, engine]() {
@@ -913,6 +993,7 @@ void IrCurveEditor::populateParameterRows() {
         if (!self)
             return;
         self->parameterTable_->setEnabled(true);
+        self->simpleParameterTable_->setEnabled(true);
         if (!result.success) {
             self->parametersLoadingLabel_->setText(
                 self->tr("Failed to load parameters: %1").arg(result.error));
@@ -960,14 +1041,133 @@ void IrCurveEditor::rebuildParameterTable() {
         spin->setValue(vit != valuesByDefinition.end() ? vit->second : d.default_value);
         spin->setToolTip(QString::fromStdString(d.description));
         parameterTable_->setCellWidget(row, 1, spin);
-        connect(spin,
-                qOverload<double>(&QDoubleSpinBox::valueChanged),
-                this,
-                &IrCurveEditor::onProcessFieldChanged);
+        connect(spin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this, row](double v) {
+            // Mirror into the Simple page's row (blocked -- the Advanced spin is the source of
+            // truth), then drive the charts.
+            if (auto* s = simpleSpinAt(row)) {
+                const QSignalBlocker blocker(s);
+                s->setValue(v);
+            }
+            if (auto* sl = simpleSliderAt(row)) {
+                const QSignalBlocker blocker(sl);
+                sl->setValue(doubleToSliderValue(v));
+            }
+            onProcessFieldChanged();
+        });
         if (d.parameter_name == "initial_rate")
             initialRateSpin_ = spin;
     }
+    rebuildSimpleParameterTable();
     updatePriceSourceEnablement();
+    refreshCharts();
+}
+
+QWidget* IrCurveEditor::buildSimpleParameterPage() {
+    auto* page = new QWidget(this);
+    auto* layout = new QVBoxLayout(page);
+    layout->setContentsMargins(0, 0, 0, 0);
+    simpleParameterTable_ = new QTableWidget(0, 2, page);
+    simpleParameterTable_->setHorizontalHeaderLabels({tr("Parameter"), tr("Value")});
+    simpleParameterTable_->verticalHeader()->setVisible(false);
+    simpleParameterTable_->verticalHeader()->setDefaultSectionSize(38);
+    simpleParameterTable_->horizontalHeader()->setStretchLastSection(true);
+    simpleParameterTable_->setMaximumWidth(400);
+    layout->addWidget(simpleParameterTable_, 1);
+    return page;
+}
+
+QSlider* IrCurveEditor::simpleSliderAt(int row) const {
+    auto* cell = qobject_cast<QWidget*>(simpleParameterTable_->cellWidget(row, 1));
+    return cell ? cell->findChild<QSlider*>() : nullptr;
+}
+
+QDoubleSpinBox* IrCurveEditor::simpleSpinAt(int row) const {
+    auto* cell = qobject_cast<QWidget*>(simpleParameterTable_->cellWidget(row, 1));
+    return cell ? cell->findChild<QDoubleSpinBox*>() : nullptr;
+}
+
+void IrCurveEditor::rebuildSimpleParameterTable() {
+    // Mirror the Advanced table row-for-row (same definitions, same order), but give each value
+    // cell a slider + precise spin combo seeded from the Advanced spin's value. The slider range
+    // comes from the definition's bounds where it has them, else a window around the current
+    // value -- deliberately approximate, since a slider cannot express 6 decimals: the spin next
+    // to it is the exact-entry surface, and the Advanced page stays the source of truth for
+    // values an unbounded slider cannot represent (its range clamps at int limits).
+    simpleParameterTable_->setRowCount(0);
+    for (int row = 0; row < static_cast<int>(parameterDefinitions_.size()); ++row) {
+        const auto& d = parameterDefinitions_[row];
+        auto* advSpin = valueSpinAt(row);
+        const double v = advSpin ? advSpin->value() : d.default_value;
+        const double lo = d.min_value ? *d.min_value : v - 2.0 * std::max(1.0, std::abs(v));
+        const double hi = d.max_value ? *d.max_value : v + 2.0 * std::max(1.0, std::abs(v));
+
+        const int trow = simpleParameterTable_->rowCount();
+        simpleParameterTable_->insertRow(trow);
+
+        auto* nameItem = new QTableWidgetItem(QString::fromStdString(d.parameter_name));
+        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+        nameItem->setToolTip(QString::fromStdString(d.description));
+        simpleParameterTable_->setItem(trow, 0, nameItem);
+
+        auto* valueCell = new QWidget(simpleParameterTable_);
+        auto* cellLayout = new QHBoxLayout(valueCell);
+        cellLayout->setContentsMargins(4, 4, 4, 4);
+        cellLayout->setSpacing(6);
+
+        auto* slider = new QSlider(Qt::Horizontal, valueCell);
+        slider->setRange(doubleToSliderValue(lo), doubleToSliderValue(hi));
+        slider->setValue(doubleToSliderValue(v));
+        slider->setMinimumWidth(110);
+        slider->setToolTip(QString::fromStdString(d.description));
+        connect(slider, &QSlider::valueChanged, this, [this, row](int sv) {
+            syncSimpleRowToAdvanced(row, sliderValueToDouble(sv));
+        });
+
+        auto* spin = new QDoubleSpinBox(valueCell);
+        spin->setDecimals(6);
+        spin->setMinimum(lo);
+        spin->setMaximum(hi);
+        spin->setValue(v);
+        spin->setToolTip(QString::fromStdString(d.description));
+        connect(spin,
+                qOverload<double>(&QDoubleSpinBox::valueChanged),
+                this,
+                [this, row](double v) { syncSimpleRowToAdvanced(row, v); });
+
+        cellLayout->addWidget(slider, 1);
+        cellLayout->addWidget(spin);
+        simpleParameterTable_->setCellWidget(trow, 1, valueCell);
+    }
+}
+
+void IrCurveEditor::syncSimpleRowToAdvanced(int row, double value) {
+    // The Advanced page's spins are the single source of truth: mirror this row's new value into
+    // the Advanced spin and the row's other Simple widget without re-entrancy, then let
+    // onProcessFieldChanged() drive the charts.
+    if (auto* advSpin = valueSpinAt(row)) {
+        const QSignalBlocker blocker(advSpin);
+        advSpin->setValue(value);
+    }
+    if (auto* spin = simpleSpinAt(row)) {
+        const QSignalBlocker blocker(spin);
+        spin->setValue(value);
+    }
+    if (auto* slider = simpleSliderAt(row)) {
+        const QSignalBlocker blocker(slider);
+        slider->setValue(doubleToSliderValue(value));
+    }
+    onProcessFieldChanged();
+}
+
+void IrCurveEditor::onModeChanged() {
+    const int id = modeGroup_ ? modeGroup_->checkedId() : 1;
+    // Leaving the Simple page costs nothing (its edits were already mirrored into the Advanced
+    // spins); entering it rebuilds from the Advanced spins in case the parameter set changed
+    // while hidden -- engine switches rebuild both pages, so this covers the initial population
+    // and any future source of drift.
+    if (id == 0)
+        rebuildSimpleParameterTable();
+    modeStack_->setCurrentIndex(id);
     refreshCharts();
 }
 
@@ -1078,7 +1278,7 @@ void IrCurveEditor::rebuildModelFromTable() {
 
 void IrCurveEditor::onAddTemplateRow() {
     rebuildModelFromTable();
-    entries_.push_back(TemplateRow{{}, "SPOT", "1Y", "Deposit"});
+    entries_.push_back(TemplateRow{{}, "SPOT", "1Y", "DEPO"});
     syncTableFromModel();
 }
 

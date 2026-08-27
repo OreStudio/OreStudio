@@ -1,0 +1,249 @@
+:PROPERTIES:
+:ID: 0B1456B4-54D1-4DDA-9754-DEE653827D59
+:END:
+#+title: Grounding
+#+description: What grounding denotes: the process by which an agent and its principal establish the mutual information a piece of work requires. Distinguishes the static sense of linking text to sources from the dynamic sense of building common ground, separates grounding from ground truth, and states the obligation the framework places on an agent.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:grounding:knowledge:definition:
+#+created: 2026-08-27
+#+updated: 2026-08-27
+
+* Summary
+
+*Grounding* is the process by which an agent establishes the mutual
+information a piece of work requires, before it does the work. An agent
+grounds itself by resolving the concepts it is about to touch to
+documents that state what those concepts mean in this system, and by
+raising as a question anything it cannot resolve.
+
+The term carries two distinct senses in the literature, and the
+framework relies on both. In the narrower sense used in natural language
+processing, grounding is the linking of text to a source outside the
+model. In the wider sense used in cognitive science, grounding is the
+coordination through which two parties arrive at enough shared
+understanding to communicate successfully. The first sense describes
+what an agent loads. The second describes why loading alone is not
+sufficient.
+
+Grounding is an activity, not a class of document. The distinction
+matters because the framework once used the word for both, and the
+resulting ambiguity is the subject of the final section.
+
+* Detail
+
+** The Two Senses
+
+Chandu, Bisk and Black (2021) observe that the two fields that use the
+term do not mean the same thing by it. Natural language processing
+applies it to "any linking of text to data or non-textual modality",
+which makes grounding a retrieval problem: the system is grounded when
+the right source has been placed before it. Retrieval-augmented
+generation (Lewis et al., 2020) is the canonical mechanism, and the
+industrial usage that speaks of grounding a model in a knowledge base
+descends from it.
+
+Cognitive science defines the term more strictly. Following Clark and
+Brennan (1991), grounding is the process of establishing what mutual
+information is required for successful communication between two
+interlocutors. Grounding on this account is a coordination problem
+rather than a retrieval problem. It is achieved between parties, not
+supplied to one of them, and it is complete when both hold enough in
+common to proceed, not when a document has been read.
+
+Chandu, Bisk and Black argue that the narrower usage has crowded out the
+wider one, and that the field should prefer the wider. They call the two
+regimes /static/ and /dynamic/ grounding. Static grounding treats common
+ground as given in advance, so that the agent need only link a query to
+an existing store. Dynamic grounding holds that common ground "is built
+via interactions including: requesting and providing clarifications,
+acknowledging or confirming clarifications, enacting or demonstrating".
+They judge the dynamic account "more general and more accurately matches
+real experiences".
+
+The framework adopts the wider sense. What an agent loads is the
+material of grounding; it is not the whole of it.
+
+** Grounding and Ground Truth
+
+The two terms are close enough in sound to be confused, and the
+literature separates them explicitly. Discussing the point at which an
+agent and a person have grounded a reference, Chandu, Bisk and Black
+note that the two need only reach consensus on truth values, "which need
+not be the same as the ground truth".
+
+The distinction is one of purpose. /Ground truth/ is an evaluative
+construct: reference data assumed correct, against which a system's
+output is scored. It exists to measure. What an agent loads in order to
+ground itself is not scored against anything, and is not assumed
+correct in the strong sense. A memory may be stale, a recipe may
+describe a command that has since changed, and a knowledge document may
+lag the code it documents.
+
+What the framework asserts of these documents is weaker and different in
+kind. It asserts that an agent must prefer them to its own recall,
+because its recall is a statistical reconstruction and they are a
+record ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]]). Preference over recall is a claim about
+provenance. Correctness is a claim about content. Only the first is
+being made.
+
+Ground truth does have a proper place in this project, but a different
+one. An evaluation of a skill requires cases whose correct outcome is
+known independently, and those cases are ground truth in the strict
+sense ([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]). That is a construct for measuring the framework,
+not a construct within it.
+
+** The Static Sense: What an Agent Loads
+
+The static component of grounding is discharged by the /loading/ trait,
+which classifies those documents an agent reads to inform work rather
+than acts upon ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]). Three types carry the weight of it, and
+they differ in the condition under which each is read.
+
+[[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][Knowledge]] is read by relevance to the work. It states what a domain
+concept means, and an agent about to touch a concept is expected to
+resolve it here first.
+
+[[id:8A2A2873-BE08-48DA-B02F-CF541479E6B1][Recipes]] are read on demand, when a command is needed. They state how an
+operation is performed in this system, which is frequently not how it is
+performed elsewhere.
+
+[[id:FC7CE460-131C-40BA-B46A-2D64525C6789][Memories]] are read unconditionally. They record corrections that have
+already been made once, and their purpose is defeated if an agent
+consults them only when it suspects it needs to.
+
+** The Dynamic Sense: How Common Ground Is Built
+
+Loading answers what an agent knows. It does not answer what happens
+when the material does not exist, and that case is the common one on
+unfamiliar work.
+
+The framework's answer is the rule that an unresolved concept becomes
+the first task rather than an assumption ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods]]). An agent that cannot
+resolve a term to a document does not proceed on its reconstruction of
+what the term probably means. It stops and asks, or it writes the
+missing document and has it reviewed.
+
+This is dynamic grounding in the sense Chandu, Bisk and Black intend. It
+is a request for clarification, and it treats the absence of common
+ground as a condition to be repaired rather than a gap to be bridged by
+inference. The corresponding move in the other direction is the record
+an agent leaves on a task, which returns what it established so that the
+next session and the human reviewer inherit it.
+
+The asymmetry is worth stating plainly. An agent's reconstruction of an
+unfamiliar term is often plausible and occasionally correct, and the two
+cases are indistinguishable from the inside. Asking is therefore
+cheaper than it appears, and inferring is more expensive.
+
+** Purviews: What Must Be Grounded
+
+Chandu, Bisk and Black decompose common ground into four /purviews/,
+which they present as successive stages. The framework's document types
+correspond to them closely enough that the correspondence is worth
+recording, since it indicates where the catalogue is complete and where
+it is thin.
+
+| Purview                | The paper's account                              | Where it is held here |
+|------------------------+--------------------------------------------------+-----------------------|
+| Localisation           | Locating a concept in its context                | Knowledge             |
+| External knowledge     | Consistency with existing sources                | The graph's links     |
+| Common sense           | The contextual assumptions a concept carries     | Principles            |
+| Personalised consensus | What these parties have agreed, over their history | Memories            |
+
+The fourth is the one most easily overlooked and the one memories exist
+to serve. A memory does not record a general truth. It records what this
+project decided, which is precisely the "personalised consensus"
+category, and which is why a memory is neither knowledge nor a
+principle.
+
+** Constraints: Why the Framework Is Documentary
+
+Clark and Brennan enumerate the constraints a medium places on
+grounding, among them copresence, visibility, cotemporality,
+sequentiality, reviewability and revisability. The list explains a
+structural feature of this project that would otherwise look like mere
+preference for documentation.
+
+An agent and its principal do not share cotemporality. The person is
+frequently absent while the work proceeds, and reviews it afterwards.
+Simultaneity is likewise unavailable. What remains are reviewability and
+revisability: the medium permits either party to return to what was
+established and to correct it.
+
+A framework grounded under those constraints must therefore write things
+down, because writing is the only channel that survives the absence of
+the other party. This is the reason the catalogue is documentary rather
+than conversational, and the reason a session that establishes something
+and does not record it has not finished grounding. It has grounded
+itself and left its principal ungrounded.
+
+** Grounding Is Not a Class of Document
+
+An earlier revision of the framework used /grounding/ as a collective
+noun for the types implementing loading. That usage is withdrawn, for
+two reasons.
+
+The first is a category error. Grounding names something an agent does.
+Knowledge, recipes and memories do not ground; an agent grounds itself
+by reading them. Naming the set after the activity invited the reader to
+treat the two as one thing.
+
+The second is that the set had ceased to be well defined. When traits
+were extended across every document type, loading came to be implemented
+by most of them, including tasks, stories, sprints and designs. The
+collective noun continued to name three. A term that names three members
+of a set containing fifteen is a fossil of an earlier taxonomy rather
+than a description of the current one.
+
+Where the set must be referred to, "the types implementing loading"
+states it exactly and in the vocabulary the model already supplies. The
+word /grounding/ is reserved for the activity throughout.
+
+#+begin_note
+*On the choice of term.* The activity keeps the name because the name is
+correct and established. Grounding is the term both relevant literatures
+use for it, and the framework gains nothing by coining an alternative.
+What was wrong was not the word but the second job it had been given.
+#+end_note
+
+** The Grounding Obligation
+
+The preceding sections support a single requirement, stated here for
+reference.
+
+Before an agent acts on a piece of work, it resolves each domain concept
+the work touches to a document that defines it. Where no such document
+exists, producing one becomes the first task, and the agent does not
+proceed on an assumed meaning. Where the work involves a command, the
+agent consults the recipe rather than reconstructing the command.
+Memories are read at the opening of the session, unconditionally. What
+the session establishes is recorded before it closes.
+
+The obligation is proportionate to the work. A method that fires on
+every trivial change trains people to route around it ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods]]). The
+obligation binds where the cost of a wrong assumption exceeds the cost
+of checking, which is the condition it exists to serve.
+
+* References
+
+- Chandu, K. R., Bisk, Y. and Black, A. W. (2021). /Grounding 'Grounding' in
+  NLP/. Findings of ACL 2021, 4283–4305. [[https://arxiv.org/abs/2106.02192][arXiv:2106.02192]]
+- Clark, H. H. and Brennan, S. E. (1991). /Grounding in Communication/. In
+  Resnick, L. B., Levine, J. M. and Teasley, S. D. (eds.), /Perspectives on
+  Socially Shared Cognition/, 127–149. American Psychological Association.
+- Harnad, S. (1990). /The Symbol Grounding Problem/. Physica D 42: 335–346.
+  Cited for the origin of the term rather than for the framework's use of it.
+- Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N.,
+  Küttler, H., Lewis, M., Yih, W., Rocktäschel, T., Riedel, S. and Kiela, D.
+  (2020). /Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks/.
+  Advances in Neural Information Processing Systems 33, 9459–9474.
+  [[https://arxiv.org/abs/2005.11401][arXiv:2005.11401]]
+
+* See also
+
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] — the loading trait and the classification it belongs to.
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Skill Methods]] — the grounding phase and its place in a session.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill Architecture]] — the dispatch model the traits serve.
+- [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Skill Verification]] — where ground truth, in the strict sense, applies.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — why recall is preferred against rather than trusted.

@@ -31,7 +31,7 @@ Capturing durable, cross-cutting rationale as a knowledge document — concepts,
    #+end_src
 
 
-2. /Fill/ =* Summary= (load-bearing facts) and =* Detail= (navigable, not exhaustive); link related docs with =[[id:...]]=.
+2. /Fill/ =* Summary= (the facts a reader needs first) and =* Detail= (navigable, not exhaustive); link related docs with =[[id:...]]=.
 
 3. /Wire/ the topic index page so the doc is reachable, and commit.
 

@@ -26,7 +26,7 @@ In execution order:
 
 1. /Scaffold./ Use [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]]§"New knowledge document": =compass add knowledge=.
 
-2. /Fill in the Summary./ Write the three-to-five sentence summary — the load-bearing field that every grep and index reads.
+2. /Fill in the Summary./ Write the three-to-five sentence summary — every grep and index reads this field.
 
 3. /Write the Detail./ Fill in the content. Use subheadings for navigability. Every reference to another doc uses =[[id:UUID]]= links.
 

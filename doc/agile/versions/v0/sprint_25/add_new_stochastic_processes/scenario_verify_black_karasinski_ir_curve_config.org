@@ -24,13 +24,20 @@ This page documents a test scenario verifying [[id:CDB12DB0-B0FF-4507-B94F-17540
   committer date (set by the rebase) against the DB's recorded author
   date of the same commit — the schema is current, this is a false
   positive.
-- Acme Corporation holding group provisioned via =compass shell -f
+- Acme Corporation holding group provisioned 2026-08-25 via =compass
+  shell -f
   projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
-  — all steps completed. The final =bundles publish risk_management
-  --wait= poll failed against a stale workflow service (binaries
-  predated the rebuild); the dispatched workflow itself completed all
-  4 steps, verified via =workflow steps=.
-- Services restarted 2026-08-25 with freshly built binaries (=compass
+  — all steps completed.
+- The 2026-08-25 run found two defects, both fixed in the build behind
+  this run: (1) the default Curve Template rows seeded display names
+  ("Deposit", "Forward Rate Agreement", "Interest Rate Swap") instead
+  of the refdata instrument codes the preview resolver matches strictly
+  by code (DEPO/FRA/IRS) — the rows now seed the codes, so "curve
+  preview failed: unknown instrument code 'Deposit'" no longer occurs;
+  (2) the Process tab had no Simple/Advanced toggle — the segmented
+  toggle from the FX editor is restored, with Simple mode showing a
+  slider + precise spin per parameter row (see step 4).
+- Services restarted 2026-08-27 with freshly built binaries (=compass
   services status=: synthetic service up).
 - The client is launched with this scenario preloaded (System >
   Testing > Scenario Runner).
@@ -134,13 +141,19 @@ notes back as a =*** Result= child heading directly under it.
   Vasicek, Cox-Ingersoll-Ross, Hull-White, Two-Factor Gaussian).
 - Select it — the tooltip shows "Black-Karasinski: d ln r = κ(θ−ln
   r)dt + σ dW..." and the parameter table reloads with four rows.
+- Confirm the segmented =Simple= / =Advanced= toggle sits to the
+  right of the engine combo (mirrors the FX editor's). Click
+  =Simple=: each parameter row now shows a slider plus a precise
+  spin box (same 6-decimal precision as the Advanced spin). Drag the
+  =sigma= slider — the row's value and the curve-shape preview
+  update together. Toggle back to =Advanced= before continuing.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
 | Status | FAIL |
-| Notes  | we get an error: no parameter definitions for engine 'VASICEK' |
+| Notes  | ok so the parameters now show but we do not seem to have the simple / advanced toggle button we used to have and still have for FX (in simple mode the parameters have simplified widgets). also curve shape says: "curve preview failed: ir_curve_template_resolver: unknown instrument code 'Deposit' |
 
 ** Check the four BK parameter fields
 
@@ -232,9 +245,9 @@ notes back as a =*** Result= child heading directly under it.
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-25T15:04:29Z |
+| Completed at  | 2026-08-27T19:51:46Z |
 | Branch        | feature/bk-feature-test-scenario |
-| Commit        | bcc5c1d740 |
+| Commit        | d933f15284 |
 | Worktree      | eager_maxwell |
 
 * Notes

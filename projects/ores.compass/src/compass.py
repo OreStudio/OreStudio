@@ -6054,6 +6054,91 @@ def _run_emacs_target(target: str, dry_run: bool = False) -> int:
         return _run_logged(cmd, PROJECT_ROOT, log)
 
 
+# Directories the site build excludes; mirrored here so the changed-file scan
+# considers exactly the files the publish project would.
+_SITE_EXCLUDED = (
+    "/build/", "/vcpkg/", "/.packages/", "/.claude/worktrees/",
+    "/projects/ores.org-js/", "/.git/",
+)
+
+_SITE_OUTPUT = Path("build") / "output" / "site" / "OreStudio"
+
+
+def _site_changed_pages():
+    """Org files whose published HTML is missing or older than the source.
+
+    Two stats per file, so scanning the tree costs a fraction of a second, where
+    asking org-publish to make the same decision means parsing every file. The
+    test is per-file rather than against a single build marker, so it stays
+    correct when pages are rebuilt one at a time."""
+    out_root = PROJECT_ROOT / _SITE_OUTPUT
+    changed = []
+    for src in PROJECT_ROOT.rglob("*.org"):
+        rel = src.relative_to(PROJECT_ROOT)
+        # org-publish skips dot files and dot directories; match it, or the scan
+        # offers pages the site never builds.
+        if any(part.startswith(".") for part in rel.parts):
+            continue
+        if any(seg in f"/{rel}" for seg in _SITE_EXCLUDED):
+            continue
+        html = out_root / rel.with_suffix(".html")
+        try:
+            if not html.exists() or src.stat().st_mtime > html.stat().st_mtime:
+                changed.append(src)
+        except OSError:
+            continue
+    return sorted(changed)
+
+
+def _cmd_site_page(paths):
+    """compass site page — publish one or more org files to the site output.
+
+    Reuses the configuration and caches the full build wrote, so a page rebuilds
+    in about a second rather than the minutes a whole-site pass costs. Links
+    resolve against the id map from the last full build, so a page linking to a
+    document created since then needs a full build to resolve it."""
+    if not paths:
+        changed = _site_changed_pages()
+        if not changed:
+            print("\u2705 No pages have changed since the last build.")
+            return 0
+        print(f"\U0001f50d {len(changed)} changed page(s):")
+        for c in changed:
+            print(f"   {c.relative_to(PROJECT_ROOT)}")
+        paths = [str(c) for c in changed]
+
+
+    script_path = PROJECT_ROOT / _EMACS_LISP_DIR / "ores-build-page.el"
+    if not script_path.is_file():
+        print(f"\u274c Emacs script not found: {script_path}", file=sys.stderr)
+        return 1
+
+    resolved = []
+    for raw_path in paths:
+        candidate = Path(raw_path)
+        if not candidate.is_absolute():
+            candidate = PROJECT_ROOT / candidate
+        if not candidate.is_file():
+            print(f"\u274c Not a file: {raw_path}", file=sys.stderr)
+            return 1
+        if candidate.suffix != ".org":
+            print(f"\u274c Not an org file: {raw_path}", file=sys.stderr)
+            return 1
+        resolved.append(str(candidate))
+
+    cmd = ["emacs", "-Q", "--script", str(script_path), "--"] + resolved
+    print(f"\U0001f528 publishing {len(resolved)} page(s)")
+    proc = subprocess.run(cmd, cwd=PROJECT_ROOT, capture_output=True, text=True)
+    # Emacs writes its progress to stderr; surface only the lines that say what
+    # happened, so a one-second command does not print a load trace.
+    for line in (proc.stderr or "").splitlines():
+        if line.startswith("ores-build-page:") or "Publishing file" in line:
+            print(line)
+    if proc.returncode != 0:
+        print(proc.stderr, file=sys.stderr)
+    return proc.returncode
+
+
 def _cmd_site_show(path, raw=False, width=100):
     """compass site show — dump a built site page's content directly from disk,
     without needing `compass site serve` + curl running in parallel."""
@@ -6136,6 +6221,14 @@ def cmd_site(argv):
     sub.add_parser("stop", help="Stop the site-preview systemd unit")
     sub.add_parser("status", help="Report the site-preview systemd unit's state")
 
+    sp3 = sub.add_parser("page", help="Publish changed pages to the site "
+                         "output, reusing the caches from the last full "
+                         "build; with no arguments, rebuilds whatever you "
+                         "have just edited")
+    sp3.add_argument("paths", nargs="*", metavar="FILE.org",
+                     help="Org file(s) to publish. Omit to publish every "
+                          "page whose source is newer than its published HTML.")
+
     sp2 = sub.add_parser("show", help="Dump a built site page as readable text (no server needed)")
     sp2.add_argument("path", help="Page path relative to the site root, e.g. "
                      "projects/ores.codegen/modeling/org_entity_meta_model.html "
@@ -6147,6 +6240,8 @@ def cmd_site(argv):
     if args.subcmd is None:
         ap.print_help()
         return 0
+    if args.subcmd == "page":
+        return _cmd_site_page(args.paths)
     if args.subcmd == "show":
         return _cmd_site_show(args.path, raw=args.raw, width=args.width)
     if args.subcmd == "start":

@@ -42,8 +42,8 @@ treats targets and the operations registered against them.
 A *document type* classifies a document by its contract: the frontmatter it
 carries, the sections it must contain, its lifecycle and its location. This is
 orthogonal to the trait, which classifies by the agent's relation, and the two
-stand in a many-to-many relation. The grounding trait spans three document types
-— knowledge, recipe and memory — while the skill document type spans three
+stand in a many-to-many relation. The loading trait spans several document types
+— knowledge, recipe and memory among them — while the skill document type spans three
 traits, since a skill may be a principle, a method or an action. The trait
 cannot therefore be inferred from the document type, which is why the definition
 requires it to be declared. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] carries the type ontology.
@@ -154,8 +154,8 @@ with an artefact once the artefact exists, which is a property of the reader
 rather than of the generator.
 
 Both are true of the same file and neither follows from the other. A knowledge
-document is an artefact of the =ores.doc.knowledge= facet and a member of the
-grounding trait; the first fact concerns how it was produced, the second how it
+document is an artefact of the =ores.doc.knowledge= facet and implements the
+loading trait; the first fact concerns how it was produced, the second how it
 is used.
 
 **** Absence of a Mapping
@@ -189,7 +189,7 @@ on it. The word is borrowed from programming, where a trait is an interface a
 type may implement alongside others, and where a trait may carry a default
 implementation inherited by every implementing type.
 
-Both properties are load-bearing here. A recipe implements /loading/, being
+Both properties are required here. A recipe implements /loading/, being
 consulted for its command, and /execution/, its script being run; a
 classification permitting only one membership per type could not express that,
 and the framework's earlier attempt to do so failed on exactly this case.
@@ -286,12 +286,16 @@ or execution according to what it contains, so its trait cannot be inferred
 from its type and must be declared on the instance. This is the reason the
 definition of a skill requires the declaration.
 
-The types offering loading are collectively called *grounding*. The name is
-retained because the framework refers to the group often, but it names a derived
-collective rather than a primitive class. What the three share is the trait;
-they differ in the condition under which it is exercised, knowledge loading by
-relevance to the work, a recipe on demand when a command is needed, and a memory
-unconditionally.
+An earlier revision named the types implementing loading collectively
+*grounding*. That name is withdrawn. Grounding denotes an activity an agent
+performs, not a class of document, and the set it was taken to name had in any
+case ceased to be well defined once loading was extended across the catalogue.
+The set is referred to as /the types implementing loading/ where it must be
+named at all. [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] treats the term and the obligation it carries.
+
+The three types that carry most of the weight differ in the condition under
+which loading occurs: knowledge by relevance to the work, a recipe on demand
+when a command is needed, and a memory unconditionally.
 
 *** The Primary Division
 
@@ -326,11 +330,11 @@ the pairs most easily confused.
 
 *** Loading
 
-Grounding is the body of material an agent brings into working knowledge before
-it acts. Its three members differ in the question they answer and in the
-condition under which they load, and the distinctions between them are
-load-bearing: a framework that treats them alike cannot say when each should be
-consulted.
+The types below supply the material an agent brings into working knowledge
+before it acts, and the process of doing so is [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][grounding]]. They differ in the
+question each answers and in the condition under which each is read, and the
+distinctions are necessary ones: a framework that treats them alike cannot say
+when each should be consulted.
 
 **** Knowledge
 

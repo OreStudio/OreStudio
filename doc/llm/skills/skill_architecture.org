@@ -79,15 +79,15 @@ operation is found and who may be offered it.
 *** Types and Traits
 
 A [[id:F5CB5A45-6557-410B-9E4F-542957561A16][trait]] classifies artefacts (/c.f./ [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]]) by the relation an agent
-bears to them: the agent /loads/ grounding, /cites/ a stance, /sequences/ a
+bears to them: the agent /loads/ a source, /cites/ a stance, /sequences/ a
 method, /executes/ an action, /declares/ a specification, /convenes/ a
 deliberation, and /records/ against an artefact carrying a lifecycle.
 
 A type may implement several traits, which is why the classification is by trait
 rather than by class. A recipe implements both /loading/, since it is consulted
-for its command, and /execution/, since its script is run. Grounding is not a
-class but the set of types implementing /loading/. The [[id:F5CB5A45-6557-410B-9E4F-542957561A16][traits]] document treats
-the taxonomy, the criterion behind it, and which document type implements what.
+for its command, and /execution/, since its script is run. The [[id:F5CB5A45-6557-410B-9E4F-542957561A16][traits]] document
+treats the taxonomy, the criterion behind it, and which document type implements
+what.
 
 *** Operations and Actions
 

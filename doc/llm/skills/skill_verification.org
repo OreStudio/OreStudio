@@ -74,8 +74,8 @@ feature at a time, into diffs nobody reviews as drift.
 
 ** Rung 2: Tests
 
-Feature work has tests. The unit-versus-integration distinction is not
-load-bearing here: what matters is that a test fails before the change
+Feature work has tests. The unit-versus-integration distinction does not
+signify here: what matters is that a test fails before the change
 and passes after, and that it exercises the real path rather than a
 mock of it. A test that would pass without the feature is not a test.
 

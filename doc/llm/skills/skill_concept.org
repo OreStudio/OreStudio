@@ -2,7 +2,7 @@
 :ID: 87D41A08-0B37-41CE-8483-B59B36BA87FA
 :END:
 #+title: Skills in the Compass Skill Framework
-#+description: A review of the academic and industrial literature on agent skills, four properties the specification does not require and the framework needs, and the definition adopted in response: one action, one typed target, one level, one affordance.
+#+description: A review of the academic and industrial literature on agent skills, four properties the specification does not require and the framework needs, and the definition adopted in response: one action, one typed target, one level, one trait.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:claude_code:architecture:definition:
@@ -280,7 +280,7 @@ constraint that buys nothing.
 *** Statement
 
 Within this framework a skill is *one action, applied to one typed target, at a
-stated level, offering exactly one affordance*.
+stated level, offering exactly one trait*.
 
 Each clause is a declaration carried in the skill's own frontmatter, and each is
 therefore available to a mechanism without a reader's interpretation.
@@ -295,8 +295,8 @@ Each clause corresponds to one limitation identified above.
   it applies to.
 - *At a stated level* declares the audience. The skill states the [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][cybernetic
   level]] it serves, which determines the sessions that see it by default.
-- *Offering exactly one affordance* admits non-executable material. The skill
-  states the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][affordance]] it offers, which fixes the relation an agent bears to
+- *Offering exactly one trait* admits non-executable material. The skill
+  states the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][trait]] it offers, which fixes the relation an agent bears to
   it, and one of the six is citation, which is borne by material that is not
   run at all.
 
@@ -317,7 +317,7 @@ target; such material is either a stance, if it constrains judgement, or a
 memory, if it records a correction.
 
 The exclusions are not rejections. Each names the document type that receives
-the material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]] carries the procedure that assigns it.
+the material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] carries the procedure that assigns it.
 The definition is therefore narrow without being lossy: it excludes by
 redirecting.
 
@@ -337,15 +337,15 @@ mechanism.
 
 **** Admissibility of Judgement
 
-Because the affordance is declared, and because one affordance holds material that is
+Because the trait is declared, and because one trait holds material that is
 cited rather than executed, a rule of judgement may be written as a skill
 without being cast as a procedure. This is the single respect in which the
 framework relaxes the specification rather than constraining it, and the
-relaxation is confined to that affordance.
+relaxation is confined to that trait.
 
 The academic literature counsels caution here, since a rule that is merely cited
 is the form it finds unreliable. The framework's response is the requirement
-that a rule expressible as a check be written as one, leaving the affordance to hold
+that a rule expressible as a check be written as one, leaving the trait to hold
 only what cannot be checked.
 
 **** Catalogue Attenuation
@@ -384,7 +384,7 @@ comparison rather than by reading.
 
 - [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]] — the specification this document analyses.
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this document sits under.
-- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]] — the taxonomy the affordance clause refers to.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] — the taxonomy the trait clause refers to.
 - [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] — the axis the level clause refers to.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the register of record for the framework's terms.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory of what exists.

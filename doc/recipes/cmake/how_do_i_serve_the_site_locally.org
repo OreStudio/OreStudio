@@ -65,10 +65,15 @@ I start the ORE Studio services?]]). Unlike the main fleet, this unit
 is standalone -- not =PartOf=/=Wants=-linked to =ores-<env>.target= --
 since previewing the site is an occasional dev convenience, not
 something every fleet start/stop should cascade to. It does *not*
-rebuild the site itself: run =compass build --direct site= first
-whenever the content changes, then =site start= (or just leave it
-running and rebuild again -- the already-running server picks up the
-new files immediately, since it serves the directory live).
+rebuild the site itself: build first, then =site start=. There is no
+need to stop the server to rebuild, since it serves the directory live
+and picks up new files immediately.
+
+While editing documents, =compass site page= rebuilds the pages you
+have changed in about a second each, which is the loop to use when
+reviewing your own writing in the browser. Run the full
+=compass build --direct site= when a change affects link resolution, or
+before committing. See [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] for which to use when.
 
 =compass site serve= (no =start=/=stop=/=status=) is the older,
 simpler foreground path: still useful for a quick interactive check

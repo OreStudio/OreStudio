@@ -16,8 +16,8 @@ page carries only what is specific to =memory=.
 
 * Contract
 
-- Affords :: loading. See
-  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]]. A
+- Implements :: loading. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]. A
   persistent project-scope note an LLM session writes for the benefit of
   future sessions — see
   [[id:32B3A055-63FA-4EDF-8DCC-901E9D883F22][Memory]] in the glossary.

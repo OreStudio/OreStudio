@@ -16,8 +16,8 @@ page carries only what is specific to =recipe=.
 
 * Contract
 
-- Affords :: loading, execution. See
-  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
+- Implements :: loading, execution. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]].
 - Folder :: =recipes/<topic>/=
 - Level :: =cross=
 - Filename :: starts with =how_do_i_= or similar NLP question phrasing.

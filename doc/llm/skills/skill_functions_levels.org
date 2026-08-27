@@ -18,7 +18,7 @@ For how an agent is configured, isolated and left to run, see
 
 * Detail
 
-** The words: agent, session, delegate
+** Terminology of Actors
 
 Everyone says "agent", and it is overloaded three ways in this project.
 The ladder, from general to specific:
@@ -54,7 +54,7 @@ scope by default.
 #+ATTR_HTML: :class hug-leading
 | Level | Function         | Horizon    | Sees                                                        |
 |-------+------------------+------------+-------------------------------------------------------------|
-| S1    | Agent            | Hours      | Action affordance in full, methods, stance, specification        |
+| S1    | Agent            | Hours      | Action trait in full, methods, stance, specification        |
 | S2    | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
 | S3    | Sprint Planner   | Weeks      | Sprint and backlog actions, planning and review methods     |
 | S3*   | Auditor          | Continuous | Read-only and audit actions only                            |
@@ -76,7 +76,7 @@ model]]: a method at S1 inherits the story goal from S2, which inherited
 the sprint mission from S3; a task result becomes a story result becomes
 a sprint retrospective.
 
-** Delegates adopt functions too
+** Functions Adopted by Delegates
 
 The levels above are functions a *session* adopts. The same artefact
 serves a second purpose: a function is also what a *delegate* adopts
@@ -93,7 +93,7 @@ no function, the discipline stops at the boundary.
 A function definition therefore states what the delegate must read
 before it begins, and what it may do.
 
-*** Read-only functions bind
+*** Read-only Functions
 
 The advisory-versus-binding distinction that separates S3* from the
 other levels applies to delegates too, and here it is easier to enforce.
@@ -106,7 +106,7 @@ it at spawn time is worth more than any instruction inside the prompt,
 because a delegate under pressure to finish will reinterpret an
 instruction and cannot reinterpret a capability it does not have.
 
-*** A finding may name a structural fix
+*** Structural Findings
 
 A read-only function that cannot change the code is not thereby limited
 to complaining. It can name the *structural* change that would remove
@@ -128,7 +128,7 @@ deletion.
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every function, its level, the affordances it sees, and whether it may mutate. Populated when levels are assigned.
+Every function, its level, the traits it sees, and whether it may mutate. Populated when levels are assigned.
 # END generated inventory
 
 * See also

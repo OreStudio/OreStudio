@@ -36,7 +36,7 @@ never skips a rung below where it stops.
 | 3    | Does the system do what the task claimed?       | A scripted =ores.shell= scenario | Every task and story |
 | 4    | Does the interface do what the system does?     | Qt verification              | Only when Qt is affected |
 
-** Rung 0: generate the structure, or extend the generator
+** Rung 0: Generation
 
 Anything structural is generated. If the generator cannot express it,
 that is a gap in the generator, not a licence to hand-write around it.
@@ -59,7 +59,7 @@ nobody else is reading.
 A hand-written workaround for a generator gap is the failure this rung
 exists to prevent. See [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
 
-** Rung 1: prove only the expected things changed
+** Rung 1: Drift
 
 Regeneration is only trustworthy if its blast radius is known. After
 generating, verify that the diff contains exactly what the change should
@@ -72,14 +72,14 @@ Carrying pre-existing drift forward inside a feature branch is how a
 component's drift backlog becomes invisible: it gets absorbed, one
 feature at a time, into diffs nobody reviews as drift.
 
-** Rung 2: unit tests, which may also be integration tests
+** Rung 2: Tests
 
 Feature work has tests. The unit-versus-integration distinction is not
 load-bearing here: what matters is that a test fails before the change
 and passes after, and that it exercises the real path rather than a
 mock of it. A test that would pass without the feature is not a test.
 
-** Rung 3: system behaviour through =ores.shell=
+** Rung 3: System Behaviour
 
 Every task and story is verified by a *scripted shell scenario* — the
 system driven through its real interface, non-interactively, with the
@@ -95,7 +95,7 @@ A scenario that cannot be scripted is a signal, not an exemption: it
 usually means the system has no non-interactive path to the behaviour,
 which is a gap worth closing on its own terms.
 
-** Rung 4: Qt
+** Rung 4: The Interface
 
 Only when the work affects the Qt client. The rule that governs the
 choice of mechanism:
@@ -124,7 +124,7 @@ External automation is deliberately last. It is brittle against layout,
 theme and timing; it needs a real display; it fails opaquely; and it can
 only see pixels, so it cannot answer the question an agent actually has.
 
-* Evaluating skills
+* Evaluation of Skills
 
 A skill is a prompt, so changing one changes agent behaviour in a way
 reading the diff cannot show.
@@ -133,7 +133,7 @@ The protocol is pstack's, and it is good. The one part that does not
 port is the judge, for the reason that recurs throughout this document:
 it wants a judge on a different model family and we have one family.
 
-** The observer effect is the central problem
+** The Observer Effect
 
 An agent that knows it is being evaluated behaves differently. That
 single fact drives the whole design, and it means blinding is not a
@@ -159,7 +159,7 @@ correct a biased judge with a second model family. We cannot, so
 preventing the candidate from performing for the grader is the only
 defence we have left on that side.
 
-** Grade from transcripts, not from self-report
+** Grading from Transcripts
 
 The sharpest rule in the protocol, and one this architecture needs
 independently of any eval:
@@ -178,7 +178,7 @@ and the mode reads a principles index, but nothing so far checked
 whether any of that was read. Transcript inspection is that check, and
 it is mechanical rather than a judgement.
 
-** Where we diverge: mechanical verdicts instead of a cross-model judge
+** Mechanical Verdicts
 
 pstack spawns candidates across model families and a blinded judge on a
 different family again. We have one family, so a judge of ours scoring
@@ -208,7 +208,7 @@ is a weak instrument and must be labelled one; a skill change that
 cannot be evaluated is a judgement call and should be made and named as
 one rather than dressed in a number.
 
-** Two kinds of evidence, for two kinds of change
+** Two Kinds of Evidence
 
 - *Continuous.* Every real session records which skills were visible,
   which was chosen and whether it was corrected. Free, and it is what

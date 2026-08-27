@@ -2,12 +2,12 @@
 :ID: 6930472B-222C-4621-AB37-CFEE3070A8BD
 :END:
 #+title: How do I deploy the site?
-#+description: Build the ORE Studio website locally with `compass build --direct site` (Emacs only, no cmake/vcpkg).
+#+description: Build the ORE Studio website locally: `compass site page` to rebuild the pages you have just edited in about a second, and `compass build --direct site` for a full publish.
 #+type: recipe
 #+level: cross
 #+filetags: :cmake:build:site:website:emacs:compass:recipe:
 #+created: 2026-05-18
-#+updated: 2026-06-05
+#+updated: 2026-08-27
 
 For the build script that does the work ([[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]]) and the
 output location, see [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]].
@@ -18,17 +18,47 @@ How do I build the ORE Studio website locally?
 
 * Answer
 
-Build the site with compass in =--direct= mode — it calls Emacs
-directly (no cmake, no vcpkg), so it works in a light environment:
+There are two commands, and which you want depends on whether you are
+editing documents or preparing to commit.
+
+** While editing: rebuild what you changed
+
+=compass site page= publishes every page whose source is newer than its
+published HTML, in about a second each:
+
+#+begin_src sh :results verbatim
+./compass.sh site page
+#+end_src
+
+Name files to rebuild them whether or not they have changed, which is
+what you want when the rendering rather than the source has moved:
+
+#+begin_src sh :results verbatim
+./compass.sh site page doc/llm/skills/skill_architecture.org
+#+end_src
+
+This reuses the identifier map and publish cache the last full build
+wrote, which is where the speed comes from. The cost is that a page
+linking to a document created since that build cannot resolve the link,
+and the command reports the failure rather than publishing a broken
+page. When that happens, run a full build.
+
+** Before committing: publish everything
 
 #+begin_src sh :results verbatim
 ./compass.sh build --direct site
 #+end_src
 
-This invokes Emacs in batch mode against
-[[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]], publishing every =.org=
+=--direct= mode calls Emacs directly, with no cmake and no vcpkg, so it
+works in a light environment. It invokes
+[[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]], which rebuilds the
+identifier map, syncs the org-roam database, and publishes every =.org=
 file in the repository (excluding =.packages=, =vcpkg=, =build=) to
 HTML. Output lands at =build/output/site/=.
+
+This is the run that proves the published site holds together, since it
+is the only one that reads every file. It takes minutes rather than
+seconds, which is why the fast path above exists.
 
 In a full environment the equivalent =deploy_site= CMake target runs the
 same script; for the raw CMake build (presets, targets, =cmake --build=
@@ -61,16 +91,33 @@ Use =--port N= to override the port.
   =compass build site= / =deploy_site= cmake path does: a =.env= with
   =ORES_PRESET= set, configured automatically on first build.)
 
-** When to re-run
+** When to run which
 
-Any time you add a new =.org= file, change a =:ID:= or =#+title:=, or
-edit anything that affects link resolution. The target wipes
-=build/output/site/= first so links don't stale.
+Run the full build whenever a change affects link resolution: a new
+=.org= file, a changed =:ID:= or =#+title:=, a renamed or deleted
+document. Run =compass site page= for everything else.
+
+*** Deleted pages are not removed
+
+Neither command deletes a published page whose source has gone. A
+renamed or retired document keeps serving its old content from the
+previous build until the file is removed by hand, as in:
+
+#+begin_src sh :results verbatim
+rm build/output/site/OreStudio/doc/llm/skills/skill_planes.html
+#+end_src
+
+This matters more than an ordinary stale file, because a reader
+following an old link reaches a page describing a state that no longer
+exists. A sweep that removes built output with no source is tracked as
+a backlog capture.
 
 * Script
 
 [[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]] is the Emacs script that =compass build --direct
-site= runs. The equivalent =deploy_site= CMake target definition lives in
+site= runs. [[proj:projects/ores.lisp/src/ores-build-page.el][=projects/ores.lisp/src/ores-build-page.el=]] is the script behind
+=compass site page=: it loads the site script's configuration, stops before its
+work, and publishes only the files it is given. The equivalent =deploy_site= CMake target definition lives in
 =CMakeLists.txt= near =add_custom_target(deploy_site ...)= and invokes the
 same script.
 

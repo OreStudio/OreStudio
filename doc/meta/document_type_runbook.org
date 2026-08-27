@@ -16,9 +16,9 @@ page carries only what is specific to =runbook=.
 
 * Contract
 
-- Affords :: sequencing. A runbook affords what a method affords, which
+- Implements :: sequencing. A runbook implements what a method implements, which
   is a duplication the framework has yet to reconcile. See
-  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]].
 - Folder :: [[proj:doc/llm/runbooks][=doc/llm/runbooks/=]]
 - Level :: =cross=
 - Filename :: =runbook.org= inside a =<slug>/= folder (same pattern as

@@ -16,6 +16,8 @@ page carries only what is specific to =plan=.
 
 * Contract
 
+- Affords :: loading. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
 - Lives /inside/ a task or story document as the =* Plan= section.
   Not a separate file. (Previously =plan.org= as a sibling file;
   that was retired when tasks became flat files.)

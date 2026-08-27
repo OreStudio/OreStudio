@@ -50,7 +50,7 @@ in when history is genuinely needed.
 | [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] | knowledge, durable | Hub: the overview, the entry points, and the map of the cluster |
 | [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] | knowledge, durable, external | The received notion of a skill, with the academic and practitioner prior art |
 | [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] | knowledge, durable | Why the received notion is too weak, and the tightened definition |
-| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]] | knowledge, durable | What kinds of artefact exist and how they differ |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]] | knowledge, durable | What an artefact offers an agent, and which document types offer what |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] | knowledge, durable | Given a thing in hand, what may be done to it |
 | [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] | knowledge, durable | Who is acting, and what they may see and change |
 | [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]] | knowledge, durable | How an agent is configured, isolated and left to run |
@@ -92,6 +92,7 @@ Tasks are listed in intended execution order.
 | [[id:D03D90DB-BDEB-4E98-A44A-384CCA790903][Implement the verification ladder and its stack discipline]] | BACKLOG | | | Codegen first, then drift, then tests, then a scripted shell scenario, then Qt; with generator gaps and drift handled as blocking discovered tasks. |
 | [[id:0829C5A8-A104-44CA-ADC5-819EFC5F31A1][Add a skill eval harness driven by mechanical verdicts]] | BACKLOG | | | Re-run closed tasks in a throwaway worktree under a changed skill and grade against what actually landed, using the independent checkers rather than a judge model. |
 | [[id:96FCA6C1-7E9C-4D25-BFE1-ADB308E58172][Establish the writing standards and the genres they govern]] | BACKLOG | | | Three writing authorities now apply: ASD-STE100 for instructions, thesis prose for knowledge documents, and writing-for-agents for skills. Settle which governs what and port the two imports. |
+| [[id:9F694794-A0A0-4625-A6C9-38B8743EC2FF][Add the missing document type templates to codegen]] | BACKLOG | | | The design type has a contract and no mustache template, so compass add design does not exist; audit every type contract against the template library. |
 
 * Decisions
 

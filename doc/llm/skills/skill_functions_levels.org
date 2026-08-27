@@ -54,7 +54,7 @@ scope by default.
 #+ATTR_HTML: :class hug-leading
 | Level | Function         | Horizon    | Sees                                                        |
 |-------+------------------+------------+-------------------------------------------------------------|
-| S1    | Agent            | Hours      | Action plane in full, methods, stance, specification        |
+| S1    | Agent            | Hours      | Action affordance in full, methods, stance, specification        |
 | S2    | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
 | S3    | Sprint Planner   | Weeks      | Sprint and backlog actions, planning and review methods     |
 | S3*   | Auditor          | Continuous | Read-only and audit actions only                            |
@@ -128,7 +128,7 @@ deletion.
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every function, its level, the planes it sees, and whether it may mutate. Populated when levels are assigned.
+Every function, its level, the affordances it sees, and whether it may mutate. Populated when levels are assigned.
 # END generated inventory
 
 * See also

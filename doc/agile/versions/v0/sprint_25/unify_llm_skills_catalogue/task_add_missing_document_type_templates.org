@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 9F694794-A0A0-4625-A6C9-38B8743EC2FF
+:END:
+#+title: Task: Add the missing document type templates to codegen
+#+description: The design type has a contract and no mustache template, so compass add design does not exist; audit every type contract against the template library.
+#+type: task
+#+level: s1
+#+filetags: :codegen:documentation:document_types:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-27
+#+updated: 2026-08-27
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The design document type was added to the register during this story, with a contract stating its folder, its lifecycle and its required fields. No template was written for it, so the document that established the type was produced by hand-editing a knowledge scaffold. A contract describing something the codegen cannot produce is worse than no contract, because it reads as available. Write the template, then audit the whole register: every type with a contract page should have a template, and every template should have a contract page. Report and close both directions of the mismatch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-27                               |
+
+* Acceptance
+
+- A doc_design mustache template exists and compass add design produces a document satisfying the design contract, including its TODO vocabulary and outcome field.
+- Every document type carrying a contract page has a corresponding template, or the contract records why it is scaffolded otherwise.
+- Every template has a contract page, or is recorded as internal to codegen and not a published type.
+- The audit is reported as a table of type against contract against template, so the next mismatch is visible.
+- The design document written during this story is regenerated from the template, or the divergence between it and the template is recorded.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

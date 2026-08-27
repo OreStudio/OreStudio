@@ -1,31 +1,31 @@
 :PROPERTIES:
 :ID: F5CB5A45-6557-410B-9E4F-542957561A16
 :END:
-#+title: Skill planes
-#+description: The criterion by which artefacts in the catalogue are classified, the six classes it admits, the contrasts between the pairs most easily confused, and the procedure that assigns a new artefact to one of them.
+#+title: Skill Affordances
+#+description: The criterion by which artefacts are classified, the seven affordances it admits, the document types that offer each, and the procedure that assigns a new artefact among them.
 #+type: knowledge
 #+level: cross
 #+startup: inlineimages
-#+filetags: :llm:skills:claude_code:architecture:planes:
+#+filetags: :llm:skills:claude_code:architecture:affordances:
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
 * Summary
 
-A *plane* is a class of artefact, distinguished from the others by the relation
-an agent bears to it.
+An *affordance* is what an artefact offers an agent: the relation the agent may
+bear to it, and therefore what the agent may do with it.
 
 This document states the criterion behind that classification and defends the
-choice of criterion, derives the six classes it admits, treats each in turn with
-attention to the pairs most easily confused, and closes with the procedure that
-assigns a new artefact to a plane.
+choice of criterion, introduces the term and the reason for choosing it, derives
+the seven affordances the criterion admits, sets out which document types offer
+each, and closes with the procedure that assigns a new artefact among them.
 
 ** Artefacts, Documents and Targets
 
 Three terms are easily run together and are distinguished here once.
 
 An *artefact*, in the sense [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] gives the word, is a file or a directory
-belonging to a software project. The planes classify a subset of the project's
+belonging to a software project. The affordances classify a subset of the project's
 artefacts: those the skills catalogue holds. Every one of them is a document, so
 within this page artefact and document may be read interchangeably; the wider
 term is retained because the classification would apply equally to a
@@ -34,33 +34,33 @@ non-document file were the catalogue ever to hold one.
 A *target* is what an action acts upon, and targets are broader than artefacts.
 A task and an entity model are artefacts, being files. A branch, a pull request,
 a service and a failing test are targets and are not artefacts, since none is a
-file or a directory. Targets are therefore never classified into planes: the
+file or a directory. Targets are therefore never classified into affordances: the
 criterion below asks what relation an agent bears to a thing, and an agent
 neither loads nor cites nor sequences a branch, it acts on one. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]
 treats targets and the operations registered against them.
 
 A *document type* classifies a document by its contract: the frontmatter it
 carries, the sections it must contain, its lifecycle and its location. This is
-orthogonal to the plane, which classifies by the agent's relation, and the two
-stand in a many-to-many relation. The grounding plane spans three document types
+orthogonal to the affordance, which classifies by the agent's relation, and the two
+stand in a many-to-many relation. The grounding affordance spans three document types
 — knowledge, recipe and memory — while the skill document type spans three
-planes, since a skill may be a principle, a method or an action. The plane
+affordances, since a skill may be a principle, a method or an action. The affordance
 cannot therefore be inferred from the document type, which is why the definition
 requires it to be declared. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] carries the type ontology.
 
 * Detail
 
-#+caption: The six planes. Grounding is loaded; the other five are run.
-[[proj:doc/llm/skills/skill_planes.png]]
+#+caption: The affordances an artefact may offer an agent.
+[[proj:doc/llm/skills/skill_affordances.png]]
 
 ** The Classification Criterion
 
 The classification is not freely chosen. [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]
 defines a skill as one action applied to one typed target, at a stated level, in
-exactly one plane, and derives the last of those clauses from a limitation of
+exactly one affordance, and derives the last of those clauses from a limitation of
 the specification: a construct admitting only executable instructions has no
 place for a rule that is cited rather than run, nor for an approach to a class
-of work that issues no command of its own. The plane clause repairs that
+of work that issues no command of its own. The affordance clause repairs that
 omission, and the present document supplies the taxonomy the clause presupposes.
 
 What remains open is which classes the taxonomy should contain, and on what
@@ -89,17 +89,17 @@ catalogue the archetype and expose its variability. The analysis behind this
 framework took the same five steps against a different population. It sampled
 our own catalogue together with three published collections, decomposed each
 skill into the judgement, sequence, command and fact it carried, classified
-those into planes, reconstructed the uniform cases as a computed table, and
+those into affordances, reconstructed the uniform cases as a computed table, and
 catalogued the result with the declarations that parameterise it.
 
 The correspondence holds at three further points.
 
 A *facet* in MASD is "an arbitrary partitioning/taxonomy of the logical space",
 a choice about how to classify entities "by the role each artefact plays". A
-plane is the same kind of object, and MASD's candour about arbitrariness is
+affordance is the same kind of object, and MASD's candour about arbitrariness is
 worth adopting rather than resisting: a taxonomy of this kind is a modelling
 choice justified by what it makes possible, not a natural kind discovered in the
-material. That is the ground on which the planes are offered as tags rather than
+material. That is the ground on which the affordances are offered as tags rather than
 as a partition.
 
 MASD addresses an artefact by a four-segment path, =[technical space].[part].
@@ -125,9 +125,9 @@ One MASD principle bears on the section that follows. /Evolve Gradually/ directs
 that coverage grow "driven by concrete practice rather than up-front design",
 which is the ground for declining to claim the six values below are exhaustive.
 
-*** Planes and Facets
+*** Affordances and Facets
 
-If a plane is the same kind of object as a MASD facet, the framework owes an
+If an affordance is the same kind of object as a MASD facet, the framework owes an
 account of why it does not simply declare six facets and stop. There are three
 reasons, and the first is a matter of fact rather than of theory.
 
@@ -142,20 +142,20 @@ axis cannot occupy the same slot in a four-segment address.
 
 **** The Two Classifications Answer Different Questions
 
-The deeper reason is that a facet and a plane are asked different things.
+The deeper reason is that a facet and an affordance are asked different things.
 
 A facet answers a question about *production*. MASD's physical space describes
 how artefacts come to exist: one logical entity projects into many artefacts,
 and the facet records which projection a given artefact is, so that grouping all
 the artefacts giving a type its serialisation is exactly what a facet is for.
 
-A plane answers a question about *consumption*. It records what an agent does
+An affordance answers a question about *consumption*. It records what an agent does
 with an artefact once the artefact exists, which is a property of the reader
 rather than of the generator.
 
 Both are true of the same file and neither follows from the other. A knowledge
 document is an artefact of the =ores.doc.knowledge= facet and a member of the
-grounding plane; the first fact concerns how it was produced, the second how it
+grounding affordance; the first fact concerns how it was produced, the second how it
 is used.
 
 **** No Mapping Exists Between Them
@@ -164,10 +164,10 @@ Were the two axes to coincide, one could be derived from the other and only one
 would be needed. They do not.
 
 Most artefacts of the =ores.doc.agile= facet, being stories and tasks, belong to
-no plane at all: they are targets that actions act upon rather than members of
-the catalogue. Conversely one document type spans three planes, since a skill
-may be a principle, a method or an action, so a facet-to-plane function would
-have to be many-valued. And some plane members lie outside the physical space
+no affordance at all: they are targets that actions act upon rather than members of
+the catalogue. Conversely one document type spans three affordances, since a skill
+may be a principle, a method or an action, so a facet-to-affordance function would
+have to be many-valued. And some affordance members lie outside the physical space
 entirely, an Allium specification and the deliberation plugin being neither
 generated by this project nor addressed within it.
 
@@ -180,49 +180,139 @@ of using them. The method is MASD's, the population overlaps, and the consumer
 differs, which is why a distinct term is warranted and why the two
 classifications coexist on the same file without competing.
 
-*** Values of the Criterion
+** The Term
 
-The criterion admits six values. An agent may *load* an artefact into what it
-knows, *cite* it in reaching a judgement, *sequence* its steps, *execute* it
-against a target, *declare* it as intended behaviour, or *convene* it as a
-procedure among several participants.
+*** Gibson's Definition
 
-These six are the values the framework has required. In keeping with the
-principle cited above, we do not claim the list is exhaustive. A seventh
-relation would be admitted on the same terms as the others: it would have to
-name something an agent does with an artefact that none of the six describes.
+The word is James Gibson's. He coined it in /The Senses Considered as Perceptual
+Systems/ (1966) and gave its best-known statement in /The Ecological Approach to
+Visual Perception/ (1979):
 
-*** The Primary Division
+#+begin_quote
+The affordances of the environment are what it offers the animal, what it
+provides or furnishes, either for good or ill.
+#+end_quote
+
+The property Gibson insists on is complementarity. An affordance belongs neither
+to the environment alone nor to the animal alone; it is a fact about the pairing.
+A surface affords walking to a creature of one size and gait and affords nothing
+of the kind to another.
+
+Donald Norman brought the term into design in 1988, narrowing it to those action
+possibilities an actor can readily perceive. That narrowing matters here, since
+an affordance an agent cannot detect is one it will not use. It is the reason the
+framework requires an artefact to *declare* what it offers rather than leaving it
+to be inferred: the declaration converts a Gibsonian affordance into a Normanian
+one.
+
+*** Why This Term
+
+The framework previously called these classes /planes/, which was a poor choice
+in two respects. The word describes nothing, so it required definition wherever
+it appeared; and it suggested a partition, so an artefact appeared to belong to
+exactly one, which is false.
+
+The false suggestion had consequences. A recipe is consulted for its command in
+one phase of work and executed in another, and under a partition one of those
+readings had to be wrong. The three members of the old grounding class differed
+in when they loaded, and that asymmetry required an excuse. Neither difficulty
+survives the change of term, because an affordance is a relation and an artefact
+may stand in several.
+
+Three alternatives were rejected. /Capability/ names what an agent can do rather
+than what an artefact offers, and so points the wrong way. /Use/ is plain but too
+weak to carry a classification. /Facet/ was unavailable, being MASD's term for a
+different partition of the same artefacts.
+
+Affordance was chosen because it is the exact term for the relation being
+classified, and because Gibson's complementarity is the property the framework
+depends on: what an artefact offers is a fact about the artefact together with
+the agent's activity, and not about either alone.
+
+*** Perspective
+
+If an affordance is a relation, something must select which relation is in play.
+That selector is the *perspective*: the activity the agent is engaged in.
+
+A method's grounding phase engages an artefact under the loading perspective, and
+a recipe is consulted for its command. An execution phase engages the same recipe
+under the execution perspective, and its script is run. An authoring phase
+engages it as something to be edited. The artefact does not change; the
+perspective selects among what it offers.
+
+Most artefacts offer exactly one affordance, so for most of the catalogue the
+perspective selects trivially and the distinction may be ignored. It is needed
+for the cases where it cannot.
+
+** The Seven Affordances
+
+The criterion admits seven affordances. Each document type offers one or more,
+and the assignment is declared in the type's own contract under =Affords ::=
+rather than inferred here.
+
+#+ATTR_HTML: :class hug-leading
+| Document type                 | Affords                          |
+|-------------------------------+----------------------------------|
+| Knowledge, investigation, manual, component | loading            |
+| Structure note                | loading                          |
+| Memory                        | loading                          |
+| Function                      | loading                          |
+| Meta, decision                | loading, citation                |
+| Recipe                        | loading, execution               |
+| Principle                     | citation                         |
+| Method                        | sequencing                       |
+| Runbook                       | sequencing                       |
+| Action                        | execution                        |
+| Specification                 | declaration                      |
+| Deliberation                  | convening                        |
+| Task, story                   | loading, declaration, recording  |
+| Sprint, version, capture, design | loading, recording            |
+| Test scenario                 | sequencing, declaration, recording |
+
+The skill document type is the exception: a skill affords citation, sequencing
+or execution according to what it contains, so its affordance cannot be inferred
+from its type and must be declared on the instance. This is the reason the
+definition of a skill requires the declaration.
+
+The types offering loading are collectively called *grounding*. The name is
+retained because the framework refers to the group often, but it names a derived
+collective rather than a primitive class. What the three share is the affordance;
+they differ in the condition under which it is exercised, knowledge loading by
+relevance to the work, a recipe on demand when a command is needed, and a memory
+unconditionally.
+
+*** Loading Against the Rest
 
 The first division the criterion makes is between loading and everything else,
 and it is the one that carries the most consequence.
 
-An artefact that is loaded contributes to what an agent knows before it decides
-anything, and it has no procedure of its own. An artefact that is run
-contributes to what the agent does, and it always has one. Grounding is the only
-loaded plane; the remaining five are run.
+An artefact engaged under the loading affordance contributes to what an agent
+knows before it decides anything, and it carries no procedure of its own. An
+artefact engaged under any of the other five contributes to what the agent does,
+and it always carries one. Loading is therefore the only affordance that changes
+the agent rather than the work.
 
-*** Tags Rather Than a Partition
+*** Plurality
 
-The planes are tags rather than a partition. Most artefacts bear one relation
-and carry one tag, but an artefact may legitimately bear several, and the router
-is the clearest instance: it declares a function, matches a method, and
-dispatches, so it is at once sequenced and executed.
+An artefact may offer more than one affordance, and the recipe does. This is a
+consequence of the term rather than an exception to it: an affordance is a
+relation, and nothing prevents an artefact standing in several.
 
-A partition would be the stronger claim and the framework does not need it.
-What it needs is that every artefact bear at least one relation, which the
-criterion guarantees, since an artefact bearing no relation to an agent has no
-place in a catalogue an agent uses.
+The framework requires only that every artefact offer at least one, which the
+criterion guarantees, since an artefact standing in no relation to an agent has
+no place in a catalogue an agent uses. It does not require that the offers be
+disjoint, and a partition would be the stronger claim it does not need.
 
-** The Planes
+The router is a second plural case. It declares a function, matches a method and
+dispatches, so it is engaged under sequencing and under execution at different
+points in its own operation.
 
-Five of the six are simple classes. Grounding alone divides further, into three
-members that differ in the question they answer and in the condition under which
-they load; that asymmetry reflects the plane rather than an oversight, since
-loading is the only relation an agent bears to an artefact before it has decided
-anything, and the material it loads is correspondingly varied.
+** The Document Types
 
-*** Grounding
+Each type is treated below under the affordance it offers, with attention to
+the pairs most easily confused.
+
+*** Loading
 
 Grounding is the body of material an agent brings into working knowledge before
 it acts. Its three members differ in the question they answer and in the
@@ -288,7 +378,7 @@ first task, ahead of design and ahead of code. A method that proceeds without
 grounding records the omission and its reason, in the same way any other skipped
 phase is recorded.
 
-*** Stance
+*** Citation
 
 A stance is a general rule of judgement. It constrains how a choice is made
 without prescribing what is done, which is why it has no procedure and produces
@@ -304,22 +394,22 @@ differs from a recipe in that a recipe is executed and leaves the system
 changed, whereas a stance leaves no trace except in the reasoning that produced
 a decision.
 
-The stance plane is the one place where an artefact that cannot be run is
+The stance affordance is the one place where an artefact that cannot be run is
 nevertheless a skill. That exemption is deliberate and narrow: a principle which
 cannot be loaded by name cannot be cited by a method, and a rule that cannot be
 cited cannot be shown to have been applied.
 
 The academic literature reviewed in [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] bears
-on this plane, and it does not favour it. That review finds a rule expressed as
+on this affordance, and it does not favour it. That review finds a rule expressed as
 text states what an agent should do in principle without stating when it
-applies, and reports such rules being disregarded in practice. The plane is
+applies, and reports such rules being disregarded in practice. The affordance is
 therefore constituted as a residue rather than as a preference: a rule that can
 be expressed as a check, whether a lint, a validator or a test, is written as
-one and does not enter the plane, which holds only what cannot be checked. A
-stance plane that fails to shrink as checks accumulate is evidence that the
+one and does not enter the affordance, which holds only what cannot be checked. A
+stance affordance that fails to shrink as checks accumulate is evidence that the
 requirement is not being applied.
 
-*** Method
+*** Sequencing
 
 A method is an ordered sequence of phases carrying a piece of work from an
 unverified beginning to a verified end. It is defined over a *shape of work* — a
@@ -329,7 +419,7 @@ command. A method is control flow without effectors.
 
 Indexing by shape of work is the axis on which the pstack collection organises
 its entire catalogue, as the review of industrial collections in [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the
-Compass Skill Framework]] records. Here it governs one plane among six, the
+Compass Skill Framework]] records. Here it governs one affordance among six, the
 artefact axis being carried by actions, so the two axes compose rather than
 compete.
 
@@ -368,7 +458,7 @@ should be run, judgement has leaked downward and belongs to a method. Where a
 method finds itself spelling out a command, an effector has leaked upward and
 belongs to a recipe.
 
-*** Action
+*** Execution
 
 An action is a single operation applied to one typed artefact, together with the
 judgement governing its use: what must hold before it runs, what state it leaves
@@ -376,18 +466,18 @@ behind, and what to do when its guards refuse. The command it issues belongs to
 a recipe, which the action delegates to; what the action itself owns is the
 decision to issue it.
 
-The three run-planes therefore divide cleanly. A recipe holds the command, an
+The three run-affordances therefore divide cleanly. A recipe holds the command, an
 action holds the judgement about that command, and a method holds the sequence
 in which such judgements are made. Each has exactly one source of truth, and
 drift in any of them has exactly one place to appear.
 
-Actions are the plane where uniformity is worth exploiting. Where a verb behaves
+Actions are the affordance where uniformity is worth exploiting. Where a verb behaves
 the same way across artefact types it becomes a single skill driven by a
 generated type table; where its procedure genuinely differs per type it keeps a
 skill of its own. The test is whether the *procedure* differs, not whether the
 artefact does.
 
-*** Specification
+*** Declaration
 
 A specification states intended behaviour in a form a machine can check, and
 from which tests are generated. Its defining property is that it is *normative*:
@@ -402,7 +492,7 @@ done falsifiable rather than rhetorical. A method's framing phase writes or
 extends a rule; its verification phase runs the tests propagated from that rule.
 In this project specifications are written in Allium.
 
-*** Deliberation
+*** Convening
 
 Deliberation is the procedure by which a contested judgement is settled when the
 available evidence cannot settle it. A method convenes one at a fork it cannot
@@ -426,9 +516,84 @@ and a weak one for detecting an error. Error detection routes instead to the
 checkers set out in [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]], which do not share those
 priors.
 
+** Actions and Affordances
+
+An affordance is a property of an artefact, not of an act. Any single act
+therefore touches at least two of them, one on each side, and confusing the two
+sides is the commonest way to misread this taxonomy.
+
+Consider an agent closing a task. It engages the skill =agile-close-task= under
+that skill's *execution* affordance: running the skill is the agent's relation to
+it. The skill's effect engages the task under the task's *recording* affordance:
+the state moves to =DONE=, the result is written, the story's table is synced.
+Execution is the agent's relation to the action; recording is the action's
+relation to the task.
+
+The general shape is that an agent *executes* an action, and the action *engages
+an affordance of its target*.
+
+*** Targets and Outputs
+
+Creation is the case that separates two things the framework has otherwise been
+able to treat as one.
+
+An action has a *target*, whose affordance it engages. It may also have an
+*output*, which is a new artefact. For most actions the two coincide closely
+enough to be ignored: closing a task targets that task and produces nothing new.
+For creation they diverge, and must.
+
+An agent adding a task executes =agile-add-task=. Its target is the *story*, not
+the task, which is why =compass add task= takes the parent as an argument. The
+affordance engaged is the story's recording: its table of tasks gains a row,
+which records that this work now exists. The new task document is the action's
+output.
+
+The reason the distinction is forced rather than merely tidy is that nothing can
+offer a relation before it exists. A target must be present for its affordances
+to be engaged, so a creation verb cannot take as its target the thing it creates.
+It takes the container instead, and [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] offers creation verbs
+against the container's type for the same reason.
+
+** Recording and Operation
+
+Two affordances concern acting on an artefact rather than consuming it, and the
+distinction between them is easily missed.
+
+*** Recording
+
+An artefact affords *recording* when it carries a lifecycle that an agent
+advances. A task moves from =BACKLOG= through =STARTED= to =DONE= and receives a
+Result when it closes; a capture moves between the backlog's folders as its
+disposition is settled. Advancing the artefact is not incidental to it. It is
+what the artefact exists for, and it is how the state of work is held.
+
+The affordance has a mechanical test, which is why its assignment is checkable
+rather than a matter of judgement: a type affords recording when it declares a
+lifecycle, whether as a TODO vocabulary in its frontmatter or as a position among
+folders. Task, story, sprint, version and test scenario declare the first;
+capture uses the second. Knowledge, recipes, runbooks, memories and skills
+declare neither and afford no recording.
+
+Recording pairs against declaration rather than duplicating it. A declaration
+states what ought to be true, which for a task is its acceptance criteria. A
+recording captures what happened: the state reached, the result written, the
+plan as it was actually worked.
+
+*** Operation
+
+Every artefact additionally offers being *operated on*: edited, moved, renamed,
+deleted. That affordance is universal, and a property every member of a
+population shares carries no classificatory information, which is why it is
+absent from the seven above.
+
+It is not absent from the framework. Operating on an artefact is what an action
+does, and the population an action may operate on is wider than the population
+classified here, since it includes targets that are not artefacts at all.
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats that population and the operations registered against it.
+
 ** Placement
 
-The planes above give the taxonomy. This procedure applies it. Take the first
+The affordances above give the taxonomy. This procedure applies it. Take the first
 match.
 
 The placement procedure. Take the first match.
@@ -457,13 +622,13 @@ The placement procedure. Take the first match.
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every skill, grouped by the plane it belongs to. Populated when the classification task lands.
+Every skill, grouped by the affordance it offers. Populated when the classification task lands.
 # END generated inventory
 
 * See also
 
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
 - [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — how a verb is selected for a target.
-- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline the knowledge plane is held under.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline the knowledge affordance is held under.
 - [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — the memory catalogue.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the recipe catalogue.

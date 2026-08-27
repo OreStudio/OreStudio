@@ -16,12 +16,15 @@ page carries only what is specific to =function=.
 
 * Contract
 
-A function is /role-shaped/: it describes a named role and lists the
-operational [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]], recipes, and pre-reads that role uses. Think of
-it as the priming context an LLM session loads when it takes on that
-role — "you are S2 orchestrator, here is what you do, here is what you
-do not do, here are the skills available to you." Compare with =skill=
-below, which is /task-shaped/.
+- Affords :: loading. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]]. A
+  function is /role-shaped/: it describes a named role and lists the
+  operational [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]],
+  recipes, and pre-reads that role uses. Think of it as the priming
+  context an LLM session loads when it takes on that role — "you are S2
+  orchestrator, here is what you do, here is what you do not do, here
+  are the skills available to you." Compare with =skill= below, which is
+  /task-shaped/.
 
 - Folder :: [[proj:doc/functions][=doc/functions/=]]
 - Level :: =cross= or a specific level.

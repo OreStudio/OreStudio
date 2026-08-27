@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: BF8714BC-B214-448E-A16C-66EB36C967B1
+:END:
+#+title: Limit concurrent running fleets via fleet slots
+#+description: Bound concurrent fleets to a fixed slot count so service fleets cannot exhaust host memory.
+#+type: capture
+#+level: cross
+#+filetags: :compass:memory:host:
+#+created: 2026-08-28
+#+updated: 2026-08-28
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Add a host-wide fleet-slot limit to =compass services start= so only a
+fixed number of environments can run their service fleets at once.
+The mechanism counts active systemd user units matching
+=ores-<env>.target= (e.g. =ores-brave_hopper.target=,
+=ores-jolly_knuth.target=) before starting a new fleet, and refuses
+with a message naming the running fleets when the limit is reached.
+The check lives in =compass_services.py=, in =_cmd_start=, before
+=systemd_generate.cmd_generate=; the count is a constant in the style
+of =BUILD_LOCK_SLOTS= in =compass.py=. A count-based check (not a
+flock like the build lock) because a fleet outlives the =services
+start= command, so a flock would go stale the moment start exits.
+Suggested limit: 2 fleets.
+
+* Why
+
+On 2026-08-27 two idle fleets (jolly_knuth, brave_hopper) held ~2.5G
+plus ~140 idle postgres backends, pushing the host baseline to ~8G of
+31G. Concurrent builds then spiked anon memory to ~15G and systemd-
+oomd killed cgroups under PSI pressure (emacs.service, build scopes).
+Fleet slots bound the baseline so builds have headroom; the related
+emacs oomd shield is a user-level drop-in at
+=~/.config/systemd/user/emacs.service.d/50-oomd-protect.conf= (not in
+this repo).
+
+* References
+
+- =projects/ores.compass/src/compass_services.py= — =_cmd_start=, fleet target start/stop
+- =projects/ores.compass/src/compass.py= — =BUILD_LOCK_SLOTS=, flock pattern to mirror
+- =~/.config/systemd/user/emacs.service.d/50-oomd-protect.conf= — emacs oomd shield (user-level, not in repo)
+
+* See also
+
+-

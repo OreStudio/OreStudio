@@ -18,7 +18,7 @@ required for humans and [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][large languag
 autonomously or semi-autonomously. The framework rests on academic foundations,
 principally [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], and on empirical foundations drawn from [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill
 collections]] published by other developers. We have attributed provenance as
-fully as we can, but please report any citation we may have missed.
+fully as we can, but please report any we may have missed.
 
 The hub starts by introducing the principal concepts and moving parts of the
 framework to build a mental model. It then describes the entry points into the
@@ -34,18 +34,16 @@ A skill in agent tooling is "a document that an assistant loads to perform a
 general notion: a [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][skill]] is one /action/ applied to one /typed target/. Compass
 represents a skill as a document type, one of many defined by the [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][documentation
 ontology]]; that same ontology supplies some of the types the targets are drawn
-from.
-
-A comparative analysis was performed across academic and industry literature, as
-well as priors (/c.f./ [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]). In response to
-that analysis, a small and consistent action model was created.
+from. A comparative analysis was performed across academic and industrial
+literature (/c.f./ [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]), and resulted in the
+action model that follows.
 
 *** The Dispatch Model
 
 The model is a dispatch system. A *target* has a *type*. A type implements one
 or more *traits*, each declaring the *operations* available on it. An *action*
 implements an operation for a type, and where behaviour is the same across every
-implementing type a single action serves them all. *Dispatch* resolves a
+implementing type, a single action serves them all. *Dispatch* resolves a
 target's type, finds the traits that type implements, and offers the operations
 those traits declare. The session's *scope* decides which of those operations it
 is offered.

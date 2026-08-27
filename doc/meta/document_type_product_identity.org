@@ -16,6 +16,9 @@ page carries only what is specific to =product_identity=.
 
 * Contract
 
+- Affords :: loading, citation. Citation is provisional: the identity is
+  cited when scope is rejected. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
 - Folder :: [[proj:doc/identity][=identity/=]]
 - Level :: =s5=
 - File :: =product_identity.org= — single file covering both what

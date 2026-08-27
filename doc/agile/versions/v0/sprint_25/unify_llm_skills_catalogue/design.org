@@ -186,8 +186,8 @@ clearest case: =compass-helm= declares a function, matches a method and
 dispatches, all at once. That is what a router is for. Do not split an
 artefact merely because two tags fit.
 
-#+caption: The six planes. Grounding is loaded; the other five are run.
-[[proj:doc/llm/skills/skill_planes.png]]
+#+caption: The affordances an artefact may offer an agent.
+[[proj:doc/llm/skills/skill_affordances.png]]
 
 *** Grounding — what must be true before I act?
 

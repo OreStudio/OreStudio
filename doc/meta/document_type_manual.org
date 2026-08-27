@@ -16,6 +16,8 @@ page carries only what is specific to =manual=.
 
 * Contract
 
+- Affords :: loading. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
 - Folder :: [[proj:doc/manual/user_guide][=doc/manual/user_guide/=]]
 - Level :: =cross=
 - Not stateful — no TODO.

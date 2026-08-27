@@ -2,7 +2,7 @@
 :ID: AEBC2BC9-A854-4CEC-BA88-1602490AC762
 :END:
 #+title: Skill architecture
-#+description: Hub of the compass skill framework: the ontology of planes, dispatch and functions, the three entry points into the model, and an index of the pages that treat each part in detail.
+#+description: Hub of the compass skill framework: the ontology of affordances, dispatch and functions, the three entry points into the model, and an index of the pages that treat each part in detail.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:claude_code:architecture:index:
@@ -41,10 +41,10 @@ such as [[https://karthinks.com/software/fifteen-ways-to-use-embark/][Emacs' emb
 That analysis yielded a small and consistent action model composed of three
 concepts.
 
-- *[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Planes]]*. Artefacts are classified by the relation an agent bears to them:
+- *[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Affordances]]*. Artefacts are classified by the relation an agent bears to them:
   the agent /loads/ grounding, /cites/ a stance, /sequences/ a method,
   /executes/ an action, /declares/ a specification, and /convenes/ a
-  deliberation. The [[id:F5CB5A45-6557-410B-9E4F-542957561A16][planes]] document treats the taxonomy and its rationale.
+  deliberation. The [[id:F5CB5A45-6557-410B-9E4F-542957561A16][affordances]] document treats the taxonomy and its rationale.
 - *[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Dispatching]]*. Operations are registered against a target's /type/ rather
   than against the command that produced the target. Applicable verbs are
   therefore computed rather than remembered, which removes the combinatorial
@@ -118,7 +118,7 @@ reader may arrive at independently.
 | Page                               | Answers                                                        |
 |------------------------------------+----------------------------------------------------------------|
 | [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the framework]]            | What is a skill here, and why is the received notion too weak? |
-| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill planes]]                       | What kinds of artefact exist, and how do they differ?          |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]]                       | What kinds of artefact exist, and how do they differ?          |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]                     | Given a thing in hand, what may be done to it?                 |
 | [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]]               | Who is acting, and what may they see and do?                   |
 | [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]                     | How is an agent configured, isolated and left to run?          |

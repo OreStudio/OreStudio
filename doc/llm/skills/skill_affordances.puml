@@ -12,7 +12,7 @@
 ' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 @startuml
 
-title The six planes — what an agent loads, and what it runs
+title The six affordances — what an artefact offers an agent
 
 skinparam rectangle {
     BackgroundColor #2A2A2E
@@ -41,17 +41,17 @@ skinparam activity {
     DiamondFontColor #E3E3E6
 }
 
-rectangle "GROUNDING\nloaded, not run" as G #1A1A1E {
+rectangle "LOADING\nchanges what the agent knows" as G #1A1A1E {
   rectangle "Knowledge\nwhat is this?" as K
   rectangle "Recipe\nhow do I operate it?" as R
   rectangle "Memory\nwhat must I not repeat?" as M
 }
 
-rectangle "Stance\na rule I cite" as S
-rectangle "Method\nhow I approach the work" as ME
-rectangle "Action\nwhat I do to an artefact" as A
-rectangle "Specification\nwhat the result must do" as SP
-rectangle "Deliberation\nhow I decide a contested fork" as D
+rectangle "Citation\na rule I cite" as S
+rectangle "Sequencing\nhow I approach the work" as ME
+rectangle "Execution\nwhat I do to a target" as A
+rectangle "Declaration\nwhat the result must do" as SP
+rectangle "Convening\nhow I decide a contested fork" as D
 
 ME -up-> S      : cites
 ME -up-> K      : grounds in

@@ -24,6 +24,10 @@ they draw on. Functions compose skills; skills don't own functions. A
 skill is loaded /into/ a session; a function /is/ the session's
 identity.
 
+- Affords :: citation, sequencing or execution; declared per skill. The
+  one type whose affordance cannot be inferred from the type, and must
+  therefore be declared on each instance. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Affordances]].
 - Folder :: =doc/llm/skills/<slug>/SKILL.org= (the filename is fixed
   uppercase by Claude Code convention).
 - Level :: =cross=.

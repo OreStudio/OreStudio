@@ -53,11 +53,17 @@
 ;; single-file build (see ores-build-page.el) loads the map the last full build
 ;; wrote, since rescanning five thousand files to publish one page is the whole
 ;; cost the single-file path exists to avoid.
+
+;; setq, not let: the flag is read by `bound-and-true-p' inside the file
+;; being loaded, and a let on an undeclared symbol binds lexically under
+;; lexical-binding, which that would not see.
+(setq ores/org-ids-library-only t)
+(load-file (expand-file-name "ores-org-ids.el"
+                             (file-name-directory
+                              (or load-file-name buffer-file-name))))
 (if (bound-and-true-p ores/site-setup-only)
     (org-id-locations-load)
-  (org-id-update-id-locations
-   (seq-remove (lambda (f) (string-match-p "/\\.claude/worktrees/" f))
-               (directory-files-recursively "." "\\.org$"))))
+  (ores/org-id-ensure))
 
 ;; Ensure the site's package dependencies are present. A no-op when the cache
 ;; is already warm (the CI pre-warm step, or a developer's local .packages).

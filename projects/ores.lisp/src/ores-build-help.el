@@ -109,8 +109,13 @@ img { max-width: 100%; }
   ;; for help — they just will not be live).
   (setq org-id-locations-file
         (expand-file-name "./.org-id-locations-file" ores/help-root))
-  (org-id-update-id-locations
-   (directory-files-recursively ores/help-root "\\.org$"))
+  ;; setq, not let: the flag is read by `bound-and-true-p' inside the
+  ;; file being loaded, and a let on an undeclared symbol binds lexically
+  ;; under lexical-binding, which that would not see.
+  (setq ores/org-ids-library-only t)
+  (load-file (expand-file-name "projects/ores.lisp/src/ores-org-ids.el"
+                               ores/help-root))
+  (ores/org-id-ensure ores/help-root)
 
   (make-directory (expand-file-name "images" ores/help-output-dir) t)
 

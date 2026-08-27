@@ -37,11 +37,15 @@ what you want when the rendering rather than the source has moved:
 ./compass.sh site page doc/llm/skills/skill_architecture.org
 #+end_src
 
-This reuses the identifier map and publish cache the last full build
-wrote, which is where the speed comes from. The cost is that a page
-linking to a document created since that build cannot resolve the link,
-and the command reports the failure rather than publishing a broken
-page. When that happens, run a full build.
+This reuses the publish cache the last full build wrote, which is where
+the speed comes from. It rebuilds the identifier map first, so a page
+linking to a document added since the last full build still resolves.
+That scan takes about three seconds; skip it with =--no-index= when
+nothing has been added, renamed or deleted:
+
+#+begin_src sh :results verbatim
+./compass.sh site page --no-index
+#+end_src
 
 ** Before committing: publish everything
 
@@ -93,9 +97,24 @@ Use =--port N= to override the port.
 
 ** When to run which
 
-Run the full build whenever a change affects link resolution: a new
-=.org= file, a changed =:ID:= or =#+title:=, a renamed or deleted
-document. Run =compass site page= for everything else.
+Run the full build before committing, and whenever a change affects how
+other pages render rather than only their own content. =compass site
+page= now rebuilds the identifier map itself, so a new =.org= file or a
+changed =:ID:= no longer forces a full build.
+
+*** Rebuilding the identifier map on its own
+
+=.org-id-locations-file= maps each =:ID:= to the file holding it, and is
+what turns an =[[id:UUID]]= link into a path at publish time. Both site
+commands rebuild it, as do the manual, help, skills and plan builds. To
+rebuild it alone:
+
+#+begin_src sh :results verbatim
+./compass.sh index --org-ids
+#+end_src
+
+It is distinct from =compass index=, which builds the search index, and
+from =compass index --org-roam-db-sync=, which syncs =.org-roam.db=.
 
 *** Deleted pages are not removed
 
@@ -117,7 +136,9 @@ a backlog capture.
 [[proj:projects/ores.lisp/src/ores-build-site.el][=projects/ores.lisp/src/ores-build-site.el=]] is the Emacs script that =compass build --direct
 site= runs. [[proj:projects/ores.lisp/src/ores-build-page.el][=projects/ores.lisp/src/ores-build-page.el=]] is the script behind
 =compass site page=: it loads the site script's configuration, stops before its
-work, and publishes only the files it is given. The equivalent =deploy_site= CMake target definition lives in
+work, and publishes only the files it is given.
+[[proj:projects/ores.lisp/src/ores-org-ids.el][=projects/ores.lisp/src/ores-org-ids.el=]] holds the identifier scan and the
+directories it excludes, shared by every build that resolves an =id:= link. The equivalent =deploy_site= CMake target definition lives in
 =CMakeLists.txt= near =add_custom_target(deploy_site ...)= and invokes the
 same script.
 

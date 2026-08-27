@@ -70,10 +70,10 @@ need to stop the server to rebuild, since it serves the directory live
 and picks up new files immediately.
 
 While editing documents, =compass site page= rebuilds the pages you
-have changed in about a second each, which is the loop to use when
+have changed in about four seconds each, which is the loop to use when
 reviewing your own writing in the browser. Run the full
-=compass build --direct site= when a change affects link resolution, or
-before committing. See [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] for which to use when.
+=compass build --direct site= before committing. See
+[[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] for which to use when.
 
 =compass site serve= (no =start=/=stop=/=status=) is the older,
 simpler foreground path: still useful for a quick interactive check

@@ -16,14 +16,14 @@ framework is to define an ontology of core domain concepts and their associated
 operational processes. Together these establish the computational primitives
 required for humans and [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][large language models]] to operate agent harnesses
 autonomously or semi-autonomously. The framework rests on academic foundations,
-principally [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], and on empirical foundations drawn from
-[[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill collections]] published by other developers. We have attributed provenance
-as fully as we can; report any citation we have missed.
+principally [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], and on empirical foundations drawn from [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill
+collections]] published by other developers. We have attributed provenance as
+fully as we can, but please report any citation we may have missed.
 
-The hub introduces the principal concepts and links to the spoke pages that
-treat each in detail. It defines the key concepts of the framework, describes
-the entry points into the model, and closes with an index of the pages that
-compose it.
+The hub starts by introducing the principal concepts and moving parts of the
+framework to build a mental model. It then describes the entry points into the
+model, and finally closes with links to the spoke pages that treat each topic in
+detail.
 
 * Detail
 

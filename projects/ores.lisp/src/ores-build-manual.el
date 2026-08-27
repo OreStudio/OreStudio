@@ -231,9 +231,13 @@
 ;; known-file list and links to newly added chapters abort the export.
 (setq org-id-locations-file
       (expand-file-name ".org-id-locations-file" ores/repo-root))
-(org-id-update-id-locations
- (directory-files-recursively
-  (expand-file-name "doc" ores/repo-root) "\\.org$"))
+;; setq, not let: the flag is read by `bound-and-true-p' inside the
+;; file being loaded, and a let on an undeclared symbol binds lexically
+;; under lexical-binding, which that would not see.
+(setq ores/org-ids-library-only t)
+(load-file (expand-file-name "projects/ores.lisp/src/ores-org-ids.el"
+                             ores/repo-root))
+(ores/org-id-ensure (expand-file-name "doc" ores/repo-root))
 
 ;; In the PDF, id links to documents OUTSIDE the manual resolve to the
 ;; published website rather than to local file paths (which would be

@@ -233,6 +233,11 @@ add_custom_target(org_roam_db_sync
     COMMAND emacs -Q --script projects/ores.lisp/src/ores-sync-org-roam.el
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+add_custom_target(org_ids
+    COMMENT "Rebuilding org-id location map (.org-id-locations-file)" VERBATIM
+    COMMAND emacs -Q --script projects/ores.lisp/src/ores-org-ids.el
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 set(ORES_MANUAL_PDF "doc/manual/user_guide/user_manual.pdf")
 add_custom_target(deploy_manual
     COMMENT "Building ORE Studio User Manual PDF to ${ORES_MANUAL_PDF}" VERBATIM

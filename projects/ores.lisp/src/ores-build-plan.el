@@ -51,7 +51,12 @@
         (org-taskjuggler-export)))))
 
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
-(org-id-update-id-locations (directory-files-recursively "." "\\.org$"))
+;; setq, not let: the flag is read by `bound-and-true-p' inside the
+;; file being loaded, and a let on an undeclared symbol binds
+;; lexically under lexical-binding, which that would not see.
+(setq ores/org-ids-library-only t)
+(load-file (expand-file-name "projects/ores.lisp/src/ores-org-ids.el"))
+(ores/org-id-ensure)
 
 ;; Define only the TaskJuggler project
 (setq org-publish-project-alist

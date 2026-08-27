@@ -205,7 +205,35 @@ def get_compass_conn():
     conn.commit()
     return conn
 
+def cmd_index_org_ids(exit_on_failure: bool = True) -> int:
+    """Rebuild .org-id-locations-file, the map used to resolve id: links.
+
+    Distinct from the compass search index and from .org-roam.db: this is
+    the map org-publish consults to turn an [[id:UUID]] link into a path.
+    A page added since the last full build is absent from it, so anything
+    linking to that page fails to publish until this has run.
+    """
+    script = (PROJECT_ROOT / "projects" / "ores.lisp" / "src"
+              / "ores-org-ids.el")
+    print(f"🔗 Rebuilding org-id location map: {script.relative_to(PROJECT_ROOT)}",
+          flush=True)
+    rc = subprocess.run(
+        ["emacs", "-Q", "--script", str(script)],
+        cwd=PROJECT_ROOT).returncode
+    if rc != 0:
+        print(f"❌ org-id scan failed (exit code {rc}).", file=sys.stderr)
+        if exit_on_failure:
+            sys.exit(rc)
+        return rc
+    print("✅ org-id location map rebuilt.")
+    return 0
+
+
 def cmd_index(args):
+    if getattr(args, "org_ids", False):
+        cmd_index_org_ids()
+        return
+
     print("Starting Compass index...")
     print(f"📂 Using org-roam.db: {ORG_ROAM_DB}")
     print(f"🌳 Project root:      {PROJECT_ROOT}")
@@ -5973,6 +6001,7 @@ BUILD_TARGET_ALIASES = {
     "site": "deploy_site",
     "manual": "deploy_manual",
     "org-roam-db-sync": "org_roam_db_sync",
+    "org-ids": "org_ids",
     # .claude/ is generated, never checked in: settings.json tangles from
     # doc/llm/claude_code_settings.org; skills deploy from doc/llm/skills.
     # Recreate the whole directory with: compass build --direct settings skills
@@ -5991,6 +6020,7 @@ EMACS_BUILD_SCRIPTS = {
     "deploy_skills":           "ores-build-skills.el",
     "deploy_settings":         "ores-build-settings.el",
     "org_roam_db_sync":        "ores-sync-org-roam.el",
+    "org_ids":                 "ores-org-ids.el",
     "tangle_shell_scripts":    "ores-build-recipe-scripts.el",
     "tangle_codegen_templates": "ores-build-codegen-templates.el",
     "tangle_clang_format":     "ores-build-clang-format.el",
@@ -6030,7 +6060,8 @@ def _clean_stale_emacs_build_state() -> None:
             entry.unlink()
 
 
-def _run_emacs_target(target: str, dry_run: bool = False) -> int:
+def _run_emacs_target(target: str, dry_run: bool = False,
+                      skip_org_id_scan: bool = False) -> int:
     """Run a single emacs build script directly, bypassing cmake."""
     script = EMACS_BUILD_SCRIPTS.get(target)
     if not script:
@@ -6050,8 +6081,12 @@ def _run_emacs_target(target: str, dry_run: bool = False) -> int:
         return 0
     log_path = _direct_build_log_path(target)
     print(f"📝 Build output: {log_path} (tail -f to follow)")
+    env = None
+    if skip_org_id_scan:
+        env = dict(os.environ, ORES_SKIP_ORG_ID_SCAN="1")
+        print("⏭️  org-id scan suppressed (--no-index)")
     with open(log_path, "w") as log:
-        return _run_logged(cmd, PROJECT_ROOT, log)
+        return _run_logged(cmd, PROJECT_ROOT, log, env=env)
 
 
 # Directories the site build excludes; mirrored here so the changed-file scan
@@ -6090,13 +6125,20 @@ def _site_changed_pages():
     return sorted(changed)
 
 
-def _cmd_site_page(paths):
+def _cmd_site_page(paths, skip_index: bool = False):
     """compass site page — publish one or more org files to the site output.
 
     Reuses the configuration and caches the full build wrote, so a page rebuilds
-    in about a second rather than the minutes a whole-site pass costs. Links
-    resolve against the id map from the last full build, so a page linking to a
-    document created since then needs a full build to resolve it."""
+    in about a second rather than the minutes a whole-site pass costs.
+
+    The org-id map is rebuilt first, because a page linking to a document added
+    since the last full build would otherwise abort the export on an unresolved
+    link. The scan costs about three seconds; --no-index skips it when nothing
+    has been added or renamed."""
+    if not skip_index:
+        rc = cmd_index_org_ids(exit_on_failure=False)
+        if rc != 0:
+            return rc
     if not paths:
         changed = _site_changed_pages()
         if not changed:
@@ -6228,6 +6270,10 @@ def cmd_site(argv):
     sp3.add_argument("paths", nargs="*", metavar="FILE.org",
                      help="Org file(s) to publish. Omit to publish every "
                           "page whose source is newer than its published HTML.")
+    sp3.add_argument("--no-index", action="store_true",
+                     help="Skip the org-id rescan that runs first. Only safe "
+                          "when no page has been added or renamed since the "
+                          "last scan.")
 
     sp2 = sub.add_parser("show", help="Dump a built site page as readable text (no server needed)")
     sp2.add_argument("path", help="Page path relative to the site root, e.g. "
@@ -6241,7 +6287,7 @@ def cmd_site(argv):
         ap.print_help()
         return 0
     if args.subcmd == "page":
-        return _cmd_site_page(args.paths)
+        return _cmd_site_page(args.paths, skip_index=args.no_index)
     if args.subcmd == "show":
         return _cmd_site_show(args.path, raw=args.raw, width=args.width)
     if args.subcmd == "start":
@@ -6688,6 +6734,10 @@ def cmd_build(argv):
                     help="Print who currently/last held each build-lock "
                          "slot, plus a tail of its build log, and exit "
                          "without building.")
+    ap.add_argument("--no-index", action="store_true",
+                    help="Skip the org-id rescan a direct build runs first "
+                         "(about 3s). Only safe when no page has been added, "
+                         "renamed or deleted since the last scan.")
     args = ap.parse_args(argv)
 
     if args.status:
@@ -6716,7 +6766,8 @@ def cmd_build(argv):
             print("❌ --direct requires at least one target.", file=sys.stderr)
             return 1
         for target in targets:
-            rc = _run_emacs_target(target, dry_run=args.dry_run)
+            rc = _run_emacs_target(target, dry_run=args.dry_run,
+                                   skip_org_id_scan=args.no_index)
             if rc != 0:
                 print(f"❌ Direct build failed for target '{target}' (exit {rc})",
                       file=sys.stderr)
@@ -7227,6 +7278,9 @@ def main():
     index_parser.add_argument("--rebuild", action="store_true", help="Rebuild the entire index from scratch")
     index_parser.add_argument("--org-roam-db-sync", action="store_true",
                               help="Sync .org-roam.db before indexing (same as compass build --direct org-roam-db-sync)")
+    index_parser.add_argument("--org-ids", action="store_true",
+                              help="Rebuild .org-id-locations-file, the map that resolves [[id:...]] links "
+                                   "during a build, then exit. Needed after adding a page other pages link to.")
 
     search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
     search_parser.add_argument("query", type=str, help="The search query")

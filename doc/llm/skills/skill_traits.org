@@ -313,7 +313,7 @@ rather than inferred here.
 | Knowledge, investigation, manual, component | loading            |
 | Structure note                | loading                          |
 | Memory                        | loading                          |
-| Function                      | loading                          |
+| System                        | loading                          |
 | Meta, decision                | loading, citation                |
 | Recipe                        | loading, execution               |
 | Principle                     | citation                         |
@@ -364,7 +364,7 @@ criterion guarantees, since an artefact standing in no relation to an agent has
 no place in a catalogue an agent uses. It does not require that the offers be
 disjoint, and a partition would be the stronger claim it does not need.
 
-The router is a second plural case. It declares a function, matches a method and
+The router is a second plural case. It declares a System, matches a method and
 dispatches, so it is engaged under sequencing and under execution at different
 points in its own operation.
 
@@ -675,7 +675,7 @@ The placement procedure. Take the first match.
    and verb. The action holds the judgement; the recipe holds the command.
 9. A contested judgement goes to *deliberation*, and its verdict is recorded
    against the work.
-10. A role a session or a delegate adopts goes to a *function*, tagged by level,
+10. A role a session or a delegate acts as goes to a *System*, tagged by level,
     stating what it must read first and what it may do.
 11. The argument for a change, spanning many tasks, goes to a *design* in the
     story's own folder rather than to the durable tree.

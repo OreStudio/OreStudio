@@ -2,10 +2,10 @@
 :ID: B544713A-BA23-4D5A-9CEE-084212D7C8BA
 :END:
 #+title: S1 Agent
-#+description: The function of System 1 — the Claude subagent that picks up a single task and lands a PR for it.
-#+type: function
+#+description: System 1 — the Claude subagent that picks up a single task and lands a PR for it.
+#+type: system
 #+level: s1
-#+filetags: :function:s1:agent:operations:
+#+filetags: :system:s1:agent:operations:
 #+created: 2026-05-21
 #+updated: 2026-06-11
 

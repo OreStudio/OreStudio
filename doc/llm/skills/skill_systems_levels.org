@@ -1,11 +1,11 @@
 :PROPERTIES:
 :ID: 5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9
 :END:
-#+title: Functions and levels
-#+description: Who is acting: the actor vocabulary, the function a session or delegate adopts, the cybernetic level that attenuates what each sees, and the difference between advisory and binding attenuation.
+#+title: Systems and levels
+#+description: Who is acting: the actor vocabulary, the System a session or delegate acts as, the cybernetic level that attenuates what each sees, and the difference between advisory and binding attenuation.
 #+type: knowledge
 #+level: cross
-#+filetags: :llm:skills:claude_code:architecture:functions:
+#+filetags: :llm:skills:claude_code:architecture:systems:
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
@@ -29,7 +29,7 @@ The ladder, from general to specific:
 | *Agent*    | Any LLM process doing work. The general word; use it when the distinction does not matter                         |
 | *Session*  | The agent a human is talking to. It has a conversation and an operator                                            |
 | *Delegate* | An agent spawned by another agent to do a bounded piece of work and report back. It has no operator, only a brief |
-| *Function* | The /role/ either one adopts. Not a process at all                                                                |
+| *System*   | The /role/ either one acts as. Not a process at all                                                               |
 
 A delegate is what the harness and most other tooling call a
 *subagent*. We say delegate because the relationship is what matters
@@ -39,7 +39,7 @@ of scope. Read the two as synonyms when reading anyone else's
 documentation.
 
 The trap worth naming: *the S1 level is called "Agent", and it is a
-function, not a process.* "The S1 Agent" is a role a session or a
+System, not a process.* "The S1 Agent" is a role a session or a
 delegate adopts, in the same way "S3* Auditor" is. When it matters,
 write "a session operating at S1" rather than "the S1 agent".
 
@@ -47,12 +47,12 @@ The owning rule: a session owns its delegates' work. A delegate's
 summary of what it did is not evidence; the artefact it produced is.
 Review the diff, not the report.
 
-A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][function]] once, at the start. That sets the
+A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][System]] once, at the start. That sets the
 cybernetic level, and the level selects the slice of the catalogue in
 scope by default.
 
 #+ATTR_HTML: :class hug-leading
-| Level | Function         | Horizon    | Sees                                                        |
+| Level | System           | Horizon    | Sees                                                        |
 |-------+------------------+------------+-------------------------------------------------------------|
 | S1    | Agent            | Hours      | Action trait in full, methods, stance, specification        |
 | S2    | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
@@ -76,39 +76,39 @@ model]]: a method at S1 inherits the story goal from S2, which inherited
 the sprint mission from S3; a task result becomes a story result becomes
 a sprint retrospective.
 
-** Functions Adopted by Delegates
+** Systems Adopted by Delegates
 
-The levels above are functions a *session* adopts. The same artefact
-serves a second purpose: a function is also what a *delegate* adopts
+The levels above are Systems a *session* acts as. The same artefact
+serves a second purpose: a System is also what a *delegate* acts as
 when a session spawns one.
 
 This matters because delegation is where discipline is most easily lost.
-A session that has declared its function, loaded the principles and
+A session that has declared its System, loaded the principles and
 copied a method's phases in can hand work to a delegate that has done
 none of those things, and the delegate will produce something plausible
 that satisfies none of the gates. The fix is structural: *a delegate is
-spawned as a named function, never as a generic agent*. If a spawn names
-no function, the discipline stops at the boundary.
+spawned as a named System, never as a generic agent*. If a spawn names
+no System, the discipline stops at the boundary.
 
-A function definition therefore states what the delegate must read
+A System definition therefore states what the delegate must read
 before it begins, and what it may do.
 
-*** Read-only Functions
+*** Read-only Systems
 
 The advisory-versus-binding distinction that separates S3* from the
 other levels applies to delegates too, and here it is easier to enforce.
 
-A reviewing function is *unable* to write, not asked not to. A comment
+A reviewing System is *unable* to write, not asked not to. A comment
 reviewer touches comments and names refactor targets; it never writes
 application code. An auditor reports; it never mutates the thing it
-observes. Stating the boundary in the function definition and enforcing
+observes. Stating the boundary in the System definition and enforcing
 it at spawn time is worth more than any instruction inside the prompt,
 because a delegate under pressure to finish will reinterpret an
 instruction and cannot reinterpret a capability it does not have.
 
 *** Structural Findings
 
-A read-only function that cannot change the code is not thereby limited
+A read-only System that cannot change the code is not thereby limited
 to complaining. It can name the *structural* change that would remove
 the problem, and that naming is often the more valuable output.
 
@@ -128,11 +128,11 @@ deletion.
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every function, its level, the traits it sees, and whether it may mutate. Populated when levels are assigned.
+Every System, its level, the traits it sees, and whether it may mutate. Populated when levels are assigned.
 # END generated inventory
 
 * See also
 
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
 - [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the model this axis applies.
-- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — the role-shaped counterpart to skills.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]] — the role-shaped counterpart to skills.

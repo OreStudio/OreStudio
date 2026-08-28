@@ -33,16 +33,16 @@ points are set out in [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architect
 across turns, applying itself when a method matches and staying out of
 the way otherwise.
 
-1. Declares the session's function, which attenuates the catalogue.
+1. Declares the System the session acts as, which attenuates the catalogue.
 2. Matches the request to a method and copies that method's phases into
    the todo list *verbatim*, before any task-specific reasoning. A phase
    deliberately skipped stays in the list with a stated reason.
 3. Reads the principles index at task start.
 4. Routes to actions and recipes as the phases fire, and to deliberation
    at a fork the evidence cannot settle.
-5. Spawns delegates as named *functions*, never as generic agents, so
+5. Spawns delegates as named *Systems*, never as generic agents, so
    the discipline survives the delegation boundary. The mode and its
-   delegate function share one definition; there is no second place for
+   delegate System share one definition; there is no second place for
    the rules to drift.
 
 Step 2 carries the value. The failure it guards against is an agent
@@ -70,7 +70,7 @@ step-list follows the step-list and drops the method's gates.
 The machinery has a cost, and a mode that fires on everything trains
 people to route around it. Moving a date, fixing a sentence, changing
 one configuration value, answering a question — none of these need a
-declared function, a matched method, a grounding phase and a decision
+declared System, a matched method, a grounding phase and a decision
 trail. Reach for the plain action skills.
 
 The mode earns its cost when a plausible diff is not enough: work that
@@ -86,7 +86,7 @@ The pages above are reference. This is the order in which they are
 reached during a piece of work, and it doubles as a reading order for
 someone meeting the framework for the first time.
 
-A session opens with =agile-find-bearings= and declares its *function*,
+A session opens with =agile-find-bearings= and declares its *System*,
 which fixes the level and attenuates the catalogue ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Agents]]). It picks
 up work with =agile-find-heading= and =agile-start-task=, inheriting the
 sprint mission and story goal as constraints from above.
@@ -115,9 +115,9 @@ a skill edit, with approval rather than automatically.
 
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this architecture governs.
 - [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the closed registers.
-- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the function axis.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the System axis.
 - [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — variety, feedback and regulation.
-- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — the role-shaped counterpart to skills.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]] — the role-shaped counterpart to skills.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — where the terminology is governed.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline this page follows as a structure note.
 - [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the same architecture, built for code.

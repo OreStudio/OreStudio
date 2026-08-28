@@ -2,10 +2,10 @@
 :ID: F1D99662-C6B1-4839-92E1-D061CCF6B83F
 :END:
 #+title: S3 Sprint Planner
-#+description: The function of System 3 — the session that opens, runs, and closes a sprint, keeping its stories coherent around one mission.
-#+type: function
+#+description: System 3 — the session that opens, runs, and closes a sprint, keeping its stories coherent around one mission.
+#+type: system
 #+level: s3
-#+filetags: :function:s3:sprint:control:
+#+filetags: :system:s3:sprint:control:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

@@ -2,7 +2,7 @@
 :ID: AEBC2BC9-A854-4CEC-BA88-1602490AC762
 :END:
 #+title: Skill architecture
-#+description: Hub of the compass skill framework: the ontology of traits, dispatch and functions, the three entry points into the model, and an index of the pages that treat each part in detail.
+#+description: Hub of the compass skill framework: the ontology of traits, dispatch and Systems, the three entry points into the model, and an index of the pages that treat each part in detail.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:claude_code:architecture:index:
@@ -108,7 +108,7 @@ so the applicable operations are computed rather than remembered. An agent
 holding an artefact can therefore ask what may be done with it, rather than
 needing to know the name of the action it wants.
 
-Scope narrows that offer. An actor declares a [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][function]], whose [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]]
+Scope narrows that offer. An actor declares a [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][System]], whose [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]]
 determines which operations are in scope for it. At most levels the narrowing is
 a default: an agent is offered less but may reach outside its scope on request.
 At the audit level it is a constraint, since an auditor that can be persuaded to
@@ -136,7 +136,7 @@ The composition model is independent of any particular way of using it. Three
 entry points are supported. The first is to *invoke an action*, where both the
 operation and its target are already known. The second is to *dispatch on a
 target* with =compass-act=, where the target is known and the operation is not.
-The third is to *enter the mode* with =compass-helm=, which declares a function,
+The third is to *enter the mode* with =compass-helm=, which declares a System,
 matches the work to a method, and routes to the other two as the method's phases
 fire.
 
@@ -160,7 +160,7 @@ the table below fixes usage within the framework.
 | principle    | A rule that is cited, not run                             |
 | knowledge    | A durable fact about the domain                           |
 | spec         | Intended behaviour, checkable                             |
-| function     | The role a session adopts                                 |
+| System       | The role a session acts as                                |
 | agent        | Any LLM process doing work                                |
 | session      | The agent a human talks to                                |
 | delegate     | An agent spawned by another                               |
@@ -170,9 +170,9 @@ the table below fixes usage within the framework.
 Three terms admit a misreading and are worth stating negatively. /Spec/ denotes
 an Allium specification and nothing else; a story's plan is a *plan*. /Persona/
 denotes a Council member and nothing else; the role a session adopts is a
-*function*. /Agent/ is the
+*System*. /Agent/ is the
 general term for any process of this kind and therefore names no role: the level
-designated S1 is called Agent, but it is a function, adopted by a session or a
+designated S1 is called Agent, but it is a System, acted as by a session or a
 delegate.
 
 ** The Framework in Detail
@@ -186,7 +186,7 @@ reader may arrive at independently.
 | [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the framework]]     | What is a skill here, and why is the received notion deemed insufficient. |
 | [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]                | What kinds of artefact exist, and how do they differ.                     |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]              | Given a thing in hand, what may be done to it.                            |
-| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]]        | Who is acting, and what may they see and do.                              |
+| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]          | Who is acting, and what may they see and do.                              |
 | [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]              | How is an agent configured, isolated and left to run.                     |
 | [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]        | How is a unit of work driven from start to finish.                        |
 | [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] | How do we establish that it worked.                                       |
@@ -200,7 +200,7 @@ material in the order a session encounters it.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this architecture governs.
 - [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] — the received notion of a skill, which this framework tightens.
 - [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — naming and attribution.
-- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the function axis.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the System axis.
 - [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — variety, feedback and regulation.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline this page follows as a structure note.
 - [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the same architecture, built for code.

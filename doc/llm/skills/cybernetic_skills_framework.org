@@ -1,0 +1,360 @@
+:PROPERTIES:
+:ID: 4228EE16-D5FD-499D-992B-6FFED05C95ED
+:END:
+#+title: The Cybernetic Skills Framework
+#+description: Specifies the skills framework as a regulator over an agent. Derives the scope of regulation from the good regulator theorem, requisite variety and the black box, and derives the regulatory channels from the primitive structure of a control loop.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:cybernetics:architecture:framework:
+#+created: 2026-08-28
+#+updated: 2026-08-28
+
+* Summary
+
+This document specifies the compass skills framework as a *regulator* over a
+large language model agent engaged in software development. It argues that the
+framework's structure is determined by results in cybernetics rather than by
+convention borrowed from software engineering, and that three of those results
+settle questions the framework has previously answered by stipulation.
+
+Three claims are advanced. First, the failures the framework addresses are
+failures of regulation rather than of capability, and the distinction determines
+what a remedy may look like. Second, the scope of the framework, meaning which
+things it models and which it leaves unspecified, follows from the good
+regulator theorem, the law of requisite variety and the black box, and requires
+no further justification. Third, the classes into which the framework sorts its
+documents are not a taxonomy chosen for convenience but the channels through
+which any regulator acts, and they can be derived from the primitive structure
+of a control loop.
+
+Two consequences follow that the framework has not previously stated. The
+document type system and the skills catalogue have different stability
+properties, the first being a model and the second being regulation. And a skill
+becomes removable when the agent no longer requires regulation at that point,
+which supplies a criterion for retirement that the catalogue currently lacks.
+
+* Detail
+
+** The Regulatory Problem
+
+*** Observed Failures
+
+An agent directed at work in this project fails in a number of recurring ways.
+It asserts facts about the domain that are plausible and unverified. It applies
+a procedure that is correct in general and wrong here, because the project's
+procedure differs from the one its training establishes. It cannot apply
+conventions it has no way of knowing, the document type system among them. And
+presented with a large undifferentiated catalogue of available operations, it
+selects poorly among them.
+
+These failures are not uniform in origin. The first concerns evidence, the
+second local convention, the third constructs invented here, and the fourth the
+volume of choice.
+
+*** Regulation Rather Than Capability
+
+What the four have in common is that none is a deficit of competence. The agent
+can execute the correct procedure once it is stated. It can hold a domain fact
+once the fact is supplied. It can select correctly from a smaller set. The
+capability is present and its application is unreliable.
+
+The distinction is not merely descriptive. A capability deficit admits only one
+remedy, a more capable agent, and that remedy is unavailable to the framework. A
+regulation deficit admits a second: an apparatus that constrains the agent's
+conduct without altering its competence. The framework is an apparatus of the
+second kind, and this document specifies it as such.
+
+** Prior Work
+
+*** Cybernetic Foundations
+
+Cybernetics supplies the results this document relies upon, and [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]]
+states them in general form. Three are used here.
+
+Wiener (1948) characterises regulation by a structure common to every substrate
+in which it occurs: a goal, a sensor that measures the present state, and a
+feedback path that acts to reduce the difference. The derivation in /Regulatory
+Channels/ rests on this decomposition.
+
+Ashby (1956) establishes the law of requisite variety, that only variety can
+absorb variety: a regulator must command at least the variety of the
+disturbances it is required to counter. The law bounds what a regulator must
+supply, and its converse bounds what it need not.
+
+Conant and Ashby (1970) prove that a regulator which is both maximally
+successful and maximally simple must be isomorphic to the system it regulates.
+The theorem is stated in their title: every good regulator of a system must be a
+model of that system. The simplicity clause carries as much weight here as the
+success clause, since it is what excludes modelling anything not regulated.
+
+Beer applied this apparatus to organisations in the [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]], whose
+recursive five-system architecture this project adopts as a lens rather than as
+a blueprint ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]).
+
+*** Agent Skill Systems
+
+The literature on agent skills divides on what a skill is made of. One lineage
+stores executable routines; the other stores verbal lessons, and the =SKILL.md=
+format belongs to the second. [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] reviews both
+and treats the specification the format follows.
+
+One result from that literature bears directly on the argument here. Liu et al.
+(2026) describe their apparatus not as an abstraction over the agent but as
+control upon it: a harness that wraps the base policy and intervenes on its
+proposed actions. Their vocabulary is worth noting, since a paper concerning
+programs that govern other programs employs no metalevel language at all. They
+characterise the purpose of such an apparatus in terms this document adopts. It
+exists to "surface and stabilize useful strategies that the model can often
+execute but does not apply reliably".
+
+That is the distinction drawn in /Regulation Rather Than Capability/, reached
+independently and stated in the same terms. It is offered as corroboration that
+the framing is not idiosyncratic to this project.
+
+** The Regulated System and the Regulator
+
+A regulator is defined relative to what it regulates, so that system must be
+identified before anything further can be said of it.
+
+The project is the viable system. The agent is its operational element, System 1
+in Beer's numbering ([[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]]), and the remaining systems regulate it at
+progressively longer horizons. The skills framework is not itself one of those
+systems. It is the channel through which their constraints reach the agent, and
+through which the agent's own conduct is constrained.
+
+One consequence is worth stating plainly. The framework does not regulate the
+codebase, the build, or the domain. It regulates conduct. A document that
+constrains what an agent does is within scope; a document describing how a
+system behaves is within scope only insofar as an agent must hold it in order to
+act correctly.
+
+** Scope of Regulation
+
+This section settles which things the framework specifies and which it does not.
+The three results answer the question in sequence, and no further criterion is
+required.
+
+*** Modelling Follows Regulation
+
+By Conant and Ashby, a regulator must model what it regulates. By the simplicity
+clause of the same theorem, a regulator modelling what it does not regulate is
+not maximally simple, and is therefore not a good regulator in their sense.
+
+The framework must model exactly what it regulates. The constraint runs in both
+directions, and the second direction is the one previously missing.
+
+*** Regulation Follows Insufficient Variety
+
+By Ashby's law the framework must supply variety sufficient to absorb the
+disturbances it counters. It is not required to supply variety the agent already
+commands.
+
+An agent trained on general software engineering commands most of the variety
+that software development presents. It knows what a compiler does, what a
+version control system does, and what the standard tools of the trade do. That
+variety is absorbed already, and supplying it again adds nothing.
+
+The residue is what the agent does not absorb: conventions invented here, and
+procedures where this project departs from general practice. That residue is
+what the framework regulates.
+
+*** What Is Not Regulated Is a Black Box
+
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] defines the black box as the practice of characterising a system by
+its inputs and outputs alone, without knowledge of its internal structure, and
+states the condition under which the practice is appropriate: when the internals
+are inaccessible, or irrelevant to the regulatory task.
+
+The second condition applies to every tool the framework invokes and does not
+regulate. A compiler is characterised by what it is given and what it returns.
+The framework does not model it. This is not an omission awaiting repair but the
+correct treatment of a system lying outside the regulatory task.
+
+*** The Boundary Rule
+
+The three results combine into a single rule.
+
+#+begin_quote
+The framework models exactly what it regulates. It regulates where the unaided
+agent would not act correctly for this project. Everything else is a black box,
+invoked but not modelled.
+#+end_quote
+
+Applying the rule resolves cases previously settled by appeal to the kind of
+thing under consideration rather than by any criterion.
+
+#+ATTR_HTML: :class hug-leading
+| Subject                       | Unaided agent            | Treatment |
+|-------------------------------+--------------------------+-----------|
+| A compiler, a file lister     | acts correctly           | black box |
+| Version control in general    | acts correctly           | black box |
+| This project's branch process | acts by generic default  | modelled  |
+| The document type system      | cannot know it           | modelled  |
+| A domain fact about the model | asserts without evidence | modelled  |
+
+The rule makes no appeal to whether a subject is a file, a directory, or a thing
+of some other kind. This is why a branch is modelled although it is not a file,
+and a compiler is not modelled although an agent uses one constantly. The
+criterion is regulatory relevance and nothing besides.
+
+** Regulatory Channels
+
+*** Derivation
+
+A regulator acts upon the regulated system through a finite set of channels, and
+Wiener's decomposition names the primitives: a goal against which the state is
+compared, a sensor by which the state is known, and a path by which action is
+taken. Ashby's law adds a fourth requirement, that the regulator command
+sufficient variety, and Conant and Ashby a fifth, that it hold a model of what
+it regulates.
+
+The classes into which this framework sorts its documents correspond to these
+primitives. Each class is a channel, and the classification states a regulatory
+function rather than a subject matter or a form.
+
+#+ATTR_HTML: :class hug-leading
+| Channel     | Regulatory function                                        |
+|-------------+------------------------------------------------------------|
+| Declaration | fixes the goal and the criterion by which it is judged met  |
+| Recording   | the sensor; registers the state reached                    |
+| Loading     | supplies the model the agent must hold in order to act     |
+| Citation    | constrains selection at a point of judgement               |
+| Sequencing  | constrains the order in which action is taken              |
+| Execution   | the effector; acts upon the system                         |
+| Convening   | amplifies variety by introducing independent priors        |
+
+The existing catalogue calls these classes *traits* ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]). The term is
+retained. What changes is that a trait now denotes a regulatory channel and is
+answerable to that account, where previously it denoted a relation an agent
+bears to an artefact and was answerable to nothing.
+
+*** Consequences of the Derivation
+
+Three properties follow that a chosen taxonomy could not supply.
+
+The classes are motivated. Loading exists because a regulator must hold a model
+of what it regulates, which is the theorem, and [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] treats the obligation
+this places on an agent before it acts. Convening exists because a regulator
+whose variety is insufficient must acquire more, and an independent judgement is
+variety the agent does not itself command.
+
+The classes are bounded. A candidate class must name a regulatory function, so
+the question whether some further class exists admits an answer rather than
+remaining a matter of preference.
+
+And one previously troublesome case is settled. Acting upon a thing, whether by
+editing, moving or deleting it, is not a channel. It is what an effector does,
+and execution is already the effector. The universal ability to operate upon an
+artefact is therefore absent from the list for a reason, rather than by the
+observation that a universal property fails to discriminate.
+
+** Variety Attenuation
+
+Ashby's law is commonly read as a requirement to supply variety. Its converse
+constrains this framework more sharply. A regulator presented with variety it
+cannot use does not thereby regulate better, and beyond some volume it ceases to
+regulate at all.
+
+An agent shown the entire catalogue at every moment is in that condition. Its
+selection degrades not because its competence is low but because the variety
+presented to it has not been attenuated.
+
+Attenuation is therefore a structural obligation rather than an ergonomic
+preference. The framework attenuates by level: a session declares the system it
+acts as, and that declaration selects the portion of the catalogue in scope by
+default ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]). Nothing is forbidden, and an agent may reach beyond
+its level by saying so. What changes is what it is shown first.
+
+** Recursion
+
+The defining property of Beer's model is recursion: every system is itself a
+viable system, containing the same functions at a shorter horizon.
+
+The channels are correspondingly indifferent to level. A declaration fixes a
+goal whether that goal is a task's acceptance criterion or a version's
+objective. A recording registers state whether the state is a task's status or a
+sprint's outcome. This is why one set of channels suffices rather than one set
+per level, and it is the strongest available evidence that the channels are
+functions rather than categories of document.
+
+** Binding Constraint and Ergonomics
+
+A distinction must be maintained that is easily lost, and this document states
+it as a rule governing its own claims.
+
+A constraint regulates only if it binds. An arrangement that recommends,
+suggests, or renders a preferred course more convenient does not regulate,
+whatever vocabulary describes it. Ashby's requirement is not satisfied by a
+filter an agent may disregard without consequence.
+
+Where the framework claims regulation, the constraint binds. Elsewhere it claims
+convenience, and it should say convenience rather than presenting ergonomics in
+cybernetic dress. Most of the catalogue is of the second kind. The distinction
+is not a weakness but a condition of the argument retaining force where it is
+made.
+
+** Consequences
+
+*** A Stable Model and a Variable Catalogue
+
+The framework has two parts with different stability properties, and conflating
+them has obscured both.
+
+The document type system is the *model*, in the sense the theorem gives the
+word. It states what the framework regulates. It is stable, because what
+requires regulation does not change when the agent changes.
+
+The catalogue is the *regulation*. It is the variety the framework supplies
+against the disturbances presently observed. It is not stable, and it should not
+be.
+
+*** Retirement
+
+A regulator is defined relative to its disturbances. Should the regulated system
+improve, the variety the regulator must supply falls.
+
+A skill therefore becomes removable when the agent ceases to act incorrectly at
+that point without it. This is a criterion the catalogue has not previously had,
+and its absence has a single direction: skills accumulate, and nothing prompts
+their removal. The framework should expect to contract as the agents it
+regulates improve, and should treat that contraction as the apparatus working
+rather than as capability lost.
+
+** Limitations
+
+Three limitations are stated here rather than left for a reader to infer.
+
+No baseline has been measured. The failures reported in /Observed Failures/ are
+drawn from practice and are not quantified, so no claim is made concerning the
+magnitude of any improvement the framework produces. Establishing such a
+baseline is prerequisite to any such claim ([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]).
+
+The correspondence with Beer's model is a lens and not an implementation. This
+project's five systems are named after his and do not discharge the obligations
+his model places upon them.
+
+The derivation in /Regulatory Channels/ establishes that each channel
+corresponds to a regulatory primitive. It does not establish that the seven are
+exhaustive, and no such claim is made.
+
+* References
+
+- Ashby, W. R. (1956). /An Introduction to Cybernetics/. Chapman and Hall.
+- Beer, S. (1972). /Brain of the Firm/. Allen Lane.
+- Conant, R. C. and Ashby, W. R. (1970). /Every good regulator of a system must
+  be a model of that system/. International Journal of Systems Science 1(2),
+  89–97.
+- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents with
+  Skill Programs/. [[https://arxiv.org/abs/2605.17734][arXiv:2605.17734]]
+- Wiener, N. (1948). /Cybernetics: or Control and Communication in the Animal
+  and the Machine/. MIT Press.
+
+* See also
+
+- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — the general statement of variety, feedback and the black box.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the five systems and this project's departures from them.
+- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] — the literature on agent skills.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] — the channels in detail and the document types implementing each.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation the loading channel places upon an agent.
+- [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — the mechanism selecting the applicable channel for a target.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the properties of the regulated agent.

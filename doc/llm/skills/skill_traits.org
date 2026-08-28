@@ -12,17 +12,17 @@
 
 * Summary
 
-An *trait* is what an artefact offers an agent: the relation the agent may
-bear to it, and therefore what the agent may do with it.
+A /trait/ is what an artefact offers an agent: the relation the agent may bear
+to it, and therefore what the agent may do with it.
 
 This document states the criterion behind that classification and defends the
 choice of criterion, introduces the term and the reason for choosing it, derives
-the seven traits the criterion admits, sets out which document types offer
-each, and closes with the procedure that assigns a new artefact among them.
+the seven traits the criterion admits, sets out which document types offer each,
+and closes with the procedure that assigns a new artefact among them.
 
 ** Artefacts, Documents and Targets
 
-Three terms are easily run together and are distinguished here once.
+Before we proceed, it is important to clarify the terminology.
 
 An *artefact*, in the sense [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] gives the word, is a file or a directory
 belonging to a software project. The traits classify a subset of the project's
@@ -78,53 +78,66 @@ classification by what an artefact contains is not.
 
 *** Methodological Precedent
 
-[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] answers a question about artefacts: given a body of hand-written material,
-which of its structure is mechanically reproducible, and what should replace
-that structure once it has been found. Code generation is the setting in which
-the question was posed rather than its content, and the question survives being
-asked of some other population.
+  ## 2. Methodological Precedent and Theoretical Transfer
 
-The skills catalogue is such a population. MASD therefore supplies this
-framework with a method rather than with a conclusion, and the distinction
-matters: the analysis transfers in full, while the remedy MASD prescribes does
-not transfer at all. This section sets out the analysis first, then the point at
-which the two diverge.
+The Model-Driven Architecture and Synthesis Methodology (MASD) provides a formal framing for structural redundancy within textual artifacts. Fundamentally, MASD addresses two core questions given an arbitrary corpus of human-authored material:
 
-MASD's physical modelling process has five steps: sample representative
-hand-written artefacts, decompose each into its parts, label and classify them
-into /parts/ and /facets/, reconstruct each pattern as an archetype, then
-catalogue the archetype and expose its variability. The analysis behind this
-framework took the same five steps against a different population. It sampled
-our own catalogue together with three published collections, decomposed each
-skill into the judgement, sequence, command and fact it carried, classified
-those into traits, reconstructed the uniform cases as a computed table, and
-catalogued the result with the declarations that parameterise it.
+1. Which structural components exhibit mechanical reproducibility?
+2. What programmatic abstraction should replace those components once identified?
 
-Applying the procedure yielded three findings, each a MASD construct
-instantiated in the new population.
+Although originally formulated within the domain of automated code generation, the structural diagnostics of MASD are domain-agnostic and extend to alternative artifact populations, specifically the skill catalogs of autonomous agents. Consequently, the proposed framework inherits the *analytical method* of MASD while intentionally diverging from its *generative prescription*.
 
-A *facet* in MASD is "an arbitrary partitioning/taxonomy of the logical space",
-a choice about how to classify entities "by the role each artefact plays". A
-trait is an object of the same kind, drawn along a different axis: it classifies
-by the agent's relation to an artefact rather than by the artefact's place in
-the physical model. MASD's description of the facet as arbitrary applies to it
-unchanged: a taxonomy of this kind is stipulative rather than descriptive,
-justified by what it makes possible rather than by correspondence to a natural
-kind in the material. The traits are therefore tags rather than a partition.
 
-MASD addresses an artefact by a four-segment path, =[technical space].[part].
-[facet].[archetype]=, so that its location follows from its classification
-rather than from memory. The framework addresses an operation by the pair of
-target type and verb for the same reason, and [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats the
-consequence.
 
-Most directly, MASD's central object is the /Schematic and Repetitive Pattern in
-Physical Space/: content that "varies predictably across entities but is
-otherwise mechanically identical", and which is therefore generated rather than
-written by hand. A catalogue holding one skill for each pairing of verb and
-target type is such a pattern. The limitation the definition addresses is
-consequently an SRPP in the skills catalogue, which is the finding on which the
-framework's own response turns.
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] asks two questions of any corpus of hand-written material: which of its
+structure is mechanically reproducible, and what should replace that structure
+once it has been found. Code generation is the setting in which the questions
+were posed rather than their content, and they survive being asked of another
+population of artefacts.
+
+The skills catalogue is such a population. MASD therefore supplies a method
+rather than a conclusion, and that distinction governs what follows: the
+analysis transfers whole, the remedy does not transfer at all.
+
+MASD's physical modelling process runs in five stages. It samples representative
+hand-written artefacts, decomposes each into its parts, classifies those into
+/parts/ and /facets/, reconstructs each recurring pattern as an archetype, and
+catalogues the archetype with its variability exposed.
+
+The analysis behind this framework ran the same five stages over a different
+population, our own catalogue together with three published collections. It
+decomposed each skill into the judgement, sequence, command and fact it carried,
+classified those into traits, reconstructed the uniform cases as a computed
+table, and catalogued the result with the declarations that parameterise it.
+
+Three findings follow, each a MASD construct instantiated in the new population.
+
+- *Traits and facets.* MASD defines a facet as "an arbitrary
+  partitioning/taxonomy of the logical space", classifying entities "by the role
+  each artefact plays". A trait is a construct of the same kind on a different
+  axis: it classifies by the agent's relation to an artefact rather than by the
+  artefact's place in the physical model. MASD's description of the facet as
+  arbitrary applies to it unchanged, so a taxonomy of this kind is stipulative
+  rather than descriptive, justified by what it makes possible rather than by
+  correspondence to a natural kind in the material. The two differ in
+  exclusivity: a facet partitions, while traits are not mutually exclusive and
+  one type may carry several.
+
+- *Addressing.* MASD addresses an artefact by a four-segment path,
+  =[technical space].[part].[facet].[archetype]=, so that its location follows
+  from its classification rather than from memory. The framework addresses an
+  operation by the pair of target type and verb for the same reason, and
+  [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats the consequence.
+
+- *Schematic and repetitive patterns.* MASD's central construct is the
+  /Schematic and Repetitive Pattern in Physical Space/: content that "varies
+  predictably across entities but is otherwise mechanically identical", and is
+  therefore generated rather than written by hand. Write $T$ for the set of
+  target types and $V$ for the set of verbs. A catalogue holding one document
+  for each admissible pair in $T \times V$ is such a pattern, since those
+  documents differ only in the two coordinates that index them. The limitation
+  the definition addresses is consequently an SRPP in the skills catalogue, and
+  it is the finding on which the framework's response turns.
 
 The test is operational in both cases. MASD holds that "one determines if a
 physical pattern is schematic and repetitive by reproducing it by automated

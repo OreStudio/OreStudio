@@ -67,7 +67,7 @@ and offer the methods of those interfaces. The one departure is *scope*, which
 has no counterpart in an ordinary trait system. There an interface belongs to
 the class and every caller sees the same methods; here the caller's role decides
 which methods it is offered, so the same object presents a smaller surface to a
-session at S1 than to one at S3*.
+session at S1 than to one at S3* (/c.f./ [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic levels]]).
 #+end_quote
 
 The three sections below take those parts in turn: what a thing is and what it
@@ -122,24 +122,23 @@ engaging it, and the level is what carries that dependence.
 *** Application
 
 The framework applies these concepts to carry a /unit of work/, most often a
-[[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], from an unverified beginning to a verified end. A [[id:E8311826-9900-4932-AFFB-A8AF663414DF][method]] governs the
-passage, and its phases are determined as the work proceeds rather than fixed in
-advance. Each phase cites the principles that govern its judgement and calls the
-actions that operate on the relevant artefacts, preferring [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][generated]] structure
-wherever generation is possible. The extent to which the work must climb the
-[[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification]] ladder follows from what it changed. An agent may be configured and
-[[id:54AD5986-34A0-4B19-9F20-D9A024225036][left running]] against a checkable finish condition.
+[[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], from an unverified beginning to a verified end. A [[id:E8311826-9900-4932-AFFB-A8AF663414DF][method]] governs the flow,
+and its phases are determined dynamically as the work proceeds rather than fixed
+in advance. Each phase cites the principles that govern its judgement and calls
+the actions that operate on the relevant artefacts, preferring [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][generated]]
+structure wherever generation is possible. The extent to which the work must
+climb the [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification]] ladder follows from what it changed. An agent may be
+configured and [[id:54AD5986-34A0-4B19-9F20-D9A024225036][left running]] against a checkable finish condition.
 
 ** Entry Points
 
 The composition model is independent of any particular way of using it. Three
-entry points are supported, and none is privileged over the others.
-
-The first is to *invoke an action*, where both the operation and its target are
-already known. The second is to *dispatch on a target* with =compass-act=, where
-the target is known and the operation is not. The third is to *enter the mode*
-with =compass-helm=, which declares a function, matches the work to a method,
-and routes to the other two as the method's phases fire.
+entry points are supported. The first is to *invoke an action*, where both the
+operation and its target are already known. The second is to *dispatch on a
+target* with =compass-act=, where the target is known and the operation is not.
+The third is to *enter the mode* with =compass-helm=, which declares a function,
+matches the work to a method, and routes to the other two as the method's phases
+fire.
 
 The mode is a convenience over methods rather than a precondition for them: a
 method may be invoked directly, as may an action. Separating the three in this
@@ -148,32 +147,33 @@ way allows each to be exercised and tested on its own.
 ** Terminology
 
 The framework uses a fixed vocabulary. The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] is the register of record;
-the table below fixes usage within the framework and names the terms it retires.
+the table below fixes usage within the framework.
 
 #+ATTR_HTML: :class hug-leading
-| Concept                          | Term      | Retired synonyms                     |
-|----------------------------------+-----------+--------------------------------------|
-| A unit of work an agent executes | task      | ticket, issue, unit, slice           |
-| A body of related tasks          | story     | epic, spec, map                      |
-| A recorded idea, not yet work    | capture   | backlog item, inbox item             |
-| The approach to a kind of work   | method    | playbook, flow                       |
-| The sticky posture for a session | mode      | stance skill, style, persona         |
-| A rule that is cited, not run    | principle | rule, guideline                      |
-| A durable fact about the domain  | knowledge | research note, doc, ADR              |
-| Intended behaviour, checkable    | spec      | never used for a story plan          |
-| The role a session adopts        | function  | persona, agent type, role            |
-| Any LLM process doing work       | agent     | bot, assistant                       |
-| The agent a human talks to       | session   | main agent, parent, the LLM          |
-| An agent spawned by another      | delegate  | subagent, worker, child agent        |
-| The typed thing acted upon       | target    | object, candidate, entity            |
-| The operation applied to it      | action    | command, verb, skill                 |
+| Term         | Concept                                                   |
+|--------------+-----------------------------------------------------------|
+| unit of work | A discrete piece of work; usually, but not always, a task |
+| story        | A body of related tasks                                   |
+| capture      | A recorded idea, not yet work                             |
+| method       | The approach to a kind of work                            |
+| mode         | The sticky posture for a session                          |
+| principle    | A rule that is cited, not run                             |
+| knowledge    | A durable fact about the domain                           |
+| spec         | Intended behaviour, checkable                             |
+| function     | The role a session adopts                                 |
+| agent        | Any LLM process doing work                                |
+| session      | The agent a human talks to                                |
+| delegate     | An agent spawned by another                               |
+| target       | The typed thing acted upon                                |
+| action       | The operation applied to it                               |
 
 Three terms admit a misreading and are worth stating negatively. /Spec/ denotes
 an Allium specification and nothing else; a story's plan is a *plan*. /Persona/
 denotes a Council member and nothing else; the role a session adopts is a
-*function*. /Agent/ is the general term for any process of this kind and
-therefore names no role: the level designated S1 is called Agent, but it is a
-function, adopted by a session or a delegate.
+*function*. /Agent/ is the
+general term for any process of this kind and therefore names no role: the level
+designated S1 is called Agent, but it is a function, adopted by a session or a
+delegate.
 
 ** The Framework in Detail
 
@@ -181,16 +181,16 @@ The detail is distributed across several pages, each answering a question a
 reader may arrive at independently.
 
 #+ATTR_HTML: :class hug-leading
-| Page                               | Answers                                                        |
-|------------------------------------+----------------------------------------------------------------|
-| [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the framework]]            | What is a skill here, and why is the received notion too weak? |
-| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]                       | What kinds of artefact exist, and how do they differ?          |
-| [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]                     | Given a thing in hand, what may be done to it?                 |
-| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]]               | Who is acting, and what may they see and do?                   |
-| [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]                     | How is an agent configured, isolated and left to run?          |
-| [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]               | How is a unit of work driven from start to finish?             |
-| [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]]        | How do we establish that it worked?                            |
-| [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]                | How is generated structure kept correct?                       |
+| Page                        | Answers                                                                   |
+|-----------------------------+---------------------------------------------------------------------------|
+| [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the framework]]     | What is a skill here, and why is the received notion deemed insufficient. |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]                | What kinds of artefact exist, and how do they differ.                     |
+| [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]              | Given a thing in hand, what may be done to it.                            |
+| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]]        | Who is acting, and what may they see and do.                              |
+| [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]              | How is an agent configured, isolated and left to run.                     |
+| [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]        | How is a unit of work driven from start to finish.                        |
+| [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] | How do we establish that it worked.                                       |
+| [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]         | How is generated structure kept correct.                                  |
 
 The order above suits a first reading. [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] presents the same
 material in the order a session encounters it.

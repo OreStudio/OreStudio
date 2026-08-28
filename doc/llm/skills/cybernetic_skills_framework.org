@@ -47,9 +47,42 @@ conventions it has no way of knowing, the document type system among them. And
 presented with a large undifferentiated catalogue of available operations, it
 selects poorly among them.
 
-These failures are not uniform in origin. The first concerns evidence, the
-second local convention, the third constructs invented here, and the fourth the
-volume of choice.
+*** Classification of the Failures
+
+The four descriptions above are of surface behaviour, and a classification by
+surface would yield four unrelated problems. The failures identified so far are
+classified here instead by *regulatory deficiency*, meaning what the regulator
+lacks in the terms of the results reviewed above. The principle is adopted
+because the remedy follows from the deficiency rather than from the appearance,
+and because failures that appear unalike may require the same remedy.
+
+On this criterion the failures fall into three classes.
+
+#+ATTR_HTML: :class hug-leading
+| Class                | Regulatory deficiency                                              | Observed as                                                        | Answered by          |
+|----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------+----------------------|
+| Absent model         | A fact the agent must hold in order to act is not held             | Unverified domain assertion; a convention not applied              | Loading              |
+| Misapplied default   | The agent holds variety, but the general case rather than this one | A generally correct procedure applied where local practice differs | Citation, Sequencing |
+| Unattenuated variety | Variety presented exceeds what the regulator can use               | Poor selection from a large undifferentiated catalogue             | Attenuation by level |
+
+The classification is informative in one respect the surface descriptions
+conceal. The first and third failures constitute a single class. In both, the
+agent acts without a fact it required; they differ only in why the fact was
+absent, being available and unloaded in the one case and absent from training in
+the other. The same channel answers both, and the difference between them
+determines the form of the remedy rather than its kind. The first requires an
+obligation to load what exists. The second requires that the construct be
+declared before there is anything to load.
+
+The three classes organise what follows. Absent model motivates the loading
+channel and the obligation treated in [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]. Misapplied default motivates
+the channels constraining choice and order. Unattenuated variety is treated
+separately under /Variety Attenuation/, its remedy being structural rather than
+a channel.
+
+The classification is drawn from observation of practice in this project. It is
+not the product of a systematic study, and the three classes are not claimed to
+be exhaustive.
 
 *** Regulation Rather Than Capability
 

@@ -149,6 +149,19 @@ public:
      */
     bool wait_until_ready(std::chrono::milliseconds timeout = std::chrono::seconds(5));
 
+    /**
+     * @brief Number of connection losses detected since construction.
+     *
+     * Each loss drops every NOTIFY in flight until the reconnect and
+     * re-LISTEN complete; PostgreSQL has no replay for dead sessions, so
+     * each loss is a surfaced loss window, not a recovered one. The
+     * operator-facing record of each window is the error log written at
+     * detection and at reconnect.
+     */
+    [[nodiscard]] std::uint64_t connection_loss_count() const noexcept {
+        return connection_loss_count_.load(std::memory_order_relaxed);
+    }
+
 private:
     /**
      * @brief Opens the dedicated PostgreSQL connection.
@@ -191,6 +204,10 @@ private:
 
     std::thread listener_thread_;
     std::atomic<bool> running_;
+
+    std::atomic<std::uint64_t> connection_loss_count_{0};
+    // Set on loss detection, read on reconnect; accessed by listen_loop only.
+    std::chrono::steady_clock::time_point loss_start_{};
 
     std::condition_variable ready_cv_; ///< Signaled when listener is ready
     bool ready_{false};                ///< True when listener is actively polling

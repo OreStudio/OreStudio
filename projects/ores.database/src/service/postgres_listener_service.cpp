@@ -22,11 +22,27 @@
 #include <algorithm>
 #include <chrono>
 #include <list>
+#include <sstream>
 #include <thread>
 
 namespace ores::database::service {
 
 using namespace ores::logging;
+
+namespace {
+
+// Builds the comma-separated channel list for loss-window diagnostics.
+std::string subscribed_channels_str(const std::vector<std::string>& channels) {
+    std::ostringstream oss;
+    for (std::size_t i = 0; i < channels.size(); ++i) {
+        if (i > 0)
+            oss << ", ";
+        oss << channels[i];
+    }
+    return oss.str();
+}
+
+}
 
 postgres_listener_service::postgres_listener_service(context ctx, notification_callback_t callback)
     : ctx_(std::move(ctx))
@@ -216,6 +232,12 @@ void postgres_listener_service::listen_loop() {
                 BOOST_LOG_SEV(lg(), error) << "Connection error while consuming input.";
                 connection_ = std::nullopt;
                 connection_ok = false;
+                ++connection_loss_count_;
+                loss_start_ = std::chrono::steady_clock::now();
+                BOOST_LOG_SEV(lg(), error)
+                    << "Listener connection lost while listening on channels ["
+                    << subscribed_channels_str(subscribed_channels_)
+                    << "]; notifications in flight may be lost";
             } else {
                 backoff = min_backoff; // reset on successful poll
                 batch = (*connection_)->get_notifications();
@@ -243,6 +265,13 @@ void postgres_listener_service::listen_loop() {
                 continue; // will retry after next backoff
             }
             connection_ = std::move(*result);
+            const auto loss_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::steady_clock::now() - loss_start_);
+            BOOST_LOG_SEV(lg(), error)
+                << "Reconnected after " << loss_duration.count()
+                << "ms; notifications sent on channels ["
+                << subscribed_channels_str(subscribed_channels_)
+                << "] during the outage are lost (PostgreSQL has no replay)";
             BOOST_LOG_SEV(lg(), info) << "Listener reconnected. Reissuing LISTENs.";
             issue_pending_listens();
             continue;

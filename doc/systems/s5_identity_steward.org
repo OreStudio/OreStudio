@@ -2,10 +2,10 @@
 :ID: 5CAD21DA-21FB-460B-9286-8998B4C6EF52
 :END:
 #+title: S5 Identity Steward
-#+description: The function of System 5 — the session, usually run with the user, that maintains the product identity and rules on what is in / out of scope.
-#+type: function
+#+description: System 5 — the session, usually run with the user, that maintains the product identity and rules on what is in / out of scope.
+#+type: system
 #+level: s5
-#+filetags: :function:s5:identity:policy:
+#+filetags: :system:s5:identity:policy:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
@@ -30,7 +30,7 @@ is in scope; nothing below S5 is.
 
 * Inputs
 
-- The current [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] (the document this function maintains).
+- The current [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]] (the document this System maintains).
 - Candidate versions and their proposed missions.
 - [[id:C1BF2C4F-2DB3-49C1-94E9-7D2B3E4F1AB8][Far]] captures flagged for identity review.
 - The user's vision and any explicit identity-shaping input.

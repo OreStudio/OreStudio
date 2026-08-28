@@ -13,13 +13,13 @@ This page describes /how/ the [[id:926B916E-A57E-498E-99AB-720B583C0362][cyberne
 actually operated in a session — who reads what, who writes what, how
 LLMs fork subprocesses, how blocking and task-switching work. It is
 the runtime view of the architecture; the static contract lives in
-[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] and the role definitions in [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][functions]]. Read this when
+[[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] and the role definitions in [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]]. Read this when
 you want to know what concretely happens when a sprint is in flight.
 
 * Roles
 
 The actors involved in a working session. Each role maps onto a
-cybernetic system — load the linked [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][function]] doc for the priming
+cybernetic system — load the linked [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][System]] doc for the priming
 context that role uses.
 
 #+ATTR_HTML: :class hug-leading

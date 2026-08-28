@@ -1132,7 +1132,7 @@ one-off scoring exercise would not.
 - [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the policy this architecture amends.
 - [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the function axis.
 - [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — variety, feedback and regulation.
-- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — the role-shaped counterpart to skills.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]] — the role-shaped counterpart to skills.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — where the terminology table lands.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the domain-grounding index, and the structure notes it needs.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the method we hold the knowledge graph by.

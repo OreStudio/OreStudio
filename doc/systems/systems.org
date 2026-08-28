@@ -1,22 +1,22 @@
 :PROPERTIES:
 :ID: 1A5E0079-5771-4213-B624-62FA9AC947B4
 :END:
-#+title: Functions
-#+description: Index of named roles — what someone does when they are wearing a given hat, with the skills and pre-reads each role needs.
+#+title: Systems
+#+description: Index of the Systems a session may act as, in Stafford Beer's sense, with the skills and pre-reads each requires.
 #+type: knowledge
 #+level: cross
-#+filetags: :functions:index:knowledge:
+#+filetags: :systems:index:knowledge:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 
-A [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] is a named role — /what someone (or some LLM session)
-does when they are wearing a given hat/. A function doc is the
+A [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]] is a named role that a session acts as, in the sense
+Stafford Beer gives the word. A System doc is the
 priming context an LLM session loads when it takes on the role: the
 purpose, what to pre-read, which [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] to use, what /not/ to do.
-Functions are role-shaped (descriptive); skills are task-shaped
-(operational). Functions compose skills.
+Systems are role-shaped (descriptive); skills are task-shaped
+(operational). Systems compose skills.
 
-There is one function per [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]], plus one for the
+There is one System per [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]], plus one for the
 independent audit channel.
 
 * Per system
@@ -33,6 +33,6 @@ independent audit channel.
 - [[id:5CAD21DA-21FB-460B-9286-8998B4C6EF52][S5 Identity Steward]] — maintains the [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]], rules on
   what is in / out of scope.
 
-Each function doc lists its pre-reads, the [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] it draws on, the
+Each System doc lists its pre-reads, the [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] it draws on, the
 recipes it exercises, and explicit boundaries (what this role does
-/not/ do, and which other function picks it up instead).
+/not/ do, and which other System picks it up instead).

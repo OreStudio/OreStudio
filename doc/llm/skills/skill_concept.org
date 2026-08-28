@@ -34,7 +34,7 @@ requires no relationship between one skill and another.
 
 ORE Studio held a position on the term before this framework. The project
 [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] records that a skill is /task-shaped/, being invoked in one session to
-perform a unit of work, and contrasts it with a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], which is
+perform a unit of work, and contrasts it with a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], which is
 /role-shaped/ and describes what an actor does across many sessions. That
 distinction survives into the definition proposed below, but it does not by
 itself resolve the questions the following sections raise.
@@ -351,11 +351,11 @@ only what cannot be checked.
 
 **** Catalogue Attenuation
 
-Because the level is declared, a session that has declared its function sees a
+Because the level is declared, a session that has declared its System sees a
 subset of the collection rather than the whole. At most levels the filter is a
 default that may be overridden on request; at the audit level it is a
 constraint, since an auditor that can be persuaded to modify what it observes is
-not an auditor. [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] treats the mechanism.
+not an auditor. [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] treats the mechanism.
 
 **** Overlap Detection
 
@@ -386,7 +386,7 @@ comparison rather than by reading.
 - [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]] — the specification this document analyses.
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this document sits under.
 - [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] — the taxonomy the trait clause refers to.
-- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] — the axis the level clause refers to.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] — the axis the level clause refers to.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the register of record for the framework's terms.
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory of what exists.
 - [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — how a skill is named and attributed.

@@ -2,10 +2,10 @@
 :ID: 66EB6824-52B8-4603-B302-F805DA9EC443
 :END:
 #+title: S4 Version Planner
-#+description: The function of System 4 — the session that plans a version, sequences its sprints, and decides what counts as "shipping" for the version.
-#+type: function
+#+description: System 4 — the session that plans a version, sequences its sprints, and decides what counts as "shipping" for the version.
+#+type: system
 #+level: s4
-#+filetags: :function:s4:version:intelligence:
+#+filetags: :system:s4:version:intelligence:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

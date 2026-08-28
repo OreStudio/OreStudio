@@ -60,7 +60,7 @@ might overlap.
 
 4. /Check that the skill is task-shaped/, not role-shaped. A skill is
    /how to do a unit of work/. If the doc describes /what someone
-   does/ across many tasks, it is a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], not a skill — flag
+   does/ across many tasks, it is a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], not a skill — flag
    for re-homing.
 
 5. /Check that procedural detail lives in recipes, not in the skill/.

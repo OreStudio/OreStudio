@@ -158,24 +158,27 @@ versions, far captures, and feature requests.
 | How to generate | [[id:F1311596-B8ED-43AD-8C46-76C58C0194C7][New product identity]] in the codegen recipe |
 | Example         | [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][ORE Studio product identity]]               |
 
-* Function
+* System
 :PROPERTIES:
 :ID: 66F2A9E8-0385-4D56-B4B1-0957208990DC
 :END:
 
-A named role that operates the system — /what someone (or some LLM session) does
-when they are wearing a given hat/. Each function doc is the priming context an
-LLM session loads when it takes on the role: its purpose, what to pre-read,
-which [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] to invoke, what /not/ to do. Functions are role-shaped
-(descriptive); skills are task-shaped (operational). Functions compose skills;
-skills do not own functions.
+A named role a session acts as, in the sense Stafford Beer gives the word: one
+of the five Systems of a viable system, plus the audit System. Each system
+document is the priming context an LLM session loads when it takes the role on:
+its purpose, what to pre-read, which [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] to invoke, and what /not/ to do.
+Systems are role-shaped (descriptive); skills are task-shaped (operational).
+Systems compose skills; skills do not own Systems.
+
+Capitalised and numbered throughout, so that System 3* is never confused with
+the system, meaning the ORE Studio software.
 
 #+ATTR_HTML: :class hug-leading
 | Field     | Value                                             |
 |-----------+---------------------------------------------------|
-| Owner     | cross-cutting (one function per cybernetic level) |
+| Owner     | cross-cutting (one System per cybernetic level)   |
 | Example   | [[id:EECA6981-3240-44D9-ADA7-4B8C64A76B44][S2 Orchestrator]]                                   |
-| Inventory | [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]]                                         |
+| Inventory | [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]]                                         |
 
 * Skill
 :PROPERTIES:
@@ -186,7 +189,7 @@ A concrete, executable capability — /how to do a kind of work/ — in Claude
 Code's skill format (=doc/llm/skills/<slug>/SKILL.org=). Each skill is
 self-contained: it describes when to use it, the procedure, and any artefacts it
 expects. A skill is /task-shaped/: invokable in one session to perform a unit of
-work. Contrast with [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], which is /role-shaped/: a description of what
+work. Contrast with [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], which is /role-shaped/: a description of what
 someone does, listing the skills that role draws on.
 
 #+ATTR_HTML: :class hug-leading
@@ -361,7 +364,7 @@ sessions. See [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]] for th
 The [[https://orgmode.org/manual/TODO-Items.html][TODO keyword]] on a stateful document's =* Status= headline. The full
 vocabulary is =DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED= (active
 states left of the bar, terminal states right). Documents that are not stateful
-(knowledge, recipes, functions, meta) have no Status headline. See [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] for
+(knowledge, recipes, systems, meta) have no Status headline. See [[id:8810E0F9-C5B9-4CFA-A710-774AD6C771DD][lifecycle]] for
 transitions.
 
 * Status headline
@@ -398,7 +401,7 @@ A story in a later sprint that picks up where this one left off. Captured as
 :END:
 
 A subprocess forked by a [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] orchestrator LLM to execute one task. Operates
-at [[id:DBFD530B-4B56-48D1-9F03-3A0D0DA16552][System 1]]. See [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][execution model]] for the role and [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent function]] for the
+at [[id:DBFD530B-4B56-48D1-9F03-3A0D0DA16552][System 1]]. See [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][execution model]] for the role and [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]] for the
 priming context.
 
 * Orchestrator
@@ -407,5 +410,5 @@ priming context.
 :END:
 
 The [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] LLM session the user has assigned to a story. Forks agents, reviews
-their output, decides what to do with discovered work. See [[id:EECA6981-3240-44D9-ADA7-4B8C64A76B44][S2 Orchestrator
-function]] for the priming context.
+their output, decides what to do with discovered work. See [[id:EECA6981-3240-44D9-ADA7-4B8C64A76B44][S2 Orchestrator]] for the priming
+context.

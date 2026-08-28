@@ -2,7 +2,7 @@
 :ID: 94F9949A-1580-4D47-9331-AA0597543C99
 :END:
 #+title: LLM Configuration and Artefacts
-#+description: Comprehensive overview of all LLM support components: instructions, runbooks, recipes, skills, functions, settings, and memories.
+#+description: Comprehensive overview of all LLM support components: instructions, runbooks, recipes, skills, Systems, settings, and memories.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:index:knowledge:
@@ -25,7 +25,7 @@ when to use it, and where to find it.
 | [[id:B555D2A6-10CA-4A93-973E-F2AF4E1D7E55][Runbooks]]     | Multi-step procedure | Composition of recipes       | "Start work on a new story" (7 steps, story → PR)         |
 | [[id:0C57932D-D13A-480F-B426-49525AA8BA3D][Recipes]]      | Single operation    | How-to with executable shell | "How do I create a PR?"                                   |
 | [[id:6054CC20-5F41-482F-A587-759512577B1D][Skills]]       | Unit of work        | Playbook an LLM loads        | "System Architect" — read model, understand layers        |
-| [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][Functions]]    | Role                | Priming context for a session| "S2 Orchestrator" — coordinates across S1 agents           |
+| [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][Systems]]    | Role                | Priming context for a session| "S2 Orchestrator" — coordinates across S1 agents           |
 | [[id:2D83251F-0E24-4B97-B736-08F710316634][Settings]]     | Permissions         | Sandbox and tool allow-list  | [[proj:.claude/settings.json][=.claude/settings.json=]] — what the LLM can execute         |
 | [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Memory]]       | Durable fact        | One fact per file            | "Set SSH_AUTH_SOCK before git push"                       |
 
@@ -72,16 +72,16 @@ like "review a component" or "create a domain type."
 
 Inventory: [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Claude Code Skills]].
 
-** Functions — role-shaped priming
+** Systems — role-shaped priming
 
-[[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][Functions]] ([[proj:doc/functions][=doc/functions/=]]) are role-shaped documents, one per
+[[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][Systems]] ([[proj:doc/systems][=doc/systems/=]]) are role-shaped documents, one per
 [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]] (S1 Agent, S2 Orchestrator, S3 Sprint Planner,
-S3* Auditor, S4 Version Planner, S5 Identity Steward). A function
+S3* Auditor, S4 Version Planner, S5 Identity Steward). A system document
 doc is the priming context an LLM loads when taking on that role
-for a session. Functions are coarser than skills — they define
+for a session. Systems are coarser than skills — they define
 /boundaries/ and /authority/, not task steps.
 
-Inventory: [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions index]].
+Inventory: [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems index]].
 
 ** Settings — tool access
 

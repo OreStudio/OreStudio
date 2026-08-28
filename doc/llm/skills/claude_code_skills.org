@@ -12,7 +12,7 @@
 Every Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skill]] used with ORE Studio lives at
 =doc/llm/skills/<slug>/SKILL.org= and is listed below, grouped by area. Skills are
 /task-shaped/: each one is the playbook an LLM session loads to perform a
-specific unit of work end-to-end. Compare with [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], which is /role-shaped/.
+specific unit of work end-to-end. Compare with [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], which is /role-shaped/.
 See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment workflow or return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 #+begin_note
@@ -182,4 +182,4 @@ CI hook that calls it.
 
 - [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — skills that author component
   overviews use this contract.
-- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Functions]] — sibling concept: role-shaped, not task-shaped.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]] — sibling concept: role-shaped, not task-shaped.

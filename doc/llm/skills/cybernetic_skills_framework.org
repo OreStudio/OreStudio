@@ -82,7 +82,9 @@ a channel.
 
 The classification is drawn from observation of practice in this project. It is
 not the product of a systematic study, and the three classes are not claimed to
-be exhaustive.
+be exhaustive. That it is provisional is not a defect to be repaired before the
+framework can proceed. Identifying failures is itself a regulatory function, and
+/Second-Order Regulation/ specifies it as one.
 
 *** Regulation Rather Than Capability
 
@@ -326,6 +328,70 @@ cybernetic dress. Most of the catalogue is of the second kind. The distinction
 is not a weakness but a condition of the argument retaining force where it is
 made.
 
+** Second-Order Regulation
+
+*** The Limit of a Fixed Regulator
+
+Everything specified so far regulates against disturbances already identified.
+Such a regulator is fixed. It answers the failures its channels were built for
+and is defeated by any other, since a disturbance outside its repertoire meets
+no response at all.
+
+The framework cannot be fixed in this sense. The agents it regulates change with
+each model release, the project's practice changes as the system grows, and
+neither the failures nor their distribution are stable.
+
+*** Ultrastability
+
+Ashby (1952) treats this case directly. An adaptive system requires a second and
+slower loop around the first: one that does not adjust the regulated variables
+but alters the structure of the regulator, and that acts only when the first
+loop fails to hold an essential variable within its bounds.
+
+The essential variable here is whether the agent's conduct remains within
+acceptable bounds for the work. A failure is the signal that it has not. The
+second loop is what converts that signal into a change of structure.
+
+*** The Loop Specified
+
+The second loop has three steps, and each is a regulatory function rather than
+an administrative one.
+
+*Detection.* A departure is observed. This is measurement, and it uses the
+recording channel: the state reached is registered against the state intended.
+
+*Classification.* The departure is assigned to one of the classes above, or
+shown to fit none of them. The classification is therefore a live instrument and
+not a preamble, and a departure fitting no class is the more informative
+outcome, since it indicates the regulator's model is incomplete.
+
+*Conversion.* The classification determines the form of the remedy, because each
+class names the channel that answers it. An absent model yields a knowledge
+document or a memory. A misapplied default yields a principle or a method. An
+excess of variety yields attenuation rather than a further document.
+
+The loop runs in both directions. The same mechanism that adds regulation on a
+new failure removes it when a failure ceases to occur, which is the criterion
+treated under /Retirement/ below.
+
+*** Present Weakness
+
+The framework must state the condition of this loop rather than its intended
+condition.
+
+At present the loop is largely manual. Detection depends on a person noticing a
+departure during a session. Classification is informal. Conversion happens when
+that person directs it, and the routing of what generalises into a memory, a
+principle or a change of skill is performed at a session's close by request
+rather than by mechanism.
+
+A loop of this kind is weak in a specific and predictable way: it registers
+departures a person happens to observe and is blind to those they do not. It
+therefore satisfies the form of ultrastability without supplying its
+reliability, and no claim is made here that it does. Strengthening it requires
+the measurement absent under /Limitations/, since a loop that cannot detect
+cannot reorganise.
+
 ** Consequences
 
 *** A Stable Model and a Variable Catalogue
@@ -372,6 +438,8 @@ exhaustive, and no such claim is made.
 
 * References
 
+- Ashby, W. R. (1952). /Design for a Brain: The Origin of Adaptive Behaviour/.
+  Chapman and Hall.
 - Ashby, W. R. (1956). /An Introduction to Cybernetics/. Chapman and Hall.
 - Beer, S. (1972). /Brain of the Firm/. Allen Lane.
 - Conant, R. C. and Ashby, W. R. (1970). /Every good regulator of a system must

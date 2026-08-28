@@ -304,10 +304,11 @@ The correspondence is one to one, which is a property of the construction rather
 than a coincidence: the clauses were derived from the limitations and no clause
 was added for any other reason.
 
-*** Boundary
+*** Exclusions
 
-A definition admitting everything discriminates nothing. Three classes of
-material fall outside this one.
+Each requirement in the definition excludes a class of material, so what falls
+outside follows from the definition rather than being stipulated alongside it.
+Three such classes arise.
 
 A document stating a durable fact is excluded, because it names no action; such
 material is knowledge. A procedure composing several operations is excluded,
@@ -316,10 +317,10 @@ applying to no particular artefact type is excluded, because it declares no
 target; such material is either a stance, if it constrains judgement, or a
 memory, if it records a correction.
 
-The exclusions are not rejections. Each names the document type that receives
-the material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] carries the procedure that assigns it.
-The definition is therefore narrow without being lossy: it excludes by
-redirecting.
+No exclusion is a rejection. Each names the document type that receives the
+material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] carries the procedure that assigns it. The
+definition is therefore narrow without being lossy: it excludes by redirecting
+rather than by discarding.
 
 *** Derived Properties
 

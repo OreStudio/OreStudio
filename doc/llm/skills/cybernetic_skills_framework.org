@@ -84,7 +84,7 @@ The classification is drawn from observation of practice in this project. It is
 not the product of a systematic study, and the three classes are not claimed to
 be exhaustive. That it is provisional is not a defect to be repaired before the
 framework can proceed. Identifying failures is itself a regulatory function, and
-/Second-Order Regulation/ specifies it as one.
+/Ultrastability/ specifies it as one.
 
 *** Regulation Rather Than Capability
 
@@ -328,7 +328,7 @@ cybernetic dress. Most of the catalogue is of the second kind. The distinction
 is not a weakness but a condition of the argument retaining force where it is
 made.
 
-** Second-Order Regulation
+** Ultrastability
 
 *** The Limit of a Fixed Regulator
 
@@ -341,16 +341,23 @@ The framework cannot be fixed in this sense. The agents it regulates change with
 each model release, the project's practice changes as the system grows, and
 neither the failures nor their distribution are stable.
 
-*** Ultrastability
+*** The Second Loop
 
 Ashby (1952) treats this case directly. An adaptive system requires a second and
 slower loop around the first: one that does not adjust the regulated variables
 but alters the structure of the regulator, and that acts only when the first
-loop fails to hold an essential variable within its bounds.
+loop fails to hold an essential variable within its bounds. He named the
+property *ultrastability*, and [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states it in general form.
+
+The distinction from homeostasis is what makes the property necessary here.
+Homeostasis maintains a variable against disturbances the regulator was built
+for. Ultrastability reorganises the regulator when maintenance fails, which is
+the only response available to a disturbance it was not built for.
 
 The essential variable here is whether the agent's conduct remains within
 acceptable bounds for the work. A failure is the signal that it has not. The
-second loop is what converts that signal into a change of structure.
+second loop converts that signal into a change of structure, and the framework's
+structure is its channels, its type system and its catalogue.
 
 *** The Loop Specified
 

@@ -49,6 +49,26 @@ measures the current state, and a feedback loop that closes the gap.
   variables within tolerable bounds in the face of environmental
   perturbation.
 
+- *Ultrastability* — Ashby's term for a system with two feedback loops
+  rather than one. The first regulates within a fixed configuration.
+  The second changes the configuration itself, and acts only when the
+  first fails to hold an essential variable within its bounds.
+  Homeostasis maintains; ultrastability reorganises when maintenance
+  fails. Ashby's homeostat demonstrated the arrangement with a fast
+  continuous loop that adjusted its outputs and a slow discrete loop
+  that stepped to new parameters once limits were breached. The
+  practical import is that a regulator built only for the disturbances
+  its designer foresaw is defeated by any other, and that adaptation
+  requires the failure itself to act as a signal.
+
+- *The good regulator theorem* — Conant and Ashby proved that a
+  regulator which is both maximally successful and maximally simple
+  must be isomorphic to the system it regulates: every good regulator
+  of a system must be a model of that system. The theorem is usually
+  cited for the first half, that effective regulation requires a model.
+  The simplicity clause matters equally, since it excludes modelling
+  anything the regulator does not regulate.
+
 - *Black box* — the practice of characterising a system purely by its
   inputs and outputs, without needing to know its internal structure.
   Useful when the internals are inaccessible or irrelevant to the

@@ -30,9 +30,13 @@ namespace ores::eventing::service {
 /**
  * @brief Publishes an entity_change_event to NATS on the given subject.
  *
- * Serializes the notification to JSON and publishes it, logging (rather than
- * throwing) on failure. Shared by every component's per-entity event-mapping
- * registration so the publish/error-handling logic is defined once.
+ * Serializes the notification to JSON and publishes it. On failure it
+ * rethrows with the subject in the message: every call site is an event_bus
+ * subscriber callback, and the bus catches handler exceptions, logs them at
+ * error, and reports the partial delivery in its summary. A failed publish
+ * is therefore never silent. Shared by every component's per-entity
+ * event-mapping registration so the publish/error-handling logic is defined
+ * once.
  */
 ORES_EVENTING_CORE_EXPORT void
 publish_entity_event(ores::nats::service::client& nats,

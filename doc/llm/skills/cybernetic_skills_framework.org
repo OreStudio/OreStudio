@@ -157,9 +157,9 @@ progressively longer horizons. The skills framework is not itself one of those
 systems. It is the means by which their constraints reach the agent, and
 through which the agent's own conduct is constrained.
 
-One consequence is worth stating plainly. The framework does not regulate the
-codebase, the build, or the domain. It regulates conduct. A document that
-constrains what an agent does is within scope; a document describing how a
+From this it follows the following: the framework does not regulate the
+codebase, the build, or the domain; instead, it regulates /conduct/. A document
+that constrains what an agent does is within scope; a document describing how a
 system behaves is within scope only insofar as an agent must hold it in order to
 act correctly.
 
@@ -211,8 +211,8 @@ The three results combine into a single rule.
 
 #+begin_quote
 The framework models exactly what it regulates. It regulates where the unaided
-agent would not act correctly for this project. Everything else is a black box,
-invoked but not modelled.
+agent would not act correctly on for this project. Everything else is a black
+box, invoked but not modelled.
 #+end_quote
 
 Applying the rule resolves cases previously settled by appeal to the kind of
@@ -237,26 +237,35 @@ criterion is regulatory relevance and nothing besides.
 *** Derivation
 
 A regulator discharges a finite set of functions, and Wiener's decomposition
-names the primitives: a goal against which the state is
-compared, a sensor by which the state is known, and a path by which action is
-taken. Ashby's law adds a fourth requirement, that the regulator command
-sufficient variety, and Conant and Ashby a fifth, that it hold a model of what
-it regulates.
+names the primitives: a goal against which the state is compared, a sensor by
+which the state is known, and a path by which action is taken. Ashby's law adds
+a fourth requirement, that the regulator command sufficient variety, and Conant
+and Ashby a fifth, that it hold a model of what it regulates.
 
 The classes into which this framework sorts its documents correspond to these
 primitives. Each class discharges one regulatory function, so the classification
 states a function rather than a subject matter or a form.
 
 #+ATTR_HTML: :class hug-leading
-| Trait       | Regulatory function                                        |
-|-------------+------------------------------------------------------------|
-| Declaration | fixes the goal and the criterion by which it is judged met  |
-| Recording   | the sensor; registers the state reached                    |
-| Loading     | supplies the model the agent must hold in order to act     |
-| Citation    | constrains selection at a point of judgement               |
-| Sequencing  | constrains the order in which action is taken              |
-| Execution   | the effector; acts upon the system                         |
-| Convening   | amplifies variety by introducing independent priors        |
+| Trait       | Regulatory function                                     |
+|-------------+---------------------------------------------------------|
+| Declaration | states the target state the outcome is compared against |
+| Recording   | the sensor; registers the state actually reached        |
+| Loading     | supplies the model the agent must hold in order to act  |
+| Citation    | constrains choice where the evidence does not settle it |
+| Sequencing  | constrains the order in which action is taken           |
+| Execution   | the effector; acts upon the system                      |
+| Convening   | amplifies variety by adding judgements the agent lacks  |
+
+Declaration and recording are the two terms of a single comparison. A
+declaration states what ought to be true; a recording states what was in fact
+reached. The difference between them is the error, and reducing it is what the
+remaining functions exist to do.
+
+That pairing accounts for a property the catalogue asserts without deriving it.
+A declaration must be checkable, because a goal an outcome cannot be compared
+against yields no error, and a regulator with no error signal does not
+regulate.
 
 The existing catalogue calls these classes *traits* ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]). The term is
 retained, and the derivation supplies what it previously lacked. A trait now

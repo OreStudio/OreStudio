@@ -15,7 +15,7 @@ This document specifies the compass skills framework as a *regulator* over a
 large language model agent engaged in software development. It argues that the
 framework's structure is determined by results in cybernetics rather than by
 convention borrowed from software engineering, and that three of those results
-settle questions the framework has previously answered by stipulation.
+settle questions that would otherwise rest on stipulation.
 
 Three claims are advanced. First, the failures the framework addresses are
 failures of regulation rather than of capability, and the distinction determines
@@ -27,11 +27,10 @@ documents are not a taxonomy chosen for convenience. Each corresponds to a
 function any regulator must discharge, and the classes can be derived from the
 primitive structure of a control loop.
 
-Two consequences follow that the framework has not previously stated. The
-document type system and the skills catalogue have different stability
-properties, the first being a model and the second being regulation. And a skill
-becomes removable when the agent no longer requires regulation at that point,
-which supplies a criterion for retirement that the catalogue currently lacks.
+Two consequences follow. The document type system and the skills catalogue have
+different stability properties, the first being a model and the second being
+regulation. And a skill becomes removable when the agent no longer requires
+regulation at that point, which is the criterion by which a skill is retired.
 
 * Detail
 
@@ -176,7 +175,7 @@ clause of the same theorem, a regulator modelling what it does not regulate is
 not maximally simple, and is therefore not a good regulator in their sense.
 
 The framework must model exactly what it regulates. The constraint runs in both
-directions, and the second direction is the one previously missing.
+directions, and it is the second that bounds the framework's scope.
 
 *** Regulation Follows Insufficient Variety
 
@@ -215,8 +214,8 @@ agent would not act correctly on for this project. Everything else is a black
 box, invoked but not modelled.
 #+end_quote
 
-Applying the rule resolves cases previously settled by appeal to the kind of
-thing under consideration rather than by any criterion.
+The rule settles cases that an appeal to the kind of thing under consideration
+does not.
 
 #+ATTR_HTML: :class hug-leading
 | Subject                       | Unaided agent            | Treatment |
@@ -267,10 +266,8 @@ A declaration must be checkable, because a goal an outcome cannot be compared
 against yields no error, and a regulator with no error signal does not
 regulate.
 
-The existing catalogue calls these classes *traits* ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]). The term is
-retained, and the derivation supplies what it previously lacked. A trait now
-denotes a regulatory function and is answerable to that account, where before it
-denoted a relation an agent bears to an artefact and was answerable to nothing.
+These classes are the *traits* ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]). A trait denotes a regulatory
+function and is answerable to that account.
 
 *** Consequences of the Derivation
 
@@ -286,10 +283,9 @@ The classes are bounded. A candidate class must name a regulatory function, so
 the question whether some further class exists admits an answer rather than
 remaining a matter of preference.
 
-And one previously troublesome case is settled. Acting upon a thing, whether by
-editing, moving or deleting it, is not a distinct function. It is what an
-effector does,
-and execution is already the effector. The universal ability to operate upon an
+And one case is settled that a classification by relation leaves open. Acting
+upon a thing, whether by editing, moving or deleting it, is not a distinct
+function. It is what an effector does, and execution is already the effector. The universal ability to operate upon an
 artefact is therefore absent from the list for a reason, rather than by the
 observation that a universal property fails to discriminate.
 
@@ -391,12 +387,12 @@ The loop runs in both directions. The same mechanism that adds regulation on a
 new failure removes it when a failure ceases to occur, which is the criterion
 treated under /Retirement/ below.
 
-*** Present Weakness
+*** The Loop as Implemented
 
-The framework must state the condition of this loop rather than its intended
+The framework states the condition of this loop rather than its intended
 condition.
 
-At present the loop is largely manual. Detection depends on a person noticing a
+The loop is largely manual. Detection depends on a person noticing a
 departure during a session. Classification is informal. Conversion happens when
 that person directs it, and the routing of what generalises into a memory, a
 principle or a change of skill is performed at a session's close by request
@@ -430,9 +426,8 @@ A regulator is defined relative to its disturbances. Should the regulated system
 improve, the variety the regulator must supply falls.
 
 A skill therefore becomes removable when the agent ceases to act incorrectly at
-that point without it. This is a criterion the catalogue has not previously had,
-and its absence has a single direction: skills accumulate, and nothing prompts
-their removal. The framework should expect to contract as the agents it
+that point without it. Without such a criterion the pressure runs in one
+direction only: skills accumulate, and nothing prompts their removal. The framework should expect to contract as the agents it
 regulates improve, and should treat that contraction as the apparatus working
 rather than as capability lost.
 

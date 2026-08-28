@@ -18,5 +18,6 @@
 #
 set(files
     "main.cpp"
+    "entity_event_publisher_tests.cpp"
     "partitioned_cache_tests.cpp"
 )

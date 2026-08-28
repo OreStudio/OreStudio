@@ -22,15 +22,32 @@
 #include "ores.testing/database_helper.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
+#include <functional>
 #include <future>
+#include <mutex>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace {
 
 const std::string test_suite("ores.database.service.tests");
 const std::string tags("[service][postgres_listener]");
+
+/**
+ * @brief Polls a predicate every 100ms until it returns true or the timeout
+ * elapses.
+ */
+bool wait_for(const std::function<bool()>& predicate, std::chrono::milliseconds timeout) {
+    const auto deadline = std::chrono::steady_clock::now() + timeout;
+    while (std::chrono::steady_clock::now() < deadline) {
+        if (predicate())
+            return true;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    return predicate();
+}
 
 /**
  * @brief Sends a NOTIFY on a channel using a separate connection.
@@ -243,7 +260,7 @@ TEST_CASE("postgres_listener_service_connect_forces_utc_session", tags) {
     database_helper h;
     const auto& credentials = h.context().credentials();
 
-    auto conn_result = connect_utc(credentials);
+    auto conn_result = connect_utc(credentials, "ores.database.test.session");
     REQUIRE(conn_result);
 
     // Behavioral assertion: in a UTC session the sentinel function equals the
@@ -251,8 +268,103 @@ TEST_CASE("postgres_listener_service_connect_forces_utc_session", tags) {
     // (the server default is Europe/London) the naive literal folds away and
     // the DO block succeeds -- which would fail the REQUIRE_FALSE below.
     auto result = (*conn_result)
-                      ->execute("DO $ BEGIN IF ores_utility_infinity_timestamp_fn() = "
+                      ->execute("DO $$ BEGIN IF ores_utility_infinity_timestamp_fn() = "
                                 "'9999-12-31 23:59:59'::timestamptz THEN RAISE EXCEPTION 'utc'; "
-                                "END IF; END $;");
+                                "END IF; END $$;");
     REQUIRE_FALSE(result);
+}
+
+TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
+    std::string channel_name =
+        "test_channel_reconnect_" +
+        std::to_string(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    const std::string lost_payload = R"({"entity":"ores.database.lost"})";
+    const std::string recovered_payload = R"({"entity":"ores.database.recovered"})";
+
+    std::vector<std::string> received;
+    std::mutex received_mutex;
+    auto callback = [&](const std::string&, const std::string& payload) {
+        std::lock_guard lock(received_mutex);
+        received.push_back(payload);
+    };
+
+    database_helper h;
+    const auto& credentials = h.context().credentials();
+
+    postgres_listener_service listener(h.context(), callback);
+    listener.subscribe(channel_name);
+    listener.start();
+    REQUIRE(listener.wait_until_ready());
+
+    // The listener stamps each session with an application_name unique to
+    // this instance (process pid plus an instance counter), so
+    // pg_stat_activity identifies exactly this listener's backend: same
+    // user and database, not our own pid, and this exact name. Sibling
+    // listeners from concurrently-running suites carry their own names and
+    // are never matched, and plain connections of this user never match
+    // either. A role may terminate its own sessions, so the DML test user
+    // can signal the listener backend.
+    auto control = sqlgen::postgres::connect(credentials);
+    REQUIRE(control);
+
+    const std::string backend_filter =
+        "usename = current_user AND datname = current_database() "
+        "AND pid <> pg_backend_pid() "
+        "AND application_name = '" + listener.application_name() + "'";
+
+    const std::string expect_present =
+        "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE " + backend_filter +
+        ") THEN RAISE EXCEPTION 'listener backend not found'; END IF; END $$;";
+    const std::string terminate_listener =
+        "DO $$ BEGIN PERFORM pg_terminate_backend(pid) FROM pg_stat_activity WHERE " +
+        backend_filter + "; END $$;";
+    const std::string expect_gone =
+        "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_stat_activity WHERE " + backend_filter +
+        ") THEN RAISE EXCEPTION 'listener backend still present'; END IF; END $$;";
+
+    // Precondition: the listener session is registered in pg_stat_activity.
+    REQUIRE(wait_for([&] { return bool((*control)->execute(expect_present)); },
+                     std::chrono::seconds(10)));
+
+    // Kill the listener session. PostgreSQL delivers NOTIFY only to live
+    // LISTEN sessions, so everything sent from here until the reconnect is
+    // a lost window.
+    auto terminated = (*control)->execute(terminate_listener);
+    REQUIRE(terminated);
+
+    // Wait until the session is gone before sending the in-flight NOTIFY,
+    // so the loss is guaranteed rather than racy.
+    REQUIRE(wait_for([&] { return bool((*control)->execute(expect_gone)); },
+                     std::chrono::seconds(10)));
+
+    // Sent while the listener is down: lost forever. The surfacing is the
+    // counter and the error logs, not a recovery.
+    send_notify(credentials, channel_name, lost_payload);
+
+    // The listener detects the loss on its next poll and records the window.
+    REQUIRE(wait_for([&] { return listener.connection_loss_count() >= 1; },
+                     std::chrono::seconds(10)));
+
+    // Wait until the listener session is back, then let the reissued LISTEN
+    // land before sending the recovery notification.
+    REQUIRE(wait_for([&] { return bool((*control)->execute(expect_present)); },
+                     std::chrono::seconds(10)));
+    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+
+    send_notify(credentials, channel_name, recovered_payload);
+
+    // The recovered notification must arrive exactly once; the lost one
+    // must never arrive.
+    REQUIRE(wait_for([&] {
+                         std::lock_guard lock(received_mutex);
+                         return received.size() == 1;
+                     },
+                     std::chrono::seconds(10)));
+    {
+        std::lock_guard lock(received_mutex);
+        REQUIRE(received.size() == 1);
+        REQUIRE(received[0] == recovered_payload);
+    }
+
+    listener.stop();
 }

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :eventing_chain_hardening:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/implement-eventing-chain-hardening
+#+pr: 1998
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-25
-#+updated: 2026-08-25
-#+environment:
+#+updated: 2026-08-28
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The eventing chain (postgres_listener_service, postgres_event_source, event_bus,
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                                  |
 | Parent story | [[id:639008BB-03A6-4675-AF2F-90A4A699729C][Harden the eventing chain against transient notification loss]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-25                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-08-28                               |
 
 * Acceptance
 
@@ -45,6 +45,50 @@ The eventing chain (postgres_listener_service, postgres_event_source, event_bus,
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
+
+** Loss window 1: listener reconnect
+
+- Root cause: =postgres_listener_service::listen_loop= drops the
+  connection when =consume_input= fails, runs the 1-5s doubling
+  backoff, then reconnects and re-issues LISTEN. PostgreSQL delivers
+  NOTIFY only to live LISTEN sessions and has no replay for dead
+  sessions, so every notification sent during the outage is lost
+  forever.
+- Decision: recovery at this layer is impossible; surface the loss
+  instead. Each detected loss increments a public counter
+  (=connection_loss_count=) and writes an error log naming the
+  affected channels, so the loss is diagnosable even if the service
+  stops before reconnect. The successful reconnect writes a second
+  error log with the outage duration and channels.
+- Test: =postgres_listener_service_reconnect_surfaces_loss_window=.
+  sqlgen has no client-side disconnect API, so the listener session is
+  killed server-side with =pg_terminate_backend= — a role may signal
+  its own sessions, and the listener connects with the test user's
+  credentials. The test kills the session, sends a NOTIFY during the
+  outage (asserts it never arrives), waits for the reconnect, then
+  sends a second NOTIFY and asserts it arrives exactly once.
+
+** Loss window 2: NATS publish failures
+
+- Root cause: =publish_entity_event= caught the NATS exception, logged
+  it at error, and swallowed it; the event_bus delivery summary then
+  reported partial delivery at debug severity, invisible at default
+  log levels.
+- Decision: =publish_entity_event= rethrows with the subject in the
+  message. Every call site (~150 per-entity registrars) is an event_bus
+  subscriber callback, and the bus catches handler exceptions at error,
+  so a failed publish surfaces at error in both the handler log and
+  the delivery summary. The summary logs at error when delivery is
+  incomplete and at debug when complete.
+- Test: =publish_entity_event_rethrows_on_nats_failure= — a never-
+  connected NATS client fails every publish with NATS_NOT_CONNECTED;
+  the publisher must throw =std::runtime_error=.
+
+** Verification
+
+- Full build, then the targeted suites (=ores.database.tests=,
+  =ores.eventing.api.tests=, =ores.eventing.core.tests=), the eventing
+  integration family (85 tests), and full ctest.
 
 * Notes
 
@@ -63,12 +107,41 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/1998][#1998]] | [ores.eventing,ores.database] Harden the eventing chain against transient notification loss |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5448091254 | Five local publish_entity_event helpers swallow NATS failures instead of rethrowing | refdata/workspace/trading/compute/analytics application.cpp | Accepted | Delegated each helper to the shared hardened ores::eventing::service::publish_entity_event; removed the now-unused pub_lg(); dropped the wire_codec include |
+| 5448091254 | subscribed_channels_str hand-rolls boost::algorithm::join | postgres_listener_service.cpp | Accepted | Replaced with boost::algorithm::join(channels, ", "); helper removed |
+| 5448091687 | Reconnect-test backend kill is not scoped to the listener (kills every same-user client backend) | postgres_listener_service_tests.cpp | Accepted | connect_utc stamps application_name = ores.database.listener.<pid>; test kills only backends matching that name. sqlgen has no scalar-query API, so the pid is exposed via the stamped name rather than an accessor |
+| 5448091687 | wait_for evaluates the predicate once more after the deadline | postgres_listener_service_tests.cpp | Declined | Harmless: every predicate is an idempotent read |
+| 5448091687 | Reconnect success logs at error severity | postgres_listener_service.cpp | Declined | Intentional: the window lost notifications; the error record is the loss surfacing |
+| 5453339136 | Kill scope still matches any listener session of the user (name prefix, not this instance) | postgres_listener_service_tests.cpp | Accepted | connect_utc now stamps a per-instance unique application_name (process pid plus instance counter); the service exposes it via application_name(); the test filters on exact equality. sqlgen has no scalar-read API, so the pid cannot be surfaced; the unique name achieves identical single-backend scoping |
+| 5453339136 | Unrelated backlog capture rides on the branch (fleet-slot limits) | limit_concurrent_running_fleets.org | Declined | Acknowledged: unrelated agile capture from the working session; harmless on the topic branch |
 
 * Result
+
+Implemented both loss-window surfacings. The listener now counts each
+detected connection loss (=connection_loss_count=), logs the affected
+channels at detection, and logs the outage duration and channels at
+reconnect; =publish_entity_event= rethrows NATS failures with the
+subject in the message and the event_bus delivery summary logs at
+error when delivery is incomplete. New tests cover both: the listener
+reconnect test kills the backend server-side, proves the in-flight
+NOTIFY is lost, and proves the post-reconnect NOTIFY arrives exactly
+once; the publisher test proves a NATS_NOT_CONNECTED publish throws.
+Test hygiene fix: the listener test file's =DO $= blocks were invalid
+SQL (=DO $ BEGIN= is a syntax error), which made every probe in the
+new test fail closed and left the pre-existing
+=connect_forces_utc_session= test vacuous; all four blocks now use
+=DO $$=. Verification: full build clean; =ores.database.tests= 17/17
+(including the reconnect test); =ores.eventing.api.tests= and
+=ores.eventing.core.tests= green; the eventing integration family
+(85 tests across iam/refdata/reporting/trading) green; full ctest
+71/71 green on a freshly recreated database. Note: the integration
+family needs the environment NATS server up
+(=nats-server-clever_dijkstra.service=) and a clean database
+(=compass db recreate=) — repeated runs collide on committed test
+data otherwise.

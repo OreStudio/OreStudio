@@ -18,24 +18,31 @@
  *
  */
 #include "ores.eventing.core/service/entity_event_publisher.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
-#include <stdexcept>
+#include "ores.nats/config/nats_options.hpp"
+#include "ores.nats/service/client.hpp"
+#include <catch2/catch_test_macros.hpp>
+#include <chrono>
+#include <string>
 
-namespace ores::eventing::service {
+namespace {
 
-void publish_entity_event(ores::nats::service::client& nats,
-                          const std::string& subject,
-                          const domain::entity_change_event& notification) {
-    try {
-        nats.publish(subject, ores::nats::default_wire_codec().encode(notification), {});
-    } catch (const std::exception& e) {
-        // The event_bus invokes every publish_entity_event call site and
-        // catches handler exceptions, so a rethrow surfaces the failure in
-        // its handler-error log and delivery summary instead of a silent
-        // error here.
-        throw std::runtime_error("Failed to publish to NATS subject '" + subject +
-                                 "': " + e.what());
-    }
+const std::string tags("[service][entity_event_publisher]");
+
 }
 
+TEST_CASE("publish_entity_event_rethrows_on_nats_failure", tags) {
+    // A client that was never connected fails every publish with
+    // NATS_NOT_CONNECTED. The publisher must surface that failure, not
+    // swallow it: the event_bus handler-error path is what makes it visible.
+    ores::nats::service::client nats(ores::nats::config::nats_options{});
+
+    const ores::eventing::domain::entity_change_event ev{
+        "ores.test.entity",
+        std::chrono::system_clock::now(),
+        {"id-1"},
+        "test-tenant"};
+
+    REQUIRE_THROWS_AS(
+        ores::eventing::service::publish_entity_event(nats, "ores.test.v1.events", ev),
+        std::runtime_error);
 }

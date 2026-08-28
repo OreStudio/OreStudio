@@ -183,8 +183,10 @@ public:
      * @param event The event instance to publish.
      *
      * All registered handlers for this event type will be invoked synchronously.
-     * Exceptions thrown by handlers are caught and logged, but do not prevent
-     * other handlers from being called.
+     * Exceptions thrown by handlers are caught and logged at error, but do not
+     * prevent other handlers from being called. When any handler fails, the
+     * delivery summary is logged at error as well, so partial delivery is
+     * visible at default log severity.
      */
     template <typename Event>
     void publish(const Event& event) {
@@ -231,9 +233,15 @@ public:
             }
         }
 
-        BOOST_LOG_SEV(lg(), debug)
-            << "Event '" << type_name << "' delivery complete: " << success_count << "/"
-            << handlers_copy.size() << " handlers succeeded";
+        if (success_count < handlers_copy.size()) {
+            BOOST_LOG_SEV(lg(), error)
+                << "Event '" << type_name << "' delivery incomplete: " << success_count << "/"
+                << handlers_copy.size() << " handlers succeeded";
+        } else {
+            BOOST_LOG_SEV(lg(), debug)
+                << "Event '" << type_name << "' delivery complete: " << success_count << "/"
+                << handlers_copy.size() << " handlers succeeded";
+        }
     }
 
     /**

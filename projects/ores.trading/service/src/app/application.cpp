@@ -21,9 +21,9 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/entity_event_publisher.hpp"
 #include "ores.eventing.core/service/postgres_event_source.hpp"
 #include "ores.eventing.core/service/registrar.hpp"
-#include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
 #include "ores.service/service/domain_service_runner.hpp"
 #include "ores.service/service/heartbeat_publisher.hpp"
@@ -64,20 +64,12 @@ namespace {
 constexpr std::string_view service_name = "ores.trading.service";
 constexpr std::string_view service_version = ORES_VERSION;
 
-auto& pub_lg() {
-    static auto instance = make_logger("ores.trading.service.app");
-    return instance;
-}
-
 void publish_entity_event(ores::nats::service::client& nats,
                           const std::string& subject,
                           const ev::domain::entity_change_event& notif) {
-    try {
-        nats.publish(subject, ores::nats::default_wire_codec().encode(notif), {});
-    } catch (const std::exception& e) {
-        BOOST_LOG_SEV(pub_lg(), error)
-            << "Failed to publish event to '" << subject << "': " << e.what();
-    }
+    // Delegate to the shared hardened publisher: it rethrows on failure so
+    // the event_bus surfaces the lost notification at error.
+    ev::service::publish_entity_event(nats, subject, notif);
 }
 
 } // namespace

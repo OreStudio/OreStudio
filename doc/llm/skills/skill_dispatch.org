@@ -9,12 +9,6 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-#+begin_note
-*Status: target state.* This page describes the framework we are
-building, not the catalogue as it stands today. Where this page and the
-current catalogue disagree, the catalogue is what runs.
-#+end_note
-
 Given a thing in hand, whether a document, a branch, a pull request or
 a failing test, this page answers what may be done to it, and how that
 is computed rather than remembered.
@@ -72,7 +66,6 @@ is not built.
 =agile-find-heading= and =compass-act= answer different questions.
 Heading picks *which work to do*; act picks *which verb applies to this
 noun*.
-
 
 ** Inventory
 

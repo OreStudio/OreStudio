@@ -260,7 +260,7 @@ TEST_CASE("postgres_listener_service_connect_forces_utc_session", tags) {
     database_helper h;
     const auto& credentials = h.context().credentials();
 
-    auto conn_result = connect_utc(credentials);
+    auto conn_result = connect_utc(credentials, "ores.database.test.session");
     REQUIRE(conn_result);
 
     // Behavioral assertion: in a UTC session the sentinel function equals the
@@ -296,20 +296,21 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
     listener.start();
     REQUIRE(listener.wait_until_ready());
 
-    // The listener stamps its session's application_name (connect_utc), so
-    // pg_stat_activity identifies the backend exactly: same user and
-    // database, not our own pid, and a listener-stamped name. The name
-    // embeds the backend pid, so a concurrent test suite's sessions -- or
-    // any other connection of this user -- never match and are never
-    // signalled. A role may terminate its own sessions, so the DML test
-    // user can signal the listener backend.
+    // The listener stamps each session with an application_name unique to
+    // this instance (process pid plus an instance counter), so
+    // pg_stat_activity identifies exactly this listener's backend: same
+    // user and database, not our own pid, and this exact name. Sibling
+    // listeners from concurrently-running suites carry their own names and
+    // are never matched, and plain connections of this user never match
+    // either. A role may terminate its own sessions, so the DML test user
+    // can signal the listener backend.
     auto control = sqlgen::postgres::connect(credentials);
     REQUIRE(control);
 
     const std::string backend_filter =
         "usename = current_user AND datname = current_database() "
         "AND pid <> pg_backend_pid() "
-        "AND application_name LIKE 'ores.database.listener.%'";
+        "AND application_name = '" + listener.application_name() + "'";
 
     const std::string expect_present =
         "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE " + backend_filter +

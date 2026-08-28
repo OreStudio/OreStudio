@@ -24,6 +24,7 @@
 #include <chrono>
 #include <list>
 #include <thread>
+#include <unistd.h>
 
 namespace ores::database::service {
 
@@ -32,6 +33,8 @@ using namespace ores::logging;
 postgres_listener_service::postgres_listener_service(context ctx, notification_callback_t callback)
     : ctx_(std::move(ctx))
     , notification_callback_(std::move(callback))
+    , application_name_("ores.database.listener." + std::to_string(::getpid()) + "." +
+                        std::to_string(instance_counter_.fetch_add(1)))
     , connection_(std::nullopt)
     , running_(false) {
     BOOST_LOG_SEV(lg(), debug) << "Listener service created.";
@@ -43,7 +46,8 @@ postgres_listener_service::~postgres_listener_service() {
 }
 
 sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-connect_utc(const sqlgen::postgres::Credentials& credentials) {
+connect_utc(const sqlgen::postgres::Credentials& credentials,
+            const std::string& application_name) {
     auto conn_result = sqlgen::postgres::connect(credentials);
     if (!conn_result)
         return conn_result;
@@ -57,8 +61,8 @@ connect_utc(const sqlgen::postgres::Credentials& credentials) {
     // Stamp the session so pg_stat_activity identifies the listener backend;
     // the reconnect test scopes its pg_terminate_backend signal to this name.
     auto name_result = (*conn_result)
-                           ->execute("SELECT set_config('application_name', "
-                                     "'ores.database.listener.' || pg_backend_pid()::text, false)");
+                           ->execute("SELECT set_config('application_name', '" + application_name +
+                                     "', false)");
     if (!name_result) {
         return sqlgen::error("Failed to set application_name: " +
                              std::string(name_result.error().what()));
@@ -76,7 +80,7 @@ bool postgres_listener_service::open_connection() {
 
     BOOST_LOG_SEV(lg(), debug) << "Opening dedicated listener connection.";
 
-    auto result = connect_utc(ctx_.credentials());
+    auto result = connect_utc(ctx_.credentials(), application_name_);
     if (!result) {
         BOOST_LOG_SEV(lg(), error) << "Failed to connect to database: " << result.error().what();
         return false;
@@ -254,7 +258,7 @@ void postgres_listener_service::listen_loop() {
                 break;
 
             std::lock_guard lock(mutex_);
-            auto result = connect_utc(ctx_.credentials());
+            auto result = connect_utc(ctx_.credentials(), application_name_);
             if (!result) {
                 BOOST_LOG_SEV(lg(), error) << "Reconnect failed: " << result.error().what();
                 continue; // will retry after next backoff

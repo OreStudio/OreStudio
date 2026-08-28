@@ -55,15 +55,16 @@ namespace ores::database::service {
  * 3828BF82); the pool forces it at acquisition, this dedicated
  * connection must do the same.
  *
- * Also stamps the session's application_name as
- * "ores.database.listener.<backend pid>" so pg_stat_activity can
- * identify this backend; the reconnect test scopes its
- * pg_terminate_backend signal to that name.
+ * Also stamps the session's application_name so pg_stat_activity can
+ * identify this backend. The caller supplies the name: each listener
+ * instance uses one unique to it, and the reconnect test scopes its
+ * pg_terminate_backend signal to that exact name.
  *
  * Exposed as a free function so tests can assert the session is UTC.
  */
 [[nodiscard]] ORES_DATABASE_EXPORT sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-connect_utc(const sqlgen::postgres::Credentials& credentials);
+connect_utc(const sqlgen::postgres::Credentials& credentials,
+            const std::string& application_name);
 
 class ORES_DATABASE_EXPORT postgres_listener_service final {
 private:
@@ -167,6 +168,18 @@ public:
         return connection_loss_count_.load(std::memory_order_relaxed);
     }
 
+    /**
+     * @brief The application_name this listener stamps on its sessions.
+     *
+     * Unique per listener instance (process pid plus an instance counter),
+     * so pg_stat_activity can distinguish this listener from any other
+     * session of the same user; the reconnect test matches its kill signal
+     * on this exact name.
+     */
+    [[nodiscard]] const std::string& application_name() const noexcept {
+        return application_name_;
+    }
+
 private:
     /**
      * @brief Opens the dedicated PostgreSQL connection.
@@ -202,6 +215,11 @@ private:
 private:
     context ctx_;
     notification_callback_t notification_callback_;
+    std::string application_name_;
+
+    // Unique per listener instance; makes application_name_ unambiguous
+    // across processes and concurrent test suites.
+    inline static std::atomic<std::uint64_t> instance_counter_{0};
 
     mutable std::mutex mutex_; ///< Protects connection and channels
     std::optional<rfl::Ref<sqlgen::postgres::Connection>> connection_;

@@ -9,17 +9,6 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-#+begin_note
-*External reference.* This page states the received definition of a
-large language model, the way the technology is described by those who
-build it. ORE Studio does not own the technology and this page states no
-project policy. It sits under [[proj:doc/llm][=doc/llm/=]] rather than under external
-knowledge because every other page in that folder depends on it.
-
-For how this project organises work around these properties, see
-[[id:3B7C30A5-A421-4EEF-ADA8-C20D4AB54BB6][LLM-first]]. For the tool it uses, see [[id:9AE40093-3BBF-44F7-818D-C8CA7C8D7F83][Claude Code]].
-#+end_note
-
 * Summary
 
 A *large language model* is a neural network trained to predict the next

@@ -78,9 +78,11 @@ classification by what an artefact contains is not.
 
 *** Methodological Precedent
 
-Classifying artefacts by the role they play is the analytical move [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] is
-built on, and the framework's treatment of the skills catalogue follows it
-closely enough that the correspondence is worth setting out.
+The taxonomic analysis of artefacts is the organising principle of [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]]. The
+framework adopts that analysis for the skills catalogue and applies it along a
+different axis, classifying artefacts by the agent's relation to them rather
+than by their place in the physical model. The correspondence extends to the
+procedure by which the classification is derived.
 
 MASD's physical modelling process has five steps: sample representative
 hand-written artefacts, decompose each into its parts, label and classify them
@@ -96,11 +98,11 @@ The correspondence holds at three further points.
 
 A *facet* in MASD is "an arbitrary partitioning/taxonomy of the logical space",
 a choice about how to classify entities "by the role each artefact plays". A
-trait is the same kind of object, and MASD's candour about arbitrariness is
-worth adopting rather than resisting: a taxonomy of this kind is a modelling
-choice justified by what it makes possible, not a natural kind discovered in the
-material. That is the ground on which the traits are offered as tags rather than
-as a partition.
+trait is an object of the same kind, and MASD's description of the facet as
+arbitrary applies to it equally: a taxonomy of this kind is stipulative rather
+than descriptive, justified by what it makes possible rather than by
+correspondence to a natural kind in the material. The traits are therefore tags
+rather than a partition.
 
 MASD addresses an artefact by a four-segment path, =[technical space].[part].
 [facet].[archetype]=, so that its location follows from its classification

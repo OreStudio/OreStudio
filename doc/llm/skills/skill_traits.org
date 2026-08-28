@@ -78,11 +78,17 @@ classification by what an artefact contains is not.
 
 *** Methodological Precedent
 
-The taxonomic analysis of artefacts is the organising principle of [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]]. The
-framework adopts that analysis for the skills catalogue and applies it along a
-different axis, classifying artefacts by the agent's relation to them rather
-than by their place in the physical model. The correspondence extends to the
-procedure by which the classification is derived.
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] answers a question about artefacts: given a body of hand-written material,
+which of its structure is mechanically reproducible, and what should replace
+that structure once it has been found. Code generation is the setting in which
+the question was posed rather than its content, and the question survives being
+asked of some other population.
+
+The skills catalogue is such a population. MASD therefore supplies this
+framework with a method rather than with a conclusion, and the distinction
+matters: the analysis transfers in full, while the remedy MASD prescribes does
+not transfer at all. This section sets out the analysis first, then the point at
+which the two diverge.
 
 MASD's physical modelling process has five steps: sample representative
 hand-written artefacts, decompose each into its parts, label and classify them
@@ -94,15 +100,17 @@ skill into the judgement, sequence, command and fact it carried, classified
 those into traits, reconstructed the uniform cases as a computed table, and
 catalogued the result with the declarations that parameterise it.
 
-The correspondence holds at three further points.
+Applying the procedure yielded three findings, each a MASD construct
+instantiated in the new population.
 
 A *facet* in MASD is "an arbitrary partitioning/taxonomy of the logical space",
 a choice about how to classify entities "by the role each artefact plays". A
-trait is an object of the same kind, and MASD's description of the facet as
-arbitrary applies to it equally: a taxonomy of this kind is stipulative rather
-than descriptive, justified by what it makes possible rather than by
-correspondence to a natural kind in the material. The traits are therefore tags
-rather than a partition.
+trait is an object of the same kind, drawn along a different axis: it classifies
+by the agent's relation to an artefact rather than by the artefact's place in
+the physical model. MASD's description of the facet as arbitrary applies to it
+unchanged: a taxonomy of this kind is stipulative rather than descriptive,
+justified by what it makes possible rather than by correspondence to a natural
+kind in the material. The traits are therefore tags rather than a partition.
 
 MASD addresses an artefact by a four-segment path, =[technical space].[part].
 [facet].[archetype]=, so that its location follows from its classification
@@ -115,13 +123,35 @@ Physical Space/: content that "varies predictably across entities but is
 otherwise mechanically identical", and which is therefore generated rather than
 written by hand. A catalogue holding one skill for each pairing of verb and
 target type is such a pattern. The limitation the definition addresses is
-consequently an SRPP in the skills catalogue, and the response the framework
-makes to it is the response MASD prescribes.
+consequently an SRPP in the skills catalogue, which is the finding on which the
+framework's own response turns.
 
 The test is operational in both cases. MASD holds that "one determines if a
 physical pattern is schematic and repetitive by reproducing it by automated
 means"; the framework holds that a verb table which cannot be generated is a
 table that should not be built.
+
+**** Divergence in the Remedy
+
+The two diverge over what to do once the pattern has been identified. MASD
+resolves an SRPP by generating the instances, which thereafter exist as files.
+The framework resolves the same pattern by declining to produce the instances at
+all: the pairing of verb and target type is computed when a target is
+dispatched, and no skill document is written for any pairing ([[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]).
+
+The divergence follows from the consumer. A compiler is indifferent to how many
+files it is handed, so materialising every instance costs nothing and buys
+locality. An agent is not indifferent. Its catalogue is read rather than
+compiled, and the size of that catalogue is itself the cost, because every entry
+competes for attention at the moment of selection. Generating one skill for each
+pairing would reproduce the pattern faithfully and reinstate the very problem
+the analysis was undertaken to solve.
+
+MASD's own test survives the divergence, since reproduction by automated means
+is satisfied by computing the pairing as well as by writing it out. What the
+framework takes from MASD is the analysis: how to recognise mechanically
+reproducible structure, and how to name the axes along which it varies. Code
+generation is where the borrowing stops.
 
 One MASD principle bears on the section that follows. /Evolve Gradually/ directs
 that coverage grow "driven by concrete practice rather than up-front design",

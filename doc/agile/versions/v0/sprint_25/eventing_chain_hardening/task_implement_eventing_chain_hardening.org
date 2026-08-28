@@ -118,6 +118,8 @@ via its "Verifies task" field.
 | 5448091687 | Reconnect-test backend kill is not scoped to the listener (kills every same-user client backend) | postgres_listener_service_tests.cpp | Accepted | connect_utc stamps application_name = ores.database.listener.<pid>; test kills only backends matching that name. sqlgen has no scalar-query API, so the pid is exposed via the stamped name rather than an accessor |
 | 5448091687 | wait_for evaluates the predicate once more after the deadline | postgres_listener_service_tests.cpp | Declined | Harmless: every predicate is an idempotent read |
 | 5448091687 | Reconnect success logs at error severity | postgres_listener_service.cpp | Declined | Intentional: the window lost notifications; the error record is the loss surfacing |
+| 5453339136 | Kill scope still matches any listener session of the user (name prefix, not this instance) | postgres_listener_service_tests.cpp | Accepted | connect_utc now stamps a per-instance unique application_name (process pid plus instance counter); the service exposes it via application_name(); the test filters on exact equality. sqlgen has no scalar-read API, so the pid cannot be surfaced; the unique name achieves identical single-backend scoping |
+| 5453339136 | Unrelated backlog capture rides on the branch (fleet-slot limits) | limit_concurrent_running_fleets.org | Declined | Acknowledged: unrelated agile capture from the working session; harmless on the topic branch |
 
 * Result
 

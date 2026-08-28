@@ -55,6 +55,11 @@ namespace ores::database::service {
  * 3828BF82); the pool forces it at acquisition, this dedicated
  * connection must do the same.
  *
+ * Also stamps the session's application_name as
+ * "ores.database.listener.<backend pid>" so pg_stat_activity can
+ * identify this backend; the reconnect test scopes its
+ * pg_terminate_backend signal to that name.
+ *
  * Exposed as a free function so tests can assert the session is UTC.
  */
 [[nodiscard]] ORES_DATABASE_EXPORT sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>

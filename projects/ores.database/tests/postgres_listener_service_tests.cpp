@@ -296,22 +296,25 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
     listener.start();
     REQUIRE(listener.wait_until_ready());
 
-    // Every same-user client backend on this database except our own is the
-    // listener's session. A role may terminate its own sessions, so the DML
-    // test user can signal the listener backend. Concurrent test suites
-    // share the user; their own listeners survive the same signal by
-    // reconnecting.
+    // The listener stamps its session's application_name (connect_utc), so
+    // pg_stat_activity identifies the backend exactly: same user and
+    // database, not our own pid, and a listener-stamped name. The name
+    // embeds the backend pid, so a concurrent test suite's sessions -- or
+    // any other connection of this user -- never match and are never
+    // signalled. A role may terminate its own sessions, so the DML test
+    // user can signal the listener backend.
     auto control = sqlgen::postgres::connect(credentials);
     REQUIRE(control);
 
     const std::string backend_filter =
         "usename = current_user AND datname = current_database() "
-        "AND pid <> pg_backend_pid() AND backend_type = 'client backend'";
+        "AND pid <> pg_backend_pid() "
+        "AND application_name LIKE 'ores.database.listener.%'";
 
     const std::string expect_present =
         "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE " + backend_filter +
         ") THEN RAISE EXCEPTION 'listener backend not found'; END IF; END $$;";
-    const std::string terminate_all =
+    const std::string terminate_listener =
         "DO $$ BEGIN PERFORM pg_terminate_backend(pid) FROM pg_stat_activity WHERE " +
         backend_filter + "; END $$;";
     const std::string expect_gone =
@@ -325,7 +328,7 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
     // Kill the listener session. PostgreSQL delivers NOTIFY only to live
     // LISTEN sessions, so everything sent from here until the reconnect is
     // a lost window.
-    auto terminated = (*control)->execute(terminate_all);
+    auto terminated = (*control)->execute(terminate_listener);
     REQUIRE(terminated);
 
     // Wait until the session is gone before sending the in-flight NOTIFY,

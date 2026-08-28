@@ -53,6 +53,16 @@ connect_utc(const sqlgen::postgres::Credentials& credentials) {
         return sqlgen::error("Failed to set session timezone to UTC: " +
                              std::string(tz_result.error().what()));
     }
+
+    // Stamp the session so pg_stat_activity identifies the listener backend;
+    // the reconnect test scopes its pg_terminate_backend signal to this name.
+    auto name_result = (*conn_result)
+                           ->execute("SELECT set_config('application_name', "
+                                     "'ores.database.listener.' || pg_backend_pid()::text, false)");
+    if (!name_result) {
+        return sqlgen::error("Failed to set application_name: " +
+                             std::string(name_result.error().what()));
+    }
     return conn_result;
 }
 

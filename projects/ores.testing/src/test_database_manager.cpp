@@ -22,19 +22,13 @@
 #include "ores.database/service/context_factory.hpp"
 #include "ores.database/service/tenant_context.hpp"
 #include "ores.platform/environment/environment.hpp"
+#include "ores.platform/process/pid.hpp"
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <chrono>
 #include <iomanip>
 #include <random>
 #include <sstream>
 #include <stdexcept>
-
-#ifdef _WIN32
-#    include <process.h>
-#    define getpid _getpid
-#else
-#    include <unistd.h>
-#endif
 
 namespace {
 
@@ -93,7 +87,7 @@ std::string test_database_manager::generate_test_tenant_code(const std::string& 
 #endif
 
     // Use process ID for uniqueness across parallel processes
-    const auto pid = getpid();
+    const auto pid = ores::platform::process::current_pid();
 
     // Add random suffix for additional uniqueness
     std::random_device rd;

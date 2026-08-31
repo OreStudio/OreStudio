@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: FB225462-5BBA-449D-82FC-BA03B0C7C731
+:END:
+#+title: Story: Hotfix: Windows build broken on unistd.h include
+#+description: The Windows CI build fails because postgres_listener_service.cpp includes unistd.h, which MSVC does not provide.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:database:sprint_25:v0:
+#+created: 2026-08-31
+#+updated: 2026-08-31
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Windows CI build breaks at
+projects/ores.database/src/service/postgres_listener_service.cpp:27
+with C1083: cannot open include file 'unistd.h'. PR #1998 introduced
+the POSIX-only include together with ::getpid() to name the listener's
+dedicated connection. The fix restores the Windows build by adding
+ores.platform::process::current_pid() — a cross-platform wrapper over
+boost::process::v2::current_pid() — and migrating every getpid call
+site to it, retiring the ad-hoc #ifdef patterns.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-31                               |
+
+* Acceptance
+
+- The Windows CI (MSVC) build compiles postgres_listener_service.cpp.
+- The Linux build and tests still pass.
+- No ad-hoc getpid #ifdef remains; the portability lives in ores.platform.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2F6AC97D-2DD9-41CE-90C4-798B6E9E79FD][Scaffold story: Hotfix: Windows build broken on unistd.h include]] | DONE | 2026-08-31 | 2026-08-31 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:FD26E848-A780-4A39-AA93-ABEE55A1885B][Implement Hotfix: Windows build broken on unistd.h include]] | DONE | 2026-08-31 | 2026-08-31 | Initial task for: Hotfix: Windows build broken on unistd.h include |
+
+* Decisions
+
+* Out of scope
+
+-

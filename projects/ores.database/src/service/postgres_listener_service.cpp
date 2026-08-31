@@ -19,12 +19,12 @@
  */
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.database/domain/session_utilities.hpp"
+#include "ores.platform/process/pid.hpp"
 #include <algorithm>
 #include <boost/algorithm/string/join.hpp>
 #include <chrono>
 #include <list>
 #include <thread>
-#include <unistd.h>
 
 namespace ores::database::service {
 
@@ -33,7 +33,8 @@ using namespace ores::logging;
 postgres_listener_service::postgres_listener_service(context ctx, notification_callback_t callback)
     : ctx_(std::move(ctx))
     , notification_callback_(std::move(callback))
-    , application_name_("ores.database.listener." + std::to_string(::getpid()) + "." +
+    , application_name_("ores.database.listener." +
+                        std::to_string(ores::platform::process::current_pid()) + "." +
                         std::to_string(instance_counter_.fetch_add(1)))
     , connection_(std::nullopt)
     , running_(false) {

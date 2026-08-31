@@ -98,7 +98,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5476846221 | getpid/_getpid ifdef block duplicated across two files | postgres_listener_service.cpp | Addressed | Stale — reviewed the pre-rework diff; the rework retires the ad-hoc pattern entirely. |
+| 5476846843 | Story Status block and sprint row stale (STARTED) | story.org, sprint.org | Fixed | Rolled the story to DONE with Now/Next set to Nothing, per the ifeed pattern. |
+| 5481902074 | lifecycle_manager.cpp calls boost::process::v2::current_pid() directly | lifecycle_manager.cpp | Fixed | Migrated to ores::platform::process::current_pid(); ores.logging already links ores.platform.lib. |
 
 * Result
 
@@ -110,3 +112,9 @@ ores.telemetry.core.lib build and link on linux-clang-debug-make;
 ores.platform.tests and ores.telemetry.core.tests green. The Windows
 CI build now compiles postgres_listener_service.cpp —
 boost::process::v2 is the cross-platform implementation.
+
+Review round 1 (2026-08-31): claude[bot] raised three comments. The
+ifdef-duplication comment reviewed the pre-rework diff and was
+already addressed by the rework; the doc-staleness comment fixed by
+rolling the story to DONE; the lifecycle_manager call site migrated
+to the wrapper. CI green after the round (check, claude-review).

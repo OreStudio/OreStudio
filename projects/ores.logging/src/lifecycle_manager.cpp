@@ -20,6 +20,7 @@
 #include "ores.logging/lifecycle_manager.hpp"
 #include "ores.logging/logging_options_validator.hpp"
 #include "ores.logging/make_logger.hpp"
+#include "ores.platform/process/pid.hpp"
 #include <boost/core/null_deleter.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/log/attributes.hpp>
@@ -30,7 +31,6 @@
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/support/date_time.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/process/v2/pid.hpp>
 #include <optional>
 #include <string_view>
 
@@ -63,7 +63,7 @@ build_filename(const std::string& filename, std::optional<int> replica_index, bo
     if (replica_index)
         result += "." + std::to_string(*replica_index);
     if (include_pid)
-        result += "." + std::to_string(boost::process::v2::current_pid());
+        result += "." + std::to_string(ores::platform::process::current_pid());
     result += ext;
     return result;
 }

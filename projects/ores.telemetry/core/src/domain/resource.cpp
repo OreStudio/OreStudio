@@ -19,10 +19,11 @@
  */
 #include "ores.telemetry.core/domain/resource.hpp"
 #include "ores.platform/net/network_info.hpp"
+#include "ores.platform/process/pid.hpp"
 
 using ores::platform::net::get_hostname;
 using ores::platform::net::derive_machine_id;
-using ores::platform::net::get_process_id;
+using ores::platform::process::current_pid;
 
 namespace ores::telemetry::domain {
 
@@ -69,7 +70,7 @@ resource resource::from_environment(std::string_view service_name,
     res.attrs["host.id"] = derive_machine_id();
 
     // Process attributes
-    res.attrs["process.pid"] = get_process_id();
+    res.attrs["process.pid"] = current_pid();
 
     return res;
 }

@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: FD26E848-A780-4A39-AA93-ABEE55A1885B
+:END:
+#+title: Task: Implement Hotfix: Windows build broken on unistd.h include
+#+description: Initial task for: Hotfix: Windows build broken on unistd.h include
+#+type: task
+#+level: s1
+#+filetags: :windows-build-unistd:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-windows-build-unistd
+#+pr: 1999
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-31
+#+updated: 2026-08-31
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FB225462-5BBA-449D-82FC-BA03B0C7C731][Hotfix: Windows build broken on unistd.h include]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the listener service's use of getpid() portable so MSVC compiles
+postgres_listener_service.cpp. Add ores.platform::process::current_pid()
+over boost::process::v2::current_pid() and use it in the listener and
+in test_database_manager.cpp, retiring the ad-hoc #ifdef patterns.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:FB225462-5BBA-449D-82FC-BA03B0C7C731][Hotfix: Windows build broken on unistd.h include]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-31                               |
+
+* Acceptance
+
+-
+
+* Plan
+
+Diagnosis: PR #1998 (eventing-chain-hardening, merge 6b90e88283) added
+#include <unistd.h> and ::getpid() to the postgres_listener_service
+constructor to build application_name_ from the process id. MSVC has no
+unistd.h (C1083) and names the function _getpid in <process.h>.
+
+Chosen fix: do not copy the ad-hoc #ifdef pattern a third time. Add a
+portability wrapper to ores.platform, the component that already owns
+this problem class (setenv/unsetenv live in ores.platform::environment).
+ores.platform::process/ already exists (executable, signals), and
+Boost.Process v2 — already a private link dependency of ores.platform —
+provides a cross-platform current_pid(). The wrapper returns a stable
+int64_t so callers are not tied to per-platform pid types. Migrate
+both call sites: postgres_listener_service.cpp (the break) and
+test_database_manager.cpp (the original ad-hoc pattern). The misplaced
+duplicate ores::platform::net::get_process_id() is retired in favour of
+the new ores.platform::process::current_pid().
+
+* Notes
+
+Root cause: PR #1998 (eventing-chain-hardening) added
+#include <unistd.h> and ::getpid() to the postgres_listener_service
+constructor to build a per-instance application_name (pid plus an
+instance counter). unistd.h is POSIX-only; MSVC reports C1083 and
+provides _getpid in <process.h>. This broke the Windows CI build at
+postgres_listener_service.cpp:27.
+
+Fix: ores.platform::process::current_pid() wraps
+boost::process::v2::current_pid() (new process/pid module with unit
+tests). The listener, test_database_manager and the telemetry resource
+now call it; both #ifdef getpid/_getpid patterns and the misplaced
+ores::platform::net::get_process_id() duplicate are retired. Verified:
+ores.platform.lib, ores.database.lib, ores.testing.lib and
+ores.telemetry.core.lib build and link on linux-clang-debug-make;
+ores.platform.tests and ores.telemetry.core.tests pass.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1999][#1999]] | [ores.platform] Add process::current_pid and migrate getpid call sites |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 5476846221 | getpid/_getpid ifdef block duplicated across two files | postgres_listener_service.cpp | Addressed | Stale — reviewed the pre-rework diff; the rework retires the ad-hoc pattern entirely. |
+| 5476846843 | Story Status block and sprint row stale (STARTED) | story.org, sprint.org | Fixed | Rolled the story to DONE with Now/Next set to Nothing, per the ifeed pattern. |
+| 5481902074 | lifecycle_manager.cpp calls boost::process::v2::current_pid() directly | lifecycle_manager.cpp | Fixed | Migrated to ores::platform::process::current_pid(); ores.logging already links ores.platform.lib. |
+
+* Result
+
+ores.platform::process::current_pid() added with unit tests; the
+listener, test_database_manager and the telemetry resource migrated to
+it, and the ores::platform::net::get_process_id() duplicate retired.
+ores.platform.lib, ores.database.lib, ores.testing.lib and
+ores.telemetry.core.lib build and link on linux-clang-debug-make;
+ores.platform.tests and ores.telemetry.core.tests green. The Windows
+CI build now compiles postgres_listener_service.cpp —
+boost::process::v2 is the cross-platform implementation.
+
+Review round 1 (2026-08-31): claude[bot] raised three comments. The
+ifdef-duplication comment reviewed the pre-rework diff and was
+already addressed by the rework; the doc-staleness comment fixed by
+rolling the story to DONE; the lifecycle_manager call site migrated
+to the wrapper. CI green after the round (check, claude-review).

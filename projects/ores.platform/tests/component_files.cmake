@@ -20,6 +20,7 @@ set(files
     "filesystem_file_tests.cpp"
     "main.cpp"
     "net_network_info_tests.cpp"
+    "process_pid_tests.cpp"
     "time_datetime_tests.cpp"
     "time_relative_time_formatter_tests.cpp"
     "time_utils_tests.cpp"

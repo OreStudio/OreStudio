@@ -123,20 +123,3 @@ TEST_CASE("derive_machine_id_hash_is_stable", tags) {
 
     REQUIRE(hash1 == hash2);
 }
-
-TEST_CASE("get_process_id_is_positive", tags) {
-    auto lg(make_logger(test_suite));
-
-    const auto pid = get_process_id();
-
-    BOOST_LOG_SEV(lg, info) << "Process ID: " << pid;
-
-    REQUIRE(pid > 0);
-}
-
-TEST_CASE("get_process_id_is_stable", tags) {
-    const auto pid1 = get_process_id();
-    const auto pid2 = get_process_id();
-
-    REQUIRE(pid1 == pid2);
-}

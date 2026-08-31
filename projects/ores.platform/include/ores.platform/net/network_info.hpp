@@ -72,13 +72,6 @@ ORES_PLATFORM_EXPORT std::string derive_machine_id();
  */
 ORES_PLATFORM_EXPORT std::uint16_t derive_machine_id_hash();
 
-/**
- * @brief Gets the current process ID.
- *
- * @return The process ID, or 0 if it cannot be determined.
- */
-ORES_PLATFORM_EXPORT std::int64_t get_process_id();
-
 }
 
 #endif

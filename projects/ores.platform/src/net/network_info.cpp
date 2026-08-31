@@ -18,7 +18,6 @@
  *
  */
 #include "ores.platform/net/network_info.hpp"
-#include <boost/process/v2/pid.hpp>
 #include <algorithm>
 #include <array>
 #include <functional>
@@ -309,10 +308,6 @@ std::uint16_t derive_machine_id_hash() {
     const std::size_t hash = std::hash<std::string>{}(combined);
 
     return static_cast<std::uint16_t>(hash & 0xFFFF);
-}
-
-std::int64_t get_process_id() {
-    return static_cast<std::int64_t>(boost::process::v2::current_pid());
 }
 
 }

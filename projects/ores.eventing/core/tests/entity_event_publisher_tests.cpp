@@ -37,10 +37,7 @@ TEST_CASE("publish_entity_event_rethrows_on_nats_failure", tags) {
     ores::nats::service::client nats(ores::nats::config::nats_options{});
 
     const ores::eventing::domain::entity_change_event ev{
-        "ores.test.entity",
-        std::chrono::system_clock::now(),
-        {"id-1"},
-        "test-tenant"};
+        "ores.test.entity", std::chrono::system_clock::now(), {"id-1"}, "test-tenant"};
 
     REQUIRE_THROWS_AS(
         ores::eventing::service::publish_entity_event(nats, "ores.test.v1.events", ev),

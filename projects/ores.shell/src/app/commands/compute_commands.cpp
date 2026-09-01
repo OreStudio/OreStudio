@@ -18,9 +18,6 @@
  *
  */
 #include "ores.shell/app/commands/compute_commands.hpp"
-
-#include <unordered_set>
-
 #include "ores.compute.api/domain/app.hpp"
 #include "ores.compute.api/domain/app_table_io.hpp"
 #include "ores.compute.api/domain/app_version.hpp"
@@ -55,6 +52,7 @@
 #include <filesystem>
 #include <ostream>
 #include <thread>
+#include <unordered_set>
 #include <utility>
 
 namespace ores::shell::app::commands {
@@ -151,8 +149,9 @@ bool is_online(const compute::domain::host& h) {
     return std::chrono::system_clock::now() - h.last_rpc_time <= online_window;
 }
 
-std::optional<compute::domain::batch>
-find_batch_by_external_ref(std::ostream& out, nats_client& session, const std::string& external_ref) {
+std::optional<compute::domain::batch> find_batch_by_external_ref(std::ostream& out,
+                                                                 nats_client& session,
+                                                                 const std::string& external_ref) {
     compute::messaging::list_batches_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
@@ -232,9 +231,7 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
 
     compute_menu->Insert(
         "list-apps",
-        [&session](std::ostream& out) {
-            process_list_apps(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_list_apps(std::ref(out), std::ref(session)); },
         "List compute apps");
 
     compute_menu->Insert(
@@ -246,88 +243,74 @@ void compute_commands::register_commands(cli::Menu& root_menu, nats_client& sess
 
     compute_menu->Insert(
         "list-platforms",
-        [&session](std::ostream& out) {
-            process_list_platforms(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_list_platforms(std::ref(out), std::ref(session)); },
         "List compute platforms");
 
     compute_menu->Insert(
         "list-hosts",
-        [&session](std::ostream& out) {
-            process_list_hosts(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_list_hosts(std::ref(out), std::ref(session)); },
         "List compute hosts");
 
     compute_menu->Insert(
         "list-batches",
-        [&session](std::ostream& out) {
-            process_list_batches(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_list_batches(std::ref(out), std::ref(session)); },
         "List compute batches");
 
-    compute_menu->Insert(
-        "add-batch",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_add_batch(std::ref(out), std::ref(session), args);
-        },
-        "Create a compute batch",
-        {"<external_ref> <job_count> [--smoke]"});
+    compute_menu->Insert("add-batch",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_add_batch(std::ref(out), std::ref(session), args);
+                         },
+                         "Create a compute batch",
+                         {"<external_ref> <job_count> [--smoke]"});
 
-    compute_menu->Insert(
-        "dispatch-batch",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_dispatch_batch(std::ref(out), std::ref(session), args);
-        },
-        "Dispatch a compute batch's jobs",
-        {"<external_ref> <job_count> <app_version_id> <input_tarball>"});
+    compute_menu->Insert("dispatch-batch",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_dispatch_batch(std::ref(out), std::ref(session), args);
+                         },
+                         "Dispatch a compute batch's jobs",
+                         {"<external_ref> <job_count> <app_version_id> <input_tarball>"});
 
-    compute_menu->Insert(
-        "list-workunits",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_list_workunits(std::ref(out), std::ref(session), args);
-        },
-        "List compute workunits",
-        {"[--batch <external_ref>]"});
+    compute_menu->Insert("list-workunits",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_list_workunits(std::ref(out), std::ref(session), args);
+                         },
+                         "List compute workunits",
+                         {"[--batch <external_ref>]"});
 
-    compute_menu->Insert(
-        "list-results",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_list_results(std::ref(out), std::ref(session), args);
-        },
-        "List compute results",
-        {"[--batch <external_ref>]"});
+    compute_menu->Insert("list-results",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_list_results(std::ref(out), std::ref(session), args);
+                         },
+                         "List compute results",
+                         {"[--batch <external_ref>]"});
 
-    compute_menu->Insert(
-        "grid-stats",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_grid_stats(std::ref(out), std::ref(session), args);
-        },
-        "Show compute grid telemetry",
-        {"[--watch <external_ref>] [--smoke] [--timeout <seconds>]"});
+    compute_menu->Insert("grid-stats",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_grid_stats(std::ref(out), std::ref(session), args);
+                         },
+                         "Show compute grid telemetry",
+                         {"[--watch <external_ref>] [--smoke] [--timeout <seconds>]"});
 
-    compute_menu->Insert(
-        "delete-host",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_delete_host(std::ref(out), std::ref(session), args);
-        },
-        "Delete a compute host",
-        {"<host_id>"});
+    compute_menu->Insert("delete-host",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_delete_host(std::ref(out), std::ref(session), args);
+                         },
+                         "Delete a compute host",
+                         {"<host_id>"});
 
-    compute_menu->Insert(
-        "download-input",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_download_input(std::ref(out), std::ref(session), args);
-        },
-        "Download a workunit's input bundle",
-        {"<workunit_id> <dest_dir>"});
+    compute_menu->Insert("download-input",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_download_input(std::ref(out), std::ref(session), args);
+                         },
+                         "Download a workunit's input bundle",
+                         {"<workunit_id> <dest_dir>"});
 
-    compute_menu->Insert(
-        "download-output",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            process_download_output(std::ref(out), std::ref(session), args);
-        },
-        "Download a result's output bundle",
-        {"<result_id> <dest_dir>"});
+    compute_menu->Insert("download-output",
+                         [&session](std::ostream& out, std::vector<std::string> args) {
+                             process_download_output(std::ref(out), std::ref(session), args);
+                         },
+                         "Download a result's output bundle",
+                         {"<result_id> <dest_dir>"});
 
     root_menu.Insert(std::move(compute_menu));
 }
@@ -541,8 +524,8 @@ void compute_commands::process_list_platforms(std::ostream& out, nats_client& se
     // platform table_io. The reconciliation task replaces this loop
     // with `out << resp->platforms`.
     for (const auto& p : resp->platforms) {
-        out << boost::uuids::to_string(p.id) << ' ' << p.code << ' ' << p.display_name
-            << ' ' << p.os_family << ' ' << p.cpu_arch << std::endl;
+        out << boost::uuids::to_string(p.id) << ' ' << p.code << ' ' << p.display_name << ' '
+            << p.os_family << ' ' << p.cpu_arch << std::endl;
     }
     out << std::endl;
 }
@@ -579,10 +562,11 @@ void compute_commands::process_list_batches(std::ostream& out, nats_client& sess
     out << resp->batches << std::endl;
 }
 
-void compute_commands::process_add_batch(std::ostream& out, nats_client& session,
+void compute_commands::process_add_batch(std::ostream& out,
+                                         nats_client& session,
                                          const std::vector<std::string>& args) {
-    auto parsed = parse_args(
-        args, {{.name = "smoke", .requires_value = false, .default_value = "false"}});
+    auto parsed =
+        parse_args(args, {{.name = "smoke", .requires_value = false, .default_value = "false"}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -634,12 +618,13 @@ void compute_commands::process_add_batch(std::ostream& out, nats_client& session
         return;
     }
 
-    out << "Created batch " << boost::uuids::to_string(batch.id) << " (ref " << external_ref
-        << ", " << *job_count << " job" << (*job_count == 1 ? "" : "s") << (smoke ? ", smoke" : "")
-        << ")." << std::endl;
+    out << "Created batch " << boost::uuids::to_string(batch.id) << " (ref " << external_ref << ", "
+        << *job_count << " job" << (*job_count == 1 ? "" : "s") << (smoke ? ", smoke" : "") << ")."
+        << std::endl;
 }
 
-void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& session,
+void compute_commands::process_dispatch_batch(std::ostream& out,
+                                              nats_client& session,
                                               const std::vector<std::string>& args) {
     auto parsed = parse_args(args, {});
     if (!parsed) {
@@ -778,14 +763,15 @@ void compute_commands::process_dispatch_batch(std::ostream& out, nats_client& se
         return;
     }
 
-    out << "Dispatched " << *job_count << " job(s) of batch " << external_ref
-        << " to app version " << app_version_id << "." << std::endl;
+    out << "Dispatched " << *job_count << " job(s) of batch " << external_ref << " to app version "
+        << app_version_id << "." << std::endl;
 }
 
-void compute_commands::process_list_workunits(std::ostream& out, nats_client& session,
+void compute_commands::process_list_workunits(std::ostream& out,
+                                              nats_client& session,
                                               const std::vector<std::string>& args) {
-    auto parsed = parse_args(
-        args, {{.name = "batch", .requires_value = true, .default_value = ""}});
+    auto parsed =
+        parse_args(args, {{.name = "batch", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -819,10 +805,11 @@ void compute_commands::process_list_workunits(std::ostream& out, nats_client& se
     out << filtered << std::endl;
 }
 
-void compute_commands::process_list_results(std::ostream& out, nats_client& session,
+void compute_commands::process_list_results(std::ostream& out,
+                                            nats_client& session,
                                             const std::vector<std::string>& args) {
-    auto parsed = parse_args(
-        args, {{.name = "batch", .requires_value = true, .default_value = ""}});
+    auto parsed =
+        parse_args(args, {{.name = "batch", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -855,13 +842,13 @@ void compute_commands::process_list_results(std::ostream& out, nats_client& sess
     out << resp->results << std::endl;
 }
 
-void compute_commands::process_grid_stats(std::ostream& out, nats_client& session,
+void compute_commands::process_grid_stats(std::ostream& out,
+                                          nats_client& session,
                                           const std::vector<std::string>& args) {
-    auto parsed = parse_args(
-        args,
-        {{.name = "watch", .requires_value = true, .default_value = ""},
-         {.name = "smoke", .requires_value = false, .default_value = "false"},
-         {.name = "timeout", .requires_value = true, .default_value = "300"}});
+    auto parsed = parse_args(args,
+                             {{.name = "watch", .requires_value = true, .default_value = ""},
+                              {.name = "smoke", .requires_value = false, .default_value = "false"},
+                              {.name = "timeout", .requires_value = true, .default_value = "300"}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
@@ -906,16 +893,17 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
             if (!wus)
                 return;
             workunit_count = static_cast<std::uint32_t>(wus->size());
-            terminal_count = static_cast<std::uint32_t>(std::count_if(
-                wus->begin(), wus->end(),
-                [](const auto& w) { return w.canonical_result_id != boost::uuids::uuid{}; }));
+            terminal_count = static_cast<std::uint32_t>(
+                std::count_if(wus->begin(), wus->end(), [](const auto& w) {
+                    return w.canonical_result_id != boost::uuids::uuid{};
+                }));
             if (workunit_count > 0 && terminal_count == workunit_count) {
                 BOOST_LOG_SEV(lg(), info) << "Batch " << batch_ref << " drained (" << terminal_count
                                           << "/" << workunit_count << " workunits).";
                 compute::messaging::list_hosts_request hosts_req;
                 hosts_req.limit = 1000;
-                auto hosts_resp = do_request(out, session, hosts_req, std::chrono::seconds(30),
-                                             true);
+                auto hosts_resp =
+                    do_request(out, session, hosts_req, std::chrono::seconds(30), true);
                 if (!hosts_resp)
                     return;
                 for (const auto& h : hosts_resp->hosts) {
@@ -925,8 +913,8 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
                 break;
             }
             if (workunit_count == 0) {
-                fail(out) << "Batch " << batch_ref
-                          << " has no workunits; dispatch it first." << std::endl;
+                fail(out) << "Batch " << batch_ref << " has no workunits; dispatch it first."
+                          << std::endl;
                 return;
             }
             if (std::chrono::steady_clock::now() >= deadline) {
@@ -994,8 +982,8 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
         const auto& online_hosts = online_hosts_at_drain;
         std::vector<compute::domain::host> unexercised;
         for (const auto& h : online_hosts) {
-            const bool exercised = std::any_of(results->begin(), results->end(),
-                                               [&](const auto& r) { return r.host_id == h.id; });
+            const bool exercised = std::any_of(
+                results->begin(), results->end(), [&](const auto& r) { return r.host_id == h.id; });
             if (!exercised)
                 unexercised.push_back(h);
         }
@@ -1008,8 +996,8 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
             out << "SMOKE PASS" << std::endl;
         } else {
             if (!all_success)
-                out << "  FAIL: " << (results->size() - success_count)
-                    << " result(s) not success" << std::endl;
+                out << "  FAIL: " << (results->size() - success_count) << " result(s) not success"
+                    << std::endl;
             for (const auto& h : unexercised) {
                 out << "  FAIL: online host " << h.display_name << " (" << h.external_id
                     << ") has no result in this batch" << std::endl;
@@ -1020,7 +1008,8 @@ void compute_commands::process_grid_stats(std::ostream& out, nats_client& sessio
     }
 }
 
-void compute_commands::process_delete_host(std::ostream& out, nats_client& session,
+void compute_commands::process_delete_host(std::ostream& out,
+                                           nats_client& session,
                                            const std::vector<std::string>& args) {
     auto parsed = parse_args(args, {});
     if (!parsed) {
@@ -1078,7 +1067,8 @@ void compute_commands::process_delete_host(std::ostream& out, nats_client& sessi
     out << "Deleted host " << target->display_name << " (" << host_id << ")." << std::endl;
 }
 
-void compute_commands::process_download_input(std::ostream& out, nats_client& session,
+void compute_commands::process_download_input(std::ostream& out,
+                                              nats_client& session,
                                               const std::vector<std::string>& args) {
     auto parsed = parse_args(args, {});
     if (!parsed) {
@@ -1120,8 +1110,8 @@ void compute_commands::process_download_input(std::ostream& out, nats_client& se
     }
     const auto storage = split_storage_uri(wu->input_uri);
     if (!storage) {
-        fail(out) << "Workunit " << workunit_id << " has an unrecognised input uri: "
-                  << wu->input_uri << std::endl;
+        fail(out) << "Workunit " << workunit_id
+                  << " has an unrecognised input uri: " << wu->input_uri << std::endl;
         return;
     }
 
@@ -1136,7 +1126,8 @@ void compute_commands::process_download_input(std::ostream& out, nats_client& se
         << std::endl;
 }
 
-void compute_commands::process_download_output(std::ostream& out, nats_client& session,
+void compute_commands::process_download_output(std::ostream& out,
+                                               nats_client& session,
                                                const std::vector<std::string>& args) {
     auto parsed = parse_args(args, {});
     if (!parsed) {
@@ -1178,8 +1169,8 @@ void compute_commands::process_download_output(std::ostream& out, nats_client& s
     }
     const auto storage = split_storage_uri(target->output_uri);
     if (!storage) {
-        fail(out) << "Result " << result_id << " has an unrecognised output uri: "
-                  << target->output_uri << std::endl;
+        fail(out) << "Result " << result_id
+                  << " has an unrecognised output uri: " << target->output_uri << std::endl;
         return;
     }
 

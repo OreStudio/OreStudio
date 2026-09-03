@@ -9,6 +9,15 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
+#+begin_note
+*Superseded as the hub.* [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] is the
+framework's specification: it derives the regulatory functions from the
+primitives of a control loop and states the rule fixing what the framework
+models. This page remains as the practical index into the cluster, and its
+account of dispatch is a mechanism the specification uses rather than the
+framework's organising idea. Where the two disagree, the specification governs.
+#+end_note
+
 * Summary
 
 This document is the hub of the /compass skill framework/. The objective of the

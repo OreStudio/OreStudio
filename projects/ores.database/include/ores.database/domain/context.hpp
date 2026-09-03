@@ -56,14 +56,17 @@ public:
                      sqlgen::postgres::Credentials credentials,
                      utility::uuid::tenant_id tenant_id,
                      std::string actor = "",
-                     std::string service_account = "")
+                     std::string service_account = "",
+                     pool_acquire_policy policy = {})
         : connection_pool_(std::move(connection_pool),
                            credentials,
                            std::move(tenant_id),
                            std::move(actor),
-                           service_account)
+                           service_account,
+                           std::move(policy))
         , credentials_(std::move(credentials))
-        , service_account_(std::move(service_account)) {}
+        , service_account_(std::move(service_account))
+        , policy_(std::move(policy)) {}
 
     /**
      * @brief Constructs a tenant-and-party-aware context.
@@ -74,16 +77,19 @@ public:
                      boost::uuids::uuid party_id,
                      std::vector<boost::uuids::uuid> visible_party_ids,
                      std::string actor = "",
-                     std::string service_account = "")
+                     std::string service_account = "",
+                     pool_acquire_policy policy = {})
         : connection_pool_(std::move(connection_pool),
                            credentials,
                            std::move(tenant_id),
                            party_id,
                            std::move(visible_party_ids),
                            std::move(actor),
-                           service_account)
+                           service_account,
+                           std::move(policy))
         , credentials_(std::move(credentials))
-        , service_account_(std::move(service_account)) {}
+        , service_account_(std::move(service_account))
+        , policy_(std::move(policy)) {}
 
     /**
      * @brief Gets the tenant-aware connection pool.
@@ -215,20 +221,23 @@ public:
     /**
      * @brief Creates a new context with a different tenant ID (no party).
      *
-     * The service_account is preserved from the base context.
+     * The service_account and pool acquisition policy are preserved from the
+     * base context.
      */
     [[nodiscard]] context with_tenant(utility::uuid::tenant_id tenant_id, std::string actor) const {
         return context(connection_pool_.underlying_pool(),
                        credentials_,
                        std::move(tenant_id),
                        std::move(actor),
-                       service_account_);
+                       service_account_,
+                       policy_);
     }
 
     /**
      * @brief Creates a new context with tenant and party isolation.
      *
-     * The service_account is preserved from the base context.
+     * The service_account and pool acquisition policy are preserved from the
+     * base context.
      */
     [[nodiscard]] context with_party(utility::uuid::tenant_id tenant_id,
                                      boost::uuids::uuid party_id,
@@ -240,12 +249,14 @@ public:
                        party_id,
                        std::move(visible_party_ids),
                        std::move(actor),
-                       service_account_);
+                       service_account_,
+                       policy_);
     }
 
 private:
     connection_pool_type connection_pool_;
     sqlgen::postgres::Credentials credentials_;
+    pool_acquire_policy policy_;
     std::string service_account_;
     std::vector<std::string> roles_;
     std::string workspace_id_ = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";

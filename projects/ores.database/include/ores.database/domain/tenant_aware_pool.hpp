@@ -25,14 +25,49 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <chrono>
+#include <cstddef>
+#include <functional>
 #include <mutex>
 #include <optional>
 #include <sqlgen/ConnectionPool.hpp>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace ores::database {
+
+/**
+ * @brief How long to wait between connection-acquisition attempts.
+ *
+ * Linear waits a fixed interval between attempts (the historical sqlgen
+ * behaviour). Exponential doubles the interval per attempt, bounded by an
+ * internal cap, so sustained contention is absorbed politely while a freed
+ * connection is still discovered promptly.
+ */
+enum class pool_backoff_strategy {
+    linear,
+    exponential
+};
+
+/**
+ * @brief Retry policy for acquiring a connection from the pool.
+ *
+ * The tenant-aware pool probes the underlying pool (configured to fail fast)
+ * and retries up to @c num_attempts times, sleeping between attempts. The
+ * retry limit is bounded: after the last attempt the acquisition fails with
+ * the usual "No available connections in the pool." error.
+ */
+struct pool_acquire_policy {
+    /// Maximum number of acquisition attempts.
+    std::size_t num_attempts = 10;
+    /// Base wait between attempts, in seconds.
+    std::size_t wait_time_in_seconds = 1;
+    /// Wait shape between attempts.
+    pool_backoff_strategy strategy = pool_backoff_strategy::exponential;
+};
 
 /**
  * @brief A connection pool wrapper that sets tenant and party context on acquire.
@@ -65,10 +100,12 @@ public:
                       sqlgen::postgres::Credentials credentials,
                       utility::uuid::tenant_id tenant_id,
                       std::string actor = "",
-                      std::string service_account = "")
+                      std::string service_account = "",
+                      pool_acquire_policy policy = {})
         : pool_(std::move(pool))
         , credentials_(std::move(credentials))
         , pool_size_(pool_.size())
+        , policy_(std::move(policy))
         , reconnect_mutex_(std::make_shared<std::mutex>())
         , tenant_id_(std::move(tenant_id))
         , actor_(std::move(actor))
@@ -83,10 +120,12 @@ public:
                       boost::uuids::uuid party_id,
                       std::vector<boost::uuids::uuid> visible_party_ids,
                       std::string actor = "",
-                      std::string service_account = "")
+                      std::string service_account = "",
+                      pool_acquire_policy policy = {})
         : pool_(std::move(pool))
         , credentials_(std::move(credentials))
         , pool_size_(pool_.size())
+        , policy_(std::move(policy))
         , reconnect_mutex_(std::make_shared<std::mutex>())
         , tenant_id_(std::move(tenant_id))
         , party_id_(party_id)
@@ -104,7 +143,29 @@ public:
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
         using namespace ores::logging;
 
-        auto session_result = pool_.acquire();
+        // The underlying pool is configured to fail fast; the retry policy
+        // lives here. The first probe is immediate; waiters then sleep
+        // between probes so the pool is not hammered, and a freed
+        // connection is found within the next probe.
+        sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> session_result =
+            pool_.acquire();
+        for (std::size_t attempt = 1; !session_result && attempt < policy_.num_attempts;
+             ++attempt) {
+            std::this_thread::sleep_for(backoff_delay(attempt, policy_));
+            if (attempt == 1)
+                BOOST_LOG_SEV(lg(), warn)
+                    << "No available database connections in the pool; waiting with "
+                    << (policy_.strategy == pool_backoff_strategy::exponential
+                            ? "exponential"
+                            : "linear")
+                    << " backoff (attempt " << (attempt + 1) << " of " << policy_.num_attempts
+                    << ")";
+            else
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Still waiting for a database connection (attempt " << (attempt + 1)
+                    << " of " << policy_.num_attempts << ")";
+            session_result = pool_.acquire();
+        }
         if (!session_result) {
             return session_result;
         }
@@ -131,8 +192,9 @@ public:
             session_result = pool_.acquire(); // re-acquire to replace below
             {
                 std::lock_guard lock(*reconnect_mutex_);
+                // Probe mode: the backoff policy above governs acquisition.
                 sqlgen::ConnectionPoolConfig cfg{
-                    .size = pool_size_, .num_attempts = 3, .wait_time_in_seconds = 1};
+                    .size = pool_size_, .num_attempts = 1, .wait_time_in_seconds = 0};
                 auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
                 if (new_pool) {
                     pool_ = std::move(*new_pool);
@@ -297,9 +359,37 @@ public:
     }
 
 private:
+    /**
+     * @brief Sleep duration before the given acquisition attempt.
+     *
+     * Linear waits a fixed interval per attempt. Exponential doubles the
+     * interval per attempt, capped at 10 seconds, so the wait is absorbed
+     * politely under sustained contention while a freed connection is still
+     * discovered promptly. A small deterministic per-thread jitter spreads
+     * waiting threads so they do not re-probe in lockstep.
+     */
+    [[nodiscard]] static std::chrono::milliseconds backoff_delay(
+        std::size_t attempt, const pool_acquire_policy& policy) noexcept {
+        constexpr auto max_delay = std::chrono::milliseconds(10'000);
+        auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::seconds(policy.wait_time_in_seconds));
+        if (policy.strategy == pool_backoff_strategy::exponential &&
+            delay > std::chrono::milliseconds::zero()) {
+            for (std::size_t i = 1; i < attempt; ++i)
+                delay = std::min(max_delay, delay * 2);
+        }
+        const auto tid = std::hash<std::thread::id>{}(std::this_thread::get_id());
+        const auto jitter = std::chrono::milliseconds(static_cast<long long>(tid % 201) - 100);
+        delay += jitter;
+        if (delay < std::chrono::milliseconds(1))
+            delay = std::chrono::milliseconds(1);
+        return delay;
+    }
+
     sqlgen::ConnectionPool<Connection> pool_;
     sqlgen::postgres::Credentials credentials_;
     std::size_t pool_size_;
+    pool_acquire_policy policy_;
     std::shared_ptr<std::mutex> reconnect_mutex_;
     utility::uuid::tenant_id tenant_id_;
     std::optional<boost::uuids::uuid> party_id_;

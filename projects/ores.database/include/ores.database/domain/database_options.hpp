@@ -63,6 +63,13 @@ struct database_options final {
      * @brief Number of connections in this service's connection pool.
      */
     int pool_size = 2;
+    /**
+     * @brief Backoff strategy for pool acquisition retries.
+     *
+     * "exponential" (the default) doubles the wait between attempts;
+     * "linear" waits a fixed interval per attempt.
+     */
+    std::string pool_backoff = "exponential";
 };
 
 ORES_DATABASE_EXPORT std::ostream& operator<<(std::ostream& s, const database_options& v);

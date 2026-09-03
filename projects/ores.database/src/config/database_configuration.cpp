@@ -35,6 +35,7 @@ const std::string database_database_arg("db-database");
 const std::string database_port_arg("db-port");
 const std::string database_tenant_arg("tenant");
 const std::string database_pool_size_arg("db-pool-size");
+const std::string database_pool_backoff_arg("db-pool-backoff");
 
 }
 
@@ -61,7 +62,11 @@ boost::program_options::options_description database_configuration::make_options
         "db-pool-size",
         value<int>()->default_value(2),
         "Number of connections in this service's connection pool. "
-        "Reads from ORES_<APP>_DB_POOL_SIZE env var.");
+        "Reads from ORES_<APP>_DB_POOL_SIZE env var.")(
+        "db-pool-backoff",
+        value<std::string>()->default_value("exponential"),
+        "Backoff strategy for pool acquisition retries: exponential (default) "
+        "or linear. Reads from ORES_<APP>_DB_POOL_BACKOFF env var.");
 
     return r;
 }
@@ -97,6 +102,12 @@ database_configuration::read_options(const boost::program_options::variables_map
         BOOST_THROW_EXCEPTION(std::runtime_error(
             "db-pool-size must be a positive integer, but was: " + std::to_string(r.pool_size) +
             ". Set ORES_<APP>_DB_POOL_SIZE env var."));
+
+    r.pool_backoff = vm[database_pool_backoff_arg].as<std::string>();
+    if (r.pool_backoff != "exponential" && r.pool_backoff != "linear")
+        BOOST_THROW_EXCEPTION(std::runtime_error(
+            "db-pool-backoff must be 'exponential' or 'linear', but was: " + r.pool_backoff +
+            ". Set ORES_<APP>_DB_POOL_BACKOFF env var."));
 
     return r;
 }

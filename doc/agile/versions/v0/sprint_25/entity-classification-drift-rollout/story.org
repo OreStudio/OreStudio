@@ -2,46 +2,57 @@
 :ID: B8F8A7B5-30E3-47EF-959F-7EB006C007D3
 :END:
 #+title: Story: Entity classification and drift baseline across all components
-#+description: Split from the ores.refdata pilot story at sprint 24 close: once the pilot tool and dimensions are trusted, run the classification/drift tool across every remaining component, produce the full quantified report, re-scope the 14 ad hoc per-component drift tasks using real data, and delete entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org. Superseded in its original shape on 2026-08-04: the 14 ad hoc tasks were re-scoped directly (component-catalogue analysis, not the read-only report) into 12 full remediation stories -- see Decisions. Remaining scope: retire the 3 stale docs, and decide whether the quantified report is still worth producing.
+#+description: Split from the ores.refdata pilot story at sprint 24 close: once the pilot tool and dimensions are trusted, run the classification/drift tool across every remaining component, produce the full quantified report, re-scope the 14 ad hoc per-component drift tasks using real data, and delete entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org. Superseded in its original shape on 2026-08-04: the 14 ad hoc tasks were re-scoped directly (component-catalogue analysis, not the read-only report) into 12 full remediation stories -- see Decisions. From 2026-09-03 this story coordinates the approved execution program (see Decisions): foundations-first ordering of the 12 stories, the canonical per-component method encoded as a reusable skill, and retirement of the 3 stale docs. The quantified report is dropped; each component story's survey supersedes it.
 #+type: story
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-03
-#+updated: 2026-08-03
-#+environment:
+#+updated: 2026-09-04
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Coordinate the drift-elimination program to its end state: every component
+regenerates byte-identical output from its org models, the drift check
+enforces it, and no hand-edited generated file survives. This story records
+the program's operating decisions, hosts the canonical per-component method
+as a reusable skill, and retires the three manual-tracking docs the program
+superseded. Each component is remediated by its own story; the ordering and
+the method come from here.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Program decisions recorded; method-skill task scaffolded; stale-doc retirement in progress. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-03                               |
+| Next          | Land the doc-retirement PR, then the method skill; then close. |
+| Last touched  | 2026-09-04                               |
 
 * Acceptance
 
-- The 14 ad hoc per-component drift tasks are re-scoped (or closed/replaced) using real data instead of guesses. entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org are deleted once whatever supersedes them is in place.
-- (Original, now optional) The classification tool is run across every remaining component (all ~19 beyond ores.refdata), producing totals and per-component breakdowns of how many entities are regular vs not, and why not -- kept as an acceptance item only if the report is still judged worth producing once the 12 remediation stories land; see Decisions.
+- The 14 ad hoc per-component drift tasks are re-scoped (or closed/replaced) using real data instead of guesses. *Done 2026-08-04.*
+- entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org are deleted once whatever supersedes them is in place. In progress 2026-09-03: the checklist's criteria are being merged into the commissioning reference before deletion.
+- The canonical per-component method exists as a reusable skill (task below), and the program's ordering and operating rules are recorded in Decisions.
+- The dormant product-backlog entries that this method supersedes are closed or re-pointed at the skill.
+- (Resolved 2026-09-03) The classification tool is run across every remaining component producing a combined quantified report. Decision: not produced; the 12 stories' per-component surveys supersede it.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | BACKLOG | | | Narrowed 2026-08-04: re-scoping is done (see Decisions); remaining work is retiring the 3 stale docs and deciding whether the quantified report still adds value. |
+| [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | STARTED | 2026-09-03 | | Narrowed 2026-08-04, report question settled 2026-09-03 (see Decisions); remaining work is retiring the 3 stale docs and closing the program setup. |
+| [[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]] | BACKLOG | | | Author the canonical method skill under doc/llm/skills, deployed to .claude/skills via deploy_skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates. |
 
 * Decisions
 
 - 2026-08-04: re-scoped the 14 ad hoc "Apply safe drift to X-cpp" tasks directly against the codegen component catalogue (=projects/ores.codegen/library/component_catalogue.org=) and the ores.refdata pilot's proven acceptance bar, rather than waiting on the read-only classification/drift report this story originally scoped. Result: 12 new per-component stories (composite components -- ores.dq, ores.iam, ores.trading -- get one story with a task per SQL/C++ subcomponent; the other 9 get one story each), each requiring profile binding, zero-diff regen, and extending the =check_component_drift.py= CI check to that component -- so the bar is "zero drift, CI-enforced," strictly stronger than this story's original "produce a report" scope. =ores.controller= was excluded: the component has been decommissioned (=projects/ores.controller*= no longer exists), so its ad hoc task was marked ABANDONED rather than re-scoped. See the sprint's Stories table for the 12 new story links.
+- 2026-09-03: approved an execution program for the 12 remediation stories, replacing the ad hoc, sprint-by-sprint drift work of the previous sprints. Components run foundations-first: =fix-codegen-template-drift= and =close-systemic-codegen-gaps= land before any component story starts, so a codegen bug found mid-sweep does not waste the sweep. Each component story runs one documented algorithm per component: baseline regen before any model edit, survey every model file, bind entities to profiles, record each no-match with its real feature values, fix codegen gaps at their source, regenerate, require byte-identical output, review the generated code for C++ idiomaticity and smells, and only then extend the =check_component_drift.py= gate list. Partial codegen coverage is not a valid end state; a type too complex to code-generate is an exception that needs a recorded justification per entity. Automation starts granular (level 0: every fix verified by build, test, and byte-identical diff before its PR) and rises only on evidence. PRs stay small and human-reviewable. The algorithm is encoded as a reusable skill (task above) so every story runs the same hardened recipe. The quantified classification report is dropped: each component story produces its own survey, and a read-only cross-component report would be stale before it landed.
 
 * Out of scope
 

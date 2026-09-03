@@ -1,0 +1,95 @@
+:PROPERTIES:
+:ID: 43EE3BC6-C813-45FD-8348-26919720FDAA
+:END:
+#+title: Task: Encode the per-component codegen drift-elimination method as a skill
+#+description: Author the canonical method skill under doc/llm/skills, deployed to .claude/skills via deploy_skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates.
+#+type: task
+#+level: s1
+#+filetags: :entity-classification-drift-rollout:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-03
+#+updated: 2026-09-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A reusable skill that runs one component through the full drift-elimination
+algorithm. The skill is the single method every remediation story follows, so
+the sweep does not re-derive the recipe per component and does not repeat the
+pilot mistakes. It encodes the algorithm the ores.refdata and ores.dq pilots
+proved (see the parent story's Decisions, 2026-09-03), the generated-code
+review step, the too-complex-to-generate exception rule, and the automation
+ramp with its evidence gates.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-04                               |
+
+* Acceptance
+
+- The skill is authored under =doc/llm/skills/<slug>/SKILL.org= per the
+  =claude_code_skills.org= contract and deployed to =.claude/skills/= via
+  =deploy_skills=. It loads through the Skill tool.
+- The algorithm is stated as an ordered procedure: baseline regen before any
+  model edit, survey every model file, bind entities to profiles, record each
+  no-match with its real feature values, fix codegen gaps at their source,
+  regenerate, require byte-identical output, review the generated code for
+  C++ idiomaticity and smells, extend the =check_component_drift.py= gate
+  list last. No step is skippable; no partial coverage is a valid end state.
+- The too-complex-to-generate exception rule is stated: an exception needs a
+  recorded justification per entity, and the manual artefact stays visible to
+  the drift check.
+- The automation ramp is stated as levels L0-L2 with the evidence each level
+  needs before promotion.
+- The skill cites its provenance: the ores.refdata and ores.dq worked method
+  records, and the sprint 24 dimension settlement.
+- The dormant product-backlog entries that this method supersedes
+  (=entity_evaluation_skill= and similar) are closed or re-pointed at the
+  skill.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-rollout:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/rollout-classification-all-components
+#+pr: 2001
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-07-31
-#+environment:
+#+updated: 2026-09-04
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -25,21 +25,23 @@ every remaining component, produce the full quantified drift baseline, and
 retire everything the tool now supersedes. The re-scoping half is done —
 each of the 14 ad hoc tasks was re-scoped directly against the codegen
 component catalogue rather than a report (see the parent story's
-Decisions). What remains: retire =entity_coverage_matrix.org=,
-=entity_evaluation_checklist.org=, and =entity_catalogue.org=, and decide
-whether the quantified classification report is still worth producing now
-that 12 remediation stories already exist.
+Decisions). What remains after 2026-09-03: retire
+=entity_coverage_matrix.org=, =entity_evaluation_checklist.org=, and
+=entity_catalogue.org=, capturing anything still useful first. The report
+question is settled: not produced. Each component story's survey supersedes
+it, and a read-only cross-component report would be stale before landing
+(see the parent story's Decisions, 2026-09-03).
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] |
-| Now          | Not yet started.                       |
+| Now          | Program decisions recorded (story); board synced; retiring the 3 stale docs. |
 | Waiting on   | Nothing.                               |
-| Next         | Decide whether the report is still worth producing; retire the 3 stale docs either way. |
-| Last touched | 2026-08-04                               |
+| Next         | Land the closeout PRs (board, docs retirement), then record Result and close. |
+| Last touched | 2026-09-04                               |
 
 * Acceptance
 
@@ -55,13 +57,25 @@ that 12 remediation stories already exist.
   component and produces a combined drift report with per-component
   breakdowns and totals — only if judged still worth producing once the 12
   stories close; not required to close this task if the per-component
-  stories already supersede its value.
+  stories already supersede its value. Resolved 2026-09-03: not produced
+  (see Goal and the parent story's Decisions).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- 2026-09-03: recorded the 2026-09-03 program decisions in the parent
+  story; re-scoped this task; scaffolded the method-skill task.
+- Raise a board PR (this commit): story/task text, sprint board rows for
+  this story and for =refactor_codegen_cpp= (its row still described the
+  pre-2026-08-04 sweep scope).
+- Retire the 3 stale docs in one doc PR: merge the evaluation checklist's
+  per-layer criteria into the commissioning process reference, reduce the
+  three files to retirement stubs that keep their =:ID:= (the site export
+  aborts on any unresolved =id:= link, and archived sprint records still
+  cite these pages), and re-point or trim every live reference (analysis
+  index, commissioning reference, model-unification analysis, system
+  model domain, product backlog captures).
+- Verify the doc PR with a site export check, then raise it for review.
+- Close with a Result recording the retirement and the report decision.
 
 * Notes
 
@@ -80,12 +94,14 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2001][#2001]] | [agile] Record drift-elimination program decisions and sync sprint 25 board |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5533143282 | Bot 1: #+branch mismatch; leading-slash path form; dormant-captures grammar | task_rollout, task_method, story | Fixed; #+branch declined | #+branch names the implementation branch for the PR-2 and PR-3 raises; rollout-board is a one-PR diff-isolation sibling. |
+| 5533144473 | Bot 2: skill authoring location per the skill contract; story grammar nitpick | task_method, story | Fixed | Acceptance now cites doc/llm/skills/<slug>/SKILL.org and the deploy_skills target. |
+| 5533144798 | Bot 3: stale #+branch; path form differs across lines 5 and 44 | task_rollout, task_method | Fixed; #+branch declined | Path form aligned to the repo-relative convention; #+branch kept, see bot 1. |
 
 * Result

@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-rollout:
 #+owner: marco
 #+branch: feature/rollout-classification-all-components
-#+pr: 2001
+#+pr: 2002
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
@@ -94,6 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2002][#2002]] | [doc] Retire entity coverage matrix, evaluation checklist, entity catalogue |
 | [[https://github.com/OreStudio/OreStudio/pull/2001][#2001]] | [agile] Record drift-elimination program decisions and sync sprint 25 board |
 
 * Review

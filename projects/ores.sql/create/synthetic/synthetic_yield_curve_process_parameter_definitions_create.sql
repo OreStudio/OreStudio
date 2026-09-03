@@ -33,10 +33,12 @@
  * strongly-typed process-parameter structs of ores.analytics.quant
  * (two_factor_gaussian_params, vasicek_params, ...). The
  * (process_type_code, parameter_name) pair uniquely identifies a
- * parameter; the description field is the rich user-facing text shown
- * in the Qt parameter table explaining what the parameter means, and
- * min_value/max_value (NULL = unbounded) plus default_value drive
- * the dialog's spin-box ranges and pre-fill.
+ * parameter; four fields drive the Qt parameter table: display_name
+ * (the English name), symbol (the Greek letter, where one is
+ * conventional), short_label (the layperson name shown in Simple
+ * mode) and description (the rich tooltip text). min_value/
+ * max_value (NULL = unbounded) plus default_value drive the
+ * dialog's spin-box ranges and pre-fill.
  *
  * Why this exists as a table rather than hardcoded structs: it makes the
  * parameter vocabulary queryable and extensible -- adding a new model or
@@ -53,6 +55,9 @@ create table if not exists "ores_synthetic_process_parameter_definitions_tbl" (
     "version" integer not null,
     "process_type_code" text not null,
     "parameter_name" text not null,
+    "display_name" text not null,
+    "symbol" text null,
+    "short_label" text not null,
     "description" text not null,
     "data_type" text not null,
     "default_value" double precision not null,

@@ -31,6 +31,9 @@ std::vector<ores::diff::domain::field_value> render_yield_curve_process_paramete
     fields.push_back({.name = "ID", .value = boost::uuids::to_string(v.id)});
     fields.push_back({.name = "Process Type Code", .value = v.process_type_code});
     fields.push_back({.name = "Parameter Name", .value = v.parameter_name});
+    fields.push_back({.name = "Display Name", .value = v.display_name});
+    fields.push_back({.name = "Symbol", .value = v.symbol.value_or(std::string{})});
+    fields.push_back({.name = "Short Label", .value = v.short_label});
     fields.push_back({.name = "Description", .value = v.description});
     fields.push_back({.name = "Data Type", .value = v.data_type});
     fields.push_back({.name = "Default Value", .value = std::to_string(v.default_value)});

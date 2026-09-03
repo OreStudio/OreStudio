@@ -40,10 +40,12 @@ namespace ores::synthetic::domain {
  * strongly-typed process-parameter structs of ores.analytics.quant
  * (two_factor_gaussian_params, vasicek_params, ...). The
  * (process_type_code, parameter_name) pair uniquely identifies a
- * parameter; the description field is the rich user-facing text shown
- * in the Qt parameter table explaining what the parameter means, and
- * min_value/max_value (NULL = unbounded) plus default_value drive
- * the dialog's spin-box ranges and pre-fill.
+ * parameter; four fields drive the Qt parameter table: display_name
+ * (the English name), symbol (the Greek letter, where one is
+ * conventional), short_label (the layperson name shown in Simple
+ * mode) and description (the rich tooltip text). min_value/
+ * max_value (NULL = unbounded) plus default_value drive the
+ * dialog's spin-box ranges and pre-fill.
  *
  * Why this exists as a table rather than hardcoded structs: it makes the
  * parameter vocabulary queryable and extensible -- adding a new model or
@@ -84,6 +86,25 @@ struct yield_curve_process_parameter_definition final {
      * process type.
      */
     std::string parameter_name;
+
+    /**
+     * @brief English name of the parameter for display, e.g. "Mean reversion speed" for kappa.
+     * Shown in the Advanced parameter table as the parenthesised meaning next to the Greek symbol.
+     */
+    std::string display_name;
+
+    /**
+     * @brief Greek letter conventionally used for the parameter, where one exists, e.g. κ for
+     * kappa, ρ for rho; NULL when no conventional symbol applies (e.g. initial_rate). Shown as the
+     * label of the Advanced parameter table row, with the English name in brackets.
+     */
+    std::optional<std::string> symbol;
+
+    /**
+     * @brief Short layperson name for the parameter, e.g. "Reversion speed" for kappa. Shown as the
+     * row label in the Simple parameter table -- write it for a non-specialist reader, not a quant.
+     */
+    std::string short_label;
 
     /**
      * @brief Rich, user-facing description of what the parameter means and its domain constraints

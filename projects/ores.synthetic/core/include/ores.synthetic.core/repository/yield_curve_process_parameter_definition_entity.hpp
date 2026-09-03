@@ -46,6 +46,9 @@ struct yield_curve_process_parameter_definition_entity {
 
     std::string parameter_name;
 
+    std::string display_name;
+    std::optional<std::string> symbol;
+    std::string short_label;
     std::string description;
     std::string data_type = "double";
     double default_value = 0.0;

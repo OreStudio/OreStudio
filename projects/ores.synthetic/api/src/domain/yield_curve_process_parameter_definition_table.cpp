@@ -41,14 +41,15 @@ std::string convert_to_table(const std::vector<yield_curve_process_parameter_def
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Process Type" << "Parameter" << "Description" << "Data Type"
-          << "Default" << "Min" << "Max" << "Display Order" << "Modified By" << "Version"
-          << fort::endr;
+    table << fort::header << "Process Type" << "Parameter" << "Display Name" << "Symbol"
+          << "Short Label" << "Description" << "Data Type" << "Default" << "Min" << "Max"
+          << "Display Order" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& pd : v) {
-        table << pd.process_type_code << pd.parameter_name << pd.description << pd.data_type
-              << pd.default_value << opt_str(pd.min_value) << opt_str(pd.max_value)
-              << pd.display_order << pd.modified_by << pd.version << fort::endr;
+        table << pd.process_type_code << pd.parameter_name << pd.display_name << opt_str(pd.symbol)
+              << pd.short_label << pd.description << pd.data_type << pd.default_value
+              << opt_str(pd.min_value) << opt_str(pd.max_value) << pd.display_order
+              << pd.modified_by << pd.version << fort::endr;
     }
     return table.to_string();
 }

@@ -26,6 +26,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <functional>
@@ -107,6 +108,7 @@ public:
         , pool_size_(pool_.size())
         , policy_(std::move(policy))
         , reconnect_mutex_(std::make_shared<std::mutex>())
+        , pool_generation_(std::make_shared<std::atomic<std::size_t>>(0))
         , tenant_id_(std::move(tenant_id))
         , actor_(std::move(actor))
         , service_account_(std::move(service_account)) {}
@@ -127,6 +129,7 @@ public:
         , pool_size_(pool_.size())
         , policy_(std::move(policy))
         , reconnect_mutex_(std::make_shared<std::mutex>())
+        , pool_generation_(std::make_shared<std::atomic<std::size_t>>(0))
         , tenant_id_(std::move(tenant_id))
         , party_id_(party_id)
         , visible_party_ids_(std::move(visible_party_ids))
@@ -148,6 +151,11 @@ public:
             return session_result;
         }
 
+        // The generation of the pool this session was acquired from; the
+        // rebuild path uses it to skip re-making when another thread already
+        // replaced the pool.
+        const auto pool_generation_at_start = pool_generation_->load(std::memory_order_relaxed);
+
         // Speculatively rollback any aborted transaction left by a previous
         // failed operation. PostgreSQL accepts ROLLBACK even when no
         // transaction is active, so this is always safe.
@@ -165,36 +173,36 @@ public:
         if (needs_rebuild) {
             BOOST_LOG_SEV(lg(), warn) << "Pool connection dead (ROLLBACK failed: " << rollback_error
                                       << "). Rebuilding pool...";
-            // Re-acquire first so the dead session's connection flag is
-            // released before the pool object is replaced below (avoids
-            // use-after-free of the old pool entry).
-            session_result = pool_.acquire();
-            {
+            // The mutex guards each make attempt and the pool swap only; the
+            // backoff waits between attempts happen outside it, so threads
+            // queueing behind a rebuild are not blocked for the whole budget.
+            // Probe mode: the backoff policy governs the rebuild attempts, so
+            // a database still restarting is absorbed instead of failing on
+            // the first refused connection.
+            sqlgen::ConnectionPoolConfig cfg{
+                .size = pool_size_, .num_attempts = 1, .wait_time_in_seconds = 0};
+            std::string rebuild_error;
+            const bool rebuilt = retry_probe([&]() {
                 std::lock_guard lock(*reconnect_mutex_);
-                // Probe mode: the retry/backoff loop governs the rebuild and
-                // the acquire that follows it, so a database still restarting
-                // is absorbed instead of failing the request on the first
-                // refused connection.
-                sqlgen::ConnectionPoolConfig cfg{
-                    .size = pool_size_, .num_attempts = 1, .wait_time_in_seconds = 0};
+                // Another thread already replaced the dead pool while this
+                // one waited; nothing to rebuild.
+                if (pool_generation_->load(std::memory_order_relaxed) != pool_generation_at_start)
+                    return true;
                 auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
-                for (std::size_t attempt = 1; !new_pool && attempt < policy_.num_attempts;
-                     ++attempt) {
-                    BOOST_LOG_SEV(lg(), warn)
-                        << "Pool rebuild attempt " << attempt << " of "
-                        << policy_.num_attempts << " failed: " << new_pool.error().what();
-                    std::this_thread::sleep_for(backoff_delay(attempt, policy_));
-                    new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
+                if (!new_pool) {
+                    rebuild_error = new_pool.error().what();
+                    return false;
                 }
-                if (new_pool) {
-                    pool_ = std::move(*new_pool);
-                    BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
-                } else {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Pool rebuild failed: " << new_pool.error().what();
-                    return sqlgen::error("Pool rebuild failed: " +
-                                         std::string(new_pool.error().what()));
-                }
+                // Sessions co-own their connection and in-use flag, so the
+                // swap is safe while the dead session is still outstanding.
+                pool_ = std::move(*new_pool);
+                pool_generation_->fetch_add(1, std::memory_order_relaxed);
+                BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
+                return true;
+            });
+            if (!rebuilt) {
+                BOOST_LOG_SEV(lg(), error) << "Pool rebuild failed: " << rebuild_error;
+                return sqlgen::error("Pool rebuild failed: " + rebuild_error);
             }
             session_result = acquire_with_backoff();
             if (!session_result)
@@ -353,21 +361,21 @@ public:
 
 private:
     /**
-     * @brief Probes the pool until a connection is free or the policy
+     * @brief Runs a fail-fast probe until it succeeds or the policy
      * budget is exhausted.
      *
-     * The underlying pool is configured to fail fast; the retry policy
-     * lives here. The first probe is immediate; waiters then sleep
-     * between probes so the pool is not hammered, and a freed
-     * connection is found within the next probe.
+     * The first probe runs immediately; after each failure the wait
+     * before the next probe follows the policy (linear or exponential,
+     * with per-thread jitter). The first wait logs at warn level, later
+     * waits at debug level.
+     *
+     * @return true when a probe succeeded.
      */
-    [[nodiscard]] sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>>
-    acquire_with_backoff() noexcept {
+    template <typename Probe>
+    [[nodiscard]] bool retry_probe(Probe&& probe) noexcept {
         using namespace ores::logging;
-        sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> session_result =
-            pool_.acquire();
-        for (std::size_t attempt = 1; !session_result && attempt < policy_.num_attempts;
-             ++attempt) {
+        bool ok = probe();
+        for (std::size_t attempt = 1; !ok && attempt < policy_.num_attempts; ++attempt) {
             std::this_thread::sleep_for(backoff_delay(attempt, policy_));
             if (attempt == 1)
                 BOOST_LOG_SEV(lg(), warn)
@@ -381,9 +389,29 @@ private:
                 BOOST_LOG_SEV(lg(), debug)
                     << "Still waiting for a database connection (attempt " << (attempt + 1)
                     << " of " << policy_.num_attempts << ")";
-            session_result = pool_.acquire();
+            ok = probe();
         }
-        return session_result;
+        return ok;
+    }
+
+    /**
+     * @brief Probes the pool until a connection is free or the policy
+     * budget is exhausted.
+     *
+     * The underlying pool is configured to fail fast; the retry policy
+     * lives here. The last probe's outcome is returned, whether a
+     * success or the error that exhausted the budget.
+     */
+    [[nodiscard]] sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>>
+    acquire_with_backoff() noexcept {
+        sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> session_result =
+            sqlgen::error("No available connections in the pool.");
+        const bool acquired = retry_probe([&]() {
+            session_result = pool_.acquire();
+            return static_cast<bool>(session_result);
+        });
+        return acquired ? session_result
+                        : sqlgen::error("No available connections in the pool.");
     }
 
     /**
@@ -418,6 +446,8 @@ private:
     std::size_t pool_size_;
     pool_acquire_policy policy_;
     std::shared_ptr<std::mutex> reconnect_mutex_;
+    /// Bumped on each rebuild; shared so copies of this pool share it.
+    std::shared_ptr<std::atomic<std::size_t>> pool_generation_;
     utility::uuid::tenant_id tenant_id_;
     std::optional<boost::uuids::uuid> party_id_;
     std::vector<boost::uuids::uuid> visible_party_ids_;

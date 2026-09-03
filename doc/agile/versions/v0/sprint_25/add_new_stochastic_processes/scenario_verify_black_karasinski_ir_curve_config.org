@@ -8,7 +8,7 @@
 #+filetags: :add_new_stochastic_processes:sprint_25:v0:
 #+target_dialog: IrCurveEditor (embedded in MarketSimulatorWindow) — Menu: Market Data > Synthetic > Market Simulator; toolbar actions New Feed / New IR Curve
 #+created: 2026-08-12
-#+updated: 2026-08-12
+#+updated: 2026-09-03
 #+environment: eager_maxwell
 #+todo: PENDING | PASSED FAILED
 #+startup: inlineimages
@@ -39,8 +39,39 @@ This page documents a test scenario verifying [[id:CDB12DB0-B0FF-4507-B94F-17540
   slider + precise spin per parameter row (see step 4).
 - Services restarted 2026-08-27 with freshly built binaries (=compass
   services status=: synthetic service up).
-- The client is launched with this scenario preloaded (System >
+- Database recreated 2026-08-31 (fifth attempt — the 2026-08-28 attempts
+  were killed mid-run by the harness, not by the DB): exit 0, zero
+  errors. Includes the three new parameter-definition label columns
+  (=display_name=, =symbol=, =short_label=) seeded for all 23 rows
+  (codegen-generated DDL, hand-written idempotent populate SQL). Schema
+  0.0.25, drift current, =built from= e01d0af7a7-d (dirty tree under
+  test).
+- SQL schemas validated 2026-08-31: =validate_schemas.sh=, 275 tables,
+  0 warnings.
+- Acme Corporation holding group re-provisioned 2026-08-31 after the
+  recreate — all steps completed (the "Poll failed (1/5)" workflow
+  instance warning was transient; all 4 published datasets completed).
+- Services restarted 2026-08-31 with the build carrying the two fixes
+  under test: exponential backoff on pool acquisition
+  (=tenant_aware_pool=, =--db-pool-backoff=) and the data-driven
+  parameter labels. The 2026-08-31 run proved the backoff fix: the
+  step-6 save completed in ~200 ms with no NATS timeout (the
+  2026-08-27 failure mode) — but the tree still did not show the saved
+  config, because =buildTree()='s folder-less-collection fallback
+  appended FX pairs only and editor-created IR curves carry no
+  =folder_id=. Fixed 2026-08-31 (client build): the fallback now
+  appends IR curves by =config_id=, mirroring the pair loop.
+- The client was rebuilt with that tree fix (plus the parameter-column
+  width fix) and relaunched with this scenario preloaded (System >
   Testing > Scenario Runner).
+- The 2026-08-31 run left =BK Feature Test= and its saved
+  =USD SOFR= config (sigma 0.02) in the database — with the tree fix
+  they now appear in the tree, so step 7's persistence check can run
+  directly on them. Note: saving a second =USD SOFR= curve under that
+  feed is rejected by the unique index =(party_id, config_id,
+  currency_code, index_family, tenor, role)= (observed 2026-08-31
+  11:36) — delete the leftover config in the tree before re-running
+  steps 3-6.
 
 * Scenario Info
 
@@ -147,13 +178,18 @@ notes back as a =*** Result= child heading directly under it.
   spin box (same 6-decimal precision as the Advanced spin). Drag the
   =sigma= slider — the row's value and the curve-shape preview
   update together. Toggle back to =Advanced= before continuing.
+- In =Advanced= mode each row's label is the Greek symbol alone — =κ=,
+  =θ=, =σ= — and =initial_rate= shows =Initial short rate= (no
+  symbol). In =Simple= mode the rows show the short layperson labels:
+  =Reversion speed=, =Long-run level=, =Volatility=, =Initial rate=.
+  Hovering a row shows the full description as its tooltip (e.g. "Mean
+  reversion speed of ln r"), which also carries the English name.
 
 *** Result
 
 | Field  | Value |
 |--------+-------|
-| Status | FAIL |
-| Notes  | ok so the parameters now show but we do not seem to have the simple / advanced toggle button we used to have and still have for FX (in simple mode the parameters have simplified widgets). also curve shape says: "curve preview failed: ir_curve_template_resolver: unknown instrument code 'Deposit' |
+| Status | PASS |
 
 ** Check the four BK parameter fields
 
@@ -170,7 +206,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Confirm the live curve preview renders
 
@@ -185,7 +221,7 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | PASS |
 
 ** Change sigma, save the config
 
@@ -197,7 +233,8 @@ notes back as a =*** Result= child heading directly under it.
 
 | Field  | Value |
 |--------+-------|
-| Status | PENDING |
+| Status | FAIL |
+| Notes  | saved says its successful but reload does not show new config. |
 
 ** Reopen and confirm persistence
 
@@ -245,9 +282,30 @@ notes back as a =*** Result= child heading directly under it.
 | Field         | Value |
 |---------------+-------|
 | Status        | FAILED |
-| Completed at  | 2026-08-27T19:51:46Z |
+| Completed at  | 2026-08-31T10:10:49Z |
 | Branch        | feature/bk-feature-test-scenario |
-| Commit        | d933f15284 |
+| Commit        | e01d0af7a7 |
 | Worktree      | eager_maxwell |
 
 * Notes
+
+- 2026-09-03: Work closed with scenario FAILED; no further runs planned.
+- The 08-31 run's leftover config (3b6576e1, sigma 0.02) was deleted
+  from the database on 2026-09-03 22:36 (bitemporal soft delete). No
+  =BK Feature Test= feed row ever persisted: earlier saves landed under
+  whichever feed node was selected (the leftover sat under 2016 ORE
+  Samples, feed 17470831).
+- Step 6 retested 2026-09-03 by saving a USD/SOFR config under the
+  2016 ORE Samples feed: the save reported no error and persisted
+  (config 69bda1cc, current row, valid_from 22:51:54+01), but a reload
+  does not show the config in the tree — the same symptom as the
+  08-31 run. The data lands correctly; the failure is in the client
+  tree display of editor-created IR curve configs.
+- Steps 7-9 are not executable: step 7 needs the tree item to reopen;
+  step 9's tree delete of an IR curve config is broken client-side
+  (the delete dispatch always sends the FX delete request, which no-ops
+  silently) and that fix is deferred.
+- The underlying IR/FX client defects (delete dispatch, tree/editor
+  duplication, per-asset-class copies) are captured in story E95A3D20
+  (asset-class-agnostic Market Simulator client: shared IR/FX config
+  UX).

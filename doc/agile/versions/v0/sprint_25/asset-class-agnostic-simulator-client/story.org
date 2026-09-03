@@ -43,6 +43,19 @@ labels added 2026-08-31), while the FX editor hardcodes its parameter
 rows ("κ (reversion speed)") — two different implementations of the
 same table.
 
+The copy-paste produced a further defect in the IR editor, observed
+during the BK PR review (PR #2000, 2026-09-04): the price-source
+vintage lock does not disable =initial_rate= on the Simple parameter
+page. =updatePriceSourceEnablement()= disables the Advanced page's
+=initialRateSpin_= correctly, then walks the Simple page's rows
+matching cell text against the parameter name ="initial_rate"= — but
+the Simple page's cells show the short label ("Initial rate"), so the
+match never fires. Re-entering Simple mode via the toggle also does not
+re-run the enablement. The shared editor base this story builds reads
+the parameter name from the model, so the lock lands in the
+data-driven row keyed on =parameter_name= instead of matching display
+text.
+
 * Duplication inventory
 
 Verified 2026-09-03 against the tree on =feature/bk-feature-test-scenario=.

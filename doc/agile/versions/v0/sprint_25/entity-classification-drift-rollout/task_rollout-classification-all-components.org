@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-07-31
-#+updated: 2026-09-03
+#+updated: 2026-09-04
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -34,14 +34,14 @@ it, and a read-only cross-component report would be stale before landing
 
 * Status
 
-| Field        | Value                                  |
-|--------------+----------------------------------------|
-| State        | STARTED                              |
-| Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] |
-| Now          | Program decisions recorded (story); board synced; retiring the 3 stale docs. |
-| Waiting on   | Nothing.                               |
+| Field        | Value                                                                         |
+|--------------+-------------------------------------------------------------------------------|
+| State        | STARTED                                                                       |
+| Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]]                |
+| Now          | Program decisions recorded (story); board synced; retiring the 3 stale docs.  |
+| Waiting on   | Nothing.                                                                      |
 | Next         | Land the closeout PRs (board, docs retirement), then record Result and close. |
-| Last touched | 2026-09-03                               |
+| Last touched | 2026-09-04                                                                    |
 
 * Acceptance
 
@@ -92,14 +92,16 @@ via its "Verifies task" field.
 
 * PRs
 
-| PR | Title |
-|----+-------|
+| PR    | Title                                                                       |
+|-------+-----------------------------------------------------------------------------|
 | [[https://github.com/OreStudio/OreStudio/pull/2001][#2001]] | [agile] Record drift-elimination program decisions and sync sprint 25 board |
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+|          # | Comment summary                                                               | File                             | Decision                 | Notes                                                                                                                    |
+|------------+-------------------------------------------------------------------------------+----------------------------------+--------------------------+--------------------------------------------------------------------------------------------------------------------------|
+| 5533143282 | Bot 1: #+branch mismatch; leading-slash path form; dormant-captures grammar   | task_rollout, task_method, story | Fixed; #+branch declined | #+branch names the implementation branch for the PR-2 and PR-3 raises; rollout-board is a one-PR diff-isolation sibling. |
+| 5533144473 | Bot 2: skill authoring location per the skill contract; story grammar nitpick | task_method, story               | Fixed                    | Acceptance now cites doc/llm/skills/<slug>/SKILL.org and the deploy_skills target.                                       |
+| 5533144798 | Bot 3: stale #+branch; path form differs across lines 5 and 44                | task_rollout, task_method        | Fixed; #+branch declined | Path form aligned to the repo-relative convention; #+branch kept, see bot 1.                                             |
 
 * Result

@@ -162,8 +162,9 @@ anywhere, it is into the logical model as a tenant-scoping attribute
 
 =SECURITY DEFINER= on insert/validate triggers is *not* a feature —
 checked against =library/templates/sql_schema_domain_entity_create.mustache=, it
-is emitted unconditionally today, matching [[id:897A7156-504D-4581-AD4C-026D643C0838][the evaluation checklist]]'s
-mandatory rule. It is mentioned here only so nobody goes looking for a
+is emitted unconditionally today, matching the
+[[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]]'s mandatory rule. It is
+mentioned here only so nobody goes looking for a
 =:security_definer:= knob that no longer exists.
 
 * Paste blocks

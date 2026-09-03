@@ -27,8 +27,9 @@ scrutiny) earns the extra surface.
 * Reference entity
 
 [[id:035402B2-0136-44A5-BDB0-601F6864A9FA][currency]] — the most complete entity in the codebase, and the
-reference specimen the [[id:897A7156-504D-4581-AD4C-026D643C0838][evaluation checklist]] itself is derived from;
-every optional Qt feature is exercised at least once.
+reference specimen the [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]]'s
+per-layer criteria are derived from; every optional Qt feature is
+exercised at least once.
 
 * Assignments
 

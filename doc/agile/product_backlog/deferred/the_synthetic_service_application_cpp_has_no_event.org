@@ -37,18 +37,18 @@ Confirms this is not synthetic-specific: any entity commissioned after
 eventing — SQL trigger and service-layer publish calls are both
 correct, and =compass codegen entity show= reports zero drift, so
 nothing in the normal commissioning flow flags it. Also added a line
-item to the [[id:897A7156-504D-4581-AD4C-026D643C0838][domain entity
-evaluation checklist]] naming this exact file/mechanism, since the
-existing checklist's "NATS event firing on mutation" criterion reads
-as being about the service class's own publish call, not this separate
-hand-maintained relay — only the Qt-layer manual cross-session check
-would have caught it, and that's easy to skip.
+item to the commissioning reference's service-layer criteria (see
+[[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]]) naming this exact
+file/mechanism, since the existing "NATS event firing on mutation"
+criterion reads as being about the service class's own publish call,
+not this separate hand-maintained relay — only the Qt-layer manual
+cross-session check would have caught it, and that's easy to skip.
 
 * References
 
 - =projects/ores.refdata/service/src/app/application.cpp= (fixed for party_type in this session)
 - =projects/ores.synthetic/service/src/app/application.cpp= (original 3-entity gap)
-- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — new line item under Service layer
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — new line item under the service-layer criteria
 
 * See also
 

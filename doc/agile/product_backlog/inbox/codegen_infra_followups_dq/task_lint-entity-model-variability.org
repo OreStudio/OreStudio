@@ -45,9 +45,10 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
-Scoped narrower than the dormant backlog story
-[[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill and runbook]] (Sprint 19, still BACKLOG) and its
-[[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] knowledge doc: those cover a full
+Scoped narrower than the [[id:058DF966-13E0-4D97-9A8B-F22301411015][Entity evaluation skill and runbook]] story
+(Sprint 19; discarded 2026-09-03 as superseded by the method-skill task in
+the drift-rollout story) and the [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process
+reference]]'s per-layer criteria: those cover a full
 *post-generation, live-system* health check across twelve layers
 (DB/Qt/shell/CLI/HTTP/Wt/manual), including manual QA steps like
 "open the app, edit a field, save". This task is a static lint of the

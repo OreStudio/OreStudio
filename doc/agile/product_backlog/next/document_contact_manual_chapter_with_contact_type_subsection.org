@@ -25,9 +25,9 @@ chapter of its own.
 
 Discovered while commissioning [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][contact_type]]:
 =contact_type= is an auxiliary/lookup type, and the
-[[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] is explicit that aux types don't
-get their own manual chapter — they get a subsection in the manual
-chapter of the primary entity that consumes them. That consuming
+[[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]]'s criteria are explicit that
+aux types don't get their own manual chapter — they get a subsection
+in the manual chapter of the primary entity that consumes them. That consuming
 entity is Contact / Contact Information, which has no manual chapter
 of its own yet. Writing a standalone =contact_type= chapter would have
 documented the lookup without the thing it looks up into.
@@ -39,4 +39,4 @@ documented the lookup without the thing it looks up into.
 * See also
 
 - [[id:E1F9C83E-645D-4CFC-B1C9-656651C55BCD][Commission: contact_type]] — the story where this was found.
-- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — the convention this follows.
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — the convention this follows.

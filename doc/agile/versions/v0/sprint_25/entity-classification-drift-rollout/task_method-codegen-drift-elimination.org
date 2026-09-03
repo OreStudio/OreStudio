@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-03
-#+updated: 2026-09-03
+#+updated: 2026-09-04
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -37,7 +37,7 @@ ramp with its evidence gates.
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-09-03                               |
+| Last touched | 2026-09-04                               |
 
 * Acceptance
 
@@ -55,8 +55,8 @@ ramp with its evidence gates.
   needs before promotion.
 - The skill cites its provenance: the ores.refdata and ores.dq worked method
   records, and the sprint 24 dimension settlement.
-- The dormant product-backlog captures that this method supersedes
-  (=entity_evaluation_skill= and friends) are closed or re-pointed at the
+- The dormant product-backlog entries that this method supersedes
+  (=entity_evaluation_skill= and similar) are closed or re-pointed at the
   skill.
 
 * Plan

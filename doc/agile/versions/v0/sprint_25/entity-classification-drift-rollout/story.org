@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-03
-#+updated: 2026-09-03
+#+updated: 2026-09-04
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -32,14 +32,14 @@ the method come from here.
 | Now           | Program decisions recorded; method-skill task scaffolded; stale-doc retirement in progress. |
 | Waiting on    | Nothing.                               |
 | Next          | Land the doc-retirement PR, then the method skill; then close. |
-| Last touched  | 2026-09-03                               |
+| Last touched  | 2026-09-04                               |
 
 * Acceptance
 
 - The 14 ad hoc per-component drift tasks are re-scoped (or closed/replaced) using real data instead of guesses. *Done 2026-08-04.*
 - entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org are deleted once whatever supersedes them is in place. In progress 2026-09-03: the checklist's criteria are being merged into the commissioning reference before deletion.
 - The canonical per-component method exists as a reusable skill (task below), and the program's ordering and operating rules are recorded in Decisions.
-- The dormant entity-evaluation product-backlog captures that the method supersedes are closed or re-pointed at the skill.
+- The dormant product-backlog entries that this method supersedes are closed or re-pointed at the skill.
 - (Resolved 2026-09-03) The classification tool is run across every remaining component producing a combined quantified report. Decision: not produced; the 12 stories' per-component surveys supersede it.
 
 * Tasks

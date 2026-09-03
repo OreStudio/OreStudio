@@ -92,15 +92,15 @@ up work with =agile-find-heading= and =agile-start-task=, inheriting the
 sprint mission and story goal as constraints from above.
 
 It then enters =compass-helm=, which matches the work to a *method* and
-copies that method's phases in (the method trait). The method opens by
+copies that method's phases in (the method regulatory function). The method opens by
 grounding itself in the domain, resolving each concept it touches to a
 knowledge document and treating an unresolved one as the first task
-([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Traits]]). It states a finish condition, backed by a *specification*
+([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). It states a finish condition, backed by a *specification*
 where behaviour is involved.
 
 The method's phases cite *principles* for judgement calls and call
 *actions* for anything touching an artefact, reaching for a *recipe*
-whenever a command is needed ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Traits]]). Where an artefact turns out to
+whenever a command is needed ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Where an artefact turns out to
 be generated, the edit goes to its model or template rather than its
 output ([[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]). At a fork the evidence cannot settle,
 the method convenes *deliberation* and records the verdict on the task.
@@ -125,5 +125,6 @@ a skill edit, with approval rather than automatically.
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every method, the shape of work it covers, and the verification rungs it must climb. Populated when the method trait lands.
-# END generated inventory
+Every method, the shape of work it covers, and the verification rungs it must
+climb. Populated when the method regulatory function lands. # END generated
+inventory

@@ -2,7 +2,7 @@
 :ID: AEBC2BC9-A854-4CEC-BA88-1602490AC762
 :END:
 #+title: Skill architecture
-#+description: Hub of the compass skill framework: the ontology of traits, dispatch and Systems, the three entry points into the model, and an index of the pages that treat each part in detail.
+#+description: Hub of the compass skill framework: the ontology of regulatory functions, dispatch and Systems, the three entry points into the model, and an index of the pages that treat each part in detail.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:claude_code:architecture:index:
@@ -41,26 +41,26 @@ action model that follows.
 *** The Dispatch Model
 
 The model is a dispatch system. A *target* has a *type*. A type implements one
-or more *traits*, each declaring the *operations* available on it. An *action*
-implements an operation for a type, and where behaviour is the same across every
-implementing type, a single action serves them all. *Dispatch* resolves a
-target's type, finds the traits that type implements, and offers the operations
-those traits declare. The session's *scope* decides which of those operations it
-is offered.
+or more *regulatory functions*, each declaring the *operations* available on
+it. An *action* implements an operation for a type, and where behaviour is the
+same across every implementing type, a single action serves them all.
+*Dispatch* resolves a target's type, finds the regulatory functions that type
+implements, and offers the operations those regulatory functions declare. The
+session's *scope* decides which of those operations it is offered.
 
 #+attr_html: :class note
 #+begin_quote
-*For programmers.* The model is a trait system with multiple dispatch, and the
-vocabulary is borrowed deliberately.
+*For programmers.* A regulatory function behaves like a trait in Rust or Scala,
+and the analogy is close enough to be worth stating.
 
-A *target* is an object. Its *type* is the class. A *trait* is an interface the
-class implements, and a class may implement several: a recipe implements both
-/loading/ and /execution/, which is why the classification cannot be a class
-hierarchy. An *operation* is a method declared by a trait, and an *action* is
-its implementation. Because an action is registered against a type rather than
-written inside it, this is closer to a generic function with multiple dispatch,
-or to a Rust trait, than to a method on a class; an operation that does not vary
-across types is written once as the trait's default implementation.
+A *target* is an object. Its *type* is the class. A *regulatory function* is an
+interface the class implements, and a class may implement several: a recipe
+implements both /loading/ and /execution/, which is why the classification
+cannot be a class hierarchy. An *operation* is a method the function declares,
+and an *action* is its implementation. Because an action is registered against a
+type rather than written inside it, this is closer to a generic function with
+multiple dispatch, or to a Rust trait, than to a method on a class; an operation
+that does not vary across types is written once as a default implementation.
 
 Dispatch is then what you would expect: given an object, ask what it implements
 and offer the methods of those interfaces. The one departure is *scope*, which
@@ -74,28 +74,30 @@ The three sections below take those parts in turn: what a thing is and what it
 participates in, what may be done to it and what does the doing, and how the
 operation is found and who may be offered it.
 
-*** Types and Traits
+*** Types and Regulatory Functions
 
-A [[id:F5CB5A45-6557-410B-9E4F-542957561A16][trait]] classifies artefacts (/c.f./ [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]]) by the relation an agent
+A [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] classifies artefacts (/c.f./ [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]]) by the relation an agent
 bears to them: the agent /loads/ a source, /cites/ a stance, /sequences/ a
 method, /executes/ an action, /declares/ a specification, /convenes/ a
 deliberation, and /records/ against an artefact carrying a lifecycle.
 
-A type may implement several traits, which is why the classification is by trait
-rather than by class. A recipe implements both /loading/, since it is consulted
-for its command, and /execution/, since its script is run. The [[id:F5CB5A45-6557-410B-9E4F-542957561A16][traits]] document
-treats the taxonomy, the criterion behind it, and which document type implements
-what.
+A type may implement several regulatory functions, which is why the
+classification is by regulatory function rather than by class. A recipe
+implements both /loading/, since it is consulted for its command, and
+/execution/, since its script is run. The
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory functions]] document
+treats the taxonomy, the criterion behind it, and which document type
+implements what.
 
 *** Operations and Actions
 
-An operation is declared by a trait; an action implements it for a type. The
-distinction matters because it is what keeps the catalogue small.
+An operation is declared by a regulatory function; an action implements it for
+a type. The distinction matters because it is what keeps the catalogue small.
 
 Actions are registered against a target's type rather than written into it,
 which makes this closer to multiple dispatch than to methods on a class. An
 operation whose behaviour does not vary across implementing types is written
-once and inherited by all of them, in the way a trait carries a default
+once and inherited by all of them, in the way a regulatory function carries a default
 implementation, and only genuinely type-specific behaviour is specialised. A
 catalogue that instead paired every operation with every type by hand would grow
 as the product of the two, and every pairing left unwritten would be a
@@ -103,7 +105,7 @@ capability that could not be found.
 
 *** Dispatch and Scope
 
-[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Dispatch]] resolves a target's type and offers the operations its traits declare,
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Dispatch]] resolves a target's type and offers the operations its regulatory functions declare,
 so the applicable operations are computed rather than remembered. An agent
 holding an artefact can therefore ask what may be done with it, rather than
 needing to know the name of the action it wants.
@@ -184,7 +186,7 @@ reader may arrive at independently.
 | Page                        | Answers                                                                   |
 |-----------------------------+---------------------------------------------------------------------------|
 | [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the framework]]     | What is a skill here, and why is the received notion deemed insufficient. |
-| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]                | What kinds of artefact exist, and how do they differ.                     |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]                | What kinds of artefact exist, and how do they differ.                     |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]              | Given a thing in hand, what may be done to it.                            |
 | [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]          | Who is acting, and what may they see and do.                              |
 | [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]              | How is an agent configured, isolated and left to run.                     |

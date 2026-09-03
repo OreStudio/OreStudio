@@ -95,9 +95,9 @@ not a construct within it.
 
 ** The Static Sense: What an Agent Loads
 
-The static component of grounding is discharged by the /loading/ trait,
+The static component of grounding is discharged by the /loading/ regulatory function,
 which classifies those documents an agent reads to inform work rather
-than acts upon ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]). Three types carry the weight of it, and
+than acts upon ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Three types carry the weight of it, and
 they differ in the condition under which each is read.
 
 [[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][Knowledge]] is read by relevance to the work. It states what a domain
@@ -189,7 +189,7 @@ Knowledge, recipes and memories do not ground; an agent grounds itself
 by reading them. Naming the set after the activity invited the reader to
 treat the two as one thing.
 
-The second is that the set had ceased to be well defined. When traits
+The second is that the set had ceased to be well defined. When regulatory functions
 were extended across every document type, loading came to be implemented
 by most of them, including tasks, stories, sprints and designs. The
 collective noun continued to name three. A term that names three members
@@ -242,8 +242,8 @@ of checking, which is the condition it exists to serve.
 
 * See also
 
-- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] — the loading trait and the classification it belongs to.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the loading regulatory function and the classification it belongs to.
 - [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Skill Methods]] — the grounding phase and its place in a session.
-- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill Architecture]] — the dispatch model the traits serve.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill Architecture]] — the dispatch model the regulatory functions serve.
 - [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Skill Verification]] — where ground truth, in the strict sense, applies.
 - [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — why recall is preferred against rather than trusted.

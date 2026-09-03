@@ -12,7 +12,7 @@
 ' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 @startuml
 
-title The traits a type may implement
+title The regulatory functions a type may implement
 
 skinparam rectangle {
     BackgroundColor #2A2A2E

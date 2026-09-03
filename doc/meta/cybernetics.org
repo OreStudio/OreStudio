@@ -61,6 +61,21 @@ measures the current state, and a feedback loop that closes the gap.
   its designer foresaw is defeated by any other, and that adaptation
   requires the failure itself to act as a signal.
 
+- *Regulatory function* — one of the functions a regulator must
+  discharge in order to regulate at all. Wiener's decomposition names
+  three: a goal against which the state is compared, a sensor by which
+  the state is known, and a path by which action is taken. Ashby's law
+  adds a fourth requirement, that the regulator command sufficient
+  variety, and the good regulator theorem a fifth, that it hold a model
+  of what it regulates. A regulator lacking any of them fails in a
+  specific way: with no goal there is nothing to compare against, with
+  no sensor no error can be detected, with no effector no correction can
+  be made, with insufficient variety the disturbance is not absorbed,
+  and with no model the response cannot be chosen. The phrase is not one
+  author's term of art; it names the composition of these requirements,
+  and it is used in this project to classify the documents that supply
+  each.
+
 - *The good regulator theorem* — Conant and Ashby proved that a
   regulator which is both maximally successful and maximally simple
   must be isomorphic to the system it regulates: every good regulator

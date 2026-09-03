@@ -1,67 +1,74 @@
 :PROPERTIES:
 :ID: F5CB5A45-6557-410B-9E4F-542957561A16
 :END:
-#+title: Skill Traits
-#+description: The criterion by which artefacts are classified, the seven traits it admits, the document types that offer each, and the procedure that assigns a new artefact among them.
+#+title: Regulatory Functions
+#+description: The criterion by which artefacts are classified, the seven regulatory functions it admits, the document types that offer each, and the procedure that assigns a new artefact among them.
 #+type: knowledge
 #+level: cross
 #+startup: inlineimages
-#+filetags: :llm:skills:claude_code:architecture:traits:
+#+filetags: :llm:skills:claude_code:architecture:regulatory_functions:
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
 * Summary
 
-A /trait/ is what an artefact offers an agent: the relation the agent may bear
-to it, and therefore what the agent may do with it.
+A /regulatory function/ is one of the functions a regulator must discharge in
+order to regulate: it sets a goal, senses the state reached, acts, holds a model
+of what it regulates, and commands sufficient variety. [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states the
+general notion, and [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] derives the seven from
+the primitives of a control loop.
 
-This document states the criterion behind that classification and defends the
-choice of criterion, introduces the term and the reason for choosing it, derives
-the seven traits the criterion admits, sets out which document types offer each,
-and closes with the procedure that assigns a new artefact among them.
+This document classifies the project's documents by the function each supplies.
+It states the criterion behind that classification and defends it, sets out the
+seven functions and which document types implement each, and closes with the
+procedure that assigns a new artefact among them.
 
 ** Artefacts, Documents and Targets
 
 Before we proceed, it is important to clarify the terminology.
 
 An *artefact*, in the sense [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] gives the word, is a file or a directory
-belonging to a software project. The traits classify a subset of the project's
-artefacts: those the skills catalogue holds. Every one of them is a document, so
-within this page artefact and document may be read interchangeably; the wider
-term is retained because the classification would apply equally to a
-non-document file were the catalogue ever to hold one.
+belonging to a software project. The regulatory functions classify a subset of
+the project's artefacts: those the skills catalogue holds. Every one of them is
+a document, so within this page artefact and document may be read
+interchangeably; the wider term is retained because the classification would
+apply equally to a non-document file were the catalogue ever to hold one.
 
 A *target* is what an action acts upon, and targets are broader than artefacts.
 A task and an entity model are artefacts, being files. A branch, a pull request,
 a service and a failing test are targets and are not artefacts, since none is a
-file or a directory. Targets are therefore never classified into traits: the
-criterion below asks what relation an agent bears to a thing, and an agent
-neither loads nor cites nor sequences a branch, it acts on one. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]
-treats targets and the operations registered against them.
+file or a directory. Targets are therefore never classified into regulatory
+functions: the criterion below asks what relation an agent bears to a thing,
+and an agent neither loads nor cites nor sequences a branch, it acts on one.
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats targets and
+the operations registered against them.
 
 A *document type* classifies a document by its contract: the frontmatter it
 carries, the sections it must contain, its lifecycle and its location. This is
-orthogonal to the trait, which classifies by the agent's relation, and the two
-stand in a many-to-many relation. The loading trait spans several document types
-— knowledge, recipe and memory among them — while the skill document type spans three
-traits, since a skill may be a principle, a method or an action. The trait
-cannot therefore be inferred from the document type, which is why the definition
-requires it to be declared. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] carries the type ontology.
+orthogonal to the regulatory function, which classifies by the agent's
+relation, and the two stand in a many-to-many relation. The loading regulatory
+function spans several document types — knowledge, recipe and memory among them
+— while the skill document type spans three regulatory functions, since a skill
+may be a principle, a method or an action. The regulatory function cannot
+therefore be inferred from the document type, which is why the definition
+requires it to be declared. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document
+Types]] carries the type ontology.
 
 * Detail
 
-#+caption: The traits a type may implement.
-[[proj:doc/llm/skills/skill_traits.png]]
+#+caption: The regulatory functions a type may implement.
+[[proj:doc/llm/skills/skill_regulatory_functions.png]]
 
 ** The Classification Criterion
 
 The classification is not freely chosen. [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]
 defines a skill as one action applied to one typed target, at a stated level, in
-exactly one trait, and derives the last of those clauses from a limitation of
-the specification: a construct admitting only executable instructions has no
-place for a rule that is cited rather than run, nor for an approach to a class
-of work that issues no command of its own. The trait clause repairs that
-omission, and the present document supplies the taxonomy the clause presupposes.
+exactly one regulatory function, and derives the last of those clauses from a
+limitation of the specification: a construct admitting only executable
+instructions has no place for a rule that is cited rather than run, nor for an
+approach to a class of work that issues no command of its own. The regulatory
+function clause repairs that omission, and the present document supplies the
+taxonomy the clause presupposes.
 
 What remains open is which classes the taxonomy should contain, and on what
 basis. A taxonomy is answerable to the question it is built to serve. The question here
@@ -107,21 +114,22 @@ catalogues the archetype with its variability exposed.
 The analysis behind this framework ran the same five stages over a different
 population, our own catalogue together with three published collections. It
 decomposed each skill into the judgement, sequence, command and fact it carried,
-classified those into traits, reconstructed the uniform cases as a computed
-table, and catalogued the result with the declarations that parameterise it.
+classified those into regulatory functions, reconstructed the uniform cases as
+a computed table, and catalogued the result with the declarations that
+parameterise it.
 
 Three findings follow, each a MASD construct instantiated in the new population.
 
-- *Traits and facets.* MASD defines a facet as "an arbitrary
+- *Regulatory Functions and facets.* MASD defines a facet as "an arbitrary
   partitioning/taxonomy of the logical space", classifying entities "by the role
-  each artefact plays". A trait is a construct of the same kind on a different
-  axis: it classifies by the agent's relation to an artefact rather than by the
-  artefact's place in the physical model. MASD's description of the facet as
-  arbitrary applies to it unchanged, so a taxonomy of this kind is stipulative
-  rather than descriptive, justified by what it makes possible rather than by
-  correspondence to a natural kind in the material. The two differ in
-  exclusivity: a facet partitions, while traits are not mutually exclusive and
-  one type may carry several.
+each artefact plays". A regulatory function is a construct of the same kind on
+a different axis: it classifies by the agent's relation to an artefact rather
+than by the artefact's place in the physical model. MASD's description of the
+facet as arbitrary applies to it unchanged, so a taxonomy of this kind is
+stipulative rather than descriptive, justified by what it makes possible rather
+than by correspondence to a natural kind in the material. The two differ in
+exclusivity: a facet partitions, while regulatory functions are not mutually
+exclusive and one type may carry several.
 
 - *Addressing.* MASD addresses an artefact by a four-segment path,
   =[technical space].[part].[facet].[archetype]=, so that its location follows
@@ -170,11 +178,12 @@ One MASD principle bears on the section that follows. /Evolve Gradually/ directs
 that coverage grow "driven by concrete practice rather than up-front design",
 which is the ground for declining to claim the six values below are exhaustive.
 
-*** Traits and Facets
+*** Regulatory Functions and Facets
 
-If a trait is the same kind of object as a MASD facet, the framework owes an
-account of why it does not simply declare six facets and stop. There are three
-reasons, and the first is a matter of fact rather than of theory.
+If a regulatory function is the same kind of object as a MASD facet, the
+framework owes an account of why it does not simply declare six facets and
+stop. There are three reasons, and the first is a matter of fact rather than of
+theory.
 
 **** The Facet Slot
 
@@ -187,21 +196,21 @@ axis cannot occupy the same slot in a four-segment address.
 
 **** Production and Consumption
 
-The deeper reason is that a facet and a trait are asked different things.
+The deeper reason is that a facet and a regulatory function are asked different things.
 
 A facet answers a question about *production*. MASD's physical space describes
 how artefacts come to exist: one logical entity projects into many artefacts,
 and the facet records which projection a given artefact is, so that grouping all
 the artefacts giving a type its serialisation is exactly what a facet is for.
 
-A trait answers a question about *consumption*. It records what an agent does
-with an artefact once the artefact exists, which is a property of the reader
-rather than of the generator.
+A regulatory function answers a question about *consumption*. It records what
+an agent does with an artefact once the artefact exists, which is a property of
+the reader rather than of the generator.
 
 Both are true of the same file and neither follows from the other. A knowledge
 document is an artefact of the =ores.doc.knowledge= facet and implements the
-loading trait; the first fact concerns how it was produced, the second how it
-is used.
+loading regulatory function; the first fact concerns how it was produced, the
+second how it is used.
 
 **** Absence of a Mapping
 
@@ -209,12 +218,13 @@ Were the two axes to coincide, one could be derived from the other and only one
 would be needed. They do not.
 
 Most artefacts of the =ores.doc.agile= facet, being stories and tasks, belong to
-no trait at all: they are targets that actions act upon rather than members of
-the catalogue. Conversely one document type spans three traits, since a skill
-may be a principle, a method or an action, so a facet-to-trait function would
-have to be many-valued. And some trait members lie outside the physical space
-entirely, an Allium specification and the deliberation plugin being neither
-generated by this project nor addressed within it.
+no regulatory function at all: they are targets that actions act upon rather
+than members of the catalogue. Conversely one document type spans three
+regulatory functions, since a skill may be a principle, a method or an action,
+so a facet-to-trait function would have to be many-valued. And some regulatory
+function members lie outside the physical space entirely, an Allium
+specification and the deliberation plugin being neither generated by this
+project nor addressed within it.
 
 **** Harmonisation
 
@@ -229,30 +239,32 @@ classifications coexist on the same file without competing.
 
 *** Choice of Term
 
-A type implements one or more *traits*, each declaring the operations available
-on it. The word is borrowed from programming, where a trait is an interface a
-type may implement alongside others, and where a trait may carry a default
-implementation inherited by every implementing type.
+A document type implements one or more *regulatory functions*, each declaring
+the operations available on it. The term is not borrowed; it names what the
+derivation establishes, and it is answerable to that account rather than to
+convenience.
 
-Both properties are required here. A recipe implements /loading/, being
-consulted for its command, and /execution/, its script being run; a
-classification permitting only one membership per type could not express that,
-and the framework's earlier attempt to do so failed on exactly this case.
-Default implementations matter for the same reason a trait system has them: an
-operation whose behaviour does not vary across implementing types is written
-once rather than once per type, which is what keeps the catalogue from growing
-as the product of operations and types.
+Two properties of the classification matter here. A type may implement several
+functions: a recipe implements /loading/, being consulted for its command, and
+/execution/, its script being run. A classification permitting one membership
+per type could not express that, and an earlier attempt failed on exactly this
+case. And an operation whose behaviour does not vary across implementing types
+is written once rather than once per type, which is what keeps the catalogue
+from growing as the product of operations and types.
 
-Three alternatives were rejected. /Interface/ carries no notion of a default
-implementation in its most familiar sense, and would therefore misdescribe the
-mechanism that solves the combinatorial problem. /Protocol/ is taken by the
-wire protocol between services. /Facet/ is MASD's term for a different partition
-of the same artefacts, treated above.
+Three alternatives were rejected. /Function/ unqualified collides three ways:
+the literature on the Viable System Model uses it interchangeably with /System/
+for S1 to S5, Liu et al. name their construct a /program function/, and the
+project is written in a programming language. /Channel/ carries information and
+has a capacity in cybernetics, which describes six of the seven but misdescribes
+execution. /Facet/ is MASD's term for a different partition of the same
+artefacts, treated above.
 
 *** Relation to Gibson's Affordances
 
-The classification is Gibsonian in character, and the connection is worth
-recording because it explains why the traits are the ones they are.
+An earlier framing of this classification was Gibsonian. The connection is
+recorded because one part of it still does work, and because the difference
+between the two framings is instructive.
 
 Gibson coined *affordance* in /The Senses Considered as Perceptual Systems/
 (1966) and stated it in /The Ecological Approach to Visual Perception/ (1979):
@@ -262,48 +274,39 @@ The affordances of the environment are what it offers the animal, what it
 provides or furnishes, either for good or ill.
 #+end_quote
 
-What an artefact offers an agent is precisely what these traits record, and that
-is the criterion the preceding section defends: classification by the relation
-an agent bears to an artefact rather than by the artefact's content.
+That framing classified an artefact by what it offers an agent. The criterion
+defended here is different in kind: a document type is classified by the
+regulatory function it supplies, and the seven are derived from the primitives
+of a control loop rather than observed in the material ([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills
+Framework]]). The two agree on almost every assignment and disagree on their
+grounds. A derivation is what the earlier framing lacked, and without one there
+was no answer to the question of whether some further class existed.
 
-Gibson insists on complementarity. An affordance belongs neither to the
-environment alone nor to the animal alone, but to the pairing. A trait in a
-typed language has no such property, since it belongs to the type and every
-caller sees the same operations. The framework recovers complementarity
-elsewhere, in scope: what a target offers depends on the actor engaging it, and
-a session at the audit level is offered a smaller set than one at S1.
-
-Norman narrowed the term in 1988 to those possibilities an actor can readily
+One element survives independently of the framing that carried it. Norman
+narrowed affordance in 1988 to those possibilities an actor can readily
 perceive. That narrowing justifies a requirement the framework would otherwise
-carry without explanation. A trait an agent cannot detect is one it will not
-use, which is why an artefact must *declare* what it implements rather than
-leaving it to be inferred.
+hold without explanation: a regulatory function an agent cannot detect is one it
+will not use, which is why an artefact must *declare* what it implements rather
+than leaving it to be inferred.
 
 #+attr_html: :class note
 #+begin_quote
-*Why not /affordance/ as the term.* An earlier draft of this framework used
-/affordance/ rather than /trait/, and the change is worth recording since the
-concept did not change with it.
+*Terms considered.* Earlier drafts named these classes /affordances/, then
+/planes/, then /traits/. Affordance is design and psychology vocabulary,
+requiring definition at each appearance and drawn from a tradition the rest of
+the model does not use. Trait named a construct from programming languages, and
+the classification is not a programming one.
 
-Three considerations decided it. The readers of this framework are programmers,
-and /trait/ names a structure they already hold, where /affordance/ is design
-and psychology vocabulary that would require defining at each appearance.
-Gibson's term carries no notion of a default implementation, and a default
-implementation is the mechanism that keeps the catalogue from growing as the
-product of operations and types, so the borrowed term would have obscured the
-part doing the most work. And the surrounding model is a dispatch system
-throughout, so a term drawn from a different tradition would sit oddly beside
-/type/, /operation/ and /dispatch/.
-
-What is lost is complementarity, which /trait/ does not carry and /affordance/
-does. That loss is real but it is repaired rather than absorbed: complementarity
-reappears as scope, which is where the dependence on the engaging agent actually
-lives in this framework.
+Neither term was answerable to an account of why the seven are the seven. Each
+named the classes without explaining them, so the question of whether an eighth
+existed had no answer beyond preference. /Regulatory function/ is answerable to
+the derivation, and a candidate class is admitted only if it names a function a
+regulator must discharge.
 #+end_quote
 
-** The Seven Traits
+** The Seven Regulatory Functions
 
-The criterion admits seven traits. Each document type offers one or more,
+The criterion admits seven regulatory functions. Each document type offers one or more,
 and the assignment is declared in the type's own contract under =Implements ::=
 rather than inferred here.
 
@@ -327,9 +330,9 @@ rather than inferred here.
 | Test scenario                 | sequencing, declaration, recording |
 
 The skill document type is the exception: a skill implements citation, sequencing
-or execution according to what it contains, so its trait cannot be inferred
-from its type and must be declared on the instance. This is the reason the
-definition of a skill requires the declaration.
+or execution according to what it contains, so its regulatory function cannot
+be inferred from its type and must be declared on the instance. This is the
+reason the definition of a skill requires the declaration.
 
 An earlier revision named the types implementing loading collectively
 *grounding*. That name is withdrawn. Grounding denotes an activity an agent
@@ -347,16 +350,16 @@ when a command is needed, and a memory unconditionally.
 The first division the criterion makes is between loading and everything else,
 and it is the one that carries the most consequence.
 
-An artefact engaged under the loading trait contributes to what an agent
+An artefact engaged under the loading regulatory function contributes to what an agent
 knows before it decides anything, and it carries no procedure of its own. An
 artefact engaged under any of the other five contributes to what the agent does,
-and it always carries one. Loading is therefore the only trait that changes
-the agent rather than the work.
+and it always carries one. Loading is therefore the only regulatory function
+that changes the agent rather than the work.
 
 *** Plurality
 
-An artefact may offer more than one trait, and the recipe does. This is a
-consequence of the term rather than an exception to it: a trait is a
+An artefact may offer more than one regulatory function, and the recipe does. This is a
+consequence of the term rather than an exception to it: a regulatory function is a
 relation, and nothing prevents an artefact standing in several.
 
 The framework requires only that every artefact offer at least one, which the
@@ -370,7 +373,7 @@ points in its own operation.
 
 ** The Document Types
 
-Each type is treated below under the trait it offers, with attention to
+Each type is treated below under the regulatory function it offers, with attention to
 the pairs most easily confused.
 
 *** Loading
@@ -455,20 +458,21 @@ differs from a recipe in that a recipe is executed and leaves the system
 changed, whereas a stance leaves no trace except in the reasoning that produced
 a decision.
 
-The stance trait is the one place where an artefact that cannot be run is
+The stance regulatory function is the one place where an artefact that cannot be run is
 nevertheless a skill. That exemption is deliberate and narrow: a principle which
 cannot be loaded by name cannot be cited by a method, and a rule that cannot be
 cited cannot be shown to have been applied.
 
 The academic literature reviewed in [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] bears
-on this trait, and it does not favour it. That review finds a rule expressed as
-text states what an agent should do in principle without stating when it
-applies, and reports such rules being disregarded in practice. The trait is
-therefore constituted as a residue rather than as a preference: a rule that can
-be expressed as a check, whether a lint, a validator or a test, is written as
-one and does not enter the trait, which holds only what cannot be checked. A
-stance trait that fails to shrink as checks accumulate is evidence that the
-requirement is not being applied.
+on this regulatory function, and it does not favour it. That review finds a
+rule expressed as text states what an agent should do in principle without
+stating when it applies, and reports such rules being disregarded in practice.
+The regulatory function is therefore constituted as a residue rather than as a
+preference: a rule that can be expressed as a check, whether a lint, a
+validator or a test, is written as one and does not enter the regulatory
+function, which holds only what cannot be checked. A stance regulatory function
+that fails to shrink as checks accumulate is evidence that the requirement is
+not being applied.
 
 *** Sequencing
 
@@ -480,9 +484,9 @@ command. A method is control flow without effectors.
 
 Indexing by shape of work is the axis on which the pstack collection organises
 its entire catalogue, as the review of industrial collections in [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the
-Compass Skill Framework]] records. Here it governs one trait among six, the
-artefact axis being carried by actions, so the two axes compose rather than
-compete.
+Compass Skill Framework]] records. Here it governs one regulatory function
+among six, the artefact axis being carried by actions, so the two axes compose
+rather than compete.
 
 The phases of a method are adaptive rather than fixed. Which of them run and in
 what order depends on what the work reveals as it proceeds, so a method's
@@ -527,16 +531,16 @@ behind, and what to do when its guards refuse. The command it issues belongs to
 a recipe, which the action delegates to; what the action itself owns is the
 decision to issue it.
 
-The three run-traits therefore divide cleanly. A recipe holds the command, an
-action holds the judgement about that command, and a method holds the sequence
-in which such judgements are made. Each has exactly one source of truth, and
-drift in any of them has exactly one place to appear.
+The three run-regulatory functions therefore divide cleanly. A recipe holds the
+command, an action holds the judgement about that command, and a method holds
+the sequence in which such judgements are made. Each has exactly one source of
+truth, and drift in any of them has exactly one place to appear.
 
-Actions are the trait where uniformity is worth exploiting. Where a verb behaves
-the same way across artefact types it becomes a single skill driven by a
-generated type table; where its procedure genuinely differs per type it keeps a
-skill of its own. The test is whether the *procedure* differs, not whether the
-artefact does.
+Actions are the regulatory function where uniformity is worth exploiting. Where
+a verb behaves the same way across artefact types it becomes a single skill
+driven by a generated type table; where its procedure genuinely differs per
+type it keeps a skill of its own. The test is whether the *procedure* differs,
+not whether the artefact does.
 
 *** Declaration
 
@@ -577,47 +581,47 @@ and a weak one for detecting an error. Error detection routes instead to the
 checkers set out in [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]], which do not share those
 priors.
 
-** Actions and Traits
+** Actions and Regulatory Functions
 
-A trait is a property of an artefact, not of an act. Any single act
+A regulatory function is a property of an artefact, not of an act. Any single act
 therefore touches at least two of them, one on each side, and confusing the two
 sides is the commonest way to misread this taxonomy.
 
 Consider an agent closing a task. It engages the skill =agile-close-task= under
-that skill's *execution* trait: running the skill is the agent's relation to
-it. The skill's effect engages the task under the task's *recording* trait:
-the state moves to =DONE=, the result is written, the story's table is synced.
-Execution is the agent's relation to the action; recording is the action's
-relation to the task.
+that skill's *execution* regulatory function: running the skill is the agent's
+relation to it. The skill's effect engages the task under the task's
+*recording* regulatory function: the state moves to =DONE=, the result is
+written, the story's table is synced. Execution is the agent's relation to the
+action; recording is the action's relation to the task.
 
 The general shape is that an agent *executes* an action, and the action *engages
-a trait of its target*.
+a regulatory function of its target*.
 
 *** Targets and Outputs
 
 Creation is the case that separates two things the framework has otherwise been
 able to treat as one.
 
-An action has a *target*, whose trait it engages. It may also have an
+An action has a *target*, whose regulatory function it engages. It may also have an
 *output*, which is a new artefact. For most actions the two coincide closely
 enough to be ignored: closing a task targets that task and produces nothing new.
 For creation they diverge, and must.
 
 An agent adding a task executes =agile-add-task=. Its target is the *story*, not
 the task, which is why =compass add task= takes the parent as an argument. The
-trait engaged is the story's recording: its table of tasks gains a row,
+regulatory function engaged is the story's recording: its table of tasks gains a row,
 which records that this work now exists. The new task document is the action's
 output.
 
 The reason the distinction is forced rather than merely tidy is that nothing can
-offer a relation before it exists. A target must be present for its traits
+offer a relation before it exists. A target must be present for its regulatory functions
 to be engaged, so a creation verb cannot take as its target the thing it creates.
 It takes the container instead, and [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] offers creation verbs
 against the container's type for the same reason.
 
 ** Recording and Editing
 
-Two traits concern acting on an artefact rather than consuming it, and the
+Two regulatory functions concern acting on an artefact rather than consuming it, and the
 distinction between them is easily missed.
 
 *** Recording
@@ -628,7 +632,7 @@ Result when it closes; a capture moves between the backlog's folders as its
 disposition is settled. Advancing the artefact is not incidental to it. It is
 what the artefact exists for, and it is how the state of work is held.
 
-The trait has a mechanical test, which is why its assignment is checkable
+The regulatory function has a mechanical test, which is why its assignment is checkable
 rather than a matter of judgement: a type implements recording when it declares a
 lifecycle, whether as a TODO vocabulary in its frontmatter or as a position among
 folders. Task, story, sprint, version and test scenario declare the first;
@@ -643,7 +647,7 @@ plan as it was actually worked.
 *** Operation
 
 Every artefact additionally offers being *operated on*: edited, moved, renamed,
-deleted. That trait is universal, and a property every member of a
+deleted. That regulatory function is universal, and a property every member of a
 population shares carries no classificatory information, which is why it is
 absent from the seven above.
 
@@ -654,8 +658,8 @@ classified here, since it includes targets that are not artefacts at all.
 
 ** Placement
 
-The traits above give the taxonomy. This procedure applies it. Take the first
-match.
+The regulatory functions above give the taxonomy. This procedure applies it.
+Take the first match.
 
 The placement procedure. Take the first match.
 
@@ -683,13 +687,13 @@ The placement procedure. Take the first match.
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every skill, grouped by the trait it offers. Populated when the classification task lands.
-# END generated inventory
+Every skill, grouped by the regulatory function it offers. Populated when the
+classification task lands. # END generated inventory
 
 * See also
 
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
 - [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — how a verb is selected for a target.
-- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline the knowledge trait is held under.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline the knowledge regulatory function is held under.
 - [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — the memory catalogue.
 - [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the recipe catalogue.

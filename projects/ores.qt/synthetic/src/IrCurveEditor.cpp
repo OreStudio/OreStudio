@@ -71,6 +71,7 @@
 #include <format>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <tuple>
 
@@ -136,6 +137,36 @@ int doubleToSliderValue(double v) {
 
 double sliderValueToDouble(int sv) {
     return static_cast<double>(sv) / kSimpleSliderScale;
+}
+
+// Keeps a two-column table's sections at a fixed ratio: labelShare of the viewport width
+// goes to the label column, the rest to the value column. Re-applied on every header
+// geometry change (i.e. every table resize) and explicitly after each population, since
+// inserting rows does not resize the header. The label column never shrinks below its
+// content, so a narrow window clips nothing. Sections must stay in Interactive mode -- the
+// re-entrancy guard stops the signal our own resizeSection calls fire from re-applying
+// mid-apply.
+void applyTwoColumnRatio(QTableWidget* table, double labelShare) {
+    const int usable = table->viewport()->width();
+    if (usable <= 0)
+        return;
+    const int labelWidth = std::max(table->horizontalHeader()->sectionSizeHint(0),
+                                    static_cast<int>(usable * labelShare));
+    table->setColumnWidth(0, labelWidth);
+    table->setColumnWidth(1, usable - labelWidth);
+}
+
+void keepTwoColumnRatio(QTableWidget* table, double labelShare) {
+    QObject::connect(table->horizontalHeader(),
+                     &QHeaderView::geometriesChanged,
+                     table,
+                     [table, labelShare, applying = std::make_shared<bool>(false)] {
+                         if (*applying)
+                             return;
+                         *applying = true;
+                         applyTwoColumnRatio(table, labelShare);
+                         *applying = false;
+                     });
 }
 
 } // namespace
@@ -531,18 +562,25 @@ void IrCurveEditor::buildProcessTab() {
     parameterTable_->setHorizontalHeaderLabels({tr("Parameter"), tr("Value")});
     parameterTable_->verticalHeader()->setVisible(false);
     parameterTable_->verticalHeader()->setDefaultSectionSize(38);
-    parameterTable_->horizontalHeader()->setStretchLastSection(true);
+    // Columns hold a fixed 40/60 ratio (label vs value) re-applied on every table resize;
+    // Interactive mode lets the ratio keeper size the sections freely (see keepTwoColumnRatio
+    // above). The value side gets the larger share so the 6-decimal spin boxes have room.
+    parameterTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    parameterTable_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    keepTwoColumnRatio(parameterTable_, 0.4);
     parametersLoadingLabel_ = new QLabel(tr("Loading parameters…"), tab);
     parametersLoadingLabel_->setStyleSheet("color: gray; font-style: italic;");
 
-    // ===== 3. Middle row: Simple/Advanced mode stack (left, compact) | curve-shape chart
-    // (right, dominant -- a full LIBOR-style Curve Template can carry 10-12 tenor points now,
-    // e.g. legacy USD-LIBOR-3M's DEPO/FRA-strip/swap-ladder grid, and needs real horizontal
-    // room for its tenor-axis labels not to overlap).
+    // ===== 3. Middle row: Simple/Advanced mode stack (left) | curve-shape chart (right). The
+    // row splits its extra width in a 2:3 ratio (stretch factors 2 and 3), so the parameter
+    // pages get a fixed share of the window -- not just their content width -- while the chart
+    // keeps the larger share. The stack is capped so a maximized window cannot inflate it past
+    // what a parameter table can usefully use; the chart absorbs everything beyond the cap.
     auto* middleRow = new QHBoxLayout();
     middleRow->setSpacing(12);
 
     modeStack_ = new QStackedWidget(tab);
+    modeStack_->setMaximumWidth(560);
     modeStack_->addWidget(buildSimpleParameterPage()); // index 0
     auto* advancedPage = new QWidget(tab);
     auto* advancedPageLayout = new QVBoxLayout(advancedPage);
@@ -551,16 +589,15 @@ void IrCurveEditor::buildProcessTab() {
     advancedPageLayout->addWidget(parametersLoadingLabel_);
     modeStack_->addWidget(advancedPage); // index 1
     modeStack_->setCurrentIndex(1);      // Advanced is the default mode (see the toggle above)
-    modeStack_->setMaximumWidth(400);
-    middleRow->addWidget(modeStack_, 0);
+    middleRow->addWidget(modeStack_, 2);
 
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);
-    shapeBox->setMinimumWidth(480);
+    shapeBox->setMinimumWidth(320);
     auto* shapeBoxLayout = new QVBoxLayout(shapeBox);
     shapeChart_ = new CurveShapePreviewChart(clientManager_, shapeBox);
     shapeChart_->setMinimumHeight(240);
     shapeBoxLayout->addWidget(shapeChart_);
-    middleRow->addWidget(shapeBox, 1, Qt::AlignTop);
+    middleRow->addWidget(shapeBox, 3, Qt::AlignTop);
     layout->addLayout(middleRow);
 
     // ===== 4. Bottom row (full width): prominent sample-paths preview.
@@ -1026,7 +1063,11 @@ void IrCurveEditor::rebuildParameterTable() {
         const int row = parameterTable_->rowCount();
         parameterTable_->insertRow(row);
 
-        auto* nameItem = new QTableWidgetItem(QString::fromStdString(d.parameter_name));
+        // The Greek symbol is the whole label; the tooltip below carries the English name and
+        // description for readers unfamiliar with the notation.
+        const QString label = d.symbol ? QString::fromStdString(*d.symbol)
+                                       : QString::fromStdString(d.display_name);
+        auto* nameItem = new QTableWidgetItem(label);
         nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
         nameItem->setToolTip(QString::fromStdString(d.description));
         parameterTable_->setItem(row, 0, nameItem);
@@ -1057,7 +1098,10 @@ void IrCurveEditor::rebuildParameterTable() {
         if (d.parameter_name == "initial_rate")
             initialRateSpin_ = spin;
     }
+
     rebuildSimpleParameterTable();
+    applyTwoColumnRatio(parameterTable_, 0.4);
+    applyTwoColumnRatio(simpleParameterTable_, 0.4);
     updatePriceSourceEnablement();
     refreshCharts();
 }
@@ -1070,8 +1114,11 @@ QWidget* IrCurveEditor::buildSimpleParameterPage() {
     simpleParameterTable_->setHorizontalHeaderLabels({tr("Parameter"), tr("Value")});
     simpleParameterTable_->verticalHeader()->setVisible(false);
     simpleParameterTable_->verticalHeader()->setDefaultSectionSize(38);
-    simpleParameterTable_->horizontalHeader()->setStretchLastSection(true);
-    simpleParameterTable_->setMaximumWidth(400);
+    // Same 40/60 label/value ratio as the Advanced table, re-applied on resize; the value
+    // cells (slider + spin) get the larger share so the slider has room to stretch.
+    simpleParameterTable_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Interactive);
+    simpleParameterTable_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    keepTwoColumnRatio(simpleParameterTable_, 0.4);
     layout->addWidget(simpleParameterTable_, 1);
     return page;
 }
@@ -1104,7 +1151,7 @@ void IrCurveEditor::rebuildSimpleParameterTable() {
         const int trow = simpleParameterTable_->rowCount();
         simpleParameterTable_->insertRow(trow);
 
-        auto* nameItem = new QTableWidgetItem(QString::fromStdString(d.parameter_name));
+        auto* nameItem = new QTableWidgetItem(QString::fromStdString(d.short_label));
         nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
         nameItem->setToolTip(QString::fromStdString(d.description));
         simpleParameterTable_->setItem(trow, 0, nameItem);
@@ -1208,8 +1255,14 @@ void IrCurveEditor::refreshCharts() {
         rows.push_back(CurveShapePreviewChart::TemplateRow{
             seq++, e.start_tenor_code, e.end_tenor_code, e.instrument_code});
     }
-    shapeChart_->setParameters(
-        engine, params, fixedLegFrequencyCombo_->currentText().toStdString(), rows);
+    // The frequency combo fills asynchronously from reference data, so on the first
+    // refresh (editor construction) it may still be empty; the config's stored code (or
+    // the constructor default) is the correct fallback then.
+    const auto freqText = fixedLegFrequencyCombo_->currentText();
+    const auto freq = freqText.isEmpty() ?
+        QString::fromStdString(ir_.fixed_leg_payment_frequency_code) :
+        freqText;
+    shapeChart_->setParameters(engine, params, freq.toStdString(), rows);
     shapeChart_->scheduleRefresh();
 }
 
@@ -1507,7 +1560,10 @@ void IrCurveEditor::onSaveClicked() {
     std::tie(ir.index_family, ir.tenor) = splitIndexFamilyAndTenor(idx);
     ir.role = roleCombo_->currentData().toString().toStdString();
     ir.process_type = engineCombo_->currentData().toString().toStdString();
-    ir.fixed_leg_payment_frequency_code = fixedLegFrequencyCombo_->currentText().toStdString();
+    const auto freqText = fixedLegFrequencyCombo_->currentText();
+    ir.fixed_leg_payment_frequency_code =
+        freqText.isEmpty() ? ir_.fixed_leg_payment_frequency_code :
+                             freqText.toStdString();
     if (vintageMode) {
         ir.price_source = "vintage";
         ir.vintage_source = vintageSourceEdit_->text().trimmed().toStdString();

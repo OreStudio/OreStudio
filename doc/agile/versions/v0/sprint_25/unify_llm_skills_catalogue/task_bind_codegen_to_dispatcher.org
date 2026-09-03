@@ -39,7 +39,7 @@ Codegen is the clearest working instance of this architecture, built independent
 - Hand-editing is never offered on a generated artefact; the model and the template are offered instead.
 - Profile selection follows the register discipline: exact match, nearest match, then gap or new profile named.
 - No entity is left with loose knobs and no profile, and the rule is stated where an author will meet it.
-- Fix the template, never the output is a principle in the stance plane, not only a memory.
+- Fix the template, never the output is a principle in the citation function, not only a memory.
 - Where this architecture and the variability model disagree, the variability model wins and the divergence is recorded.
 
 * Plan

@@ -77,7 +77,7 @@ project.
 | separate-before-serializing-shared-state | Adopt       | Worktrees share a stash stack and a build lock here                |
 | model-the-domain                         | Adopt       | We already require domain grounding; this states the code side     |
 | type-system-discipline                   | Adopt       | C++ project; illegal states are representable by default           |
-| encode-lessons-in-structure              | Conflict    | Our memory contract already occupies this ground                   |
+| encode-lessons-in-structure              | Adopt      | Sharpens the memory contract; see below          |
 | never-block-on-the-human                 | Adopt       | Sound, and paired with recording; see below                        |
 | boundary-discipline                      | Skip        | General practice the agent already applies                         |
 | exhaust-the-design-space                 | Skip        | Cost exceeds the failure rate observed here                        |
@@ -99,7 +99,7 @@ already absorbed, which is the same verdict the rule reaches for a compiler.
 | reflect                            | recording   | Adopt       | Runs our second loop; we have no equivalent                     |
 | show-me-your-work                  | recording   | Adopt       | Decision trail for unattended runs; we have none                |
 | arena                              | convening   | Adopt       | Design bakeoff; council does not do base-and-graft              |
-| interrogate                        | convening   | Conflict    | Overlaps council; pick one                                      |
+| interrogate                        | convening   | Adopt      | Stronger variety than coun |
 | swarm                              | convening   | Adopt       | Parallel coverage; we have no fan-out primitive                 |
 | blast-radius                       | execution   | Adopt       | Proves a change is safe by running code                         |
 | architect                          | sequencing  | Adopt       | Design before code; we have no equivalent                       |
@@ -114,14 +114,14 @@ already absorbed, which is the same verdict the rule reaches for a compiler.
 | how                                | execution   | Bind        | Must consult knowledge and recipes first                        |
 | why                                | execution   | Bind        | Our rationale lives in decisions and tasks                      |
 | teach                              | execution   | Skip        | Wraps how and why                                               |
-| technical-writing                  | execution   | Conflict    | Carries STE; overlaps doc-review-ste100                         |
-| unslop                             | execution   | Conflict    | Overlaps doc-review-ste100                                      |
-| deslop                             | execution   | Conflict    | Overlaps code-review-comments                                   |
-| no-comments                        | execution   | Conflict    | Overlaps code-review-comments                                   |
-| thermo-nuclear-code-quality-review | execution   | Conflict    | Overlaps code-review-component                                  |
-| tdd                                | sequencing  | Conflict    | Overlaps mattpocock tdd and our test skills                     |
-| create-verification-skill          | declaration | Conflict    | Overlaps our verification ladder                                |
-| maintain-verification-skill        | recording   | Conflict    | Same                                                            |
+| technical-writing                  | execution   | Adopt      | Subsumes doc-review-ste100; ours become |
+| unslop                             | execution   | Adopt      | Same surface as technical- |
+| deslop                             | execution   | Adopt      | Enforces the rule code-review |
+| no-comments                        | execution   | Adopt      | Enforces the rule code-review |
+| thermo-nuclear-code-quality-review | execution   | Bind       | Ours files stories against com |
+| tdd                                | sequencing  | Skip       | code-add-tests binds Catch2 and our convent |
+| create-verification-skill          | declaration | Adopt      | Builds the driver; our ladder st |
+| maintain-verification-skill        | recording   | Adopt      | Keep |
 | typescript-best-practices          | execution   | Skip        | No TypeScript here                                              |
 | automate-me                        | execution   | Skip        | Authors a personal mode; not a project concern                  |
 | setup-pstack                       | execution   | Skip        | Plugin configuration                                            |
@@ -141,10 +141,31 @@ our catalogue is thinnest, sequencing and convening, are where pstack is
 richest. The collections are complementary over the same seven functions, which
 is why one classification serves both.
 
-** Conflicts to Resolve
+** Overlaps with Our Catalogue
 
-Nine entries above are marked Conflict. One is substantive rather than mere
-overlap, and one apparent conflict resolves into a pairing.
+Ten entries were first marked Conflict. Eight were not conflicts.
+
+*** Most Overlaps Are a Rule and Its Enforcer
+
+Classifying both sides by regulatory function dissolves them. Ours state rules
+and standards, which is citation and declaration. The upstream ones run checks,
+which is execution. =code-review-comments= states where a comment belongs;
+=no-comments= spawns a reviewer that finds violations of exactly that. A rule and
+the instrument that enforces it are not competitors, and holding both is the
+normal case rather than duplication.
+
+The same reading resolves =deslop=, =create-verification-skill= and
+=maintain-verification-skill=. Our verification ladder states what must be
+verified at each rung; theirs builds and maintains the driver that does the
+verifying.
+
+=encode-lessons-in-structure= is a third case. It does not duplicate the memory
+contract, it constrains it: when the same correction is written twice, prefer a
+lint or a check to more prose. Our memories are prose, so the principle supplies
+a test our contract lacked, and a memory earns its place only where no structure
+can carry the rule.
+
+Two conflicts were real.
 
 *** never-block-on-the-human and grounding
 
@@ -164,14 +185,33 @@ Blocking is then reserved for what a record cannot repair. That is the
 irreversible: a destructive command, a message sent outside the project, a
 decision whose cost is paid before anyone reads the trail.
 
-*** The prose skills
+*** The prose standards
 
-=unslop=, =technical-writing=, =deslop= and =no-comments= govern the same
-surfaces as =doc-review-ste100= and =code-review-comments=. =technical-writing=
-already carries STE instruction rules, so it may subsume ours rather than
-compete with it. This needs a reading of both before either is retired, and
-[[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] records the three writing standards the
-project holds.
+=technical-writing= carries Diataxis structure, Google style, STE instruction
+rules and Global English. That subsumes =doc-review-ste100=, whose content is
+one of those four layers.
+
+Ours is retired as a standard and kept as a binding. What survives is the part
+upstream cannot know: which of the three writing standards this project applies
+where. STE governs an agent's replies to a person, thesis prose governs the
+org-roam documentation, and writing for agents governs skills, memories and
+specifications ([[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]). The binding names the
+standard and cites =technical-writing= and =unslop= for how to meet it.
+
+*** Convening: interrogate and council
+
+Both amplify variety, and they do not amplify the same amount.
+
+=interrogate= runs a claim past several models. =council= runs it past several
+personas within one model. Personas share the base model's priors, so the
+variety a council adds is bounded by what one model already commands, while
+independent models are not so bounded.
+
+Under the convening function that is a difference in kind, and =interrogate= is
+the stronger instrument wherever model diversity is available. Council is
+retained for deliberation that wants a reasoned verdict rather than a defect
+list, which is the use it has served in this project. The weaker amplification
+is recorded here so the choice is made knowingly.
 
 ** Tracking Upstream
 

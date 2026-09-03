@@ -26,9 +26,9 @@ What remains is the per-skill judgement, and it needs the files read
 rather than their README one-liners. Read all 44 pstack skills, its 29
 playbooks, and all 35 Matt Pocock skills, and record for each a
 disposition — adopt, adapt, harvest into an existing skill, or reject —
-the plane it lands in, and the reason. Note in particular which pstack
+the regulatory function it lands in, and the reason. Note in particular which pstack
 playbook steps map onto an existing recipe and which need a new one,
-since that mapping is what the method plane is built from.
+since that mapping is what the sequencing function is built from.
 
 * Status
 
@@ -44,7 +44,7 @@ since that mapping is what the method plane is built from.
 * Acceptance
 
 - Every pstack skill, pstack playbook and Matt Pocock skill carries a disposition and a one-line reason.
-- Each adopted item names the plane it lands in.
+- Each adopted item names the regulatory function it lands in.
 - Each adopted method names the recipes its steps call, and flags the steps that need a recipe written.
 - The dispositions taken from README descriptions in the earlier pass are re-checked against the files, and the changes are called out.
 - No skill file changes in this task.

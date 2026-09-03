@@ -35,7 +35,7 @@ Verification is a ladder, not a final phase, and work never skips a rung below w
 
 * Acceptance
 
-- The ladder is implemented in the method plane: a method cannot report done having skipped a rung below where it stopped.
+- The ladder is implemented in the sequencing function: a method cannot report done having skipped a rung below where it stopped.
 - A generator gap found mid-task produces a discovered task, blocks the current task, and is landed on its own pull request before the original resumes.
 - Drift found mid-task follows the same discipline and is never carried forward inside a feature branch.
 - Every task and story carries a committed ores.shell scenario that a reviewer can re-run.

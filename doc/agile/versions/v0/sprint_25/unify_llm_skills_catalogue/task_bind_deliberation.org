@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: BC52784C-64A6-47D2-AE13-BA8530C34507
 :END:
-#+title: Task: Bind the Council as the deliberation plane
-#+description: Wire the Council of High Intelligence in as the deliberation plane, and route error detection to the checkers that are genuinely independent.
+#+title: Task: Bind the Council to the convening function
+#+description: Wire the Council of High Intelligence in as an instrument of the convening function, and route error detection to the checkers that are genuinely independent.
 #+type: task
 #+level: s1
 #+filetags: :llm:skills:deliberation:council:unify_llm_skills_catalogue:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Claude Code runs one model per session, so we cannot copy pstack's multi-model rigor. The Council substitutes persona diversity for model diversity, which is a good substitute where the value is framing and a poor one where the value is independent error detection, because eighteen personas over one model share that model's blind spots. Bind the Council as the deliberation plane for design forks and contested judgements, and at the same time make the architecture's other half real: route error detection to the checkers that genuinely do not share the session model's priors, which are the compiler, the test suite, the schema validators, CI and the review bot. Record the verdict on the task, never as a silent change to the code.
+Claude Code runs one model per session, so we cannot copy pstack's multi-model rigor. The Council substitutes persona diversity for model diversity, which is a good substitute where the value is framing and a poor one where the value is independent error detection, because eighteen personas over one model share that model's blind spots. Bind the Council to the convening function for design forks and contested judgements, and at the same time make the architecture's other half real: route error detection to the checkers that genuinely do not share the session model's priors, which are the compiler, the test suite, the schema validators, CI and the review bot. Record the verdict on the task, never as a silent change to the code.
 
 * Status
 

@@ -65,8 +65,8 @@ public:
                            service_account,
                            std::move(policy))
         , credentials_(std::move(credentials))
-        , service_account_(std::move(service_account))
-        , policy_(std::move(policy)) {}
+        , policy_(std::move(policy))
+        , service_account_(std::move(service_account)) {}
 
     /**
      * @brief Constructs a tenant-and-party-aware context.
@@ -88,8 +88,8 @@ public:
                            service_account,
                            std::move(policy))
         , credentials_(std::move(credentials))
-        , service_account_(std::move(service_account))
-        , policy_(std::move(policy)) {}
+        , policy_(std::move(policy))
+        , service_account_(std::move(service_account)) {}
 
     /**
      * @brief Gets the tenant-aware connection pool.

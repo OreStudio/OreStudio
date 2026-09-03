@@ -22,11 +22,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 The [[id:C7473361-9825-43DF-8610-EBB028A250BE][design]] document states the model; this task makes it
 binding. Amend the [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][skill naming conventions]] to carry the compass-
-prefix, the six planes, the =principle-= and =method-= segments, the
+prefix, the six regulatory functions, the =principle-= and =method-= segments, the
 verbs the ported methods need, and the mandatory =#+level:= keyword.
 Land the terminology table in the [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] so it governs every document,
 not only skills. Amend the rule forbidding reference-only skills to
-exempt the stance plane. Record every register extension in the
+exempt the citation function. Record every register extension in the
 decision log, as the policy already demands.
 
 * Status
@@ -42,11 +42,11 @@ decision log, as the policy already demands.
 
 * Acceptance
 
-- The naming conventions document carries the compass- prefix rule, the six planes, and the =principle-= and =method-= segments.
+- The naming conventions document carries the compass- prefix rule, the six regulatory functions, and the =principle-= and =method-= segments.
 - =#+level:= is mandatory on every skill, and the level-to-scope table from the architecture is recorded.
 - The verb register gains every verb the ported methods need, each with its decision-log entry.
 - The terminology table lands in the glossary, naming the retired synonyms and the two traps: spec means an Allium spec, persona means a Council member.
-- The reference-only-skills rule is amended to exempt the stance plane, with the reasoning recorded.
+- The reference-only-skills rule is amended to exempt the citation function, with the reasoning recorded.
 - The placement procedure from the architecture is reproduced where an author will meet it.
 
 * Plan

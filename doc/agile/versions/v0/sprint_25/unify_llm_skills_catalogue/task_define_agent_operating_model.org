@@ -35,7 +35,7 @@ The purpose of this framework is that the mode can be started on an agent and le
 
 * Acceptance
 
-- The five configuration fields are implemented, and an agent cannot be started without a function, a level, an environment and a finish condition.
+- The five configuration fields are implemented, and an agent cannot be started without a System, a level, an environment and a finish condition.
 - Authority is granted explicitly and narrowly in the request that starts a run; an agent that reaches the edge of its authority stops and says so rather than widening its own grant.
 - Be autonomous is not treated as an authority grant; it permits reversible work only.
 - Every parallel writer has its own worktree and environment, provisioned through compass.

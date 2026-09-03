@@ -2,7 +2,7 @@
 :ID: 3969C185-48DE-47F0-A00D-FD28CD58C1B0
 :END:
 #+title: Task: Tag every skill with its cybernetic level
-#+description: Add the mandatory level keyword to every skill and make the declared function attenuate which skills a session sees.
+#+description: Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees.
 #+type: task
 #+level: s1
 #+filetags: :llm:skills:cybernetics:levels:unify_llm_skills_catalogue:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Every stateful document carries a level keyword; skills do not. Adding it is the change with the largest effect in the architecture, because it turns the cybernetic levels into a variety attenuator. Ashby's law says a regulator swamped by variety it cannot use stops regulating, and an agent shown 79 skills plus 79 imported ones plus every plugin's skills is exactly that. pstack answers context pressure with a principle asking the agent to be disciplined; structure regulates where discipline does not. Tag each skill with the level it serves, and make a session's declared function select the slice of the catalogue that is in scope by default. This is visibility, not access control: nothing is forbidden and an agent may reach outside its level by saying so.
+Every stateful document carries a level keyword; skills do not. Adding it is the change with the largest effect in the architecture, because it turns the cybernetic levels into a variety attenuator. Ashby's law says a regulator swamped by variety it cannot use stops regulating, and an agent shown 79 skills plus 79 imported ones plus every plugin's skills is exactly that. pstack answers context pressure with a principle asking the agent to be disciplined; structure regulates where discipline does not. Tag each skill with the level it serves, and make a session's declared System select the slice of the catalogue that is in scope by default. This is visibility, not access control: nothing is forbidden and an agent may reach outside its level by saying so.
 
 * Status
 
@@ -37,10 +37,10 @@ Every stateful document carries a level keyword; skills do not. Adding it is the
 
 - Every skill carries a considered level keyword, and the choice is defensible for each.
 - The S3-star auditor's slice contains only read-only and audit actions; it can no longer reach the skills that mutate work items by default.
-- A session that declares its function sees the attenuated catalogue, and can still reach outside it deliberately.
+- A session that declares its System sees the attenuated catalogue, and can still reach outside it deliberately.
 - The level-to-scope table in the architecture matches what the catalogue actually does.
 - A wrong level hides a capability, so the tagging is reviewed rather than bulk-applied.
-- Functions cover delegates as well as sessions: a delegate is spawned as a named function stating what it must read first and what it may do.
+- Systems cover delegates as well as sessions: a delegate is spawned as a named System stating what it must read first and what it may do.
 - Read-only functions are enforced at spawn time, not requested in the prompt.
 
 * Plan

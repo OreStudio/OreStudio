@@ -38,7 +38,7 @@ The architecture is only real if it loads. Regenerate the skills catalogue and t
 - The catalogue and the verb table are regenerated from source, not hand-edited.
 - The bundle builds and deploys, and every skill loads under its compass- name.
 - No stale directory remains under the deployed skills directory.
-- Each declared function sees the slice the level table says it should.
+- Each declared System sees the slice the level table says it should.
 - The dispatcher resolves every registered target type against a real target.
 - The knowledge graph resolves every id reference, including the previously invisible cluster.
 - Every check is run against the real artefact and its output recorded.

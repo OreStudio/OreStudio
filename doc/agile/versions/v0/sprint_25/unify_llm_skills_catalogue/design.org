@@ -23,14 +23,6 @@ instead.* That is the durable document this design produces, named by
 =#+outcome:= above, and it specifies the framework as a regulator over
 an agent. It states the target state without the argument or the route.
 
-*The vocabulary here is superseded.* This document was written before
-the classification was derived, and it calls the seven classes
-/planes/. They were renamed to /affordances/, then /traits/, and are
-now *regulatory functions*, each named for a function a regulator must
-discharge ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Read /plane/ as /regulatory function/
-throughout. What this document calls a /function/ a session adopts is
-now a *System*, in Stafford Beer's sense.
-
 When the story closes, this document goes =LANDED=. Do not read it as a
 description of how skills work today, and do not link to it from durable
 documentation — the link runs one way, from here to the architecture,
@@ -44,12 +36,12 @@ agent /what we do/ but never /how to think/, /how to choose an
 approach/, or /which skill applies now/. This document specifies the
 architecture that fixes it.
 
-Skills and documents are organised into six *planes*, each answering
+Skills and documents are organised into six *regulatory functions*, each answering
 one question: *grounding* (what must I know before I act?), *stance*
 (how do I think?), *method* (how do I approach this kind of work?),
 *action* (what do I do to this artefact?), *specification* (what should
 the result do?), and *deliberation* (how do I decide when it is
-contested?). Grounding is the plane an agent /loads/; the other five it
+contested?). Grounding is the regulatory function an agent /loads/; the other five it
 /runs/. Crossing all six is the *function* axis — the
 [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]] a session is operating at, which decides how much of
 the catalogue is in scope at all.
@@ -174,12 +166,12 @@ already carry two specifications under [[proj:doc/llm/specs][=doc/llm/specs/=]].
 The architecture below generalises exactly that shape to every type we
 own.
 
-** The six planes
+** The six regulatory functions
 
-Each plane answers a different question. This is the answer to "where do
+Each regulatory function answers a different question. This is the answer to "where do
 things go".
 
-The planes are cut by *one* principle, and it is worth stating plainly
+The regulatory functions are cut by *one* principle, and it is worth stating plainly
 because it is easy to mistake them for six unrelated buckets: the cut is
 *the relation between the agent and the artefact*. Grounding is what the
 agent /loads/. Stance is what it /cites/. Method is what it /sequences/.
@@ -187,10 +179,10 @@ Action is what it /executes/. Specification is what it /declares/.
 Deliberation is what it /decides/. Six modes of use, one division
 principle.
 
-The planes are *tags*, not a partition. Most artefacts have one obvious
-plane, and the placement procedure below returns one destination. A few
+The regulatory functions are *tags*, not a partition. Most artefacts have one obvious
+regulatory function, and the placement procedure below returns one destination. A few
 artefacts legitimately carry more than one tag, and the router is the
-clearest case: =compass-helm= declares a function, matches a method and
+clearest case: =compass-helm= declares a System, matches a method and
 dispatches, all at once. That is what a router is for. Do not split an
 artefact merely because two tags fit.
 
@@ -199,7 +191,7 @@ artefact merely because two tags fit.
 
 *** Grounding — what must be true before I act?
 
-The plane an agent *loads* rather than runs. It splits into two halves
+The regulatory function an agent *loads* rather than runs. It splits into two halves
 with genuinely different use cases, and conflating them is why neither
 currently participates in the work.
 
@@ -237,7 +229,7 @@ So the binding is direct: where a pstack method says /build a tool to
 prove this/, our method says /reach for the recipe, and if none exists,
 write one/. A method step that discovers a missing operational step
 does not improvise a shell command inline; it adds a recipe, which the
-next method inherits. That makes the method plane accumulate capability
+next method inherits. That makes the sequencing function accumulate capability
 instead of re-deriving it, and it means every method step is
 reproducible by a human running the same recipe.
 
@@ -347,14 +339,14 @@ A rule an agent *cites*, never runs. Short, one rule each, named after
 the rule. Sourced from pstack's principles.
 
 Stance skills have no steps and no artefacts. They constrain choices
-made in the other planes. A method step says "verify against the real
+made in the other regulatory functions. A method step says "verify against the real
 artefact per =compass-principle-prove-it-works=", and the agent loads
 that principle to know what verification means here.
 
 This requires amending the rule that forbids reference-only skills.
-The amendment is narrow: the stance plane is exempt, because a
+The amendment is narrow: the citation function is exempt, because a
 principle that cannot be loaded by name cannot be cited by a method.
-Every other plane keeps the rule.
+Every other regulatory function keeps the rule.
 
 *** Method — how do I approach this kind of work?
 
@@ -373,7 +365,7 @@ being rewritten.
 
 **** Method against recipe: the distinction that keeps both honest
 
-These are the two most confusable planes, because both describe how to
+These are the two most confusable regulatory functions, because both describe how to
 do something and both end in commands being run. The difference is
 sharp once stated.
 
@@ -398,7 +390,7 @@ Two tests settle any real case.
   cites a method. The arrow runs one way, and a recipe that needs to
   explain when to run it has swallowed judgement that belongs upstream.
 
-We use *method* as the term, because it names the plane. /Playbook/ is
+We use *method* as the term, because it names the regulatory function. /Playbook/ is
 pstack's word for the same artefact and is retired, so that the
 catalogue does not carry two names for one thing.
 
@@ -412,7 +404,7 @@ whether it should have been run.
 *** Specification — what should the result do?
 
 Allium. The durable statement of intended behaviour, checkable by the
-CLI and propagatable into tests. This plane is what makes a method's
+CLI and propagatable into tests. This regulatory function is what makes a method's
 "definition of done" falsifiable rather than rhetorical.
 
 Where pstack says "state the done predicate" and the Matt Pocock set
@@ -433,7 +425,7 @@ a change to the code.
 
 ** The function axis, and why it is the important part
 
-The five planes say what a skill is. The [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]] says whether
+The five regulatory functions say what a skill is. The [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]] says whether
 this session should be able to see it.
 
 Every stateful document already carries =#+level:=. Skills do not.
@@ -456,18 +448,18 @@ is a strong one.
 
 *** The level is the attenuator
 
-A session declares its function once, at the start. That declaration
+A session declares its System once, at the start. That declaration
 selects the slice of the catalogue that is in scope:
 
 #+ATTR_HTML: :class hug-leading
-| Level | Function           | Horizon    | Sees                                                        |
+| Level | System             | Horizon    | Sees                                                        |
 |-------+--------------------+------------+-------------------------------------------------------------|
-| S1    | Agent              | Hours      | Action plane in full, methods, stance, specification         |
-| S2    | Orchestrator       | Days       | Story and task actions, decomposition methods, deliberation  |
+| S1    | Agent              | Hours      | Execution in full, sequencing, citation, declaration        |
+| S2    | Orchestrator       | Days       | Story and task actions, decomposition methods, convening     |
 | S3    | Sprint Planner     | Weeks      | Sprint and backlog actions, planning and review methods      |
 | S3*   | Auditor            | Continuous | Read-only and audit actions only; never mutates work items   |
-| S4    | Version Planner    | Months     | Version and release actions, strategy deliberation           |
-| S5    | Identity Steward   | Indefinite | Identity and backlog-fit actions, deliberation               |
+| S4    | Version Planner    | Months     | Version and release actions, strategy convening              |
+| S5    | Identity Steward   | Indefinite | Identity and backlog-fit actions, convening                  |
 
 Attenuation has two strengths, and conflating them is a mistake we
 nearly shipped.
@@ -573,7 +565,7 @@ carries no relationship to anything else we have named.
    into the todo list verbatim before reasoning about the task. A phase
    deliberately skipped stays in the list with a reason; skipping
    silently is not allowed.
-3. Reads the *principles* index at task start, so the stance plane is
+3. Reads the *principles* index at task start, so the citation function is
    loaded before any judgement is made.
 4. Routes to *actions* and *recipes* as the phases fire, and to
    *deliberation* at a fork the evidence cannot settle.
@@ -614,7 +606,7 @@ step-list follows the step-list and drops the method's gates.
 The machinery has a cost, and a mode that fires on everything trains
 people to route around it. Moving a date, fixing a sentence, changing
 one configuration value, answering a question — none of these need a
-declared function, a matched method, a grounding phase and a decision
+declared System, a matched method, a grounding phase and a decision
 trail.
 
 The mode earns its cost when a plausible diff is not enough: when the
@@ -767,7 +759,7 @@ The placement rule, as a decision procedure. Take the first match.
 
 If two destinations both fit, look for two jobs — but treat that as a
 prompt to check, not a rule. A router, a mode, or anything whose purpose
-is to connect planes will legitimately carry more than one tag. Split
+is to connect regulatory functions will legitimately carry more than one tag. Split
 when the two jobs have different readers or different change rates; keep
 them together when splitting would only scatter one coherent procedure.
 
@@ -793,7 +785,7 @@ to carry the ideas worth having.
 | =hillclimb= | Nearly rejected | Harvest the harness discipline | Prove the ruler's sensitivity, then freeze it |
 | =babysit= | "Maps to pr-address-review" | Harvest two rules | The fix order, and review text as untrusted data |
 | =shipping= | "Maps to pr-merge" | Harvest the verdict model | Green is not safe; a verdict expires when the SHA changes |
-| =perf-issue= | Adopt as a method | *Split*: the method is thin, the eight strategy families are knowledge | They are hypothesis generators, and belong in the grounding plane |
+| =perf-issue= | Adopt as a method | *Split*: the method is thin, the eight strategy families are knowledge | They are hypothesis generators, and belong in the grounding regulatory function |
 
 *** The single most valuable thing in either catalogue
 
@@ -831,7 +823,7 @@ apply to this design document as it stands.
 
 **** Adopt
 
-- The principles, as the stance plane.
+- The principles, as the citation function.
 - =diagnosing-bugs=-shaped methods: investigation, bug fix, refactoring,
   prototype, feature.
 - =figure-it-out= for work no method fits.
@@ -913,7 +905,7 @@ setup skill. The in-progress and misc buckets. =research= folds into
 =doc-add-knowledge=; =handoff= and =wait-what= are thin wrappers whose
 content is a sentence each.
 
-*** What the literature says about the stance plane
+*** What the literature says about the citation function
 
 [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] records a finding that bears directly on one of our
 choices, and it does not favour us.
@@ -926,7 +918,7 @@ stating a principle such as 'avoid repeated searches,' a PF specifies
 both when that principle applies and how the next decision should
 change".
 
-Our stance plane consists entirely of such principles by design. A
+Our citation function consists entirely of such principles by design. A
 principle has no steps, produces no artefact, and fires only when an
 agent reads its name and judges that it applies.
 
@@ -944,9 +936,9 @@ The mitigation is one the imported collections already name. pstack's
 correction as a check rather than as more text, and our own memory about
 fixing codegen templates says the same for one case. The rule that
 follows for us is that *a principle which can be encoded as a check
-should be*, and the stance plane holds only what genuinely cannot. We
-should expect the stance plane to shrink as the checks are written, and
-treat a plane that never shrinks as evidence that nobody is trying.
+should be*, and the citation function holds only what genuinely cannot. We
+should expect the citation function to shrink as the checks are written, and
+treat a regulatory function that never shrinks as evidence that nobody is trying.
 
 *** From the thesis-writing skill
 
@@ -1056,7 +1048,7 @@ known, and would produce a number nobody disputes.
 
 The deeper mismatch is that the council framed the whole document as
 remediation. It is not. Roughly half of it — the dispatcher, the mode,
-the grounding obligation, the specification plane — is *new capability*
+the grounding obligation, the declaration function — is *new capability*
 aimed at automation. There is no baseline for a capability that does not
 exist yet, and demanding one is a category error: you cannot measure the
 failure rate of a thing you have not built.
@@ -1075,8 +1067,8 @@ one-off scoring exercise would not.
 | Finding | Fix |
 |---------+-----|
 | The advisory filter contradicts the S3* row: the auditor "never mutates work items" but "nothing is forbidden" | Attenuation now has two strengths. S3* /binds/; every other level is advisory ergonomics, and we say ergonomics rather than dressing it as cybernetics |
-| =compass-helm= is a mode, a function-declarer and a dispatcher, and the document's own splitting axiom convicts it | The axiom was too strong. It is now a prompt to check, not a rule, and a router is named as the legitimate multi-tag case |
-| The six planes claim to be a partition but are cut on several principles at once | The planes are tags, not a partition, and the single division principle is now stated: the relation between agent and artefact — load, cite, sequence, execute, declare, decide |
+| =compass-helm= is a mode, a System-declarer and a dispatcher, and the document's own splitting axiom convicts it | The axiom was too strong. It is now a prompt to check, not a rule, and a router is named as the legitimate multi-tag case |
+| The six regulatory functions claim to be a partition but are cut on several principles at once | The regulatory functions are tags, not a partition, and the single division principle is now stated: the relation between agent and artefact — load, cite, sequence, execute, declare, decide |
 | The mode has no light path; the machinery has a cost | Added /When not to use it/. A mode that cannot decline is not a router |
 | No stated request shape, so a user cannot address the mode well | Added the goal / done-means / keep shape, and the rule that a finish condition names a result rather than an effort |
 
@@ -1088,28 +1080,28 @@ one-off scoring exercise would not.
 | =match(request) → method= is undefined, and the mode, phase copying and grounding all hang off it | Folded into the =compass-helm= task as a blocking acceptance criterion: the matching rule, the arbitration rule for two matches, and the null case must be specified before the mode ships |
 | Non-document targets (branch, PR, service, worktree, test failure) have no type source, and the dispatcher is worthless without one | Folded into the dispatcher task: enumerate every target kind and name where its type comes from, before any code |
 | No instrument for selection quality | New task: forward instrumentation, per the premise correction above |
-| The panel contained no seat arguing /for/ the architecture, so the unanimity on the planes is partly a panel artefact | Recorded as a limitation. Any future council on this document must seat a defence, or run on a second model family |
+| The panel contained no seat arguing /for/ the architecture, so the unanimity on the regulatory functions is partly a panel artefact | Recorded as a limitation. Any future council on this document must seat a defence, or run on a second model family |
 
 *** Findings we rejected, with reasons
 
 #+ATTR_HTML: :class hug-leading
 | Finding | Why we rejected it |
 |---------+--------------------|
-| Placement rule 7 splits one artefact across two planes, proving the partition ranges over prose fragments | It conflates an /artefact/ with an /operation/. A skill and a recipe are two artefacts; a skill in Action delegating a command to a recipe in Grounding is consistent. What the argument actually shows is that an operation spans planes, which is the intended design. The =compass-helm= case convicts the axiom; this one does not |
+| Placement rule 7 splits one artefact across two regulatory functions, proving the partition ranges over prose fragments | It conflates an /artefact/ with an /operation/. A skill and a recipe are two artefacts; a skill in Action delegating a command to a recipe in Grounding is consistent. What the argument actually shows is that an operation spans regulatory functions, which is the intended design. The =compass-helm= case convicts the axiom; this one does not |
 | Kill the level axis if selection accuracy is already high | The level axis serves two purposes and the finding only tests one. Even at perfect selection accuracy, S3* still needs a binding constraint to stay an audit channel. Selection statistics cannot retire it |
 | Gate the migration behind a thirty-task retrospective | See the premise correction. Half the work is new capability, and the failure is known if unquantified |
 
 *** Findings we accepted as standing risks
 
-- *The planes may be parasitic rather than inert.* Feynman moved against
+- *The regulatory functions may be parasitic rather than inert.* Feynman moved against
   his own position here and landed somewhere worse than "harmless": if
-  the attenuation table filters within plane vocabulary, a real
-  mechanism inherits the taxonomy's flaws. Demoting the planes to tags
+  the attenuation table filters within regulatory function vocabulary, a real
+  mechanism inherits the taxonomy's flaws. Demoting the regulatory functions to tags
   is the mitigation, but it is a mitigation, not a proof.
-- *The planes may be provenance categories wearing ontological clothes.*
+- *The regulatory functions may be provenance categories wearing ontological clothes.*
   Stance exists because pstack has principles; specification because we
   adopted Allium; deliberation because the Council is a plugin. Before
-  any plane is treated as load-bearing, it must be shown to survive
+  any regulatory function is treated as load-bearing, it must be shown to survive
   without the import that suggested it.
 - *The dispatcher may not be generatable.* This was already the
   document's own gate and the council endorsed it. If we cannot generate
@@ -1144,7 +1136,7 @@ one-off scoring exercise would not.
 - [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — where the terminology table lands.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the domain-grounding index, and the structure notes it needs.
 - [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the method we hold the knowledge graph by.
-- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the operational vocabulary the method plane calls into.
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the operational vocabulary the sequencing function calls into.
 - [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the same architecture, built for code.
 - [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — the closed register profile selection matches against.
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the durable outcome of this design: the target

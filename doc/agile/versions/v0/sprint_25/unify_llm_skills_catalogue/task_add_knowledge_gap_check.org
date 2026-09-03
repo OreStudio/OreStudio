@@ -39,7 +39,7 @@ The architecture makes domain grounding an obligation: a method's framing phase 
 - The check draws its vocabulary from the glossary and the modeling documents rather than a hand-written list.
 - Misses can be filed as captures or tasks in one step.
 - The check is exercised against at least three existing stories and its findings are reviewed for false positives.
-- The method plane's grounding phase names this check as how the gap list is produced.
+- The sequencing function's grounding phase names this check as how the gap list is produced.
 
 * Plan
 

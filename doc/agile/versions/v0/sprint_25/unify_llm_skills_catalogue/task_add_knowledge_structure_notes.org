@@ -39,7 +39,7 @@ Luhmann's slip-box had structure notes, the entry points that list a cluster's n
 - Every structure note is reachable from the knowledge index and from the documents it orders.
 - A structure note explains why the order is what it is; a bare list is not acceptable.
 - The Zettelkasten knowledge page documents structure notes as part of how we hold the graph.
-- The grounding phase of the method plane can name a cluster and get a reading path.
+- The grounding phase of the sequencing function can name a cluster and get a reading path.
 
 * Plan
 

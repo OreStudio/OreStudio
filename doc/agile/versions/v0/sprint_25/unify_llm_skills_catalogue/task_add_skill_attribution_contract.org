@@ -26,11 +26,11 @@ We import skills from two repositories that keep moving. Without a recorded orig
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | ABANDONED                            |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Abandoned; superseded by the reference approach. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. See Result.                   |
 | Last touched | 2026-08-25                               |
 
 * Acceptance

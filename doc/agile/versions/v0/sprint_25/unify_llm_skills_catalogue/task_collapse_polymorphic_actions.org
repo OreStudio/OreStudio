@@ -2,7 +2,7 @@
 :ID: 629B48C7-BC7E-44A8-8979-3E05D6DA5BFE
 :END:
 #+title: Task: Collapse the uniform verbs into polymorphic actions
-#+description: Shrink the action plane before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table.
+#+description: Shrink the execution function before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table.
 #+type: task
 #+level: s1
 #+filetags: :llm:skills:refactor:unify_llm_skills_catalogue:sprint_25:v0:

@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Skills and recipes restate each other today. pr-merge the skill and the merge-a-PR recipe both carry the command. Under the architecture the recipe holds the command, tested and runnable by a human, and the skill holds the judgement: when to reach for it, what must hold first, what to do when the guard rails refuse. Sweep the action plane and enforce that split. Where a skill carries a command with no recipe behind it, write the recipe. This is also what makes the method plane work, because a method step that needs an effector reaches for a recipe rather than improvising a shell command inline, and the next method inherits it.
+Skills and recipes restate each other today. pr-merge the skill and the merge-a-PR recipe both carry the command. Under the architecture the recipe holds the command, tested and runnable by a human, and the skill holds the judgement: when to reach for it, what must hold first, what to do when the guard rails refuse. Sweep the execution function and enforce that split. Where a skill carries a command with no recipe behind it, write the recipe. This is also what makes the sequencing function work, because a method step that needs an effector reaches for a recipe rather than improvising a shell command inline, and the next method inherits it.
 
 * Status
 
@@ -39,7 +39,7 @@ Skills and recipes restate each other today. pr-merge the skill and the merge-a-
 - Every action's Recipes section names the recipes it delegates to, and every Reference section names the knowledge it assumes.
 - Commands found in skills with no backing recipe have had that recipe written.
 - doc-sync-recipes detects drift in exactly one place after the sweep.
-- The method plane's rule is documented: a missing effector becomes a recipe, never an inline command.
+- The sequencing function's rule is documented: a missing effector becomes a recipe, never an inline command.
 
 * Plan
 

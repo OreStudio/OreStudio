@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: A7BCF024-9222-40C3-9151-AFE9C9B4BDBE
 :END:
-#+title: Task: Port the principles into the stance plane
+#+title: Task: Cite the principles under the citation function
 #+description: REFRAMED by the reference approach. The eleven adopted pstack principles are referenced upstream rather than ported; this task now covers citing them from our catalogue and writing the thin local bindings, not copying them.
 #+type: task
 #+level: s1
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The stance plane holds rules an agent cites rather than runs. Port the pstack principles the audit adopted, each as its own loadable skill so a method can cite it by name. Several need adaptation rather than copying: type-system-discipline is written for TypeScript and must be recast for C++; never-block-on-the-human argues against confirmation in a way that conflicts with our own conventions on irreversible actions and unrequested pull requests, so it must be reconciled explicitly rather than imported as written. Each principle carries its upstream attribution and a divergence note.
+The citation function holds rules an agent cites rather than runs. Port the pstack principles the audit adopted, each as its own loadable skill so a method can cite it by name. Several need adaptation rather than copying: type-system-discipline is written for TypeScript and must be recast for C++; never-block-on-the-human argues against confirmation in a way that conflicts with our own conventions on irreversible actions and unrequested pull requests, so it must be reconciled explicitly rather than imported as written. Each principle carries its upstream attribution and a divergence note.
 
 * Status
 
@@ -40,7 +40,7 @@ The stance plane holds rules an agent cites rather than runs. Port the pstack pr
 - never-block-on-the-human is reconciled against our conventions on irreversible actions and unrequested pull requests, and the resolution is recorded.
 - An index lists the principles by group so a method can read the set at task start.
 - Every ported principle carries its upstream repository, path and commit.
-- Each candidate principle is tested against the encode-as-a-check rule before it is ported: a principle that can be expressed as a lint, a metadata flag, a runtime check or a script is written that way instead, and the stance plane holds only what genuinely cannot be checked.
+- Each candidate principle is tested against the encode-as-a-check rule before it is ported: a principle that can be expressed as a lint, a metadata flag, a runtime check or a script is written that way instead, and the citation function holds only what genuinely cannot be checked.
 - The principles that were encoded as checks rather than ported are listed, with what checks them.
 
 * Plan

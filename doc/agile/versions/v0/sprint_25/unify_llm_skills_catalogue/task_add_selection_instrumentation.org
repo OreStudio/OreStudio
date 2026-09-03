@@ -40,7 +40,7 @@ We know skill mis-selection is a real problem because it has been corrected by h
 - A compass command reports selection quality over a window, including the correction rate and the causes ranked.
 - The instrument runs without the agent having to remember to use it.
 - The report distinguishes sessions run under the attenuated catalogue from sessions run without it, so the level axis can be judged on evidence.
-- First report is produced and reviewed before the method plane lands.
+- First report is produced and reviewed before the sequencing function lands.
 
 * Plan
 

@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: 08F7F925-49B2-40E0-A298-E300353CAE2E
 :END:
-#+title: Task: Port the method plane and bind it to recipes and actions
+#+title: Task: Port the sequencing function and bind it to recipes and actions
 #+description: Import the adopted playbooks and interview skills as compass-method skills, with every step bound to one of our actions or recipes.
 #+type: task
 #+level: s1
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The method plane is control flow with no effectors; our actions and recipes are effectors with no control flow. This task joins them. Port the adopted pstack playbooks and the Matt Pocock interview and design skills, rewriting every step that assumed a foreign host. Each method opens with the domain grounding phase, states a falsifiable predicate backed by an Allium spec where behaviour is involved, cites principles for the judgement calls, calls actions for anything touching an artefact, and reaches for a recipe rather than improvising a command. Steps that assumed Graphite stacks, model routing or an issue-tracker abstraction are dropped, because our agile layer already owns that ground.
+The sequencing function is control flow with no effectors; our actions and recipes are effectors with no control flow. This task joins them. Port the adopted pstack playbooks and the Matt Pocock interview and design skills, rewriting every step that assumed a foreign host. Each method opens with the domain grounding phase, states a falsifiable predicate backed by an Allium spec where behaviour is involved, cites principles for the judgement calls, calls actions for anything touching an artefact, and reaches for a recipe rather than improvising a command. Steps that assumed Graphite stacks, model routing or an issue-tracker abstraction are dropped, because our agile layer already owns that ground.
 
 * Status
 

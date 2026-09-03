@@ -50,9 +50,9 @@ in when history is genuinely needed.
 | [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] | knowledge, durable | Hub: the overview, the entry points, and the map of the cluster |
 | [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] | knowledge, durable, external | The received notion of a skill, with the academic and practitioner prior art |
 | [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] | knowledge, durable | Why the received notion is too weak, and the tightened definition |
-| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] | knowledge, durable | What an artefact offers an agent, and which document types offer what |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] | knowledge, durable | The function each document type supplies to the regulator |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] | knowledge, durable | Given a thing in hand, what may be done to it |
-| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] | knowledge, durable | Who is acting, and what they may see and change |
+| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] | knowledge, durable | Who is acting, and what they may see and change |
 | [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]] | knowledge, durable | How an agent is configured, isolated and left to run |
 | [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] | knowledge, durable | How work is driven from start to finish |
 | [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] | knowledge, durable | How we know it worked |

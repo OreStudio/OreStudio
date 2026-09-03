@@ -9,7 +9,7 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 #+todo: DRAFT STARTED | LANDED SUPERSEDED ABANDONED
-#+outcome: AEBC2BC9-A854-4CEC-BA88-1602490AC762
+#+outcome: 4228EE16-D5FD-499D-992B-6FFED05C95ED
 
 #+begin_note
 *This document describes a transition, not the current state.* It argues
@@ -18,10 +18,18 @@ expires when the work lands. It is scoped to the [[id:2FCD10F0-E7B5-4CBA-A7C7-E2
 catalogue]] story and lives with it, so that it leaves the default
 grounding path when this sprint closes.
 
-*For how the framework works, read [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] instead.* That is
-the durable document this design produces, named by =#+outcome:= below,
-and it is the hub of a six-page cluster carrying the detail.
-It states the target state without the argument or the route.
+*For how the framework works, read [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]
+instead.* That is the durable document this design produces, named by
+=#+outcome:= above, and it specifies the framework as a regulator over
+an agent. It states the target state without the argument or the route.
+
+*The vocabulary here is superseded.* This document was written before
+the classification was derived, and it calls the seven classes
+/planes/. They were renamed to /affordances/, then /traits/, and are
+now *regulatory functions*, each named for a function a regulator must
+discharge ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Read /plane/ as /regulatory function/
+throughout. What this document calls a /function/ a session adopts is
+now a *System*, in Stafford Beer's sense.
 
 When the story closes, this document goes =LANDED=. Do not read it as a
 description of how skills work today, and do not link to it from durable

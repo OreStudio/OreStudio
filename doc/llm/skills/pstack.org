@@ -78,7 +78,7 @@ project.
 | model-the-domain                         | Adopt       | We already require domain grounding; this states the code side     |
 | type-system-discipline                   | Adopt       | C++ project; illegal states are representable by default           |
 | encode-lessons-in-structure              | Conflict    | Our memory contract already occupies this ground                   |
-| never-block-on-the-human                 | Conflict    | Contradicts the grounding obligation; see below                    |
+| never-block-on-the-human                 | Adopt       | Sound, and paired with recording; see below                        |
 | boundary-discipline                      | Skip        | General practice the agent already applies                         |
 | exhaust-the-design-space                 | Skip        | Cost exceeds the failure rate observed here                        |
 | experience-first                         | Skip        | Product judgement; ours is held by S5                              |
@@ -143,19 +143,26 @@ is why one classification serves both.
 
 ** Conflicts to Resolve
 
-Ten entries above are marked Conflict. Two are substantive rather than mere
-overlap.
+Nine entries above are marked Conflict. One is substantive rather than mere
+overlap, and one apparent conflict resolves into a pairing.
 
-*** never-block-on-the-human
+*** never-block-on-the-human and grounding
 
 The principle directs an agent to proceed on reversible work rather than ask.
 The [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][grounding]] obligation directs it to stop when a concept resolves to no
-document, and to treat the gap as the first task.
+document. The two look opposed and are not. The principle's condition is
+reversibility, and the obligation's subject is one of the things that decides
+whether a choice is reversible.
 
-These are not reconcilable by preference. The obligation is narrower and it
-wins where it applies: an unresolved domain concept is not a reversible choice,
-because the work built on a guessed meaning is wrong in a way the diff does not
-show. The principle governs everything else.
+Both are adopted, and the recording function reconciles them. An agent that
+proceeds on an unresolved concept states the assumption it proceeded on, and
+that record is what makes the choice reversible rather than merely undeclared.
+=show-me-your-work= supplies the mechanism, which is why it and the principle
+are adopted together.
+
+Blocking is then reserved for what a record cannot repair. That is the
+irreversible: a destructive command, a message sent outside the project, a
+decision whose cost is paid before anyone reads the trail.
 
 *** The prose skills
 
@@ -181,4 +188,4 @@ than to re-import.
 - [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] — the seven functions and the boundary rule.
 - [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — each function in detail.
 - [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] — the review of practitioner collections.
-- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation that bounds never-block-on-the-human.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation that never-block-on-the-human is paired with.

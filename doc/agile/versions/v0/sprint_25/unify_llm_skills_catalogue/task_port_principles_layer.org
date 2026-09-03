@@ -2,7 +2,7 @@
 :ID: A7BCF024-9222-40C3-9151-AFE9C9B4BDBE
 :END:
 #+title: Task: Port the principles into the stance plane
-#+description: Import the adopted pstack principles as compass-principle skills, adapted from TypeScript to our stack, with attribution.
+#+description: REFRAMED by the reference approach. The eleven adopted pstack principles are referenced upstream rather than ported; this task now covers citing them from our catalogue and writing the thin local bindings, not copying them.
 #+type: task
 #+level: s1
 #+filetags: :llm:skills:principles:pstack:unify_llm_skills_catalogue:sprint_25:v0:

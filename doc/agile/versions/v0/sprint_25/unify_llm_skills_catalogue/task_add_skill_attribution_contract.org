@@ -2,7 +2,7 @@
 :ID: 1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE
 :END:
 #+title: Task: Define the upstream attribution contract for imported skills
-#+description: Give every imported skill a recorded upstream source, path, commit and divergence note, backed by a manifest and a drift check.
+#+description: SUPERSEDED by the reference approach. Upstream skills are no longer copied, so there is nothing to attribute or drift-check; the classification table in The pstack Collection replaces this. Retain only if a forked skill ever lands.
 #+type: task
 #+level: s1
 #+filetags: :llm:skills:attribution:licensing:unify_llm_skills_catalogue:sprint_25:v0:

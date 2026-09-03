@@ -47,7 +47,7 @@ the method come from here.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | STARTED | 2026-09-03 | | Narrowed 2026-08-04, report question settled 2026-09-03 (see Decisions); remaining work is retiring the 3 stale docs and closing the program setup. |
-| [[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]] | BACKLOG | | | Author the canonical method skill under .claude/skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates. |
+| [[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]] | BACKLOG | | | Author the canonical method skill under doc/llm/skills, deployed to .claude/skills via deploy_skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates. |
 
 * Decisions
 

@@ -137,35 +137,13 @@ public:
      * @brief Acquires a session and sets the tenant (and party) context.
      *
      * If the probing ROLLBACK fails (dead connection after a DB restart), the
-     * entire pool is rebuilt from the stored credentials and the acquire is
-     * retried once.
+     * entire pool is rebuilt from the stored credentials under the backoff
+     * policy and the acquire is retried.
      */
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
         using namespace ores::logging;
 
-        // The underlying pool is configured to fail fast; the retry policy
-        // lives here. The first probe is immediate; waiters then sleep
-        // between probes so the pool is not hammered, and a freed
-        // connection is found within the next probe.
-        sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> session_result =
-            pool_.acquire();
-        for (std::size_t attempt = 1; !session_result && attempt < policy_.num_attempts;
-             ++attempt) {
-            std::this_thread::sleep_for(backoff_delay(attempt, policy_));
-            if (attempt == 1)
-                BOOST_LOG_SEV(lg(), warn)
-                    << "No available database connections in the pool; waiting with "
-                    << (policy_.strategy == pool_backoff_strategy::exponential
-                            ? "exponential"
-                            : "linear")
-                    << " backoff (attempt " << (attempt + 1) << " of " << policy_.num_attempts
-                    << ")";
-            else
-                BOOST_LOG_SEV(lg(), debug)
-                    << "Still waiting for a database connection (attempt " << (attempt + 1)
-                    << " of " << policy_.num_attempts << ")";
-            session_result = pool_.acquire();
-        }
+        auto session_result = acquire_with_backoff();
         if (!session_result) {
             return session_result;
         }
@@ -187,15 +165,27 @@ public:
         if (needs_rebuild) {
             BOOST_LOG_SEV(lg(), warn) << "Pool connection dead (ROLLBACK failed: " << rollback_error
                                       << "). Rebuilding pool...";
-            // Drop session so the connection flag is released before we
-            // replace the pool (avoids use-after-free of the old pool entry).
-            session_result = pool_.acquire(); // re-acquire to replace below
+            // Re-acquire first so the dead session's connection flag is
+            // released before the pool object is replaced below (avoids
+            // use-after-free of the old pool entry).
+            session_result = pool_.acquire();
             {
                 std::lock_guard lock(*reconnect_mutex_);
-                // Probe mode: the backoff policy above governs acquisition.
+                // Probe mode: the retry/backoff loop governs the rebuild and
+                // the acquire that follows it, so a database still restarting
+                // is absorbed instead of failing the request on the first
+                // refused connection.
                 sqlgen::ConnectionPoolConfig cfg{
                     .size = pool_size_, .num_attempts = 1, .wait_time_in_seconds = 0};
                 auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
+                for (std::size_t attempt = 1; !new_pool && attempt < policy_.num_attempts;
+                     ++attempt) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Pool rebuild attempt " << attempt << " of "
+                        << policy_.num_attempts << " failed: " << new_pool.error().what();
+                    std::this_thread::sleep_for(backoff_delay(attempt, policy_));
+                    new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
+                }
                 if (new_pool) {
                     pool_ = std::move(*new_pool);
                     BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
@@ -206,10 +196,13 @@ public:
                                          std::string(new_pool.error().what()));
                 }
             }
-            session_result = pool_.acquire();
+            session_result = acquire_with_backoff();
             if (!session_result)
                 return session_result;
-            (*session_result)->execute("ROLLBACK"); // best-effort on fresh conn
+            // Best-effort: roll back any aborted transaction on the fresh
+            // connection. PostgreSQL accepts ROLLBACK when no transaction is
+            // active, so this is always safe.
+            (*session_result)->execute("ROLLBACK");
         }
 
         // Force UTC for all timestamp operations on this connection.
@@ -359,6 +352,40 @@ public:
     }
 
 private:
+    /**
+     * @brief Probes the pool until a connection is free or the policy
+     * budget is exhausted.
+     *
+     * The underlying pool is configured to fail fast; the retry policy
+     * lives here. The first probe is immediate; waiters then sleep
+     * between probes so the pool is not hammered, and a freed
+     * connection is found within the next probe.
+     */
+    [[nodiscard]] sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>>
+    acquire_with_backoff() noexcept {
+        using namespace ores::logging;
+        sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> session_result =
+            pool_.acquire();
+        for (std::size_t attempt = 1; !session_result && attempt < policy_.num_attempts;
+             ++attempt) {
+            std::this_thread::sleep_for(backoff_delay(attempt, policy_));
+            if (attempt == 1)
+                BOOST_LOG_SEV(lg(), warn)
+                    << "No available database connections in the pool; waiting with "
+                    << (policy_.strategy == pool_backoff_strategy::exponential
+                            ? "exponential"
+                            : "linear")
+                    << " backoff (attempt " << (attempt + 1) << " of " << policy_.num_attempts
+                    << ")";
+            else
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Still waiting for a database connection (attempt " << (attempt + 1)
+                    << " of " << policy_.num_attempts << ")";
+            session_result = pool_.acquire();
+        }
+        return session_result;
+    }
+
     /**
      * @brief Sleep duration before the given acquisition attempt.
      *

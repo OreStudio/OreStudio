@@ -17,7 +17,7 @@ page carries only what is specific to =capture=.
 * Contract
 
 - Implements :: loading, recording. See
-  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]. A pre-
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]. A pre-
   sprint idea — see [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][Capture]]
   in the glossary.
 

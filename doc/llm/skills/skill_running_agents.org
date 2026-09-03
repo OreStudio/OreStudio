@@ -57,7 +57,7 @@ from. Fan-out for *coverage* survives intact, because its value is
 parallelism. Fan-out for *competition* — several attempts at one brief,
 judged and grafted — does not, because its value was model diversity and
 we have none. Use coverage freely; reach for competition only on design
-questions, and prefer the deliberation trait there.
+questions, and prefer the deliberation regulatory function there.
 
 ** Isolation
 
@@ -149,7 +149,7 @@ unattended result trustworthy rather than merely finished.
 The parts of this architecture that matter most to an unattended run
 are the ones that bind rather than advise: the finish condition, the
 authority boundary, the read-only functions, the isolation, and the
-independent checkers. Everything advisory — the trait vocabulary, the
+independent checkers. Everything advisory — the regulatory function vocabulary, the
 default visibility at most levels — helps an agent choose well while
 someone is watching, and does nothing at three in the morning.
 

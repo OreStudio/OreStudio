@@ -17,7 +17,7 @@ page carries only what is specific to =version=.
 * Contract
 
 - Implements :: loading, recording. See
-  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]].
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
 - Folder :: =versions/<v>/=
 - Title :: =Version N= — no prefix (the word "Version" is already in
   the title).

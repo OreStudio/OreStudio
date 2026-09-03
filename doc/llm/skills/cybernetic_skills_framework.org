@@ -2,7 +2,7 @@
 :ID: 4228EE16-D5FD-499D-992B-6FFED05C95ED
 :END:
 #+title: The Cybernetic Skills Framework
-#+description: Specifies the skills framework as a regulator over an agent. Derives the scope of regulation from the good regulator theorem, requisite variety and the black box, and derives the traits from the primitive structure of a control loop.
+#+description: Specifies the skills framework as a regulator over an agent. Derives the scope of regulation from the good regulator theorem, requisite variety and the black box, and derives the regulatory functions from the primitive structure of a control loop.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:cybernetics:architecture:framework:
@@ -74,7 +74,7 @@ exists. The second requires that the construct be declared before there is
 anything to load.
 
 The three classes organise what follows. The first two are answered by classes
-of document, derived under /Regulatory Traits/ and set out in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]; the
+of document, derived under /Regulatory Regulatory Functions/ and set out in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]; the
 obligation the first imposes is treated in [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]. The third is answered by
 no document, since supplying further documents is what produced it, and is
 treated under /Variety Attenuation/.
@@ -108,7 +108,7 @@ states them in general form. Three are used here.
 Wiener (1948) characterises regulation by a structure common to every substrate
 in which it occurs: a goal, a sensor that measures the present state, and a
 feedback path that acts to reduce the difference. The derivation in /Regulatory
-Traits/ rests on this decomposition.
+Regulatory Functions/ rests on this decomposition.
 
 Ashby (1956) establishes the law of requisite variety, that only variety can
 absorb variety: a regulator must command at least the variety of the
@@ -231,7 +231,7 @@ of some other kind. This is why a branch is modelled although it is not a file,
 and a compiler is not modelled although an agent uses one constantly. The
 criterion is regulatory relevance and nothing besides.
 
-** Regulatory Traits
+** Regulatory Regulatory Functions
 
 *** Derivation
 
@@ -246,7 +246,7 @@ primitives. Each class discharges one regulatory function, so the classification
 states a function rather than a subject matter or a form.
 
 #+ATTR_HTML: :class hug-leading
-| Trait       | Regulatory function                                     |
+| Regulatory function       | Regulatory function                                     |
 |-------------+---------------------------------------------------------|
 | Declaration | states the target state the outcome is compared against |
 | Recording   | the sensor; registers the state actually reached        |
@@ -266,7 +266,7 @@ A declaration must be checkable, because a goal an outcome cannot be compared
 against yields no error, and a regulator with no error signal does not
 regulate.
 
-These classes are the *traits* ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]]). A trait denotes a regulatory
+These classes are the *regulatory functions* ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). A regulatory function denotes a regulatory
 function and is answerable to that account.
 
 *** Consequences of the Derivation
@@ -311,12 +311,12 @@ its level by saying so. What changes is what it is shown first.
 The defining property of Beer's model is recursion: every system is itself a
 viable system, containing the same functions at a shorter horizon.
 
-The traits are correspondingly indifferent to level. A declaration fixes a
+The regulatory functions are correspondingly indifferent to level. A declaration fixes a
 goal whether that goal is a task's acceptance criterion or a version's
 objective. A recording registers state whether the state is a task's status or a
-sprint's outcome. This is why one set of traits suffices rather than one set per
-level, and it is the strongest available evidence that they are functions rather
-than categories of document.
+sprint's outcome. This is why one set of regulatory functions suffices rather
+than one set per level, and it is the strongest available evidence that they
+are functions rather than categories of document.
 
 ** Binding Constraint and Ergonomics
 
@@ -339,9 +339,9 @@ made.
 *** The Limit of a Fixed Regulator
 
 Everything specified so far regulates against disturbances already identified.
-Such a regulator is fixed. It answers the failures its traits were built for
-and is defeated by any other, since a disturbance outside its repertoire meets
-no response at all.
+Such a regulator is fixed. It answers the failures its regulatory functions
+were built for and is defeated by any other, since a disturbance outside its
+repertoire meets no response at all.
 
 The framework cannot be fixed in this sense. The agents it regulates change with
 each model release, the project's practice changes as the system grows, and
@@ -363,7 +363,7 @@ the only response available to a disturbance it was not built for.
 The essential variable here is whether the agent's conduct remains within
 acceptable bounds for the work. A failure is the signal that it has not. The
 second loop converts that signal into a change of structure, and the framework's
-structure is its traits, its type system and its catalogue.
+structure is its regulatory functions, its type system and its catalogue.
 
 *** The Loop Specified
 
@@ -371,7 +371,8 @@ The second loop has three steps, and each is a regulatory function rather than
 an administrative one.
 
 *Detection.* A departure is observed. This is measurement, and it uses the
-recording trait: the state reached is registered against the state intended.
+recording regulatory function: the state reached is registered against the
+state intended.
 
 *Classification.* The departure is assigned to one of the classes above, or
 shown to fit none of them. The classification is therefore a live instrument and
@@ -444,9 +445,9 @@ The correspondence with Beer's model is a lens and not an implementation. This
 project's five systems are named after his and do not discharge the obligations
 his model places upon them.
 
-The derivation in /Regulatory Traits/ establishes that each trait corresponds to
-a regulatory primitive. It does not establish that the seven are
-exhaustive, and no such claim is made.
+The derivation in /Regulatory Regulatory Functions/ establishes that each
+regulatory function corresponds to a regulatory primitive. It does not
+establish that the seven are exhaustive, and no such claim is made.
 
 * References
 
@@ -467,7 +468,7 @@ exhaustive, and no such claim is made.
 - [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — the general statement of variety, feedback and the black box.
 - [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the five systems and this project's departures from them.
 - [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] — the literature on agent skills.
-- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Skill Traits]] — the traits in detail and the document types implementing each.
-- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation the loading trait places upon an agent.
-- [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — the mechanism selecting the applicable trait for a target.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the regulatory functions in detail and the document types implementing each.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation the loading regulatory function places upon an agent.
+- [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — the mechanism selecting the applicable regulatory function for a target.
 - [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the properties of the regulated agent.

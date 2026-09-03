@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ID: 0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC
+:END:
+#+title: The pstack Collection
+#+description: How the compass framework relates to the upstream pstack skill collection: referenced rather than forked, with every skill classified by the regulatory function it supplies and a disposition set by the boundary rule.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:pstack:external:integration:
+#+created: 2026-09-03
+#+updated: 2026-09-03
+
+* Summary
+
+pstack is an upstream collection of 52 skills, installed as a Claude Code
+plugin. This page states how the compass framework relates to it: the
+collection is *referenced*, not copied, and each skill we adopt is classified by
+the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] it supplies.
+
+The classification is the framework's model of pstack. It is what makes the
+relationship checkable, and it is deliberately the only artefact we maintain.
+No upstream skill is forked.
+
+* Detail
+
+** Why Reference Rather Than Fork
+
+Forking severs a feedback path. [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] requires a
+second loop that changes the regulator when it fails; a forked copy stops
+tracking the moment upstream improves, so the framework would hold regulation it
+could not update. A stale fork also fails silently, where a broken reference
+fails loudly.
+
+The good regulator theorem does not require ownership. A regulator must model
+what it regulates, not author it. The classification below is that model.
+
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] gives the same answer from the other side. A forked skill is a
+hand-maintained copy that varies predictably from its original, and the
+prescribed response to that shape is never to copy it but to expose the
+variability. Where an upstream skill is right in shape and wrong in local
+detail, we write a thin local skill holding only the difference.
+
+** The Adoption Criterion
+
+The boundary rule governs which upstream skills we adopt at all. The framework
+regulates where the unaided agent would act wrongly for this project, and treats
+the rest as a black box. An upstream principle stating something a competent
+agent already does adds variety the agent has absorbed, and importing it is what
+the rule forbids.
+
+Four dispositions follow.
+
+#+ATTR_HTML: :class hug-leading
+| Disposition | Meaning                                                                     |
+|-------------+-----------------------------------------------------------------------------|
+| Adopt       | Reference upstream unchanged and cite it from our catalogue                 |
+| Bind        | Write a thin local skill citing upstream, supplying only the project detail |
+| Conflict    | Overlaps a skill we already hold; resolve before adopting either            |
+| Skip        | Variety the agent already commands, or not applicable here                  |
+
+** Principles
+
+All 21 supply *citation*: each is cited at a judgement call and never run. The
+adoption column records whether the unaided agent fails at that point in this
+project.
+
+#+ATTR_HTML: :class hug-leading
+| Skill                                    | Disposition | Reason                                                             |
+|------------------------------------------+-------------+--------------------------------------------------------------------|
+| build-the-lever                          | Adopt       | Scripts the work instead of hand-editing it; observed failure here |
+| fix-root-causes                          | Adopt       | Patches symptoms unless constrained                                |
+| guard-the-context-window                 | Adopt       | Carries our attenuation argument into a session                    |
+| laziness-protocol                        | Adopt       | Over-builds; observed failure here                                 |
+| prove-it-works                           | Adopt       | Declares done without checking; observed failure here              |
+| redesign-from-first-principles           | Adopt       | Bolts on rather than redesigning                                   |
+| sequence-verifiable-units                | Adopt       | Matches our task sizing rule                                       |
+| subtract-before-you-add                  | Adopt       | Adds without removing overlap                                      |
+| separate-before-serializing-shared-state | Adopt       | Worktrees share a stash stack and a build lock here                |
+| model-the-domain                         | Adopt       | We already require domain grounding; this states the code side     |
+| type-system-discipline                   | Adopt       | C++ project; illegal states are representable by default           |
+| encode-lessons-in-structure              | Conflict    | Our memory contract already occupies this ground                   |
+| never-block-on-the-human                 | Conflict    | Contradicts the grounding obligation; see below                    |
+| boundary-discipline                      | Skip        | General practice the agent already applies                         |
+| exhaust-the-design-space                 | Skip        | Cost exceeds the failure rate observed here                        |
+| experience-first                         | Skip        | Product judgement; ours is held by S5                              |
+| foundational-thinking                    | Skip        | Subsumed by model-the-domain for our purposes                      |
+| make-operations-idempotent               | Skip        | Compass commands already are                                       |
+| migrate-callers-then-delete-legacy-apis  | Skip        | Already our practice                                               |
+| minimize-reader-load                     | Skip        | Already absorbed                                                   |
+| outcome-oriented-execution               | Skip        | Already our practice                                               |
+
+Eleven of 21 are adopted. The skipped ones are not judged wrong; they are judged
+already absorbed, which is the same verdict the rule reaches for a compiler.
+
+** Playbooks and Workflow Skills
+
+#+ATTR_HTML: :class hug-leading
+| Skill                              | Function    | Disposition | Reason                                                          |
+|------------------------------------+-------------+-------------+-----------------------------------------------------------------|
+| reflect                            | recording   | Adopt       | Runs our second loop; we have no equivalent                     |
+| show-me-your-work                  | recording   | Adopt       | Decision trail for unattended runs; we have none                |
+| arena                              | convening   | Adopt       | Design bakeoff; council does not do base-and-graft              |
+| interrogate                        | convening   | Conflict    | Overlaps council; pick one                                      |
+| swarm                              | convening   | Adopt       | Parallel coverage; we have no fan-out primitive                 |
+| blast-radius                       | execution   | Adopt       | Proves a change is safe by running code                         |
+| architect                          | sequencing  | Adopt       | Design before code; we have no equivalent                       |
+| figure-it-out                      | sequencing  | Adopt       | Bespoke playbook when none fits                                 |
+| poteto-mode                        | mode        | Adopt       | A mode in our exact sense                                       |
+| recall                             | loading     | Bind        | Nearest thing pstack has to loading; must cite compass bearings |
+| babysit                            | sequencing  | Bind        | Generic PR flow; ours needs compass pr and the @claude comment  |
+| fix-ci                             | execution   | Bind        | Must read our CI targets                                        |
+| get-pr-comments                    | execution   | Bind        | compass review list already does this                           |
+| make-pr-easy-to-review             | execution   | Bind        | Must respect our commit conventions                             |
+| fix-merge-conflicts                | execution   | Bind        | Worktree rules apply here                                       |
+| how                                | execution   | Bind        | Must consult knowledge and recipes first                        |
+| why                                | execution   | Bind        | Our rationale lives in decisions and tasks                      |
+| teach                              | execution   | Skip        | Wraps how and why                                               |
+| technical-writing                  | execution   | Conflict    | Carries STE; overlaps doc-review-ste100                         |
+| unslop                             | execution   | Conflict    | Overlaps doc-review-ste100                                      |
+| deslop                             | execution   | Conflict    | Overlaps code-review-comments                                   |
+| no-comments                        | execution   | Conflict    | Overlaps code-review-comments                                   |
+| thermo-nuclear-code-quality-review | execution   | Conflict    | Overlaps code-review-component                                  |
+| tdd                                | sequencing  | Conflict    | Overlaps mattpocock tdd and our test skills                     |
+| create-verification-skill          | declaration | Conflict    | Overlaps our verification ladder                                |
+| maintain-verification-skill        | recording   | Conflict    | Same                                                            |
+| typescript-best-practices          | execution   | Skip        | No TypeScript here                                              |
+| automate-me                        | execution   | Skip        | Authors a personal mode; not a project concern                  |
+| setup-pstack                       | execution   | Skip        | Plugin configuration                                            |
+| bro                                | execution   | Skip        | Restates a reply                                                |
+| what-did-i-get-done                | recording   | Skip        | compass journal and timeline cover it                           |
+
+** Coverage
+
+pstack implements five of the seven regulatory functions. It carries no
+*loading* and no *declaration*: nothing in the 52 supplies a knowledge base, a
+domain model, or a durable statement of intended behaviour. =recall= comes
+closest to loading and reconstructs session context rather than domain fact.
+
+Those two absences are where this framework is strongest, with knowledge
+documents, recipes, memories and Allium specifications. The two functions where
+our catalogue is thinnest, sequencing and convening, are where pstack is
+richest. The collections are complementary over the same seven functions, which
+is why one classification serves both.
+
+** Conflicts to Resolve
+
+Ten entries above are marked Conflict. Two are substantive rather than mere
+overlap.
+
+*** never-block-on-the-human
+
+The principle directs an agent to proceed on reversible work rather than ask.
+The [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][grounding]] obligation directs it to stop when a concept resolves to no
+document, and to treat the gap as the first task.
+
+These are not reconcilable by preference. The obligation is narrower and it
+wins where it applies: an unresolved domain concept is not a reversible choice,
+because the work built on a guessed meaning is wrong in a way the diff does not
+show. The principle governs everything else.
+
+*** The prose skills
+
+=unslop=, =technical-writing=, =deslop= and =no-comments= govern the same
+surfaces as =doc-review-ste100= and =code-review-comments=. =technical-writing=
+already carries STE instruction rules, so it may subsume ours rather than
+compete with it. This needs a reading of both before either is retired, and
+[[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] records the three writing standards the
+project holds.
+
+** Tracking Upstream
+
+Pinned at pstack 0.9.18. This table states what we adopted and why; it does not
+mirror upstream content, so an upstream change invalidates a row only when it
+changes what that skill supplies or whether the agent still fails without it.
+
+A new upstream release is a disturbance in the sense the framework gives the
+word, and the response is to re-run the adoption criterion over the diff rather
+than to re-import.
+
+* See also
+
+- [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] — the seven functions and the boundary rule.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — each function in detail.
+- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] — the review of practitioner collections.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation that bounds never-block-on-the-human.

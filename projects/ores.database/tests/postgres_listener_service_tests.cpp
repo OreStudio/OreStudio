@@ -307,10 +307,10 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
     auto control = sqlgen::postgres::connect(credentials);
     REQUIRE(control);
 
-    const std::string backend_filter =
-        "usename = current_user AND datname = current_database() "
-        "AND pid <> pg_backend_pid() "
-        "AND application_name = '" + listener.application_name() + "'";
+    const std::string backend_filter = "usename = current_user AND datname = current_database() "
+                                       "AND pid <> pg_backend_pid() "
+                                       "AND application_name = '" +
+                                       listener.application_name() + "'";
 
     const std::string expect_present =
         "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_stat_activity WHERE " + backend_filter +
@@ -334,16 +334,16 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
 
     // Wait until the session is gone before sending the in-flight NOTIFY,
     // so the loss is guaranteed rather than racy.
-    REQUIRE(wait_for([&] { return bool((*control)->execute(expect_gone)); },
-                     std::chrono::seconds(10)));
+    REQUIRE(
+        wait_for([&] { return bool((*control)->execute(expect_gone)); }, std::chrono::seconds(10)));
 
     // Sent while the listener is down: lost forever. The surfacing is the
     // counter and the error logs, not a recovery.
     send_notify(credentials, channel_name, lost_payload);
 
     // The listener detects the loss on its next poll and records the window.
-    REQUIRE(wait_for([&] { return listener.connection_loss_count() >= 1; },
-                     std::chrono::seconds(10)));
+    REQUIRE(
+        wait_for([&] { return listener.connection_loss_count() >= 1; }, std::chrono::seconds(10)));
 
     // Wait until the listener session is back, then let the reissued LISTEN
     // land before sending the recovery notification.
@@ -355,11 +355,12 @@ TEST_CASE("postgres_listener_service_reconnect_surfaces_loss_window", tags) {
 
     // The recovered notification must arrive exactly once; the lost one
     // must never arrive.
-    REQUIRE(wait_for([&] {
-                         std::lock_guard lock(received_mutex);
-                         return received.size() == 1;
-                     },
-                     std::chrono::seconds(10)));
+    REQUIRE(wait_for(
+        [&] {
+            std::lock_guard lock(received_mutex);
+            return received.size() == 1;
+        },
+        std::chrono::seconds(10)));
     {
         std::lock_guard lock(received_mutex);
         REQUIRE(received.size() == 1);

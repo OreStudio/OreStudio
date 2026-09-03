@@ -63,8 +63,7 @@ namespace ores::database::service {
  * Exposed as a free function so tests can assert the session is UTC.
  */
 [[nodiscard]] ORES_DATABASE_EXPORT sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-connect_utc(const sqlgen::postgres::Credentials& credentials,
-            const std::string& application_name);
+connect_utc(const sqlgen::postgres::Credentials& credentials, const std::string& application_name);
 
 class ORES_DATABASE_EXPORT postgres_listener_service final {
 private:

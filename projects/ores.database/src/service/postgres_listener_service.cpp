@@ -20,8 +20,8 @@
 #include "ores.database/service/postgres_listener_service.hpp"
 #include "ores.database/domain/session_utilities.hpp"
 #include "ores.platform/process/pid.hpp"
-#include <algorithm>
 #include <boost/algorithm/string/join.hpp>
+#include <algorithm>
 #include <chrono>
 #include <list>
 #include <thread>
@@ -47,8 +47,7 @@ postgres_listener_service::~postgres_listener_service() {
 }
 
 sqlgen::Result<sqlgen::Ref<sqlgen::postgres::Connection>>
-connect_utc(const sqlgen::postgres::Credentials& credentials,
-            const std::string& application_name) {
+connect_utc(const sqlgen::postgres::Credentials& credentials, const std::string& application_name) {
     auto conn_result = sqlgen::postgres::connect(credentials);
     if (!conn_result)
         return conn_result;
@@ -61,9 +60,9 @@ connect_utc(const sqlgen::postgres::Credentials& credentials,
 
     // Stamp the session so pg_stat_activity identifies the listener backend;
     // the reconnect test scopes its pg_terminate_backend signal to this name.
-    auto name_result = (*conn_result)
-                           ->execute("SELECT set_config('application_name', '" + application_name +
-                                     "', false)");
+    auto name_result =
+        (*conn_result)
+            ->execute("SELECT set_config('application_name', '" + application_name + "', false)");
     if (!name_result) {
         return sqlgen::error("Failed to set application_name: " +
                              std::string(name_result.error().what()));
@@ -267,11 +266,10 @@ void postgres_listener_service::listen_loop() {
             connection_ = std::move(*result);
             const auto loss_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
                 std::chrono::steady_clock::now() - loss_start_);
-            BOOST_LOG_SEV(lg(), error)
-                << "Reconnected after " << loss_duration.count()
-                << "ms; notifications sent on channels ["
-                << boost::algorithm::join(subscribed_channels_, ", ")
-                << "] during the outage are lost (PostgreSQL has no replay)";
+            BOOST_LOG_SEV(lg(), error) << "Reconnected after " << loss_duration.count()
+                                       << "ms; notifications sent on channels ["
+                                       << boost::algorithm::join(subscribed_channels_, ", ")
+                                       << "] during the outage are lost (PostgreSQL has no replay)";
             BOOST_LOG_SEV(lg(), info) << "Listener reconnected. Reissuing LISTENs.";
             issue_pending_listens();
             continue;

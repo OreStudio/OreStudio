@@ -531,8 +531,9 @@ void IrCurveEditor::buildProcessTab() {
         b->setAutoExclusive(true);
         b->setCursor(Qt::PointingHandCursor);
     }
-    advancedBtn->setChecked(true); // Advanced is the default: the exact-entry surface, and the
-                                   // mode the test scenario's spin-box steps exercise
+    // Advanced is the default: the exact-entry surface, and the mode the
+    // test scenario's spin-box steps exercise.
+    advancedBtn->setChecked(true);
     modeGroup_ = new QButtonGroup(this);
     modeGroup_->setExclusive(true);
     modeGroup_->addButton(simpleBtn, 0);
@@ -540,7 +541,8 @@ void IrCurveEditor::buildProcessTab() {
     connect(modeGroup_, &QButtonGroup::idClicked, this, [this](int) { onModeChanged(); });
 
     auto* segRow = new QHBoxLayout();
-    segRow->setSpacing(0); // connected segments
+    // Zero spacing between the buttons so the toggle reads as one control.
+    segRow->setSpacing(0);
     segRow->addWidget(simpleBtn);
     segRow->addWidget(advancedBtn);
     headerRow->addStretch(1);
@@ -581,14 +583,16 @@ void IrCurveEditor::buildProcessTab() {
 
     modeStack_ = new QStackedWidget(tab);
     modeStack_->setMaximumWidth(560);
-    modeStack_->addWidget(buildSimpleParameterPage()); // index 0
+    // Stack index mirrors the mode toggle's id: Simple at 0, Advanced at 1.
+    modeStack_->addWidget(buildSimpleParameterPage());
     auto* advancedPage = new QWidget(tab);
     auto* advancedPageLayout = new QVBoxLayout(advancedPage);
     advancedPageLayout->setContentsMargins(0, 0, 0, 0);
     advancedPageLayout->addWidget(parameterTable_, 1);
     advancedPageLayout->addWidget(parametersLoadingLabel_);
-    modeStack_->addWidget(advancedPage); // index 1
-    modeStack_->setCurrentIndex(1);      // Advanced is the default mode (see the toggle above)
+    modeStack_->addWidget(advancedPage);
+    // Advanced is the default mode (see the toggle above).
+    modeStack_->setCurrentIndex(1);
     middleRow->addWidget(modeStack_, 2);
 
     auto* shapeBox = new QGroupBox(tr("Curve shape"), tab);

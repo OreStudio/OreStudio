@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 9EEF7590-86C3-449F-8387-A21B5B62EF87
+:END:
+#+title: Regen byproduct hygiene
+#+description: Standing rule: every regeneration phase must sweep for unexpected untracked byproducts and account for each one.
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+
+Every phase that regenerates code must close with a byproduct sweep: git status must show no unexpected untracked files outside the component the phase targets. When one appears, the phase names it and accounts for it (deliberate inclusion in the change, or quarantine in a stash entry whose tag and SHA are recorded) before moving on.
+
+*Why:* On 2026-09-04 a regeneration during the junction-template-followups unit left 118 untracked generated files across 14 components that no unit owned; they went unnoticed until a manual sweep found them. Quarantined in stash entry ad0c738b9a (tag quarantine-regen-byproducts-20260904-1538).
+
+*How to apply:* In any unit that runs a regeneration step (compass codegen regenerate, the codegen_templates tangle, check_component_drift.py, the roundtrip check, the component-file-list regeneration), run git status immediately after the regeneration and before closing the phase. Account for every untracked file that is not the phase own output.

@@ -8,7 +8,7 @@
 #+filetags: :test-db-rerun-safety:sprint_25:v0:
 #+owner: marco
 #+branch: feature/close-test-db-rerun-safety-gap
-#+pr:
+#+pr: 2011
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-04
@@ -184,7 +184,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2011][#2011]] | [ores.testing] Close orphaned synthetic rows before test runs |
 
 * Review
 

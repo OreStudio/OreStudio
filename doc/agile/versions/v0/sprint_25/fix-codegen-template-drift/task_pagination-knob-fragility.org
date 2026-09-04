@@ -8,7 +8,7 @@
 #+filetags: :fix-codegen-template-drift:sprint_25:v0:
 #+owner: marco
 #+branch: feature/pagination-knob-fragility
-#+pr:
+#+pr: 2006
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
@@ -179,7 +179,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2006][#2006]] | [ores.codegen] Qt client model fetches paginated unconditionally |
 
 * Review
 

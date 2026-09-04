@@ -26,7 +26,7 @@
  *
  * A feed binding records which raw producer channel feeds an official market
  * series, in which workspace. The marketdata service reads all enabled bindings
- * at startup, subscribes to synthetic.v1.tick.<source_name> once per
+ * at startup, subscribes to synthetic.v1.tick.fx_spot.<source_name> once per
  * (tenant, party, workspace), persists each arriving tick as a
  * market_observation under the binding's party, and republishes on the
  * per-party realtime stream

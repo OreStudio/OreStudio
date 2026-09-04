@@ -88,6 +88,18 @@ def _read_drawer_properties(model_path: Path) -> dict[str, Any]:
         return {}
 
 
+# A junction's messaging layer exists to serve parent-scoped list reads
+# (:list_by: on a junction side). With no :list_by: declared, the four
+# facets would emit a stack nothing subscribes to: a registrar shell,
+# an unreachable service, and a protocol nobody reads.
+_JUNCTION_MESSAGING_FACETS = frozenset({
+    "ores.cpp.nats-handler",
+    "ores.cpp.nats-sub-registrar",
+    "ores.cpp.protocol",
+    "ores.cpp.service",
+})
+
+
 def resolve_targets(
     model_path: Path,
     base_dir: Path,
@@ -119,6 +131,18 @@ def resolve_targets(
     gen_facets = resolve_generation_set(supported, target)
 
     model_data = load_model(model_path)
+    if model_type == "junction":
+        junction = model_data.get("junction", {})
+        left = (junction.get("left") or {}).get("list_by")
+        right = (junction.get("right") or {}).get("list_by")
+        if not (left or right):
+            # Hard gate: this runs before the per-archetype
+            # :ores.*.enabled: override loop below, so an explicit enabled
+            # override cannot re-admit messaging for a junction with no
+            # declared list read (a stack nothing would subscribe to, and a
+            # regeneration that would overwrite a live legacy layer).
+            gen_facets = {f for f in gen_facets
+                          if f not in _JUNCTION_MESSAGING_FACETS}
     # Per-archetype activation: the entity's ores.* drawer overrides (most-
     # specific wins, archetype depth included) and, for components, the kind
     # discriminator that selects mutually-exclusive variants in one pass.

@@ -39,11 +39,11 @@ not waste the sweep.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Task 9FF6FAD3 (has_pagination knob footgun) done, delivered in commit 7287a46527. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Task D8301A1C (junction codegen template follow-ups), the last in the story. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-09-04                               |
 
 * Acceptance
@@ -71,7 +71,7 @@ not waste the sweep.
 | [[id:3F3559A2-5E98-44EA-A87A-E5DA7CF5BA23][Update history field mapper codegen template to use provenance_fields constants]] | DONE | 2026-09-04 | 2026-09-04 | cpp_history_field_mapper.cpp.mustache hardcodes audit-column labels ("Modified By", etc.) as string literals, but currency_history_field_mapper.cpp on main uses the shared ores::history::domain::provenance_fields constants instead -- the template needs to be updated to match and every entity's generated mapper regenerated. |
 | [[id:453FA225-F6FF-4095-AFB7-4D59E3FDB357][Compound-key is_uuid gating drops trailing columns in Qt/service templates]] | DONE | 2026-09-04 | 2026-09-04 | cpp_protocol.hpp.mustache and cpp_service.cpp.mustache gate their delete/history/save is_uuid branch on primary_key.is_uuid alone, which reflects only the first key column. A future compound key whose leading column is UUID would silently drop every subsequent key column from these structs/validations. Not exercised today (subject_area's key is two text columns). Raised in PR #1691 review round 1. Fix: make the is_uuid branches loop primary_key.columns like cpp_domain_type_mapper.cpp.mustache already does. |
 | [[id:9FF6FAD3-A3C3-4C31-9220-57CAADFDCCA0][has_pagination knob is a silent-failure footgun in the Qt client model template]] | DONE | 2026-09-04 | 2026-09-04 | The codegen knob gating real offset/limit pagination in a Client entity Model.cpp defaults to off with no compile-time or runtime signal when unset, letting 61 entities silently truncate lists at 100 rows behind fully-functional-looking pagination controls. |
-| [[id:D8301A1C-726D-495E-A509-AEA9A838DC88][Junction codegen template follow-ups]] | BACKLOG | | | Four codegen template issues for junction entities: path/namespace mismatch between generated and live code, current_timestamp version-collision in insert triggers, messaging handler generated without matching service, and eventing facets produce incomplete output. |
+| [[id:D8301A1C-726D-495E-A509-AEA9A838DC88][Junction codegen template follow-ups]] | DONE | 2026-09-04 | 2026-09-04 | Four codegen template issues for junction entities: path/namespace mismatch between generated and live code, current_timestamp version-collision in insert triggers, messaging handler generated without matching service, and eventing facets produce incomplete output. |
 
 * Decisions
 
@@ -111,6 +111,27 @@ not waste the sweep.
   unregenerable until 836BB4CE. The round also retired the
   =variability_feature_has_pagination.org= feature page, which still
   described the flag as a live behavioural toggle.
+- 2026-09-04 (task D8301A1C): junction messaging is gated on the
+  declared read need, in =resolve_targets=. A junction whose =left=
+  and =right= sides both lack =:list_by:= resolves none of the four
+  messaging facets (=ores.cpp.nats-handler=,
+  =ores.cpp.nats-sub-registrar=, =ores.cpp.protocol=,
+  =ores.cpp.service=): the junction sections' only subject-emitting
+  content is the per-side list read, so the stack the pre-gate
+  templates emitted served no subscriber. The org's own =:list_by:=
+  is the declaration of intent, so no new drawer syntax or
+  enablement key was added, and =badge_mapping='s four disable keys
+  stay as the explicit suppression record. Related discovery,
+  recorded for the refdata drift story: org frontmatter
+  =#+profile: tenant-scoped-junction= is not read by the junction
+  loader (=_ensure_profile_binding= accepts =:profile:= only in the
+  root =** Flags= drawer), so those eight orgs regenerate
+  tenant-less. Junction create triggers use =clock_timestamp()= at
+  the four version/validity sites, mirroring the domain-entity
+  create fix: =current_timestamp= is frozen for the whole
+  transaction, so a same-transaction multi-write to one junction row
+  would collide with itself, while =clock_timestamp()= always
+  advances.
 
 * Out of scope
 

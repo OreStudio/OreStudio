@@ -143,7 +143,8 @@ is why one classification serves both.
 
 ** Overlaps with Our Catalogue
 
-Ten entries were first marked Conflict. Eight were not conflicts.
+Ten upstream skills cover ground our catalogue already holds. Eight of the
+ten are not competitors.
 
 *** Most Overlaps Are a Rule and Its Enforcer
 

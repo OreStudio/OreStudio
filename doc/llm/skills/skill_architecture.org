@@ -2,7 +2,7 @@
 :ID: AEBC2BC9-A854-4CEC-BA88-1602490AC762
 :END:
 #+title: Skill architecture
-#+description: Hub of the compass skill framework: the ontology of regulatory functions, dispatch and Systems, the three entry points into the model, and an index of the pages that treat each part in detail.
+#+description: The working index into the skill framework: how dispatch resolves a target to the operations available on it, the three entry points into the model, and a map of the pages treating each part in detail.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:claude_code:architecture:index:
@@ -10,26 +10,24 @@
 #+updated: 2026-08-26
 
 #+begin_note
-*Superseded as the hub.* [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] is the
-framework's specification: it derives the regulatory functions from the
-primitives of a control loop and states the rule fixing what the framework
-models. This page remains as the practical index into the cluster, and its
-account of dispatch is a mechanism the specification uses rather than the
-framework's organising idea. Where the two disagree, the specification governs.
+*Scope.* This page is the working index into the framework and the account of
+its dispatch mechanism. [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] is the
+specification: it derives the regulatory functions and states what the framework
+models. The specification governs.
 #+end_note
 
 * Summary
 
-This document is the hub of the /compass skill framework/. The objective of the
-framework is to define an ontology of core domain concepts and their associated
-operational processes. Together these establish the computational primitives
+This document indexes the /compass skill framework/ and treats its dispatch
+mechanism. The objective of the framework is to define an ontology of core
+domain concepts and their associated operational processes. Together these establish the computational primitives
 required for humans and [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][large language models]] to operate agent harnesses
 autonomously or semi-autonomously. The framework rests on academic foundations,
 principally [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], and on empirical foundations drawn from [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill
 collections]] published by other developers. We have attributed provenance as
 fully as we can, but please report any we may have missed.
 
-The hub starts by introducing the principal concepts and moving parts of the
+This page starts by introducing the principal concepts and moving parts of the
 framework to build a mental model. It then describes the entry points into the
 model, and finally closes with links to the spoke pages that treat each topic in
 detail.

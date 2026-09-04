@@ -98,6 +98,10 @@ The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke p
   symbol that clearly exists somewhere in the tree (typically right
   after a rebase/merge), or a new source file was just added to a
   component: regenerate its =component_files.cmake=.
+- [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]] — a remediation story must bring one component
+  to zero codegen drift (or a regen just surfaced drift): run the
+  component through the drift-elimination method — survey, profile
+  binding, byte-identical regen, drift gate.
 
 * Recipes
 

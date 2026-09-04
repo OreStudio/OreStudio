@@ -124,6 +124,7 @@ Entities, components, and schemas produced by ores.codegen.
 | [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]] | Codegen Add Shell Entity | Create shell commands for domain entities in ores.shell including list, add, history, and other operations. |
 | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]] | Codegen Add SQL Schema | Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio. |
 | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][codegen-add-wt-entity]] | Codegen Add WT Entity | Create Wt web UI components for domain entities including list widgets, detail dialogs, and application int... |
+| [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]] | Codegen Fix Drift | Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, b... |
 | [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]] | codegen-sync-cmake-sources | Regenerate CMake component file lists (component_files.cmake) after adding/removing a source file, or after... |
 
 * DevOps (=devops-=)

@@ -27,19 +27,19 @@ the method come from here.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Program decisions recorded; method-skill task scaffolded; stale-doc retirement in progress. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Land the doc-retirement PR, then the method skill; then close. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-04                               |
 
 * Acceptance
 
 - The 14 ad hoc per-component drift tasks are re-scoped (or closed/replaced) using real data instead of guesses. *Done 2026-08-04.*
-- entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org are deleted once whatever supersedes them is in place. In progress 2026-09-03: the checklist's criteria are being merged into the commissioning reference before deletion.
-- The canonical per-component method exists as a reusable skill (task below), and the program's ordering and operating rules are recorded in Decisions.
-- The dormant product-backlog entries that this method supersedes are closed or re-pointed at the skill.
+- entity_coverage_matrix.org, entity_evaluation_checklist.org, and entity_catalogue.org are deleted once whatever supersedes them is in place. *Done 2026-09-04* (PR #2002): the checklist's per-layer criteria were merged into the commissioning reference, the three files reduced to retirement stubs that keep their =:ID:=.
+- The canonical per-component method exists as a reusable skill (task below), and the program's ordering and operating rules are recorded in Decisions. *Done 2026-09-04.*
+- The dormant product-backlog entries that this method supersedes are closed or re-pointed at the skill. *Done 2026-09-04.*
 - (Resolved 2026-09-03) The classification tool is run across every remaining component producing a combined quantified report. Decision: not produced; the 12 stories' per-component surveys supersede it.
 
 * Tasks
@@ -47,7 +47,7 @@ the method come from here.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | DONE | 2026-09-03 | 2026-09-04 | Narrowed 2026-08-04, report question settled 2026-09-03 (see Decisions); remaining work is retiring the 3 stale docs and closing the program setup. |
-| [[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]] | BACKLOG | | | Author the canonical method skill under doc/llm/skills, deployed to .claude/skills via deploy_skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates. |
+| [[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]] | DONE | 2026-09-04 | 2026-09-04 | Author the canonical method skill under doc/llm/skills, deployed to .claude/skills via deploy_skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates. |
 
 * Decisions
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :entity-classification-drift-rollout:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/method-codegen-drift-elimination
+#+pr: 2003
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-03
 #+updated: 2026-09-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -32,11 +32,11 @@ ramp with its evidence gates.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-04                               |
 
 * Acceptance
@@ -63,9 +63,19 @@ ramp with its evidence gates.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- 2026-09-03: task scaffolded with the rollout task (see its Plan).
+- Name the skill against the naming registers: no register verb covers
+  repair to a defined end state, so extend the verb register with
+  =fix-=, recording the decision in =skill_naming_conventions.org='s
+  decision log (per the register's own extension mechanism).
+- Scaffold via =compass add skill= under =doc/llm/skills/<slug>/= and
+  author the whole method from the provenance records only: the
+  refdata and dq worked records, the sprint 24 dimension settlement,
+  and the story's 2026-09-03 Decisions.
+- Wire: catalogue regeneration, s1-agent cross-link, dormant
+  =entity_evaluation_skill= backlog entry re-pointed at the skill.
+- Verify with =deploy_skills= (export + id-link resolution) and a site
+  export check before raising.
 
 * Notes
 
@@ -84,12 +94,40 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2003][#2003]] | [skills] Add codegen-fix-drift drift-elimination skill |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5534510135 | Typo: "Work arounds are not a fix." | codegen-fix-drift/SKILL.org | Fixed | One word: "Workarounds". |
+| 5534510135 | Dangling id-link A57C28EA has no defining :ID: | codegen-fix-drift/SKILL.org | Declined | The :ID: is defined at projects/modeling/variability_profiles.org:2, the real Variability Profiles doc; the reviewer's id search missed the projects/modeling tree. |
+| 5534510135 | Skill is 187 lines against the 50-80 thin-index contract; Recipes empty | codegen-fix-drift/SKILL.org | Noted, no change | Matches actual catalogue practice (agile-refine-backlog 346, code-review-comments 408); contract-vs-norm divergence is a separate question, not this PR's defect. |
 
 * Result
+
+Closed 2026-09-04. The canonical method ships as the =codegen-fix-drift=
+skill (=doc/llm/skills/codegen-fix-drift/SKILL.org=, ID
+7908E2AF-E196-443F-8FB7-0047553D8EFE) in this PR (c5f51aeb9f,
+62cbd692d7, 400620bbf0, a4e2bd8fc5). The name extends the skill naming
+verb register with =fix-=, recorded in that document's decision log.
+The content distills the refdata and dq worked records, the sprint 24
+dimension settlement, and the story's 2026-09-03 Decisions into seven
+ordered, unskippable steps: baseline regen before any model edit,
+survey every model file, compute resolved feature values, bind every
+match and record every no-match with its real values, scripted
+per-entity regeneration with zero-additional-diff and idempotency
+requirements, generated-code review for C++ idiomaticity (template
+fixes only), and the drift gate extended last. It states the
+too-complex-to-generate exception rule (recorded justification per
+entity, artefact stays visible to the drift check) and the L0-L2
+automation ramp with its evidence gates.
+
+Acceptance: authored under =doc/llm/skills/<slug>/SKILL.org= per the
+skill contract and deployed via =deploy_skills= (clean export to
+=.claude/skills=, id-links resolve); ordered procedure with no
+skippable steps and no partial-coverage end state; exception rule;
+L0-L2 ramp with evidence gates; provenance citations (refdata and dq
+worked records, sprint 24 settlement); the dormant
+=entity_evaluation_skill= backlog entry re-pointed at the skill — all
+met. The skill is also wired into the catalogue and the s1 agent.

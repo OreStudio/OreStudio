@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :llm:skills:claude_code:naming:convention:
 #+created: 2026-06-06
-#+updated: 2026-06-06
+#+updated: 2026-09-04
 
 * Summary
 
@@ -71,6 +71,7 @@ is =codegen-add-qt-entity=.
 | =brainstorm-= | explore a design through collaborative dialogue           |
 | =deploy-= | build an artefact and publish it to where it is consumed    |
 | =delete-= | retire an artefact and heal the graph: re-point incoming links, record disposition, purge deployed copies |
+| =fix-=    | repair a defect to a defined end state: drift elimination, template bugs, failing behaviour |
 | (bare)   | rare domain verbs with no object, e.g. =pr-merge=              |
 
 =add= versus =start= is the create-vs-pick-up distinction: creating a
@@ -109,6 +110,7 @@ must. See the /Clean up the compass work lifecycle/ story.
 | =write= rejected | =code-add-tests=, not =code-write-tests= — =add= already means "create the artefact" |
 | =deploy-= added | The build pillar's deploy_manual/skills/settings/site targets are publish actions, not plain runs |
 | =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=skill-delete=) |
+| =fix-= added | The drift-elimination method needs the plain repair verb: =add-= (create), =run-= (execute), and =update-= (align with a change elsewhere) each name a different action, and remediation is the load-bearing action of the 12 per-component stories (=codegen-fix-drift=) |
 
 * See also
 

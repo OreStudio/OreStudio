@@ -8,7 +8,7 @@
 #+filetags: :entity-classification-drift-rollout:sprint_25:v0:
 #+owner: marco
 #+branch: feature/method-codegen-drift-elimination
-#+pr:
+#+pr: 2003
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-03
@@ -94,7 +94,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2003][#2003]] | [skills] Add codegen-fix-drift drift-elimination skill |
 
 * Review
 

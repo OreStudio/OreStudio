@@ -26,12 +26,12 @@ Four codegen template issues for junction entities: path/namespace mismatch betw
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing.                               |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-04                               |
 
 * Acceptance
 
@@ -295,3 +295,86 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered 2026-09-04 on branch
+=feature/junction-codegen-template-followups=. Code commits:
+9dcbdceea4 (defect-2 template fix, with the three clean creates) and
+82c577190d (defect-3 gate).
+
+- Defect 1 (path/namespace mismatch): verified resolved, no change
+  needed. The subcomponent-flag routing that postdates the July
+  capture resolves junction output into =ores.{component}/
+  {subcomponent}= paths, and a baseline full-ores regeneration
+  reproduces the committed tree byte-identically for every junction
+  unit the generator writes. The residue classes the survey found
+  are not generator output: =ores.iam= =account_party='s live
+  entity-flavoured messaging sits at its api/core subcomponent paths
+  (wired into the aggregate registrar), where no current
+  regeneration writes, and =ores.compute= =app_version_platform='s
+  committed domain/repository quartet is stale drift from an org
+  that evolved after its last regeneration. Both are recorded in the
+  Plan for their components' drift stories.
+- Defect 2 (insert-trigger =current_timestamp=): the org source
+  =ores.sql.schema.junction_create.org= and its tangled
+  =sql_schema_junction_create.mustache= now use =clock_timestamp()=
+  at the four version/validity sites (validity close, close guard,
+  new-version =valid_from=, soft-delete close), with the rationale
+  comment the domain-entity create fix carries. The re-tangle
+  changed exactly the two template files. Per-junction
+  =ores.sql.schema= regeneration over the 13 junction orgs is
+  idempotent: two consecutive runs are byte-identical across all 12
+  tracked creates. The three creates whose committed tree carries no
+  other drift ship here, each a 15-line diff: =ores.dq=
+  =badge_mapping=, =ores.dq= =dataset_bundle_member=, =ores.refdata=
+  =tenor_convention_resolution=. Live-verified on a recreated
+  =brave_hopper= database (=compass db recreate= exit 0): population
+  wrote Badge Mappings 160, Tenor Convention Resolutions 54, and the
+  Dataset Bundle Members through the rewritten insert triggers; the
+  live =pg_proc= definitions of the three junction insert functions
+  carry =clock_timestamp()= at all four sites with zero bare
+  =current_timestamp=, and =ores_dq_badge_mappings_insert_fn= dumps
+  verbatim to its committed create file.
+- Defect 3 (messaging handler without matching service): the
+  resolver gates the junction messaging layer on the declared read
+  need. =resolve_targets= in =generate.py= drops the four messaging
+  facets (=ores.cpp.nats-handler=, =ores.cpp.nats-sub-registrar=,
+  =ores.cpp.protocol=, =ores.cpp.service=) from a junction whose
+  =left= and =right= sides both lack =:list_by:=, once the model
+  loads. Post-gate unit census: =calendar_date= 28 with 6
+  messaging, =dataset_bundle_member= 31 with 6, =badge_mapping= 25
+  with 0 (its four disable keys stay as the explicit suppression
+  record), every other junction 25 with 0. Two full-ores
+  regeneration rounds after the gate are byte-identical (198 files
+  each: the 197-file pre-existing baseline drift plus
+  =generate.py=, zero attributable junction churn). The gate also
+  protects =account_party=: with its messaging suppressed, no
+  regeneration can overwrite its live legacy layer.
+- Defect 4 (eventing facets produce incomplete output): the junction
+  exclusion from all three eventing facets is verified deliberate
+  and unchanged. No template change here admits junctions to
+  eventing, and no junction eventing is generated anywhere. The
+  capability gap, its single residue (the =ores.compute=
+  =app_version_platforms= notify trigger, schema-era), and the open
+  payload-shape decision stay recorded on the discarded capture
+  (ID 6AFE12CD) as the follow-up input.
+- Recorded for the per-component drift stories, not fixed here: the
+  nine reverted creates. Eight =ores.refdata= creates regenerate
+  tenant-less because their orgs declare =#+profile:
+  tenant-scoped-junction= as frontmatter, which the junction loader
+  does not read (=_ensure_profile_binding= accepts =:profile:= only
+  in the root =** Flags= drawer), so =has_tenant_id= never reaches
+  the junction context and regeneration drops the =tenant_id=
+  column, its composite-PK member, its index, and the tenant
+  validations. The =ores.iam= =account_party= create is
+  security-definer-era (inline soft-FK validation the current
+  template no longer emits). The =ores.compute= create output is an
+  untracked byproduct whose committed counterpart is the plural
+  schema-era residue.
+- Verification (change classes: ci, python tooling, docs, code):
+  compass pytest 117 passed / 1 skipped; codegen-templates tangle
+  byte-in-sync; component drift check clean of junction output
+  (three pre-existing domain-entity files reverted and recorded);
+  roundtrip check exit 0; =validate_schemas.sh= passed with zero
+  warnings; site build exit 0; full build (linux-clang-debug-make)
+  exit 0 at 100%; ctest 71/71 passed against a freshly recreated
+  database.

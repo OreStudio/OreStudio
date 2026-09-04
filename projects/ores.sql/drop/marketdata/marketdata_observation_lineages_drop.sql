@@ -18,6 +18,8 @@
  *
  */
 
+drop policy if exists observation_lineages_tbl_party_isolation_policy on "ores_marketdata_observation_lineages_tbl";
+drop policy if exists observation_lineages_tbl_tenant_isolation_policy on "ores_marketdata_observation_lineages_tbl";
 drop rule if exists ores_marketdata_observation_lineages_delete_rule on "ores_marketdata_observation_lineages_tbl";
 drop trigger if exists ores_marketdata_observation_lineages_insert_trg on "ores_marketdata_observation_lineages_tbl";
 drop function if exists ores_marketdata_observation_lineages_insert_fn;

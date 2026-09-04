@@ -11,7 +11,7 @@
 #+entity_title: Feed Binding
 #+brief: Persisted mapping that binds an official ORE market series (ore_key) to one raw synthetic producer channel (source_name); enables/disables the ingest loop subscription.
 #+created: 2026-06-30
-#+updated: 2026-06-30
+#+updated: 2026-09-04
 
 A feed binding records which raw producer channel feeds an official market
 series, in which workspace. The marketdata service reads all enabled bindings
@@ -126,7 +126,9 @@ binding. Setting to false suspends ingestion without removing the binding record
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_marketdata_feed_bindings_tbl
+:tablename:                 ores_marketdata_feed_bindings_tbl
+:rls_tenant_isolation:      true
+:rls_system_tenant_visible: true
 :END:
 
 ** Checks

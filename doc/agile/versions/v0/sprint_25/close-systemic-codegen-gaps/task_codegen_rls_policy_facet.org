@@ -128,7 +128,9 @@ still has to be hand-wired afterwards":
 - Model machinery: features are catalogued
   (=projects/modeling/variability_features.org=), namespaced
   (=_FEATURE_NAMESPACE= in org_loader.py), defaulted by profiles, and
-  declared in an entity's =* Flags= drawer. =has_tenant_id= exists and
+  declared on the entity — root =* Flags= drawer for the structural
+  keys (=has_tenant_id=), the =* SQL= =** Flags= drawer for
+  sql-namespace knobs. =has_tenant_id= exists and
   defaults true for domain entities; no party or policy-shape feature
   exists.
 - Aggregator census (create side, =<dir>/<dir>_create.sql= vs dir
@@ -155,12 +157,21 @@ still has to be hand-wired afterwards":
   pre-iam ones, whose adoption needs the IAM-function ordering question
   resolved) adopt inside their own drift stories; recorded, not done
   here.
-- D3 (intent flags, not inference): new features =rls_tenant_isolation=
-  and =rls_party_isolation= (root namespace) plus a T2 modifier
-  =rls_system_tenant_visible= (sql namespace), declared per entity.
-  Column-based inference would silently add policies to the 53
-  deliberately-skip tables and to party_id natural keys that are not
-  party scope.
+- D3 (intent flags, not inference): new features =rls_tenant_isolation=,
+  =rls_party_isolation=, and =rls_system_tenant_visible=, declared per
+  entity. Column-based inference would silently add policies to the 53
+  deliberately-skip tables and to =party_id= natural keys that are not
+  party scope. Namespace refined at implementation start (draft said
+  root): all three are =ores.sql.schema=-bundle features in the =sql=
+  namespace, declared in the entity's =* SQL= =** Flags= drawer beside
+  the =system_scope=-family knobs. The variability model's category
+  test makes these authored DDL-behaviour knobs, not structural
+  predicates: root-namespace features (=has_tenant_id=,
+  =has_workspace_id=) document on Keys and columns and branch the
+  logical shape, while the tenant-scoping knobs (=system_scope=,
+  =nullable_tenant_id=) are sql-namespace features read as
+  =domain_entity.sql.*=; =sql= keeps all three RLS features in one
+  bundle, namespace, declaration idiom, and profile-defaulting path.
 - D4 (drop side): policy drops go at the top of the entity's generated
   drop file (before the table drop); DROP POLICY IF EXISTS is safe in
   any order.

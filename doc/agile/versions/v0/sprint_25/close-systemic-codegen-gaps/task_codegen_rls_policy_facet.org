@@ -8,7 +8,7 @@
 #+filetags: :close-systemic-codegen-gaps:sprint_25:v0:
 #+owner: marco
 #+branch: feature/codegen-rls-policy-facet
-#+pr:
+#+pr: 2009
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
@@ -328,7 +328,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2009][#2009]] | [ores.codegen] Add RLS policy emission and aggregator wiring validation |
 
 * Review
 

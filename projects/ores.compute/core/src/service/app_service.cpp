@@ -68,9 +68,10 @@ void app_service::save_app(const domain::app& v) {
 }
 
 void app_service::save_apps(const std::vector<domain::app>& apps) {
-    for (const auto& e : apps)
+    for (const auto& e : apps) {
         if (e.id.is_nil())
             throw std::invalid_argument("App id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << apps.size() << " compute apps";
     auto ts = apps;
     for (auto& e : ts)

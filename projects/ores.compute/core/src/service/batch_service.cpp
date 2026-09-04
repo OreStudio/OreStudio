@@ -68,9 +68,10 @@ void batch_service::save_batch(const domain::batch& v) {
 }
 
 void batch_service::save_batches(const std::vector<domain::batch>& batches) {
-    for (const auto& e : batches)
+    for (const auto& e : batches) {
         if (e.id.is_nil())
             throw std::invalid_argument("Batch id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << batches.size() << " compute batches";
     auto ts = batches;
     for (auto& e : ts)

@@ -43,8 +43,8 @@
  * eight regularly scheduled meetings per year are entered as a short run
  * of central_bank_meeting instances on the US.FOMC calendar,
  * transcribed from the Fed's published calendar with
- * source'federalreserve.gov'. Formulaic recurrence generation is
- * deferred; calendar_rules='s grammar can later feed a template link
+ * source='federalreserve.gov'. Formulaic recurrence generation is
+ * deferred; calendar_rules's grammar can later feed a template link
  * if a consumer needs it.
  */
 

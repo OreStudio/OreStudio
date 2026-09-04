@@ -82,9 +82,10 @@ void result_service::save_result(const domain::result& v) {
 }
 
 void result_service::save_results(const std::vector<domain::result>& results) {
-    for (const auto& e : results)
+    for (const auto& e : results) {
         if (e.id.is_nil())
             throw std::invalid_argument("Result id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << results.size() << " compute results";
     auto ts = results;
     for (auto& e : ts)

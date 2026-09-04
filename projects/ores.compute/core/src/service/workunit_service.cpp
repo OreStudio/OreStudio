@@ -81,9 +81,10 @@ void workunit_service::save_workunit(const domain::workunit& v) {
 }
 
 void workunit_service::save_workunits(const std::vector<domain::workunit>& workunits) {
-    for (const auto& e : workunits)
+    for (const auto& e : workunits) {
         if (e.id.is_nil())
             throw std::invalid_argument("Workunit id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << workunits.size() << " workunits";
     auto ts = workunits;
     for (auto& e : ts)

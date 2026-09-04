@@ -69,9 +69,10 @@ void app_version_service::save_app_version(const domain::app_version& v) {
 }
 
 void app_version_service::save_app_versions(const std::vector<domain::app_version>& app_versions) {
-    for (const auto& e : app_versions)
+    for (const auto& e : app_versions) {
         if (e.id.is_nil())
             throw std::invalid_argument("App Version id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << app_versions.size() << " app versions";
     auto ts = app_versions;
     for (auto& e : ts)

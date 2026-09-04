@@ -68,9 +68,10 @@ void host_service::save_host(const domain::host& v) {
 }
 
 void host_service::save_hosts(const std::vector<domain::host>& hosts) {
-    for (const auto& e : hosts)
+    for (const auto& e : hosts) {
         if (e.id.is_nil())
             throw std::invalid_argument("Host id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << hosts.size() << " compute hosts";
     auto ts = hosts;
     for (auto& e : ts)

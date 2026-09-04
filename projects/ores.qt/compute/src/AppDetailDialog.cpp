@@ -91,7 +91,7 @@ void AppDetailDialog::setupConnections() {
     connect(ui_->deleteButton, &QPushButton::clicked, this, &AppDetailDialog::onDeleteClicked);
     connect(ui_->closeButton, &QPushButton::clicked, this, &AppDetailDialog::onCloseClicked);
 
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &AppDetailDialog::onFieldChanged);
+    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &AppDetailDialog::onCodeChanged);
     connect(
         ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, &AppDetailDialog::onFieldChanged);
 }
@@ -111,6 +111,7 @@ void AppDetailDialog::setApp(const compute::domain::app& app) {
 
 void AppDetailDialog::setCreateMode(bool createMode) {
     createMode_ = createMode;
+    ui_->nameEdit->setReadOnly(!createMode);
     ui_->deleteButton->setVisible(!createMode);
     setProvenanceEnabled(!createMode);
     if (createMode) {
@@ -127,7 +128,7 @@ void AppDetailDialog::markDirty() {
 
 void AppDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
-    ui_->nameEdit->setReadOnly(readOnly);
+    ui_->nameEdit->setReadOnly(true);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
@@ -149,9 +150,16 @@ void AppDetailDialog::updateUiFromApp() {
 }
 
 void AppDetailDialog::updateAppFromUi() {
-    app_.name = ui_->nameEdit->text().trimmed().toStdString();
+    if (createMode_) {
+        app_.name = ui_->nameEdit->text().trimmed().toStdString();
+    }
     app_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     app_.modified_by = username_;
+}
+
+void AppDetailDialog::onCodeChanged(const QString& /* text */) {
+    hasChanges_ = true;
+    updateSaveButtonState();
 }
 
 void AppDetailDialog::onFieldChanged() {

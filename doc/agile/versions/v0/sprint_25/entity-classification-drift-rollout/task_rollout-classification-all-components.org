@@ -36,11 +36,11 @@ it, and a read-only cross-component report would be stale before landing
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] |
-| Now          | Program decisions recorded (story); board synced; retiring the 3 stale docs. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Land the closeout PRs (board, docs retirement), then record Result and close. |
+| Next         | Nothing. |
 | Last touched | 2026-09-04                               |
 
 * Acceptance
@@ -109,3 +109,30 @@ via its "Verifies task" field.
 | 5533662524 | Bot 3: fabricated task ID in the discarded capture description; doc/plans note | discarded/entity_evaluation_skill.org | Fixed; doc/plans noted | ID corrected to 43EE3BC6-C813-45FD-8348-26919720FDAA; doc/plans left as read-only history, see bot 1 row. |
 
 * Result
+
+Closed 2026-09-04. Both closeout PRs landed:
+
+- #2001 (board): task and story re-scoped, the 2026-09-03 program
+  decisions recorded in the story, sprint 25 board rows synced.
+- #2002 (docs): the three stale docs retired to stubs that keep their
+  =:ID:=, so every archived =id:= link still resolves; the evaluation
+  checklist's per-layer criteria merged verbatim into the commissioning
+  reference (=entity_commissioning_reference.org=, section "Commissioning
+  criteria by layer"); every live reference re-pointed to the
+  commissioning reference or the component catalogue; the dormant
+  =entity_evaluation_skill= capture moved next → discarded with its
+  supersession note; backlog indexes regenerated.
+
+Three bot findings on #2002 handled in the review round: fabricated
+method-skill task ID corrected (6509b26a8f), stale backlog indexes
+regenerated (992021d7a2), completed-plan link in =doc/plans= noted with
+no change (read-only history; the stub keeps the link resolving). The
+re-review confirmed both fixes and found no further issues.
+
+Acceptance: the 14 ad hoc tasks are re-scoped (12 stories, 1
+ABANDONED); the three docs retired with their useful content captured
+first; the quantified report question settled (not produced, recorded
+2026-09-03 in the story's Decisions). The method-skill acceptance item
+is delivered by its own task
+[[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]],
+still BACKLOG in this story.

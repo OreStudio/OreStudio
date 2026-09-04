@@ -104,5 +104,8 @@ via its "Verifies task" field.
 | 5533143282 | Bot 1: #+branch mismatch; leading-slash path form; dormant-captures grammar | task_rollout, task_method, story | Fixed; #+branch declined | #+branch names the implementation branch for the PR-2 and PR-3 raises; rollout-board is a one-PR diff-isolation sibling. |
 | 5533144473 | Bot 2: skill authoring location per the skill contract; story grammar nitpick | task_method, story | Fixed | Acceptance now cites doc/llm/skills/<slug>/SKILL.org and the deploy_skills target. |
 | 5533144798 | Bot 3: stale #+branch; path form differs across lines 5 and 44 | task_rollout, task_method | Fixed; #+branch declined | Path form aligned to the repo-relative convention; #+branch kept, see bot 1. |
+| 5533661331 | Bot 1: no correctness issues; noted doc/plans COMPLETED doc still links the retired matrix | doc/plans/2026-02-22-cli-domain-submenus-design.org | Noted, no change | doc/plans is read-only history like the archived sprints; the stub keeps the link resolving. |
+| 5533662305 | Bot 2: stale backlog indexes after the capture move (next.org still lists it, discarded.org misses it) | next.org, discarded.org | Fixed | regenerate_backlog_indexes.py re-run after the ID fix; unrelated pre-existing inbox.org staleness on main left out (restored). |
+| 5533662524 | Bot 3: fabricated task ID in the discarded capture description; doc/plans note | discarded/entity_evaluation_skill.org | Fixed; doc/plans noted | ID corrected to 43EE3BC6-C813-45FD-8348-26919720FDAA; doc/plans left as read-only history, see bot 1 row. |
 
 * Result

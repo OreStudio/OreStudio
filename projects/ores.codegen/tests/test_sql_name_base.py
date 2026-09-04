@@ -170,3 +170,40 @@ def test_long_base_is_truncated_so_every_suffix_survives_distinct(tmp_path):
         assert name.endswith(suffix)
     # The un-truncated 69-char composition is impossible in PostgreSQL.
     assert LONG_PLURAL + "_tbl" not in sql
+
+
+# A tablename base long enough that an appended RLS isolation policy name
+# would exceed PostgreSQL's 63-byte budget, but short enough that the
+# base-family objects (longest suffix 17) fit without the general
+# truncation net. Deliberately NOT following the <product>_<component>_
+# convention: the RLS policy names are then composed from the full
+# unprefixed base, and only the RLS-specific suffix budget (28 chars for
+# _tbl_tenant_isolation_policy) applies.
+UNPREFIXED_LONG_BASE = "entity_table_that_has_no_product_component_prefix"
+
+
+def test_long_rls_policy_names_are_truncated_on_their_own_budget(tmp_path):
+    body = REQUIRED_FLAGS.replace(
+        ":tablename: ores_testcomp_compound_key_entities_tbl\n",
+        ":tablename: " + UNPREFIXED_LONG_BASE + "_tbl\n"
+        ":rls_tenant_isolation: true\n"
+        ":rls_party_isolation: true\n",
+    )
+    sql = _generate_sql(tmp_path, body=body)
+    names = _base_family_names(sql)
+
+    # The table and its base family keep the full name: 49 + 4 = 53 bytes
+    # fits the 63-byte budget, so the general truncation net must not fire.
+    assert names['_tbl'] == UNPREFIXED_LONG_BASE + "_tbl"
+    assert all(len(name) <= 63 for name in names.values())
+
+    # The isolation policies append their own suffix to the unprefixed
+    # base; uncut they would run 77 chars and PostgreSQL would silently
+    # truncate them. The RLS-specific budget must cut them to fit.
+    policy_names = re.findall(r'create policy ([a-z_0-9]+)', sql)
+    assert len(policy_names) == 2
+    for policy_name in policy_names:
+        assert len(policy_name) <= 63
+        assert policy_name.endswith('_isolation_policy')
+    assert len(set(policy_names)) == 2
+    assert UNPREFIXED_LONG_BASE + "_tbl_tenant_isolation_policy" not in sql

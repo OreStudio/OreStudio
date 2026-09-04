@@ -90,7 +90,7 @@ surveys and regenerations below do the work.
    otherwise revert and flag it. Any additional diff is a bug in the
    profile, the matching, or a template: find the root cause in
    =org_loader.py=, the template, or the archetype, fix it at the
-   source, and add a regression test. Work arounds are not a fix.
+   source, and add a regression test. Workarounds are not a fix.
    Regenerate a second time and require byte-identical output: the
    component's regeneration must be idempotent.
 

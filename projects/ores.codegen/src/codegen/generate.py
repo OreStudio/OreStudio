@@ -136,6 +136,11 @@ def resolve_targets(
         left = (junction.get("left") or {}).get("list_by")
         right = (junction.get("right") or {}).get("list_by")
         if not (left or right):
+            # Hard gate: this runs before the per-archetype
+            # :ores.*.enabled: override loop below, so an explicit enabled
+            # override cannot re-admit messaging for a junction with no
+            # declared list read (a stack nothing would subscribe to, and a
+            # regeneration that would overwrite a live legacy layer).
             gen_facets = {f for f in gen_facets
                           if f not in _JUNCTION_MESSAGING_FACETS}
     # Per-archetype activation: the entity's ores.* drawer overrides (most-

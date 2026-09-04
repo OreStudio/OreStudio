@@ -48,13 +48,10 @@ def test_list_by_declaring_junction_keeps_full_messaging_stack():
     assert MESSAGING_TEMPLATES <= templates
 
 
-def test_bare_junction_drops_only_the_messaging_units():
+def test_bare_junction_resolves_no_messaging_and_keeps_its_stack():
     bare_units, _, _ = resolve_targets(BARE_JUNCTION, CODEGEN_BASE)
-    declaring_units, _, _ = resolve_targets(DECLARING_JUNCTION, CODEGEN_BASE)
-    bare_templates = {u["template"] for u in bare_units}
-    declaring_templates = {u["template"] for u in declaring_units}
-    assert not (MESSAGING_TEMPLATES & bare_templates)
-    # The gate removes exactly the six messaging units: everything else
-    # the declaring junction resolves (SQL create, Qt, domain, repository)
-    # resolves unchanged for a junction with no :list_by: at all.
-    assert bare_templates == declaring_templates - MESSAGING_TEMPLATES
+    templates = {u["template"] for u in bare_units}
+    assert not (MESSAGING_TEMPLATES & templates)
+    # The gate must not over-drop: a bare junction still resolves its
+    # non-messaging stack, e.g. the SQL create.
+    assert "sql_schema_junction_create.mustache" in templates

@@ -36,15 +36,20 @@ Four codegen template issues for junction entities: path/namespace mismatch betw
 * Acceptance
 
 - Path/namespace parity (defect 1) verified resolved: a baseline
-  full-ores regeneration writes no junction unit into a legacy root
-  layout and reproduces the committed tree for every regenerable
-  junction (=ores.dq= =dataset_bundle_member=, =ores.compute=
-  =app_version_platform=, =ores.refdata= =calendar_date=). The
-  non-regenerable residue enumerated in the Plan (=ores.iam=
-  =account_party='s entity-flavoured messaging at generator paths,
-  =ores.compute= =app_version_platform='s uncompiled stack and its
-  schema-era SQL pair) is excluded from this PR and recorded for the
-  per-component drift stories.
+  full-ores regeneration reproduces the committed tree byte-identically
+  for every junction unit the generator writes (=ores.dq=
+  =dataset_bundle_member=, =ores.iam= =account_party='s messaging
+  shells at the legacy-root paths, =ores.compute=
+  =app_version_platform='s messaging stack), and =ores.refdata=
+  =calendar_date= reproduces byte-identically in its per-junction
+  run. Excluded as pre-existing drift and recorded for the
+  per-component drift stories: the stale committed domain/repository
+  files of =ores.compute= =app_version_platform= (its org evolved
+  after its last regeneration), the stale-era =ores.iam=
+  =account_party= create SQL, and the live but generator-invisible
+  entity-flavoured messaging of =ores.iam= =account_party= at its
+  api/core subcomponent paths (wired into the aggregate registrar),
+  alongside the schema-era SQL residue recorded in the Plan.
 - =sql_schema_junction_create.org= and its tangled
   =sql_schema_junction_create.mustache= use =clock_timestamp()= at the
   four version/validity sites of the insert and soft-delete triggers,
@@ -175,6 +180,42 @@ Four codegen template issues for junction entities: path/namespace mismatch betw
   byte-identical), then close out with the code+ci+docs verification
   union (site build, full build + ctest on a recreated database,
   drift checks, roundtrip).
+- 2026-09-04: baseline regeneration evidence and survey corrections.
+  The baseline full-ores run (=regenerate --all --address ores= via
+  =codegen.sh=) churned 197 tracked files of pre-existing drift
+  (trading 95, sql 27, qt 19, scheduler 15, dq 15, database 9,
+  synthetic 7, compute 4, analytics 3, refdata/marketdata/iam 1
+  each) — reverted and excluded, input for the per-component drift
+  stories. The junction-relevant churn is exactly two classes: the
+  =ores.iam= =account_party= create SQL (its committed copy is
+  security-definer-era: inline soft-FK validation the current
+  template no longer emits) and =ores.compute= =app_version_platform='s
+  domain/repository quartet (stale committed copies; its org evolved
+  after its last regeneration). No messaging file of any junction
+  churns: every regenerable junction messaging unit reproduces its
+  committed bytes, including =ores.iam= =account_party='s legacy-root
+  shells.
+- 2026-09-04: survey correction to the defect-1 residue record.
+  =account_party='s entity-flavoured messaging is not at the paths
+  the current junction sections write to. The generator routes
+  =account_party='s units to the legacy-root paths, and the committed
+  files there (=include/ores.iam/messaging/account_party_protocol.hpp=
+  and friends) are junction shells byte-identical to current output.
+  The live entity-flavoured layer lives at the subcomponent paths
+  (=ores.iam.api/messaging/account_party_protocol.hpp=,
+  =ores.iam.core/messaging/account_party_handler.hpp=), where the
+  aggregate =core/src/messaging/registrar.cpp= wires its save/delete
+  subjects, and no current regeneration writes there — the generator
+  cannot clobber it. Its regeneration is nevertheless parked: the
+  create SQL's committed state is stale, so the whole =account_party=
+  regeneration rides iam's drift story, not this PR.
+- 2026-09-04: invocation correction. The earlier recorded "baseline
+  run" was void: =python -m codegen.cli= never executes the CLI — the
+  module has no =__main__= guard and its dispatch lives inside
+  =main()= — so it exits 0 printing nothing. Every regeneration in
+  this unit runs through =codegen.sh= (the packaged entry point) or
+  the in-process driver used for the per-junction runs; the unit
+  census calls =resolve_targets= directly, which is unaffected.
 
 * Notes
 

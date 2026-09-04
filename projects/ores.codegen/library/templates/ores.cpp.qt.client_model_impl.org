@@ -262,32 +262,24 @@ void Client{{domain_entity.entity_pascal}}Model::load_page(std::uint32_t offset,
 
 #+end_src
 
-** Fetching a page — the =has_pagination= variability point
+** Fetching a page
 
 =fetch_...= runs the server request off the UI thread (=QtConcurrent::run=)
 and marshals the outcome into a =FetchResult= that =on...Loaded= consumes on
-the UI thread. Whether it fetches a /page/ or the /whole set/ is governed by
-the =has_pagination= switch, and getting this wrong is subtle, so it is worth
-spelling out.
-
-*When =has_pagination= is true* the request carries =offset= / =limit=, and —
-critically — the model takes =total_available_count= from the *response*, not
-from the size of the returned vector. That server-supplied total is what tells
-the =PaginationWidget= how many pages exist; without it the widget cannot know
+the UI thread. The request always carries =offset= / =limit=, and the model
+always takes =total_available_count= from the *response*, not from the size of
+the returned vector. That server-supplied total is what tells the
+=PaginationWidget= how many pages exist; without it the widget cannot know
 there is a page 2.
 
-*When =has_pagination= is false* the request is sent with its defaults and the
-"total" is just the number of rows returned. That is only correct for small
-reference sets that always come back in a single response. If such an entity is
-in fact capped server-side (the default =limit= is 100), the model will report
-=total = 100= and the pager will believe the first 100 rows /are/ the entire
-table — the list silently truncates. So any entity whose table can exceed the
-default page MUST set =has_pagination: true=; otherwise it loses rows with no
-error. (This is exactly the bug that hid every country after the first 100.)
-
-The two branches differ only in those two lines (set offset/limit; trust the
-response total). Everything else — the async wrapper, the destroyed-model and
-transport-error guards, the move into =FetchResult= — is shared.
+This used to be a fork on the =has_pagination= Qt-facet flag: with the flag
+unset, the request went out with its defaults and the model reported the
+returned page's size as the total. For a table capped server-side (the default
+=limit= is 100) that silently truncated the list — the pager believed the first
+100 rows /were/ the entire table, with no error. That bug hid every country
+after the first 100. The flag is no longer read by this template; every entity
+pages and reports the real total, so =:has_pagination:= survives only as
+entity-org documentation.
 
 #+begin_src mustache :tangle cpp_qt_client_model.cpp.mustache
 void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collection_name}}(
@@ -308,10 +300,8 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                 }
 
                 {{domain_entity.qt.get_request_class}} request;
-{{#domain_entity.qt.has_pagination}}
                 request.offset = offset;
                 request.limit = limit;
-{{/domain_entity.qt.has_pagination}}
 {{#domain_entity.qt.has_parent_scoped_list}}
                 request.{{domain_entity.qt.parent_key_field}} = self->{{domain_entity.qt.parent_key_param}}_.toStdString();
 {{/domain_entity.qt.has_parent_scoped_list}}
@@ -342,7 +332,6 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                             .error_details = {}};
                 }
 
-{{#domain_entity.qt.has_pagination}}
                 BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.repository.entity_plural_short}}.size()
                                            << " {{domain_entity.entity_plural_words}}, total available: "
                                            << result->total_available_count;
@@ -351,17 +340,6 @@ void Client{{domain_entity.entity_pascal}}Model::fetch_{{domain_entity.qt.collec
                         .total_available_count =
                             static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {}, .error_details = {}};
-{{/domain_entity.qt.has_pagination}}
-{{^domain_entity.qt.has_pagination}}
-                BOOST_LOG_SEV(lg(), debug) << "Fetched " << result->{{domain_entity.repository.entity_plural_short}}.size()
-                                           << " {{domain_entity.entity_plural_words}}";
-                const std::uint32_t count =
-                    static_cast<std::uint32_t>(result->{{domain_entity.repository.entity_plural_short}}.size());
-                return {.success = true,
-                        .{{domain_entity.qt.collection_name}} = std::move(result->{{domain_entity.repository.entity_plural_short}}),
-                        .total_available_count = count,
-                        .error_message = {}, .error_details = {}};
-{{/domain_entity.qt.has_pagination}}
             }, "{{domain_entity.entity_plural_words}}");
         });
 

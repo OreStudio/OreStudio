@@ -207,6 +207,8 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
                 }
 
                 dq::messaging::get_badge_severities_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -237,11 +239,12 @@ void ClientBadgeSeverityModel::fetch_severities(std::uint32_t offset, std::uint3
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->severities.size() << " badge severities";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->severities.size());
+                    << "Fetched " << result->severities.size()
+                    << " badge severities, total available: " << result->total_available_count;
                 return {.success = true,
                         .severities = std::move(result->severities),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

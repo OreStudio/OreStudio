@@ -152,6 +152,9 @@ narrative home for these knobs; that page indexes them.
 | =:text_code_validations:= | collection<struct> | ∅ | FK validations against a text lookup column. |
 | =:party_id_from_book_id:= | struct | absent | Derive and validate =party_id=/=portfolio_id= from =book_id= in the trigger. |
 | =:party_id_from_session:= | bool | false | Set =party_id= from the session GUC =app.current_party_id=. |
+| =:rls_tenant_isolation:= | bool | false | Emit =enable row level security= + a permissive tenant-isolation policy (T1) as a trailer of the create file, and its drop in the drop file. |
+| =:rls_party_isolation:= | bool | false | Also emit a =party_id=-scoped =as restrictive= policy (T3) over =ores_iam_visible_party_ids_fn= membership; requires =:rls_tenant_isolation:=. |
+| =:rls_system_tenant_visible:= | bool | false | Widen the tenant-isolation policy body to own-tenant *or* system-tenant (T2); requires =:rls_tenant_isolation:=. |
 
 *Tenant-scoping is a policy, not three booleans.* =:system_scope:= and
 =:nullable_tenant_id:= are mutually exclusive with the default
@@ -159,6 +162,23 @@ narrative home for these knobs; that page indexes them.
 tenant-scoping policy ∈ {standard, system, nullable}. If they migrate
 anywhere, it is into the logical model as a tenant-scoping attribute
 (they lean structural despite being authored as knobs).
+
+*Row-level security emission is an explicit intent flag, not a
+consequence of having a tenant column.* The =:rls_*:= features above
+emit =enable row level security= and the matching policy blocks inline
+at the end of the generated per-entity create file, so a regenerated
+table owns its whole SQL lifecycle. They default off and no profile
+fixes them: many tenant-column tables deliberately skip RLS
+(system-owned registries, currently silenced by =RLS_001= ignore
+entries in =validation_ignore.txt=), and a =party_id= column is not
+party isolation scope on its own (e.g. market_series). The emitted
+blocks are verbatim copies of the dominant hand-written shapes from
+the components' =*_rls_policies_create.sql= files (T1 tenant-only, T2
+own-or-system-tenant, T3 =restrictive= party membership). Because
+=create policy= resolves =ores_iam_current_tenant_id_fn= at creation
+time, inline emission is only legal for components created after the
+iam section of =create/create.sql=; the pre-iam components keep their
+RLS-layer files until that ordering question is resolved.
 
 =SECURITY DEFINER= on insert/validate triggers is *not* a feature —
 checked against =library/templates/sql_schema_domain_entity_create.mustache=, it

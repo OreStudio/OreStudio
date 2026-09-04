@@ -190,7 +190,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Sweep assumes an ON DELETE DO INSTEAD rule per registered table; without one the DELETE would hard-delete | projects/ores.testing/src/test_database_manager.cpp | Declined | The requirement is prominent in the API doc-comment; registration happens only at hardcoded, reviewed call sites; a runtime catalog assertion would add a query per table per run for a static, version-controlled contract. |
+| 2 | Per-table sweep failure is warn-logged only, so a silently broken sweep could resurface the collision | projects/ores.testing/src/test_database_manager.cpp | Declined | Deliberate tradeoff recorded in Plan and Result: a failing table is logged and skipped so an unhealthy database cannot abort the run; the warn lands in every suite log that registers tables. |
+| 3 | No dedicated unit test exercises close_orphaned_synthetic_rows | projects/ores.testing/src/test_database_manager.cpp | Declined | Every steady-state pair of runs exercises the sweep end-to-end against real residue, and the SIGKILL reproduction plus SQL post-state checks already proved close-not-delete and seed-row protection on live rows. A dedicated case would add a new query surface to re-assert rule behaviour; fair future hardening, mechanism recorded in Notes. |
+| 4 | register_pre_run_sweep_table could std::move the string into the vector | projects/ores.testing/src/database_lifecycle_listener.cpp | Declined | Called twice per process at startup; the copy is bounded and unobservable, and moving would add an include for no measurable gain. |
 
 * Result
 

@@ -8,7 +8,7 @@
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-06
 #+updated: 2026-08-06
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -36,7 +36,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:467F77DB-3829-4F15-8E8E-C64FAA369459][Codegen leaves new entities unwired: RLS policies and the create/drop aggregators]] | BACKLOG | | | No template in ores.codegen emits ENABLE ROW LEVEL SECURITY/CREATE POLICY for entities with :has_tenant_id: true, and generated per-table SQL is never linked into the component's hand-maintained *_create.sql/_drop.sql aggregator (the \ir include list) -- both are manual steps every entity author has to remember, and both were missed while adding the CRM config tables. |
+| [[id:467F77DB-3829-4F15-8E8E-C64FAA369459][Codegen leaves new entities unwired: RLS policies and the create/drop aggregators]] | STARTED | 2026-09-04 | | No template in ores.codegen emits ENABLE ROW LEVEL SECURITY/CREATE POLICY for entities with :has_tenant_id: true, and generated per-table SQL is never linked into the component's hand-maintained *_create.sql/_drop.sql aggregator (the \ir include list) -- both are manual steps every entity author has to remember, and both were missed while adding the CRM config tables. |
 | [[id:2DFEF8F6-DA10-407B-8A8A-95B938CD673D][Codegen the history-provider registrar wiring]] | BACKLOG | | | refdata's registrar.cpp is a monolithic hand-maintained file of near-identical register_history_provider() blocks per entity; this should be a codegen archetype instead. |
 
 * Decisions

@@ -13,7 +13,7 @@
 #+begin_export markdown
 ---
 name: pr-raise
-description: Open a pull request with compass pr create, then post an @claude comment to trigger the interactive code review.
+description: Run the local code review, then open a pull request with compass pr create and post an @claude comment to trigger the on-demand review.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -21,8 +21,9 @@ license: Complete terms in LICENSE.txt
 * When to use this skill
 
 When the user is ready to open a pull request from a feature branch.
-Raises the PR with =compass pr create= and immediately posts an
-=@claude= comment to trigger an interactive code review.
+Runs the local code review (the =code-review-pr= skill) on the change,
+raises the PR with =compass pr create=, and posts an =@claude= comment
+to trigger the on-demand review.
 
 By the time this skill runs, the work is *done* from the developer's
 side — review is a post-done validation activity, not a continuation
@@ -98,15 +99,26 @@ lifecycle is ordered this way.
    Do not raise the PR until the checks for the class are clean. Note
    the class(es), the checks run, and the results (e.g. "doc-only;
    local site build clean" or "code; build clean (<preset>); ctest
-   142/142 passed") — they go into the PR description in step 2.
+   142/142 passed") — they go into the PR description in step 4.
 
-2. *Close task/story bookkeeping now, if not already done*. The task
+2. *Run the local code review before raising the PR*. The automatic
+   GitHub review (=claude-code-review.yml=) was retired with the
+   absorb-PR-checks-locally story — the local review is the review
+   coverage now, so do not skip it even under time pressure. Invoke
+   the [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] skill on the change (the =git diff
+   origin/main...HEAD= range from step 1), record every finding in the
+   task's =* Review= table with its decision (accept or decline, never
+   silently ignore), and address the accepted ones — fix, then re-run
+   the class's checks from step 1. The misspell check (=misspell-fixer
+   .= from the repo root; exit 0 = clean) is part of this review pass.
+
+3. *Close task/story bookkeeping now, if not already done*. The task
    should already be =DONE= with its =* Result= written and the parent
    story/sprint rows synced (per [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]]) — do this *before*
    raising the PR, not after review. If it's not done yet, do it now,
    as part of the same commit set the PR will contain from the start.
 
-3. *Raise the PR*, including the change class and the verification
+4. *Raise the PR*, including the change class and the verification
    from step 1 as an explicit =--change= bullet so it's visible in the
    PR description (reviewers and future readers can see it happened
    without asking):
@@ -122,14 +134,16 @@ lifecycle is ordered this way.
    opens the PR, records it on the task, and stamps the journal. Note
    the PR number it prints.
 
-4. *Trigger Claude review* by posting a PR comment:
+5. *Trigger the on-demand =@claude= review* by posting a PR comment:
 
    #+begin_src sh :results verbatim
    gh pr comment <N> --body "@claude please review this pull request"
    #+end_src
 
-   This starts an interactive review session. Claude will post a
-   progress-tracking comment and then inline findings once it is done.
+   The automatic review workflow (=claude-code-review.yml=) is retired;
+   this comment runs the on-demand =claude.yml= trigger (=claude.yml=
+   stays). Claude will post a progress-tracking comment and then
+   inline findings once it is done.
 
 * Recipes
 

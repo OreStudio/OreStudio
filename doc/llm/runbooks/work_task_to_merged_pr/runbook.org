@@ -74,6 +74,14 @@ In execution order:
    build/test verification the change gets before review, since CI no
    longer runs one.
 
+5a. /Run the local code review./ The automatic GitHub review
+   (=claude-code-review.yml=) is retired; the local review is the
+   review coverage now. Run the [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] skill on the
+   change, record its findings in the task's =* Review= table with
+   their decisions, and address the accepted ones before raising the
+   PR. The misspell check (=misspell-fixer .=; exit 0 = clean) is part
+   of this review pass.
+
 6. /Close out task/story bookkeeping now — before the PR exists./ The
    task is done as far as the developer is concerned; review is a
    post-done validation activity, not something bookkeeping waits on:

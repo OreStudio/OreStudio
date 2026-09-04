@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: DE706C79-6C3E-4842-8362-DB5F20756419
+:END:
+#+title: Task: Wire the local code review into the submit-PR flow and retire the GitHub review workflows
+#+description: Run the code-review skill locally before submit: findings are recorded against the task and addressed in the round. When the local skill is the review coverage, retire claude-code-review.yml (auto review on PR events) and misspell.yml; the on-demand claude.yml trigger stays.
+#+type: task
+#+level: s1
+#+filetags: :local-checks-for-pr-velocity:sprint_25:v0:
+#+owner: marco
+#+branch: feature/local-review
+#+pr: 1990
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+#+environment: solid_dirac
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The review runs on GitHub today: =claude-code-review.yml= auto-reviews
+every PR event, and =misspell.yml= opens typo-fix PRs on every push.
+Run the code review locally as a skill instead: =pr-raise= runs the
+=code-review-pr= skill on the change before submit, records its
+findings in the task's =* Review= table, and addresses them in the
+round. When the local skill is the review coverage, delete
+=claude-code-review.yml= (auto review on PR events) and =misspell.yml=
+(the typo-fix bot); the on-demand =@claude= trigger (=claude.yml=)
+stays.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][Absorb PR checks locally: targeted checks, local review, CDash submissions]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-08-12                               |
+
+* Acceptance
+
+- =pr-raise= runs the local code review before raising the PR; its
+  findings are recorded in the task's =* Review= table and addressed
+  in the round.
+- =claude-code-review.yml= is deleted; no automatic review runs on PR
+  events.
+- =misspell.yml= is deleted; the local review pass includes the
+  misspell check (=misspell-fixer=, honoring =.misspell-fixer.ignore=).
+- =claude.yml= stays (the on-demand =@claude= trigger).
+- The knowledge doc's fate table reflects the deletions.
+- No skill, recipe, or doc references the deleted workflows as live.
+
+* Plan
+
+- Install the local misspell checker: =sudo apt install misspell-fixer=
+  (Debian forky/sid carries 0.6-1). Check-only is the default without
+  =-r=; exit 0 = clean, 1-5 = typos found; the repo's
+  =.misspell-fixer.ignore= is auto-respected.
+- Wire the local review into =pr-raise=: run the =code-review-pr=
+  skill on the change before raising, record its findings in the
+  task's =* Review= table, and address them in the round. Update step
+  4 (the =@claude= comment) to reflect that it now triggers the
+  on-demand =claude.yml= only — the automatic review is gone.
+- Fold the misspell check into the local review pass (=code-review-pr=
+  skill).
+- Delete =.github/workflows/claude-code-review.yml= and
+  =.github/workflows/misspell.yml=.
+- Update the knowledge doc: fate table rows for the two workflows,
+  the local verification flow, and any live references.
+- Distill the sequencing decision into the parent story's
+  =* Decisions= at close.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/1990][#1990]] | [ci] Wire local review into submit-PR flow; retire review workflows |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review (misspell): =misspell-fixer .= exits 1 on vendored trees — hits in =.packages/= (emacs packages) and =projects/ores.compass/venv/= site-packages are not covered by the ignore file, so the documented "exit 0 = clean" check would always fail | .misspell-fixer.ignore | accepted | Extended =*.misspell-fixer.ignore*= with =^./.packages= and =^./projects/ores.compass/venv=; the check now exits 0 ("nothing to replace") |
+
+* Result
+
+The local code review is the review coverage now: =pr-raise= runs the
+=code-review-pr= skill on the change before raising the PR, records
+its findings in the task's =* Review= table with their decisions, and
+addresses the accepted ones in the round. The =code-review-pr= review
+pass includes the misspell check (=misspell-fixer ., check-only; the
+repo's =.misspell-fixer.ignore= is respected — extended with
+=^./.packages= and =^./projects/ores.compass/venv= so vendored trees
+do not fail the check). The two GitHub review workflows are deleted:
+=claude-code-review.yml= (auto review on PR events) and =misspell.yml=
+(the typo-fix bot); the on-demand =@claude= trigger (=claude.yml=)
+stays. The knowledge doc's fate table, the local verification flow,
+and the =work_task_to_merged_pr= runbook reflect the deletions.

@@ -53,6 +53,7 @@ The objective is higher velocity without losing quality. More analysis is needed
 | [[id:F0DEA73F-65B2-43C3-A83B-5A211F9C87ED][Scaffold story: Absorb PR checks locally]] | DONE | | 2026-08-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:000AD939-CEDD-487E-A23F-EAD86B3F1CE7][Classify changes and run targeted local checks in the submit-PR skills]] | DONE | 2026-08-11 | 2026-08-11 | Replace the unconditional build and ctest in pr-raise with change classification: read the changed files, bucket them per the rule table in the CI workflows and local checks knowledge doc (docs / code / ci / python tooling), and run only the matching checks. Record the class and the verification in the PR description. pr-address-review reuses the classification for its per-round verification. |
 | [[id:3D80654C-76CB-4482-ADAE-6C890E9E7C2C][Delete the PR gate: no GitHub CI on pull requests]] | DONE | 2026-08-11 | 2026-08-11 | The pr.yml workflow gated every pull request with site, roundtrip, drift, and classifier jobs that now run locally via the submit-PR skills — a vestigial ~7s shell gating on nothing real. Delete the workflow entirely (classify, pr-gate, and the retired functional jobs together) and remove the branch-protection required check. The review is the quality backstop on GitHub; the submit-PR skills are the gate. |
+| [[id:DE706C79-6C3E-4842-8362-DB5F20756419][Wire the local code review into the submit-PR flow and retire the GitHub review workflows]] | DONE | 2026-08-12 | 2026-08-12 | Run the code-review skill locally before submit: findings are recorded against the task and addressed in the round. When the local skill is the review coverage, retire claude-code-review.yml (auto review on PR events) and misspell.yml; the on-demand claude.yml trigger stays. |
 
 * Decisions
 
@@ -70,11 +71,12 @@ The objective is higher velocity without losing quality. More analysis is needed
   CDash submissions use =--cdash Experimental=.
 - The PR gate (=pr.yml=) is untouched by the classification task; its
   reduction is a follow-up task.
-- Deleting whole workflows is sequenced with the local-review task:
-  =claude-code-review.yml= (auto review on PR events) and =misspell.yml=
-  retire when the local code-review skill lands, since they are the
-  review coverage that skill replaces; the on-demand =claude.yml=
-  trigger stays. The gate-reduction task deletes =pr.yml= entirely.
+- The review workflows are deleted: =claude-code-review.yml= (auto
+  review on PR events) and =misspell.yml= (the typo-fix bot) went with
+  the local-review task, since the =code-review-pr= skill (run by
+  =pr-raise= before submit) is the review coverage they replaced; the
+  on-demand =claude.yml= trigger stays. The gate-reduction task
+  deleted =pr.yml= entirely.
 
 * Out of scope
 

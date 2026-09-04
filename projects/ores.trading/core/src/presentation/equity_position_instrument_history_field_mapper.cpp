@@ -18,6 +18,7 @@
  *
  */
 #include "ores.trading.core/presentation/equity_position_instrument_history_field_mapper.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
@@ -42,12 +43,15 @@ render_equity_position_instrument_fields(const domain::equity_position_instrumen
         {.name = "Price", .value = v.price ? std::to_string(*v.price) : std::string{}});
     fields.push_back({.name = "Option Data Json", .value = v.option_data_json});
     fields.push_back({.name = "Description", .value = v.description});
-    fields.push_back({.name = "Modified By", .value = v.audit.modified_by});
-    fields.push_back({.name = "Performed By", .value = v.audit.performed_by});
-    fields.push_back({.name = "Change Reason Code", .value = v.audit.change_reason_code});
-    fields.push_back({.name = "Change Commentary", .value = v.audit.change_commentary});
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.audit.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.audit.performed_by});
     fields.push_back(
-        {.name = "Recorded At",
+        {.name = provenance_fields::change_reason_code, .value = v.audit.change_reason_code});
+    fields.push_back(
+        {.name = provenance_fields::change_commentary, .value = v.audit.change_commentary});
+    fields.push_back(
+        {.name = provenance_fields::recorded_at,
          .value = ores::platform::time::datetime::to_iso8601_utc(v.audit.recorded_at)});
 
     return fields;

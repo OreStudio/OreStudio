@@ -18,6 +18,7 @@
  *
  */
 #include "ores.synthetic.core/presentation/gmm_component_history_field_mapper.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
@@ -37,11 +38,13 @@ render_gmm_component_fields(const domain::gmm_component& v) {
     fields.push_back({.name = "Mean", .value = std::to_string(v.mean)});
     fields.push_back({.name = "Stdev", .value = std::to_string(v.stdev)});
     fields.push_back({.name = "Weight", .value = std::to_string(v.weight)});
-    fields.push_back({.name = "Modified By", .value = v.modified_by});
-    fields.push_back({.name = "Performed By", .value = v.performed_by});
-    fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});
-    fields.push_back({.name = "Change Commentary", .value = v.change_commentary});
-    fields.push_back({.name = "Recorded At",
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
+    fields.push_back(
+        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
+    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
+    fields.push_back({.name = provenance_fields::recorded_at,
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;

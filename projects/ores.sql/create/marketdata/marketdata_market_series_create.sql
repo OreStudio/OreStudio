@@ -164,3 +164,17 @@ on delete to "ores_marketdata_market_series_tbl" do instead (
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
 );
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Market Series
+-- =============================================================================
+alter table ores_marketdata_market_series_tbl enable row level security;
+
+create policy market_series_tbl_tenant_isolation_policy
+on ores_marketdata_market_series_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

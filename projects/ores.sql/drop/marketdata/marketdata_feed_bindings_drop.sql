@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists feed_bindings_tbl_tenant_isolation_policy on "ores_marketdata_feed_bindings_tbl";
 drop rule if exists ores_marketdata_feed_bindings_delete_rule on "ores_marketdata_feed_bindings_tbl";
 drop trigger if exists ores_marketdata_feed_bindings_insert_trg on "ores_marketdata_feed_bindings_tbl";
 drop function if exists ores_marketdata_feed_bindings_insert_fn;

@@ -18,6 +18,7 @@
  *
  */
 
+drop policy if exists market_fixings_tbl_tenant_isolation_policy on "ores_marketdata_market_fixings_tbl";
 drop trigger if exists ores_marketdata_market_fixings_delete_trg on "ores_marketdata_market_fixings_tbl";
 drop function if exists ores_marketdata_market_fixings_delete_fn;
 drop trigger if exists ores_marketdata_market_fixings_insert_trg on "ores_marketdata_market_fixings_tbl";

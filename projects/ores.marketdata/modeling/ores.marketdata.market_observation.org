@@ -12,7 +12,7 @@
 #+entity_title: Market Observation
 #+brief: One observed value for a (series, observation_datetime, point_id) triple; TimescaleDB hypertable partitioned by observation_datetime.
 #+created: 2026-06-30
-#+updated: 2026-06-30
+#+updated: 2026-09-04
 
 A single market data observation: the value of a series at a given
 =observation_datetime= and optional =point_id= (tenor/surface coordinate).
@@ -129,6 +129,7 @@ Source tag identifying the producer channel that published this observation
 :bitemporal_trigger:     soft_update_delete
 :no_audit_columns:       true
 :suppress_nk_index:      true
+:rls_tenant_isolation:   true
 :END:
 
 ** Checks

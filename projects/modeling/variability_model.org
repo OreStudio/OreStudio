@@ -227,6 +227,9 @@ table is the cross-facet index only.
 | =text_code_validations= | collection<struct> | ∅ |
 | =party_id_from_book_id= | struct | absent |
 | =party_id_from_session= | bool | false |
+| =rls_tenant_isolation= | bool | false |
+| =rls_party_isolation= | bool | false |
+| =rls_system_tenant_visible= | bool | false |
 
 ** Bundle: =ores.cpp.qt= (Qt projection configuration)
 

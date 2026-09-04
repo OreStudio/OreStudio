@@ -1315,6 +1315,26 @@ def validate_cache_aux_type(domain_entity):
             f"{domain_entity.get('entity_singular', '?')}: cache_aux_type requires cached_by")
 
 
+def validate_rls_isolation(domain_entity):
+    """
+    Validate the rls_party_isolation sql flag: the AS RESTRICTIVE party
+    policy is emitted inside the tenant-isolation block (it ANDs with the
+    permissive tenant policy), so party isolation without tenant isolation
+    would silently emit no RLS at all for the entity.
+
+    Args:
+        domain_entity (dict): not mutated.
+
+    Raises:
+        ValueError: if rls_party_isolation is set without rls_tenant_isolation.
+    """
+    sql_section = domain_entity.get('sql', {})
+    if sql_section.get('rls_party_isolation') and not sql_section.get('rls_tenant_isolation'):
+        raise ValueError(
+            f"{domain_entity.get('entity_singular', '?')}: rls_party_isolation requires "
+            f"rls_tenant_isolation")
+
+
 def validate_explorer_interface(domain_entity):
     """
     Validate the qt.explorer_interface knob: the name of an abstract
@@ -2548,6 +2568,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 fk.get('parent_seed_country_sentinel') for fk in fks)
         # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
         sql_section = domain_entity.get('sql', {})
+        validate_rls_isolation(domain_entity)
         domain_entity['index_name_prefix'] = sql_section.get(
             'index_prefix', domain_entity.get('entity_plural', 'unknown'))
         # Compute has_tenant_in_pk: tenant_id is in the primary key when has_tenant_id
@@ -2599,6 +2620,29 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if len(sql_name_base) + longest_suffix > 63:
             sql_name_base = sql_name_base[:63 - longest_suffix]
         domain_entity['sql_name_base'] = sql_name_base
+        # RLS policy names are composed from the short table base
+        # (market_series_tbl_tenant_isolation_policy), the dominant
+        # hand-written shape, while sql_name_base carries the full
+        # <product>_<component>_ prefix used by every other identifier.
+        rls_table_base = sql_name_base
+        prefix = (
+            f"{domain_entity.get('product', 'ores')}_"
+            f"{domain_entity.get('component', 'unknown')}_"
+        )
+        if rls_table_base.startswith(prefix):
+            rls_table_base = rls_table_base[len(prefix):]
+        # Policy names append the isolation suffix to rls_table_base
+        # (_tbl_tenant_isolation_policy / _tbl_party_isolation_policy, up to
+        # 28 chars) in the create/drop templates. The budget above covers
+        # sql_name_base's own suffixes but not these; an over-long policy name
+        # would hit the same silent 63-byte truncation. Only reachable when no
+        # prefix was stripped (a :tablename: not following the
+        # <product>_<component>_ convention) and RLS is opted into.
+        longest_rls_suffix = len('_tbl_tenant_isolation_policy')
+        if (sql_section.get('rls_tenant_isolation')
+                and len(rls_table_base) + longest_rls_suffix > 63):
+            rls_table_base = rls_table_base[:63 - longest_rls_suffix]
+        domain_entity['rls_table_base'] = rls_table_base
         # GIST exclusion: suppressed for hypertables (incompatible); active otherwise
         # for standard temporal entities with has_tenant_id.
         domain_entity['has_gist_exclusion'] = (

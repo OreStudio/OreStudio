@@ -12,7 +12,7 @@
 #+entity_title: Observation Lineage
 #+brief: Per-observation provenance -- which config/version/source produced a derived observation's generation.
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-09-04
 
 Per-observation provenance for a *derived* =market_observation= row: which
 derivation config/version produced it, and which upstream source
@@ -186,7 +186,9 @@ std::string("[]")
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_marketdata_observation_lineages_tbl
+:tablename:            ores_marketdata_observation_lineages_tbl
+:rls_tenant_isolation: true
+:rls_party_isolation:  true
 :END:
 
 The top-level =* Flags= drawer's =natural_keys_composite_name:

@@ -136,3 +136,17 @@ begin
         raise notice 'TimescaleDB not available - using regular table (manual cleanup required)';
     end if;
 end $$;
+
+-- =============================================================================
+-- Row-level security: tenant isolation for Market Observation
+-- =============================================================================
+alter table ores_marketdata_market_observations_tbl enable row level security;
+
+create policy market_observations_tbl_tenant_isolation_policy
+on ores_marketdata_market_observations_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);

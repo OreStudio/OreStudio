@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close-systemic-codegen-gaps:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/codegen-rls-policy-facet
+#+pr: 2009
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
-#+updated: 2026-08-06
-#+environment:
+#+updated: 2026-09-04
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -54,24 +54,264 @@ still has to be hand-wired afterwards":
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-04                               |
 
 * Acceptance
 
--
+- New first-class variability features exist for the RLS policy shapes:
+  tenant isolation, party isolation, and system-tenant-visible tenant
+  isolation (feature catalogue entries, =_FEATURE_NAMESPACE= rows,
+  profile defaults).
+- The domain-entity SQL create emission appends the declared policies
+  as a generated trailer (post-table, pre-file-end); the domain-entity
+  drop emission carries the policy drops. The emitted block shapes are
+  verbatim copies of the dominant hand-written shapes. Junction
+  entities are out of scope (D7).
+- ores.marketdata is the adoption proof. All five tables declare their
+  shapes; =marketdata_rls_policies_create.sql= and
+  =marketdata_rls_policies_drop.sql= become empty and are deleted along
+  with their =\\ir= lines in =rls/rls_create.sql= (and the drop
+  counterpart); =validate_schemas.sh= stays green; a second regen is
+  byte-identical.
+- A new =plantuml_er_parse_sql.py= validation rule makes every
+  component-aggregator chain complete: a create/drop file that is not
+  =\\ir=-reachable fails validation. The rule encodes the deliberate
+  exception classes (RLS-layer files governed by RLS_003, top-level
+  wired bundles) and passes the current census with zero warnings.
+- The marketdata =RLS_001= ignore entries (if any) are removed; the
+  remaining 16 components' hand RLS files are untouched, and their
+  migration is recorded for their drift stories.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+** Baseline survey (2026-09-04)
+
+- Layout: =setup_schema.sql= -> =create/create.sql= -> per-component
+  aggregators =<comp>_create.sql= (hand-maintained =\\ir= lists; entity
+  files are codegen outputs, marked "Template: ..." in their header).
+  RLS layer: =create/rls/rls_create.sql= -> 17 hand-maintained
+  =<comp>_rls_policies_create.sql= files (~200 table blocks). Drop side
+  mirrors (=drop/drop.sql=, =drop/rls/rls_drop.sql=).
+- Validators (in =ores.codegen/src/plantuml_er_parse_sql.py=, run by
+  =validate_schemas.sh= --strict): RLS_001 (tenant_id column without
+  ENABLE ROW LEVEL SECURITY in any =*_rls_policies_create.sql=),
+  RLS_002 (party_id column without an AS RESTRICTIVE policy), RLS_003
+  (RLS file not reachable from =rls/rls_create.sql=). Parser accepts
+  policy blocks inside plain create files as well as RLS files
+  ("we accept both").
+- Live state: =validate_schemas.sh= green, 0 warnings, but 53
+  =RLS_001/RLS_002= ignore entries (validation_ignore.txt) prop up that
+  green -- including the capture's own examples (book_statuses,
+  badge_mappings). The ignore list is the debt ledger, not a design.
+- Ordering constraint: =ores_iam_current_tenant_id_fn= is created in
+  =create/iam/iam_tenant_functions_create.sql= (iam section), which
+  runs AFTER refdata/trading/dq/workspace in =create/create.sql=.
+  CREATE POLICY resolves its function at creation time, so inline
+  per-entity policies are only legal for components created after iam
+  (variability onward). The RLS layer exists precisely to defer policy
+  creation past all tables and IAM functions.
+- Policy shapes are heterogeneous: (T1) standard tenant-only
+  (majority); (T2) tenant OR system-tenant fallback (feed_bindings,
+  compute platforms/apps...); (T3) dual tenant + party RESTRICTIVE with
+  NULL-party passthrough variants (observation_lineages, synthetic
+  configs, trading); (T4) bespoke (dq role-scoped read policies,
+  scheduler write policy, ...). Column presence is NOT a sufficient
+  signal: ores_marketdata_market_series_tbl has a =party_id= natural
+  key but deliberately no party isolation, and many tenant-column
+  registry tables deliberately skip RLS (system-owned rows). Policy
+  emission therefore keys off explicit per-entity intent, never off
+  column inference.
+- Model machinery: features are catalogued
+  (=projects/modeling/variability_features.org=), namespaced
+  (=_FEATURE_NAMESPACE= in org_loader.py), defaulted by profiles, and
+  declared on the entity — root =* Flags= drawer for the structural
+  keys (=has_tenant_id=), the =* SQL= =** Flags= drawer for
+  sql-namespace knobs. =has_tenant_id= exists and
+  defaults true for domain entities; no party or policy-shape feature
+  exists.
+- Aggregator census (create side, =<dir>/<dir>_create.sql= vs dir
+  files): every codegen entity file of every component is wired today;
+  the unwired classes are exactly the deliberate ones (RLS files ->
+  RLS_003 domain, top-level wired bundles: service grants, workspace
+  notify trigger, utility summary functions) plus stale residue
+  (refdata legacy =*_notify_trigger.sql= pairs, compute's stale
+  singular =app_version_platform_create.sql=, dq naming
+  singular/plural residue). No validator catches a future missed =\\ir=.
+
+** Design decisions
+
+- D1 (layout): policies emit inline as a trailer of the per-entity
+  create file, not into the RLS-layer files. Per-entity emission is the
+  only shape that rides the existing per-entity regen/drift machinery;
+  it makes the table own its whole SQL lifecycle (create + trigger +
+  policy; drop counterpart). Valid for components created after iam.
+- D2 (adoption order): marketdata is the proof component -- smallest
+  component exercising all three standard shapes (T1 x3, T3 lineage,
+  T2 feed_bindings), already in the drift-checked pilot set, and
+  created after iam so inline policies are legal without touching
+  =create/create.sql= ordering. The 16 other components (including the
+  pre-iam ones, whose adoption needs the IAM-function ordering question
+  resolved) adopt inside their own drift stories; recorded, not done
+  here.
+- D3 (intent flags, not inference): new features =rls_tenant_isolation=,
+  =rls_party_isolation=, and =rls_system_tenant_visible=, declared per
+  entity. Column-based inference would silently add policies to the 53
+  deliberately-skip tables and to =party_id= natural keys that are not
+  party scope. Namespace refined at implementation start (draft said
+  root): all three are =ores.sql.schema=-bundle features in the =sql=
+  namespace, declared in the entity's =* SQL= =** Flags= drawer beside
+  the =system_scope=-family knobs. The variability model's category
+  test makes these authored DDL-behaviour knobs, not structural
+  predicates: root-namespace features (=has_tenant_id=,
+  =has_workspace_id=) document on Keys and columns and branch the
+  logical shape, while the tenant-scoping knobs (=system_scope=,
+  =nullable_tenant_id=) are sql-namespace features read as
+  =domain_entity.sql.*=; =sql= keeps all three RLS features in one
+  bundle, namespace, declaration idiom, and profile-defaulting path.
+- D4 (drop side): policy drops go at the top of the entity's generated
+  drop file (before the table drop); DROP POLICY IF EXISTS is safe in
+  any order.
+- D5 (validator): extend =plantuml_er_parse_sql.py= with a reachability
+  rule for component aggregator chains, coded against the census
+  exception classes; enforcement closes the silent "relation does not
+  exist" failure mode for future entities without restructuring the
+  hand aggregators.
+- D6: the capture's "stretch" (party RLS as a first-class model flag)
+  is not stretch -- it is required by the proof component and lands as
+  D3.
+- D7 (junction scope, corrected at implementation start): junction
+  entities are excluded from inline RLS this task. The
+  =sql_schema_domain_entity_drop= archetype is =domain_entity=-only and
+  no junction drop emission exists anywhere (no =*_drop.sql= file for
+  junctions on disk), so an inline junction policy trailer would
+  create a policy with no generated drop to remove it. Junction RLS
+  waits on a junction drop archetype; recorded in Notes, not done
+  here.
+
+** Staging
+
+1. Feature catalogue + namespace + org_loader rows for the three new
+   features; tangle; codegen pytest suite.
+2. Template change: policy trailer block (create) + policy drop block
+   (drop) in the domain-entity org archetypes (junction excluded, D7),
+   gated on the declared features; tangle; regen marketdata;
+   byte-identical second regen.
+3. Marketdata orgs declare features; delete the two hand RLS files and
+   their =\\ir= lines; validate_schemas + db recreate green; remove
+   migrated ignore entries.
+4. Reachability validator rule + census pass + tests.
+
+** Verification union
+
+- =validate_schemas.sh= (0 warnings), =compass db recreate=,
+  byte-identical regen round, codegen pytest suite, drift check for
+  marketdata, site build. Doc + template + python-tooling change
+  classes: union of docs/ci/python checks.
 
 * Notes
+
+- Staging step 3 evidence (2026-09-04): the five marketdata orgs
+  declare their RLS features; the regenerated create files carry the
+  policy trailers and the drop files the policy drops, matching the
+  deleted hand file's SQL surface verbatim; the second regen round is
+  byte-identical; =validate_schemas.sh= --strict passes with 0
+  warnings; =compass db recreate= green (48s); live
+  =pg_policies= shows all six policies with correct names and the
+  observation_lineages party policy as RESTRICTIVE.
+- The lineages tenant-policy name changes: the hand file used
+  =observation_lineages_tenant_isolation_policy= (no =_tbl=); the
+  generated =observation_lineages_tbl_tenant_isolation_policy= follows
+  the dominant =_tbl= policy-name shape and is a deliberate rename.
+  The party-policy name already matched. The generated banner comments
+  replace the hand file's one-line comment.
+- No marketdata =RLS_001= ignore entries existed, so acceptance's
+  "remove migrated ignore entries (if any)" resolves to none. The
+  =RLS_002= entries for the four non-lineage marketdata tables and the
+  CRM tables remain valid: only observation_lineages gains party
+  isolation here.
+- =check_component_drift.py= regenerates at the umbrella =ores=
+  address and then runs =git diff= against the whole tree, so it
+  reports every uncommitted change, intended or not. It is a
+  post-commit gate (pr-raise); mid-task the byte-identical regen round
+  is the equivalent evidence.
+- Staging step 4 evidence (2026-09-04): the =WIRE_001= rule in
+  =plantuml_er_parse_sql.py= fires on exactly the census files (74
+  drop + 3 create) on its first run against the live tree, with no
+  false positives and no other warning code disturbed. After the
+  =validation_ignore.txt= ledger entries, =validate_schemas.sh=
+  --strict passes with 0 warnings. Eight new pytest tests cover the
+  rule (wired passes, unwired warns on both sides, RLS and service-
+  bundle exemptions, ignore-file suppression); the codegen suite is
+  145 passed.
+- Census correction to the survey's "drop side mirrors": it does not.
+  Create side has exactly three unwired files (the two deliberate iam
+  service bundles plus residue); the drop side has 74 across eight
+  components. The classes: dq per-dataset artefact and population
+  drops are a mixed state (26/23 and 5/16 wired/unwired), so their
+  ledger entries are per-file, not wildcards -- a wildcard would hide
+  new unwired files inside an already-partially-wired family; the
+  trading equity family is pure debt (all nine creates and notify
+  triggers are wired in =trading_create.sql=, no equity include exists
+  in =drop_trading.sql=) and takes two family wildcards. Singles:
+  five dq notify-trigger drops, three dq plural-era residues, the rpa
+  notify trigger, refdata curve roles (2), synthetic yield-curve
+  process types (2), iam session samples and tenant terminator, mq
+  scrape functions.
+- =database_info_drop.sql= drops =ores_database_info_tbl=, the table
+  the wired =database/database_database_infos_create.sql= creates, but
+  =drop.sql= never reaches =drop/database/= (the file is the only one
+  there). The hole is invisible to =DROP_001=, which pairs by file
+  existence rather than reachability -- the gap this rule closes.
+- The =compute_app_version_platform_create.sql= ledger entry names an
+  untracked regen byproduct (see the =TEMPORAL_004= entry above it for
+  the stale junction template); it does not exist on clean checkouts,
+  so the entry is inert until that regen lands and wires the file.
+- The rule encodes the deliberate exceptions structurally rather than
+  in the ledger: create-side =*_rls_policies_create.sql= files are
+  RLS_003's domain (no double-report), drop-side
+  =*_rls_policies_drop.sql= files stay in scope (no drop-side RLS
+  reachability rule exists), and the two iam service bundles are
+  exempt because their =\\ir= wiring lives in the setup flows
+  (=setup_schema.sql=, =setup_user.sql=, =recreate_database.sql=),
+  outside the roots the rule can see.
+
+* Result
+
+- The three RLS features (=rls_tenant_isolation=,
+  =rls_party_isolation=, =rls_system_tenant_visible=) exist as
+  =ores.sql.schema= variability features with profile defaults and are
+  declared per entity in the =sql= namespace (D3).
+- The domain-entity SQL create emission appends the declared policies
+  as a post-table trailer; the drop emission carries the =DROP POLICY=
+  block at the top (D4). Junction entities are excluded (D7). The
+  emitted shapes are verbatim copies of the dominant hand-written
+  blocks.
+- ores.marketdata is the adoption proof: all five entities declare
+  their shapes, the two hand RLS files and their =\\ir= lines are
+  deleted, =validate_schemas.sh= --strict stays green, the second regen
+  round is byte-identical, =compass db recreate= is green (48s), and
+  live =pg_policies= shows all six policies with the lineages party
+  policy RESTRICTIVE.
+- The =WIRE_001= rule makes every component-aggregator chain complete:
+  every =*_create.sql= under =create/= must be reachable from
+  =create/create.sql= and every =*_drop.sql= under =drop/= from
+  =drop/drop.sql=. The deliberate exception classes are encoded in the
+  rule (create-side RLS files are RLS_003's domain, drop-side RLS
+  files stay in scope, the two iam service bundles wire from the
+  setup flows). The census passes with zero warnings; the pre-existing
+  debt (3 create + 74 drop files across eight components) is recorded
+  per file in =validation_ignore.txt= for the component drift stories.
+  Eight pytest tests cover the rule.
+- Acceptance's "remove the marketdata =RLS_001= ignore entries (if
+  any)" resolves to none: no =RLS_001= entries existed. The =RLS_002=
+  entries for the four non-lineage marketdata tables and the CRM
+  tables remain valid: only observation_lineages gains party
+  isolation in this task.
 
 * Test Scenarios
 
@@ -88,13 +328,17 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2009][#2009]] | [ores.codegen] Add RLS policy emission and aggregator wiring validation |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | validate_rls_policies early-return goes dark once no *_rls_policies_create.sql files remain anywhere | plantuml_er_parse_sql.py | Fixed | Early return removed; RLS_001/RLS_002 now scan every *_create.sql (the inline-emission pattern) and RLS_003 no-ops on an empty legacy list. Regression tests in test_plantuml_er_parse_sql_rls.py |
+| 2 | Generated drop files orphan the legacy observation_lineages_* policy names after migration | sql templates | Declined | No non-recreate upgrade path exists; generated files cannot carry hand-maintained legacy renames -- that state is the drift class this program removes |
+| 3 | rls_party_isolation without rls_tenant_isolation silently emits no RLS at all (party policy nests inside the tenant block) | codegen/core.py | Fixed | validate_rls_isolation raises at the sql_section read point, mirroring the house validator idiom. Tests in test_rls_isolation.py |
+| 4 | Truncation budget covers sql_name_base suffixes only; the RLS policy suffix (28 chars) appends to rls_table_base | codegen/core.py | Fixed | rls_table_base truncated on its own 63-28 budget when RLS is opted in; zero emission change on today's corpus. Test in test_sql_name_base.py |
+| 5 | PR description ledger count does not match the diff | PR body | Declined | Cosmetic; the count illustrates the migration ledger, not a per-PR contract |
 
 * Result
 

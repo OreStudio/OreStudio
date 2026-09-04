@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 46AC210B-6BDF-49D2-BA47-35404AAEBA18
+:END:
+#+title: Feature: rls_tenant_isolation
+#+description: Emits ENABLE ROW LEVEL SECURITY plus a tenant-isolation CREATE POLICY trailer in the entity's generated create SQL, and its DROP POLICY in the drop file.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:rls_tenant_isolation:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Emits =alter table ... enable row level security= plus a permissive
+tenant-isolation =create policy ... as permissive for all using
+(tenant_id = ores_iam_current_tenant_id_fn()) with check (...)= as a
+trailer of the entity's generated create SQL, and the matching
+=drop policy= at the top of the generated drop SQL. Row-level security
+is what actually enforces the =tenant_id= column the entity declares
+via =:has_tenant_id:=; the policy body is the verbatim dominant
+hand-written shape (T1) that previously lived per-component in
+=*_rls_policies_create.sql= files.
+
+Omit on the deliberately-unisolated class of tenant-column tables
+(system-owned registries such as =book_statuses=,
+=badge_mappings=) that today carry RLS_001 ignore entries — this is an
+opt-in intent flag, never inferred from the presence of a
+=tenant_id= column.
+
+* Structural consequence
+
+None on the logical shape — no column or field is added or removed;
+only generated DDL policy blocks. Requires the entity's =tenant_id=
+column (=:has_tenant_id:=), and per-entity in-file emission is only
+legal for tables created after the iam section of
+=create/create.sql= (the policy resolves
+=ores_iam_current_tenant_id_fn= at creation time).
+
+* Used by
+
+None yet — deliberately not fixed by any profile: a profile default
+would re-introduce inference for the skip class above.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

@@ -12,7 +12,7 @@
 #+entity_title: Market Series
 #+brief: Catalog entry identifying what is being observed (series type, metric, qualifier, asset class).
 #+created: 2026-06-30
-#+updated: 2026-06-30
+#+updated: 2026-09-04
 
 A catalog entry for a market data series — it records what is being observed:
 a yield curve, vol surface, spot rate, fixing index, or similar. Standard
@@ -216,7 +216,8 @@ The derivation config's version this series was produced under -- =0=
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_marketdata_market_series_tbl
+:tablename:            ores_marketdata_market_series_tbl
+:rls_tenant_isolation: true
 :END:
 
 ** Checks

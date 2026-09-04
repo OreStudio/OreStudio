@@ -914,16 +914,21 @@ class SQLParser:
 
         Three checks:
         - RLS_001: Table has tenant_id but no 'ALTER TABLE ... ENABLE ROW LEVEL SECURITY'
-                   found in any *_rls_policies_create.sql file.
+                   found in any *_create.sql file (inline emission or a
+                   *_rls_policies_create.sql file).
         - RLS_002: Table has party_id but no AS RESTRICTIVE policy on party_id found
-                   in any *_rls_policies_create.sql file.
+                   in any *_create.sql file (inline emission or a
+                   *_rls_policies_create.sql file).
         - RLS_003: A *_rls_policies_create.sql file exists in create/ but is not reachable
                    (directly or transitively) from rls/rls_create.sql.
         """
         # ---- Step 1: collect all *_rls_policies_create.sql files ----
+        # RLS_001/RLS_002 must run even when no *_rls_policies_create.sql
+        # files remain anywhere: components migrated onto inline RLS emission
+        # (the marketdata pattern) keep the directives in each table's own
+        # *_create.sql file. Only RLS_003 depends on the legacy files, and its
+        # loop below no-ops on an empty list.
         rls_files = sorted(create_dir.rglob('*_rls_policies_create.sql'))
-        if not rls_files:
-            return
 
         # ---- Step 2: scan ALL *_create.sql files for RLS directives ----
         # Some components (e.g. mq) define RLS inline in the table create file
@@ -988,15 +993,63 @@ class SQLParser:
                 self._add_warning(
                     table.source_file, 0, 'RLS_001',
                     f"Table '{table_name}' has tenant_id but no ENABLE ROW LEVEL SECURITY "
-                    f"found in any *_rls_policies_create.sql file",
+                    f"found in any *_create.sql file",
                     entity_name=table_name)
 
             if 'party_id' in col_names and table_name not in party_isolated_tables:
                 self._add_warning(
                     table.source_file, 0, 'RLS_002',
                     f"Table '{table_name}' has party_id but no AS RESTRICTIVE party isolation "
-                    f"policy found in any *_rls_policies_create.sql file",
+                    f"policy found in any *_create.sql file",
                     entity_name=table_name)
+
+    def validate_component_wiring(self, create_dir: Path, drop_dir: Path) -> None:
+        """Validate component-aggregator wiring completeness.
+
+        WIRE_001: every *_create.sql under create_dir must be reachable from
+        create/create.sql, and every *_drop.sql under drop_dir from drop/drop.sql,
+        through \\ir includes. An unreachable file means the schema flow never
+        executes it: the component builds (or tears down) a different object
+        set than its own SQL files define.
+
+        Encoded structural exceptions, instead of validation_ignore.txt entries:
+        - *_rls_policies_create.sql files: RLS_003 already checks reachability
+          of these from rls/rls_create.sql; do not double-report. The drop-side
+          *_rls_policies_drop.sql files stay in scope: no drop-side RLS
+          reachability rule exists for them.
+        - iam service bundles: wired from the database bootstrap flows
+          (setup_schema.sql, setup_user.sql, recreate_database.sql), which live
+          outside the create.sql chain this rule can see.
+        """
+        # These files are \ir'd from the bootstrap flows, not from
+        # create/create.sql, so they can never satisfy this rule's reachability.
+        service_bundle_files = {
+            Path('iam/iam_service_db_grants_create.sql'),
+            Path('iam/service_users_create.sql'),
+        }
+
+        for side_dir, root_name, pattern in (
+            (create_dir, 'create.sql', '*_create.sql'),
+            (drop_dir, 'drop.sql', '*_drop.sql'),
+        ):
+            root = side_dir / root_name
+            reachable_files: set[Path] = set()
+            if root.exists():
+                self._collect_included_files(root, reachable_files)
+
+            for sql_file in sorted(side_dir.rglob(pattern)):
+                if sql_file.name.endswith('_rls_policies_create.sql'):
+                    continue
+                if sql_file.relative_to(side_dir) in service_bundle_files:
+                    continue
+                if sql_file.resolve() in reachable_files:
+                    continue
+                self._add_warning(
+                    str(sql_file), 0, 'WIRE_001',
+                    f"Schema file '{sql_file.name}' is not reachable from "
+                    f"{root_name} (add a \\ir include to wire it into the "
+                    f"component aggregator chain)",
+                    entity_name=sql_file.name)
 
     def _collect_included_files(self, sql_file: Path, visited: set) -> None:
         """Recursively collect files reachable via \\ir includes from sql_file."""
@@ -1406,6 +1459,9 @@ def main():
 
     # Validate RLS coverage (tenant isolation, party isolation, orchestration completeness)
     sql_parser.validate_rls_policies(create_dir)
+
+    # Validate component-aggregator wiring completeness
+    sql_parser.validate_component_wiring(create_dir, drop_dir)
 
     # Print summary
     print(f"\n=== Validation Summary ===", file=sys.stderr)

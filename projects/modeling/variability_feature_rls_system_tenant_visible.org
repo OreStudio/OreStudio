@@ -1,0 +1,45 @@
+:PROPERTIES:
+:ID: 29914714-A8D4-4D4A-A3FE-7CD6D18DEEC3
+:END:
+#+title: Feature: rls_system_tenant_visible
+#+description: T2 modifier on tenant isolation: system-tenant sessions may read rows of every tenant (policy body widens to OR tenant_id = system tenant).
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:rls_system_tenant_visible:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Modifier on =:rls_tenant_isolation=: widens the emitted policy body
+from own-tenant-only to own-tenant *or* system-tenant
+(=tenant_id = ores_iam_current_tenant_id_fn() or tenant_id =
+ores_utility_system_tenant_id_fn()==). The T2 shape — used by tables a
+system-tenant service must read across tenants (e.g.
+=feed_bindings=, compute platforms). Requires
+=:rls_tenant_isolation:=; without it this flag has no effect.
+
+* Structural consequence
+
+None on the logical shape — only the generated policy body differs.
+
+* Used by
+
+None yet — deliberately not fixed by any profile.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

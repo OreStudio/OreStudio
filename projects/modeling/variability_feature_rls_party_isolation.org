@@ -1,0 +1,55 @@
+:PROPERTIES:
+:ID: 224743E4-B05D-4221-B027-9C4779F13823
+:END:
+#+title: Feature: rls_party_isolation
+#+description: Emits a party-scoped AS RESTRICTIVE CREATE POLICY trailer (visible_party_ids_fn membership) alongside tenant isolation for entities whose rows carry party scope.
+#+type: feature
+#+level: cross
+#+filetags: :codegen:variability:feature:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+
+This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
+Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
+this feature's value links here rather than restating its effect.
+
+* Identity
+
+| Field | Value |
+|-------+-------|
+| Literal name | =:rls_party_isolation:= |
+| Bundle | =ores.sql.schema= |
+| Type | bool |
+| Default | false |
+
+* Effect
+
+Emits a party-scoped =create policy ... as restrictive ... using
+(ores_iam_visible_party_ids_fn() is null or party_id = any (...))=
+trailer in the entity's generated create SQL (and its =drop policy=
+in the drop file), layered on top of the tenant-isolation policy
+declared via =:rls_tenant_isolation:=. This is the T3 shape: rows are
+visible to a session when its tenant matches and its visible party
+set admits the row's =party_id=; the NULL-passthrough lets system
+tenants and unrestricted sessions read across parties.
+
+=party_id= on its own is not a signal: many entities carry a
+=party_id= natural key that is not party isolation scope (e.g.
+=ores_marketdata_market_series_tbl=). Opt in explicitly per entity.
+
+* Structural consequence
+
+None on the logical shape — no column or field is added or removed;
+only a generated policy block over the entity's existing =party_id=
+column. Requires both =:has_tenant_id:= and
+=:rls_tenant_isolation:=, and per-entity in-file emission is only
+legal for tables created after the iam section of
+=create/create.sql=.
+
+* Used by
+
+None yet — deliberately not fixed by any profile.
+
+* See also
+
+- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the bundle this feature belongs to.

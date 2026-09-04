@@ -883,3 +883,43 @@ begin
 end $$;
 {{/domain_entity.sql.hypertable}}
 <<paste:92432102-d405-46fc-911a-111dfed27358>>
+{{#domain_entity.sql.rls_tenant_isolation}}
+
+-- =============================================================================
+-- Row-level security: tenant isolation for {{domain_entity.entity_title}}
+{{#domain_entity.sql.rls_system_tenant_visible}}
+-- System-tenant sessions may also read every tenant's rows.
+{{/domain_entity.sql.rls_system_tenant_visible}}
+-- =============================================================================
+alter table {{domain_entity.sql_name_base}}_tbl enable row level security;
+
+create policy {{domain_entity.rls_table_base}}_tbl_tenant_isolation_policy
+on {{domain_entity.sql_name_base}}_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn(){{#domain_entity.sql.rls_system_tenant_visible}}
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/domain_entity.sql.rls_system_tenant_visible}}
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn(){{#domain_entity.sql.rls_system_tenant_visible}}
+    OR ores_iam_current_tenant_id_fn() = ores_utility_system_tenant_id_fn(){{/domain_entity.sql.rls_system_tenant_visible}}
+);
+{{#domain_entity.sql.rls_party_isolation}}
+
+-- Party isolation (RESTRICTIVE): ANDed with the permissive tenant
+-- policy above, a session sees only rows whose party_id its visible
+-- party set admits. The visible_party_ids-is-null passthrough applies
+-- for sessions with no party restriction (tenant admins, service
+-- contexts).
+create policy {{domain_entity.rls_table_base}}_tbl_party_isolation_policy
+on {{domain_entity.sql_name_base}}_tbl
+as restrictive
+for all using (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+)
+with check (
+    ores_iam_visible_party_ids_fn() is null
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
+);
+{{/domain_entity.sql.rls_party_isolation}}
+{{/domain_entity.sql.rls_tenant_isolation}}

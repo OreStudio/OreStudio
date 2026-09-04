@@ -100,19 +100,24 @@ begin
         end if;
         new.version = current_version + 1;
 
-        -- Close existing record
+        -- Close existing record.
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. the same junction pair touched
+        -- twice in one transaction) would collide with itself.
+        -- clock_timestamp() always advances.
         update "ores_dq_dataset_bundle_members_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = new.tenant_id
         and bundle_code = new.bundle_code
         and dataset_code = new.dataset_code
         and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+        and valid_from < clock_timestamp();
     else
         new.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
+    new.valid_from = clock_timestamp();
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
@@ -133,7 +138,7 @@ create or replace rule ores_dq_dataset_bundle_members_delete_rule as
 on delete to "ores_dq_dataset_bundle_members_tbl"
 do instead
   update "ores_dq_dataset_bundle_members_tbl"
-  set valid_to = current_timestamp
+  set valid_to = clock_timestamp()
   where tenant_id = old.tenant_id
   and bundle_code = old.bundle_code
   and dataset_code = old.dataset_code

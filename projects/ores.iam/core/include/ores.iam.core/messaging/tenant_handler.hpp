@@ -678,6 +678,8 @@ public:
                             const auto mkt_label = "system_market_data." + current_sys_mkt_step;
                             auto wait_result = system_client.wait_for_workflow_instance(
                                 instance_id, std::chrono::seconds{120}, expected, progress(mkt_label));
+                            if (!wait_result.success)
+                                add_step(mkt_label + ".failed", wait_result.error, 0);
                             return wait_result.success;
                         },
                         [&](const auto& step) {

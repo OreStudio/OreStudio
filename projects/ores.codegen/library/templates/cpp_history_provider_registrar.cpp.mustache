@@ -1,0 +1,24 @@
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.history-provider-registrar.history_provider_registrar_implementation.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#include "ores.{{component_core}}/messaging/{{entity_singular}}_history_provider_registrar.hpp"
+#include "ores.{{component_core}}/presentation/{{entity_singular}}_history_field_mapper.hpp"
+#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+
+namespace ores::{{component}}::messaging {
+
+void register_{{entity_singular}}_history_provider(
+    ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "{{product}}.{{component}}.{{entity_singular}}",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::{{entity_singular}}_service svc(scoped_ctx);
+            auto versions = svc.get_{{entity_singular_short}}_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_{{entity_singular}}_fields);
+        });
+}
+
+} // namespace ores::{{component}}::messaging
+{{/domain_entity}}

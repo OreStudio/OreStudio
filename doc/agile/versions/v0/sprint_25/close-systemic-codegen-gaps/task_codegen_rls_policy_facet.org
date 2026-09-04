@@ -215,6 +215,31 @@ still has to be hand-wired afterwards":
 
 * Notes
 
+- Staging step 3 evidence (2026-09-04): the five marketdata orgs
+  declare their RLS features; the regenerated create files carry the
+  policy trailers and the drop files the policy drops, matching the
+  deleted hand file's SQL surface verbatim; the second regen round is
+  byte-identical; =validate_schemas.sh= --strict passes with 0
+  warnings; =compass db recreate= green (48s); live
+  =pg_policies= shows all six policies with correct names and the
+  observation_lineages party policy as RESTRICTIVE.
+- The lineages tenant-policy name changes: the hand file used
+  =observation_lineages_tenant_isolation_policy= (no =_tbl=); the
+  generated =observation_lineages_tbl_tenant_isolation_policy= follows
+  the dominant =_tbl= policy-name shape and is a deliberate rename.
+  The party-policy name already matched. The generated banner comments
+  replace the hand file's one-line comment.
+- No marketdata =RLS_001= ignore entries existed, so acceptance's
+  "remove migrated ignore entries (if any)" resolves to none. The
+  =RLS_002= entries for the four non-lineage marketdata tables and the
+  CRM tables remain valid: only observation_lineages gains party
+  isolation here.
+- =check_component_drift.py= regenerates at the umbrella =ores=
+  address and then runs =git diff= against the whole tree, so it
+  reports every uncommitted change, intended or not. It is a
+  post-commit gate (pr-raise); mid-task the byte-identical regen round
+  is the equivalent evidence.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

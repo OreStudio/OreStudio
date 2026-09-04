@@ -2,12 +2,12 @@
 :ID: 26409919-470E-4820-B8C1-AC816181F894
 :END:
 #+title: Feature: has_pagination
-#+description: Emit pagination controls in the list view instead of loading everything.
+#+description: Retired behavioural toggle; Qt list views always paginate with a real total since 2026-09-04.
 #+type: feature
 #+level: cross
 #+filetags: :codegen:variability:feature:
 #+created: 2026-07-31
-#+updated: 2026-07-31
+#+updated: 2026-09-04
 
 This page is one authored [[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][MASD feature]] in [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability
 Model]] § "Projection configuration: how an existing artefact family is shaped". Any [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profile]] that fixes
@@ -24,11 +24,20 @@ this feature's value links here rather than restating its effect.
 
 * Effect
 
-Emit pagination controls in the list view instead of loading every row at once.
+Retired as a behavioural toggle on 2026-09-04 (task
+9FF6FAD3): the Qt client model template now generates the paginated
+fetch unconditionally. Every list request carries =offset=/=limit=
+and the model reports the server's =total_available_count=; every
+=MdiWindow= shows the pagination controls. The literal remains
+accepted on entity orgs, and on the profiles listed below, as
+documentation only — setting or clearing it no longer changes
+generated behaviour, and no entity can silently truncate a list by
+leaving it unset.
 
 * Structural consequence
 
-None — purely a Qt behavioural toggle, no column or struct field.
+None — the property never mapped to a column or struct field, and
+its retirement changed nothing structurally.
 
 * Used by
 

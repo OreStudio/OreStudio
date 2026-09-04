@@ -103,7 +103,14 @@ not waste the sweep.
   entities — the dq and reporting flips are carried in this PR, and
   the scheduler one (=ClientJobDefinitionModel=) waits for its
   component's drift story because its regeneration bundles unrelated
-  stale drift.
+  stale drift. Review round 1 (PR #2006) completed that record: the
+  compute→reporting and dq→api migrations left stale duplicate
+  client models compiled under =ores.qt/compute/src= and
+  =ores.qt/api/src= that no generator writes to (their deletion
+  belongs to the migration follow-up), and the workspace model is
+  unregenerable until 836BB4CE. The round also retired the
+  =variability_feature_has_pagination.org= feature page, which still
+  described the flag as a live behavioural toggle.
 
 * Out of scope
 

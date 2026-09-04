@@ -185,7 +185,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Four reporting client models and ClientDatasetBundleModel still compiled on the truncating shape under =ores.qt/compute/src= and =ores.qt/api/src= | =ores.qt/compute/src/Client{ReportInstance,ReportType,ReportDefinition,ConcurrencyPolicy}Model.cpp=, =ores.qt/api/src/ClientDatasetBundleModel.cpp= | Follow-up | Migration orphans: no generator writes to =ores.qt/compute= or =ores.qt/api= for these entities (canonical output goes to =ores.qt/reporting= and =ores.qt/dq=), so no regen can flip them; compiled via =component_files.cmake= and a duplicate-class (ODR) hazard while both libraries load — recorded as follow-up input for the migration/drift story, not foldable into this PR |
+| 2 | =ClientWorkspaceModel= still on the truncating shape despite its protocol carrying offset/limit | =ores.qt/workspace/src/ClientWorkspaceModel.cpp= | Not changed | Its org (=ores.workspace.workspace.org=) is legacy-`* Primary key`: codegen validation fails for it in both regen runs, so it cannot regenerate until the unblocking task 836BB4CE lands — the acceptance-recorded class, not a "trivial flip" |
+| 3 | =ClientJobDefinitionModel= (scheduler) not flipped | =ores.qt/scheduler/src/ClientJobDefinitionModel.cpp= | Not changed | Deferral recorded in Result and story Decisions: its regeneration bundles unrelated pre-existing drift (org evolved after its last regen), which never rides a foundation PR |
+| 4 | =variability_feature_has_pagination.org= still documents the flag as a live behavioural toggle | =projects/modeling/variability_feature_has_pagination.org= | Fixed | Feature retired; page now records the retirement (task 9FF6FAD3) and the flag's documentation-only survival |
 
 * Result
 

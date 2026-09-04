@@ -50,11 +50,11 @@ analytics 4, iam 4, reporting 4) are template-consistent again.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] |
-| Now          | Survey complete; template edit and fleet regen next. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Build verification, then close out.     |
+| Next         | Nothing. |
 | Last touched | 2026-09-04                               |
 
 * Acceptance
@@ -129,6 +129,53 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered 2026-09-04 on branch
+=feature/history-field-mapper-template-provenance-fields=, commits
+373ef857ea (org source fix + regeneration) and cfcfafd123 (cmake
+links).
+
+- The org source
+  (=ores.cpp.presentation.history_field_mapper_impl.org=) emits all
+  five labels as =provenance_fields::*= constants in both audit
+  shapes, the nested =v.audit.*= (=has_audit_group=) and the flat
+  =v.*= legacy shape; no label literal remains in its audit blocks.
+  The =#include "ores.history.api/domain/provenance_fields.hpp"= and
+  the function-scope =using ores::history::domain::provenance_fields;=
+  are unconditional: =Recorded At= renders outside the
+  =has_audit_columns= guard in both shapes, so neither shape could
+  carry the include alone.
+- Re-tangling (=compass build --direct tangle_codegen_templates=)
+  changed only =cpp_history_field_mapper.cpp.mustache=. Regenerating
+  the 8 components is idempotent: the second regeneration is
+  byte-identical to the first.
+- 120 of the 122 tracked =*_history_field_mapper.cpp= regenerated in
+  373ef857ea, each diff confined to the audit-block lines and the
+  include. The two trading mappers (=party_role_type=,
+  =trade_type=) did not regenerate: full-component regeneration leaves
+  them byte-identical with the literal labels, so the template fix
+  cannot converge them. The drift survey records them as the
+  trading-cpp stale pair, owned by the trading per-component drift
+  story and excluded from this PR per program scope.
+- Compile gate: all 8 core libraries build the regenerated mappers.
+  The unconditional include needs =ores.history= on the include path;
+  the five cores that did not link it (iam, marketdata, reporting,
+  synthetic, trading) failed the first build and received
+  =ores.history.core.lib= in their CMakeLists (cfcfafd123), matching
+  the refdata/dq/analytics idiom.
+- Verification (change class: code + ci + docs): site build clean;
+  full system build clean (linux-clang-debug-make); ctest 71/71
+  passed against a recreated database — the CI-equivalent state,
+  because the repository write tests are not repeatable against a
+  persistent database (the first clean-slate suite run passed
+  =ores.iam.core.tests=, which had failed a prior run on duplicate
+  keys left by an interrupted earlier execution); tangle roundtrip
+  clean; component drift checks (refdata, reporting, marketdata)
+  clean except the three recorded pre-existing files; ore domain
+  roundtrip check red before and after (pre-existing, untouched by
+  this diff).
+
+Acceptance: all five bullets met.
 
 * Promoted from capture
 

@@ -15,10 +15,18 @@ building, not the catalogue as it stands today. Where this page and the
 current catalogue disagree, the catalogue is what runs.
 #+end_note
 
-Verification establishes whether a claim about the work is true. This
-page holds the ladder that governs how far a piece of work must climb,
-the checkers each rung uses, and the separate question of how a change
-to a skill is itself evaluated.
+* Summary
+
+Verification establishes whether a claim about the work is true, and it is how
+this framework obtains its error signal. A [[id:F5CB5A45-6557-410B-9E4F-542957561A16][declaration]] states the target
+state, a recording registers the state reached, and verification is what
+establishes the difference between them. A regulator with no error signal does
+not regulate, which is why the rungs below are obligations rather than good
+practice.
+
+This document holds the ladder governing how far a piece of work must climb, the
+checkers each rung uses, and the separate question of how a change to a skill is
+itself evaluated.
 
 * Detail
 
@@ -129,9 +137,9 @@ only see pixels, so it cannot answer the question an agent actually has.
 A skill is a prompt, so changing one changes agent behaviour in a way
 reading the diff cannot show.
 
-The protocol is pstack's, and it is good. The one part that does not
-port is the judge, for the reason that recurs throughout this document:
-it wants a judge on a different model family and we have one family.
+The protocol is taken from pstack's eval playbook ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]]). One
+part of it does not transfer, for the reason recurring throughout this document:
+it wants a judge drawn from a different model family, and this project has one.
 
 ** The Observer Effect
 
@@ -173,16 +181,25 @@ Grade chain-following from which files the agent *actually opened*, read
 from its transcript, plus the shape of the work it produced. Never from
 its own account of what it did.
 
-This closes a hole elsewhere in this document. Methods cite principles
-and the mode reads a principles index, but nothing so far checked
-whether any of that was read. Transcript inspection is that check, and
-it is mechanical rather than a judgement.
+This supplies a check the framework otherwise lacks. Methods cite principles and
+the mode reads a principles index, and nothing else establishes that either was
+read. Transcript inspection is that check, and it is mechanical rather than a
+judgement.
 
 ** Mechanical Verdicts
 
-pstack spawns candidates across model families and a blinded judge on a
-different family again. We have one family, so a judge of ours scoring
-our own output measures agreement, not quality.
+pstack spawns candidates across model families, and a blinded judge on a
+different family again. Two distinctions matter here, and collapsing them
+overstates what is unavailable.
+
+Cross-*family* diversity does not transfer. This project runs one family, so a
+judge of ours scoring our own output measures agreement rather than quality.
+
+Cross-*model* diversity within the family does transfer, and =interrogate=
+supplies it. The variety it amplifies is real and bounded: models trained
+together share more priors than models trained apart, so an intra-family panel
+is a weaker instrument than pstack's and a stronger one than a single session
+reviewing itself. Where it is used, that bound is stated rather than assumed.
 
 Our substitute is that *our work already carries mechanical verdicts*.
 It compiles or it does not; the drift check is clean or it is not; the
@@ -199,8 +216,9 @@ The composite we run:
 | Blinded, organic prompt      | pstack   | Ports unchanged, and matters more here      |
 | Sanitised environments       | pstack   | Ports unchanged                             |
 | Chain check from transcripts | pstack   | Ports unchanged; mechanical                 |
-| Cross-model candidates       | pstack   | *Does not port.* One family                 |
-| Cross-model blinded judge    | pstack   | *Does not port.* Replaced below             |
+| Cross-family candidates      | pstack   | *Unavailable.* One family                   |
+| Cross-family blinded judge   | pstack   | *Unavailable.* One family; see above         |
+| Intra-family panel           | pstack   | =interrogate=; weaker variety, stated as such |
 | Mechanical verdict on a closed task | ours | Compilation, tests, drift, shell scenario |
 
 Where no mechanical verdict exists, say so. A judge of the same family
@@ -230,6 +248,9 @@ Every independent checker, what it proves, and where it is enforced. Populated w
 
 * See also
 
-- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] — why an error signal is required, and the
+  measurement this framework does not yet have.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
 - [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]] — the first two rungs of the ladder.
 - [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what decides how far the ladder is climbed.
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — the upstream eval protocol, and =interrogate=.

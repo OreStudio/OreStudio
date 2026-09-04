@@ -212,6 +212,8 @@ void ClientReportInstanceModel::fetch_instances(std::uint32_t offset, std::uint3
                 }
 
                 reporting::messaging::get_report_instances_request request;
+                request.offset = offset;
+                request.limit = limit;
 
                 auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
@@ -242,11 +244,12 @@ void ClientReportInstanceModel::fetch_instances(std::uint32_t offset, std::uint3
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << result->instances.size() << " report instances";
-                const std::uint32_t count = static_cast<std::uint32_t>(result->instances.size());
+                    << "Fetched " << result->instances.size()
+                    << " report instances, total available: " << result->total_available_count;
                 return {.success = true,
                         .instances = std::move(result->instances),
-                        .total_available_count = count,
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },

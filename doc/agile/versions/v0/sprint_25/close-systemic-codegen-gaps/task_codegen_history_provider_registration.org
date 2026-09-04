@@ -43,7 +43,7 @@ onto the generic =HistoryDialog=.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] |
-| Now          | Plan written (Option A). Tracing the presentation facet's activation path. |
+| Now          | Activation path traced (see * Notes). Writing the facet/archetype modelling docs. |
 | Waiting on   | Nothing.                               |
 | Next         | Facet/archetype modelling docs + templates. |
 | Last touched | 2026-09-04                               |
@@ -138,6 +138,33 @@ Implementation order:
    =compass pr create= with the change class recorded.
 
 * Notes
+
+** Activation path (plan step 1, traced 2026-09-04)
+
+The history-field-mapper set (64) is not a per-entity opt-in anywhere:
+no refdata org mentions =ores.cpp.presentation=. It is pure physical
+space admission — the =ores.cpp.presentation= facet doc's
+=#+model_types: schema domain_entity= with a default-enabled facet
+admits every =domain_entity= org of a component, and refdata has
+exactly 64 =domain_entity= orgs (74 orgs total = 1 component + 9
+junctions + 64 entities). The new facet gates the same way:
+=#+model_types: domain_entity=, default-enabled, =#+facet_group:
+ores.cpp= ⇒ emission == mapper set by construction, for refdata and
+for any component that regenerates later.
+
+A full census of the 53 =register_history_provider= blocks (captured
+in /tmp/history_provider_census.json before any rewrite) proves each
+block is fully determined by the entity org: provider key =
+={{product}}.{{component}}.{{entity_singular}}= (same composition the
+notify-trigger SQL uses for its =entity_name=), service class
+={{entity_singular}}_service=, service method
+=get_{{entity_singular_short}}_history= (the =entity_singular_short=
+Repository-drawer property, hoisted to the model top level, drives the
+irregular spellings =get_type_history=/=get_centre_history=), mapper
+function =presentation::render_{{entity_singular}}_fields=. All 53
+blocks check out against the org properties; all 64 services declare
+their short-named history method, so the 64 generated pairs compile
+even for the 11 unwired entities.
 
 * Test Scenarios
 

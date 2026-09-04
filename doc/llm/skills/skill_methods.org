@@ -15,13 +15,21 @@ building, not the catalogue as it stands today. Where this page and the
 current catalogue disagree, the catalogue is what runs.
 #+end_note
 
-A method carries a piece of work from an unverified beginning to a
-verified end. This page holds the catalogue of methods, the discipline
-their phases share, and the mode that routes work to them.
+* Summary
 
-The mode is a convenience over methods rather than a precondition for
-them. A method is invocable directly, and so is an action; the entry
-points are set out in [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
+A method is this framework's instrument of [[id:F5CB5A45-6557-410B-9E4F-542957561A16][sequencing]]: it constrains the
+order in which action is taken, which is one of the functions a regulator must
+discharge. It carries a piece of work from an unverified beginning to a verified
+end, and its phases are what make that progression checkable rather than
+asserted.
+
+This document holds the catalogue of methods, the discipline their phases share,
+the mode that routes work to them, and the course a session takes through the
+framework as a whole.
+
+The mode is a convenience over methods rather than a precondition for them. A
+method is invocable directly, and so is an action; the entry points are set out
+in [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
 
 * Detail
 
@@ -82,17 +90,17 @@ domain the agent has not grounded itself in.
 ** The Course of a Session
 
 
-The pages above are reference. This is the order in which they are
-reached during a piece of work, and it doubles as a reading order for
-someone meeting the framework for the first time.
+The sections above state what a method is. This states the order in which the
+framework's parts are reached during a piece of work, and it doubles as a
+reading order for someone meeting the cluster for the first time.
 
 A session opens with =agile-find-bearings= and declares its *System*,
-which fixes the level and attenuates the catalogue ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Agents]]). It picks
+which fixes the level and attenuates the catalogue ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]). It picks
 up work with =agile-find-heading= and =agile-start-task=, inheriting the
 sprint mission and story goal as constraints from above.
 
 It then enters =compass-helm=, which matches the work to a *method* and
-copies that method's phases in (the method regulatory function). The method opens by
+copies that method's phases in. The method opens by
 grounding itself in the domain, resolving each concept it touches to a
 knowledge document and treating an unresolved one as the first task
 ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). It states a finish condition, backed by a *specification*
@@ -111,20 +119,18 @@ first to the checkers that do not share the session model's priors
 =pr-raise=, and what generalises is routed into a memory, a principle or
 a skill edit, with approval rather than automatically.
 
-* See also
-
-- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this architecture governs.
-- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the closed registers.
-- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the System axis.
-- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — variety, feedback and regulation.
-- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]] — the role-shaped counterpart to skills.
-- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — where the terminology is governed.
-- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline this page follows as a structure note.
-- [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][ORE Studio Variability Model]] — the same architecture, built for code.
-
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
 Every method, the shape of work it covers, and the verification rungs it must
-climb. Populated when the method regulatory function lands. # END generated
-inventory
+climb. Populated when the methods land.
+# END generated inventory
+
+* See also
+
+- [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] — sequencing among the regulatory functions.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation a method's opening phase discharges.
+- [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]] — the ladder a method's closing phases climb.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] — what the mode declares, and what it attenuates.
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory the methods draw on.

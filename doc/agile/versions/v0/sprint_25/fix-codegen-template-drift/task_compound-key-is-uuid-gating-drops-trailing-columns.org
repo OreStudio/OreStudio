@@ -8,7 +8,7 @@
 #+filetags: :fix-codegen-template-drift:sprint_25:v0:
 #+owner: marco
 #+branch: feature/compound-key-is-uuid-gating-drops-trailing-columns
-#+pr:
+#+pr: 2005
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
@@ -155,7 +155,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2005][#2005]] | [ores.codegen] Protocol/service templates iterate primary_key.columns for key gates |
 
 * Review
 

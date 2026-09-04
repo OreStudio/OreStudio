@@ -40,11 +40,11 @@ machinery inside their own drift stories.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Codegen leaves new entities unwired: RLS policies and the create/drop aggregators (2026-09-04). |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | The second task (codegen the history-provider registrar wiring) after this one merges. |
+| Next          | Nothing.                               |
 | Last touched  | 2026-09-04                               |
 
 * Acceptance
@@ -77,9 +77,34 @@ machinery inside their own drift stories.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:467F77DB-3829-4F15-8E8E-C64FAA369459][Codegen leaves new entities unwired: RLS policies and the create/drop aggregators]] | DONE | 2026-09-04 | 2026-09-04 | No template in ores.codegen emits ENABLE ROW LEVEL SECURITY/CREATE POLICY for entities with :has_tenant_id: true, and generated per-table SQL is never linked into the component's hand-maintained *_create.sql/_drop.sql aggregator (the \ir include list) -- both are manual steps every entity author has to remember, and both were missed while adding the CRM config tables. |
-| [[id:2DFEF8F6-DA10-407B-8A8A-95B938CD673D][Codegen the history-provider registrar wiring]] | BACKLOG | | | refdata's registrar.cpp is a monolithic hand-maintained file of near-identical register_history_provider() blocks per entity; this should be a codegen archetype instead. |
+| [[id:2DFEF8F6-DA10-407B-8A8A-95B938CD673D][Codegen the history-provider registrar wiring]] | DONE | 2026-09-04 | 2026-09-04 | refdata's registrar.cpp is a monolithic hand-maintained file of near-identical register_history_provider() blocks per entity; this should be a codegen archetype instead. |
 
 * Decisions
+
+- 2026-09-04 (task 2DFEF8F6): the per-entity
+  =register_<entity>_history_provider()= surface is a codegen
+  archetype pair; the component registrar stays a hand-written
+  assembler. A whole-file =registrar.cpp= template was rejected: the
+  file is a true assembler (NATS wiring, queue groups, the
+  function-local =history_registry()= static, inline no-sub-registrar
+  handlers), not a per-entity shape, so templating it would force
+  every future structural change through mustache for no per-entity
+  gain. Registrar.cpp keeps its current 53 calls, so the registered
+  key set is unchanged, and the 11 mapper-bearing entities without a
+  provider stay unregistered with identical runtime behaviour until
+  their own wiring work adds them.
+- 2026-09-04 (task 2DFEF8F6): emission follows physical-space
+  admission, the key follows the SQL side. The facet gates exactly
+  like the presentation facet it renders through:
+  =#+model_types: domain_entity=, default-enabled, so emission equals
+  the mapper set by construction for any component that regenerates.
+  The provider key is composed =product.component.entity_singular=,
+  identically to the notify-trigger SQL facet's =entity_name=, so the
+  server-side dispatch key and the row-change side of the history
+  pipeline cannot drift apart. The service method spelling comes from
+  =entity_singular_short=, the same model property that already drives
+  the irregular =get_type_history= / =get_centre_history= spellings on
+  the generated services.
 
 * Out of scope
 

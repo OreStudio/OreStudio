@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: BF30A77D-3799-4DB1-8301-883AE9539F8F
+:END:
+#+title: ores.cpp.history-provider-registrar.history_provider_registrar_header
+#+description: Per-entity history-provider registrar header declaring =register_<entity>_history_provider()=.
+#+type: archetype
+#+output: projects/{component_core_dir}/include/ores.{component_core}/messaging/{entity}_history_provider_registrar.hpp
+#+facet: ores.cpp.history-provider-registrar
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+
+Per-entity history-provider registrar header. Declares
+=register_<entity>_history_provider()=, which the per-component
+service registrar calls with its =ores::history::service::dispatch_registry=
+instance so the entity's provider joins the generic
+=history.v1.get= dispatch.
+
+The header needs only the registry's own header. The service and
+mapper headers stay in the implementation, so a compile failure in
+one entity's service or mapper cannot leak into every other
+registrar.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cpp_history_provider_registrar.hpp.mustache=.
+
+#+begin_src mustache :tangle cpp_history_provider_registrar.hpp.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cpp.history-provider-registrar.history_provider_registrar_header.org. Edit the org source. }}
+{{{cpp_license}}}
+{{#domain_entity}}
+#ifndef ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_{{component_core_upper}}_MESSAGING_{{entity_singular_upper}}_HISTORY_PROVIDER_REGISTRAR_HPP
+
+#include "ores.history.core/service/dispatch_registry.hpp"
+
+namespace ores::{{component}}::messaging {
+
+void register_{{entity_singular}}_history_provider(
+    ores::history::service::dispatch_registry& registry);
+
+} // namespace ores::{{component}}::messaging
+
+#endif
+{{/domain_entity}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:3D65395A-F821-4AA4-BDC1-E34690CF7F9F][ores.cpp.history-provider-registrar]]
+- [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]]
+- [[id:1F662435-823D-498E-B311-45FCA9BF226E][ores.cpp.history-provider-registrar.history_provider_registrar_implementation]] — the paired implementation.

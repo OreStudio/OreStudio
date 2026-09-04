@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :close-systemic-codegen-gaps:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/codegen-history-provider-registration
+#+pr: 2010
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
 #+updated: 2026-08-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -41,24 +41,130 @@ onto the generic =HistoryDialog=.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-04                               |
 
 * Acceptance
 
--
+1. New facet =ores.cpp.history-provider-registrar= with two archetypes
+   (=_header= / =_implementation=), mirroring the
+   =ores.cpp.nats-event-registrar= facet's conventions: facet and
+   archetype modelling docs in =projects/ores.codegen/library/templates=,
+   a mustache template pair in the same directory, and registration in
+   the entity meta-model documentation.
+
+2. The archetypes emit, for every refdata entity that already receives
+   a history field mapper (the 64-entity presentation-facet set), one
+   =<entity>_history_provider_registrar.hpp/.cpp= pair in
+   =ores.refdata.core/messaging= declaring
+   =register_<entity>_history_provider(ores::history::service::dispatch_registry&)=.
+   The implementation wraps the exact provider body today's
+   =registrar.cpp= blocks carry: the
+   ="ores.refdata.<entity_singular>"= entity-type key,
+   =service::<entity_singular>_service= construction from the scoped
+   context, =get_<entity_singular_short>_history= dispatch, and
+   =presentation::render_<entity_singular>_fields= through
+   =ores::history::service::build_entity_history_versions=. All
+   service/mapper/domain includes move into the generated file.
+
+3. =registrar.cpp= is reduced to the assembly role: the ~480-line
+   provider region becomes 53 =register_<entity>_history_provider=
+   calls inside the existing =history_registry()= scope, with the
+   per-entity registrar headers added to the include block. The
+   registered key set is byte-identical to today's (53 keys).
+
+4. Verification: emission count == generated mapper count (64
+   registrar pairs); registered-key parity between the rewritten
+   =registrar.cpp= and the pre-change block list (53 keys, no
+   additions or removals); full build and ctest green; codegen drift
+   checks green; codegen pytest suite green.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Option A — per-entity archetype pair, hand-written assembler.
+Rejected alternative: a whole-file =registrar.cpp= template. The
+file is a true assembler (NATS wiring, queue groups, the
+function-local =history_registry()= static, handler stitching), not a
+per-entity shape; templating it would force every future structural
+change through mustache for no per-entity gain. The per-entity
+registrar, by contrast, is the same shape the codegen program
+already ships for the NATS sub-registrars (=register_<entity>_handlers=)
+and the history field mappers, and it removes the whole
+"hand-edit the giant file per migrated entity" failure mode:
+the 11 mapper-bearing entities with no provider today stay
+unregistered (identical runtime behaviour), but the act of adding
+one is a model property change plus regeneration, never a hand edit
+of =registrar.cpp=.
+
+Implementation order:
+
+1. Trace the presentation facet's activation path end to end on one
+   wired entity (e.g. =currency=), so the new archetypes gate on the
+   same signal that emits the 64 mappers.
+
+2. Modelling docs: facet + two archetype docs with fresh UUIDs under
+   =projects/ores.codegen/library/templates=, tangle them via
+   =compass build --direct codegen_templates=, and register the facet
+   in =entity_meta_model_cpp_presentation.org= (or the meta-model hub
+   if a new facet segment is warranted).
+
+3. Mustache pair =cpp_history_provider_registrar.hpp/.cpp.mustache=:
+   model inputs are =entity_singular=, =entity_singular_short=,
+   =product=, =component= (all already on the model; the short form
+   already drives the irregular =get_type_history=/=get_centre_history=
+   spellings on the generated services).
+
+4. Regenerate refdata (=compass codegen regenerate=), regenerate the
+   cmake component file lists, then rewrite =registrar.cpp='s history
+   region: remove the 53 lambda blocks and the service/domain/mapper
+   includes they need, add the 53 registrar-header includes, and emit
+   the 53 calls in alphabetical order (matching the current block
+   order) inside the existing =history_registry()= scope.
+
+5. Enumerate the census before the rewrite and diff it after: mapper
+   glob (64), pre-change provider keys (53) captured from the block
+   list, post-change call keys (53). The 11 unwired mapper entities
+   are named in the =* Result= for the record.
+
+6. Local checks per the python-tooling/code rule table: codegen
+   pytest, compass pytest, full build + ctest, drift checks.
+
+7. Agile close before PR raise (this doc's =* Result=, story
+   =* Decisions= distillation, sprint/story row sync), then
+   =compass pr create= with the change class recorded.
 
 * Notes
+
+** Activation path (plan step 1, traced 2026-09-04)
+
+The history-field-mapper set (64) is not a per-entity opt-in anywhere:
+no refdata org mentions =ores.cpp.presentation=. It is pure physical
+space admission — the =ores.cpp.presentation= facet doc's
+=#+model_types: schema domain_entity= with a default-enabled facet
+admits every =domain_entity= org of a component, and refdata has
+exactly 64 =domain_entity= orgs (74 orgs total = 1 component + 9
+junctions + 64 entities). The new facet gates the same way:
+=#+model_types: domain_entity=, default-enabled, =#+facet_group:
+ores.cpp= ⇒ emission == mapper set by construction, for refdata and
+for any component that regenerates later.
+
+A full census of the 53 =register_history_provider= blocks (captured
+in /tmp/history_provider_census.json before any rewrite) proves each
+block is fully determined by the entity org: provider key =
+={{product}}.{{component}}.{{entity_singular}}= (same composition the
+notify-trigger SQL uses for its =entity_name=), service class
+={{entity_singular}}_service=, service method
+=get_{{entity_singular_short}}_history= (the =entity_singular_short=
+Repository-drawer property, hoisted to the model top level, drives the
+irregular spellings =get_type_history=/=get_centre_history=), mapper
+function =presentation::render_{{entity_singular}}_fields=. All 53
+blocks check out against the org properties; all 64 services declare
+their short-named history method, so the 64 generated pairs compile
+even for the 11 unwired entities.
 
 * Test Scenarios
 
@@ -75,7 +181,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2010][#2010]] | [ores.refdata] Codegen the history-provider registrar wiring |
 
 * Review
 
@@ -84,6 +190,54 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+- The =ores.cpp.history-provider-registrar= facet exists with the two
+  archetypes (=_header= / =_implementation=) in
+  =projects/ores.codegen/library/templates=, the mustache pair tangled
+  byte-identically, and the facet registered in the C++ presentation
+  segment of the entity meta-model hub (the hub row now lists both
+  facets). The facet doc states the drift rationale: refdata's
+  registrar registers only 53 of its 64 mapper-bearing entities, and a
+  compile failure in one entity's provider must not block the rest.
+- The archetypes emit one =<entity>_history_provider_registrar.hpp/.cpp=
+  pair per domain entity for every component that regenerates: refdata
+  now carries 64 pairs, one per mapper-bearing entity (== the mapper
+  glob count). Each implementation wraps the exact provider body
+  registrar.cpp used to hand-carry: the
+  =product.component.entity_singular= key (composed identically to the
+  notify-trigger SQL =entity_name=), the service read via
+  =get_<entity_singular_short>_history= (irregular spellings included),
+  and the presentation mapper render through
+  =build_entity_history_versions()=. The component file lists were
+  regenerated (+128 lines, registrar entries only).
+- =registrar.cpp= is reduced to the assembly role (961 lines to 449):
+  the ~480-line provider region is 53
+  =register_<entity>_history_provider(hist_registry)= calls in the
+  existing =history_registry()= scope, in alphabetical order matching
+  the new registrar-header include block above it. The 148
+  domain/mapper/service/version_builder includes the blocks needed
+  moved into the generated files. The registered key set is
+  byte-identical: post-rewrite call keys match the pre-change census
+  line for line (53 keys). The 11 mapper-bearing entities with no
+  provider today (calendar_exception, calendar_rule, calendar_type,
+  counterparty_contact_information, counterparty_identifier,
+  derivation_kind, instrument_code, ir_curve_bootstrap_config,
+  ir_curve_bootstrap_pillar, party_contact_information,
+  party_identifier) stay unregistered with identical runtime
+  behaviour; wiring one is now a model change plus regeneration plus
+  one call line, never a hand edit of the giant file.
+- Verification: codegen pytest 155 passed; compass pytest 117 passed,
+  1 skipped; roundtrip exit 0; cmake-sources drift refdata-clean (11
+  pre-existing stale lists in other components recorded for the
+  per-component drift stories); codegen drift green (tangle +
+  =check_component_drift.py= exit 0, zero tracked diffs); site build
+  clean; full build green (linux-clang-debug-make, zero errors); ctest
+  71/71 passed (883s; ores.refdata.core.tests 261.6s);
+  CDash Experimental green: serial rerun 71/71 passed and
+  submitted (20260904-1925). The first parallel attempt aborted on
+  duplicate-key rows in =ores.iam.core.tests= left open in the shared
+  test DB by an earlier aborted run — an environmental collision in a
+  suite this diff does not touch, not a regression.
 
 * Promoted from capture
 

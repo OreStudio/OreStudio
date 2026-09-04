@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 3D65395A-F821-4AA4-BDC1-E34690CF7F9F
+:END:
+#+title: ores.cpp.history-provider-registrar
+#+description: Per-entity history-provider registrar pair registering an entity's history provider into the ores.history dispatch registry.
+#+type: facet
+#+model_types: domain_entity
+#+level: cross
+#+facet_group: ores.cpp
+#+filetags: :codegen:physical-space:cpp:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+
+This page is the node for the =ores.cpp.history-provider-registrar=
+facet of the codegen template library, part of the
+[[id:C3F9DCE5-200A-4324-8904-B56BB73FD9CB][ores.cpp]]
+[[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][technical space]]. Each archetype
+below is documented, and holds its =mustache= source, in its own
+linked page. This page is the facet-level summary and the routing
+table to them.
+
+* Summary
+
+Two templates forming the per-entity history-provider registrar pair.
+The header declares =register_<entity>_history_provider()=. The
+implementation builds the entity's history provider and registers it
+into the =ores::history::service::dispatch_registry= the caller
+passes in. The provider reads the entity's version history through
+its service and renders each version through its field mapper. The
+per-component service registrar delegates to each per-entity
+registrar, so a compile failure in one entity's provider cannot block
+registration of the rest. Consumed by the default (no =--address=)
+generation set for every =domain_entity=.
+
+* The ores.cpp.history-provider-registrar facet
+
+Projects the entity model onto its generic-history registration
+surface: the =entity_type= key the generic =history.v1.get= subject
+dispatches on, the service read that produces the version history,
+and the field mapper that renders each version for display. It
+consumes the same =domain_entity= model and the same
+=presentation::render_<entity>_fields= mapper the
+[[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]
+facet emits. It derives its =entity_type= key identically to the
+=entity_name= the
+[[id:3EAC73DC-6ECE-4DB3-8172-790A2C709AAC][notify_trigger]] SQL facet
+stamps on each row change (=product_component_entity_singular=), so
+the two sides of the pipeline can never drift out of sync.
+
+Replaces the pattern of hand-wiring one ~10-line
+=register_history_provider()= lambda per entity directly into each
+component's =registrar.cpp=. That hand-maintained surface has already
+drifted: refdata's registrar registers only 53 of its 64
+mapper-bearing entities. A small per-component aggregator (not
+generated; it mirrors =ores::refdata::core::messaging::registrar=)
+calls each generated per-entity function, the same way it already
+calls the CRUD =register_<entity>_handlers()= functions. refdata's
+registrar keeps its current 53 calls, so the registered key set is
+unchanged. The 11 mapper-bearing entities with no provider today stay
+unregistered, with identical runtime behaviour, until their own
+wiring work adds them.
+
+* Archetypes
+
+| Archetype | Description |
+|-----------+-------------|
+| [[id:BF30A77D-3799-4DB1-8301-883AE9539F8F][ores.cpp.history-provider-registrar.history_provider_registrar_header]] | Per-entity history-provider registrar header declaring =register_<entity>_history_provider()=. |
+| [[id:1F662435-823D-498E-B311-45FCA9BF226E][ores.cpp.history-provider-registrar.history_provider_registrar_implementation]] | Per-entity history-provider registrar implementation registering the provider body into the dispatch registry. |
+
+* See also
+
+- [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] — the mapper this facet's provider renders through.
+- [[id:FDA9A722-A1AD-4086-BE01-18C1D2042803][Entity-composed registrars]] — the architecture meta-pattern this facet is the history instance of.
+- [[id:287FF186-24CC-40D3-95B2-CEA12E3B6F3F][ores.cpp.nats-sub-registrar]] — the request/response registrar pair this facet sits alongside in =.core= messaging.
+- [[id:3B6B9F75-BDC9-4AE9-B16E-5A05FFC3A4B5][Codegen template library]] — the groups overview.

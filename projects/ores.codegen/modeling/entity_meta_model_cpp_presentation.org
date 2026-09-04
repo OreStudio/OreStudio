@@ -2,25 +2,30 @@
 :ID: F966605D-4321-4499-9304-F8A703C91E26
 :END:
 #+title: Codegen entity meta-model — C++ presentation
-#+description: The ores.cpp.presentation facet: rendering a domain type to an ordered field list for history-diff display.
+#+description: The ores.cpp.presentation and ores.cpp.history-provider-registrar facets: rendering a domain type to an ordered field list for history-diff display, and the server-side provider registration that feeds that display.
 #+type: knowledge
 #+level: cross
 #+filetags: :codegen:meta_model:org_mode:literate:
 #+startup: inlineimages
 #+created: 2026-07-17
-#+updated: 2026-07-17
+#+updated: 2026-09-04
 
 This page is a segment of the [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] hub, covering
-the [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] facet — the smallest facet on this hub after
-[[id:E6E2EDC1-4ED3-4458-9B1D-7DD575ECDDCE][C++ Domain]]. It exists to answer one question: when the Qt history
-dialog shows "what changed between version 3 and version 4", what
-does it show, and in what order?
+the two facets behind one generic-history flow: the
+[[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]] facet, which renders a domain type to an ordered
+field list, and the
+[[id:3D65395A-F821-4AA4-BDC1-E34690CF7F9F][ores.cpp.history-provider-registrar]] facet, which registers the
+server-side history provider that feeds that list. It exists to
+answer one question: when the Qt history dialog shows "what changed
+between version 3 and version 4", what does it show, in what order,
+and where does the server side of that history come from?
 
 * Physical model mapping
 
-| Facet                     | Description                                       |
-|-----------------------------+------------------------------------------------------|
-| [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]      | Server-side rendering of a domain type for display: history field mapper. |
+| Facet                                                        | Description                                                                 |
+|--------------------------------------------------------------+-----------------------------------------------------------------------------|
+| [[id:4B6E2C1A-8F3D-4A5B-9C7E-1D2F3A4B5C6D][ores.cpp.presentation]]                                                   | Server-side rendering of a domain type for display: history field mapper.    |
+| [[id:3D65395A-F821-4AA4-BDC1-E34690CF7F9F][ores.cpp.history-provider-registrar]]                                 | Server-side registration of one entity's history provider into the ores.history dispatch registry. |
 
 * What gets generated, unconditionally
 
@@ -45,9 +50,36 @@ render_badge_definition_fields(const domain::badge_definition& v);
 }
 #+end_src
 
-No paste blocks or behavioural knobs exist for this facet today.
+No paste blocks or behavioural knobs exist for the mapper today.
+
+A history-provider registrar pair: a function registering the
+entity's history provider into the
+=ores::history::service::dispatch_registry= under the
+=product.component.entity_singular= type key. The provider reads the
+entity's version history through its service and renders each version
+through the mapper above, so the two facets share one model and one
+mapper function. The registrar pair is a server-side registration
+surface: the per-component service registrar calls each per-entity
+function, which is why every mapper-bearing entity needs the pair
+even before it is wired into that aggregator.
+
+Generates, in =badge_definition_history_provider_registrar.hpp=:
+
+#+begin_src cpp
+namespace ores::dq::messaging {
+
+void register_badge_definition_history_provider(
+    ores::history::service::dispatch_registry& registry);
+
+}
+#+end_src
+
+The mapper set and the registrar-pair set are equal by construction:
+both facets admit the same =domain_entity= model. An unwired pair in
+the aggregator just stays unregistered at runtime.
 
 * See also
 
 - [[id:BDE309BA-71DA-4A52-AA10-00F17AFDA476][Codegen org-entity meta-model]] — the hub.
 - [[id:0BD99407-1CBE-469B-B2D3-1C0AE3AA18DE][Keys and columns]] — the field list this facet renders.
+- [[id:3D65395A-F821-4AA4-BDC1-E34690CF7F9F][ores.cpp.history-provider-registrar]] — the facet page, with the archetype docs and templates.

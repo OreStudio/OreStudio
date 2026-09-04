@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix-codegen-template-drift:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/pagination-knob-fragility
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
 #+updated: 2026-08-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -64,22 +64,103 @@ narrow fix lands:
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-04                               |
 
 * Acceptance
 
--
+- =ores.cpp.qt.client_model_impl.org= (and the tanged
+  =cpp_qt_client_model.cpp.mustache=) generates the fetch method with
+  no =has_pagination= fork: the request always carries =offset= /
+  =limit= and the model always takes =total_available_count= from the
+  response. The ={{^}}= truncating branch and both ={{#}}= wrappers
+  are gone, and the narrative no longer documents a two-branch design.
+- Re-tangling changes only the two files (org archetype + mustache).
+- The change is output-neutral for every entity that can regenerate
+  today: regenerating the Qt client models (all flag-on) is
+  byte-identical to the pre-edit output, so no model churn is
+  attributable to the change beyond the recorded pre-existing drift
+  baseline, and a second regeneration is byte-identical.
+- No entity can emit the truncating shape from this template any more:
+  the 16 legacy-`* Primary key` entities cannot regenerate until their
+  unblocking task lands (836BB4CE), and when they do, and for every
+  new entity from now on, the generated fetch pages correctly with no
+  per-entity knob to set. The unconditional =PaginationWidget= is
+  therefore accurate for every generated model — the model/window
+  disagreement class is gone.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- 2026-09-04: survey. The flag's behavioural read surface is exactly
+  one template: grep of the templates directory shows
+  =has_pagination= consumed only by the client model fetch function
+  (two ={{#}}= sites and one ={{^}}= branch, lines 311-364 of the
+  org). Everywhere else it is inert documentation: the doc entity org
+  templates echo =:has_pagination:= back into regenerated entity
+  doc pages when set, and =core.py= (lines 3224-3225) loads the Qt
+  drawer property with a silent =False= default to feed that same
+  echo. =doc_feature.org= mentions the property only as an example
+  literal in a generic feature template.
+- The protocol side has no gate: =offset= (default 0) / =limit=
+  (default 100) and =total_available_count= are unconditional members
+  of every generated list request and response class
+  (=ores.cpp.protocol.protocol_header.org=, five request shapes, all
+  with the same unconditional trio), so the paginated branch compiles
+  for every entity when it can regenerate. The country-fix commit that
+  created the fork (3f51aef9f4) changed only the model template, the
+  country org, and the narrative — the flag never reached the
+  protocol, the service, or the server.
+- Committed-model census: 30 entities carry the flag (the tracking
+  task 914B206F's 29 fixes in PR #1760 plus =calendar_type=), all
+  regenerable and byte-stable across the fixes' regeneration rounds.
+  The only committed flag-off models belong to the 16 legacy-`*
+  Primary key` heading entities (follow-up 836BB4CE) that cannot
+  regenerate at all today — =resolve_targets= fails on any address for
+  them, so their truncating output stays in the tree until that
+  unblocking task lands, whatever this task decides.
+- Design decision: capture option 1 — generate the paginated fetch
+  path unconditionally and delete the fork. The fork never was a
+  small-table optimisation worth preserving: the ={{^}}= branch does
+  not fetch "the whole set", it sends the request with its default
+  =offset=0/limit=100= and reports the returned page's size as the
+  total, so both branches fetch at most the server's default page and
+  differ only in whether the model can page onward and report a
+  truthful total. The unconditional path is the one proven in
+  production by the ~30 flag-on entities; for a table over 100 rows
+  the flag-off path is strictly lossy. Deleting the fork makes the
+  unconditional =PaginationWidget= correct for every generated model,
+  which dissolves the model/window disagreement that let the bug go
+  unnoticed across 61 entities — capture option 3 (a lint pass) is
+  then unnecessary, and the flag itself survives only as the entity-
+  org doc property it already is (loader and doc echo untouched;
+  nothing behavioural reads it any more).
+- Implementation order: baseline full regeneration (drift record,
+  pre-edit), org edit (unbrace the two ={{#}}= sites so the
+  offset/limit pair and the response-total return are unconditional;
+  delete the ={{^}}= branch; rewrite the narrative), re-tangle (only
+  the one mustache should change), per-component regeneration
+  (byte-identical to the baseline for all regenerable models),
+  idempotency check (second regen byte-identical), then close out
+  with the code+ci+docs verification union (site build, full build +
+  ctest on a recreated database, drift checks, roundtrip).
+- 2026-09-04: regeneration evidence. The baseline full-ores
+  regeneration (run 1, pre-edit) churned 202 tracked generated files
+  — pre-existing drift whose composition (trading 95, sql 31, dq 15,
+  scheduler 24 incl. Qt, synthetic 17 incl. Qt, database 7, analytics
+  4, compute 4, qt/iam 2, refdata/marketdata/iam 1 each) differs from
+  task 453FA225's recorded baseline as main evolved; all of it
+  reverted or excluded from this PR. The attributable delta between
+  run 1 and run 2 (post-edit) is exactly 7 files: the two templates,
+  two =ores.database= =component_files.cmake= (stub-byproduct churn,
+  reverted), and three Qt client model flips (=ClientBadgeSeverityModel=,
+  =ClientReportInstanceModel= — carried; =ClientJobDefinitionModel= —
+  reverted, see Result). Runs 2 and 3 are byte-identical (identical
+  md5 sets) — idempotent. The 166 untracked byproducts (42 inherited
+  from task 453FA225's regens) are byte-identical across the runs.
 
 * Notes
 
@@ -107,6 +188,70 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered 2026-09-04 on branch
+=feature/pagination-knob-fragility=, commit 7287a46527.
+
+- The fetch is unconditional in both the org source
+  (=ores.cpp.qt.client_model_impl.org=) and the tangled mustache: the
+  ={{#domain_entity.qt.has_pagination}}= wrappers around the
+  =offset=/=limit= pair and around the log + response-total return are
+  gone, and the ={{^}}= truncating branch (defaults, page-size
+  reported as total) is deleted. The request always carries
+  =offset=/=limit= and the model always takes
+  =total_available_count= from the response, so no entity can emit the
+  truncating shape from this template. The section (now "** Fetching a
+  page") records the fork's history; the flag survives only as
+  entity-org documentation (loader and doc echo untouched).
+- Re-tangling changed only the two template files (the org and its
+  tangled mustache).
+- Regeneration evidence (three full-ores regens, md5 per changed
+  file, in the Plan): run 1 (pre-edit) churned 202 tracked generated
+  files of pre-existing drift — all reverted or excluded from this PR
+  and input for the per-component drift stories. The attributable
+  delta between run 1 and run 2 is exactly 7 files: the two
+  templates, two =component_files.cmake= files (stub-byproduct
+  churn, reverted), and three Qt client model flips. Runs 2 and 3
+  are byte-identical (identical md5 sets) — idempotent.
+- Census correction: the survey census (30 flag-on entities, 16
+  legacy-`* Primary key` unregenerable) missed three regenerable
+  modern-key entities that carry the flag off: the regen delta flipped
+  =ClientBadgeSeverityModel= (dq) and =ClientReportInstanceModel=
+  (reporting), both carried in this PR as the intended repair — the
+  tracking task 914B206F's census never listed them. The narrow fix
+  (set the flag everywhere) was therefore incomplete exactly where
+  this fix cannot be: there is no flag left to forget. The third flip,
+  =ClientJobDefinitionModel= (scheduler), sits on top of stale
+  committed drift (its org evolved after its last regeneration), so
+  the file was reverted to its committed state and its regeneration is
+  left to the scheduler per-component drift story; until then its
+  committed model stays the old truncating shape, a historical
+  artifact this template can no longer produce.
+- Output neutrality held for every flag-on entity: no Qt client model
+  churn exists in any flag-on component across the runs beyond the
+  three flips above, and the post-fix component drift check
+  (refdata) wrote every flag-on Qt model byte-identical to the
+  committed tree.
+- Verification (change class: code + ci + docs): site build clean;
+  full system build clean (linux-clang-debug-make); ctest 71/71
+  passed against a recreated database — the CI-equivalent state,
+  because the repository write tests are not repeatable against a
+  persistent database; component drift checks (refdata, reporting,
+  marketdata) reproduce the committed tree except the three recorded
+  pre-existing files (=party_repository.cpp=, =feed_binding.hpp= and
+  its create sql), reverted after the check; ore domain roundtrip
+  report generated clean (rc 0), structurally unchanged — this diff
+  touches no roundtrip input or parser.
+- The 166 untracked regen byproducts (42 inherited from task
+  453FA225's regen plus this unit's additions) stay in the working
+  tree, byte-identical across runs 2 and 3, excluded from all
+  commits (deletion not authorised).
+
+Acceptance: bullets 1, 2, and 4 met as written. Bullet 3 holds for
+its flag-on scope with the correction recorded above: the two
+census-missed flag-off entities flip as the intended repair (which is
+the story's purpose — an entity with the flag off must not truncate),
+and no other model churn is attributable to the change.
 
 * Promoted from capture
 

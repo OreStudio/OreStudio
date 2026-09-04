@@ -3056,19 +3056,28 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             validate_parent_scoped_list(domain_entity)
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
-            # Auto-generate default detail_fields if not provided
+            # Auto-generate default detail_fields if not provided. The
+            # default shape is the code+name+description lookup form: a
+            # key row plus a display-name row. An entity whose key field
+            # IS name (compute app) has no separate display name, so the
+            # key row alone carries it, named after the field like every
+            # other row; emitting a second nameEdit would bind two
+            # widgets to one column.
             if 'detail_fields' not in qt:
                 key_field = qt.get('key_field', 'code')
                 column_names = {c.get('name') for c in domain_entity.get('columns', [])}
+                key_is_name = key_field == 'name'
                 fields = [
                     {'field': key_field, 'label': key_field.replace('_', ' ').title(),
-                     'widget': 'codeEdit',
+                     'widget': 'nameEdit' if key_is_name else 'codeEdit',
                      'type': 'line_edit', 'is_key': True, 'is_required': True,
                      'placeholder': 'Enter ' + domain_entity.get('entity_singular_words', 'item') + ' ' + key_field.replace('_', ' ')},
-                    {'field': 'name', 'label': 'Name', 'widget': 'nameEdit',
-                     'type': 'line_edit', 'is_required': True,
-                     'placeholder': 'Enter display name'},
                 ]
+                if not key_is_name:
+                    fields.append(
+                        {'field': 'name', 'label': 'Name', 'widget': 'nameEdit',
+                         'type': 'line_edit', 'is_required': True,
+                         'placeholder': 'Enter display name'})
                 if 'description' in column_names:
                     fields.append(
                         {'field': 'description', 'label': 'Description', 'widget': 'descriptionEdit',

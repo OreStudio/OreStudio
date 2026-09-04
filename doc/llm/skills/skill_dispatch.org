@@ -2,18 +2,27 @@
 :ID: 3018B7FE-2DF7-49E5-A57F-A75C02C4D498
 :END:
 #+title: Skill dispatch
-#+description: How an operation is selected for an artefact: target types, the verbs registered against each, and the dispatcher that computes the pairing.
+#+description: How the operations available on a target are computed rather than recalled: types, the verbs registered against each, the creation case that forces the target and output distinction, and the generated table the dispatcher reads.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:claude_code:architecture:dispatch:
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-Given a thing in hand, whether a document, a branch, a pull request or
-a failing test, this page answers what may be done to it, and how that
-is computed rather than remembered.
+* Summary
 
-For the classes of artefact themselves see [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]].
+A regulator must select a response matching the disturbance it faces. Dispatch
+is how this framework performs that selection: given a target, it computes the
+operations available on it rather than requiring an agent to recall them.
+
+The computation runs in three steps. A target resolves to a type, the type
+implements one or more [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory functions]], and each function declares
+operations. The session's [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][System]] then attenuates what is offered, so the same
+target presents a smaller surface at the audit level than at S1.
+
+This document states how a target resolves to a type, how verbs register against
+types, why creation is the case that forces a distinction between a target and
+an output, and why the table is generated rather than written.
 
 * Detail
 
@@ -44,8 +53,8 @@ offers each where the container is resolved, which is also where a person would
 look for it: holding a story, one asks what may be done with it, and adding a
 task is among the answers.
 
-[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] treats the distinction between a target and an output, and the
-reason creation forces it.
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] treats the distinction between a target and an output, and
+the reason creation forces it.
 
 ** The Skills
 
@@ -59,9 +68,11 @@ Three skills implement the model:
   candidates become captures; drift findings become tasks. Never invent
   a new container when an artefact type already exists for the payload.
 
-The verb table is *generated* from the catalogue. A hand-maintained
-table drifts within a sprint; if it cannot be generated, the dispatcher
-is not built.
+The verb table is *generated* from the catalogue, and the requirement is
+operational rather than a preference. A hand-maintained table drifts within a
+sprint, and a pairing that cannot be reproduced by automated means is one the
+framework does not hold: if the table cannot be generated, the dispatcher is not
+built.
 
 =agile-find-heading= and =compass-act= answer different questions.
 Heading picks *which work to do*; act picks *which verb applies to this
@@ -75,6 +86,8 @@ Target type against verb, with the source each type resolves from. Populated whe
 
 * See also
 
-- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
-- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the classes of artefact a target may belong to.
-- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] — the level that filters the verbs on offer.
+- [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] — why a regulator computes its response.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the functions a type implements, which declare the
+  operations dispatch offers.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] — the attenuator that decides which of those are shown.

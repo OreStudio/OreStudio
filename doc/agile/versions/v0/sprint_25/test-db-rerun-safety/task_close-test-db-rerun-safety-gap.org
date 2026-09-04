@@ -1,0 +1,226 @@
+:PROPERTIES:
+:ID: 00C324E7-20EA-4675-B8D5-4E4C24D2A6CF
+:END:
+#+title: Task: Close the test-db rerun-safety gap
+#+description: An aborted ores.iam.core.tests run leaves OPEN bitemporal rows in the shared per-worktree test database that poison the next run with duplicate-key failures; the gap needs a root-cause write-up and a suite-level or harness-level fix.
+#+type: task
+#+level: s1
+#+filetags: :test-db-rerun-safety:sprint_25:v0:
+#+owner: marco
+#+branch: feature/close-test-db-rerun-safety-gap
+#+pr: 2011
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CF4E06FF-CB08-484F-A354-91933CCCC7CD][Shared test database rerun safety]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Root-cause why an aborted fixture-writing suite leaves OPEN rows behind and why they poison the next run; land a fix at the suite or harness level so ctest and CDash Experimental cycles are reliably rerunnable with no manual database surgery.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:CF4E06FF-CB08-484F-A354-91933CCCC7CD][Shared test database rerun safety]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-04                               |
+
+* Acceptance
+
+- Root cause documented: the mechanism by which an aborted fixture-writing suite (ores.iam.core.tests) leaves OPEN bitemporal rows (valid_to = infinity) behind, and why OPEN rows collide with the next run (partial unique indexes constrain only open rows).
+- A fix lands at the suite or harness level: either failure-safe teardown that closes the suite synthetic rows when the run aborts, or a pre-run sweep that closes orphaned synthetic OPEN rows before tests start. The mechanism keys on the synthetic markers (change_reason_code system.test, the test DML user), honours the bitemporal close semantics (the ON DELETE DO INSTEAD rules turn DELETEs into valid_to = clock_timestamp() updates), and never touches rows a real user created.
+- Reproduction: abort a fixture-writing suite mid-run against a dirty database, then rerun with no manual intervention; the rerun is green.
+- Full ctest green (71/71) and a CDash Experimental submission green, with no manual database cleanup between runs.
+
+* Plan
+
+Strategy: a pre-run sweep at the harness level, not failure-safe
+teardown. Teardown cannot run when a process is SIGKILLed, and the
+fixture suites have no teardown today, so the sweep is the only shape
+that covers the hard-abort case. The sweep keys on the synthetic
+markers (=change_reason_code = 'system.test'=, =performed_by =
+current_user=) which no seed or real workflow row carries, scopes to
+the system tenant and OPEN rows, and issues a plain DELETE so each
+table's existing =ON DELETE DO INSTEAD= rule performs the close —
+no new DDL, no new close semantics, idempotent.
+
+Chosen homes: the sweep statement and connection live in
+=test_database_manager= (it already owns raw SQL and the context
+helpers); the invocation lives in =database_lifecycle_listener= at
+=testRunStarting= so it runs once per process before any test writes;
+the table list is registered by the binary that writes shared-tenant
+synthetic rows (=ores.iam.core.tests= main.cpp). Alternative shapes
+rejected: suite-local SQL in the test files (duplicates plumbing that
+belongs in ores.testing), a sweep inside =database_helper= construction
+(runs per test case, would close a previous case's rows mid-run), and
+randomising the fixture names (stops the collision but still leaks
+rows on every abort; the sweep removes residue regardless of name).
+Only the two poisoning tables are registered: the tenants-table writer
+cannot collide across runs (all its unique keys are random per run),
+and test-tenant rows never collide because each process provisions its
+own tenant.
+
+* Notes
+
+** Incident evidence (2026-09-04, scoping)
+
+Observed during the CDash Experimental reruns that closed task 2DFEF8F6:
+
+- An aborted =ores.iam.core.tests= run left 8 OPEN rows per table in
+  the shared per-worktree test database: faker-named tenant_types and
+  tenant_statuses rows (CD 1..8) in the system tenant
+  =ffffffff-ffff-ffff-ffff-ffffffffffff=, change_reason_code
+  =system.test=, commentary "Synthetic test data", performed by
+  =ores_brave_hopper_test_dml_user=. Both the parallel attempt and
+  serial rerun #1 aborted on duplicate keys against these rows; the
+  failing suite teardown then closed all 16 rows in one multi-row
+  close (8 timestamps within 0.2 ms) and serial rerun #2 was green on
+  the clean database.
+- Open rows collide with fresh inserts because the partial unique
+  indexes (e.g. =tenant_types_name_uniq_idx ... WHERE valid_to =
+  infinity=) constrain only OPEN rows. Raw DELETE on an OPEN row is
+  translated by the =ON DELETE DO INSTEAD= rules into
+  =UPDATE ... SET valid_to = clock_timestamp()=; DELETE RETURNING
+  errors without a RETURNING rule.
+- Evidence to verify against: fixture writing in
+  =ores.testing/database_helper.cpp= and
+  =test_database_manager.cpp=, the iam repository fixture tests,
+  =CTest.cmake= (PARALLEL_LEVEL = nproc capped by
+  CTEST_MAX_PARALLELISM), and the bitemporal close rules in the
+  ores_iam DDL.
+- Same residue class was already documented for rat runs on 2026-08-12
+  in [[id:ABF849AE-7E40-4557-B58B-1C3F273603DE][the iam-rat-residue memory]] (identical CD N faker rows, partial
+  unique index collisions, soft-close remediation); that memory's
+  manual remediation is what this task automates away. Note the test
+  DML user is environment-specific (ores_swift_curie on swift_curie,
+  ores_brave_hopper on brave_hopper).
+- The earlier claim in this note that "the failing suite teardown then
+  closed all 16 rows" is wrong: no teardown exists in the fixture
+  suites or the harness that could close system-tenant rows. The close
+  observed at 20:21:14 on 2026-09-04 was a manual remediation during
+  the incident forensics.
+
+** Root cause (confirmed by live reproduction, 2026-09-04)
+
+The mechanism, verified end to end against the live database:
+
+- The iam repository tests
+  (=repository_tenant_type_repository_tests.cpp=,
+  =repository_tenant_status_repository_tests.cpp=) write tenant types
+  and statuses into the =system= tenant
+  (=ffffffff-ffff-ffff-ffff-ffffffffffff=) with markers
+  =change_reason_code = 'system.test'=, the test DML user as session
+  user, and =version = 1=.
+- The row =name= is deterministic across every process and run:
+  =faker::word::noun()= returns the fixed word =CD= (probe confirmed
+  identical =CD 1..N= names across three independent processes), while
+  the =type=/=status= field is random per process
+  (=std::random_device=-seeded).
+- A run that aborts mid-run (kill, crash, timeout) skips all cleanup,
+  leaving its rows OPEN (=valid_to = infinity=). The harness terminates
+  only the per-process test tenant at =testRunEnded=; nothing touches
+  system-tenant rows. Even a fully successful run leaves its CD rows
+  OPEN, so the very next run of the binary fails.
+- The rerun regenerates the same names but fresh random types. The
+  BEFORE INSERT trigger closes a prior OPEN row keyed on
+  =(tenant_id, type)= only, so it never matches the residue; the insert
+  then collides on the partial unique indexes
+  =tenant_types_name_uniq_idx= / =tenant_statuses_name_uniq_idx=
+  (=WHERE valid_to = infinity=). Reproduction output:
+
+#+begin_example
+ERROR: duplicate key value violates unique constraint
+"tenant_types_name_uniq_idx"
+DETAIL: Key (tenant_id, name)=(ffffffff-ffff-ffff-ffff-ffffffffffff,
+CD 1) already exists.
+#+end_example
+
+- The =ores_iam_tenants_tbl= writer in the same binary does not poison
+  reruns: its =code=, =hostname= and =id= are random per run, and the
+  table has no partial unique index on the deterministic
+  ="Test Tenant N"= name. Seed rows are safe from the sweep: they carry
+  =change_reason_code = 'system.initial_load'= and are performed by the
+  DDL user, not the test DML user.
+
+** Fix (committed 2a5d1f92f5)
+
+Pre-run sweep at the harness level: =database_lifecycle_listener= now
+closes orphaned synthetic OPEN rows at =testRunStarting= in every
+table a binary registers via
+=register_pre_run_sweep_table=; =ores.iam.core.tests= registers
+=ores_iam_tenant_types_tbl= and =ores_iam_tenant_statuses_tbl=. The
+sweep issues a plain =DELETE= scoped to =tenant_id = system=,
+=change_reason_code = 'system.test'=, =performed_by = current_user=
+and OPEN rows; each table's =ON DELETE DO INSTEAD= rule rewrites it
+into =UPDATE ... SET valid_to = clock_timestamp()= on the current
+row, so the close honours the bitemporal semantics, is idempotent,
+and preserves the closed rows as history. A failing table is logged
+and skipped so an unhealthy database cannot abort the run.
+
+Reproduction result (acceptance 3): a =[repository]= run was killed
+mid-run with SIGKILL at 19 s, leaving 4 OPEN CD rows in each table;
+the rerun with no manual intervention passed all 53 test cases.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2011][#2011]] | [ores.testing] Close orphaned synthetic rows before test runs |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Sweep assumes an ON DELETE DO INSTEAD rule per registered table; without one the DELETE would hard-delete | projects/ores.testing/src/test_database_manager.cpp | Declined | The requirement is prominent in the API doc-comment; registration happens only at hardcoded, reviewed call sites; a runtime catalog assertion would add a query per table per run for a static, version-controlled contract. |
+| 2 | Per-table sweep failure is warn-logged only, so a silently broken sweep could resurface the collision | projects/ores.testing/src/test_database_manager.cpp | Declined | Deliberate tradeoff recorded in Plan and Result: a failing table is logged and skipped so an unhealthy database cannot abort the run; the warn lands in every suite log that registers tables. |
+| 3 | No dedicated unit test exercises close_orphaned_synthetic_rows | projects/ores.testing/src/test_database_manager.cpp | Declined | Every steady-state pair of runs exercises the sweep end-to-end against real residue, and the SIGKILL reproduction plus SQL post-state checks already proved close-not-delete and seed-row protection on live rows. A dedicated case would add a new query surface to re-assert rule behaviour; fair future hardening, mechanism recorded in Notes. |
+| 4 | register_pre_run_sweep_table could std::move the string into the vector | projects/ores.testing/src/database_lifecycle_listener.cpp | Declined | Called twice per process at startup; the copy is bounded and unobservable, and moving would add an include for no measurable gain. |
+
+* Result
+
+Closed the rerun-safety gap with a pre-run sweep at the harness level
+(commit 2a5d1f92f5). The mechanism is fully documented in Notes: the
+iam repository tests write deterministic faker-named =CD N= rows into
+the shared =system= tenant with random per-run types, so the BEFORE
+INSERT trigger's =(tenant_id, type)=-keyed close never matches the
+residue of an earlier run and the partial name unique indexes reject
+the rerun's inserts. The fix registers the two poisoning tables
+(=ores_iam_tenant_types_tbl=, =ores_iam_tenant_statuses_tbl=) from
+=ores.iam.core.tests= main.cpp; at =testRunStarting= the listener
+closes orphaned synthetic OPEN rows (system tenant,
+=change_reason_code = 'system.test'=, =performed_by = current_user=)
+with a plain DELETE that each table's =ON DELETE DO INSTEAD= rule
+rewrites into a bitemporal soft close. Seed and real-user rows are
+untouched; a failing table is logged and skipped, never aborting the
+run.
+
+All four acceptance criteria met:
+
+- Root cause documented, confirmed by live reproduction (Notes above).
+- Fix landed at the harness level, keyed on the synthetic markers,
+  honouring the close semantics with no new DDL.
+- Reproduction: SIGKILL at 19 s left 4 OPEN CD rows per table; the
+  rerun with no manual intervention passed all 53 test cases.
+- Full ctest green (71/71, 892 s) followed by a CDash Experimental
+  submission green (71/71 in Test.xml), with no manual database
+  cleanup between the runs — the sweep closed the previous run's rows
+  at the start of the CDash cycle.

@@ -36,5 +36,14 @@ int main(int argc, char* argv[]) {
     BOOST_SCOPE_EXIT_END
 
     ores::testing::logging_listener::set_test_module_name("ores.iam.tests");
+
+    // The repository tests write synthetic tenant types and statuses into the
+    // shared system tenant; an aborted run leaves OPEN rows that collide with
+    // the next run. Close the leftovers at the start of every run.
+    ores::testing::database_lifecycle_listener::register_pre_run_sweep_table(
+        "ores_iam_tenant_types_tbl");
+    ores::testing::database_lifecycle_listener::register_pre_run_sweep_table(
+        "ores_iam_tenant_statuses_tbl");
+
     return Catch::Session().run(argc, argv);
 }

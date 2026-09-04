@@ -100,6 +100,7 @@ of these exclusions, push back: the right home is somewhere else.
   =:ID:= drawer; generated UUIDs silently break the link graph.
 - [[id:99D08493-2142-4536-B2A5-0F1B0E68313E][Cap C++ compilation builds at -j2]] — never =-j $(nproc)=; Emacs-only cmake targets need no cap.
 - [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][Fix codegen templates — never work around codegen gaps]] — fix the template; regenerate; never hand-write into generated files.
+- [[id:9EEF7590-86C3-449F-8387-A21B5B62EF87][Regen byproduct hygiene]] — every phase that regenerates code must sweep for unexpected untracked files and account for each one before closing.
 - [[id:34F5490D-DC57-4B87-961D-3E4920FEBEBF][Load .env before running test binaries]] — =set -a && source .env && set +a= before test runs.
 - [[id:C3B499F6-2E41-4E1C-A724-7524EAC24B8E][gh CLI requires dangerouslyDisableSandbox]] — keyring socket blocked by sandbox; always disable.
 - [[id:5FF87481-1FF7-4AAA-A4CC-12BC3A5DE166][Never amend commits — always create new ones]] — even when fixing the immediately prior commit.

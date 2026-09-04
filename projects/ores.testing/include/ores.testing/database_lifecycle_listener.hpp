@@ -24,6 +24,7 @@
 #include "ores.testing/export.hpp"
 #include <catch2/reporters/catch_reporter_event_listener.hpp>
 #include <string>
+#include <vector>
 
 namespace ores::testing {
 
@@ -49,6 +50,18 @@ public:
     using Catch::EventListenerBase::EventListenerBase;
 
     /**
+     * @brief Registers a table for the pre-run orphaned-row sweep.
+     *
+     * At the start of every test run the listener closes OPEN synthetic
+     * rows that an aborted earlier run left in the registered tables. The
+     * tables must carry the bitemporal close rules (ON DELETE DO INSTEAD)
+     * and the synthetic-row columns change_reason_code and performed_by.
+     *
+     * @param table_name Table to sweep at the start of each run
+     */
+    static void register_pre_run_sweep_table(std::string table_name);
+
+    /**
      * @brief Called when test run starts - provisions a test tenant.
      */
     void testRunStarting(Catch::TestRunInfo const& testRunInfo) override;
@@ -59,6 +72,8 @@ public:
     void testRunEnded(Catch::TestRunStats const& testRunStats) override;
 
 private:
+    inline static std::vector<std::string> pre_run_sweep_tables_;
+
     std::string test_tenant_id_;
 };
 

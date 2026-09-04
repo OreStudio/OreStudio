@@ -13,7 +13,7 @@
 #+blocked_since:
 #+created: 2026-08-06
 #+updated: 2026-09-04
-#+environment: brave_hopper brave_hopper
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -54,11 +54,11 @@ still has to be hand-wired afterwards":
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] |
-| Now          | Staging step 4 (reachability validator) implemented, ledger written, census pass zero-warning (2026-09-04). |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Commit step 4, then verification union + pr-raise. |
+| Next         | Nothing. |
 | Last touched | 2026-09-04                               |
 
 * Acceptance
@@ -279,6 +279,39 @@ still has to be hand-wired afterwards":
   exempt because their =\\ir= wiring lives in the setup flows
   (=setup_schema.sql=, =setup_user.sql=, =recreate_database.sql=),
   outside the roots the rule can see.
+
+* Result
+
+- The three RLS features (=rls_tenant_isolation=,
+  =rls_party_isolation=, =rls_system_tenant_visible=) exist as
+  =ores.sql.schema= variability features with profile defaults and are
+  declared per entity in the =sql= namespace (D3).
+- The domain-entity SQL create emission appends the declared policies
+  as a post-table trailer; the drop emission carries the =DROP POLICY=
+  block at the top (D4). Junction entities are excluded (D7). The
+  emitted shapes are verbatim copies of the dominant hand-written
+  blocks.
+- ores.marketdata is the adoption proof: all five entities declare
+  their shapes, the two hand RLS files and their =\\ir= lines are
+  deleted, =validate_schemas.sh= --strict stays green, the second regen
+  round is byte-identical, =compass db recreate= is green (48s), and
+  live =pg_policies= shows all six policies with the lineages party
+  policy RESTRICTIVE.
+- The =WIRE_001= rule makes every component-aggregator chain complete:
+  every =*_create.sql= under =create/= must be reachable from
+  =create/create.sql= and every =*_drop.sql= under =drop/= from
+  =drop/drop.sql=. The deliberate exception classes are encoded in the
+  rule (create-side RLS files are RLS_003's domain, drop-side RLS
+  files stay in scope, the two iam service bundles wire from the
+  setup flows). The census passes with zero warnings; the pre-existing
+  debt (3 create + 74 drop files across eight components) is recorded
+  per file in =validation_ignore.txt= for the component drift stories.
+  Eight pytest tests cover the rule.
+- Acceptance's "remove the marketdata =RLS_001= ignore entries (if
+  any)" resolves to none: no =RLS_001= entries existed. The =RLS_002=
+  entries for the four non-lineage marketdata tables and the CRM
+  tables remain valid: only observation_lineages gains party
+  isolation in this task.
 
 * Test Scenarios
 

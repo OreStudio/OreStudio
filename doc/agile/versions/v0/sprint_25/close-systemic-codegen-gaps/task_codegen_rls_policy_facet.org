@@ -56,9 +56,9 @@ still has to be hand-wired afterwards":
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:8B4DE7A9-A10A-4F23-B300-D2B98CA8D7FA][Close systemic codegen gaps]] |
-| Now          | Baseline survey complete; writing Plan and starting implementation (2026-09-04). |
+| Now          | Staging step 4 (reachability validator) implemented, ledger written, census pass zero-warning (2026-09-04). |
 | Waiting on   | Nothing.                               |
-| Next         | Implement the RLS emission + marketdata adoption proof, then the reachability validator. |
+| Next         | Commit step 4, then verification union + pr-raise. |
 | Last touched | 2026-09-04                               |
 
 * Acceptance
@@ -239,6 +239,46 @@ still has to be hand-wired afterwards":
   reports every uncommitted change, intended or not. It is a
   post-commit gate (pr-raise); mid-task the byte-identical regen round
   is the equivalent evidence.
+- Staging step 4 evidence (2026-09-04): the =WIRE_001= rule in
+  =plantuml_er_parse_sql.py= fires on exactly the census files (74
+  drop + 3 create) on its first run against the live tree, with no
+  false positives and no other warning code disturbed. After the
+  =validation_ignore.txt= ledger entries, =validate_schemas.sh=
+  --strict passes with 0 warnings. Eight new pytest tests cover the
+  rule (wired passes, unwired warns on both sides, RLS and service-
+  bundle exemptions, ignore-file suppression); the codegen suite is
+  145 passed.
+- Census correction to the survey's "drop side mirrors": it does not.
+  Create side has exactly three unwired files (the two deliberate iam
+  service bundles plus residue); the drop side has 74 across eight
+  components. The classes: dq per-dataset artefact and population
+  drops are a mixed state (26/23 and 5/16 wired/unwired), so their
+  ledger entries are per-file, not wildcards -- a wildcard would hide
+  new unwired files inside an already-partially-wired family; the
+  trading equity family is pure debt (all nine creates and notify
+  triggers are wired in =trading_create.sql=, no equity include exists
+  in =drop_trading.sql=) and takes two family wildcards. Singles:
+  five dq notify-trigger drops, three dq plural-era residues, the rpa
+  notify trigger, refdata curve roles (2), synthetic yield-curve
+  process types (2), iam session samples and tenant terminator, mq
+  scrape functions.
+- =database_info_drop.sql= drops =ores_database_info_tbl=, the table
+  the wired =database/database_database_infos_create.sql= creates, but
+  =drop.sql= never reaches =drop/database/= (the file is the only one
+  there). The hole is invisible to =DROP_001=, which pairs by file
+  existence rather than reachability -- the gap this rule closes.
+- The =compute_app_version_platform_create.sql= ledger entry names an
+  untracked regen byproduct (see the =TEMPORAL_004= entry above it for
+  the stale junction template); it does not exist on clean checkouts,
+  so the entry is inert until that regen lands and wires the file.
+- The rule encodes the deliberate exceptions structurally rather than
+  in the ledger: create-side =*_rls_policies_create.sql= files are
+  RLS_003's domain (no double-report), drop-side
+  =*_rls_policies_drop.sql= files stay in scope (no drop-side RLS
+  reachability rule exists), and the two iam service bundles are
+  exempt because their =\\ir= wiring lives in the setup flows
+  (=setup_schema.sql=, =setup_user.sql=, =recreate_database.sql=),
+  outside the roots the rule can see.
 
 * Test Scenarios
 

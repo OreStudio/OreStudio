@@ -67,10 +67,11 @@ still has to be hand-wired afterwards":
   tenant isolation, party isolation, and system-tenant-visible tenant
   isolation (feature catalogue entries, =_FEATURE_NAMESPACE= rows,
   profile defaults).
-- The domain-entity and junction SQL create emissions append the
-  declared policies as a generated trailer (post-table, pre-file-end);
-  the drop emissions carry the policy drops. The emitted block shapes
-  are verbatim copies of the dominant hand-written shapes.
+- The domain-entity SQL create emission appends the declared policies
+  as a generated trailer (post-table, pre-file-end); the domain-entity
+  drop emission carries the policy drops. The emitted block shapes are
+  verbatim copies of the dominant hand-written shapes. Junction
+  entities are out of scope (D7).
 - ores.marketdata is the adoption proof. All five tables declare their
   shapes; =marketdata_rls_policies_create.sql= and
   =marketdata_rls_policies_drop.sql= become empty and are deleted along
@@ -183,13 +184,21 @@ still has to be hand-wired afterwards":
 - D6: the capture's "stretch" (party RLS as a first-class model flag)
   is not stretch -- it is required by the proof component and lands as
   D3.
+- D7 (junction scope, corrected at implementation start): junction
+  entities are excluded from inline RLS this task. The
+  =sql_schema_domain_entity_drop= archetype is =domain_entity=-only and
+  no junction drop emission exists anywhere (no =*_drop.sql= file for
+  junctions on disk), so an inline junction policy trailer would
+  create a policy with no generated drop to remove it. Junction RLS
+  waits on a junction drop archetype; recorded in Notes, not done
+  here.
 
 ** Staging
 
 1. Feature catalogue + namespace + org_loader rows for the three new
    features; tangle; codegen pytest suite.
 2. Template change: policy trailer block (create) + policy drop block
-   (drop) in the domain-entity and junction create/drop org archetypes,
+   (drop) in the domain-entity org archetypes (junction excluded, D7),
    gated on the declared features; tangle; regen marketdata;
    byte-identical second regen.
 3. Marketdata orgs declare features; delete the two hand RLS files and

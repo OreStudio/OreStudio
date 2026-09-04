@@ -48,6 +48,7 @@ target_link_libraries(${lib_target_name}
         ores.refdata.core.lib
         ores.database.lib
     PRIVATE
+        ores.history.core.lib
         ores.service.lib
         ores.utility.lib
         ores.security.lib

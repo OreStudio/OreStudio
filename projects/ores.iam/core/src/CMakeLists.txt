@@ -53,6 +53,7 @@ target_link_libraries(${lib_target_name}
         ores.workflow.api.lib
         ores.assets.api.lib
     PRIVATE
+        ores.history.core.lib
         ores.iam.client.lib
         ores.service.lib
         ores.utility.lib

@@ -121,11 +121,11 @@ register_gmm_component_event_mapping(ores::eventing::service::postgres_event_sou
 }
 #+end_src
 
-This registrar also has to be *called* somewhere — the [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity
-evaluation checklist]]'s Service-layer criterion calls this out
-specifically: it is hand-maintained with no AUTO-GENERATED marker,
-and easy to miss when commissioning a new entity (party_type and
-~14 other entities silently never fired eventing because of exactly
+This registrar also has to be *called* somewhere — the
+[[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]]'s Service-layer criterion calls
+this out specifically: it is hand-maintained with no AUTO-GENERATED
+marker, and easy to miss when commissioning a new entity (party_type
+and ~14 other entities silently never fired eventing because of exactly
 this miss).
 
 * Paste blocks

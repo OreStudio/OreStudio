@@ -493,9 +493,9 @@ from a proven hand-written entity.
 
 1. *Commission =currency= by hand* — every layer written without generator
    involvement. =currency= is the reference implementation.
-2. *Identify the SRPPs* — the [[id:897A7156-504D-4581-AD4C-026D643C0838][entity evaluation checklist]] formalises what
-   "fully commissioned" means at each layer; patterns identical across all
-   checklist items are extraction candidates.
+2. *Identify the SRPPs* — the [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]]'s
+   per-layer criteria formalise what "fully commissioned" means at each
+   layer; patterns identical across all criteria are extraction candidates.
 3. *Encode each SRPP as a Mustache archetype* parameterised by the entity
    model.
 4. *Register the archetypes* as rows in the facet's Archetypes table in
@@ -564,6 +564,6 @@ as the fitness function.
 
 - [[id:08FBD248-257A-A474-DD43-DB08949978F1][ores.codegen]] — the generator; inputs, templates, addresses, recipes.
 - [[id:FE693595-6693-459B-AD9B-EB7E3ABBBC88][ores.codegen architecture]] — directory layout and template system.
-- [[id:897A7156-504D-4581-AD4C-026D643C0838][ores.refdata entity evaluation checklist]] — the "fully commissioned"
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]] — the "fully commissioned"
   fitness function.
 - [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator]] — the skill that generates all facets of an entity.

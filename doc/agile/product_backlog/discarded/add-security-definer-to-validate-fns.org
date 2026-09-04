@@ -43,8 +43,8 @@ The two gaps are architectural correctness issues: =security definer= +
 manipulated path; the active-rows bootstrap filter prevents a confusing
 "Must be one of: (empty list)" error when a table has only soft-deleted
 historical rows.  Both are now documented as mandatory rules in
-[[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] and as checklist criteria
-in [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]].  The analysis and rationale live in
+[[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] and as criteria in the
+[[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][entity commissioning process reference]].  The analysis and rationale live in
 [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country § Analysis]].
 
 The commissioning pipeline will repair each entity naturally (each
@@ -62,5 +62,5 @@ production before they are commissioned.
 
 - [[id:F0FC905B-6A70-486F-A23F-0064B6A3EE75][Commission: country]] — Analysis section documents the rationale in full
 - [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL: Database Architecture and Conventions]] — canonical rules
-- [[id:897A7156-504D-4581-AD4C-026D643C0838][Domain entity evaluation checklist]] — checklist criteria that ensure future commission stories pick this up
+- [[id:F556E446-EB91-4656-BEDC-15AE0F7B5ECD][Entity commissioning process reference]] — criteria that ensure future commission stories pick this up
 - =sql_schema_create.mustache= — the fixed template (retired since; see [[id:9023BDE0-979F-422F-BC73-985D6A80E7CB][Retire legacy codegen profile system; add junction support to physical-space codegen]])

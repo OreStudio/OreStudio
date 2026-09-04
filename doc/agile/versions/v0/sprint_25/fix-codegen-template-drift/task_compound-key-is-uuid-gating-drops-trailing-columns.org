@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix-codegen-template-drift:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/compound-key-is-uuid-gating-drops-trailing-columns
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
-#+updated: 2026-08-06
-#+environment:
+#+updated: 2026-09-04
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,22 +26,117 @@ cpp_protocol.hpp.mustache and cpp_service.cpp.mustache gate their delete/history
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-06                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-04                               |
 
 * Acceptance
 
--
+- Both org archetypes (=ores.cpp.protocol.protocol_header.org=,
+  =ores.cpp.service.service_impl.org=) iterate
+  =primary_key.columns= in the ={{#domain_entity}}= delete/history/
+  save branches, with per-column =is_uuid= selecting the member name
+  (=ids= for a uuid column) or the emptiness check (=is_nil()= vs
+  =.empty()=), so a compound key whose leading column is uuid no
+  longer drops its trailing key columns from the structs or the
+  validations.
+- The ={{#entity}}= (lookup-entity) delete gate and the
+  ={{#junction}}= section are unchanged: schema primary keys carry no
+  =columns= list (single-column shape only), so the loop form cannot
+  apply there, and the junction section has no primary-key gates.
+- Re-tangling changes only the two mustaches. Regenerating the 8
+  components is idempotent: a second regeneration is byte-identical
+  to the first.
+- The regenerated output is confined to the intended fix: protocol
+  delete/history and service save-single output is byte-identical for
+  every entity (uuid-keyed entities keep the =ids= member and the
+  column-named history member), and the only expected churn is the
+  braces the batch-save validation loop gains in uuid-keyed
+  =*_service.cpp= files (the loop must contain every key column's
+  check; the old uuid shortcut emitted one unbraced =if=).
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- 2026-09-04: task started; surveyed the blast radius. The two
+  templates render only for =domain_entity= models (static mapping
+  =get_cpp_domain_entity_template_mappings= and the physical-space
+  graph agree), except =cpp_protocol.hpp.mustache= also renders for
+  junctions (=ores.cpp.protocol= admits =junction=) and lookup
+  entities (=schema=), firing the mustache's ={{#junction}}= and
+  ={{#entity}}= sections — so all three sections of the protocol
+  mustache are live, one per model kind, and the fix must not touch
+  the two non-domain sections.
+- The is_uuid shortcut lives in exactly four branches across the two
+  orgs: protocol delete request and history request
+  (={{#domain_entity}}=), and service save-single and save-batch
+  validations. The ={{#entity}}= delete branch gates on
+  =primary_key.is_text= instead, with the mirror scalar as fallback;
+  schema (lookup) primary keys carry no =columns= list — the loader
+  produces a single-column dict (=column=/=type=/=is_text=), so a
+  loop form would emit nothing for every lookup entity. That branch
+  stays as-is and is out of scope: schema keys are single-column
+  today and cannot express the compound shape the task repairs.
+- Key census (122 domain-entity orgs across the 8 components): every
+  primary key is a single uuid column (=id=, or =instrument_id= for
+  the trading instrument family), a single text column, or a compound
+  text key (=subject_area='s =name=+=domain_name=). The member-name
+  convention is type-driven for uuid keys — the delete request member
+  is literally =ids= whatever the column name (checked in the
+  generated instrument-family protocol headers), and the handler
+  template reads =req->{{delete_request_id_field}}=, which
+  =core.py= (lines 2411-2413) derives as =ids= for a uuid key — so a
+  column-driven loop would rename the instrument family's delete
+  member to =instrument_ids= and break its generated handlers. The
+  per-column =is_uuid= form keeps =ids= for uuid columns and
+  ={{column}}s= for text columns, matching the derivation layer for
+  every viable shape (uuid-leading compound keys are the only mixed
+  shape the service validation can express today; text-leading keys
+  with a uuid trailing column would already fail the =.empty()= check
+  the old branch emitted).
+- Fix shape per branch, in the org sources only (no core.py change):
+  delete ={{#primary_key.columns}}= loop with per-column ={{#is_uuid}}=
+  emitting =ids= and ={{^is_uuid}}= emitting ={{column}}s=; history
+  plain loop over ={{column}}=; service save-single and save-batch
+  per-column loops with ={{#is_uuid}}.is_nil(){{/is_uuid}}=
+  ={{^is_uuid}}.empty(){{/is_uuid}}= and the per-column
+  =is_identity_group_column= prefix. The batch-save loop takes the
+  braced shape unconditionally (multiple =if= statements in one loop
+  require braces); text-keyed and compound-keyed entities already
+  emit the braced shape, so only uuid-keyed =*_service.cpp= files
+  gain the braces — the intended, visible churn.
+- Baseline regen before the org edit, edit, re-tangle, per-component
+  regen, idempotency check, component drift checks, then close out.
+- 2026-09-04: implementation. The baseline full-ores regeneration
+  dirtied 48 tracked files outside the CI-checked components (dq 24,
+  synthetic 10, qt 9, iam 6, sql 11 file list overlaps, marketdata 1,
+  refdata 1) plus emitted untracked additions (dq eventing integration
+  tests for 9 entities, a monolithic account_party source tree and
+  component stubs under =projects/ores.iam/{include,src,tests}=):
+  =main='s checked-in generated tree does not reproduce from its own
+  templates at full-ores regeneration in the non-CI components, while
+  refdata/reporting/marketdata (the drift-checked three) are clean.
+  All of it reverted or excluded from this PR and recorded here as
+  unrecorded pre-existing drift, input for the per-component drift
+  stories. The org edits themselves changed only the two mustaches on
+  re-tangle (4-file diff: 2 orgs + 2 mustaches).
+- 2026-09-04: regeneration evidence. Regenerating the 8 components
+  after the edit is confined to the intended output: 36 uuid-keyed
+  =*_service.cpp= files gained the braced batch-save loop, and
+  =folder_service.cpp= (synthetic) the same change on top of its
+  recorded include drift, which was reverted out. No
+  =*_protocol.hpp= churned anywhere (protocol delete/history output
+  byte-identical for every entity: uuid keys keep the =ids= member
+  and column-named history member) and no save-single hunk exists in
+  any diff (save-single byte-identical for every entity). Idempotency:
+  three full regenerations; runs 2 and 3 are byte-identical at the
+  content level (full-diff hash 224600e5), run 1 has the identical
+  changed-file set, and the untracked additions are byte-identical
+  across all runs. The verification tree carries exactly the fix
+  diff: 4 template files, 37 service cpps whose every changed line is
+  a batch-save for-loop brace, and the 2 agile docs.
 
 * Notes
 
@@ -69,3 +164,52 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered 2026-09-04 on branch
+=feature/compound-key-is-uuid-gating-drops-trailing-columns=, commit
+28d36860dc.
+
+- Both org sources (=ores.cpp.protocol.protocol_header.org=,
+  =ores.cpp.service.service_impl.org=) iterate =primary_key.columns=
+  in the ={{#domain_entity}}= delete/history/save branches, with
+  per-column =is_uuid= selecting the member name (=ids= for a uuid
+  column, ={{column}}s= for a text column) or the emptiness check
+  (=is_nil()= vs =.empty()=). The ={{#entity}}= delete gate and the
+  ={{#junction}}= section are untouched: schema primary keys carry no
+  =columns= list, and the junction section has no key gates.
+- Re-tangling changed only the two mustaches (4-file diff: the two
+  orgs + the two mustaches). Regenerating the 8 components is
+  idempotent: three full regenerations, runs 2 and 3 byte-identical
+  at the content level (full-diff hash 224600e5), run 1 with the
+  identical changed-file set, and the untracked additions
+  byte-identical across all runs.
+- The regenerated output is confined to the intended churn: 36
+  uuid-keyed =*_service.cpp= files gained the braced batch-save
+  validation loop, and =folder_service.cpp= (synthetic) the same
+  change on top of its recorded include drift, which was reverted
+  out. No =*_protocol.hpp= churned anywhere and no save-single hunk
+  exists in any diff: protocol delete/history and save-single output
+  is byte-identical for every entity.
+- The baseline regeneration (before the edit) dirtied 48 tracked
+  files in the non-CI components plus 42 untracked additions, none
+  of which reproduce from =main='s own templates: unrecorded
+  pre-existing drift (dq/synthetic/qt/iam/sql, plus the recorded
+  marketdata/refdata pair), reverted or excluded from this PR and
+  recorded in the Plan as input for the per-component drift stories.
+  The 42 untracked regen byproducts stay in the working tree
+  (deletion not authorised); they are inert, byte-identical across
+  regenerations, not referenced by any build, and excluded from all
+  commits.
+- Verification (change class: code + ci + docs): site build clean;
+  full system build clean (linux-clang-debug-make); ctest 71/71
+  passed against a recreated database — the CI-equivalent state,
+  because the repository write tests are not repeatable against a
+  persistent database (the first run's =ores.iam.core.tests=
+  duplicate-key failures were the known stale-DB artifact recorded in
+  task 3F3559A2's Result); component drift checks (refdata,
+  reporting, marketdata) clean except the three recorded pre-existing
+  files, which were reverted after the check; ore domain roundtrip
+  report unchanged from its recorded pre-existing state (fidelity
+  gaps against upstream ORE, untouched by this diff).
+
+Acceptance: all four bullets met.

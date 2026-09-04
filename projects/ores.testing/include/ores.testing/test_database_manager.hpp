@@ -26,6 +26,7 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/export.hpp"
 #include <string>
+#include <vector>
 
 namespace ores::testing {
 
@@ -100,6 +101,24 @@ public:
      * @param tenant_id The UUID of the tenant to terminate
      */
     static void terminate_test_tenant(database::context& ctx, const std::string& tenant_id);
+
+    /**
+     * @brief Closes orphaned synthetic OPEN rows in the given tables.
+     *
+     * A test run that aborts can leave its synthetic rows OPEN in the
+     * shared system tenant; the partial unique indexes on OPEN rows then
+     * collide with the next run. The DELETE only matches rows this database
+     * user wrote with change_reason_code 'system.test' and is rewritten by
+     * each table's ON DELETE DO INSTEAD rule into a valid_to close, so it
+     * honours the bitemporal close semantics, is idempotent, and never
+     * touches seed or real-user rows. A failing table is logged and skipped
+     * so an unhealthy database cannot abort the test run.
+     *
+     * @param ctx The database context to use
+     * @param table_names Tables whose orphaned synthetic rows to close
+     */
+    static void close_orphaned_synthetic_rows(database::context& ctx,
+                                              const std::vector<std::string>& table_names);
 
     /**
      * @brief Sets the ORES_TEST_DB_TENANT_ID environment variable.

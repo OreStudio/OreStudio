@@ -27,6 +27,10 @@ namespace ores::testing {
 
 using namespace ores::logging;
 
+void database_lifecycle_listener::register_pre_run_sweep_table(std::string table_name) {
+    pre_run_sweep_tables_.push_back(table_name);
+}
+
 void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& testRunInfo) {
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
@@ -35,6 +39,11 @@ void database_lifecycle_listener::testRunStarting(Catch::TestRunInfo const& test
     try {
         // Create database context
         auto ctx = test_database_manager::make_context();
+
+        // Close OPEN synthetic rows an aborted earlier run left in the
+        // registered tables; partial unique indexes would otherwise collide
+        // with this run.
+        test_database_manager::close_orphaned_synthetic_rows(ctx, pre_run_sweep_tables_);
 
         // Get test suite name from Catch2
         const std::string test_suite_name(testRunInfo.name.data(), testRunInfo.name.size());

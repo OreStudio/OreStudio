@@ -8,7 +8,7 @@
 #+filetags: :close-systemic-codegen-gaps:sprint_25:v0:
 #+owner: marco
 #+branch: feature/codegen-history-provider-registration
-#+pr:
+#+pr: 2010
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
@@ -181,7 +181,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2010][#2010]] | [ores.refdata] Codegen the history-provider registrar wiring |
 
 * Review
 

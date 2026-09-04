@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :test-db-rerun-safety:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/close-test-db-rerun-safety-gap
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-04
 #+updated: 2026-09-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CF4E06FF-CB08-484F-A354-91933CCCC7CD][Shared test database rerun safety]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Root-cause why an aborted fixture-writing suite leaves OPEN rows behind and why 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:CF4E06FF-CB08-484F-A354-91933CCCC7CD][Shared test database rerun safety]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

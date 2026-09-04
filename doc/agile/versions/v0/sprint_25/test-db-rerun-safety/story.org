@@ -8,7 +8,7 @@
 #+filetags: :sprint_25:v0:
 #+created: 2026-09-04
 #+updated: 2026-09-04
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Every ctest and CDash Experimental cycle is rerunnable without manual database s
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -42,7 +42,7 @@ Every ctest and CDash Experimental cycle is rerunnable without manual database s
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:00C324E7-20EA-4675-B8D5-4E4C24D2A6CF][Close the test-db rerun-safety gap]] | BACKLOG | | | An aborted ores.iam.core.tests run leaves OPEN bitemporal rows in the shared per-worktree test database that poison the next run with duplicate-key failures; the gap needs a root-cause write-up and a suite-level or harness-level fix. |
+| [[id:00C324E7-20EA-4675-B8D5-4E4C24D2A6CF][Close the test-db rerun-safety gap]] | STARTED | 2026-09-04 | | An aborted ores.iam.core.tests run leaves OPEN bitemporal rows in the shared per-worktree test database that poison the next run with duplicate-key failures; the gap needs a root-cause write-up and a suite-level or harness-level fix. |
 
 * Decisions
 

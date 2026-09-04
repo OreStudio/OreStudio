@@ -85,7 +85,7 @@ begin
         ('sigma', c.sigma),
         ('initial_rate', c.initial_rate)
     ) as p(parameter_name, parameter_value)
-    join ores_synthetic_yield_curve_process_parameter_definitions_tbl d
+    join ores_synthetic_process_parameter_definitions_tbl d
         on d.tenant_id = ores_utility_system_tenant_id_fn()
        and d.process_type_code = c.process_type
        and d.parameter_name = p.parameter_name

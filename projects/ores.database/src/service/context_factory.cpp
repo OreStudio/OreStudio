@@ -47,9 +47,11 @@ context context_factory::make_context(const configuration& cfg) {
 
     const auto credentials = to_credentials(cfg.database_options);
 
+    // The underlying pool probes fail fast; the retry policy (num_attempts,
+    // wait, backoff shape) is applied by tenant_aware_pool::acquire().
     sqlgen::ConnectionPoolConfig pool_config{.size = cfg.pool_size,
-                                             .num_attempts = cfg.num_attempts,
-                                             .wait_time_in_seconds = cfg.wait_time_in_seconds};
+                                             .num_attempts = 1,
+                                             .wait_time_in_seconds = 0};
 
     auto pool_result = make_connection_pool<context::connection_type>(pool_config, credentials);
 
@@ -57,6 +59,12 @@ context context_factory::make_context(const configuration& cfg) {
         throw db_connection_exception("Failed to create connection pool: " +
                                       std::string(pool_result.error().what()));
     }
+
+    pool_acquire_policy policy{.num_attempts = cfg.num_attempts,
+                               .wait_time_in_seconds = cfg.wait_time_in_seconds,
+                               .strategy = cfg.database_options.pool_backoff == "linear"
+                                               ? pool_backoff_strategy::linear
+                                               : pool_backoff_strategy::exponential};
 
     // Convert string tenant to tenant_id, defaulting to system tenant
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
@@ -73,7 +81,8 @@ context context_factory::make_context(const configuration& cfg) {
               credentials,
               std::move(tenant_id),
               /*actor=*/"",
-              cfg.service_account);
+              cfg.service_account,
+              policy);
 
     BOOST_LOG_SEV(lg(), debug) << "Finished creating context.";
     return r;

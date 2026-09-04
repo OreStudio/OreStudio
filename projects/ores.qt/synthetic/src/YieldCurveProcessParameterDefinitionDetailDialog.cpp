@@ -110,6 +110,18 @@ void YieldCurveProcessParameterDefinitionDetailDialog::setupConnections() {
             &QLineEdit::textChanged,
             this,
             &YieldCurveProcessParameterDefinitionDetailDialog::onCodeChanged);
+    connect(ui_->displayNameEdit,
+            &QLineEdit::textChanged,
+            this,
+            &YieldCurveProcessParameterDefinitionDetailDialog::onFieldChanged);
+    connect(ui_->symbolEdit,
+            &QLineEdit::textChanged,
+            this,
+            &YieldCurveProcessParameterDefinitionDetailDialog::onFieldChanged);
+    connect(ui_->shortLabelEdit,
+            &QLineEdit::textChanged,
+            this,
+            &YieldCurveProcessParameterDefinitionDetailDialog::onFieldChanged);
     connect(ui_->descriptionEdit,
             &QPlainTextEdit::textChanged,
             this,
@@ -172,6 +184,9 @@ void YieldCurveProcessParameterDefinitionDetailDialog::setReadOnly(bool readOnly
     readOnly_ = readOnly;
     ui_->processTypeCodeEdit->setReadOnly(readOnly);
     ui_->parameterNameEdit->setReadOnly(true);
+    ui_->displayNameEdit->setReadOnly(readOnly);
+    ui_->symbolEdit->setReadOnly(readOnly);
+    ui_->shortLabelEdit->setReadOnly(readOnly);
     ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->dataTypeEdit->setReadOnly(readOnly);
     ui_->defaultValueEdit->setReadOnly(readOnly);
@@ -185,6 +200,11 @@ void YieldCurveProcessParameterDefinitionDetailDialog::updateUiFromDefinition() 
     ui_->processTypeCodeEdit->setText(
         QString::fromStdString(parameter_definition_.process_type_code));
     ui_->parameterNameEdit->setText(QString::fromStdString(parameter_definition_.parameter_name));
+    ui_->displayNameEdit->setText(QString::fromStdString(parameter_definition_.display_name));
+    ui_->symbolEdit->setText(parameter_definition_.symbol ?
+                                 QString::fromStdString(*parameter_definition_.symbol) :
+                                 QString{});
+    ui_->shortLabelEdit->setText(QString::fromStdString(parameter_definition_.short_label));
     ui_->descriptionEdit->setPlainText(QString::fromStdString(parameter_definition_.description));
     ui_->dataTypeEdit->setText(QString::fromStdString(parameter_definition_.data_type));
     ui_->defaultValueEdit->setText(QString::number(parameter_definition_.default_value));
@@ -214,6 +234,13 @@ void YieldCurveProcessParameterDefinitionDetailDialog::updateDefinitionFromUi() 
         parameter_definition_.parameter_name =
             ui_->parameterNameEdit->text().trimmed().toStdString();
     }
+    parameter_definition_.display_name = ui_->displayNameEdit->text().trimmed().toStdString();
+    {
+        const auto symbol_str = ui_->symbolEdit->text().trimmed().toStdString();
+        parameter_definition_.symbol =
+            symbol_str.empty() ? std::nullopt : std::optional<std::string>(symbol_str);
+    }
+    parameter_definition_.short_label = ui_->shortLabelEdit->text().trimmed().toStdString();
     parameter_definition_.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     parameter_definition_.data_type = ui_->dataTypeEdit->text().trimmed().toStdString();
     parameter_definition_.default_value = ui_->defaultValueEdit->text().trimmed().toDouble();
@@ -247,10 +274,12 @@ void YieldCurveProcessParameterDefinitionDetailDialog::updateSaveButtonState() {
 bool YieldCurveProcessParameterDefinitionDetailDialog::validateInput() {
     const QString process_type_code_val = ui_->processTypeCodeEdit->text().trimmed();
     const QString parameter_name_val = ui_->parameterNameEdit->text().trimmed();
+    const QString display_name_val = ui_->displayNameEdit->text().trimmed();
+    const QString short_label_val = ui_->shortLabelEdit->text().trimmed();
     const QString data_type_val = ui_->dataTypeEdit->text().trimmed();
 
     return true && !process_type_code_val.isEmpty() && !parameter_name_val.isEmpty() &&
-           !data_type_val.isEmpty();
+           !display_name_val.isEmpty() && !short_label_val.isEmpty() && !data_type_val.isEmpty();
 }
 
 void YieldCurveProcessParameterDefinitionDetailDialog::onSaveClicked() {

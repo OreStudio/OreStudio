@@ -1,0 +1,311 @@
+:PROPERTIES:
+:ID: 795B5273-58CF-40BF-9F01-E83CF82F1891
+:END:
+#+title: Test Scenario: Verify Black-Karasinski IR curve config
+#+description: Verify the Black-Karasinski engine appears in the IR curve config editor's engine combo, shows its four parameter fields with the seeded defaults and bounds, persists them to the child table on save, and drives a live curve preview through the mapping layer, with existing Vasicek configs unaffected.
+#+type: test_scenario
+#+level: s1
+#+filetags: :add_new_stochastic_processes:sprint_25:v0:
+#+target_dialog: IrCurveEditor (embedded in MarketSimulatorWindow) — Menu: Market Data > Synthetic > Market Simulator; toolbar actions New Feed / New IR Curve
+#+created: 2026-08-12
+#+updated: 2026-09-03
+#+environment: eager_maxwell
+#+todo: PENDING | PASSED FAILED
+#+startup: inlineimages
+
+This page documents a test scenario verifying [[id:CDB12DB0-B0FF-4507-B94F-17540F6792B3][Implement Black-Karasinski log-normal short-rate process]] in [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]]. It is filled in with the target dialog and checklist of steps before testing starts; the QA Validation Runner panel rewrites =* Results= in place on save.
+
+* Before you start
+
+- Database recreated 2026-08-25 from the rebased BK head (HEAD
+  40d2f3d82d, schema 0.0.25) — includes the five process types and the
+  23 parameter definitions seeded by PR #1980. Note: =compass db
+  status= reports "stale" because the drift check compares HEAD's
+  committer date (set by the rebase) against the DB's recorded author
+  date of the same commit — the schema is current, this is a false
+  positive.
+- Acme Corporation holding group provisioned 2026-08-25 via =compass
+  shell -f
+  projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores=
+  — all steps completed.
+- The 2026-08-25 run found two defects, both fixed in the build behind
+  this run: (1) the default Curve Template rows seeded display names
+  ("Deposit", "Forward Rate Agreement", "Interest Rate Swap") instead
+  of the refdata instrument codes the preview resolver matches strictly
+  by code (DEPO/FRA/IRS) — the rows now seed the codes, so "curve
+  preview failed: unknown instrument code 'Deposit'" no longer occurs;
+  (2) the Process tab had no Simple/Advanced toggle — the segmented
+  toggle from the FX editor is restored, with Simple mode showing a
+  slider + precise spin per parameter row (see step 4).
+- Services restarted 2026-08-27 with freshly built binaries (=compass
+  services status=: synthetic service up).
+- Database recreated 2026-08-31 (fifth attempt — the 2026-08-28 attempts
+  were killed mid-run by the harness, not by the DB): exit 0, zero
+  errors. Includes the three new parameter-definition label columns
+  (=display_name=, =symbol=, =short_label=) seeded for all 23 rows
+  (codegen-generated DDL, hand-written idempotent populate SQL). Schema
+  0.0.25, drift current, =built from= e01d0af7a7-d (dirty tree under
+  test).
+- SQL schemas validated 2026-08-31: =validate_schemas.sh=, 275 tables,
+  0 warnings.
+- Acme Corporation holding group re-provisioned 2026-08-31 after the
+  recreate — all steps completed (the "Poll failed (1/5)" workflow
+  instance warning was transient; all 4 published datasets completed).
+- Services restarted 2026-08-31 with the build carrying the two fixes
+  under test: exponential backoff on pool acquisition
+  (=tenant_aware_pool=, =--db-pool-backoff=) and the data-driven
+  parameter labels. The 2026-08-31 run proved the backoff fix: the
+  step-6 save completed in ~200 ms with no NATS timeout (the
+  2026-08-27 failure mode) — but the tree still did not show the saved
+  config, because =buildTree()='s folder-less-collection fallback
+  appended FX pairs only and editor-created IR curves carry no
+  =folder_id=. Fixed 2026-08-31 (client build): the fallback now
+  appends IR curves by =config_id=, mirroring the pair loop.
+- The client was rebuilt with that tree fix (plus the parameter-column
+  width fix) and relaunched with this scenario preloaded (System >
+  Testing > Scenario Runner).
+- The 2026-08-31 run left =BK Feature Test= and its saved
+  =USD SOFR= config (sigma 0.02) in the database — with the tree fix
+  they now appear in the tree, so step 7's persistence check can run
+  directly on them. Note: saving a second =USD SOFR= curve under that
+  feed is rejected by the unique index =(party_id, config_id,
+  currency_code, index_family, tenor, role)= (observed 2026-08-31
+  11:36) — delete the leftover config in the tree before re-running
+  steps 3-6.
+
+* Scenario Info
+
+# The QA Validation Runner treats *any* non-empty Clients cell below as
+# "this is a multi-client scenario" and then expects every step nested
+# one level deeper, under a per-client heading (Runner source:
+# QaValidationRunnerWidget.cpp, `multi_client =
+# !find_field_value(*info, "Clients").isEmpty()`). Leave the cell
+# genuinely blank — no placeholder text, not even "(single client)" —
+# for the common single-client case; a non-empty cell here with flat
+# `**` steps (no per-client `**`/`***` nesting) silently loads zero
+# steps. Only put text in it when the scenario truly needs several
+# running client instances at once (e.g. a NATS notification lands on
+# a second instance) — list the instance colours/labels, e.g. "blue,
+# red", and nest every step one level deeper under a `**` heading per
+# client as shown further down.
+
+| Field         | Value                                   |
+|---------------+------------------------------------------|
+| Verifies task | [[id:CDB12DB0-B0FF-4507-B94F-17540F6792B3][Implement Black-Karasinski log-normal short-rate process]] |
+| Parent story  | [[id:C603D702-DE7E-4DA4-8409-6FCB0F64808F][Add new stochastic processes]]   |
+| Target dialog | IrCurveEditor (embedded in MarketSimulatorWindow) — Menu: Market Data > Synthetic > Market Simulator; toolbar actions New Feed / New IR Curve |
+| Clients       |                                          |
+| State         | PENDING                               |
+
+* Steps
+
+Each step is its own heading — the title should be five to seven
+words so it fits on one line in the QA Validation Runner's step list
+without wrapping or truncating (e.g. "Edit and save the record", not
+a full sentence describing the whole operation). The body below the
+title is a bullet-point checklist, not a prose paragraph: give the
+tester every piece of context needed to execute that one step without
+looking anything up elsewhere — what UI state must already exist,
+exactly what to click or type, and exactly what confirms the step
+passed. The panel writes each step's PASS/FAIL/PENDING outcome and
+notes back as a =*** Result= child heading directly under it.
+
+** Log in as tenant admin
+
+- Account: =tenant_admin@acme_corporation=, password:
+  =Secure-Password-123= (from the Acme provisioning script's =login=
+  line).
+- After login, confirm the Acme Corporation party is selected and the
+  main window opens with the menu bar.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Open the Market Simulator
+
+- Menu: Market Data > Synthetic > Market Simulator.
+- The window opens with an empty left tree (no feeds exist yet) and
+  the toolbar (Reload, New Feed, New FX Rate, New IR Curve, Edit,
+  Delete, Start Feed, Stop Feed).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Create a new feed
+
+- Click the =New Feed= toolbar button.
+- Name it =BK Feature Test= and accept.
+- Confirm the feed appears in the left tree.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Start a new IR curve config
+
+- Select the =BK Feature Test= feed in the left tree.
+- Click the =New IR Curve= toolbar button.
+- The IR curve editor opens (Provenance / Instrument / Process /
+  Curve Template tabs).
+- On the Instrument tab: pick Currency =USD=, Index =SOFR= (both
+  combos must populate with reference data); leave Role and Source
+  Name at their defaults.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Select the Black-Karasinski engine
+
+- On the Process tab, open the =Engine:= combo at the top.
+- Confirm the fifth and final entry is =Black-Karasinski= (after
+  Vasicek, Cox-Ingersoll-Ross, Hull-White, Two-Factor Gaussian).
+- Select it — the tooltip shows "Black-Karasinski: d ln r = κ(θ−ln
+  r)dt + σ dW..." and the parameter table reloads with four rows.
+- Confirm the segmented =Simple= / =Advanced= toggle sits to the
+  right of the engine combo (mirrors the FX editor's). Click
+  =Simple=: each parameter row now shows a slider plus a precise
+  spin box (same 6-decimal precision as the Advanced spin). Drag the
+  =sigma= slider — the row's value and the curve-shape preview
+  update together. Toggle back to =Advanced= before continuing.
+- In =Advanced= mode each row's label is the Greek symbol alone — =κ=,
+  =θ=, =σ= — and =initial_rate= shows =Initial short rate= (no
+  symbol). In =Simple= mode the rows show the short layperson labels:
+  =Reversion speed=, =Long-run level=, =Volatility=, =Initial rate=.
+  Hovering a row shows the full description as its tooltip (e.g. "Mean
+  reversion speed of ln r"), which also carries the English name.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Check the four BK parameter fields
+
+- Confirm the parameter table shows exactly: =kappa=, =theta=,
+  =sigma=, =initial_rate=.
+- Confirm the seeded defaults: kappa =0.5=, theta ==-3.218876=
+  (log(0.04), the long-run level of ln r), sigma =0.01=,
+  initial_rate =0.03=.
+- Confirm the spin-box bounds: sigma cannot go below 0; typing 0 into
+  initial_rate clamps to =1e-6= (strictly positive — 0 is not
+  selectable); kappa and theta have no lower bound.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Confirm the live curve preview renders
+
+- On the Process tab, confirm the curve shape chart and the sample
+  paths preview draw a positive short-rate curve that evolves over
+  time — this constructs the engine through the mapping layer
+  (preview request → map_parameters_to_yield_curve_process), so a
+  dispatch or validation failure would show an error banner instead.
+- No error banner is displayed.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PASS |
+
+** Change sigma, save the config
+
+- Set sigma =0.02= (edit the spin box on the sigma row).
+- Click =Save=; enter a change reason if prompted.
+- Confirm the new config appears under =BK Feature Test= in the tree.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | FAIL |
+| Notes  | saved says its successful but reload does not show new config. |
+
+** Reopen and confirm persistence
+
+- Double-click the saved config in the tree (edit mode).
+- On the Process tab confirm the engine is still =Black-Karasinski=
+  and the parameter table shows sigma =0.02= — the value read back
+  from the config's child value rows, not the seeded default (0.01).
+- kappa, theta, initial_rate show their saved values (0.5,
+  -3.218876, 0.03).
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Regression: Vasicek config unaffected
+
+- With the feed still selected, click =New IR Curve= again.
+- Leave the engine at the default =Vasicek=; confirm its four
+  parameters show the Vasicek defaults (theta =0.03=, sigma =0.01=)
+  and its preview renders.
+- Save it with a change reason, then close the editor.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+** Delete both test configs
+
+- Select each config in the tree and click =Delete=, confirming the
+  prompt.
+- Confirm both disappear from the tree and the feed remains.
+
+*** Result
+
+| Field  | Value |
+|--------+-------|
+| Status | PENDING |
+
+* Results
+
+| Field         | Value |
+|---------------+-------|
+| Status        | FAILED |
+| Completed at  | 2026-08-31T10:10:49Z |
+| Branch        | feature/bk-feature-test-scenario |
+| Commit        | e01d0af7a7 |
+| Worktree      | eager_maxwell |
+
+* Notes
+
+- 2026-09-03: Work closed with scenario FAILED; no further runs planned.
+- The 08-31 run's leftover config (3b6576e1, sigma 0.02) was deleted
+  from the database on 2026-09-03 22:36 (bitemporal soft delete). No
+  =BK Feature Test= feed row ever persisted: earlier saves landed under
+  whichever feed node was selected (the leftover sat under 2016 ORE
+  Samples, feed 17470831).
+- Step 6 retested 2026-09-03 by saving a USD/SOFR config under the
+  2016 ORE Samples feed: the save reported no error and persisted
+  (config 69bda1cc, current row, valid_from 22:51:54+01), but a reload
+  does not show the config in the tree — the same symptom as the
+  08-31 run. The data lands correctly; the failure is in the client
+  tree display of editor-created IR curve configs.
+- Steps 7-9 are not executable: step 7 needs the tree item to reopen;
+  step 9's tree delete of an IR curve config is broken client-side
+  (the delete dispatch always sends the FX delete request, which no-ops
+  silently) and that fix is deferred.
+- The underlying IR/FX client defects (delete dispatch, tree/editor
+  duplication, per-asset-class copies) are captured in story E95A3D20
+  (asset-class-agnostic Market Simulator client: shared IR/FX config
+  UX).

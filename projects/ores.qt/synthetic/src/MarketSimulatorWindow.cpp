@@ -987,7 +987,9 @@ void MarketSimulatorWindow::buildTree() {
     // folder_id follow-up note on fx_spot_generation_config's model) --
     // surfaced directly under the tree root so they aren't silently
     // invisible; no FolderIdRole, so start/stop on them falls back to
-    // per-feed enumeration instead of the folder-scoped request.
+    // per-feed enumeration instead of the folder-scoped request. Both asset
+    // classes hang off the collection by config_id -- editor-created rows
+    // have no folder_id, so the folder grouping above never picks them up.
     for (const auto& [feedId, feed] : feeds_) {
         if (collectionsWithFolder.contains(feedId))
             continue;
@@ -1003,6 +1005,12 @@ void MarketSimulatorWindow::buildTree() {
             if (boost::uuids::to_string(fx.config_id) != feedId)
                 continue;
             collectionItem->appendRow(buildFeedItem(fx, imageCache_));
+        }
+
+        for (const auto& [irId, ir] : irCurves_) {
+            if (boost::uuids::to_string(ir.config_id) != feedId)
+                continue;
+            collectionItem->appendRow(buildIrCurveFeedItem(ir, imageCache_));
         }
 
         root->appendRow(collectionItem);

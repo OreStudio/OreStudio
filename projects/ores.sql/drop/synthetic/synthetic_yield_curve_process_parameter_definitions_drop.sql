@@ -18,7 +18,7 @@
  *
  */
 
-drop rule if exists ores_synthetic_yield_curve_process_parameter_definitions_delete_rule on "ores_synthetic_yield_curve_process_parameter_definitions_tbl";
-drop trigger if exists ores_synthetic_yield_curve_process_parameter_definitions_insert_trg on "ores_synthetic_yield_curve_process_parameter_definitions_tbl";
-drop function if exists ores_synthetic_yield_curve_process_parameter_definitions_insert_fn;
-drop table if exists "ores_synthetic_yield_curve_process_parameter_definitions_tbl";
+drop rule if exists ores_synthetic_process_parameter_definitions_delete_rule on "ores_synthetic_process_parameter_definitions_tbl";
+drop trigger if exists ores_synthetic_process_parameter_definitions_insert_trg on "ores_synthetic_process_parameter_definitions_tbl";
+drop function if exists ores_synthetic_process_parameter_definitions_insert_fn;
+drop table if exists "ores_synthetic_process_parameter_definitions_tbl";

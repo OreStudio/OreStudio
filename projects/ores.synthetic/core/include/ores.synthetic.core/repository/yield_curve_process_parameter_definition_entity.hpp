@@ -35,8 +35,7 @@ using db_timestamp = ores::database::repository::db_timestamp;
  */
 struct yield_curve_process_parameter_definition_entity {
     constexpr static const char* schema = "public";
-    constexpr static const char* tablename =
-        "ores_synthetic_yield_curve_process_parameter_definitions_tbl";
+    constexpr static const char* tablename = "ores_synthetic_process_parameter_definitions_tbl";
 
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
@@ -47,6 +46,9 @@ struct yield_curve_process_parameter_definition_entity {
 
     std::string parameter_name;
 
+    std::string display_name;
+    std::optional<std::string> symbol;
+    std::string short_label;
     std::string description;
     std::string data_type = "double";
     double default_value = 0.0;

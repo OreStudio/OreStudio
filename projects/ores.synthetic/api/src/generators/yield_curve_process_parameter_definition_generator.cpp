@@ -45,6 +45,8 @@ generate_synthetic_yield_curve_process_parameter_definition(
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.process_type_code = std::string(faker::word::noun()) + "-" + std::to_string(idx);
     r.parameter_name = std::string(faker::word::noun()) + "-" + std::to_string(idx);
+    r.display_name = std::string(faker::word::noun());
+    r.short_label = std::string(faker::word::noun());
     r.description = std::string(faker::word::noun());
     r.data_type = std::string(faker::word::noun());
     r.default_value = faker::number::decimal(0.0, 0.05);

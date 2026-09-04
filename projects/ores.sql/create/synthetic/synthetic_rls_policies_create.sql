@@ -227,10 +227,10 @@ with check (
 -- Yield curve process parameter definitions (system-tenant reference data;
 -- tenant isolation only, same shape as yield_curve_process_types)
 -- -----------------------------------------------------------------------------
-alter table ores_synthetic_yield_curve_process_parameter_definitions_tbl enable row level security;
+alter table ores_synthetic_process_parameter_definitions_tbl enable row level security;
 
 create policy yield_curve_process_parameter_definitions_tenant_isolation_policy
-on ores_synthetic_yield_curve_process_parameter_definitions_tbl
+on ores_synthetic_process_parameter_definitions_tbl
 for all using (
     tenant_id = ores_iam_current_tenant_id_fn()
 )

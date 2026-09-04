@@ -33,10 +33,12 @@
  * strongly-typed process-parameter structs of ores.analytics.quant
  * (two_factor_gaussian_params, vasicek_params, ...). The
  * (process_type_code, parameter_name) pair uniquely identifies a
- * parameter; the description field is the rich user-facing text shown
- * in the Qt parameter table explaining what the parameter means, and
- * min_value/max_value (NULL = unbounded) plus default_value drive
- * the dialog's spin-box ranges and pre-fill.
+ * parameter; four fields drive the Qt parameter table: display_name
+ * (the English name), symbol (the Greek letter, where one is
+ * conventional), short_label (the layperson name shown in Simple
+ * mode) and description (the rich tooltip text). min_value/
+ * max_value (NULL = unbounded) plus default_value drive the
+ * dialog's spin-box ranges and pre-fill.
  *
  * Why this exists as a table rather than hardcoded structs: it makes the
  * parameter vocabulary queryable and extensible -- adding a new model or
@@ -47,12 +49,15 @@
  * edit definitions, only the values of their own configs.
  */
 
-create table if not exists "ores_synthetic_yield_curve_process_parameter_definitions_tbl" (
+create table if not exists "ores_synthetic_process_parameter_definitions_tbl" (
     "id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "process_type_code" text not null,
     "parameter_name" text not null,
+    "display_name" text not null,
+    "symbol" text null,
+    "short_label" text not null,
     "description" text not null,
     "data_type" text not null,
     "default_value" double precision not null,
@@ -79,23 +84,23 @@ create table if not exists "ores_synthetic_yield_curve_process_parameter_definit
 
 -- Composite natural key: unique combination for active records
 create unique index if not exists yield_curve_process_parameter_definitions_process_type_code_parameter_name_uniq_idx
-on "ores_synthetic_yield_curve_process_parameter_definitions_tbl" (tenant_id, process_type_code, parameter_name)
+on "ores_synthetic_process_parameter_definitions_tbl" (tenant_id, process_type_code, parameter_name)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists yield_curve_process_parameter_definitions_version_uniq_idx
-on "ores_synthetic_yield_curve_process_parameter_definitions_tbl" (tenant_id, id, version)
+on "ores_synthetic_process_parameter_definitions_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists yield_curve_process_parameter_definitions_id_uniq_idx
-on "ores_synthetic_yield_curve_process_parameter_definitions_tbl" (tenant_id, id)
+on "ores_synthetic_process_parameter_definitions_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists yield_curve_process_parameter_definitions_tenant_idx
-on "ores_synthetic_yield_curve_process_parameter_definitions_tbl" (tenant_id)
+on "ores_synthetic_process_parameter_definitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create or replace function ores_synthetic_yield_curve_process_parameter_definitions_insert_fn()
+create or replace function ores_synthetic_process_parameter_definitions_insert_fn()
 returns trigger as $$
 declare
     current_version integer;
@@ -111,7 +116,7 @@ begin
 
     -- Version management
     select version into current_version
-    from "ores_synthetic_yield_curve_process_parameter_definitions_tbl"
+    from "ores_synthetic_process_parameter_definitions_tbl"
     where tenant_id = NEW.tenant_id
       and id = NEW.id
       and valid_to = ores_utility_infinity_timestamp_fn()
@@ -129,7 +134,7 @@ begin
         -- multi-write to this row (e.g. a composite entity's parent
         -- touched twice by two different children in one transaction)
         -- would collide with itself. clock_timestamp() always advances.
-        update "ores_synthetic_yield_curve_process_parameter_definitions_tbl"
+        update "ores_synthetic_process_parameter_definitions_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
@@ -148,13 +153,13 @@ begin
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
 
-create or replace trigger ores_synthetic_yield_curve_process_parameter_definitions_insert_trg
-before insert on "ores_synthetic_yield_curve_process_parameter_definitions_tbl"
-for each row execute function ores_synthetic_yield_curve_process_parameter_definitions_insert_fn();
+create or replace trigger ores_synthetic_process_parameter_definitions_insert_trg
+before insert on "ores_synthetic_process_parameter_definitions_tbl"
+for each row execute function ores_synthetic_process_parameter_definitions_insert_fn();
 
-create or replace rule ores_synthetic_yield_curve_process_parameter_definitions_delete_rule as
-on delete to "ores_synthetic_yield_curve_process_parameter_definitions_tbl" do instead (
-    update "ores_synthetic_yield_curve_process_parameter_definitions_tbl"
+create or replace rule ores_synthetic_process_parameter_definitions_delete_rule as
+on delete to "ores_synthetic_process_parameter_definitions_tbl" do instead (
+    update "ores_synthetic_process_parameter_definitions_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
@@ -180,7 +185,7 @@ begin
 
     -- Allow pass-through during bootstrap (no active rows for system tenant).
     if not exists (
-        select 1 from ores_synthetic_yield_curve_process_parameter_definitions_tbl
+        select 1 from ores_synthetic_process_parameter_definitions_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
@@ -189,14 +194,14 @@ begin
 
     -- Validate against reference data
     if not exists (
-        select 1 from ores_synthetic_yield_curve_process_parameter_definitions_tbl
+        select 1 from ores_synthetic_process_parameter_definitions_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and id = p_value
           and valid_to = ores_utility_infinity_timestamp_fn()
     ) then
         raise exception 'Invalid yield_curve_process_parameter_definition: %. Must be one of: %', p_value, (
             select string_agg(id::text, ', ' order by display_order)
-            from ores_synthetic_yield_curve_process_parameter_definitions_tbl
+            from ores_synthetic_process_parameter_definitions_tbl
             where tenant_id = ores_utility_system_tenant_id_fn()
               and valid_to = ores_utility_infinity_timestamp_fn()
         ) using errcode = '23503';

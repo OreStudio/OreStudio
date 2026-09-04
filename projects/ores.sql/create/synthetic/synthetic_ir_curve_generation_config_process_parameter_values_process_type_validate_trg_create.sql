@@ -47,7 +47,7 @@ declare
 begin
     -- Resolve the process type of the referenced parameter definition.
     select "process_type_code" into v_definition_process_type
-    from "ores_synthetic_yield_curve_process_parameter_definitions_tbl"
+    from "ores_synthetic_process_parameter_definitions_tbl"
     where tenant_id = ores_utility_system_tenant_id_fn()
       and id = NEW.parameter_definition_id
       and valid_to = ores_utility_infinity_timestamp_fn();

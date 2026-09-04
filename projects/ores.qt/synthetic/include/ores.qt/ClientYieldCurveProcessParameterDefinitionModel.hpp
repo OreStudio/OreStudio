@@ -57,6 +57,9 @@ public:
     enum Column {
         ProcessTypeCode,
         ParameterName,
+        DisplayName,
+        Symbol,
+        ShortLabel,
         Description,
         DataType,
         DefaultValue,

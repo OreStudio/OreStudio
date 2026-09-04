@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :postgresql:database:architecture:knowledge:
 #+created: 2026-06-03
-#+updated: 2026-06-25
+#+updated: 2026-08-27
 
 ORE Studio uses PostgreSQL as its sole persistent store.  All services
 read and write through a shared database, each with a strictly scoped
@@ -92,6 +92,33 @@ SELECT set_config('app.current_party_id', '<uuid>', false);
 it, PostgreSQL uses the server's local timezone and returns
 =TIMESTAMPTZ= values with local offsets rather than =+00=.  All C++
 timestamp parsing assumes UTC.
+
+** Connection acquisition: retry with backoff
+
+Every service holds a small per-service connection pool (default 2
+connections, tuned per service via =--db-pool-size= /
+=ORES_<APP>_DB_POOL_SIZE=).  When every connection is in use, an
+acquire waits and retries instead of failing immediately:
+
+- =num_attempts= (default 10) bounds the retries.  After the last
+  attempt the acquire fails with "No available connections in the
+  pool."
+- Between attempts the waiter sleeps.  The default strategy is
+  =exponential=: the base =wait_time_in_seconds= (default 1) doubles
+  per attempt, capped at 10 seconds, plus a small deterministic
+  per-thread jitter so waiting threads do not re-probe in lockstep.
+  The =linear= strategy waits the fixed interval per attempt — the
+  historical behavior, available for environments that need it.
+- The strategy is chosen per service: =--db-pool-backoff
+  <exponential|linear>= / =ORES_<APP>_DB_POOL_BACKOFF=, default
+  =exponential=.
+
+The wait policy lives in common code (=ores.database=,
+=tenant_aware_pool::acquire()=); the underlying sqlgen pool is
+configured to fail fast, and the project-side loop owns the backoff.
+Writes therefore serialize naturally on the pool under contention:
+waiters queue politely and each eventually acquires, rather than one
+failing while others proceed.
 
 * Bitemporal design
 

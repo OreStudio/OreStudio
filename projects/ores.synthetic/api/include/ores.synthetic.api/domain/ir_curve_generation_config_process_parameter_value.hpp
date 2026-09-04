@@ -78,9 +78,9 @@ struct ir_curve_generation_config_process_parameter_value final {
 
     /**
      * @brief The yield_curve_process_parameter_definition this value instantiates (soft FK to
-     * ores_synthetic_yield_curve_process_parameter_definitions_tbl, validated via the generated
-     * validation function). The definition supplies the parameter's name, description and
-     * validation bounds; only the value itself lives here.
+     * ores_synthetic_process_parameter_definitions_tbl, validated via the generated validation
+     * function). The definition supplies the parameter's name, description and validation bounds;
+     * only the value itself lives here.
      */
     boost::uuids::uuid parameter_definition_id;
 

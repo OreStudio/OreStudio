@@ -43,6 +43,9 @@ yield_curve_process_parameter_definition_mapper::map(
 
     r.parameter_name = v.parameter_name;
 
+    r.display_name = v.display_name;
+    r.symbol = v.symbol;
+    r.short_label = v.short_label;
     r.description = v.description;
     r.data_type = v.data_type;
     r.default_value = v.default_value;
@@ -74,6 +77,9 @@ yield_curve_process_parameter_definition_mapper::map(
 
     r.parameter_name = v.parameter_name;
 
+    r.display_name = v.display_name;
+    r.symbol = v.symbol;
+    r.short_label = v.short_label;
     r.description = v.description;
     r.data_type = v.data_type;
     r.default_value = v.default_value;

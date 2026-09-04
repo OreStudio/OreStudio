@@ -32,6 +32,7 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPointer>
 #include <QSpinBox>
 #include <QTabWidget>
 #include <QVBoxLayout>
@@ -39,9 +40,12 @@
 #include <string>
 #include <vector>
 
+class QButtonGroup;
 class QDoubleSpinBox;
 class QPushButton;
 class QRadioButton;
+class QSlider;
+class QStackedWidget;
 class QTableWidget;
 
 namespace ores::qt {
@@ -116,9 +120,7 @@ protected:
     QWidget* provenanceTab() const override {
         return provenanceTab_;
     }
-    ProvenanceWidget* provenanceWidget() const override {
-        return provenanceWidget_;
-    }
+    ProvenanceWidget* provenanceWidget() const override;
 
 private slots:
     void onSaveClicked();
@@ -175,6 +177,17 @@ private:
     // preview charts' setParameters() and the mapping layer consume.
     [[nodiscard]] std::vector<ores::synthetic::messaging::parameter_spec> currentParameters() const;
 
+    // Simple/Advanced split, mirroring FxSpotRateEditor's: both pages edit the same
+    // definitions-driven parameter set, with the Advanced page's spins as the single source of
+    // truth (currentParameters() and the save path read them). The Simple page is a per-row
+    // slider + precise spin combo, rebuilt from the Advanced page whenever it becomes visible.
+    QWidget* buildSimpleParameterPage();
+    void rebuildSimpleParameterTable();
+    void onModeChanged();
+    void syncSimpleRowToAdvanced(int row, double value);
+    [[nodiscard]] QSlider* simpleSliderAt(int row) const;
+    [[nodiscard]] QDoubleSpinBox* simpleSpinAt(int row) const;
+
     ClientManager* clientManager_;
     ImageCache* imageCache_;
     QString username_;
@@ -187,61 +200,73 @@ private:
     std::vector<TemplateRow> entries_;
 
     // Tabs.
-    QTabWidget* tabWidget_;
-    QWidget* provenanceTab_;
-    ProvenanceWidget* provenanceWidget_;
+    QPointer<QTabWidget> tabWidget_;
+    QPointer<QWidget> provenanceTab_;
+    QPointer<ProvenanceWidget> provenanceWidget_;
 
     // Instrument tab.
-    QComboBox* currencyCombo_;
-    QComboBox* indexNameCombo_;
-    QComboBox* roleCombo_;
-    QLabel* oreKeyLabel_;
-    QComboBox* fixedLegFrequencyCombo_;
-    QCheckBox* enabledCheck_;
-    QSpinBox* secondsSpin_;
-    QLineEdit* sourceNameEdit_;
+    QPointer<QComboBox> currencyCombo_;
+    QPointer<QComboBox> indexNameCombo_;
+    QPointer<QComboBox> roleCombo_;
+    QPointer<QLabel> oreKeyLabel_;
+    QPointer<QComboBox> fixedLegFrequencyCombo_;
+    QPointer<QCheckBox> enabledCheck_;
+    QPointer<QSpinBox> secondsSpin_;
+    QPointer<QLineEdit> sourceNameEdit_;
     // Price source: mirrors FxSpotRateEditor's own radio-group pattern (see its header's
     // priceSourceGroup_ comment). Checking "Vintage" makes vintageSourceEdit_/vintageDateEdit_
     // authoritative and disables the Process tab's initial-rate parameter row (initialRateSpin_),
     // since the starting rate is then resolved server-side from a real DEPOSIT-tenor observation
     // -- see ir_curve_generation_config.price_source.
-    QRadioButton* fixedRadio_;
-    QRadioButton* vintageRadio_;
-    QButtonGroup* priceSourceGroup_;
-    QLineEdit* vintageSourceEdit_;
-    QLineEdit* vintageDateEdit_;
-    QPushButton* browseVintageButton_;
+    QPointer<QRadioButton> fixedRadio_;
+    QPointer<QRadioButton> vintageRadio_;
+    QPointer<QButtonGroup> priceSourceGroup_;
+    QPointer<QLineEdit> vintageSourceEdit_;
+    QPointer<QLineEdit> vintageDateEdit_;
+    QPointer<QPushButton> browseVintageButton_;
 
     // Process tab.
-    QComboBox* engineCombo_;
+    QPointer<QComboBox> engineCombo_;
+    // Segmented Simple/Advanced toggle (mirrors FxSpotRateEditor's) driving modeStack_: id 0 =
+    // Simple page (slider + precise spin per parameter row), id 1 = Advanced page (the parameter
+    // table below). Both pages edit the same definitions-driven set; the Advanced page's spins
+    // stay the single source of truth (see onModeChanged()).
+    QPointer<QButtonGroup> modeGroup_;
+    QPointer<QStackedWidget> modeStack_;
     // One table row per yield_curve_process_parameter_definition for the selected engine:
     // read-only parameter name/description (column 0) + a QDoubleSpinBox per value row (column
     // 1), the spin's range clamped to the definition's min/max and its value seeded from the
     // config's value row (edit mode) or the definition's default_value. Rebuilt by
-    // populateParameterRows() whenever the engine changes -- the single editing surface, precise
-    // entry included, so there is no Simple/Advanced split to keep in sync with a dynamic
-    // parameter set (4 rows for the one-factor engines, 7 for Two-Factor Gaussian).
-    QTableWidget* parameterTable_;
+    // populateParameterRows() whenever the engine changes (4 rows for the one-factor engines, 7
+    // for Two-Factor Gaussian).
+    QPointer<QTableWidget> parameterTable_;
+    // Simple-mode page (modeStack_ index 0): same 2-column shape as the Advanced table, but each
+    // value cell is a slider + precise spin combo. Slider ranges are derived from the
+    // definition's bounds, falling back to a window around the current value when unbounded so
+    // the slider stays usable (the Advanced spin remains the exact-entry surface for extremes).
+    // Rebuilt by rebuildSimpleParameterTable() whenever the Advanced table is rebuilt or the
+    // Simple page becomes visible.
+    QPointer<QTableWidget> simpleParameterTable_;
     // The initial_rate spin box, looked up when the table is rebuilt -- the one parameter the
     // vintage price source overrides server-side, so its editor control is disabled in vintage
     // mode (see updatePriceSourceEnablement()).
-    QDoubleSpinBox* initialRateSpin_;
-    QLabel* parametersLoadingLabel_;
+    QPointer<QDoubleSpinBox> initialRateSpin_;
+    QPointer<QLabel> parametersLoadingLabel_;
     std::vector<synthetic::domain::yield_curve_process_parameter_definition>
         parameterDefinitions_; // current engine's, sorted by display_order
     std::vector<synthetic::domain::ir_curve_generation_config_process_parameter_value>
         valueRows_; // the config's existing value rows (edit mode): seeds the table's spins, and
                     // save compares against them to find stale rows for deletion
-    SampleShortRatePathsChart* pathsChart_;
-    CurveShapePreviewChart* shapeChart_;
+    QPointer<SampleShortRatePathsChart> pathsChart_;
+    QPointer<CurveShapePreviewChart> shapeChart_;
 
     // Curve Template tab.
-    QTableWidget* templateTable_;
-    QPushButton* addRowBtn_;
-    QPushButton* removeRowBtn_;
-    QPushButton* moveUpBtn_;
-    QPushButton* moveDownBtn_;
-    QLabel* templateWarningLabel_;
+    QPointer<QTableWidget> templateTable_;
+    QPointer<QPushButton> addRowBtn_;
+    QPointer<QPushButton> removeRowBtn_;
+    QPointer<QPushButton> moveUpBtn_;
+    QPointer<QPushButton> moveDownBtn_;
+    QPointer<QLabel> templateWarningLabel_;
 
     std::vector<std::string> knownCurrencyCodes_;
     // Full floating_index_type codes (e.g. "USD-SOFR") -- overnight-style only (two "-"-delimited

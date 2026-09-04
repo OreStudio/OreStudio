@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: BF4994FE-002B-41C5-9AEE-2256C60D8163
+:END:
+#+title: Restart services after rebuild before provisioning
+#+description: Provisioning against services started before a rebuild fails with poll parse errors from stale binaries; restart services after the build.
+#+type: capture
+#+level: cross
+#+filetags: :devops:provisioning:environment:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+During the 2026-08-25 Acme re-provisioning of the eager_maxwell
+environment, the provisioning script's final step =bundles publish
+risk_management --wait= aborted after 5 consecutive poll failures:
+"Field named 'status' not found" (also =error=, =step_count=,
+=current_step_index=). Root cause: the services were started *before*
+the rebuild finished, so the running =ores.workflow= binary was ~5
+days old — its =get_workflow_steps_response= JSON lacked the fields
+the current shell's =fetch_steps()= parser requires
+(projects/ores.shell/src/app/commands/workflow_commands.cpp, protocol
+in projects/ores.workflow/api/include/ores.workflow.api/messaging/workflow_query_protocol.hpp).
+The dispatched workflow itself completed all 4 steps; verified via
+=workflow steps= after restarting services with fresh binaries. The
+=--wait= poll treats parse errors as transient (5 tolerated), then
+aborts the script — the wrong diagnosis would be a provisioning or
+schema bug.
+
+* Why
+
+A provisioning failure mid-flow costs real minutes and the parse-error
+signature is cryptic: it looks like schema drift or a protocol bug
+when it is actually binary staleness. Nothing enforces the correct
+ordering today — the feature-test recipe builds first, but
+=compass services start= happily launches stale binaries from the
+previous build. Options: (a) a pre-flight check in =services start=
+that warns (or fails) when the publish/bin timestamps predate the
+current build; (b) an explicit "rebuild then restart services then
+provision" note in the ready-up recipe; (c) a =compass provision=
+command that restarts services itself.
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+- projects/ores.shell/scripts/library/provisioning/how_do_i_provision_the_system_with_acme_corporation_holding_group.ores
+- projects/ores.shell/src/app/commands/workflow_commands.cpp — =wait_for_instance()=, =fetch_steps()=
+- projects/ores.workflow/api/include/ores.workflow.api/messaging/workflow_query_protocol.hpp — =get_workflow_steps_response=
+
+* See also
+
+-

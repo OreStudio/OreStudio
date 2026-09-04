@@ -107,9 +107,9 @@ begin
             using errcode = '23503';
     end if;
 
-    -- Validate parameter_definition_id (soft FK to ores_synthetic_yield_curve_process_parameter_definitions_tbl)
+    -- Validate parameter_definition_id (soft FK to ores_synthetic_process_parameter_definitions_tbl)
     if not exists (
-        select 1 from ores_synthetic_yield_curve_process_parameter_definitions_tbl
+        select 1 from ores_synthetic_process_parameter_definitions_tbl
         where tenant_id = ores_utility_system_tenant_id_fn()
           and id = NEW.parameter_definition_id
           and valid_to = ores_utility_infinity_timestamp_fn()

@@ -25,14 +25,50 @@
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <cstddef>
+#include <functional>
 #include <mutex>
 #include <optional>
 #include <sqlgen/ConnectionPool.hpp>
 #include <sqlgen/postgres.hpp>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace ores::database {
+
+/**
+ * @brief How long to wait between connection-acquisition attempts.
+ *
+ * Linear waits a fixed interval between attempts (the historical sqlgen
+ * behaviour). Exponential doubles the interval per attempt, bounded by an
+ * internal cap, so sustained contention is absorbed politely while a freed
+ * connection is still discovered promptly.
+ */
+enum class pool_backoff_strategy {
+    linear,
+    exponential
+};
+
+/**
+ * @brief Retry policy for acquiring a connection from the pool.
+ *
+ * The tenant-aware pool probes the underlying pool (configured to fail fast)
+ * and retries up to @c num_attempts times, sleeping between attempts. The
+ * retry limit is bounded: after the last attempt the acquisition fails with
+ * the usual "No available connections in the pool." error.
+ */
+struct pool_acquire_policy {
+    /// Maximum number of acquisition attempts.
+    std::size_t num_attempts = 10;
+    /// Base wait between attempts, in seconds.
+    std::size_t wait_time_in_seconds = 1;
+    /// Wait shape between attempts.
+    pool_backoff_strategy strategy = pool_backoff_strategy::exponential;
+};
 
 /**
  * @brief A connection pool wrapper that sets tenant and party context on acquire.
@@ -65,11 +101,14 @@ public:
                       sqlgen::postgres::Credentials credentials,
                       utility::uuid::tenant_id tenant_id,
                       std::string actor = "",
-                      std::string service_account = "")
+                      std::string service_account = "",
+                      pool_acquire_policy policy = {})
         : pool_(std::move(pool))
         , credentials_(std::move(credentials))
         , pool_size_(pool_.size())
+        , policy_(std::move(policy))
         , reconnect_mutex_(std::make_shared<std::mutex>())
+        , pool_generation_(std::make_shared<std::atomic<std::size_t>>(0))
         , tenant_id_(std::move(tenant_id))
         , actor_(std::move(actor))
         , service_account_(std::move(service_account)) {}
@@ -83,11 +122,14 @@ public:
                       boost::uuids::uuid party_id,
                       std::vector<boost::uuids::uuid> visible_party_ids,
                       std::string actor = "",
-                      std::string service_account = "")
+                      std::string service_account = "",
+                      pool_acquire_policy policy = {})
         : pool_(std::move(pool))
         , credentials_(std::move(credentials))
         , pool_size_(pool_.size())
+        , policy_(std::move(policy))
         , reconnect_mutex_(std::make_shared<std::mutex>())
+        , pool_generation_(std::make_shared<std::atomic<std::size_t>>(0))
         , tenant_id_(std::move(tenant_id))
         , party_id_(party_id)
         , visible_party_ids_(std::move(visible_party_ids))
@@ -98,16 +140,21 @@ public:
      * @brief Acquires a session and sets the tenant (and party) context.
      *
      * If the probing ROLLBACK fails (dead connection after a DB restart), the
-     * entire pool is rebuilt from the stored credentials and the acquire is
-     * retried once.
+     * entire pool is rebuilt from the stored credentials under the backoff
+     * policy and the acquire is retried.
      */
     sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> acquire() noexcept {
         using namespace ores::logging;
 
-        auto session_result = pool_.acquire();
+        auto session_result = acquire_with_backoff();
         if (!session_result) {
             return session_result;
         }
+
+        // The generation of the pool this session was acquired from; the
+        // rebuild path uses it to skip re-making when another thread already
+        // replaced the pool.
+        const auto pool_generation_at_start = pool_generation_->load(std::memory_order_relaxed);
 
         // Speculatively rollback any aborted transaction left by a previous
         // failed operation. PostgreSQL accepts ROLLBACK even when no
@@ -126,28 +173,50 @@ public:
         if (needs_rebuild) {
             BOOST_LOG_SEV(lg(), warn) << "Pool connection dead (ROLLBACK failed: " << rollback_error
                                       << "). Rebuilding pool...";
-            // Drop session so the connection flag is released before we
-            // replace the pool (avoids use-after-free of the old pool entry).
-            session_result = pool_.acquire(); // re-acquire to replace below
-            {
-                std::lock_guard lock(*reconnect_mutex_);
-                sqlgen::ConnectionPoolConfig cfg{
-                    .size = pool_size_, .num_attempts = 3, .wait_time_in_seconds = 1};
-                auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
-                if (new_pool) {
+            // The mutex guards each make attempt and the pool swap only; the
+            // backoff waits between attempts happen outside it, so threads
+            // queueing behind a rebuild are not blocked for the whole budget.
+            // Probe mode: the backoff policy governs the rebuild attempts, so
+            // a database still restarting is absorbed instead of failing on
+            // the first refused connection.
+            sqlgen::ConnectionPoolConfig cfg{
+                .size = pool_size_, .num_attempts = 1, .wait_time_in_seconds = 0};
+            std::string rebuild_error;
+            const bool rebuilt = retry_probe(
+                [&]() {
+                    std::lock_guard lock(*reconnect_mutex_);
+                    // Another thread already replaced the dead pool while this
+                    // one waited; nothing to rebuild.
+                    if (pool_generation_->load(std::memory_order_relaxed) != pool_generation_at_start)
+                        return true;
+                    auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
+                    if (!new_pool) {
+                        rebuild_error = new_pool.error().what();
+                        return false;
+                    }
+                    // Sessions co-own their connection and in-use flag, so the
+                    // swap is safe while the dead session is still outstanding.
                     pool_ = std::move(*new_pool);
+                    pool_generation_->fetch_add(1, std::memory_order_relaxed);
                     BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
-                } else {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Pool rebuild failed: " << new_pool.error().what();
-                    return sqlgen::error("Pool rebuild failed: " +
-                                         std::string(new_pool.error().what()));
-                }
+                    return true;
+                },
+                [&](std::size_t attempt) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Pool rebuild attempt " << attempt << " of " << policy_.num_attempts
+                        << " failed: " << rebuild_error;
+                });
+            if (!rebuilt) {
+                BOOST_LOG_SEV(lg(), error) << "Pool rebuild failed: " << rebuild_error;
+                return sqlgen::error("Pool rebuild failed: " + rebuild_error);
             }
-            session_result = pool_.acquire();
+            session_result = acquire_with_backoff();
             if (!session_result)
                 return session_result;
-            (*session_result)->execute("ROLLBACK"); // best-effort on fresh conn
+            // Best-effort: roll back any aborted transaction on the fresh
+            // connection. PostgreSQL accepts ROLLBACK when no transaction is
+            // active, so this is always safe.
+            (*session_result)->execute("ROLLBACK");
         }
 
         // Force UTC for all timestamp operations on this connection.
@@ -297,10 +366,103 @@ public:
     }
 
 private:
+    /**
+     * @brief Runs a fail-fast probe until it succeeds or the policy
+     * budget is exhausted.
+     *
+     * The first probe runs immediately; after each failure @c on_failure
+     * runs so the caller can log the probe's own failure detail, then
+     * the wait before the next probe follows the policy (linear or
+     * exponential, with per-thread jitter). The first wait logs at warn
+     * level, later waits at debug level.
+     *
+     * @return true when a probe succeeded.
+     */
+    template <typename Probe, typename OnFailure>
+    bool retry_probe(Probe&& probe, OnFailure&& on_failure) noexcept {
+        using namespace ores::logging;
+        bool ok = probe();
+        for (std::size_t attempt = 1; !ok && attempt < policy_.num_attempts; ++attempt) {
+            on_failure(attempt);
+            std::this_thread::sleep_for(backoff_delay(attempt, policy_));
+            if (attempt == 1)
+                BOOST_LOG_SEV(lg(), warn)
+                    << "No available database connections in the pool; waiting with "
+                    << (policy_.strategy == pool_backoff_strategy::exponential
+                            ? "exponential"
+                            : "linear")
+                    << " backoff (attempt " << (attempt + 1) << " of " << policy_.num_attempts
+                    << ")";
+            else
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Still waiting for a database connection (attempt " << (attempt + 1)
+                    << " of " << policy_.num_attempts << ")";
+            ok = probe();
+        }
+        return ok;
+    }
+
+    /**
+     * @brief retry_probe without a per-failure callback.
+     */
+    template <typename Probe>
+    bool retry_probe(Probe&& probe) noexcept {
+        return retry_probe(probe, [](std::size_t) {});
+    }
+
+    /**
+     * @brief Probes the pool until a connection is free or the policy
+     * budget is exhausted.
+     *
+     * The underlying pool is configured to fail fast; the retry policy
+     * lives here. The last probe's outcome is returned, whether a
+     * success or the error that exhausted the budget.
+     */
+    [[nodiscard]] sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>>
+    acquire_with_backoff() noexcept {
+        sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> session_result =
+            sqlgen::error("No available connections in the pool.");
+        retry_probe([&]() {
+            session_result = pool_.acquire();
+            return static_cast<bool>(session_result);
+        });
+        return session_result;
+    }
+
+    /**
+     * @brief Sleep duration before the given acquisition attempt.
+     *
+     * Linear waits a fixed interval per attempt. Exponential doubles the
+     * interval per attempt, capped at 10 seconds, so the wait is absorbed
+     * politely under sustained contention while a freed connection is still
+     * discovered promptly. A small deterministic per-thread jitter spreads
+     * waiting threads so they do not re-probe in lockstep.
+     */
+    [[nodiscard]] static std::chrono::milliseconds backoff_delay(
+        std::size_t attempt, const pool_acquire_policy& policy) noexcept {
+        constexpr auto max_delay = std::chrono::milliseconds(10'000);
+        auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::seconds(policy.wait_time_in_seconds));
+        if (policy.strategy == pool_backoff_strategy::exponential &&
+            delay > std::chrono::milliseconds::zero()) {
+            for (std::size_t i = 1; i < attempt; ++i)
+                delay = std::min(max_delay, delay * 2);
+        }
+        const auto tid = std::hash<std::thread::id>{}(std::this_thread::get_id());
+        const auto jitter = std::chrono::milliseconds(static_cast<long long>(tid % 201) - 100);
+        delay += jitter;
+        if (delay < std::chrono::milliseconds(1))
+            delay = std::chrono::milliseconds(1);
+        return delay;
+    }
+
     sqlgen::ConnectionPool<Connection> pool_;
     sqlgen::postgres::Credentials credentials_;
     std::size_t pool_size_;
+    pool_acquire_policy policy_;
     std::shared_ptr<std::mutex> reconnect_mutex_;
+    /// Bumped on each rebuild; shared so copies of this pool share it.
+    std::shared_ptr<std::atomic<std::size_t>> pool_generation_;
     utility::uuid::tenant_id tenant_id_;
     std::optional<boost::uuids::uuid> party_id_;
     std::vector<boost::uuids::uuid> visible_party_ids_;

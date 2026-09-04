@@ -11,7 +11,7 @@
 #+entity_title: Yield Curve Process Parameter Definition
 #+brief: Reference data: named parameters each yield curve process type accepts.
 #+created: 2026-08-08
-#+updated: 2026-08-08
+#+updated: 2026-08-25
 
 Reference data table describing, per =yield_curve_process_type=, the
 named parameters that process accepts and their validation bounds. This
@@ -22,10 +22,12 @@ definition, and the mapping layer materialises those rows into the
 strongly-typed process-parameter structs of =ores.analytics.quant=
 (=two_factor_gaussian_params=, =vasicek_params=, ...). The
 =(process_type_code, parameter_name)= pair uniquely identifies a
-parameter; the =description= field is the rich user-facing text shown
-in the Qt parameter table explaining what the parameter means, and
-=min_value=/=max_value= (NULL = unbounded) plus =default_value= drive
-the dialog's spin-box ranges and pre-fill.
+parameter; four fields drive the Qt parameter table: =display_name=
+(the English name), =symbol= (the Greek letter, where one is
+conventional), =short_label= (the layperson name shown in Simple
+mode) and =description= (the rich tooltip text). =min_value=/
+=max_value= (NULL = unbounded) plus =default_value= drive the
+dialog's spin-box ranges and pre-fill.
 
 Why this exists as a table rather than hardcoded structs: it makes the
 parameter vocabulary queryable and extensible -- adding a new model or
@@ -42,6 +44,7 @@ edit definitions, only the values of their own configs.
 :component: synthetic
 :has_tenant_id:    true
 :has_workspace_id: false
+:system_tenant_validation: true
 :END:
 
 * Columns
@@ -80,6 +83,40 @@ and the value rows, e.g. =kappa=, =theta=, =sigma=, =initial_rate= for
 the one-factor models; =kappa_x=, =kappa_y=, =sigma_x=, =sigma_y=,
 =rho=, =theta=, =initial_rate= for the two-factor Gaussian. Unique
 within a process type.
+
+** display_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+English name of the parameter for display, e.g. "Mean reversion
+speed" for =kappa=. Shown in the Advanced parameter table as the
+parenthesised meaning next to the Greek symbol.
+
+** symbol
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Greek letter conventionally used for the parameter, where one exists,
+e.g. =κ= for =kappa=, =ρ= for =rho=; NULL when no conventional symbol
+applies (e.g. =initial_rate=). Shown as the label of the Advanced
+parameter table row, with the English name in brackets.
+
+** short_label
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Short layperson name for the parameter, e.g. "Reversion speed" for
+=kappa=. Shown as the row label in the Simple parameter table -- write
+it for a non-specialist reader, not a quant.
 
 ** description
 :PROPERTIES:
@@ -175,8 +212,19 @@ faker::number::integer(1, 10)
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_synthetic_yield_curve_process_parameter_definitions_tbl
+:tablename: ores_synthetic_process_parameter_definitions_tbl
 :END:
+
+The =:tablename:= is the base every SQL object name for this entity is
+composed from (table, insert/notify/delete functions, triggers, delete
+rule, pg_notify channel). The conventional
+=ores_synthetic_yield_curve_process_parameter_definitions_tbl= would
+make the derived names exceed PostgreSQL's 63-byte identifier limit,
+so the least specific leading qualifier =yield_curve_= is dropped —
+the =process_parameter_definitions= remainder keeps the process scope
+and mirrors the sibling =ores_synthetic_config_process_parameter_values_tbl=
+(same 48-character shape). See the SQL naming conventions doc for the
+codegen-side rule.
 
 ** Checks
 
@@ -240,6 +288,9 @@ faker::number::integer(1, 10)
 |------------------+----------------|
 | process_type_code | Process Type  |
 | parameter_name   | Parameter      |
+| display_name     | Display Name   |
+| symbol           | Symbol         |
+| short_label      | Short Label    |
 | description      | Description    |
 | data_type        | Data Type      |
 | default_value    | Default        |
@@ -284,6 +335,9 @@ faker::number::integer(1, 10)
 |------------------+------------------+-----------------------+-----------+--------+-------------+--------------------------------|
 | process_type_code | Process Type    | processTypeCodeEdit   | line_edit |        | true        | e.g. VASICEK, TWO_FACTOR_GAUSSIAN |
 | parameter_name   | Parameter        | parameterNameEdit     | line_edit | true   | true        | e.g. kappa_x                    |
+| display_name     | Display Name    | displayNameEdit       | line_edit |        | true        | e.g. Mean reversion speed       |
+| symbol           | Symbol          | symbolEdit            | line_edit |        |             | e.g. κ; empty when none         |
+| short_label      | Short Label     | shortLabelEdit        | line_edit |        | true        | e.g. Reversion speed            |
 | description      | Description      | descriptionEdit       | text_edit |        | true        | What this parameter means       |
 | data_type        | Data Type        | dataTypeEdit          | line_edit |        | true        | double                          |
 | default_value    | Default Value    | defaultValueEdit      | line_edit |        |             |                                 |
@@ -297,6 +351,9 @@ faker::number::integer(1, 10)
 |----------------+------------------+----------------+-----------+-------|
 | ProcessTypeCode | process_type_code | Process Type  | string    | 140   |
 | ParameterName  | parameter_name   | Parameter      | string    | 120   |
+| DisplayName    | display_name     | Display Name   | string    | 180   |
+| Symbol         | symbol           | Symbol         | string    | 60    |
+| ShortLabel     | short_label      | Short Label    | string    | 140   |
 | Description    | description      | Description    | string    | 300   |
 | DataType       | data_type        | Data Type      | string    | 80    |
 | DefaultValue   | default_value    | Default        | double    | 90    |

@@ -88,6 +88,14 @@ QVariant ClientYieldCurveProcessParameterDefinitionModel::data(const QModelIndex
                 return QString::fromStdString(parameter_definition.process_type_code);
             case ParameterName:
                 return QString::fromStdString(parameter_definition.parameter_name);
+            case DisplayName:
+                return QString::fromStdString(parameter_definition.display_name);
+            case Symbol:
+                return parameter_definition.symbol ?
+                           QString::fromStdString(*parameter_definition.symbol) :
+                           QString{};
+            case ShortLabel:
+                return QString::fromStdString(parameter_definition.short_label);
             case Description:
                 return QString::fromStdString(parameter_definition.description);
             case DataType:
@@ -138,6 +146,12 @@ QVariant ClientYieldCurveProcessParameterDefinitionModel::headerData(int section
             return tr("Process Type");
         case ParameterName:
             return tr("Parameter");
+        case DisplayName:
+            return tr("Display Name");
+        case Symbol:
+            return tr("Symbol");
+        case ShortLabel:
+            return tr("Short Label");
         case Description:
             return tr("Description");
         case DataType:

@@ -18,6 +18,7 @@
  *
  */
 #include "ores.refdata.core/presentation/overnight_index_convention_history_field_mapper.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 
 namespace ores::refdata::presentation {
@@ -31,11 +32,13 @@ render_overnight_index_convention_fields(const domain::overnight_index_conventio
     fields.push_back({.name = "Fixing Calendar", .value = v.fixing_calendar});
     fields.push_back({.name = "Day Count Fraction", .value = v.day_count_fraction});
     fields.push_back({.name = "Settlement Days", .value = std::to_string(v.settlement_days)});
-    fields.push_back({.name = "Modified By", .value = v.modified_by});
-    fields.push_back({.name = "Performed By", .value = v.performed_by});
-    fields.push_back({.name = "Change Reason Code", .value = v.change_reason_code});
-    fields.push_back({.name = "Change Commentary", .value = v.change_commentary});
-    fields.push_back({.name = "Recorded At",
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
+    fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});
+    fields.push_back(
+        {.name = provenance_fields::change_reason_code, .value = v.change_reason_code});
+    fields.push_back({.name = provenance_fields::change_commentary, .value = v.change_commentary});
+    fields.push_back({.name = provenance_fields::recorded_at,
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;

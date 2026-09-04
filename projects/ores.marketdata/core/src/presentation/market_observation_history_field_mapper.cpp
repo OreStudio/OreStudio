@@ -18,6 +18,7 @@
  *
  */
 #include "ores.marketdata.core/presentation/market_observation_history_field_mapper.hpp"
+#include "ores.history.api/domain/provenance_fields.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include <boost/uuid/uuid_io.hpp>
 
@@ -37,7 +38,8 @@ render_market_observation_fields(const domain::market_observation& v) {
     fields.push_back({.name = "Point ID", .value = v.point_id});
     fields.push_back({.name = "Value", .value = v.value});
     fields.push_back({.name = "Source", .value = v.source});
-    fields.push_back({.name = "Recorded At",
+    using ores::history::domain::provenance_fields;
+    fields.push_back({.name = provenance_fields::recorded_at,
                       .value = ores::platform::time::datetime::to_iso8601_utc(v.recorded_at)});
 
     return fields;

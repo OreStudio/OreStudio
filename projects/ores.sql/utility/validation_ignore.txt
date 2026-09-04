@@ -17,6 +17,7 @@
 # - RLS_001: Table has tenant_id but no ENABLE ROW LEVEL SECURITY found
 # - RLS_002: Table has party_id but no AS RESTRICTIVE party isolation policy
 # - RLS_003: *_rls_policies_create.sql file not reachable from rls/rls_create.sql
+# - WIRE_001: *_create.sql / *_drop.sql file not reachable from its root aggregator
 
 # =============================================================================
 # Change reason tables - intentionally missing change_reason_code
@@ -383,3 +384,146 @@ RLS_001 ores_workspace_trade_scope_tbl
 # =============================================================================
 TENANT_002 ores_synthetic_market_data_generation_configs_tbl
 TENANT_003 ores_synthetic_market_data_generation_configs_tbl
+
+# =============================================================================
+# WIRE_001 -- files not reachable from the create.sql / drop.sql roots
+#
+# WIRE_001 fires when a *_create.sql file under create/ is not reachable from
+# create/create.sql, or a *_drop.sql file under drop/ is not reachable from
+# drop/drop.sql, through \ir includes. The entries below are pre-existing
+# wiring debt: each class is cleared by the component drift story that wires
+# the files into its aggregator and removes the entries.
+# =============================================================================
+
+# Create side -- plural-era residue. dq_create.sql wires the singular files
+# (dq_catalog_create.sql, dq_subject_area_create.sql); these two sit unwired.
+WIRE_001 dq_catalogs_create.sql
+WIRE_001 dq_subject_areas_create.sql
+
+# Create side -- compute app_version_platform. The checked-in, wired file is
+# the stale plural compute_app_version_platforms_create.sql (see the
+# TEMPORAL_004 entry above for the junction-template mismatch). This singular
+# file is that template's current output, left behind untracked by full
+# regenerations. It does not exist on clean checkouts, so this entry is inert
+# until the regen (and filename migration) the TEMPORAL_004 entry calls for
+# lands, which must also wire this file.
+WIRE_001 compute_app_version_platform_create.sql
+
+# =============================================================================
+# DQ artefact drops -- the 23 files below are the artefact-drop layer files
+# that dq_drop.sql never wired. dq_drop.sql does wire the other 26
+# *_artefact_drop.sql files on disk, so these are a per-file gap, not a whole
+# family gap; keep the list explicit so new unwired files still warn.
+# =============================================================================
+WIRE_001 dq_account_types_artefact_drop.sql
+WIRE_001 dq_asset_classes_artefact_drop.sql
+WIRE_001 dq_asset_measures_artefact_drop.sql
+WIRE_001 dq_benchmark_rates_artefact_drop.sql
+WIRE_001 dq_business_centres_artefact_drop.sql
+WIRE_001 dq_business_processes_artefact_drop.sql
+WIRE_001 dq_cashflow_types_artefact_drop.sql
+WIRE_001 dq_coding_schemes_artefact_drop.sql
+WIRE_001 dq_currencies_artefact_drop.sql
+WIRE_001 dq_entity_classifications_artefact_drop.sql
+WIRE_001 dq_image_tags_artefact_drop.sql
+WIRE_001 dq_images_artefact_drop.sql
+WIRE_001 dq_lei_bic_artefact_drop.sql
+WIRE_001 dq_lei_entities_artefact_drop.sql
+WIRE_001 dq_lei_relationships_artefact_drop.sql
+WIRE_001 dq_local_jurisdictions_artefact_drop.sql
+WIRE_001 dq_party_relationships_artefact_drop.sql
+WIRE_001 dq_party_roles_artefact_drop.sql
+WIRE_001 dq_person_roles_artefact_drop.sql
+WIRE_001 dq_regulatory_corporate_sectors_artefact_drop.sql
+WIRE_001 dq_reporting_regimes_artefact_drop.sql
+WIRE_001 dq_supervisory_bodies_artefact_drop.sql
+WIRE_001 dq_tags_artefact_drop.sql
+
+# =============================================================================
+# DQ population-function drops -- same per-file gap as the artefact drops
+# above. dq_drop.sql wires 5 of the 21 population-function drop files on disk;
+# these 16 are unwired. Keep the list explicit so new unwired files warn.
+# =============================================================================
+WIRE_001 dq_account_types_population_functions_drop.sql
+WIRE_001 dq_asset_classes_population_functions_drop.sql
+WIRE_001 dq_asset_measures_population_functions_drop.sql
+WIRE_001 dq_benchmark_rates_population_functions_drop.sql
+WIRE_001 dq_business_centres_population_functions_drop.sql
+WIRE_001 dq_business_processes_population_functions_drop.sql
+WIRE_001 dq_cashflow_types_population_functions_drop.sql
+WIRE_001 dq_coding_schemes_population_functions_drop.sql
+WIRE_001 dq_entity_classifications_population_functions_drop.sql
+WIRE_001 dq_local_jurisdictions_population_functions_drop.sql
+WIRE_001 dq_party_relationships_population_functions_drop.sql
+WIRE_001 dq_party_roles_population_functions_drop.sql
+WIRE_001 dq_person_roles_population_functions_drop.sql
+WIRE_001 dq_regulatory_corporate_sectors_population_functions_drop.sql
+WIRE_001 dq_reporting_regimes_population_functions_drop.sql
+WIRE_001 dq_supervisory_bodies_population_functions_drop.sql
+
+# =============================================================================
+# DQ notify-trigger drops -- dq_drop.sql wires the sibling table drop of each
+# of these five triggers, but not the trigger drop itself.
+# =============================================================================
+WIRE_001 dq_artefact_types_notify_trigger_drop.sql
+WIRE_001 dq_badge_definitions_notify_trigger_drop.sql
+WIRE_001 dq_badge_severities_notify_trigger_drop.sql
+WIRE_001 dq_code_domains_notify_trigger_drop.sql
+WIRE_001 dq_dataset_bundles_notify_trigger_drop.sql
+
+# =============================================================================
+# DQ plural-era drop residue -- the unwired plural files sit next to the
+# singular files dq_drop.sql wires (dq_catalog_drop.sql,
+# dq_subject_area_drop.sql, dq_dataset_bundle_drop.sql).
+# =============================================================================
+WIRE_001 dq_catalogs_drop.sql
+WIRE_001 dq_subject_areas_drop.sql
+WIRE_001 dq_dataset_bundles_drop.sql
+
+# =============================================================================
+# Trading equity instruments -- trading_create.sql wires all nine equity
+# instrument creates and their notify triggers, but drop_trading.sql has no
+# equity include at all. The whole family is unwired, so the two patterns
+# cover it; remove them when the drop side of the equity family is wired.
+# =============================================================================
+WIRE_001 trading_equity_*_instruments_drop.sql
+WIRE_001 trading_equity_*_instruments_notify_trigger_drop.sql
+
+# RPA instruments notify trigger -- drop_trading.sql wires
+# trading_rpa_instruments_drop.sql; this trigger drop was not added.
+WIRE_001 trading_rpa_instruments_notify_trigger_drop.sql
+
+# =============================================================================
+# Curve roles -- creates are wired; refdata_drop.sql has no include for the
+# table drop or its notify-trigger drop.
+# =============================================================================
+WIRE_001 refdata_curve_roles_drop.sql
+WIRE_001 refdata_curve_roles_notify_trigger_drop.sql
+
+# =============================================================================
+# Synthetic yield-curve process types -- synthetic_drop.sql wires the
+# process-parameter-definitions sibling family; these two files were not added.
+# =============================================================================
+WIRE_001 synthetic_yield_curve_process_types_drop.sql
+WIRE_001 synthetic_yield_curve_process_types_notify_trigger_drop.sql
+
+# =============================================================================
+# IAM -- iam_drop.sql never wired the session-samples drop or the
+# tenant-terminator drop.
+# =============================================================================
+WIRE_001 iam_session_samples_drop.sql
+WIRE_001 iam_tenant_terminator_drop.sql
+
+# =============================================================================
+# MQ -- mq_drop.sql wires five files; the scrape-function drop is not one of
+# them.
+# =============================================================================
+WIRE_001 mq_scrape_functions_drop.sql
+
+# =============================================================================
+# Database info -- database_info_drop.sql drops ores_database_info_tbl, the
+# table the wired database/database_database_infos_create.sql creates.
+# drop/database/ has no aggregator file and drop.sql never reaches into it, so
+# the table is dropped only by whole-database recreate.
+# =============================================================================
+WIRE_001 database_info_drop.sql

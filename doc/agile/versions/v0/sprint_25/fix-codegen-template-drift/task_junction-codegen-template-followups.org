@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :fix-codegen-template-drift:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/junction-codegen-template-followups
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-06
 #+updated: 2026-08-06
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Four codegen template issues for junction entities: path/namespace mismatch betw
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:F5532C5C-7A8D-461D-8E0A-CACB602AB3DF][Fix codegen template drift]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

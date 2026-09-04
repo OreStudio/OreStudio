@@ -200,13 +200,6 @@ Where the set must be referred to, "the types implementing loading"
 states it exactly and in the vocabulary the model already supplies. The
 word /grounding/ is reserved for the activity throughout.
 
-#+begin_note
-*On the choice of term.* The activity keeps the name because the name is
-correct and established. Grounding is the term both relevant literatures
-use for it, and the framework gains nothing by coining an alternative.
-What was wrong was not the word but the second job it had been given.
-#+end_note
-
 ** The Grounding Obligation
 
 The preceding sections support a single requirement, stated here for

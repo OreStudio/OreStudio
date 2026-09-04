@@ -9,28 +9,24 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-#+begin_note
-*Scope.* This page is the working index into the framework and the account of
-its dispatch mechanism. [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] is the
-specification: it derives the regulatory functions and states what the framework
-models. The specification governs.
-#+end_note
-
 * Summary
 
-This document indexes the /compass skill framework/ and treats its dispatch
-mechanism. The objective of the framework is to define an ontology of core
-domain concepts and their associated operational processes. Together these establish the computational primitives
-required for humans and [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][large language models]] to operate agent harnesses
-autonomously or semi-autonomously. The framework rests on academic foundations,
-principally [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], and on empirical foundations drawn from [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill
-collections]] published by other developers. We have attributed provenance as
-fully as we can, but please report any we may have missed.
-
-This page starts by introducing the principal concepts and moving parts of the
-framework to build a mental model. It then describes the entry points into the
-model, and finally closes with links to the spoke pages that treat each topic in
+This document is the working index into the /compass skill framework/. It
+carries the vocabulary a reader needs to navigate the cluster, the dispatch
+mechanism by which a target resolves to the operations available on it, the
+three entry points into the model, and a map of the pages treating each part in
 detail.
+
+[[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] specifies the framework: it derives the
+regulatory functions from the primitives of a control loop, states which things
+the framework models and which it leaves to the agent, and gives the criterion
+by which a skill is retired. Read it for what the framework is and why. Read
+this page to find your way around it.
+
+The framework rests on academic foundations, principally [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]],
+and on empirical foundations drawn from [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill collections]] published by other
+developers. We have attributed provenance as fully as we can, but please report
+any we may have missed.
 
 * Detail
 

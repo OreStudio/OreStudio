@@ -97,10 +97,19 @@ Use =--port N= to override the port.
 
 ** When to run which
 
-Run the full build before committing, and whenever a change affects how
-other pages render rather than only their own content. =compass site
-page= now rebuilds the identifier map itself, so a new =.org= file or a
-changed =:ID:= no longer forces a full build.
+=compass site page= is the default, including after adding, renaming or
+deleting a document. It rebuilds the identifier map itself, so a new
+=:ID:= resolves without a full pass.
+
+The full build does two things the page build does not. It regenerates
+=graph/graphdata.json=, which backs the graph view, and it walks every
+document, which is how a link that no longer resolves is found. Run it
+when you need either.
+
+A full build on a tree with three changed pages publishes three pages
+and re-stats five thousand files to do it. That takes upward of ten
+minutes against about five seconds, so reach for it because you want
+the graph or the sweep, not as a precaution before committing.
 
 *** Rebuilding the identifier map on its own
 

@@ -2599,6 +2599,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         if len(sql_name_base) + longest_suffix > 63:
             sql_name_base = sql_name_base[:63 - longest_suffix]
         domain_entity['sql_name_base'] = sql_name_base
+        # RLS policy names are composed from the short table base
+        # (market_series_tbl_tenant_isolation_policy), the dominant
+        # hand-written shape, while sql_name_base carries the full
+        # <product>_<component>_ prefix used by every other identifier.
+        rls_table_base = sql_name_base
+        prefix = (
+            f"{domain_entity.get('product', 'ores')}_"
+            f"{domain_entity.get('component', 'unknown')}_"
+        )
+        if rls_table_base.startswith(prefix):
+            rls_table_base = rls_table_base[len(prefix):]
+        domain_entity['rls_table_base'] = rls_table_base
         # GIST exclusion: suppressed for hypertables (incompatible); active otherwise
         # for standard temporal entities with has_tenant_id.
         domain_entity['has_gist_exclusion'] = (

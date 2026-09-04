@@ -3,6 +3,12 @@
 {{{sql_license}}}
 {{#domain_entity}}
 
+{{#sql.rls_tenant_isolation}}
+{{#sql.rls_party_isolation}}
+drop policy if exists {{rls_table_base}}_tbl_party_isolation_policy on "{{sql_name_base}}_tbl";
+{{/sql.rls_party_isolation}}
+drop policy if exists {{rls_table_base}}_tbl_tenant_isolation_policy on "{{sql_name_base}}_tbl";
+{{/sql.rls_tenant_isolation}}
 {{#sql.bitemporal_soft_update}}
 drop trigger if exists {{sql_name_base}}_delete_trg on "{{sql_name_base}}_tbl";
 drop function if exists {{sql_name_base}}_delete_fn;

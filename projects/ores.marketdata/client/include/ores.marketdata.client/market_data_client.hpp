@@ -81,10 +81,18 @@ public:
      * (series_type, metric, qualifier) match; there is no dedicated
      * lookup-by-key request on the protocol yet.
      *
+     * When @p party_id is non-empty the scan is restricted to that party's
+     * series. Without it the first id-ordered match wins, which is arbitrary
+     * when the same natural key exists for several parties (e.g. FX spot
+     * series are materialised per party).
+     *
      * @return The matching series, std::nullopt if none found, or an error.
      */
     [[nodiscard]] std::expected<std::optional<domain::market_series>, std::string> find_series(
-        const std::string& series_type, const std::string& metric, const std::string& qualifier);
+        const std::string& series_type,
+        const std::string& metric,
+        const std::string& qualifier,
+        const std::string& party_id = {});
 
     /**
      * @brief List observations for a series (limit 10000, first page).

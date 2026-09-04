@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 6AF874F7-9E0C-470C-9ACE-B72C09111E79
+:END:
+#+title: IR curve feed synthetic.2026realistic.usdsofrfomc (FOMC-date…
+#+description: IR curve feed synthetic.2026realistic.usdsofrfomc (FOMC-dated USD-SOFR segment) publishes 0: every tick fails with curve_instrument_pricer: year_fraction must be positive (ores.synthetic.api.ir_curve_feed, SYNTHETIC CURVE PUBLISH FAILED). Producer-side pricing defect, separate from F15 (F15 is consumption-side and verified working). The FOMC bootstrap config prices the meeting-dated short end; curve_instrument_pricer rejects a non-positive year fraction, likely a FOMC meeting-date/tenor mapping at or before the valuation date. All other IR curve feeds publish normally. Continuous in ores.synthetic.service.0.log since 2026-08-12 15:09, every tick (60s period).
+#+type: capture
+#+level: cross
+#+filetags: :capture:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

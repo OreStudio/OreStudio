@@ -33,11 +33,21 @@ namespace ores::marketdata::domain {
  * producer channel (source_name); enables/disables the ingest loop subscription.
  *
  * A feed binding records which raw producer channel feeds an official market
- * series. The marketdata service reads all enabled bindings at startup into the
- * ingest loop's binding cache — the source of tenant/party/ore_key identity for
- * fx_spot ticks, which are not self-describing — persists each arriving tick as a
- * market_observation, and republishes on the official tenant-scoped stream
- * marketdata.v1.tick.<tenant_id>.<ore_key>.
+ * series, in which workspace. The marketdata service reads all enabled bindings
+ * at startup, subscribes to synthetic.v1.tick.fx_spot.<source_name> once per
+ * (tenant, party, workspace), persists each arriving tick as a
+ * market_observation under the binding's party, and republishes on the
+ * per-party realtime stream
+ * marketdata.v1.tick.<tenant_id>.<workspace_id>.<party_id>.<ore_key>.
+ *
+ * workspace_id defaults to the Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa),
+ * which resolves in every tenant. It is the seam where the future workspaces
+ * feature binds scenario data: a binding reads "party P consumes source S in
+ * workspace W" (see
+ * [[file:../../../doc/llm/specs/simulated-market-data-strategy.allium][simulated-market-data-strategy.allium]]).
+ * Bindings are created by provisioning against the system party's config, not
+ * per office: each party consumes the shared stream into its own per-party
+ * series.
  *
  * Rebinding (editing source_name) switches the ingest source without restarting
  * producers. Setting enabled  false= suspends the subscription without deleting
@@ -53,6 +63,13 @@ struct feed_binding final {
      * @brief Tenant identifier for multi-tenancy isolation.
      */
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
+     * @brief Workspace this record belongs to.
+     *
+     * Defaults to the Live workspace sentinel.
+     */
+    boost::uuids::uuid workspace_id = utility::uuid::live_workspace_id();
 
     /**
      * @brief Surrogate UUID uniquely identifying this feed binding.

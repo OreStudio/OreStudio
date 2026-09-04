@@ -32,9 +32,11 @@ namespace ores::marketdata::client {
 /**
  * @brief RAII subscription to a single FX spot tick stream.
  *
- * Translates an ORE key (e.g. "FX/RATE/EUR/USD") into the canonical NATS
- * fan-out subject ("marketdata.v1.tick.fx.rate.eur.usd") and subscribes to
- * it. Each arriving message is deserialised with the process-wide
+ * Translates an ORE key (e.g. "FX/RATE/EUR/USD") plus the consuming
+ * (tenant, workspace, party) context into the canonical NATS fan-out
+ * subject ("marketdata.v1.tick.<tenant>.<workspace>.<party>.fx.rate.eur.usd")
+ * and subscribes to it. Each arriving message is deserialised with the
+ * process-wide
  * default_wire_codec() (matches whatever ORES_NATS_WIRE_FORMAT the
  * publisher used) and delivered to the caller-supplied handler. Malformed
  * messages are logged and reported via @p on_error, if supplied — a
@@ -72,19 +74,28 @@ public:
     /**
      * @brief Subscribe to tick updates for an ORE key.
      *
-     * @param nats       Connected NATS client to subscribe on.
-     * @param ore_key    ORE canonical key, e.g. "FX/RATE/EUR/USD".
-     * @param tenant_id  Tenant UUID string; included in the NATS subject so the
-     *                   subscription matches the tenant-scoped publish path used
-     *                   by the ingest loop.
-     * @param on_tick    Invoked on the NATS delivery thread for each valid tick.
-     * @param on_error   Optional; invoked on the NATS delivery thread for each
-     *                   tick that fails to deserialise. Failures are always
-     *                   logged regardless of whether this is supplied.
+     * @param nats         Connected NATS client to subscribe on.
+     * @param ore_key      ORE canonical key, e.g. "FX/RATE/EUR/USD".
+     * @param tenant_id    Tenant UUID string; included in the NATS subject so
+     *                     the subscription matches the tenant-scoped publish
+     *                     path used by the ingest loop.
+     * @param workspace_id Workspace UUID string; the stream the ingest loop
+     *                     republishes on is per (tenant, workspace, party,
+     *                     ore_key). Consumers of the Live market pass the
+     *                     Live sentinel (aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa);
+     *                     scenario workspaces will pass their own id.
+     * @param party_id     Party UUID string; the party whose per-party stream
+     *                     this subscription follows.
+     * @param on_tick      Invoked on the NATS delivery thread for each valid tick.
+     * @param on_error     Optional; invoked on the NATS delivery thread for each
+     *                     tick that fails to deserialise. Failures are always
+     *                     logged regardless of whether this is supplied.
      */
     fx_spot_subscription(ores::nats::service::client& nats,
                          std::string ore_key,
                          std::string tenant_id,
+                         std::string workspace_id,
+                         std::string party_id,
                          handler on_tick,
                          error_handler on_error = {});
 

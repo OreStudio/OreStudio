@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 71EC429B-F889-4C94-A028-60AA116B22B9
+:END:
+#+title: Simulated market data: consistent world vs. scenario workspaces
+#+description: Strategy for simulated market data generation, decided 2026-08-12 (F15). Two use cases: (1) the consistent world, where the system party owns the sim config, publishes the theme once, and every party consumes the same stream into its own per-party series; (2) scenario data, future workspace-scoped work where users create artificial data with permission control and locking. Full decisions in doc/llm/specs/simulated-market-data-strategy.allium.
+#+type: capture
+#+level: cross
+#+filetags: :simulated_market_data:strategy:
+#+created: 2026-08-12
+#+updated: 2026-08-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+There are two use cases for simulated market data.
+
+1. The consistent world (e.g. ACME): the whole system uses the same
+   simulated market data as a stand-in for real vendor feeds. All of
+   ACME's parties and any other tenant see the same world, and users
+   must not override the sim data.
+2. Alternative scenarios: individual users create artificial data,
+   manually or by automated means, to test something. This needs
+   permission control and a way to lock the live workspace as ground
+   truth. It requires workspace-scoped feeds, which do not exist yet.
+
+* Why
+
+The ACME fit-for-purpose review (F15) found that only the first
+office's synthetic feeds tick: the feed controller keys feeds by
+source_name service-wide, and every office's configs share the
+theme's source names. Deciding the strategy resolved the F15 design
+question: per-office producers would give offices different worlds,
+which contradicts the consistent-world use case. The decision (2026-08-12)
+is per-party consumption of a system-party-owned config: the theme
+publishes once to the system party; each party consumes the shared
+stream via per-party feed bindings bound to the Live workspace, and
+materializes its own per-party series. Scenario data lands later
+with the workspaces feature.
+
+* References
+
+- [[file:../../../llm/specs/simulated-market-data-strategy.allium][simulated-market-data-strategy.allium]] — the strategy spec
+- [[id:989374A9-2BE3-4370-BD85-7FC7C7C34047][Task: Fix: only the first party's synthetic feeds tick (per-party consumption)]] — F15 implementation
+- [[id:34D09192-16D1-471B-845C-790F8B38A341][Task: Update Market Data Architecture with the simulated-data-generation strategy]]
+
+* See also
+
+- [[id:DF2B616F-E112-4C57-A73B-69F85BE96EF4][Market Data Architecture]]

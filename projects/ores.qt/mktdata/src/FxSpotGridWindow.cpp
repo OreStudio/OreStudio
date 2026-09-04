@@ -433,6 +433,8 @@ void FxSpotGridWindow::buildRows(const std::vector<marketdata::domain::feed_bind
         RowState rs;
         rs.row = row;
         rs.ore_key = ore_key;
+        rs.workspace_id = boost::uuids::to_string(b.workspace_id);
+        rs.party_id = boost::uuids::to_string(b.party_id);
         if (conventionCache_ && clientManager_) {
             const auto resolved =
                 resolve_convention(*conventionCache_, clientManager_->currentTenantId(), pairText);
@@ -461,6 +463,8 @@ void FxSpotGridWindow::subscribe(RowState& rs) {
             clientManager_->nats_client(),
             ore_key,
             clientManager_->currentTenantId(),
+            rs.workspace_id,
+            rs.party_id,
             [self, ore_key](const marketdata::domain::fx_spot_tick& tick) {
                 const double mid = tick.mid;
                 const auto when = tick.datetime;

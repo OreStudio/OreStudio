@@ -51,11 +51,11 @@ namespace ores::synthetic::feed {
 inline constexpr std::string_view ir_curve_feed_kind = "ir_curve";
 
 /**
- * @brief Thrown by make_ir_curve_feed() when cfg.price_source is "vintage" and no matching
- * market_observation is found for (vintage_source, vintage_date) on the config's anchor entry --
- * mirrors feed_controller::start_result::vintage_data_missing's actionable-rejection contract for
- * FX, but as an exception rather than a result enum since make_ir_curve_feed already throws
- * std::invalid_argument for other construction failures (process_type/curve_role/tenor data).
+ * @brief Thrown by make_ir_curve_feed() and make_fx_spot_feed() when cfg.price_source is
+ * "vintage" and no matching market_observation is found for (vintage_source, vintage_date) --
+ * on the config's anchor entry for curves, on its SPOT point for FX -- as an exception rather
+ * than a result enum since the make functions already throw std::invalid_argument for other
+ * construction failures (process_type/curve_role/tenor data).
  */
 class ORES_SYNTHETIC_API_EXPORT vintage_data_missing_error final : public std::runtime_error {
 public:

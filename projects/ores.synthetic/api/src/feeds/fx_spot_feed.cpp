@@ -21,10 +21,14 @@
 #include "ores.analytics.quant/service/process_factory.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.marketdata.api/domain/fx_spot_tick_json_io.hpp" // IWYU pragma: keep.
+#include "ores.marketdata.client/market_data_client.hpp"
 #include "ores.marketdata.core/oresmd/oresmd_projections.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
+#include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include <boost/uuid/uuid_io.hpp>
 #include <chrono>
+#include <format>
 #include <random>
 #include <stdexcept>
 #include <thread>
@@ -40,13 +44,83 @@ auto& lg() {
     return instance;
 }
 
+// ISO date part of an observation_datetime -- the same one-liner duplicated in
+// ir_curve_feed.cpp (the two live in the same component but keep their own copy
+// rather than share a header for a one-line helper).
+std::string date_part(std::chrono::system_clock::time_point tp) {
+    const auto days = std::chrono::floor<std::chrono::days>(tp);
+    return std::format("{:%F}", days);
+}
+
+// Resolves the initial price from a real market_observation when cfg.price_source is "vintage",
+// mirroring the deleted feed_controller::vintage_data_available() -- the config's own series
+// (from its ore_key), keyed on (source=vintage_source, point_id="SPOT", date=vintage_date).
+//
+// @throws vintage_data_missing_error if no matching observation is found.
+double resolve_vintage_initial_price(ores::nats::service::nats_client& auth_nats,
+                                     const ores::synthetic::domain::fx_spot_generation_config& cfg,
+                                     const std::string& caller_bearer_token) {
+    const auto missing_message = [&] {
+        return "No vintage data found for source=" + cfg.vintage_source + ", date=" +
+               cfg.vintage_date + ", point_id=SPOT.";
+    };
+
+    const auto key =
+        ores::marketdata::core::oresmd_projections::split_market_series_key(cfg.ore_key);
+    if (!key)
+        throw vintage_data_missing_error("Cannot parse ORE key '" + cfg.ore_key + "'.");
+
+    auto delegated_nats = auth_nats.with_delegation(caller_bearer_token);
+    ores::marketdata::client::market_data_client md_client(delegated_nats);
+
+    auto series = md_client.find_series(key->series_type,
+                                        key->metric,
+                                        key->qualifier,
+                                        boost::uuids::to_string(cfg.party_id));
+    if (!series)
+        throw vintage_data_missing_error("Failed to look up series for '" + cfg.ore_key + "': " +
+                                         series.error());
+    if (!series->has_value())
+        throw vintage_data_missing_error(missing_message());
+
+    // Paged scan -- see ir_curve_feed.cpp's resolve_vintage_initial_rate() for why an unbounded
+    // fetch is unsafe here (NATS max payload).
+    constexpr std::uint32_t page_size = 200;
+    const auto series_id_str = boost::uuids::to_string((*series)->id);
+    std::uint32_t offset = 0;
+    for (;;) {
+        auto observations = md_client.list_observations_page(series_id_str, offset, page_size);
+        if (!observations) {
+            throw vintage_data_missing_error("Failed to look up observations for '" + cfg.ore_key +
+                                             "': " + observations.error());
+        }
+        for (const auto& obs : *observations) {
+            if (obs.source == cfg.vintage_source && obs.point_id == "SPOT" &&
+                date_part(obs.observation_datetime) == cfg.vintage_date) {
+                try {
+                    return std::stod(obs.value);
+                } catch (const std::exception& e) {
+                    throw vintage_data_missing_error("Vintage observation value '" + obs.value +
+                                                     "' is not a valid number: " + e.what());
+                }
+            }
+        }
+        if (observations->size() < page_size)
+            break;
+        offset += page_size;
+    }
+    throw vintage_data_missing_error(missing_message());
+}
+
 } // namespace
 
-ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
-make_fx_spot_feed(ores::nats::service::client& nats,
-                  const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                  const std::vector<ores::synthetic::domain::gmm_component>& components,
-                  ores::synthetic::domain::binding_mode binding_mode) {
+ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed> make_fx_spot_feed(
+    ores::nats::service::client& nats,
+    ores::nats::service::nats_client& auth_nats,
+    const ores::synthetic::domain::fx_spot_generation_config& cfg,
+    const std::vector<ores::synthetic::domain::gmm_component>& components,
+    ores::synthetic::domain::binding_mode binding_mode,
+    const std::string& caller_bearer_token) {
     if (components.empty())
         throw std::invalid_argument("make_fx_spot_feed: config '" + cfg.ore_key +
                                     "' has no GMM components.");
@@ -61,6 +135,15 @@ make_fx_spot_feed(ores::nats::service::client& nats,
         weights.push_back(c.weight);
     }
 
+    // "vintage" resolves the initial price from a real market_observation, overriding the stored
+    // gmm_initial_price (0 for vintage configs, per the check constraint); "fixed" uses the
+    // stored value as-is. See make_fx_spot_feed's doc comment for the vintage semantics.
+    const double initial_price = cfg.price_source == "vintage"
+                                     ? resolve_vintage_initial_price(auth_nats,
+                                                                     cfg,
+                                                                     caller_bearer_token)
+                                     : cfg.gmm_initial_price;
+
     // Persistent random_device so the OS entropy pool is not re-seeded between rapid
     // successive calls (which can produce equal values on some platforms when called on
     // separate temporaries) -- same note as feed_controller::start().
@@ -69,13 +152,13 @@ make_fx_spot_feed(ores::nats::service::client& nats,
     BOOST_LOG_SEV(lg(), ores::logging::info)
         << "SYNTHETIC SEED: source='" << cfg.source_name << "' seed=" << seed;
 
-    auto process =
-        ores::analytics::quant::service::process_factory::make_process(cfg.process_type,
-                                                                       std::move(means),
-                                                                       std::move(stdevs),
-                                                                       std::move(weights),
-                                                                       cfg.gmm_initial_price,
-                                                                       seed);
+    auto process = ores::analytics::quant::service::process_factory::make_process(
+        cfg.process_type,
+        std::move(means),
+        std::move(stdevs),
+        std::move(weights),
+        initial_price,
+        seed);
 
     return std::make_shared<fx_spot_feed>(nats,
                                           cfg.ore_key,

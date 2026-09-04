@@ -24,6 +24,7 @@
 #include "ores.marketdata.api/domain/i_feed.hpp"
 #include "ores.marketdata.api/domain/tick_subjects.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.nats/service/nats_client.hpp"
 #include "ores.synthetic.api/domain/binding_mode.hpp"
 #include "ores.synthetic.api/domain/fx_spot_generation_config.hpp"
 #include "ores.synthetic.api/domain/gmm_component.hpp"
@@ -147,21 +148,27 @@ private:
  * stdevs/weights via process_factory, seeded from random_device; the publish subject is derived
  * from the config's source_name under @p binding_mode via synthetic_producer_subject().
  *
- * The config's "vintage" price_source is not resolved here: the FX vintage lookup (vintage_data_
- * available) lives in feed_controller::start()'s client-supplied-params path, which predates
- * this builder and is deleted by the per-config control-plane task. Until then the factory path
- * behaves like the auto-start path it replaces (gmm_initial_price as-is).
+ * A config with price_source "vintage" resolves its initial price from a real market_observation
+ * -- (source=vintage_source, point_id="SPOT", date=vintage_date) on the config's own series --
+ * via @p auth_nats delegated to @p caller_bearer_token, overriding the stored gmm_initial_price
+ * (0 for vintage configs, per the gmm_initial_price check constraint). "fixed" uses the stored
+ * value as-is. This mirrors resolve_vintage_initial_rate() for IR curves, replacing the vintage
+ * lookup the deleted client-supplied-params path of feed_controller::start() used to perform.
  *
- * @throws std::invalid_argument if @p components is empty or cfg.ticks_per_hour is non-positive.
- * cfg.process_type is not validated here: it is forwarded to process_factory::make_process(),
- * which falls back to the geometric engine for unrecognised values.
+ * @throws vintage_data_missing_error if price_source is "vintage" and no matching observation
+ * is found, and std::invalid_argument if @p components is empty or cfg.ticks_per_hour is
+ * non-positive. cfg.process_type is not validated here: it is forwarded to
+ * process_factory::make_process(), which falls back to the geometric engine for unrecognised
+ * values.
  */
-ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed>
-make_fx_spot_feed(ores::nats::service::client& nats,
-                  const ores::synthetic::domain::fx_spot_generation_config& cfg,
-                  const std::vector<ores::synthetic::domain::gmm_component>& components,
-                  ores::synthetic::domain::binding_mode binding_mode =
-                      ores::synthetic::domain::binding_mode::bound);
+ORES_SYNTHETIC_API_EXPORT std::shared_ptr<fx_spot_feed> make_fx_spot_feed(
+    ores::nats::service::client& nats,
+    ores::nats::service::nats_client& auth_nats,
+    const ores::synthetic::domain::fx_spot_generation_config& cfg,
+    const std::vector<ores::synthetic::domain::gmm_component>& components,
+    ores::synthetic::domain::binding_mode binding_mode =
+        ores::synthetic::domain::binding_mode::bound,
+    const std::string& caller_bearer_token = {});
 
 }
 #endif

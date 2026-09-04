@@ -41,10 +41,12 @@ inline static std::string_view logger_name = "ores.marketdata.client.fx_spot_sub
 fx_spot_subscription::fx_spot_subscription(ores::nats::service::client& nats,
                                            std::string ore_key,
                                            std::string tenant_id,
+                                           std::string workspace_id,
+                                           std::string party_id,
                                            handler on_tick,
                                            error_handler on_error)
     : sub_(nats.subscribe(
-          detail::ore_key_to_subject(ore_key, tenant_id),
+          detail::ore_key_to_subject(ore_key, tenant_id, workspace_id, party_id),
           [on_tick = std::move(on_tick), on_error = std::move(on_error)](ores::nats::message msg) {
               const auto& codec = ores::nats::default_wire_codec();
               BOOST_LOG_SEV(lg(), trace)

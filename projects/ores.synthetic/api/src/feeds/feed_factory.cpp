@@ -52,7 +52,12 @@ namespace {
 std::shared_ptr<ores::marketdata::domain::IFeed> build_fx_spot(const feed_build_context& ctx,
                                                                const feed_build_input& input) {
     const auto& in = std::get<fx_spot_feed_build_input>(input);
-    return make_fx_spot_feed(ctx.nats, in.config, in.components, in.binding_mode);
+    return make_fx_spot_feed(ctx.nats,
+                             ctx.auth_nats,
+                             in.config,
+                             in.components,
+                             in.binding_mode,
+                             ctx.caller_bearer_token);
 }
 
 std::shared_ptr<ores::marketdata::domain::IFeed> build_ir_curve(const feed_build_context& ctx,

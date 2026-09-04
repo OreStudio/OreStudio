@@ -1,0 +1,186 @@
+-- allium: 3
+-- simulated-market-data-strategy.allium
+
+-- Scope: the strategy for simulated market data generation and
+-- consumption: who owns the sim config, who consumes it, and how
+-- consumption stays per party and per workspace.
+-- Includes:
+--   - The two use cases for simulated data: the consistent world
+--     (every party sees the same market) and scenario data
+--     (future, workspace-scoped, permission-controlled)
+--   - Sim config ownership: the system party owns the theme; the
+--     theme is published once per environment
+--   - The consumption contract: feed_binding per (tenant, party,
+--     workspace), workspace defaulting to Live
+--   - Ingest fan-out: one subscription per (source_name, tenant,
+--     party, workspace), each writing observations under its own
+--     party
+--   - The realtime stream: per-party republish subjects
+--   - CRM: per-party config, fed from the one shared market
+-- Excludes:
+--   - The workspaces feature: per-workspace producers, locking
+--     non-live workspaces, workspace scoping of configs, folders,
+--     series and observations -- deferred
+--   - Producer internals: stochastic processes, tick clocks,
+--     vintage resolution -- existing behavior, unchanged
+--   - Vendor (non-synthetic) producers -- unchanged
+-- External inputs: the published theme (DQ datasets), the Live
+-- workspace sentinel id, the feed configs the system party owns.
+
+config {
+    -- Decisions (2026-08-12):
+    --   System-party ownership: the sim theme publishes once, to the
+    --     system party, as part of tenant provisioning. Offices do
+    --     not publish themes. Users cannot see or override the
+    --     config: tenant and RLS isolation hide it. This is the
+    --     "no override" guarantee of the consistent world.
+    --   One producer per source: the feed controller keys feeds by
+    --     source_name service-wide. This dedup is correct, not a
+    --     bug: one producer per source keeps the world consistent.
+    --   Per-party materialization: every consuming party writes its
+    --     own observations into its own series. Values are identical
+    --     across parties; the records are per party, like each firm
+    --     keeping its own books of the same market.
+    --   Live workspace seam: feed_binding carries workspace_id,
+    --     defaulting to the Live sentinel. This is where future
+    --     workspaces bind: a binding reads "party P consumes source
+    --     S in workspace W".
+    --   Per-party realtime stream: the republish subject carries
+    --     tenant, workspace, party and ore_key, so each party's
+    --     stream is its own and scenario data later lands on
+    --     distinct subjects without cross-pollution.
+    --   CRM per party: the CRM topology config and driver pairs are
+    --     per-party rows already. The ingest bridge fans one market
+    --     tick out to every party's own config. No sharing.
+    system_party_owns_config: Boolean = true
+    one_producer_per_source: Boolean = true
+    per_party_materialization: Boolean = true
+    live_workspace_id: Uuid = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+    republish_subject: String = "marketdata.v1.tick.<tenant>.<workspace>.<party>.<ore_key>"
+}
+
+-- ------------------------------------------------------------
+-- Use cases
+-- ------------------------------------------------------------
+
+-- Use case 1, the consistent world: the whole system uses the same
+-- simulated market data, standing in for real vendor feeds
+-- (Bloomberg, Reuters). Every ACME party and every other tenant sees
+-- the same market. Users must not override the sim data.
+-- Use case 2, scenario data: individual users create artificial data
+-- for alternative scenarios, manually or by automated means,
+-- depending on permissions. Live workspaces must stay locked as
+-- ground truth. This needs a notion of workspace-scoped feeds, which
+-- does not exist yet; it lands with the workspaces feature.
+
+-- ------------------------------------------------------------
+-- Entities
+-- ------------------------------------------------------------
+
+-- A published theme (e.g. "FX Driver Rates 2026-05-05"): a DQ
+-- dataset published into synthetic configs and folders. Owned by the
+-- system party (see config); every party consumes its sources.
+entity SimTheme {
+    name: String
+    owner: `SYSTEM_PARTY`
+
+    feeds: SimFeed with theme = this
+}
+
+-- One synthetic producer: publishes ticks on
+-- synthetic.v1.tick.<source_name>. The source_name is namespaced by
+-- theme and pair ("synthetic.<theme>.<pair>"), not by party: there is
+-- exactly one producer per source per environment (config).
+entity SimFeed {
+    theme: SimTheme
+    source_name: String
+    ore_key: String
+
+    -- The feed config row the producer was built from; lives under
+    -- the system party, invisible to consuming parties.
+    config: FeedConfig
+}
+
+entity FeedConfig {
+    party_id: Uuid
+    folder_id: Uuid?
+    source_name: String
+    ore_key: String
+    enabled: Boolean
+}
+
+-- The consumption contract: one row per (tenant, party, workspace,
+-- source). The marketdata service subscribes on the source's subject
+-- per enabled binding and persists each tick under the binding's
+-- party. workspace_id defaults to the Live sentinel, which resolves
+-- in the binding's own tenant (every tenant has a Live workspace
+-- with that id).
+entity FeedBinding {
+    tenant_id: Uuid
+    party_id: Uuid
+    workspace_id: Uuid = live_workspace_id
+    source_name: String
+    ore_key: String
+    enabled: Boolean
+    asset_class: `FX` | `RATES` | `CREDIT` | `EQUITY` | `COMMODITY` | `INFLATION` | `BOND` | `CROSS_ASSET` = `FX`
+}
+
+-- One ingest subscription per binding, keyed by (source_name,
+-- tenant, party, workspace). Each subscription receives the shared
+-- stream (JetStream delivers a copy per consumer) and writes
+-- observations under its own party. It also republishes the tick on
+-- the binding's own realtime subject (see RepublishedTickStream).
+entity IngestSubscription {
+    binding: FeedBinding
+    subject: String  -- synthetic.v1.tick.<source_name>
+    tick_count: Integer = 0
+}
+
+-- The official series, one per (party, series_type, metric,
+-- qualifier). Created lazily on the party's first tick. The series
+-- identity is per party; values come from the shared stream, so
+-- every party's series holds the same market.
+entity MarketSeries {
+    tenant_id: Uuid
+    party_id: Uuid
+    series_type: `FX` | `IR` | `CREDIT` | ...
+    metric: `SPOT` | `DISCOUNT` | `RATE` | ...
+    qualifier: String
+}
+
+entity MarketObservation {
+    series: MarketSeries
+    observation_datetime: Timestamp
+    value: Decimal
+    source: String
+    point_id: String
+}
+
+-- The realtime stream a consuming party sees: one subject per
+-- (tenant, workspace, party, ore_key). Each party's stream is its
+-- own; the values are the same across parties (consistent world).
+-- The ore_key subject is the ore_key with '/' replaced by '.',
+-- lower-cased (fx_spot_subscription's ore_key_to_subject).
+entity RepublishedTickStream {
+    subject: String  -- marketdata.v1.tick.<tenant>.<workspace>.<party>.<ore_key>
+    consumer: `FX_SPOT_SUBSCRIPTION` | `CHART` | ...
+}
+
+-- The CRM topology config: per-party rows (topology config and
+-- driver pairs). The ingest bridge offers each tick tenant-wide;
+-- every party with a matching driver edge updates from its own
+-- config. Config is never shared between parties.
+entity CrmTopologyConfig {
+    party_id: Uuid
+    name: String
+    pivot_currency_code: String
+    enabled: Boolean
+
+    driver_pairs: CrmDriverPair with config = this
+}
+
+entity CrmDriverPair {
+    config: CrmTopologyConfig
+    base_currency_code: String
+    quote_currency_code: String
+}

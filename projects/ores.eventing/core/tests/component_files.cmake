@@ -17,7 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
-    "main.cpp"
     "entity_event_publisher_tests.cpp"
+    "main.cpp"
     "partitioned_cache_tests.cpp"
 )

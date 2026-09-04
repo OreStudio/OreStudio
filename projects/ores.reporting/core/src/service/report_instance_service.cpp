@@ -71,9 +71,10 @@ void report_instance_service::save_instance(const domain::report_instance& v) {
 
 void report_instance_service::save_instances(
     const std::vector<domain::report_instance>& instances) {
-    for (const auto& e : instances)
+    for (const auto& e : instances) {
         if (e.id.is_nil())
             throw std::invalid_argument("Report Instance id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << instances.size() << " report instances";
     auto ts = instances;
     for (auto& e : ts)

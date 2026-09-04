@@ -142,16 +142,10 @@ std::vector<domain::{{entity_singular}}>
 {{/has_batch_read}}
 
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
-{{#primary_key.is_uuid}}
-    if (v.{{#primary_key.is_identity_group_column}}identity.{{/primary_key.is_identity_group_column}}{{primary_key.column}}.is_nil())
-        throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
-{{/primary_key.is_uuid}}
-{{^primary_key.is_uuid}}
 {{#primary_key.columns}}
-    if (v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.empty())
+    if (v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
         throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
 {{/primary_key.columns}}
-{{/primary_key.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
     stamp(t, ctx_);
@@ -161,19 +155,12 @@ void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{
 
 void {{entity_singular}}_service::save_{{entity_plural_short}}(
     const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
-{{#primary_key.is_uuid}}
-    for (const auto& e : {{entity_plural_short}})
-        if (e.{{#primary_key.is_identity_group_column}}identity.{{/primary_key.is_identity_group_column}}{{primary_key.column}}.is_nil())
-            throw std::invalid_argument("{{entity_title}} {{primary_key.column}} cannot be empty.");
-{{/primary_key.is_uuid}}
-{{^primary_key.is_uuid}}
     for (const auto& e : {{entity_plural_short}}) {
 {{#primary_key.columns}}
-        if (e.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.empty())
+        if (e.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
             throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
 {{/primary_key.columns}}
     }
-{{/primary_key.is_uuid}}
     BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()
         << " {{entity_plural_words}}";
     auto ts = {{entity_plural_short}};

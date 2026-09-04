@@ -74,9 +74,10 @@ void ir_curve_template_entry_service::save_ir_curve_template_entry(
 
 void ir_curve_template_entry_service::save_ir_curve_template_entries(
     const std::vector<domain::ir_curve_template_entry>& ir_curve_template_entries) {
-    for (const auto& e : ir_curve_template_entries)
+    for (const auto& e : ir_curve_template_entries) {
         if (e.id.is_nil())
             throw std::invalid_argument("IR Curve Template Entry id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ir_curve_template_entries.size()
                                << " IR curve template entries";
     auto ts = ir_curve_template_entries;

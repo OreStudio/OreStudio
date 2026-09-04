@@ -74,9 +74,10 @@ void ir_curve_generation_config_service::save_ir_curve_generation_config(
 
 void ir_curve_generation_config_service::save_ir_curve_generation_configs(
     const std::vector<domain::ir_curve_generation_config>& ir_curve_generation_configs) {
-    for (const auto& e : ir_curve_generation_configs)
+    for (const auto& e : ir_curve_generation_configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("IR Curve Generation Config id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << ir_curve_generation_configs.size()
                                << " IR curve generation configs";
     auto ts = ir_curve_generation_configs;

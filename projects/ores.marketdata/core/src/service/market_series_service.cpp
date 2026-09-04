@@ -71,9 +71,10 @@ void market_series_service::save_market_series(const domain::market_series& v) {
 
 void market_series_service::save_market_series(
     const std::vector<domain::market_series>& market_series) {
-    for (const auto& e : market_series)
+    for (const auto& e : market_series) {
         if (e.id.is_nil())
             throw std::invalid_argument("Market Series id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_series.size() << " market series";
     auto ts = market_series;
     for (auto& e : ts)

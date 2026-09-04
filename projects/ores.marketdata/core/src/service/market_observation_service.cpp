@@ -80,9 +80,10 @@ void market_observation_service::save_market_observation(const domain::market_ob
 
 void market_observation_service::save_market_observations(
     const std::vector<domain::market_observation>& market_observations) {
-    for (const auto& e : market_observations)
+    for (const auto& e : market_observations) {
         if (e.id.is_nil())
             throw std::invalid_argument("Market Observation id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_observations.size() << " market observations";
     auto ts = market_observations;
     for (auto& e : ts)

@@ -84,10 +84,11 @@ void ir_curve_generation_config_process_parameter_value_service::save_process_pa
 void ir_curve_generation_config_process_parameter_value_service::save_process_parameter_values(
     const std::vector<domain::ir_curve_generation_config_process_parameter_value>&
         process_parameter_values) {
-    for (const auto& e : process_parameter_values)
+    for (const auto& e : process_parameter_values) {
         if (e.id.is_nil())
             throw std::invalid_argument(
                 "IR Curve Generation Config Process Parameter Value id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << process_parameter_values.size()
                                << " IR curve generation config process parameter values";
     auto ts = process_parameter_values;

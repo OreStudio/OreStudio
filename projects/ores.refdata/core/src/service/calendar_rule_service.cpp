@@ -93,9 +93,10 @@ void calendar_rule_service::save_calendar_rule(const domain::calendar_rule& v) {
 
 void calendar_rule_service::save_calendar_rules(
     const std::vector<domain::calendar_rule>& calendar_rules) {
-    for (const auto& e : calendar_rules)
+    for (const auto& e : calendar_rules) {
         if (e.id.is_nil())
             throw std::invalid_argument("Calendar Rule id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_rules.size() << " calendar rules";
     auto ts = calendar_rules;
     for (auto& e : ts)

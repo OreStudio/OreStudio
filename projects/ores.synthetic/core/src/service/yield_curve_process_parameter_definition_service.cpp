@@ -78,10 +78,11 @@ void yield_curve_process_parameter_definition_service::save_parameter_definition
 
 void yield_curve_process_parameter_definition_service::save_parameter_definitions(
     const std::vector<domain::yield_curve_process_parameter_definition>& parameter_definitions) {
-    for (const auto& e : parameter_definitions)
+    for (const auto& e : parameter_definitions) {
         if (e.id.is_nil())
             throw std::invalid_argument(
                 "Yield Curve Process Parameter Definition id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parameter_definitions.size()
                                << " yield curve process parameter definitions";
     auto ts = parameter_definitions;

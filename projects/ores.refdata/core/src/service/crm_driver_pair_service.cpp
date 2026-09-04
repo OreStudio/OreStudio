@@ -72,9 +72,10 @@ void crm_driver_pair_service::save_crm_driver_pair(const domain::crm_driver_pair
 
 void crm_driver_pair_service::save_crm_driver_pairs(
     const std::vector<domain::crm_driver_pair>& crm_driver_pairs) {
-    for (const auto& e : crm_driver_pairs)
+    for (const auto& e : crm_driver_pairs) {
         if (e.id.is_nil())
             throw std::invalid_argument("CRM Driver Pair id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << crm_driver_pairs.size() << " CRM driver pairs";
     auto ts = crm_driver_pairs;
     for (auto& e : ts)

@@ -119,9 +119,10 @@ void calendar_event_service::save_calendar_event(const domain::calendar_event& v
 
 void calendar_event_service::save_calendar_events(
     const std::vector<domain::calendar_event>& calendar_events) {
-    for (const auto& e : calendar_events)
+    for (const auto& e : calendar_events) {
         if (e.id.is_nil())
             throw std::invalid_argument("Calendar Event id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_events.size() << " calendar events";
     auto ts = calendar_events;
     for (auto& e : ts)

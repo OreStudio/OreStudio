@@ -69,9 +69,10 @@ void folder_service::save_folder(const domain::folder& v) {
 }
 
 void folder_service::save_folders(const std::vector<domain::folder>& folders) {
-    for (const auto& e : folders)
+    for (const auto& e : folders) {
         if (e.id.is_nil())
             throw std::invalid_argument("Folder id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << folders.size() << " folders";
     auto ts = folders;
     for (auto& e : ts)

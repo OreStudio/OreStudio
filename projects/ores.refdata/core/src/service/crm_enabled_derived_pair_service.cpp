@@ -74,9 +74,10 @@ void crm_enabled_derived_pair_service::save_crm_enabled_derived_pair(
 
 void crm_enabled_derived_pair_service::save_crm_enabled_derived_pairs(
     const std::vector<domain::crm_enabled_derived_pair>& crm_enabled_derived_pairs) {
-    for (const auto& e : crm_enabled_derived_pairs)
+    for (const auto& e : crm_enabled_derived_pairs) {
         if (e.id.is_nil())
             throw std::invalid_argument("CRM Enabled Derived Pair id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << crm_enabled_derived_pairs.size()
                                << " CRM enabled derived pairs";
     auto ts = crm_enabled_derived_pairs;

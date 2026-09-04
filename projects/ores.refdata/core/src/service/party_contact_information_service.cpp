@@ -133,9 +133,10 @@ void party_contact_information_service::save_party_contact_information(
 
 void party_contact_information_service::save_party_contact_informations(
     const std::vector<domain::party_contact_information>& party_contact_informations) {
-    for (const auto& e : party_contact_informations)
+    for (const auto& e : party_contact_informations) {
         if (e.id.is_nil())
             throw std::invalid_argument("Party Contact Information id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_contact_informations.size()
                                << " party contact informations";
     auto ts = party_contact_informations;

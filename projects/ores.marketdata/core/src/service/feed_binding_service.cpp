@@ -70,9 +70,10 @@ void feed_binding_service::save_feed_binding(const domain::feed_binding& v) {
 
 void feed_binding_service::save_feed_bindings(
     const std::vector<domain::feed_binding>& feed_bindings) {
-    for (const auto& e : feed_bindings)
+    for (const auto& e : feed_bindings) {
         if (e.id.is_nil())
             throw std::invalid_argument("Feed Binding id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << feed_bindings.size() << " feed bindings";
     auto ts = feed_bindings;
     for (auto& e : ts)

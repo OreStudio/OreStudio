@@ -98,9 +98,10 @@ void account_contact_information_service::save_account_contact_information(
 
 void account_contact_information_service::save_account_contact_informations(
     const std::vector<domain::account_contact_information>& account_contact_informations) {
-    for (const auto& e : account_contact_informations)
+    for (const auto& e : account_contact_informations) {
         if (e.id.is_nil())
             throw std::invalid_argument("Account Contact Information id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << account_contact_informations.size()
                                << " account contact informations";
     auto ts = account_contact_informations;

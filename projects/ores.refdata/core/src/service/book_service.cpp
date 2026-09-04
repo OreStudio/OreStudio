@@ -91,9 +91,10 @@ void book_service::save_book(const domain::book& v) {
 }
 
 void book_service::save_books(const std::vector<domain::book>& books) {
-    for (const auto& e : books)
+    for (const auto& e : books) {
         if (e.id.is_nil())
             throw std::invalid_argument("Book id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << books.size() << " books";
     auto ts = books;
     for (auto& e : ts)

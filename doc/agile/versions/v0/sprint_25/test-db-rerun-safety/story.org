@@ -21,11 +21,11 @@ Every ctest and CDash Experimental cycle is rerunnable without manual database s
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing. |
 | Last touched  | 2026-09-04                               |
 
 * Acceptance
@@ -33,18 +33,40 @@ Every ctest and CDash Experimental cycle is rerunnable without manual database s
 - An aborted fixture-writing run leaves no residue that poisons the
   next run: ctest and CDash Experimental cycles are rerunnable with no
   manual database surgery, verified by an abort-then-rerun
-  reproduction.
+  reproduction. *Done 2026-09-04*: SIGKILL reproduction plus ctest
+  71/71 and a CDash Experimental submission green with no manual
+  cleanup between runs.
 - The mechanism keys on the synthetic markers (change_reason_code
   system.test, the test DML user), honours the bitemporal close
-  semantics, and never touches rows a real user created.
+  semantics, and never touches rows a real user created. *Done
+  2026-09-04*: pre-run sweep keys on the markers and rides the ON
+  DELETE DO INSTEAD rules; seed rows carry system.initial_load and the
+  DDL user, so they are untouched.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:00C324E7-20EA-4675-B8D5-4E4C24D2A6CF][Close the test-db rerun-safety gap]] | STARTED | 2026-09-04 | | An aborted ores.iam.core.tests run leaves OPEN bitemporal rows in the shared per-worktree test database that poison the next run with duplicate-key failures; the gap needs a root-cause write-up and a suite-level or harness-level fix. |
+| [[id:00C324E7-20EA-4675-B8D5-4E4C24D2A6CF][Close the test-db rerun-safety gap]] | DONE | 2026-09-04 | 2026-09-04 | An aborted ores.iam.core.tests run leaves OPEN bitemporal rows in the shared per-worktree test database that poison the next run with duplicate-key failures; the gap needs a root-cause write-up and a suite-level or harness-level fix. |
 
 * Decisions
+
+- 2026-09-04: chose a harness-level pre-run sweep over failure-safe
+  teardown for rerun safety. Teardown cannot run when a process is
+  SIGKILLed and the fixture suites have no teardown today, so only a
+  sweep covers the hard-abort case. The sweep keys on the synthetic
+  markers (=change_reason_code = 'system.test'=, the test DML user as
+  =performed_by=), scopes to the system tenant and OPEN rows, and
+  issues a plain DELETE so each table's existing =ON DELETE DO
+  INSTEAD= rule performs the bitemporal close — no new DDL, no new
+  close semantics, idempotent. The statement lives in
+  =test_database_manager=, the invocation in
+  =database_lifecycle_listener= at =testRunStarting=, and the
+  registering binary names the tables it writes into the shared
+  tenant. Only tables whose residue can collide are registered: a
+  collision needs a unique key that is deterministic across runs,
+  which holds only for the faker-named tenant_types and
+  tenant_statuses rows of the iam repository tests.
 
 * Out of scope
 

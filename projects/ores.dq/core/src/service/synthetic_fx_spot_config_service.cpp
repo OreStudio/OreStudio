@@ -72,9 +72,10 @@ void synthetic_fx_spot_config_service::save_config(const domain::synthetic_fx_sp
 
 void synthetic_fx_spot_config_service::save_configs(
     const std::vector<domain::synthetic_fx_spot_config>& configs) {
-    for (const auto& e : configs)
+    for (const auto& e : configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("Synthetic FX Spot Config id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << configs.size() << " synthetic FX spot configs";
     auto ts = configs;
     for (auto& e : ts)

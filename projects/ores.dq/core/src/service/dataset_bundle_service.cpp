@@ -69,9 +69,10 @@ void dataset_bundle_service::save_bundle(const domain::dataset_bundle& v) {
 }
 
 void dataset_bundle_service::save_bundles(const std::vector<domain::dataset_bundle>& bundles) {
-    for (const auto& e : bundles)
+    for (const auto& e : bundles) {
         if (e.id.is_nil())
             throw std::invalid_argument("Dataset Bundle id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << bundles.size() << " dataset bundles";
     auto ts = bundles;
     for (auto& e : ts)

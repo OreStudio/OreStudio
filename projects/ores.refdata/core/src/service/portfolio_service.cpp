@@ -78,9 +78,10 @@ void portfolio_service::save_portfolio(const domain::portfolio& v) {
 }
 
 void portfolio_service::save_portfolios(const std::vector<domain::portfolio>& portfolios) {
-    for (const auto& e : portfolios)
+    for (const auto& e : portfolios) {
         if (e.id.is_nil())
             throw std::invalid_argument("Portfolio id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << portfolios.size() << " portfolios";
     auto ts = portfolios;
     for (auto& e : ts)

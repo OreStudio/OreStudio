@@ -127,9 +127,10 @@ void party_identifier_service::save_party_identifier(const domain::party_identif
 
 void party_identifier_service::save_party_identifiers(
     const std::vector<domain::party_identifier>& party_identifiers) {
-    for (const auto& e : party_identifiers)
+    for (const auto& e : party_identifiers) {
         if (e.id.is_nil())
             throw std::invalid_argument("Party Identifier id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << party_identifiers.size() << " party identifiers";
     auto ts = party_identifiers;
     for (auto& e : ts)

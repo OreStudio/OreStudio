@@ -74,9 +74,10 @@ void ir_curve_bootstrap_config_service::save_bootstrap_config(
 
 void ir_curve_bootstrap_config_service::save_bootstrap_configs(
     const std::vector<domain::ir_curve_bootstrap_config>& bootstrap_configs) {
-    for (const auto& e : bootstrap_configs)
+    for (const auto& e : bootstrap_configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("IR Curve Bootstrap Config id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << bootstrap_configs.size()
                                << " IR curve bootstrap configs";
     auto ts = bootstrap_configs;

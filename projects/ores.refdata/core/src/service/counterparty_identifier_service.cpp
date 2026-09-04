@@ -138,9 +138,10 @@ void counterparty_identifier_service::save_counterparty_identifier(
 
 void counterparty_identifier_service::save_counterparty_identifiers(
     const std::vector<domain::counterparty_identifier>& counterparty_identifiers) {
-    for (const auto& e : counterparty_identifiers)
+    for (const auto& e : counterparty_identifiers) {
         if (e.id.is_nil())
             throw std::invalid_argument("Counterparty Identifier id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_identifiers.size()
                                << " counterparty identifiers";
     auto ts = counterparty_identifiers;

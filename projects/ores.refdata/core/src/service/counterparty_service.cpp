@@ -89,9 +89,10 @@ void counterparty_service::save_counterparty(const domain::counterparty& v) {
 
 void counterparty_service::save_counterparties(
     const std::vector<domain::counterparty>& counterparties) {
-    for (const auto& e : counterparties)
+    for (const auto& e : counterparties) {
         if (e.id.is_nil())
             throw std::invalid_argument("Counterparty id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparties.size() << " counterparties";
     auto ts = counterparties;
     for (auto& e : ts)

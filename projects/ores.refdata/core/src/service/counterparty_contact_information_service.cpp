@@ -147,9 +147,10 @@ void counterparty_contact_information_service::save_counterparty_contact_informa
 void counterparty_contact_information_service::save_counterparty_contact_informations(
     const std::vector<domain::counterparty_contact_information>&
         counterparty_contact_informations) {
-    for (const auto& e : counterparty_contact_informations)
+    for (const auto& e : counterparty_contact_informations) {
         if (e.id.is_nil())
             throw std::invalid_argument("Counterparty Contact Information id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << counterparty_contact_informations.size()
                                << " counterparty contact informations";
     auto ts = counterparty_contact_informations;

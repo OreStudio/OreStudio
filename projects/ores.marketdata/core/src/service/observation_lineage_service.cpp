@@ -72,9 +72,10 @@ void observation_lineage_service::save_observation_lineage(const domain::observa
 
 void observation_lineage_service::save_observation_lineages(
     const std::vector<domain::observation_lineage>& observation_lineages) {
-    for (const auto& e : observation_lineages)
+    for (const auto& e : observation_lineages) {
         if (e.id.is_nil())
             throw std::invalid_argument("Observation Lineage id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << observation_lineages.size()
                                << " observation lineages";
     auto ts = observation_lineages;

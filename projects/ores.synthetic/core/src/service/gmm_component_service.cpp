@@ -71,9 +71,10 @@ void gmm_component_service::save_gmm_component(const domain::gmm_component& v) {
 
 void gmm_component_service::save_gmm_components(
     const std::vector<domain::gmm_component>& gmm_components) {
-    for (const auto& e : gmm_components)
+    for (const auto& e : gmm_components) {
         if (e.id.is_nil())
             throw std::invalid_argument("GMM Component id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << gmm_components.size() << " GMM components";
     auto ts = gmm_components;
     for (auto& e : ts)

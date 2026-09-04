@@ -85,9 +85,10 @@ void party_service::save_party(const domain::party& v) {
 }
 
 void party_service::save_parties(const std::vector<domain::party>& parties) {
-    for (const auto& e : parties)
+    for (const auto& e : parties) {
         if (e.id.is_nil())
             throw std::invalid_argument("Party id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parties.size() << " parties";
     auto ts = parties;
     for (auto& e : ts)

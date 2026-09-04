@@ -71,9 +71,10 @@ void report_definition_service::save_definition(const domain::report_definition&
 
 void report_definition_service::save_definitions(
     const std::vector<domain::report_definition>& definitions) {
-    for (const auto& e : definitions)
+    for (const auto& e : definitions) {
         if (e.id.is_nil())
             throw std::invalid_argument("Report Definition id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << definitions.size() << " report definitions";
     auto ts = definitions;
     for (auto& e : ts)

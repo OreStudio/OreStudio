@@ -92,9 +92,10 @@ void business_unit_service::save_business_unit(const domain::business_unit& v) {
 
 void business_unit_service::save_business_units(
     const std::vector<domain::business_unit>& business_units) {
-    for (const auto& e : business_units)
+    for (const auto& e : business_units) {
         if (e.id.is_nil())
             throw std::invalid_argument("Business Unit id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << business_units.size() << " business units";
     auto ts = business_units;
     for (auto& e : ts)

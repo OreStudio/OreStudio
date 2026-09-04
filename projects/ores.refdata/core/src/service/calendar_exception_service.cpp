@@ -95,9 +95,10 @@ void calendar_exception_service::save_calendar_exception(const domain::calendar_
 
 void calendar_exception_service::save_calendar_exceptions(
     const std::vector<domain::calendar_exception>& calendar_exceptions) {
-    for (const auto& e : calendar_exceptions)
+    for (const auto& e : calendar_exceptions) {
         if (e.id.is_nil())
             throw std::invalid_argument("Calendar Exception id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << calendar_exceptions.size() << " calendar exceptions";
     auto ts = calendar_exceptions;
     for (auto& e : ts)

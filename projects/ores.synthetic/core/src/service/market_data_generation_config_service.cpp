@@ -74,9 +74,10 @@ void market_data_generation_config_service::save_market_data_generation_config(
 
 void market_data_generation_config_service::save_market_data_generation_configs(
     const std::vector<domain::market_data_generation_config>& market_data_generation_configs) {
-    for (const auto& e : market_data_generation_configs)
+    for (const auto& e : market_data_generation_configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("Market Data Generation Config id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_data_generation_configs.size()
                                << " market data generation configs";
     auto ts = market_data_generation_configs;

@@ -70,9 +70,10 @@ void business_unit_type_service::save_type(const domain::business_unit_type& v) 
 }
 
 void business_unit_type_service::save_types(const std::vector<domain::business_unit_type>& types) {
-    for (const auto& e : types)
+    for (const auto& e : types) {
         if (e.id.is_nil())
             throw std::invalid_argument("Business Unit Type id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << types.size() << " business unit types";
     auto ts = types;
     for (auto& e : ts)

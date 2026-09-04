@@ -64,9 +64,10 @@ void market_fixing_service::save_market_fixing(const domain::market_fixing& v) {
 
 void market_fixing_service::save_market_fixings(
     const std::vector<domain::market_fixing>& market_fixings) {
-    for (const auto& e : market_fixings)
+    for (const auto& e : market_fixings) {
         if (e.id.is_nil())
             throw std::invalid_argument("Market Fixing id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << market_fixings.size() << " market fixings";
     auto ts = market_fixings;
     for (auto& e : ts)

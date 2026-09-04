@@ -72,9 +72,10 @@ void ir_curve_bootstrap_pillar_service::save_pillar(const domain::ir_curve_boots
 
 void ir_curve_bootstrap_pillar_service::save_pillars(
     const std::vector<domain::ir_curve_bootstrap_pillar>& pillars) {
-    for (const auto& e : pillars)
+    for (const auto& e : pillars) {
         if (e.id.is_nil())
             throw std::invalid_argument("IR Curve Bootstrap Pillar id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << pillars.size() << " IR curve bootstrap pillars";
     auto ts = pillars;
     for (auto& e : ts)

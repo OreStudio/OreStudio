@@ -74,9 +74,10 @@ void fx_spot_generation_config_service::save_fx_spot_generation_config(
 
 void fx_spot_generation_config_service::save_fx_spot_generation_configs(
     const std::vector<domain::fx_spot_generation_config>& fx_spot_generation_configs) {
-    for (const auto& e : fx_spot_generation_configs)
+    for (const auto& e : fx_spot_generation_configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("FX Spot Generation Config id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_spot_generation_configs.size()
                                << " FX spot generation configs";
     auto ts = fx_spot_generation_configs;

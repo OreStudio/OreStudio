@@ -72,9 +72,10 @@ void crm_topology_config_service::save_crm_topology_config(const domain::crm_top
 
 void crm_topology_config_service::save_crm_topology_configs(
     const std::vector<domain::crm_topology_config>& crm_topology_configs) {
-    for (const auto& e : crm_topology_configs)
+    for (const auto& e : crm_topology_configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("CRM Topology Config id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << crm_topology_configs.size()
                                << " CRM topology configs";
     auto ts = crm_topology_configs;

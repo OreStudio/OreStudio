@@ -1,0 +1,187 @@
+:PROPERTIES:
+:ID: 7908E2AF-E196-443F-8FB7-0047553D8EFE
+:END:
+#+title: Codegen Fix Drift
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:codegen:drift:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+
+#+begin_export markdown
+---
+name: codegen-fix-drift
+description: Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, byte-identical regen, generated-code review, then extend the drift gate.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+A component's codegen entity models must reach zero drift: every entity
+bound to a variability profile, regeneration byte-identical to the
+checked-in output, and the drift check extended to that component.
+Reach for this skill at the start of a per-component remediation story,
+and again whenever a regeneration surfaces drift later. One component
+per invocation; the composite components (=ores.dq=, =ores.iam=,
+=ores.trading=) run it once per subcomponent task.
+
+* How to use this skill
+
+Run the steps in order. No step is skippable, and partial codegen
+coverage is not a valid end state. The drift check lives at
+=projects/ores.codegen/scripts/check_component_drift.py=: it
+regenerates the component in place and exits non-zero on any diff
+against the checked-in files. This is the tool that measures, the
+surveys and regenerations below do the work.
+
+1. *Establish the baseline before any model edit.* Regenerate the
+   component's models with the files untouched and diff against the
+   checked-in output. Whatever differs is pre-existing drift: record
+   it and revert the output. A later diff is attributable only against
+   this baseline. Both pilots found real codegen bugs this way, before
+   touching any model: the pilot's =currency_calendar= had stale
+   includes and missing facets; the dq run's =org_loader.py= never read
+   the =lookup_entity= primary-key heading and silently corrupted DDL
+   for every lookup entity in the repo.
+
+2. *Survey every model file.* Walk the component's modeling
+   directory; when two component entries share one directory (dq and
+   dq-cpp both use =projects/ores.dq/modeling=), survey it once.
+   Classify each file by metatype. Only entity metatypes carry
+   variability: =domain_entity=, =junction=, and legacy
+   =lookup_entity= (migrate these to =domain_entity= rather than
+   binding them, per the lookup-entity retirement). =field_group=,
+   =module=, and =component= are structurally not entities: record and
+   exclude them with the reason, matching the pilot's precedent.
+
+3. *Compute resolved feature values.* For each entity, read the
+   features the profile catalogue assigns and the entity's own
+   properties, and resolve defaults the way =org_loader.py= does.
+   Compare *every* profile-assigned feature against the entity's
+   actual resolved value, not only the features the entity already
+   sets: an unset feature that the profile fixes to a value is a real
+   mismatch (the pilot's =leg_type= and =business_unit=: one was a
+   genuine gap, the other genuinely bespoke). The Qt half of a
+   profile is inert when the entity has no =** Qt= drawer — match on
+   the =root=/=sql= features alone in that case.
+
+4. *Bind every matching entity.* Replace the explicit per-entity
+   feature properties the profile covers with =:profile: <name>=, and
+   keep the structural fields and per-entity naming. An explicit
+   per-entity property still overrides the profile's value where both
+   are present. When no profile matches, record the entity with its
+   actual feature values and the reason — never force the nearest
+   profile onto it (the =business_unit= precedent: a forced bind
+   would add a real, unwanted =workspace_id= column). A novel
+   combination is a new-profile candidate only once a second entity
+   repeats it. A deliberate-looking mismatch (a UI or product
+   decision, e.g. pagination unset where the profile fixes it) is real
+   data: record it and flag it for a product conversation. Never
+   silently drop a no-match.
+
+5. *Regenerate; require byte-identical output.* Process the entities
+   one at a time through a scripted, per-entity pipeline: regenerate
+   the unmodified file (the baseline from step 1), revert, apply the
+   bind, regenerate, and require the new diff to be an exact subset of
+   that baseline — zero *additional* diff — before keeping the edit;
+   otherwise revert and flag it. Any additional diff is a bug in the
+   profile, the matching, or a template: find the root cause in
+   =org_loader.py=, the template, or the archetype, fix it at the
+   source, and add a regression test. Work arounds are not a fix.
+   Regenerate a second time and require byte-identical output: the
+   component's regeneration must be idempotent.
+
+6. *Review the generated code for C++ idiomaticity and smells.* Read
+   the regenerated output as you would a hand-written PR: naming,
+   shape, and structure must match the component's best existing code
+   (the stateless repository shape, the standard controller
+   constructor order, the generic history dialog). A finding is a
+   template bug: fix the template, never the generated output.
+
+7. *Extend the drift gate last.* Add the component to the
+   drift-check component list and wire the CI job that regenerates
+   the component on every PR and fails on any diff, following the
+   pilot's refdata job. The gate lands only on a component at
+   verified zero drift: it enforces the method, it does not replace
+   it. Run the whole component through the checker once more before
+   the PR that lands the gate.
+
+** Exception: an entity too complex to code-generate
+
+Partial coverage is not an end state, but a genuinely
+too-complex-to-generate entity is a recorded exception, not a forced
+bind. An exception needs, per entity: the recorded justification (the
+feature values that make it too complex and why codegen cannot express
+them), and the entity stays visible to the drift check — no exclusion
+that hides a manual artefact from the gate. Revisit the justification
+when the systemic codegen-gap stories land; a gap closed upstream may
+make the entity regular after all.
+
+** Automation ramp (levels L0-L2)
+
+Automation starts granular and rises only on evidence:
+
+- *Level 0 — manual, per fix.* Every fix is verified by build, test,
+  and byte-identical regen diff before its PR; PRs stay small and
+  human-reviewable. This is the mandatory mode for the remediation
+  stories.
+- *Level 1 — scripted verification, same granularity.* Promote when
+  one full component has passed through level 0 end-to-end, its drift
+  gate is live on main, and every codegen bug the run surfaced was
+  fixed at source with a regression test — no temporary workarounds
+  outstanding. The pilot's scripted per-entity pipeline (baseline
+  regen, bind, subset-diff) automates the verification only; commits
+  stay one entity per logical change. The pilot itself ran at this
+  level.
+- *Level 2 — batched within a component.* Promote when a further
+  component has completed level 1 with no template fix needed, i.e.
+  the templates held steady across components and the systemic
+  codegen-gap stories are closed. Then a component's remaining binds
+  may be regenerated as one reviewed unit instead of one commit per
+  entity.
+
+* Recipes
+
+- (None yet. The ordered procedure above is self-contained; the
+  worked records in Reference are the closest procedure documents.)
+
+* Reference
+
+- [[id:AD953FB1-65AF-4475-BF67-E964DA6CA5D4][Bind ores.refdata entities to profiles; verify zero-diff regen]] — the
+  pilot worked record: baseline-first attribution, per-entity
+  pipeline, profile-matching lessons, =business_unit=/=leg_type=
+  cases.
+- [[id:163AC07E-19E4-4486-A503-8170D9B46108][Bind ores.dq entities to profiles; verify zero-diff regen]] — the
+  second worked record: composite-component survey, idempotency
+  verification, deliberate-mismatch recording, no-match reasons.
+- [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline: ores.refdata pilot]] — the
+  sprint 24 dimension settlement that grounds the survey.
+- [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] — the
+  2026-09-03 program decisions this skill encodes (foundations-first
+  ordering, exception rule, automation principle).
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — the named profiles entities bind to; the
+  source of truth for profile-assigned features.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -2,12 +2,12 @@
 :ID: 058DF966-13E0-4D97-9A8B-F22301411015
 :END:
 #+title: Story: Entity evaluation skill and runbook
-#+description: Create a reusable skill and runbook for evaluating the health of any entity: coverage matrix lookup, functional verification steps, and gap reporting. Discarded 2026-09-03: superseded by the method-skill task 43EE3BC6-C813-45FD-8348-26919720FDAA in the drift-rollout story, and by the per-layer criteria merged into the entity commissioning process reference.
+#+description: Create a reusable skill and runbook for evaluating the health of any entity: coverage matrix lookup, functional verification steps, and gap reporting. Discarded 2026-09-03: superseded by the codegen-fix-drift skill (delivered by the method-skill task 43EE3BC6-C813-45FD-8348-26919720FDAA in the drift-rollout story) and by the per-layer criteria merged into the entity commissioning process reference.
 #+type: story
 #+level: s2
 #+filetags: :llm:skill:runbook:entity:evaluation:sprint_19:v0:
 #+created: 2026-05-29
-#+updated: 2026-09-03
+#+updated: 2026-09-04
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:76AE36A4-A3ED-4F48-BDA0-977B362F2238][Sprint 19]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.

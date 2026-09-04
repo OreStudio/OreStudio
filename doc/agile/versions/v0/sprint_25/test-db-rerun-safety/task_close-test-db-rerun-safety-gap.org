@@ -1,0 +1,107 @@
+:PROPERTIES:
+:ID: 00C324E7-20EA-4675-B8D5-4E4C24D2A6CF
+:END:
+#+title: Task: Close the test-db rerun-safety gap
+#+description: An aborted ores.iam.core.tests run leaves OPEN bitemporal rows in the shared per-worktree test database that poison the next run with duplicate-key failures; the gap needs a root-cause write-up and a suite-level or harness-level fix.
+#+type: task
+#+level: s1
+#+filetags: :test-db-rerun-safety:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:CF4E06FF-CB08-484F-A354-91933CCCC7CD][Shared test database rerun safety]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Root-cause why an aborted fixture-writing suite leaves OPEN rows behind and why they poison the next run; land a fix at the suite or harness level so ctest and CDash Experimental cycles are reliably rerunnable with no manual database surgery.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:CF4E06FF-CB08-484F-A354-91933CCCC7CD][Shared test database rerun safety]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-04                               |
+
+* Acceptance
+
+- Root cause documented: the mechanism by which an aborted fixture-writing suite (ores.iam.core.tests) leaves OPEN bitemporal rows (valid_to = infinity) behind, and why OPEN rows collide with the next run (partial unique indexes constrain only open rows).
+- A fix lands at the suite or harness level: either failure-safe teardown that closes the suite synthetic rows when the run aborts, or a pre-run sweep that closes orphaned synthetic OPEN rows before tests start. The mechanism keys on the synthetic markers (change_reason_code system.test, the test DML user), honours the bitemporal close semantics (the ON DELETE DO INSTEAD rules turn DELETEs into valid_to = clock_timestamp() updates), and never touches rows a real user created.
+- Reproduction: abort a fixture-writing suite mid-run against a dirty database, then rerun with no manual intervention; the rerun is green.
+- Full ctest green (71/71) and a CDash Experimental submission green, with no manual database cleanup between runs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** Incident evidence (2026-09-04, scoping)
+
+Observed during the CDash Experimental reruns that closed task 2DFEF8F6:
+
+- An aborted =ores.iam.core.tests= run left 8 OPEN rows per table in
+  the shared per-worktree test database: faker-named tenant_types and
+  tenant_statuses rows (CD 1..8) in the system tenant
+  =ffffffff-ffff-ffff-ffff-ffffffffffff=, change_reason_code
+  =system.test=, commentary "Synthetic test data", performed by
+  =ores_brave_hopper_test_dml_user=. Both the parallel attempt and
+  serial rerun #1 aborted on duplicate keys against these rows; the
+  failing suite teardown then closed all 16 rows in one multi-row
+  close (8 timestamps within 0.2 ms) and serial rerun #2 was green on
+  the clean database.
+- Open rows collide with fresh inserts because the partial unique
+  indexes (e.g. =tenant_types_name_uniq_idx ... WHERE valid_to =
+  infinity=) constrain only OPEN rows. Raw DELETE on an OPEN row is
+  translated by the =ON DELETE DO INSTEAD= rules into
+  =UPDATE ... SET valid_to = clock_timestamp()=; DELETE RETURNING
+  errors without a RETURNING rule.
+- Evidence to verify against: fixture writing in
+  =ores.testing/database_helper.cpp= and
+  =test_database_manager.cpp=, the iam repository fixture tests,
+  =CTest.cmake= (PARALLEL_LEVEL = nproc capped by
+  CTEST_MAX_PARALLELISM), and the bitemporal close rules in the
+  ores_iam DDL.
+- Same residue class was already documented for rat runs on 2026-08-12
+  in [[id:ABF849AE-7E40-4557-B58B-1C3F273603DE][the iam-rat-residue memory]] (identical CD N faker rows, partial
+  unique index collisions, soft-close remediation); that memory's
+  manual remediation is what this task automates away. Note the test
+  DML user is environment-specific (ores_swift_curie on swift_curie,
+  ores_brave_hopper on brave_hopper).
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

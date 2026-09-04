@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: CF4E06FF-CB08-484F-A354-91933CCCC7CD
+:END:
+#+title: Story: Shared test database rerun safety
+#+description: An aborted fixture-writing test suite can leave synthetic rows open in the shared per-worktree test database; the next run then aborts on duplicate keys. CDash Experimental must be rerunnable without manual database surgery.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-04
+#+updated: 2026-09-04
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Every ctest and CDash Experimental cycle is rerunnable without manual database surgery, even after an earlier fixture-writing run aborted mid-run.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-04                               |
+
+* Acceptance
+
+- An aborted fixture-writing run leaves no residue that poisons the
+  next run: ctest and CDash Experimental cycles are rerunnable with no
+  manual database surgery, verified by an abort-then-rerun
+  reproduction.
+- The mechanism keys on the synthetic markers (change_reason_code
+  system.test, the test DML user), honours the bitemporal close
+  semantics, and never touches rows a real user created.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:00C324E7-20EA-4675-B8D5-4E4C24D2A6CF][Close the test-db rerun-safety gap]] | BACKLOG | | | An aborted ores.iam.core.tests run leaves OPEN bitemporal rows in the shared per-worktree test database that poison the next run with duplicate-key failures; the gap needs a root-cause write-up and a suite-level or harness-level fix. |
+
+* Decisions
+
+* Out of scope
+
+- Changes to ctest parallelism policy (CTEST_MAX_PARALLELISM): the
+  rerun-safety failure mode is leftover open rows, not parallelism.
+- Altering the bitemporal schema or the ON DELETE DO INSTEAD close
+  semantics of the shared database.
+- Reconciling the quarantined codegen regeneration byproducts (stash
+  entry ad0c738b9a): that is the regen-byproduct-hygiene memory's
+  concern, not this story's.

@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | Scenario | State | Notes |
 |----------+-------+-------|
-| [[id:795B5273-58CF-40BF-9F01-E83CF82F1891][Verify Black-Karasinski IR curve config]] | PENDING | Covers the BK-specific acceptance: engine in combo, four parameter fields with seeded defaults/bounds, save/reopen persistence, live preview via the mapping layer, Vasicek regression. History and eventing steps omitted: both are generic config-entity mechanics, independent of process type. |
+| [[id:795B5273-58CF-40BF-9F01-E83CF82F1891][Verify Black-Karasinski IR curve config]] | FAILED | Covers the BK-specific acceptance: engine in combo, four parameter fields with seeded defaults/bounds, save/reopen persistence, live preview via the mapping layer, Vasicek regression. History and eventing steps omitted: both are generic config-entity mechanics, independent of process type. Closed 2026-09-03 (059ffe11ef): step 6's save persists but the reloaded tree does not show the config; steps 7-9 not executable (tree reopen needs the missing item; IR tree delete broken client-side) — underlying IR/FX client defects captured in story E95A3D20. |
 
 * PRs
 
@@ -115,6 +115,7 @@ via its "Verifies task" field.
 |----+-------|
 | [[https://github.com/OreStudio/OreStudio/pull/1980][#1980]] | [ores.synthetic] Wire Black-Karasinski into the system: mapping, seed, editor |
 | [[https://github.com/OreStudio/OreStudio/pull/1932][#1932]] | [ores.analytics.quant] Implement six stochastic IR processes |
+| [[https://github.com/OreStudio/OreStudio/pull/2000][#2000]] | [ores.database,ores.synthetic,ores.qt] Black-Karasinski config test: pool backoff, data-driven parameter labels, editor and tree fixes |
 
 * Review
 

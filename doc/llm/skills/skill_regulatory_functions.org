@@ -289,21 +289,6 @@ hold without explanation: a regulatory function an agent cannot detect is one it
 will not use, which is why an artefact must *declare* what it implements rather
 than leaving it to be inferred.
 
-#+attr_html: :class note
-#+begin_quote
-*Terms considered.* Earlier drafts named these classes /affordances/, then
-/planes/, then /traits/. Affordance is design and psychology vocabulary,
-requiring definition at each appearance and drawn from a tradition the rest of
-the model does not use. Trait named a construct from programming languages, and
-the classification is not a programming one.
-
-Neither term was answerable to an account of why the seven are the seven. Each
-named the classes without explaining them, so the question of whether an eighth
-existed had no answer beyond preference. /Regulatory function/ is answerable to
-the derivation, and a candidate class is admitted only if it names a function a
-regulator must discharge.
-#+end_quote
-
 ** The Seven Regulatory Functions
 
 The criterion admits seven regulatory functions. Each document type offers one or more,

@@ -7,15 +7,34 @@
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-06
-#+updated: 2026-08-06
-#+environment: brave_hopper
+#+updated: 2026-09-04
+#+environment: brave_hopper brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
 
 * Goal
 
-(Describe the user-visible outcome this story delivers.)
+Close two systemic codegen gaps where no template exists at all, so a
+regenerated entity never needs hand-wiring afterwards:
+
+1. *RLS policies*: no template emits =ENABLE ROW LEVEL SECURITY= /
+   =CREATE POLICY= for tables with a tenant or party scope column.
+   Every policy today is hand-written into a per-component
+   =*_rls_policies_create.sql= file; the model layer has no signal for
+   which table wants which policy shape, so the step is manual, easy to
+   forget, and propped up by 53 =RLS_001/RLS_002= ignore entries.
+2. *Create/drop aggregator wiring*: codegen writes each entity's
+   =*_create.sql=/=_drop.sql= file but the component aggregator's
+   =\\ir= include list is hand-maintained. A new entity's tables
+   silently do not exist after =compass db recreate= until someone
+   wires them in by hand; no validator catches a missed =\\ir= line.
+
+Both gaps get model-driven codegen ownership: an entity declares the
+policy shapes it wants, the generated per-entity SQL carries them, and
+reachability through the aggregator chain is enforced. ores.marketdata
+is the adoption-proof component; the other 16 components adopt the
+machinery inside their own drift stories.
 
 * Status
 
@@ -23,14 +42,35 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Codegen leaves new entities unwired: RLS policies and the create/drop aggregators (2026-09-04). |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-06                               |
+| Next          | The second task (codegen the history-provider registrar wiring) after this one merges. |
+| Last touched  | 2026-09-04                               |
 
 * Acceptance
 
--
+- An entity model can declare its RLS policy shapes (tenant isolation,
+  party isolation, system-tenant-visible tenant isolation), as
+  first-class variability features with catalogue entries and profile
+  defaults.
+- The per-entity SQL create emission carries the declared policies as a
+  generated trailer, and the per-entity drop emission carries their
+  drops, so a regenerated table owns its whole SQL lifecycle. The
+  emitted blocks match the dominant hand-written block shapes verbatim.
+- ores.marketdata is the adoption proof: its five tables' policies
+  migrate from =marketdata_rls_policies_create.sql= to the generated
+  trailers, the now-empty hand file and its wiring are removed, and a
+  second regeneration is byte-identical.
+- Reachability enforcement: a validation rule fails when a generated
+  SQL file is not =\\ir=-reachable from its component aggregator chain
+  (create and drop); it passes the current census with the deliberate
+  exception classes encoded (RLS-layer files, top-level wired bundles).
+- =compass db recreate= + =validate_schemas.sh= stay green throughout;
+  the =RLS_001/RLS_002= ignore entries for the migrated population are
+  removed where the policy now exists, with the remainder audited and
+  recorded per table.
+- The history-provider registrar task (second task) is untouched by
+  this one.
 
 * Tasks
 

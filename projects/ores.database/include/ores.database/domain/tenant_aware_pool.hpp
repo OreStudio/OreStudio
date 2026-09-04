@@ -182,24 +182,30 @@ public:
             sqlgen::ConnectionPoolConfig cfg{
                 .size = pool_size_, .num_attempts = 1, .wait_time_in_seconds = 0};
             std::string rebuild_error;
-            const bool rebuilt = retry_probe([&]() {
-                std::lock_guard lock(*reconnect_mutex_);
-                // Another thread already replaced the dead pool while this
-                // one waited; nothing to rebuild.
-                if (pool_generation_->load(std::memory_order_relaxed) != pool_generation_at_start)
+            const bool rebuilt = retry_probe(
+                [&]() {
+                    std::lock_guard lock(*reconnect_mutex_);
+                    // Another thread already replaced the dead pool while this
+                    // one waited; nothing to rebuild.
+                    if (pool_generation_->load(std::memory_order_relaxed) != pool_generation_at_start)
+                        return true;
+                    auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
+                    if (!new_pool) {
+                        rebuild_error = new_pool.error().what();
+                        return false;
+                    }
+                    // Sessions co-own their connection and in-use flag, so the
+                    // swap is safe while the dead session is still outstanding.
+                    pool_ = std::move(*new_pool);
+                    pool_generation_->fetch_add(1, std::memory_order_relaxed);
+                    BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
                     return true;
-                auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
-                if (!new_pool) {
-                    rebuild_error = new_pool.error().what();
-                    return false;
-                }
-                // Sessions co-own their connection and in-use flag, so the
-                // swap is safe while the dead session is still outstanding.
-                pool_ = std::move(*new_pool);
-                pool_generation_->fetch_add(1, std::memory_order_relaxed);
-                BOOST_LOG_SEV(lg(), info) << "Pool rebuilt successfully.";
-                return true;
-            });
+                },
+                [&](std::size_t attempt) {
+                    BOOST_LOG_SEV(lg(), warn)
+                        << "Pool rebuild attempt " << attempt << " of " << policy_.num_attempts
+                        << " failed: " << rebuild_error;
+                });
             if (!rebuilt) {
                 BOOST_LOG_SEV(lg(), error) << "Pool rebuild failed: " << rebuild_error;
                 return sqlgen::error("Pool rebuild failed: " + rebuild_error);
@@ -364,18 +370,20 @@ private:
      * @brief Runs a fail-fast probe until it succeeds or the policy
      * budget is exhausted.
      *
-     * The first probe runs immediately; after each failure the wait
-     * before the next probe follows the policy (linear or exponential,
-     * with per-thread jitter). The first wait logs at warn level, later
-     * waits at debug level.
+     * The first probe runs immediately; after each failure @c on_failure
+     * runs so the caller can log the probe's own failure detail, then
+     * the wait before the next probe follows the policy (linear or
+     * exponential, with per-thread jitter). The first wait logs at warn
+     * level, later waits at debug level.
      *
      * @return true when a probe succeeded.
      */
-    template <typename Probe>
-    [[nodiscard]] bool retry_probe(Probe&& probe) noexcept {
+    template <typename Probe, typename OnFailure>
+    bool retry_probe(Probe&& probe, OnFailure&& on_failure) noexcept {
         using namespace ores::logging;
         bool ok = probe();
         for (std::size_t attempt = 1; !ok && attempt < policy_.num_attempts; ++attempt) {
+            on_failure(attempt);
             std::this_thread::sleep_for(backoff_delay(attempt, policy_));
             if (attempt == 1)
                 BOOST_LOG_SEV(lg(), warn)
@@ -395,6 +403,14 @@ private:
     }
 
     /**
+     * @brief retry_probe without a per-failure callback.
+     */
+    template <typename Probe>
+    bool retry_probe(Probe&& probe) noexcept {
+        return retry_probe(probe, [](std::size_t) {});
+    }
+
+    /**
      * @brief Probes the pool until a connection is free or the policy
      * budget is exhausted.
      *
@@ -406,12 +422,11 @@ private:
     acquire_with_backoff() noexcept {
         sqlgen::Result<sqlgen::Ref<sqlgen::Session<Connection>>> session_result =
             sqlgen::error("No available connections in the pool.");
-        const bool acquired = retry_probe([&]() {
+        retry_probe([&]() {
             session_result = pool_.acquire();
             return static_cast<bool>(session_result);
         });
-        return acquired ? session_result
-                        : sqlgen::error("No available connections in the pool.");
+        return session_result;
     }
 
     /**

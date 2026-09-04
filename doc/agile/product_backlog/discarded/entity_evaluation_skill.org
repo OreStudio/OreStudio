@@ -2,7 +2,7 @@
 :ID: 058DF966-13E0-4D97-9A8B-F22301411015
 :END:
 #+title: Story: Entity evaluation skill and runbook
-#+description: Create a reusable skill and runbook for evaluating the health of any entity: coverage matrix lookup, functional verification steps, and gap reporting. Discarded 2026-09-03: superseded by the method-skill task 43EE3BC6-373A-4499-90A7-A774DF8CDE84 in the drift-rollout story, and by the per-layer criteria merged into the entity commissioning process reference.
+#+description: Create a reusable skill and runbook for evaluating the health of any entity: coverage matrix lookup, functional verification steps, and gap reporting. Discarded 2026-09-03: superseded by the method-skill task 43EE3BC6-C813-45FD-8348-26919720FDAA in the drift-rollout story, and by the per-layer criteria merged into the entity commissioning process reference.
 #+type: story
 #+level: s2
 #+filetags: :llm:skill:runbook:entity:evaluation:sprint_19:v0:

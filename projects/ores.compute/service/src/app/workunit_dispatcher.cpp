@@ -75,12 +75,17 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
         return;
     }
 
-    // Workunit events fire on every row version (insert, update, close). A
-    // workunit is dispatched exactly once, when its first version is created.
+    // Workunit events fire on every row version (insert, update, close).
+    // Dispatch converges on the redundancy target: a workunit short of its
+    // target tops up the missing assignments on the next event, so a
+    // partially failed publish is retried instead of stranding the workunit.
     repository::result_repository result_repo;
-    if (result_repo.get_total_result_count_by_workunit_id(tenant_ctx, workunit_id) > 0) {
+    const auto existing = static_cast<int>(
+        result_repo.get_total_result_count_by_workunit_id(tenant_ctx, workunit_id));
+    const auto missing = wu->target_redundancy - existing;
+    if (missing <= 0) {
         BOOST_LOG_SEV(lg(), debug)
-            << "Workunit " << workunit_id << " already dispatched; skipping";
+            << "Workunit " << workunit_id << " at redundancy target; skipping";
         return;
     }
 
@@ -103,8 +108,7 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
     const auto tenant_uuid = tenant_ctx.tenant_id().to_string();
     ores::compute::service::result_service result_svc(tenant_ctx);
 
-    const auto redundancy = wu->target_redundancy;
-    for (int i = 0; i < redundancy; ++i) {
+    for (int i = 0; i < missing; ++i) {
         const auto& avp = avps[i % avps.size()];
         const auto result_id = boost::uuids::random_generator()();
         ores::compute::domain::result r;

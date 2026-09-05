@@ -60,8 +60,10 @@ public:
     /**
      * @brief Dispatches every workunit named in the event.
      *
-     * Idempotent per workunit: a workunit that already has result rows is
-     * skipped, so update events for an already-dispatched workunit are safe.
+     * Convergent per workunit: a workunit at its redundancy target is
+     * skipped, and one below it tops up the missing assignments, so update
+     * events for an already-dispatched workunit are safe and a partially
+     * failed publish heals on the next event.
      */
     void dispatch(const ores::compute::eventing::workunit_changed_event& evt);
 

@@ -58,9 +58,18 @@ cannot remove, and prove the grid drains again live.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Restore each dropped channel in the hand-written files that per-entity
+codegen regeneration cannot remove: the machine protocol structs belong
+in work_protocol.hpp (result_protocol.hpp regenerates on every bind), the
+trusted handler is a new header beside the hand-written work_handler.hpp,
+its subscription goes in the aggregate registrar.cpp next to the heartbeat
+and report-submit blocks, and the dispatch seam lives in the service app
+layer, subscribed to the in-process event bus before event_source.start().
+The wrapper call site returns to the submit protocol; the handler replies
+a typed envelope on every path (never error_reply), so a rejected request
+can never again surface as a wrapper decode failure. Verify with a full
+build and ctest, then redeploy the fleet and run the story's smoke script
+live: dispatch, drain, and assert every online host was exercised.
 
 * Notes
 

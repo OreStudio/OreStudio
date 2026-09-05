@@ -2426,11 +2426,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         uuid_columns.add(key['column'])
             if 'columns' in domain_entity:
                 for col in domain_entity['columns']:
-                    if col.get('is_uuid') or col.get('is_optional_uuid'):
+                    # Optional-ness must come from the raw cpp_type, not the
+                    # SQL-nullability flags: the domain class template emits
+                    # {{{cpp_type}}} verbatim, so a ":nullable: true" column
+                    # whose author left cpp_type as a plain scalar (e.g.
+                    # "int" or a plain time_point) is a plain member and
+                    # streams as-is; only an explicit std::optional<...>
+                    # cpp_type needs the opt_str() wrapper (see the
+                    # render_* flag comment above).
+                    _render_cpp_type = (col.get('cpp_type') or '').strip()
+                    if (
+                        'boost::uuids::uuid' in _render_cpp_type
+                        and not _render_cpp_type.startswith('std::optional<')
+                    ):
                         uuid_columns.add(col['name'])
-                    if col.get('nullable', False) and not col.get('is_uuid') and not col.get('is_nullable_string'):
+                    if _render_cpp_type.startswith('std::optional<'):
                         optional_columns.add(col['name'])
-                    if (col.get('cpp_type') or '').strip() == 'bool':
+                    if _render_cpp_type == 'bool':
                         bool_columns.add(col['name'])
             _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns, bool_columns)
         # Copy repository section fields to top level for template access

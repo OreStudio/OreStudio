@@ -3070,11 +3070,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['item_var'] = qt.get('item_var', 'item')
             # Auto-generate default detail_fields if not provided. The
             # default shape is the code+name+description lookup form: a
-            # key row plus a display-name row. An entity whose key field
-            # IS name (compute app) has no separate display name, so the
-            # key row alone carries it, named after the field like every
-            # other row; emitting a second nameEdit would bind two
-            # widgets to one column.
+            # key row plus a display-name row, each gated on the column
+            # existing. An entity whose key field IS name (compute app)
+            # has no separate display name, so the key row alone carries
+            # it, named after the field like every other row; emitting a
+            # second nameEdit would bind two widgets to one column. An
+            # entity with no name column at all (compute batch, result,
+            # ...) gets no display-name row either -- the name row must
+            # not be emitted unconditionally, the way description is
+            # gated below, or the dialog binds a phantom member.
             if 'detail_fields' not in qt:
                 key_field = qt.get('key_field', 'code')
                 column_names = {c.get('name') for c in domain_entity.get('columns', [])}
@@ -3085,7 +3089,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                      'type': 'line_edit', 'is_key': True, 'is_required': True,
                      'placeholder': 'Enter ' + domain_entity.get('entity_singular_words', 'item') + ' ' + key_field.replace('_', ' ')},
                 ]
-                if not key_is_name:
+                if not key_is_name and 'name' in column_names:
                     fields.append(
                         {'field': 'name', 'label': 'Name', 'widget': 'nameEdit',
                          'type': 'line_edit', 'is_required': True,

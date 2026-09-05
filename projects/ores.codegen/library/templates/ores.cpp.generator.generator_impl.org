@@ -11,7 +11,7 @@
 #+created: 2026-06-08
 #+updated: 2026-06-08
 
-faker-cxx generation per column type. =generator= profile.  Uses [[https://github.com/nicktindall/faker-cxx][faker-cxx]] to produce structurally-valid synthetic instances. Counter-suffixed keys guarantee uniqueness within a test run; temporal fields are filled with plausible past timestamps via the generation context.
+faker-cxx generation per column type. =generator= profile.  Uses [[https://github.com/nicktindall/faker-cxx][faker-cxx]] to produce structurally-valid synthetic instances. Counter-suffixed keys guarantee uniqueness within a test run: text natural keys, text primary keys, and =:unique:= plain-string columns all carry the process counter (a faker-derived base is a process constant, so a =:unique:= column without the suffix would collide on its unique index from the second row on). Temporal fields are filled with plausible past timestamps via the generation context.
 
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
@@ -82,6 +82,11 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{#has_text_natural_keys}}
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
 {{/has_text_natural_keys}}
+{{^has_text_natural_keys}}
+{{#has_unique_suffix_columns}}
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+{{/has_unique_suffix_columns}}
+{{/has_text_natural_keys}}
 {{/primary_key.is_uuid}}
 {{#primary_key.extra_columns}}
 {{#is_uuid}}
@@ -149,14 +154,26 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/natural_keys}}
 {{#columns}}
 {{#generator_expr}}
+{{#requires_unique_suffix}}
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = {{{generator_expr}}} + "-"
+        + std::to_string(idx);
+{{/requires_unique_suffix}}
+{{^requires_unique_suffix}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = {{{generator_expr}}};
+{{/requires_unique_suffix}}
 {{/generator_expr}}
 {{^generator_expr}}
 {{#is_uuid}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = ctx.generate_uuid();
 {{/is_uuid}}
 {{#is_plain_string}}
+{{#requires_unique_suffix}}
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = std::string(faker::word::noun()) + "-"
+        + std::to_string(idx);
+{{/requires_unique_suffix}}
+{{^requires_unique_suffix}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = std::string(faker::word::noun());
+{{/requires_unique_suffix}}
 {{/is_plain_string}}
 {{/generator_expr}}
 {{/columns}}

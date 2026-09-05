@@ -2175,6 +2175,21 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     col['is_simple'] and col.get('cpp_type') == 'std::string'
                     and not col.get('generator_expr')
                 )
+                # A plain-string column declared :unique: must produce a
+                # distinct value per synthetic row. The generator template
+                # appends the process-counter suffix (the same mechanism
+                # text natural keys use) unless the model opts out via
+                # :no_generator_suffix:. The raw cpp_type check mirrors
+                # is_plain_string but tolerates an explicit generator_expr,
+                # which is_plain_string deliberately excludes -- a unique
+                # column WITH a generator expression collides just as
+                # surely as one without (faker-derived bases are not
+                # distinct), so both need the suffix.
+                col['requires_unique_suffix'] = (
+                    col.get('unique') is True
+                    and col.get('cpp_type') == 'std::string'
+                    and not col.get('no_generator_suffix', False)
+                )
                 # Render-type flags for templates (e.g. the history field
                 # mapper) that must render an existing value to string.
                 # Deliberately derived from the RAW cpp_type string, not
@@ -2368,9 +2383,19 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # entity with a text PK and no natural keys at all (e.g.
         # currency_pair) still needs the counter, but previously this whole
         # computation only ran when natural_keys existed.
+        domain_entity['has_unique_suffix_columns'] = any(
+            c.get('requires_unique_suffix') for c in domain_entity.get('columns', [])
+        )
+        # needs_counter drives the process-static counter the synthetic
+        # generator suffixes onto text natural keys and text primary keys.
+        # A :unique: plain-string column needs the counter too: its value
+        # must differ per row, and a faker-derived base is a process
+        # constant, so without the suffix the second write of the entity in
+        # one process collides on the unique index.
         domain_entity['needs_counter'] = (
             domain_entity.get('primary_key', {}).get('type') == 'text'
             or domain_entity['has_text_natural_keys']
+            or domain_entity['has_unique_suffix_columns']
         )
         if 'indexes' in domain_entity:
             _mark_last_item(domain_entity['indexes'])

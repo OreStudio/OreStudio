@@ -74,8 +74,9 @@ exists. The second requires that the construct be declared before there is
 anything to load.
 
 The three classes organise what follows. The first two are answered by classes
-of document, derived under /Regulatory Regulatory Functions/ and set out in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]; the
-obligation the first imposes is treated in [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]. The third is answered by
+of document, derived under /Deriving the Functions/ below and set out in detail
+in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]; the obligation the first imposes is treated in
+[[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]. The third is answered by
 no document, since supplying further documents is what produced it, and is
 treated under /Variety Attenuation/.
 
@@ -231,7 +232,7 @@ of some other kind. This is why a branch is modelled although it is not a file,
 and a compiler is not modelled although an agent uses one constantly. The
 criterion is regulatory relevance and nothing besides.
 
-** Regulatory Regulatory Functions
+** Deriving the Functions
 
 *** Derivation
 
@@ -445,7 +446,7 @@ The correspondence with Beer's model is a lens and not an implementation. This
 project's five systems are named after his and do not discharge the obligations
 his model places upon them.
 
-The derivation in /Regulatory Regulatory Functions/ establishes that each
+The derivation in /Deriving the Functions/ establishes that each
 regulatory function corresponds to a regulatory primitive. It does not
 establish that the seven are exhaustive, and no such claim is made.
 

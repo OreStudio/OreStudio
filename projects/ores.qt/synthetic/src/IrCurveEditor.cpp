@@ -54,8 +54,8 @@
 #include <QPointer>
 #include <QPushButton>
 #include <QRadioButton>
-#include <QSlider>
 #include <QSizePolicy>
+#include <QSlider>
 #include <QSplitter>
 #include <QStackedWidget>
 #include <QTableWidget>
@@ -129,10 +129,9 @@ QString joinIndexFamilyAndTenor(const std::string& index_family, const std::stri
 constexpr int kSimpleSliderScale = 1'000'000;
 
 int doubleToSliderValue(double v) {
-    return static_cast<int>(std::clamp(
-        std::llround(v * kSimpleSliderScale),
-        static_cast<long long>(std::numeric_limits<int>::min()),
-        static_cast<long long>(std::numeric_limits<int>::max())));
+    return static_cast<int>(std::clamp(std::llround(v * kSimpleSliderScale),
+                                       static_cast<long long>(std::numeric_limits<int>::min()),
+                                       static_cast<long long>(std::numeric_limits<int>::max())));
 }
 
 double sliderValueToDouble(int sv) {
@@ -1069,8 +1068,8 @@ void IrCurveEditor::rebuildParameterTable() {
 
         // The Greek symbol is the whole label; the tooltip below carries the English name and
         // description for readers unfamiliar with the notation.
-        const QString label = d.symbol ? QString::fromStdString(*d.symbol)
-                                       : QString::fromStdString(d.display_name);
+        const QString label =
+            d.symbol ? QString::fromStdString(*d.symbol) : QString::fromStdString(d.display_name);
         auto* nameItem = new QTableWidgetItem(label);
         nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
         nameItem->setToolTip(QString::fromStdString(d.description));
@@ -1086,19 +1085,20 @@ void IrCurveEditor::rebuildParameterTable() {
         spin->setValue(vit != valuesByDefinition.end() ? vit->second : d.default_value);
         spin->setToolTip(QString::fromStdString(d.description));
         parameterTable_->setCellWidget(row, 1, spin);
-        connect(spin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this, row](double v) {
-            // Mirror into the Simple page's row (blocked -- the Advanced spin is the source of
-            // truth), then drive the charts.
-            if (auto* s = simpleSpinAt(row)) {
-                const QSignalBlocker blocker(s);
-                s->setValue(v);
-            }
-            if (auto* sl = simpleSliderAt(row)) {
-                const QSignalBlocker blocker(sl);
-                sl->setValue(doubleToSliderValue(v));
-            }
-            onProcessFieldChanged();
-        });
+        connect(
+            spin, qOverload<double>(&QDoubleSpinBox::valueChanged), this, [this, row](double v) {
+                // Mirror into the Simple page's row (blocked -- the Advanced spin is the source of
+                // truth), then drive the charts.
+                if (auto* s = simpleSpinAt(row)) {
+                    const QSignalBlocker blocker(s);
+                    s->setValue(v);
+                }
+                if (auto* sl = simpleSliderAt(row)) {
+                    const QSignalBlocker blocker(sl);
+                    sl->setValue(doubleToSliderValue(v));
+                }
+                onProcessFieldChanged();
+            });
         if (d.parameter_name == "initial_rate")
             initialRateSpin_ = spin;
     }
@@ -1264,8 +1264,8 @@ void IrCurveEditor::refreshCharts() {
     // the constructor default) is the correct fallback then.
     const auto freqText = fixedLegFrequencyCombo_->currentText();
     const auto freq = freqText.isEmpty() ?
-        QString::fromStdString(ir_.fixed_leg_payment_frequency_code) :
-        freqText;
+                          QString::fromStdString(ir_.fixed_leg_payment_frequency_code) :
+                          freqText;
     shapeChart_->setParameters(engine, params, freq.toStdString(), rows);
     shapeChart_->scheduleRefresh();
 }
@@ -1566,8 +1566,7 @@ void IrCurveEditor::onSaveClicked() {
     ir.process_type = engineCombo_->currentData().toString().toStdString();
     const auto freqText = fixedLegFrequencyCombo_->currentText();
     ir.fixed_leg_payment_frequency_code =
-        freqText.isEmpty() ? ir_.fixed_leg_payment_frequency_code :
-                             freqText.toStdString();
+        freqText.isEmpty() ? ir_.fixed_leg_payment_frequency_code : freqText.toStdString();
     if (vintageMode) {
         ir.price_source = "vintage";
         ir.vintage_source = vintageSourceEdit_->text().trimmed().toStdString();

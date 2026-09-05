@@ -178,18 +178,22 @@ void test_database_manager::close_orphaned_synthetic_rows(
     BOOST_LOG_SCOPED_LOGGER_TAG(lg(), "Tag", "TestSuite");
 
     for (const auto& table_name : table_names) {
-        const auto sql = "DELETE FROM \"" + table_name + "\""
+        const auto sql = "DELETE FROM \"" + table_name +
+                         "\""
                          " WHERE tenant_id = $1::uuid"
                          " AND change_reason_code = 'system.test'"
                          " AND performed_by = current_user"
                          " AND valid_to = ores_utility_infinity_timestamp_fn()";
         try {
-            execute_parameterized_command(ctx, sql, {std::string(system_tenant_id)}, lg(),
+            execute_parameterized_command(ctx,
+                                          sql,
+                                          {std::string(system_tenant_id)},
+                                          lg(),
                                           "Closing orphaned synthetic rows in " + table_name);
             BOOST_LOG_SEV(lg(), info) << "Closed orphaned synthetic rows in " << table_name;
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(lg(), warn) << "Failed to close orphaned synthetic rows in "
-                                      << table_name << ": " << e.what();
+            BOOST_LOG_SEV(lg(), warn)
+                << "Failed to close orphaned synthetic rows in " << table_name << ": " << e.what();
         }
     }
 }

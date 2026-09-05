@@ -48,10 +48,7 @@ namespace ores::database {
  * internal cap, so sustained contention is absorbed politely while a freed
  * connection is still discovered promptly.
  */
-enum class pool_backoff_strategy {
-    linear,
-    exponential
-};
+enum class pool_backoff_strategy { linear, exponential };
 
 /**
  * @brief Retry policy for acquiring a connection from the pool.
@@ -187,7 +184,8 @@ public:
                     std::lock_guard lock(*reconnect_mutex_);
                     // Another thread already replaced the dead pool while this
                     // one waited; nothing to rebuild.
-                    if (pool_generation_->load(std::memory_order_relaxed) != pool_generation_at_start)
+                    if (pool_generation_->load(std::memory_order_relaxed) !=
+                        pool_generation_at_start)
                         return true;
                     auto new_pool = sqlgen::make_connection_pool<Connection>(cfg, credentials_);
                     if (!new_pool) {
@@ -388,9 +386,8 @@ private:
             if (attempt == 1)
                 BOOST_LOG_SEV(lg(), warn)
                     << "No available database connections in the pool; waiting with "
-                    << (policy_.strategy == pool_backoff_strategy::exponential
-                            ? "exponential"
-                            : "linear")
+                    << (policy_.strategy == pool_backoff_strategy::exponential ? "exponential" :
+                                                                                 "linear")
                     << " backoff (attempt " << (attempt + 1) << " of " << policy_.num_attempts
                     << ")";
             else
@@ -438,8 +435,8 @@ private:
      * discovered promptly. A small deterministic per-thread jitter spreads
      * waiting threads so they do not re-probe in lockstep.
      */
-    [[nodiscard]] static std::chrono::milliseconds backoff_delay(
-        std::size_t attempt, const pool_acquire_policy& policy) noexcept {
+    [[nodiscard]] static std::chrono::milliseconds
+    backoff_delay(std::size_t attempt, const pool_acquire_policy& policy) noexcept {
         constexpr auto max_delay = std::chrono::milliseconds(10'000);
         auto delay = std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::seconds(policy.wait_time_in_seconds));

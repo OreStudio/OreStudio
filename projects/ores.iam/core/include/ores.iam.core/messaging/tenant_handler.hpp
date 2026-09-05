@@ -643,8 +643,7 @@ public:
                 } else {
                     internal_request_client system_client = make_client(system_party->id);
                     const std::vector<dq::messaging::party_bundle_publish_step> system_mkt_plan{
-                        {"synthetic_realistic_2026",
-                         "synthetic market data configuration (2026)"},
+                        {"synthetic_realistic_2026", "synthetic market data configuration (2026)"},
                         {"synthetic_ore_samples_2016",
                          "synthetic market data configuration (legacy ORE Samples)"},
                         {"marketdata.reference_vintage_2026_05_05", "FX driver rates"}};
@@ -676,8 +675,11 @@ public:
                         },
                         [&](const std::string& instance_id, std::size_t expected) {
                             const auto mkt_label = "system_market_data." + current_sys_mkt_step;
-                            auto wait_result = system_client.wait_for_workflow_instance(
-                                instance_id, std::chrono::seconds{120}, expected, progress(mkt_label));
+                            auto wait_result =
+                                system_client.wait_for_workflow_instance(instance_id,
+                                                                         std::chrono::seconds{120},
+                                                                         expected,
+                                                                         progress(mkt_label));
                             if (!wait_result.success)
                                 add_step(mkt_label + ".failed", wait_result.error, 0);
                             return wait_result.success;
@@ -950,7 +952,8 @@ private:
     // Finds the tenant's system party (party_category == "System", created
     // once per tenant by the IAM provisioner) -- the owner of the simulated
     // market config in the consistent world.
-    static std::optional<ores::refdata::domain::party> find_system_party(internal_request_client& client) {
+    static std::optional<ores::refdata::domain::party>
+    find_system_party(internal_request_client& client) {
         ores::refdata::messaging::get_parties_request req;
         req.limit = 1000;
         auto resp = client.request(req);
@@ -1055,8 +1058,7 @@ private:
             auto resp = save_client.request(req);
             if (!resp.success) {
                 BOOST_LOG_SEV(tenant_handler_lg(), warn)
-                    << "create_theme_feed_bindings: list feed_bindings failed: "
-                    << resp.message;
+                    << "create_theme_feed_bindings: list feed_bindings failed: " << resp.message;
                 return false;
             }
             for (const auto& b : resp.feed_bindings)
@@ -1097,8 +1099,7 @@ private:
         }
         if (sources.empty())
             BOOST_LOG_SEV(tenant_handler_lg(), info)
-                << "create_theme_feed_bindings: no enabled FX sources for dataset "
-                << dataset_code;
+                << "create_theme_feed_bindings: no enabled FX sources for dataset " << dataset_code;
         return all_saved;
     }
 

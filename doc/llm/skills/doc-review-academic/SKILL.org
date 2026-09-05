@@ -6,6 +6,8 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
+#+type: skill
+#+level: cross
 #+filetags: :llm:skill:skills:claude_code:writing:academic:
 #+created: 2026-09-05
 #+updated: 2026-09-05
@@ -17,6 +19,12 @@ description: Layered review of argumentative documentation: claim, spine, paragr
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
+
+* Contract
+
+- Implements :: citation. The skill states a standard cited at a point of
+  judgement about prose. It runs nothing and sequences no work. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
 
 * When to use this skill
 
@@ -176,7 +184,8 @@ The failures, by layer.
 
 * Recipes
 
-- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — the doc contract this skill reviews against.
+This skill indexes no recipes. It states a standard rather than a
+procedure over commands, so there is nothing operational to delegate.
 
 * Reference
 
@@ -186,10 +195,23 @@ The failures, by layer.
 - [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — =technical-writing= and =unslop=, which own
   product documentation and slop patterns respectively.
 
-Sources. Gopen, G. D. and Swan, J. A. (1990). /The Science of Scientific
-Writing/. American Scientist 78(6), 550-558. Swales, J. M. (1990).
-/Genre Analysis: English in Academic and Research Settings/. Cambridge
-University Press.
+** Sources
+
+- Gopen, G. D. and Swan, J. A. (1990). /The Science of Scientific
+  Writing/. American Scientist 78(6), 550-558. Supplies the sentence
+  layer: topic position, stress position, old before new, subject and
+  verb proximity, one idea per unit of discourse, and action carried by
+  the verb.
+- Swales, J. M. (1990). /Genre Analysis: English in Academic and
+  Research Settings/. Cambridge University Press. Supplies the spine
+  layer: the three moves of establishing a territory, establishing a
+  niche, and occupying the niche, known as the CARS model.
+- ASD-STE100 Simplified Technical English. Reached through
+  [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]], which holds the rules and their scope.
+
+The term, evidence and honesty layers are this project's own, derived
+from errors observed in this corpus rather than from a published
+standard.
 
 * Artefacts                                                        :noexport:
 

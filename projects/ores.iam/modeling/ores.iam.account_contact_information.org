@@ -234,6 +234,26 @@ std::string("https://example.com")
 :list_by_as_of: true
 :END:
 
+The account table is hand-authored (account is not a codegen-bound
+entity), so the eventing test cannot synthesize an account parent row
+through the generated machinery. The =parent_seed= block below is the
+seeding code the generated eventing integration test emits verbatim:
+it writes a synthetic account through the hand-authored account
+generator and repository, whose write API predates the
+context-carrying form the auto-seeding blocks use.
+
+#+begin_src cpp :name parent_seed
+    // Seed the active account row ores_iam_accounts_tbl references: the
+    // insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first. The
+    // account repository takes its context in the constructor.
+    auto account_id_parent = ores::iam::generators::generate_synthetic_account(ctx);
+    account_id_parent.change_reason_code = "system.test";
+    ores::iam::repository::account_repository account_id_parent_repo(party_ctx);
+    account_id_parent_repo.write(account_id_parent);
+    v.account_id = account_id_parent.id;
+#+end_src
+
 * Insert trigger
 
 ** Validations

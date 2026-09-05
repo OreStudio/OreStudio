@@ -150,6 +150,22 @@ Accumulated work units successfully processed by this host.
 :iterator_var: h
 :END:
 
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| id            | ID            |
+| external_id   | External ID   |
+| display_name  | Display Name  |
+| location      | Location      |
+| cpu_count     | CPU Count     |
+| ram_mb        | RAM (MB)      |
+| gpu_type      | GPU Type      |
+| last_rpc_time | Last RPC Time |
+| credit_total  | Credit Total  |
+| modified_by   | Modified By   |
+| recorded_at   | Recorded At   |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/host.hpp

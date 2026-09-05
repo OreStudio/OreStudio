@@ -123,6 +123,18 @@ tenant must see them in reads. Mutations stay own-tenant scoped.
 :iterator_var: av
 :END:
 
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| id              | ID              |
+| app_id          | App ID          |
+| wrapper_version | Wrapper Version |
+| engine_version  | Engine Version  |
+| min_ram_mb      | Min RAM (MB)    |
+| modified_by     | Modified By     |
+| recorded_at     | Recorded At     |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/app_version.hpp

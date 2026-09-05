@@ -230,6 +230,21 @@ them.
 :iterator_var: r
 :END:
 
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| id            | ID            |
+| workunit_id   | Workunit ID   |
+| host_id       | Host ID       |
+| server_state  | Server State  |
+| outcome       | Outcome       |
+| output_uri    | Output URI    |
+| error_message | Error Message |
+| received_at   | Received At   |
+| modified_by   | Modified By   |
+| recorded_at   | Recorded At   |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/result.hpp

@@ -162,6 +162,20 @@ FK to the validated canonical result; NULL until the Validator accepts a result.
 :iterator_var: wu
 :END:
 
+** Table display
+
+| column            | header            |
+|-------------------+-------------------|
+| id                | ID                |
+| batch_id          | Batch ID          |
+| app_version_id    | App Version ID    |
+| input_uri         | Input URI         |
+| config_uri        | Config URI        |
+| priority          | Priority          |
+| target_redundancy | Target Redundancy |
+| modified_by       | Modified By       |
+| recorded_at       | Recorded At       |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/workunit.hpp

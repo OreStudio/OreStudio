@@ -93,6 +93,16 @@ own-tenant scoped.
 :iterator_var: a
 :END:
 
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID          |
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+| recorded_at | Recorded At |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/app.hpp

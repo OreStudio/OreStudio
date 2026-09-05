@@ -88,6 +88,16 @@ Lifecycle status: open, processing, assimilating, or closed.
 :iterator_var: b
 :END:
 
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| id           | ID           |
+| external_ref | External Ref |
+| status       | Status       |
+| modified_by  | Modified By  |
+| recorded_at  | Recorded At  |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.compute.api/domain/batch.hpp

@@ -31,7 +31,7 @@
 #include "ores.iam.core/repository/account_repository.hpp"
 #include "ores.iam.core/repository/auth_event_repository.hpp"
 #include "ores.iam.core/repository/session_repository.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
@@ -104,8 +104,7 @@ auth_ensure_parties_cached(service::cache::party_cache& cache,
 inline std::string auth_lookup_tenant_name(const ores::database::context& ctx,
                                            const boost::uuids::uuid& tenant_id) {
     try {
-        repository::tenant_repository repo(ctx);
-        auto tenants = repo.read_latest(tenant_id);
+        const auto tenants = repository::read_active_tenant_by_id(ctx, tenant_id);
         if (!tenants.empty())
             return tenants.front().name;
     } catch (const std::exception& e) {
@@ -118,8 +117,7 @@ inline std::string auth_lookup_tenant_name(const ores::database::context& ctx,
 inline std::optional<ores::iam::domain::tenant>
 auth_lookup_tenant_by_hostname(const ores::database::context& ctx, const std::string& hostname) {
     try {
-        repository::tenant_repository repo(ctx);
-        auto tenants = repo.read_latest_by_hostname(hostname);
+        const auto tenants = repository::read_active_tenant_by_hostname(ctx, hostname);
         if (!tenants.empty())
             return tenants.front();
     } catch (const std::exception& e) {

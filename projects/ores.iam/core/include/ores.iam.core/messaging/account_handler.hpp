@@ -29,7 +29,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.iam.core/domain/token_settings.hpp"
 #include "ores.iam.core/repository/account_party_repository.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/account_service.hpp"
 #include "ores.iam.core/service/account_setup_service.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
@@ -111,8 +111,7 @@ inline bool acct_is_party_onboarding_complete(const ores::database::context& ctx
 inline std::string acct_lookup_tenant_name(const ores::database::context& ctx,
                                            const boost::uuids::uuid& tenant_id) {
     try {
-        repository::tenant_repository repo(ctx);
-        auto tenants = repo.read_latest(tenant_id);
+        const auto tenants = repository::read_active_tenant_by_id(ctx, tenant_id);
         if (!tenants.empty())
             return tenants.front().name;
     } catch (const std::exception& e) {
@@ -284,8 +283,7 @@ public:
             if (at_pos != std::string::npos) {
                 username = req->principal.substr(0, at_pos);
                 const auto hostname = req->principal.substr(at_pos + 1);
-                repository::tenant_repository tenant_repo(ctx_);
-                auto tenants = tenant_repo.read_latest_by_hostname(hostname);
+                const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
                 if (!tenants.empty()) {
                     using ores::database::service::tenant_context;
                     op_ctx = tenant_context::with_tenant(

@@ -26,7 +26,7 @@
 #include "ores.iam.api/domain/permission.hpp"
 #include "ores.iam.api/messaging/authorization_protocol.hpp"
 #include "ores.iam.core/repository/account_repository.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/authorization_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/message.hpp"
@@ -202,8 +202,7 @@ public:
             const auto hostname = req->principal.substr(at_pos + 1);
 
             // Resolve tenant by hostname
-            repository::tenant_repository tenant_repo(ctx_);
-            auto tenants = tenant_repo.read_latest_by_hostname(hostname);
+            const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
             if (tenants.empty()) {
                 reply(nats_,
                       msg,
@@ -294,8 +293,7 @@ public:
             const auto hostname = req->principal.substr(at_pos + 1);
 
             // Resolve tenant by hostname
-            repository::tenant_repository tenant_repo(ctx_);
-            auto tenants = tenant_repo.read_latest_by_hostname(hostname);
+            const auto tenants = repository::read_active_tenant_by_hostname(ctx_, hostname);
             if (tenants.empty()) {
                 reply(nats_,
                       msg,

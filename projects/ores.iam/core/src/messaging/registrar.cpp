@@ -46,7 +46,7 @@
 #include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_status_handler.hpp"
 #include "ores.iam.core/messaging/tenant_type_handler.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/cache/party_cache_registrar.hpp"
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
@@ -367,8 +367,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     std::vector<std::string> tenant_ids;
     try {
-        repository::tenant_repository tenant_repo(ctx);
-        const auto tenants = tenant_repo.read_latest();
+        const auto tenants = repository::read_all_active_tenants(ctx);
         tenant_ids.reserve(tenants.size());
         for (const auto& t : tenants)
             tenant_ids.push_back(boost::uuids::to_string(t.id));

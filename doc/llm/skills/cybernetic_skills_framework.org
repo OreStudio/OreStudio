@@ -60,9 +60,13 @@ On this criterion the failures fall into three classes.
 #+ATTR_HTML: :class hug-leading
 | Class                | Regulatory deficiency                                              | Observed as                                                        | Remedy required            |
 |----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------+----------------------------|
-| Absent model         | A fact the agent must hold in order to act is not held             | Unverified domain assertion; a convention not applied              | Supply the missing fact    |
+| Absent domain model  | A fact the agent must hold in order to act is not held             | Unverified domain assertion; a convention not applied              | Supply the missing fact    |
 | Misapplied default   | The agent holds variety, but the general case rather than this one | A generally correct procedure applied where local practice differs | Constrain choice and order |
 | Unattenuated variety | Variety presented exceeds what the regulator can use               | Poor selection from a large undifferentiated catalogue             | Reduce the variety shown   |
+
+The class is named for the holder because this document uses /model/ in the
+theorem's sense at two levels, and the two must not be confused. An absent
+domain model is the agent's, not the framework's.
 
 The classification is informative in one respect the surface descriptions
 conceal. The first and third failures constitute a single class. In both, the
@@ -108,8 +112,8 @@ states them in general form. Three are used here.
 
 Wiener (1948) characterises regulation by a structure common to every substrate
 in which it occurs: a goal, a sensor that measures the present state, and a
-feedback path that acts to reduce the difference. The derivation in /Regulatory
-Regulatory Functions/ rests on this decomposition.
+feedback path that acts to reduce the difference. The derivation in /Deriving the
+Functions/ rests on this decomposition.
 
 Ashby (1956) establishes the law of requisite variety, that only variety can
 absorb variety: a regulator must command at least the variety of the
@@ -121,6 +125,12 @@ successful and maximally simple must be isomorphic to the system it regulates.
 The theorem is stated in their title: every good regulator of a system must be a
 model of that system. The simplicity clause carries as much weight here as the
 success clause, since it is what excludes modelling anything not regulated.
+
+The theorem applies at every level of recursion, which is why /model/ appears in
+this document with two referents. The framework regulates the agent's conduct,
+and its model is the document type system. The agent regulates the work, and its
+model is the domain knowledge it holds. Both follow from the same theorem
+applied one level apart, and each use below names which is meant.
 
 Beer applied this apparatus to organisations in the [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]], whose
 recursive five-system architecture this project adopts as a lens rather than as
@@ -225,7 +235,7 @@ does not.
 | Version control in general    | acts correctly           | black box |
 | This project's branch process | acts by generic default  | modelled  |
 | The document type system      | cannot know it           | modelled  |
-| A domain fact about the model | asserts without evidence | modelled  |
+| A fact about the trading domain | asserts without evidence | modelled  |
 
 The rule makes no appeal to whether a subject is a file, a directory, or a thing
 of some other kind. This is why a branch is modelled although it is not a file,

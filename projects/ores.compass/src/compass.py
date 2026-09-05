@@ -2407,14 +2407,78 @@ def _parse_tags_from_filetags_line(line: str) -> list:
     return [t for t in raw.split(":") if t.strip()]
 
 
+_MARKER_BEGIN_RE = re.compile(r"^#\s*BEGIN generated (\w+)\b")
+_MARKER_END_RE = re.compile(r"^#\s*END generated (\w+)\s*$")
+
+# Types whose documents record a moment in the work rather than the state of
+# the system. A durable document must not link to one: the story links to the
+# knowledge document it produced, never the reverse.
+_AGILE_TYPES = {"story", "task", "sprint", "design", "capture", "version",
+                "plan", "retrospective"}
+_DURABLE_DIRS = ("doc/llm/", "doc/meta/", "doc/knowledge/", "doc/recipes/")
+_ID_LINK_RE = re.compile(r"\[\[id:([0-9A-Fa-f-]{36})\]\[([^\]]*)\]\]")
+
+
+def _lint_generator_markers(files):
+    """Every '# BEGIN generated X' needs '# END generated X' on its own line.
+
+    A reflow that wraps the END marker into the prose above it leaves the block
+    with no terminator the generator can find, and the section then silently
+    fails to populate rather than erroring.
+    """
+    out = []
+    for rel, text in files:
+        open_stack = []
+        for lineno, line in enumerate(text.splitlines(), 1):
+            stripped = line.strip()
+            b = _MARKER_BEGIN_RE.match(stripped)
+            e = _MARKER_END_RE.match(stripped)
+            if b:
+                open_stack.append((b.group(1), lineno))
+            elif e and open_stack and open_stack[-1][0] == e.group(1):
+                open_stack.pop()
+        for kind, lineno in open_stack:
+            out.append((rel, lineno,
+                        f"'# BEGIN generated {kind}' has no matching "
+                        f"'# END generated {kind}' on its own line"))
+    return out
+
+
+def _lint_durable_links(files, id_types):
+    """Report durable documents linking into agile content."""
+    out = []
+    for rel, text in files:
+        if not str(rel).startswith(_DURABLE_DIRS):
+            continue
+        for m in _ID_LINK_RE.finditer(text):
+            kind = id_types.get(m.group(1).upper())
+            if kind in _AGILE_TYPES:
+                label = m.group(2).replace("\n", " ")[:50]
+                out.append((rel, kind, label))
+    return out
+
+
+def _collect_org_types(files):
+    """Map every :ID: in the corpus to the #+type: of its document."""
+    types = {}
+    for _rel, text in files:
+        t = re.search(r"^#\+type:\s*(\S+)", text, re.M)
+        kind = t.group(1) if t else None
+        for m in re.finditer(r"^:ID:\s+(\S+)", text, re.M):
+            types[m.group(1).upper()] = kind
+    return types
+
+
 def cmd_lint(argv):
     """compass lint — validate filetags across all .org files."""
     ap = argparse.ArgumentParser(
         prog="compass lint",
         description=(
-            "Validate #+filetags: values across every .org file in the repo. "
-            "Every tag must be lowercase and match [a-z][a-z0-9_-]*. "
-            "Prints the offending file and tag; exits non-zero on any violation."
+            "Validate the org corpus. Checks filetags (every tag lowercase, "
+            "matching [a-z][a-z0-9_-]*), generator markers (every BEGIN has a "
+            "matching END on its own line), and links from durable documents "
+            "into agile content. The first two are enforced; the link check is "
+            "advisory unless --strict-links is given."
         ),
     )
     ap.add_argument(
@@ -2427,6 +2491,10 @@ def cmd_lint(argv):
         help="Exclude a directory prefix (may be repeated). "
              "build/ and venv/ are always excluded.",
     )
+    ap.add_argument(
+        "--strict-links", action="store_true",
+        help="Fail on durable documents linking into agile content. Advisory "
+             "by default while the existing violations are worked through.")
     args = ap.parse_args(argv)
 
     root = Path(PROJECT_ROOT) / args.path
@@ -2434,17 +2502,20 @@ def cmd_lint(argv):
     extra_exclude = set(args.exclude)
     all_exclude = always_exclude | extra_exclude
 
-    violations = []
-
+    files = []
     for org_file in sorted(root.rglob("*.org")):
         rel = org_file.relative_to(Path(PROJECT_ROOT))
         first_part = rel.parts[0] if rel.parts else ""
         if first_part in all_exclude:
             continue
         try:
-            text = org_file.read_text(encoding="utf-8", errors="replace")
+            files.append((rel, org_file.read_text(encoding="utf-8",
+                                                  errors="replace")))
         except OSError:
             continue
+
+    violations = []
+    for rel, text in files:
         for line in text.splitlines():
             if not line.startswith("#+filetags:"):
                 continue
@@ -2454,16 +2525,50 @@ def cmd_lint(argv):
                     violations.append((str(rel), tag, line.strip()))
             break
 
-    if not violations:
-        print("✅  compass lint: all filetags are valid.")
-        return 0
+    markers = _lint_generator_markers(files)
+    links = _lint_durable_links(files, _collect_org_types(files))
 
-    print(f"❌  compass lint: {len(violations)} filetag violation(s):\n",
-          file=sys.stderr)
-    for path, tag, raw in violations:
-        print(f"  {path}: unknown/malformed tag '{tag}'", file=sys.stderr)
-        print(f"    {raw}", file=sys.stderr)
-    return 1
+    failed = False
+
+    if violations:
+        failed = True
+        print(f"❌  filetags: {len(violations)} violation(s):\n", file=sys.stderr)
+        for path, tag, raw in violations:
+            print(f"  {path}: unknown/malformed tag '{tag}'", file=sys.stderr)
+            print(f"    {raw}", file=sys.stderr)
+
+    if markers:
+        failed = True
+        print(f"❌  generator markers: {len(markers)} violation(s):\n",
+              file=sys.stderr)
+        for path, lineno, msg in markers:
+            print(f"  {path}:{lineno}: {msg}", file=sys.stderr)
+
+    if links:
+        by_file = {}
+        for path, kind, label in links:
+            by_file.setdefault(str(path), []).append((kind, label))
+        icon = "❌" if args.strict_links else "⚠️ "
+        stream = sys.stderr if args.strict_links else sys.stdout
+        print(f"{icon}  durable documents linking into agile content: "
+              f"{len(links)} link(s) across {len(by_file)} file(s).", file=stream)
+        if args.strict_links:
+            failed = True
+            for path, hits in sorted(by_file.items()):
+                print(f"  {path}", file=stream)
+                for kind, label in hits:
+                    print(f"    -> {kind}: {label}", file=stream)
+        else:
+            print("   Advisory. Run with --strict-links to list them and fail.",
+                  file=stream)
+
+    if failed:
+        return 1
+    if links:
+        print("✅  compass lint: filetags and generator markers are valid.")
+    else:
+        print("✅  compass lint: all checks pass.")
+    return 0
 
 
 def cmd_sprint(argv):

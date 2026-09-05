@@ -1,0 +1,54 @@
+:PROPERTIES:
+:ID: F646B28F-4C6C-4793-BBD1-1FACDFBF9CAF
+:END:
+#+title: Durable documents link into agile content
+#+description: Seventy knowledge, meta and recipe documents hold roughly 130 org-roam links into stories, tasks, sprints and captures, which the one-way rule forbids. Sweep them, absorbing provenance into the durable page where the link carries information rather than deleting it.
+#+type: capture
+#+level: cross
+#+filetags: :documentation:zettelkasten:graph:hygiene:
+#+created: 2026-09-05
+#+updated: 2026-09-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Seventy documents under =doc/knowledge/=, =doc/meta=, =doc/llm/= and
+=doc/recipes/= carry roughly 130 =[[id:]]= links whose targets are stories,
+tasks, sprints, versions or captures. The rule is that links run one way: a
+story links to the durable document it produced, and the durable document does
+not link back.
+
+The spread is uneven and worth knowing before scoping.
+=doc/knowledge/architecture/history_diff_architecture.org= holds nine on its
+own. Nine recipes under =doc/recipes/codegen/= point at one story, /Refactor
+ores.codegen C++ generation/. The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] points at a task, two sprints, a
+version and a capture. Eleven =SKILL.org= files point at /Clean up the compass
+work lifecycle/.
+
+* Why
+
+A durable document states current or target state. A link into a sprint's
+working record carries the reader into a version of the past, and an agent
+grounding itself follows it and loads material describing a state that no longer
+holds.
+
+The work is not a sweep of deletions, which is why it needs a person rather than
+a regular expression. Most of these links carry provenance: the story that
+introduced a concept, the task that found a bug. Where the link is the only
+record of why the durable page says what it says, that reason belongs *in* the
+page, and the link is removed once it has been absorbed. Where the link adds
+nothing the page does not already state, it is simply removed.
+
+The lint added alongside this capture reports the violations, so the sweep has a
+worklist and a regression guard. It is advisory at first, since it fails on 70
+files today, and binds once they are clear.
+
+* References
+
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the linking discipline this restores.
+- [[id:7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866][Document type: design]] — where the one-way rule is stated.
+
+* See also
+
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document Types]] — which types are durable and which are agile.

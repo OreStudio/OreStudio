@@ -11,7 +11,12 @@
 
 * Summary
 
-Every Claude Code skill is named =<domain>-<verb>[-<object>]=, in
+A name is what makes a catalogue selectable. An agent choosing among skills reads
+names before it reads anything else, so a predictable name is part of the
+attenuation the framework depends on rather than a matter of tidiness
+([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]).
+
+Every Claude Code skill this project authors is named =<domain>-<verb>[-<object>]=, in
 kebab-case, after /the thing we want to do/ — never after a role
 (=sprint-planner=), an artefact (=pr-manager=), or the compass command
 the skill happens to run. The domain prefix and the verb each come from a closed
@@ -73,9 +78,8 @@ is =codegen-add-qt-entity=.
 | =delete-= | retire an artefact and heal the graph: re-point incoming links, record disposition, purge deployed copies |
 | (bare)   | rare domain verbs with no object, e.g. =pr-merge=              |
 
-=add= versus =start= is the create-vs-pick-up distinction: creating a
-story for backlog refinement must not create a branch; picking one up
-must. See the /Clean up the compass work lifecycle/ story.
+=add= versus =start= is the create-versus-pick-up distinction. Creating a story
+for backlog refinement must not create a branch; picking one up must.
 
 ** Structural rules
 
@@ -110,25 +114,23 @@ must. See the /Clean up the compass work lifecycle/ story.
 | =deploy-= added | The build pillar's deploy_manual/skills/settings/site targets are publish actions, not plain runs |
 | =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=skill-delete=) |
 
-* Provenance of imported skills
+* Upstream skills
 
-Imported skills are not prefixed by their origin. The name is the
-developer's interface and says what the skill does, nothing else.
+The registers govern the skills this project authors. They do not govern skills
+it consumes from elsewhere.
 
-Provenance lives in the org source: the upstream repository, the path
-within it, the commit imported from, the date, and a divergence note. A
-manifest lists every import and a check reports which have fallen behind
-upstream. None of it appears in the exported skill.
+An upstream skill keeps the name its authors gave it. It is referenced rather
+than copied ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]]), so there is no local artefact to rename,
+and renaming a referenced skill would break the reference for no gain. A reader
+meeting =unslop= or =arena= is meeting the upstream name deliberately.
 
-Because the name carries no origin, the frontmatter and the manifest are
-the *only* record that a skill was imported, which is why =skill-add=
-enforces the contract at authoring time.
+Where an upstream skill is right in shape and wrong in local detail, the binding
+written for it *is* a skill this project authors, and it takes a name from the
+registers like any other.
 
 * See also
 
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this policy governs.
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] — enforces this policy when adding skills.
-- [[id:C1813B64-1647-4B49-B856-A8345850001C][Story: Clean up the compass work lifecycle]] — the create vs
-  pick-up distinction and the PR close-out workflow.
-- [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Story: Action-oriented skill cleanup]] — the story that
-  introduced this policy.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — the upstream skills these registers do not govern.

@@ -109,6 +109,12 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
         switch (index.column()) {
 {{#domain_entity.qt.columns}}
 {{^is_computed}}
+{{#data_paste}}
+        case {{enum_name}}: {
+<<paste:{{data_paste}}>>
+        }
+{{/data_paste}}
+{{^data_paste}}
         case {{enum_name}}:
 {{#formatter}}
             return {{formatter}}({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
@@ -152,6 +158,7 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
             return relative_time_helper::format({{domain_entity.qt.item_var}}.{{#field_access}}{{field_access}}{{/field_access}}{{^field_access}}{{field}}{{/field_access}});
 {{/is_timestamp}}
 {{/formatter}}
+{{/data_paste}}
 {{/is_computed}}
 {{/domain_entity.qt.columns}}
         default:
@@ -159,6 +166,13 @@ QVariant Client{{domain_entity.entity_pascal}}Model::data(
         }
     }
 
+{{#domain_entity.qt.columns}}
+{{#tooltip_field}}
+    if (role == Qt::ToolTipRole && index.column() == {{enum_name}}) {
+        return QString::fromStdString({{domain_entity.qt.item_var}}.{{tooltip_field}});
+    }
+{{/tooltip_field}}
+{{/domain_entity.qt.columns}}
 {{#domain_entity.qt.has_flag_icon}}
     if (role == Qt::DecorationRole && index.column() == iconColumn()) {
         return flagDecoration({{domain_entity.qt.item_var}}.image_id);

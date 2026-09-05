@@ -20,9 +20,9 @@
 #include "ores.compute.api/domain/result_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include <sstream>
 
 namespace ores::compute::domain {
+
 
 std::string convert_to_table(const std::vector<result>& v) {
     fort::char_table table;
@@ -33,14 +33,11 @@ std::string convert_to_table(const std::vector<result>& v) {
           << fort::endr;
 
     for (const auto& r : v) {
-        table << boost::uuids::to_string(r.id) << boost::uuids::to_string(r.workunit_id)
+        table << r.id << boost::uuids::to_string(r.workunit_id)
               << boost::uuids::to_string(r.host_id) << r.server_state << r.outcome << r.output_uri
               << r.error_message << r.received_at << r.modified_by << r.recorded_at << fort::endr;
     }
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
+    return table.to_string();
 }
 
 }

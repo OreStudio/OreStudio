@@ -45,7 +45,9 @@
     <file>icons/fluentui/filled/ic_fluent_database_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_delete_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_delete_dismiss_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_apps_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_archive_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_desktop_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_dismiss_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_dismiss_circle_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_document_code_16_filled.svg</file>
@@ -53,6 +55,7 @@
     <file>icons/fluentui/filled/ic_fluent_edit_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_error_circle_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_flag_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_flash_flow_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_folder_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_globe_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_handshake_20_filled.svg</file>
@@ -92,6 +95,7 @@
     <file>icons/fluentui/filled/ic_fluent_table_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_tag_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_tasks_app_20_filled.svg</file>
+    <file>icons/fluentui/filled/ic_fluent_text_bullet_list_square_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_text_abc_underline_double_32_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_window_console_20_filled.svg</file>
     <file>icons/fluentui/filled/ic_fluent_wand_20_filled.svg</file>
@@ -137,7 +141,9 @@
     <file>icons/fluentui/regular/ic_fluent_database_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_delete_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_delete_dismiss_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_apps_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_archive_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_desktop_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_dismiss_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_dismiss_circle_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_document_code_16_regular.svg</file>
@@ -145,6 +151,7 @@
     <file>icons/fluentui/regular/ic_fluent_edit_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_error_circle_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_flag_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_flash_flow_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_folder_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_folder_open_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_globe_20_regular.svg</file>
@@ -183,6 +190,7 @@
     <file>icons/fluentui/regular/ic_fluent_table_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_tag_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_tasks_app_20_regular.svg</file>
+    <file>icons/fluentui/regular/ic_fluent_text_bullet_list_square_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_text_abc_underline_double_32_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_window_console_20_regular.svg</file>
     <file>icons/fluentui/regular/ic_fluent_wand_20_regular.svg</file>
@@ -196,6 +204,7 @@
     <file>icons/solarized/Bold/add-circle.svg</file>
     <file>icons/solarized/Bold/arrow-left.svg</file>
     <file>icons/solarized/Bold/arrow-right.svg</file>
+    <file>icons/solarized/Bold/bolt.svg</file>
     <file>icons/solarized/Bold/book-2.svg</file>
     <file>icons/solarized/Bold/buildings.svg</file>
     <file>icons/solarized/Bold/buildings-2.svg</file>
@@ -231,6 +240,7 @@
     <file>icons/solarized/Bold/key-minimalistic-square.svg</file>
     <file>icons/solarized/Bold/keyboard.svg</file>
     <file>icons/solarized/Bold/link-broken.svg</file>
+    <file>icons/solarized/Bold/list-check.svg</file>
     <file>icons/solarized/Bold/hourglass.svg</file>
     <file>icons/solarized/Bold/record.svg</file>
     <file>icons/solarized/Bold/soundwave.svg</file>
@@ -239,6 +249,7 @@
     <file>icons/solarized/Bold/lock-password-unlocked.svg</file>
     <file>icons/solarized/Bold/lock-unlocked.svg</file>
     <file>icons/solarized/Bold/magic-stick-3.svg</file>
+    <file>icons/solarized/Bold/monitor.svg</file>
     <file>icons/solarized/Bold/notes-minimalistic.svg</file>
     <file>icons/solarized/Bold/solar_notepad.svg</file>
     <file>icons/solarized/Bold/pause-circle.svg</file>
@@ -269,6 +280,7 @@
     <file>icons/solarized/Bold/user-circle.svg</file>
     <file>icons/solarized/Bold/user-plus-rounded.svg</file>
     <file>icons/solarized/Bold/users-group-rounded.svg</file>
+    <file>icons/solarized/Bold/widget.svg</file>
     <file>icons/solarized/Linear/export_csv.svg</file>
     <file>icons/solarized/Linear/export_fpml.svg</file>
     <file>icons/solarized/Linear/export_ore.svg</file>
@@ -278,6 +290,7 @@
     <file>icons/solarized/Linear/add-circle.svg</file>
     <file>icons/solarized/Linear/arrow-left.svg</file>
     <file>icons/solarized/Linear/arrow-right.svg</file>
+    <file>icons/solarized/Linear/bolt.svg</file>
     <file>icons/solarized/Linear/book-2.svg</file>
     <file>icons/solarized/Linear/buildings.svg</file>
     <file>icons/solarized/Linear/buildings-2.svg</file>
@@ -313,6 +326,7 @@
     <file>icons/solarized/Linear/key-minimalistic-square.svg</file>
     <file>icons/solarized/Linear/keyboard.svg</file>
     <file>icons/solarized/Linear/link-broken.svg</file>
+    <file>icons/solarized/Linear/list-check.svg</file>
     <file>icons/solarized/Linear/hourglass.svg</file>
     <file>icons/solarized/Linear/record.svg</file>
     <file>icons/solarized/Linear/soundwave.svg</file>
@@ -321,6 +335,7 @@
     <file>icons/solarized/Linear/lock-password-unlocked.svg</file>
     <file>icons/solarized/Linear/lock-unlocked.svg</file>
     <file>icons/solarized/Linear/magic-stick-3.svg</file>
+    <file>icons/solarized/Linear/monitor.svg</file>
     <file>icons/solarized/Linear/notes-minimalistic.svg</file>
     <file>icons/solarized/Linear/solar_notepad.svg</file>
     <file>icons/solarized/Linear/pen-new-square.svg</file>
@@ -350,6 +365,7 @@
     <file>icons/solarized/Linear/user-circle.svg</file>
     <file>icons/solarized/Linear/user-plus-rounded.svg</file>
     <file>icons/solarized/Linear/users-group-rounded.svg</file>
+    <file>icons/solarized/Linear/widget.svg</file>
     <file>images/login_screen.png</file>
     <file>images/modern-icon.png</file>
     <file>images/ore-studio-background.png</file>

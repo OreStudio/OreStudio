@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-compute:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bind-compute-entities-to-profiles
+#+pr: 2012
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
-#+environment:
+#+updated: 2026-09-05
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Survey every ores.compute entity against the profile catalogue, rebind matches, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-05                               |
 
 * Acceptance
 
@@ -43,11 +43,172 @@ Survey every ores.compute entity against the profile catalogue, rebind matches, 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Survey of all 8 models, the exclusion catalogue, and the strategy per the
+codegen drift loop (spec:
+[[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]]).
+
+** Survey
+
+All 8 models read. The 6 entities are legacy-format models with identical
+shape: =* Flags= (=:schema: public=, =:product: ores=, =:component: compute=,
+=:has_tenant_id: true=), the legacy =* Primary key= / =* Natural keys=
+headings, old-style =** Qt= drawers (get_request_class only; no
+save/delete/history classes), an empty =** Custom repository methods=
+section, no eventing keys, and no change-reason keys. The junction is
+current-format. The module is a catalogue; no change.
+
+| Entity   | Natural key | FKs                              | Today (hand-crafted protocol)      | Profile               | Change reason | Notes                                       |
+|----------+-------------+----------------------------------+------------------------------------+-----------------------+---------------+---------------------------------------------|
+| app         | name           |                                  | save + history, no delete          | uuid-identified-lookup | yes           | system-tenant union repo; stamps on save    |
+| app_version | wrapper_version| app_id                           | save + history, no delete          | uuid-identified-lookup | yes           | system-tenant union repo; stamps on save    |
+| batch       | external_ref   |                                  | save + history, no delete          | uuid-identified-lookup | yes           | stamps on save                              |
+| host        | external_id    |                                  | save + delete, no history          | uuid-identified-lookup | yes           | does NOT stamp on save                      |
+| result      | (none)         | workunit_id                      | nothing                            | uuid-identified-lookup | no (exception)| read_by_workunit custom read; no stamp; grid machinery writes |
+| workunit    | (none)         | host_id, batch_id, app_version_id| save only                          | uuid-identified-lookup | yes           | read_by_batch custom read; no stamp         |
+| app_version_platform_junction | | | junction                          | tenant-scoped-junction |               | orphan notify trigger (no consumer)        |
+
+** Exclusion catalogue resolutions
+
+Drift-loop rule: each item is fixed properly or verified as a genuine,
+documented exclusion. Nothing is carried forward as an unexamined
+restore-from-HEAD step.
+
+1. *6 hand-written service files* — BROUGHT UNDER CODEGEN. Verified all six
+   are thin CRUD facades with no business logic beyond id-nil validation,
+   stamp, and read_latest/read_all. The generated standard-CRUD service
+   covers the whole API: list_*s(offset, limit), count_*s, find_*s(uuid),
+   save_*s, delete_*s, remove_*, get_*_history. The custom reads
+   (list_by_workunit, list_by_batch) come free from FK =:list_by: true=.
+   The host/result/workunit no-stamp behaviour is a genuine behavioural
+   difference to triage at regen: candidate for a model key, or a
+   documented decision (grid machinery writes these without actor stamps).
+
+2. *result_repository read_by_workunit* — generated via =:list_by: true= on
+   the workunit_id FK.
+
+3. *workunit_repository read_by_batch* — generated via =:list_by: true= on
+   the batch_id FK.
+
+4. *3 mappers (nullable vs non-optional)* — triage at regen. Likely the
+   generated mapper is now correct and the hand-written null-handling is
+   superseded (code improved; sign off).
+
+5. *2 repositories (app, app_version) system-tenant union filter* — genuine
+   business rule: system-tenant apps are visible to every tenant. No
+   template feature exists for it. Candidate for a template feature
+   (=:system_tenant_visible:=) captured for later; documented exclusion with
+   reason until then.
+
+6. *Hand-crafted protocol and handlers* — REPLACED. The protocol classes
+   (list_apps_request, list_apps_response, ...) and the entity handlers
+   (app_handler, app_version_handler, batch_handler, host_handler,
+   result_handler, workunit_handler; none carry the AUTO-GENERATED stamp)
+   are replaced by standard codegen'd messages and handlers. The models'
+   Qt drawers name the standard class set per the refdata/dq convention
+   (get_*_request, save_*_request, delete_*_request, get_*_history_request
+   plus message types); protocol, handlers, and services all regenerate
+   from those keys. This is the "standard codegened messages and standard
+   CRUD entity flow over manual hacks" directive.
+
+7. *report_submit_handler + registrar.cpp* (core/src/messaging) — genuinely
+   custom (report submission flow, not entity CRUD) — documented exclusion.
+   Verify they are not on any template output path so regen cannot touch
+   them.
+
+** Decisions
+
+- Profile: uuid-identified-lookup for all 6 entities. It supplies
+  has_tenant_id, has_uuid_primary_key, has_change_reason_cache,
+  has_pagination and, via its Physical space table, enables
+  ores.cpp.eventing-integration-test (verified working in analytics-cpp).
+  Junction: tenant-scoped-junction via file-level =#+profile:=.
+
+- Eventing: all 6 entities get changed_event keys (host_changed_event is
+  new); the profile enables one eventing integration test per entity;
+  application.cpp subscribes to ores_compute_hosts. The junction notify
+  trigger stays generated but orphaned — drop or subscribe at triage.
+
+- Qt: full per-entity generation (all dialogs); legacy per-entity
+  HistoryDialogs (AppHistoryDialog, AppVersionHistoryDialog + .ui) are
+  removed; entities bind to the generic ores::qt::HistoryDialog.
+
+- Change reason cache: has_change_reason_cache: true for app, app_version,
+  batch, host, workunit. result is the documented exception: list-only
+  entity; grid machinery writes results; no human edit flow.
+
+- Delete flow: standard codegen'd delete classes and the standard CRUD flow
+  for every entity (the generated MDI window requires delete_request_class);
+  no manual hacks.
+
+** Strategy
+
+1. Modernize the 6 models: =* Flags= with =:profile:=, =* Columns= with
+   =:primary_key: true= / =:natural_key: true= flags, new-format =** Qt=
+   drawers with the standard class set, changed_event keys,
+   has_change_reason_cache per capability, FK =:list_by:= flags,
+   custom-method paste blocks where needed. Eventing comes from the
+   profile's Physical space table.
+2. Modernize the junction (file-level =#+profile: tenant-scoped-junction=).
+3. Regenerate compute-cpp; triage every diff per the drift loop; sign off
+   improved code; verify each exclusion; add the host subscription in
+   application.cpp.
+4. Zero-diff via check_component_drift.py; extend --components and the
+   pr.yml codegen-drift job to cover compute-cpp.
+5. Full build, validate_schemas.sh, full ctest.
 
 * Notes
+
+** Rebase and re-verify (2026-08-25)
+
+Rebased the session's codegen onto latest main (branch
+=feature/bind-compute-entities-to-profiles=) and re-verified both
+components. Main's repository template gained the
+=:has_workspace_id:= read logic (read_at_version workspace fix) since
+the branch base; the merge combined it with the branch's
+=:system_tenant_visible:= template feature (={{{sys_decl}}}= /
+={{{tenant_where}}}=). Refdata and compute-cpp both regenerate
+byte-identically to the committed tree (drift checks pass).
+
+*** Sign-off: doc-comment rendering improvements (improved_code)
+
+Regenerating refdata surfaced two stale generated docs and one
+malformed model doc, all fixed and signed off per the drift loop:
+
+- =ores.refdata.calendar_rule=: model prose =0=Sunday..6=Saturday= was
+  silently losing its equals signs in the generated header
+  (=0Sunday..6Saturday=). Root cause: the verbatim-marker regex
+  =([^=\s][^=]*?)= pairs bare equals signs across words. The
+  boundary-guarded regex
+  =(?<!\w)=([^=\s][^=]*?)=(?!\w)= (word boundary on both sides, as real
+  org requires) preserves prose equals signs; regenerated
+  =calendar_rule.hpp= now matches the model.
+- =ores.refdata.calendar_event=: the model doc used illegal org
+  emphasis (=source='federalreserve.gov'=. — an equals sign inside the
+  span), which regenerated into garbled text. Fixed the model to plain
+  prose =source='federalreserve.gov'.=; the generated header now reads
+  correctly (=calendar_rules='s= emphasis renders as
+  =calendar_rules's=).
+- =ores.compute=: the same boundary-guarded regex restored prose
+  equals signs in workunit/result doc comments (=1=Inactive, 2=Unsent=
+  etc.) that the old regex had dropped.
+
+*** Sign-off: party repository SQL (brought back under codegen)
+
+=party_repository.cpp= =read_descendants= regenerated to the model's
+current text: the raw SQL now uses the =MAX_TIMESTAMP= constant
+instead of =ores_utility_infinity_timestamp_fn()=. Main's checked-in
+file was stale (model updated without regenerating); the regen
+restores model/generated parity.
+
+*** Template rendering note: no blank line after tid
+
+The inline ={{sys_decl}}= splice (tag at the end of the tid
+declaration, empty value renders nothing) keeps regenerated
+repositories byte-identical to main's checked-in style — no blank
+line between the tid declaration and the query. A standalone
+={{sys_decl}}= tag would emit one (interpolation tags are exempt from
+mustache standalone-line stripping), diverging from main by ~440
+whitespace lines across refdata; rejected for that reason.
 
 * Test Scenarios
 
@@ -64,12 +225,54 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2012][#2012]] | [compute,codegen] Bind compute entities to profiles, zero-diff regen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1 (claude bot): phantom =ores.compute= scaffold — top-level CMakeLists.txt plus =src/=, =tests/=, =include/= subtrees never reached by add_subdirectory | =ores.compute/= | Accept | Fixed in 060cd50144 + ff4c34bfc4. Root cause: the org loader defaults an undeclared =#+component_kind:= to =flat=, whose bootstrap archetypes emit the whole scaffold into the component root; =ores.compute= is a sub-component container (api/client/core/service/wrapper own their orgs) and had no =composite= key, so every regen re-wrote the phantom and the drift gate committed it. All eight container orgs now declare =#+component_kind: composite=, both phantom scaffolds (compute + analytics) are deleted, and resolve_targets raises on any container root that would emit a flat scaffold again (regression-tested). |
+| 2 | Round 1 (claude bot, minor): =_strip_org_markup= verbatim-regex fix has no unit test | =org_loader.py= | Accept | Fixed in 4fed1d8e9e — regression test added (=tests/test_org_loader_markup.py=) covering prose =equals= legends surviving stripping. |
 
 * Result
+
+Closed 2026-09-05. Bound all seven ores.compute entities per the Plan
+survey: app, app_version, batch, host, result and workunit to
+=uuid-identified-lookup=, the app_version_platform junction to
+=tenant-scoped-junction=. Regenerated the component after binding. All
+six hand-written service files, the hand-crafted messaging protocol and
+the six entity handlers are replaced by the standard codegen'd set; the
+custom reads generate from FK =:list_by: true=; result is the one
+change-reason exception (list-only entity, grid machinery writes).
+Two documented exclusions remain: the app/app_version system-tenant
+union filter (genuine business rule; =:system_tenant_visible:= recorded
+as the template-feature candidate) and report_submit_handler plus
+registrar.cpp (custom flow on no template output path).
+
+Regeneration pre-empted the zero-additional-diff gate: the pre-rebind
+baseline was not a true regeneration of main, so the gate only holds
+after fixing two defects at source. The JSON-to-org model migration had
+silently dropped the six legacy entities' Table display sections;
+restored them verbatim in the orgs (81ddb04d60) and regenerated the
+table displays (7aea9d2326). The qt detail-dialog generator emitted a
+display-name row unconditionally, which bound a phantom =.name= member
+for entities with no name column and the regenerated dialogs did not
+compile; the row is now gated on the name member existing, with a name
+carried as the natural key counted as a real member (core.py, dccbe5d574,
+86393b44a8, 9a5c60a45b). The five DetailDialog cpp/ui pairs regenerated
+(d755eede45); the compute qt and shell call sites adapted (bb34072366,
+31f994beeb). The env DB's app_version_platforms table was stale against
+repo DDL; refreshed so the api/core suites could run. The site build
+surfaced a latent org-export defect in this doc's 2026-08-25 note,
+which wrote the ={{{sys_decl}}}= and ={{{tenant_where}}}= splices bare;
+org parsed them as macros and the publish aborted. Wrapped in verbatim
+per repo convention.
+
+Acceptance: every entity surveyed and every match rebound (survey
+table above); regenerated output byte-identical to the committed tree
+for refdata, reporting, marketdata and compute-cpp
+(check_component_drift.py, 2026-09-05); the exclusion catalogue is
+resolved or documented with its reason; full build clean at 100% with
+ores.qt.exe linked; ctest 71/71 green; schema drift current per
+=compass db status= (0.0.25), the validate_schemas.sh successor;
+compute-cpp covered by the CI drift gate (08b6f23193).

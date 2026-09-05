@@ -11,6 +11,7 @@
 #+name: scheduler
 #+full_name: ores.scheduler
 #+brief: Job scheduling component
+#+component_kind: composite
 
 * Summary
 

@@ -18,7 +18,11 @@
  *
  */
 #include "ores.compute.core/service/result_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::compute::service {
 
@@ -27,40 +31,85 @@ using namespace ores::logging;
 result_service::result_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::result> result_service::list() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all results";
-    return repo_.read_latest(ctx_);
+std::vector<domain::result> result_service::list_results(std::uint32_t offset,
+                                                         std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing all compute results";
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::result> result_service::find(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding result: " << id;
+std::uint32_t result_service::count_results() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total compute results count";
+    return repo_.get_total_result_count(ctx_);
+}
+
+
+std::vector<domain::result> result_service::list_results_by_workunit_id(
+    const std::string& workunit_id, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing compute results by workunit_id: " << workunit_id;
+    return repo_.read_latest_by_workunit_id(ctx_, workunit_id, offset, limit);
+}
+
+std::uint32_t result_service::count_results_by_workunit_id(const std::string& workunit_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total compute results count by workunit_id: "
+                               << workunit_id;
+    return repo_.get_total_result_count_by_workunit_id(ctx_, workunit_id);
+}
+
+
+std::optional<domain::result> result_service::get_result_at_version(const std::string& id,
+                                                                    std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting compute result at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::optional<domain::result> result_service::get_result(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting compute result. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
-void result_service::save(const domain::result& v) {
+void result_service::save_result(const domain::result& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Result id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving result: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved result: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving compute result. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved compute result. " << "id: " << v.id;
 }
 
-std::vector<domain::result> result_service::history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for result: " << id;
+void result_service::save_results(const std::vector<domain::result>& results) {
+    for (const auto& e : results) {
+        if (e.id.is_nil())
+            throw std::invalid_argument("Result id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << results.size() << " compute results";
+    auto ts = results;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void result_service::delete_result(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing compute result. " << "id: " << id;
+    repo_.remove(ctx_, id);
+    BOOST_LOG_SEV(lg(), info) << "Removed compute result. " << "id: " << id;
+}
+
+void result_service::delete_results(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
+std::vector<domain::result> result_service::get_result_history(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for compute result. " << "id: " << id;
     return repo_.read_all(ctx_, id);
-}
-
-std::vector<domain::result> result_service::list_by_workunit(const std::string& workunit_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing results by workunit: " << workunit_id;
-    return repo_.read_by_workunit(ctx_, workunit_id);
 }
 
 std::vector<domain::result> result_service::list_by_state(int server_state) {
     BOOST_LOG_SEV(lg(), debug) << "Listing results by state: " << server_state;
     return repo_.read_by_state(ctx_, server_state);
 }
-
 }

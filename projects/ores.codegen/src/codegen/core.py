@@ -2095,6 +2095,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                     and not is_timestamp_type
                     and not is_enum_type
                     and not is_already_optional
+                    and col.get('cpp_type') == 'std::string'
+                )
+                # A nullable numeric (or bool) column whose domain member is
+                # the plain scalar: the entity layer represents it as
+                # std::optional<{cpp_type}> and the mapper maps NULL to the
+                # zero sentinel, mirroring the string/uuid/timestamp idioms.
+                # is_nullable_string must NOT claim these columns (it would
+                # emit std::optional<std::string> for a numeric entity member).
+                col['is_nullable_numeric'] = (
+                    col.get('nullable', False)
+                    and not is_uuid_type
+                    and not is_timestamp_type
+                    and not is_enum_type
+                    and not is_already_optional
+                    and col.get('cpp_type') in (
+                        'int', 'std::int64_t', 'std::uint64_t', 'double', 'float', 'bool'
+                    )
                 )
                 col['is_simple'] = (
                     not col.get('nullable', False)
@@ -2279,10 +2296,18 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         # A required (NOT NULL) plain timestamp column needs the same
         # ores.platform/time/datetime.hpp + <chrono>/<format>/<sstream>
         # includes a timestamp natural key needs -- broaden the flag rather
-        # than require a timestamp natural key to also be present.
+        # than require a timestamp natural key to also be present. The same
+        # holds for a nullable timestamp whose domain member is a plain
+        # time_point: the mapper's sentinel idiom compares against
+        # std::chrono::system_clock::time_point{} and renders via
+        # datetime::to_db_string.
         domain_entity['has_date_or_timestamp_natural_keys'] = (
             domain_entity.get('has_date_or_timestamp_natural_keys', False)
             or any(c.get('is_required_timestamp') for c in domain_entity.get('columns', []))
+            or any(
+                c.get('is_optional_timestamp') and c.get('render_is_timestamp')
+                for c in domain_entity.get('columns', [])
+            )
         )
         # Check primary_key's raw 'type' rather than the derived 'is_text'
         # flag: that flag isn't computed until later in this function, so
@@ -2401,11 +2426,23 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                         uuid_columns.add(key['column'])
             if 'columns' in domain_entity:
                 for col in domain_entity['columns']:
-                    if col.get('is_uuid') or col.get('is_optional_uuid'):
+                    # Optional-ness must come from the raw cpp_type, not the
+                    # SQL-nullability flags: the domain class template emits
+                    # {{{cpp_type}}} verbatim, so a ":nullable: true" column
+                    # whose author left cpp_type as a plain scalar (e.g.
+                    # "int" or a plain time_point) is a plain member and
+                    # streams as-is; only an explicit std::optional<...>
+                    # cpp_type needs the opt_str() wrapper (see the
+                    # render_* flag comment above).
+                    _render_cpp_type = (col.get('cpp_type') or '').strip()
+                    if (
+                        'boost::uuids::uuid' in _render_cpp_type
+                        and not _render_cpp_type.startswith('std::optional<')
+                    ):
                         uuid_columns.add(col['name'])
-                    if col.get('nullable', False) and not col.get('is_uuid') and not col.get('is_nullable_string'):
+                    if _render_cpp_type.startswith('std::optional<'):
                         optional_columns.add(col['name'])
-                    if (col.get('cpp_type') or '').strip() == 'bool':
+                    if _render_cpp_type == 'bool':
                         bool_columns.add(col['name'])
             _prepare_table_display(domain_entity['cpp'], uuid_columns, optional_columns, bool_columns)
         # Copy repository section fields to top level for template access
@@ -2423,6 +2460,30 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         domain_entity['read_tenant_filtered'] = (
             domain_entity.get('has_tenant_id', False)
             and domain_entity.get('tenant_read_scope', 'tenant') != 'shared')
+        # System-tenant read scope: entities marked :system_tenant_visible:
+        # read their own tenant's rows PLUS platform rows seeded under the
+        # system tenant (e.g. compute apps shared across all tenants). The
+        # union is spliced into every read where-clause via tenant_where /
+        # sys_decl (see cpp_domain_type_repository.cpp.mustache); mutations
+        # (insert/update/delete) always stay own-tenant scoped regardless.
+        # Incompatible with tenant_read_scope: shared -- that scope removes
+        # the app-level tenant filter entirely (RLS governs), which would
+        # leave sys declared but unused.
+        domain_entity['system_tenant_visible'] = bool(
+            domain_entity.get('system_tenant_visible', False))
+        if domain_entity['system_tenant_visible']:
+            domain_entity['tenant_where'] = (
+                '("tenant_id"_c == tid || "tenant_id"_c == sys)')
+            # Leading newline: the template inlines {{sys_decl}} at the end
+            # of the tid declaration line, so an empty value must render
+            # nothing at all (no stray blank line) and a non-empty value
+            # starts on its own line.
+            domain_entity['sys_decl'] = (
+                '\n    static const std::string sys('
+                'ores::database::service::tenant_context::system_tenant_id);')
+        else:
+            domain_entity['tenant_where'] = '"tenant_id"_c == tid'
+            domain_entity['sys_decl'] = ''
         # Set defaults for messaging handler knobs if not provided by entity model.
         # Entities override via ** Repository section; these cover the common cases.
         pk = domain_entity.get('primary_key', {})
@@ -3007,19 +3068,41 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             validate_parent_scoped_list(domain_entity)
             # Add iterator variable reference for templates
             qt['item_var'] = qt.get('item_var', 'item')
-            # Auto-generate default detail_fields if not provided
+            # Auto-generate default detail_fields if not provided. The
+            # default shape is the code+name+description lookup form: a
+            # key row plus a display-name row, each gated on the column
+            # existing. An entity whose key field IS name (compute app)
+            # has no separate display name, so the key row alone carries
+            # it, named after the field like every other row; emitting a
+            # second nameEdit would bind two widgets to one column. An
+            # entity with no name column at all (compute batch, result,
+            # ...) gets no display-name row either -- the name row must
+            # not be emitted unconditionally, the way description is
+            # gated below, or the dialog binds a phantom member.
             if 'detail_fields' not in qt:
                 key_field = qt.get('key_field', 'code')
                 column_names = {c.get('name') for c in domain_entity.get('columns', [])}
+                # A display name carried as the natural key (refdata's
+                # code-keyed lookups, e.g. rounding_type) is a real
+                # member too, but the parser catalogues natural keys
+                # under natural_keys, not columns -- include them or the
+                # name row below is gated off for every such lookup.
+                column_names.update(
+                    nk.get('column')
+                    for nk in domain_entity.get('natural_keys', [])
+                    if nk.get('column'))
+                key_is_name = key_field == 'name'
                 fields = [
                     {'field': key_field, 'label': key_field.replace('_', ' ').title(),
-                     'widget': 'codeEdit',
+                     'widget': 'nameEdit' if key_is_name else 'codeEdit',
                      'type': 'line_edit', 'is_key': True, 'is_required': True,
                      'placeholder': 'Enter ' + domain_entity.get('entity_singular_words', 'item') + ' ' + key_field.replace('_', ' ')},
-                    {'field': 'name', 'label': 'Name', 'widget': 'nameEdit',
-                     'type': 'line_edit', 'is_required': True,
-                     'placeholder': 'Enter display name'},
                 ]
+                if not key_is_name and 'name' in column_names:
+                    fields.append(
+                        {'field': 'name', 'label': 'Name', 'widget': 'nameEdit',
+                         'type': 'line_edit', 'is_required': True,
+                         'placeholder': 'Enter display name'})
                 if 'description' in column_names:
                     fields.append(
                         {'field': 'description', 'label': 'Description', 'widget': 'descriptionEdit',

@@ -99,6 +99,54 @@ _JUNCTION_MESSAGING_FACETS = frozenset({
     "ores.cpp.service",
 })
 
+# The per-entity history-provider registrar renders every version's actor
+# through build_entity_history_versions(), which requires the entity's
+# domain type to carry modified_by. no_audit_columns entities (hypertable
+# time-series rows that deliberately carry no actor stamps) have no such
+# member, so the generated registrar cannot compile for them. The domain
+# type and the history field mapper already honour no_audit_columns; this
+# facet is the remaining piece of the same exclusion.
+_NO_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
+    "ores.cpp.history-provider-registrar",
+})
+
+
+def _hosted_subcomponents(component_org: Path) -> list[str]:
+    """Return the sub-component projects hosted directly under an org's root.
+
+    A sub-component project is a directory holding its own
+    ``modeling/component_overview.org``; several directly under one root
+    make that root a pure container with no code of its own."""
+    root = component_org.resolve().parent.parent
+    if not root.is_dir():
+        return []
+    return sorted(
+        child.name for child in root.iterdir()
+        if child.is_dir()
+        and (child / "modeling" / "component_overview.org").is_file())
+
+
+def _reject_non_composite_container(
+    model_path: Path, comp: dict[str, Any],
+) -> None:
+    """Raise when a container component would emit the flat scaffold.
+
+    The org loader defaults an undeclared ``#+component_kind:`` to "flat",
+    which selects the flat bootstrap archetypes for any component model.
+    Against a root that hosts sub-component projects that means writing a
+    whole phantom scaffold (root CMakeLists.txt, src/, tests/, include/)
+    into the container directory; only kind "composite" is legal there."""
+    if comp.get("kind") == "composite":
+        return
+    hosted = _hosted_subcomponents(model_path)
+    if not hosted:
+        return
+    raise ValueError(
+        f"{model_path.name}: component root hosts sub-component projects "
+        f"({', '.join(hosted)}) but resolves kind {comp.get('kind')!r}; "
+        f"declare #+component_kind: composite so no flat scaffold is "
+        f"emitted into the container")
+
 
 def resolve_targets(
     model_path: Path,
@@ -143,6 +191,17 @@ def resolve_targets(
             # regeneration that would overwrite a live legacy layer).
             gen_facets = {f for f in gen_facets
                           if f not in _JUNCTION_MESSAGING_FACETS}
+    if model_type == "domain_entity":
+        entity = model_data.get("domain_entity", {})
+        if (entity.get("sql") or {}).get("no_audit_columns"):
+            # Hard gate, mirroring the junction gate above: the generated
+            # history provider needs the entity's version rows to carry an
+            # actor (modified_by), which a no_audit_columns entity lacks by
+            # design. Runs before the per-archetype override loop so an
+            # explicit :ores.*.enabled: override cannot re-admit a facet
+            # whose output cannot build for this entity.
+            gen_facets = {f for f in gen_facets
+                          if f not in _NO_AUDIT_HISTORY_PROVIDER_FACETS}
     # Per-archetype activation: the entity's ores.* drawer overrides (most-
     # specific wins, archetype depth included) and, for components, the kind
     # discriminator that selects mutually-exclusive variants in one pass.
@@ -151,6 +210,13 @@ def resolve_targets(
     if model_type == "component":
         comp = model_data.setdefault("component", {})
         component_kind = comp.get("kind")
+        # Hard gate: a root hosting sub-component projects is a pure
+        # container, and only kind "composite" (no archetype serves it)
+        # may generate there. The loader defaults an undeclared
+        # #+component_kind: to "flat", which would emit a whole phantom
+        # scaffold (CMakeLists.txt, src/, tests/, include/) into the
+        # container directory — the ores.compute incident.
+        _reject_non_composite_container(model_path, comp)
         # Component root on disk relative to projects/ (the nested regrouped
         # layout, e.g. ores.refdata/api), used as {component_dir} so output goes
         # to the real location rather than the dotted name. The model lives at

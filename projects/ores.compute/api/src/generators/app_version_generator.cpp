@@ -19,28 +19,29 @@
  */
 #include "ores.compute.api/generators/app_version_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
 namespace ores::compute::generators {
 
 using ores::utility::generation::generation_keys;
 
-domain::app_version generate_synthetic_app_version(const boost::uuids::uuid& app_id,
-                                                   utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
-    const auto idx = ++counter;
-    const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
-    const auto tenant_id = ctx.env().get_or(generation_keys::tenant_id, "system");
+domain::app_version generate_synthetic_app_version(utility::generation::generation_context& ctx) {
+    const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::app_version r;
-    r.version = 1;
-    r.tenant_id = utility::uuid::tenant_id::from_string(tenant_id).value();
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
-    r.app_id = app_id;
-    r.wrapper_version = std::string("v1.0.") + std::to_string(idx);
-    r.engine_version = std::string("engine-7.") + std::to_string(idx);
-    r.min_ram_mb = 4096;
+    r.app_id = ctx.generate_uuid();
+    r.wrapper_version = std::string(faker::word::noun());
+    r.engine_version = std::string(faker::word::noun());
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";
@@ -49,12 +50,12 @@ domain::app_version generate_synthetic_app_version(const boost::uuids::uuid& app
     return r;
 }
 
-std::vector<domain::app_version> generate_synthetic_app_versions(
-    std::size_t n, const boost::uuids::uuid& app_id, utility::generation::generation_context& ctx) {
+std::vector<domain::app_version>
+generate_synthetic_app_versions(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::app_version> r;
     r.reserve(n);
     while (r.size() < n)
-        r.push_back(generate_synthetic_app_version(app_id, ctx));
+        r.push_back(generate_synthetic_app_version(ctx));
     return r;
 }
 

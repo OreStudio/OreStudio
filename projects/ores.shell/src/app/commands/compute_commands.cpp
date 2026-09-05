@@ -28,6 +28,7 @@
 #include "ores.compute.api/domain/result_table_io.hpp"
 #include "ores.compute.api/domain/workunit_table_io.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/batch_protocol.hpp"
 #include "ores.compute.api/messaging/host_protocol.hpp"
@@ -72,7 +73,7 @@ std::string default_http_base_url() {
 
 std::optional<compute::domain::app>
 find_app_by_name(std::ostream& out, nats_client& session, const std::string& name) {
-    compute::messaging::list_apps_request req;
+    compute::messaging::get_apps_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -89,7 +90,7 @@ std::optional<compute::domain::app_version> find_app_version(std::ostream& out,
                                                              const boost::uuids::uuid& app_id,
                                                              const std::string& engine_version,
                                                              const std::string& wrapper_version) {
-    compute::messaging::list_app_versions_request req;
+    compute::messaging::get_app_versions_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -108,12 +109,12 @@ std::optional<compute::domain::app_version> find_app_version(std::ostream& out,
 // wipes every previously published platform on the next save.
 std::optional<std::vector<compute::domain::app_version_platform>> existing_platforms(
     std::ostream& out, nats_client& session, const boost::uuids::uuid& app_version_id) {
-    compute::messaging::list_app_version_platforms_request req;
+    compute::messaging::get_app_version_platforms_by_app_version_request req;
     req.app_version_id = boost::uuids::to_string(app_version_id);
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp || !resp->success)
         return std::nullopt;
-    return resp->platforms;
+    return resp->app_version_platforms;
 }
 
 std::optional<boost::uuids::uuid>
@@ -152,7 +153,7 @@ bool is_online(const compute::domain::host& h) {
 std::optional<compute::domain::batch> find_batch_by_external_ref(std::ostream& out,
                                                                  nats_client& session,
                                                                  const std::string& external_ref) {
-    compute::messaging::list_batches_request req;
+    compute::messaging::get_batches_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -167,7 +168,7 @@ std::optional<compute::domain::batch> find_batch_by_external_ref(std::ostream& o
 
 std::optional<std::vector<compute::domain::workunit>>
 workunits_of_batch(std::ostream& out, nats_client& session, const boost::uuids::uuid& batch_id) {
-    compute::messaging::list_workunits_request req;
+    compute::messaging::get_workunits_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -188,7 +189,7 @@ results_of_batch(std::ostream& out, nats_client& session, const boost::uuids::uu
     std::unordered_set<boost::uuids::uuid> workunit_ids;
     for (const auto& w : *wus)
         workunit_ids.insert(w.id);
-    compute::messaging::list_results_request req;
+    compute::messaging::get_results_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -397,10 +398,7 @@ void compute_commands::process_publish_package(std::ostream& out,
     app.change_reason_code = reason_code;
     app.change_commentary = commentary;
 
-    compute::messaging::save_app_request app_req;
-    app_req.app = app;
-    app_req.change_reason_code = reason_code;
-    app_req.change_commentary = commentary;
+    auto app_req = compute::messaging::save_app_request::from(app);
 
     auto app_resp = do_request(out, session, app_req, std::chrono::seconds(30), true);
     if (!app_resp || !app_resp->success) {
@@ -450,16 +448,30 @@ void compute_commands::process_publish_package(std::ostream& out,
     std::erase_if(platform_rows, [&](const auto& p) { return p.platform_code == platform_code; });
     platform_rows.push_back(row);
 
-    compute::messaging::save_app_version_request ver_req;
-    ver_req.app_version = ver;
-    ver_req.platforms = std::move(platform_rows);
-    ver_req.change_reason_code = reason_code;
-    ver_req.change_commentary = commentary;
+    auto ver_req = compute::messaging::save_app_version_request::from(ver);
 
     auto ver_resp = do_request(out, session, ver_req, std::chrono::seconds(30), true);
     if (!ver_resp || !ver_resp->success) {
         fail(out) << "Failed to save app version: "
                   << (ver_resp ? ver_resp->message : "no response") << std::endl;
+        return;
+    }
+
+    // Platforms are saved through the junction's replace-by-app-version flow
+    // (compute.v1.app_version_platforms.replace_by_app_version_id), which
+    // swaps the full platform row set for the version in one operation.
+    compute::messaging::replace_app_version_platforms_by_app_version_request plat_req;
+    plat_req.app_version_id = boost::uuids::to_string(ver.id);
+    plat_req.app_version_platforms = std::move(platform_rows);
+    plat_req.modified_by = username;
+    plat_req.performed_by = username;
+    plat_req.change_reason_code = reason_code;
+    plat_req.change_commentary = commentary;
+
+    auto plat_resp = do_request(out, session, plat_req, std::chrono::seconds(30), true);
+    if (!plat_resp || !plat_resp->success) {
+        fail(out) << "Failed to save platforms for app version: "
+                  << (plat_resp ? plat_resp->message : "no response") << std::endl;
         return;
     }
 
@@ -473,7 +485,7 @@ void compute_commands::process_list_apps(std::ostream& out, nats_client& session
         return;
     }
 
-    compute::messaging::list_apps_request req;
+    compute::messaging::get_apps_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -489,7 +501,7 @@ void compute_commands::process_list_app_versions(std::ostream& out, nats_client&
         return;
     }
 
-    compute::messaging::list_app_versions_request req;
+    compute::messaging::get_app_versions_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -536,7 +548,7 @@ void compute_commands::process_list_hosts(std::ostream& out, nats_client& sessio
         return;
     }
 
-    compute::messaging::list_hosts_request req;
+    compute::messaging::get_hosts_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -552,7 +564,7 @@ void compute_commands::process_list_batches(std::ostream& out, nats_client& sess
         return;
     }
 
-    compute::messaging::list_batches_request req;
+    compute::messaging::get_batches_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -607,9 +619,7 @@ void compute_commands::process_add_batch(std::ostream& out,
     batch.change_commentary = commentary;
 
     compute::messaging::save_batch_request req;
-    req.batch = batch;
-    req.change_reason_code = reason_code;
-    req.change_commentary = commentary;
+    req.data = batch;
 
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp || !resp->success) {
@@ -666,7 +676,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
     // published and the jobs sit unsent forever.
     boost::uuids::uuid app_version_uuid;
     bool found_app_version = false;
-    compute::messaging::list_app_versions_request av_req;
+    compute::messaging::get_app_versions_request av_req;
     av_req.limit = 1000;
     auto av_resp = do_request(out, session, av_req, std::chrono::seconds(30), true);
     if (!av_resp)
@@ -732,9 +742,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
         wu.change_commentary = commentary;
 
         compute::messaging::save_workunit_request wu_req;
-        wu_req.workunit = wu;
-        wu_req.change_reason_code = reason_code;
-        wu_req.change_commentary = commentary;
+        wu_req.data = wu;
         auto wu_resp = do_request(out, session, wu_req, std::chrono::seconds(30), true);
         if (!wu_resp || !wu_resp->success) {
             fail(out) << "Failed to dispatch job " << (i + 1) << "/" << *job_count << ": "
@@ -753,9 +761,7 @@ void compute_commands::process_dispatch_batch(std::ostream& out,
     dispatched.change_commentary = commentary;
 
     compute::messaging::save_batch_request batch_req;
-    batch_req.batch = dispatched;
-    batch_req.change_reason_code = reason_code;
-    batch_req.change_commentary = commentary;
+    batch_req.data = dispatched;
     auto batch_resp = do_request(out, session, batch_req, std::chrono::seconds(30), true);
     if (!batch_resp || !batch_resp->success) {
         fail(out) << "Failed to mark batch dispatched: "
@@ -781,7 +787,7 @@ void compute_commands::process_list_workunits(std::ostream& out,
         return;
     }
 
-    compute::messaging::list_workunits_request req;
+    compute::messaging::get_workunits_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -832,7 +838,7 @@ void compute_commands::process_list_results(std::ostream& out,
         return;
     }
 
-    compute::messaging::list_results_request req;
+    compute::messaging::get_results_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -900,7 +906,7 @@ void compute_commands::process_grid_stats(std::ostream& out,
             if (workunit_count > 0 && terminal_count == workunit_count) {
                 BOOST_LOG_SEV(lg(), info) << "Batch " << batch_ref << " drained (" << terminal_count
                                           << "/" << workunit_count << " workunits).";
-                compute::messaging::list_hosts_request hosts_req;
+                compute::messaging::get_hosts_request hosts_req;
                 hosts_req.limit = 1000;
                 auto hosts_resp =
                     do_request(out, session, hosts_req, std::chrono::seconds(30), true);
@@ -1027,7 +1033,7 @@ void compute_commands::process_delete_host(std::ostream& out,
 
     const auto& host_id = parsed->positionals[0];
 
-    compute::messaging::list_hosts_request req;
+    compute::messaging::get_hosts_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -1050,14 +1056,8 @@ void compute_commands::process_delete_host(std::ostream& out,
         return;
     }
 
-    const auto username = session.auth().username;
-    const auto reason_code = std::string(default_reason_code);
-    const std::string commentary = "Deleted via compute delete-host";
-
     compute::messaging::delete_host_request del_req;
-    del_req.id = host_id;
-    del_req.change_reason_code = reason_code;
-    del_req.change_commentary = commentary;
+    del_req.ids = {host_id};
     auto del_resp = do_request(out, session, del_req, std::chrono::seconds(30), true);
     if (!del_resp || !del_resp->success) {
         fail(out) << "Failed to delete host: " << (del_resp ? del_resp->message : "no response")
@@ -1087,7 +1087,7 @@ void compute_commands::process_download_input(std::ostream& out,
     const auto& workunit_id = parsed->positionals[0];
     const auto& dest_dir = parsed->positionals[1];
 
-    compute::messaging::list_workunits_request req;
+    compute::messaging::get_workunits_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)
@@ -1146,7 +1146,7 @@ void compute_commands::process_download_output(std::ostream& out,
     const auto& result_id = parsed->positionals[0];
     const auto& dest_dir = parsed->positionals[1];
 
-    compute::messaging::list_results_request req;
+    compute::messaging::get_results_request req;
     req.limit = 1000;
     auto resp = do_request(out, session, req, std::chrono::seconds(30), true);
     if (!resp)

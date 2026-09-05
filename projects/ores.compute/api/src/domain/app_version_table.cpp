@@ -20,9 +20,9 @@
 #include "ores.compute.api/domain/app_version_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
-#include <sstream>
 
 namespace ores::compute::domain {
+
 
 std::string convert_to_table(const std::vector<app_version>& v) {
     fort::char_table table;
@@ -32,14 +32,11 @@ std::string convert_to_table(const std::vector<app_version>& v) {
           << "Min RAM (MB)" << "Modified By" << "Recorded At" << fort::endr;
 
     for (const auto& av : v) {
-        table << boost::uuids::to_string(av.id) << boost::uuids::to_string(av.app_id)
-              << av.wrapper_version << av.engine_version << av.min_ram_mb << av.modified_by
-              << av.recorded_at << fort::endr;
+        table << av.id << boost::uuids::to_string(av.app_id) << av.wrapper_version
+              << av.engine_version << av.min_ram_mb << av.modified_by << av.recorded_at
+              << fort::endr;
     }
-
-    std::ostringstream ss;
-    ss << std::endl << table.to_string() << std::endl;
-    return ss.str();
+    return table.to_string();
 }
 
 }

@@ -11,32 +11,43 @@
 #+entity_plural: results
 #+entity_title: Result
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-11
 
 Bridges the workunit definition and the actual execution on a grid node.
 Tracks PGMQ lease state, server-side lifecycle (Inactive/Unsent/InProgress/Done),
 and the location of output data. The BOINC equivalent of 'result'.
 
+Change-reason exception (recorded in the codegen drift loop): result is a
+machine-written, list-only entity — the grid machinery writes results and
+there is no human edit flow — so has_change_reason_cache is explicitly
+false, overriding the profile default.
+
+Generator-signature exception (recorded in the codegen drift loop): the
+pre-drift handcrafted generator took a =workunit_id= parameter
+(=generate_synthetic_result(workunit_id, ctx)=). The template signature
+takes only the generation context, and the sole consumer (the result
+eventing integration test) now links the FK by member assignment after
+generation. No model knob or paste block is needed for the parameterized
+overload; the template shape is the sanctioned surface.
+
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     compute
-:has_tenant_id: true
+:schema:    public
+:product:   ores
+:component: compute
+:profile:   uuid-identified-lookup
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID primary key for the result.
-
-* Natural keys
-
-* Columns
 
 ** workunit_id
 :PROPERTIES:
@@ -56,6 +67,10 @@ FK reference to ores_compute_workunits_tbl.
 
 FK reference to ores_compute_hosts_tbl; NULL until the result is dispatched.
 
+#+begin_src cpp :name generator
+boost::uuids::uuid{}
+#+end_src
+
 ** pgmq_msg_id
 :PROPERTIES:
 :type:     bigint
@@ -64,6 +79,10 @@ FK reference to ores_compute_hosts_tbl; NULL until the result is dispatched.
 :END:
 
 PGMQ lease pointer; NULL when not actively queued.
+
+#+begin_src cpp :name generator
+0
+#+end_src
 
 ** server_state
 :PROPERTIES:
@@ -75,6 +94,10 @@ PGMQ lease pointer; NULL when not actively queued.
 
 State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
 
+#+begin_src cpp :name generator
+1
+#+end_src
+
 ** outcome
 :PROPERTIES:
 :type:     integer
@@ -83,6 +106,10 @@ State machine: 1=Inactive, 2=Unsent, 4=InProgress, 5=Done.
 :END:
 
 Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
+
+#+begin_src cpp :name generator
+0
+#+end_src
 
 ** output_uri
 :PROPERTIES:
@@ -93,6 +120,23 @@ Result outcome code: 1=Success, 3=ClientError, 4=NoReply.
 
 URI where the wrapper uploaded the zipped output; NULL until completed.
 
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
+** error_message
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Human-readable error description from the wrapper; empty on success.
+
+#+begin_src cpp :name generator
+std::string()
+#+end_src
+
 ** received_at
 :PROPERTIES:
 :type:     timestamp with time zone
@@ -102,11 +146,59 @@ URI where the wrapper uploaded the zipped output; NULL until completed.
 
 Timestamp when the output was received by the server pool.
 
+#+begin_src cpp :name generator
+std::chrono::system_clock::time_point{}
+#+end_src
+
+* Foreign keys
+
+** workunit_id
+:PROPERTIES:
+:table:         ores_compute_workunits_tbl
+:target_column: id
+:nullable:      false
+:error_message: Invalid workunit_id: %. No active workunit found with this id.
+:list_by:       true
+:END:
+
+** host_id
+:PROPERTIES:
+:table:         ores_compute_hosts_tbl
+:target_column: id
+:nullable:      true
+:error_message: Invalid host_id: %. No active host found with this id.
+:END:
+
 * SQL
 
 ** Flags
 :PROPERTIES:
 :tablename: ores_compute_results_tbl
+:END:
+
+* Indexes
+
+The work-queue queries filter by FK and by server state on the current row
+version, so the composite partial indexes below are the hot paths. They were
+handcrafted pre-drift; this section now models them so the generator owns
+them.
+
+** workunit_id
+:PROPERTIES:
+:columns:      tenant_id, workunit_id
+:current_only: true
+:END:
+
+** host_id
+:PROPERTIES:
+:columns:      tenant_id, host_id
+:current_only: true
+:END:
+
+** server_state
+:PROPERTIES:
+:columns:      tenant_id, server_state
+:current_only: true
 :END:
 
 * C++
@@ -138,21 +230,49 @@ Timestamp when the output was received by the server pool.
 :iterator_var: r
 :END:
 
+** Table display
+
+| column        | header        |
+|---------------+---------------|
+| id            | ID            |
+| workunit_id   | Workunit ID   |
+| host_id       | Host ID       |
+| server_state  | Server State  |
+| outcome       | Outcome       |
+| output_uri    | Output URI    |
+| error_message | Error Message |
+| received_at   | Received At   |
+| modified_by   | Modified By   |
+| recorded_at   | Recorded At   |
+
 ** Qt
 :PROPERTIES:
-:domain_include:       ores.compute/domain/result.hpp
-:domain_class:         compute::domain::result
-:protocol_include:     ores.compute/messaging/result_protocol.hpp
-:collection_name:      results
-:item_var:             result
-:key_field:            modified_by
-:has_uuid_primary_key: true
-:has_pagination:       true
-:get_request_class:    compute::messaging::list_results_request
-:get_response_class:   compute::messaging::list_results_response
-:settings_group:       ResultListWindow
-:window_title:         Results
-:icon:                 CheckmarkCircle
+:domain_include:          ores.compute.api/domain/result.hpp
+:domain_class:            compute::domain::result
+:protocol_include:        ores.compute.api/messaging/result_protocol.hpp
+:collection_name:         results
+:item_var:                result
+:key_field:               modified_by
+:has_uuid_primary_key:    true
+:get_request_class:       compute::messaging::get_results_request
+:get_response_class:      compute::messaging::get_results_response
+:get_message_type:        get_results_request
+:save_request_class:      compute::messaging::save_result_request
+:save_response_class:     compute::messaging::save_result_response
+:save_message_type:       save_result_request
+:delete_request_class:    compute::messaging::delete_result_request
+:delete_response_class:   compute::messaging::delete_result_response
+:delete_message_type:     delete_result_request
+:history_request_class:   compute::messaging::get_result_history_request
+:history_response_class:  compute::messaging::get_result_history_response
+:history_message_type:    get_result_history_request
+:settings_group:          ResultListWindow
+:window_title:            Results
+:icon:                    CheckmarkCircle
+:changed_event_class:     compute::eventing::result_changed_event
+:changed_event_include:   ores.compute.api/eventing/result_changed_event.hpp
+:has_change_reason_cache: false
+:has_pagination:          true
 :END:
 
 *** Columns (Qt model)
@@ -163,12 +283,72 @@ Timestamp when the output was received by the server pool.
 | HostId      | host_id      | Host ID     | uuid      | 160   |
 | ServerState | server_state | State       | int       | 70    |
 | Outcome     | outcome      | Outcome     | int       | 70    |
+| ErrorMessage | error_message | Error      | string    | 160   |
 | OutputUri   | output_uri   | Output URI  | string    | 200   |
 | ReceivedAt  | received_at  | Received At | timestamp | 140   |
 | Version     | version      | Version     | int       | 60    |
 | ModifiedBy  | modified_by  | Modified By | string    | 120   |
 
 ** Custom repository methods
+
+The following method goes beyond the standard repository template: a
+state-filtered read used by the work handler to find results awaiting
+re-dispatch. Pagination, the active-count aggregate, and the per-FK
+list reads are now generated by the standard template and are no longer
+carried here.
+
+*** Repository declarations
+
+#+begin_src cpp :name declaration :implements DCA78C69-E508-48D9-9972-A9B8094D91FB
+    /**
+     * @brief Reads the latest version of all results in a given server state.
+     */
+    std::vector<domain::result> read_by_state(context ctx, int server_state);
+#+end_src
+
+*** Repository implementations
+
+#+begin_src cpp :name implementation :implements F2EB1914-5E94-42CA-9C77-46BDB364BF9E
+std::vector<domain::result> result_repository::read_by_state(context ctx, int server_state) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading results by state: " << server_state;
+    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<result_entity>> |
+                       where("tenant_id"_c == tid && "server_state"_c == server_state &&
+                             "valid_to"_c == max.value());
+
+    return execute_read_query<result_entity, domain::result>(
+        ctx,
+        query,
+        [](const auto& entities) { return result_mapper::map(entities); },
+        lg(),
+        "Reading results by state.");
+}
+#+end_src
+
+** Custom service methods
+
+The work handler dispatches results by server state (Unsent and
+InProgress); the generated service surface has no state filter, so the
+forwarding method below is carried as a paste block.
+
+*** Service declarations
+
+#+begin_src cpp :name declaration :implements 2D4EA0F9-6AF6-45A5-A959-F672BF866C6A
+    /**
+     * @brief Lists results in a given server state, newest first.
+     */
+    std::vector<domain::result> list_by_state(int server_state);
+#+end_src
+
+*** Service implementations
+
+#+begin_src cpp :name implementation :implements D3E7A5F2-8B4C-4D1E-9A6F-2E1C7B4D8A3F
+std::vector<domain::result> result_service::list_by_state(int server_state) {
+    BOOST_LOG_SEV(lg(), debug) << "Listing results by state: " << server_state;
+    return repo_.read_by_state(ctx_, server_state);
+}
+#+end_src
 
 * See also
 

@@ -92,7 +92,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
         stamp(batch, tenant_ctx);
 
         service::batch_service batch_svc(tenant_ctx);
-        batch_svc.save(batch);
+        batch_svc.save_batch(batch);
 
         BOOST_LOG_SEV(lg(), info) << "Created compute batch: " << batch_id;
 
@@ -113,7 +113,7 @@ void report_submit_handler::submit(ores::nats::message msg) {
             wu.target_redundancy = 1;
             stamp(wu, tenant_ctx);
 
-            wu_svc.save(wu);
+            wu_svc.save_workunit(wu);
             workunit_ids.push_back(wu_id);
 
             // Publish work assignment event (fire-and-forget).

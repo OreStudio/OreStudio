@@ -590,7 +590,13 @@ def _section(node: OrgNode, title: str) -> OrgNode | None:
 # behaviour. Callers that strip prose containing unpaired ``=`` (e.g.
 # "asset_class=ir") pass per_line=True instead, so a bare ``=`` never
 # pairs with a later one across a newline.
-_ORG_VERBATIM_RE = re.compile(r"=([^=\s][^=]*?)=")
+#
+# The marker must sit at a word boundary on both sides, as real org
+# requires: an ``=`` glued to a word (e.g. the equals signs in
+# "1=Inactive, 2=Unsent") is prose, not verbatim markup. Without the
+# boundary guards, that prose pairs its ``1=`` with the following
+# ``2=`` and the stripped text silently drops the equals signs.
+_ORG_VERBATIM_RE = re.compile(r"(?<!\w)=([^=\s][^=]*?)=(?!\w)")
 
 
 def _strip_org_markup(text: str) -> str:

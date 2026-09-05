@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_RESULT_ENTITY_HPP
-#define ORES_COMPUTE_REPOSITORY_RESULT_ENTITY_HPP
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_RESULT_ENTITY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_RESULT_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -43,11 +43,11 @@ struct result_entity {
     std::string workunit_id;
     std::optional<std::string> host_id;
     std::optional<std::int64_t> pgmq_msg_id;
-    int server_state;
+    int server_state = 0;
     std::optional<int> outcome;
     std::optional<std::string> output_uri;
     std::optional<std::string> error_message;
-    std::optional<db_timestamp> received_at;
+    std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> received_at;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

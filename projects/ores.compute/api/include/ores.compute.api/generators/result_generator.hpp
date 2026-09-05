@@ -17,31 +17,27 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_GENERATORS_RESULT_GENERATOR_HPP
-#define ORES_COMPUTE_GENERATORS_RESULT_GENERATOR_HPP
+#ifndef ORES_COMPUTE_API_GENERATORS_RESULT_GENERATOR_HPP
+#define ORES_COMPUTE_API_GENERATORS_RESULT_GENERATOR_HPP
 
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/export.hpp"
 #include "ores.utility/generation/generation_context.hpp"
-#include <boost/uuid/uuid.hpp>
 #include <vector>
 
 namespace ores::compute::generators {
 
 /**
- * @brief Generates a synthetic result for the given workunit.
+ * @brief Generates a synthetic result.
  */
 ORES_COMPUTE_API_EXPORT domain::result
-generate_synthetic_result(const boost::uuids::uuid& workunit_id,
-                          utility::generation::generation_context& ctx);
+generate_synthetic_result(utility::generation::generation_context& ctx);
 
 /**
- * @brief Generates N synthetic results for the given workunit.
+ * @brief Generates N synthetic results.
  */
 ORES_COMPUTE_API_EXPORT std::vector<domain::result>
-generate_synthetic_results(std::size_t n,
-                           const boost::uuids::uuid& workunit_id,
-                           utility::generation::generation_context& ctx);
+generate_synthetic_results(std::size_t n, utility::generation::generation_context& ctx);
 
 }
 

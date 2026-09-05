@@ -22,7 +22,7 @@
  * Template: sql_schema_domain_entity_create.mustache
  * To modify, update the template and regenerate.
  *
- *  Table
+ * Workunit Table
  *
  * Defines the problem to be solved: which app version to use, where the input
  * data lives, and how many times to run it for redundancy. The BOINC equivalent
@@ -69,14 +69,6 @@ create index if not exists workunits_tenant_idx
 on "ores_compute_workunits_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists workunits_batch_id_idx
-on "ores_compute_workunits_tbl" (tenant_id, batch_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
-create index if not exists workunits_app_version_id_idx
-on "ores_compute_workunits_tbl" (tenant_id, app_version_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_compute_workunits_insert_fn()
 returns trigger as $$
 declare
@@ -84,6 +76,44 @@ declare
 begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
+
+    -- Validate batch_id (soft FK to ores_compute_batches_tbl)
+    if not exists (
+        select 1 from ores_compute_batches_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.batch_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid batch_id: %. No active batch found with this id.', NEW.batch_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate app_version_id (soft FK to ores_compute_app_versions_tbl)
+    if not exists (
+        select 1 from ores_compute_app_versions_tbl
+        where tenant_id = NEW.tenant_id
+          and id = NEW.app_version_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid app_version_id: %. No active app version found with this id.', NEW.app_version_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate canonical_result_id (optional soft FK to ores_compute_results_tbl)
+    if NEW.canonical_result_id is not null then
+        if not exists (
+            select 1 from ores_compute_results_tbl
+            where tenant_id = NEW.tenant_id
+              and id = NEW.canonical_result_id
+              and valid_to = ores_utility_infinity_timestamp_fn()
+        ) then
+            raise exception 'Invalid canonical_result_id: %. No active result found with this id.', NEW.canonical_result_id
+                using errcode = '23503';
+        end if;
+    end if;
+
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
 
     -- Version management
     select version into current_version
@@ -100,36 +130,39 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_compute_workunits_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
-
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_compute_workunits_insert_trg
 before insert on "ores_compute_workunits_tbl"
 for each row execute function ores_compute_workunits_insert_fn();
 
 create or replace rule ores_compute_workunits_delete_rule as
-on delete to "ores_compute_workunits_tbl" do instead
+on delete to "ores_compute_workunits_tbl" do instead (
     update "ores_compute_workunits_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

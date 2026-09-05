@@ -96,7 +96,7 @@ struct calendar_rule final {
     std::optional<int> day;
 
     /**
-     * @brief Weekday (0Sunday..6Saturday, std::chrono::weekday's c_encoding), for
+     * @brief Weekday (0=Sunday..6=Saturday, std::chrono::weekday's c_encoding), for
      * nth_weekday_of_month and last_weekday_of_month rules.
      *
      * Null for fixed_date and easter_offset rules.

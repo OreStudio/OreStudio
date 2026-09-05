@@ -1,0 +1,896 @@
+-- allium: 3
+-- codegen-drift-loop.allium
+
+-- Scope: the codegen regeneration drift loop, applied to any
+-- component (ores.refdata, ores.compute, ores.dq, ...).
+-- Includes:
+--   - The survey: check every entity model's needs against the
+--     variability profile catalogue -- bind to a matching profile,
+--     record a genuine no-match, or propose a new profile when the
+--     needs recur
+--   - Model format conformance: every codegen input in the current
+--     model format (profile binding, physical-space enablement incl.
+--     the NATS eventing-integration-test facet)
+--   - The loop: regenerate a component, triage every diff the
+--     regeneration surfaces, and drive each diff to a resolution
+--   - Diff kinds: (a) improved generated code -- accept and sign off;
+--     (b) lost handcrafted code -- fix the model (missing variability
+--     options or other model mistakes), capture it as a paste block,
+--     or move it to a hand-crafted service class -- service-class
+--     extraction is reserved for genuinely bespoke units; a thin CRUD
+--     facade (a hand-written list/find/save/history service over the
+--     repository with no bespoke logic) is brought under codegen
+--     instead: the generated standard-CRUD service replaces it
+--   - Standard protocol conformance: a current-format model names the
+--     standard codegen'd message class set in its Qt drawer
+--     (get/save/delete/history request, response and message_type per
+--     the refdata/dq convention) plus changed_event and change-reason
+--     keys per capability. A hand-crafted protocol (list_Xs_request
+--     naming, missing delete classes) is drift: the model is fixed to
+--     produce the standard classes -- the protocol, handlers and
+--     services regenerate from the model's keys; the model is never
+--     fitted around a hand-crafted protocol
+--   - The convergence gate: a component regenerates with zero diffs
+--     and joins the CI drift check's --components coverage
+--   - The CI drift gate: regenerate every covered component on each
+--     PR and fail on any diff
+--   - The drift check's own evolution: a gap in the check (a drift
+--     type it misses, or a checking approach that can be improved)
+--     is recorded and the tooling updated -- a component reaches
+--     drift-free only on a gap-free check
+-- Excludes:
+--   - The generation engine internals: org parsing, template
+--     rendering, mustache, the physical-space graph mechanics --
+--     existing behavior, unchanged, observed through the
+--     GenerationEngine contract
+--   - The variability feature vocabulary itself -- features are data
+--   - Which exact profile fits which exact entity -- a survey judgment
+--     the engineer records through the loop's verbs
+-- External inputs: the checked-in models and generated files, the
+-- variability profile catalogue, the engineer's survey of entity
+-- needs; a component enters the loop when its survey starts.
+
+config {
+    -- Decisions (2026-08-10):
+    --   Default regeneration address: ores.cpp -- the technical space
+    --     covering the C++ domain, repository, service, generator and
+    --     eventing-integration-test (NATS test generation) facets.
+    --   CI coverage grows per component: refdata, reporting and
+    --     marketdata today; every component joins once it regenerates
+    --     to zero diffs (ComponentConverges).
+    regeneration_address: String = "ores.cpp"
+}
+
+-- ------------------------------------------------------------
+-- Entities
+-- ------------------------------------------------------------
+
+-- The engineer who runs the drift loop. Identity lives outside this
+-- spec (the IAM session).
+entity DriftEngineer {
+    name: String
+}
+
+-- A codegen component: ores.refdata, ores.compute, ores.dq, ... --
+-- the unit the loop audits and the CI gate covers.
+entity Component {
+    slug: String
+    status: not_audited | audited | drift_free
+    ci_covered: Boolean
+
+    models: CodegenModel with component = this
+    diffs: Diff with component = this
+    open_diffs: diffs where state = open
+    unclassified_models: models where classification = unclassified
+    legacy_models: models where format = legacy
+
+    transitions status {
+        not_audited -> audited
+        not_audited -> drift_free
+        audited -> drift_free
+        drift_free -> audited
+    }
+}
+
+-- A named, reusable bundle of feature assignments and physical-space
+-- enablements (Simple lookup, FK-scoped child, ...). The catalogue
+-- index lives in variability_profiles.org; a profile is added only
+-- once a combination recurs across more than one entity -- never
+-- invented in the abstract.
+entity Profile {
+    slug: String
+    metatype: String?
+    feature_assignments: Set<FeatureAssignment>
+    enabled_spaces: Set<PhysicalSpace>
+}
+
+-- One variability knob the codegen templates branch on
+-- (has_tenant_id, has_uuid_primary_key, has_pagination, ...).
+entity Feature {
+    name: String
+}
+
+-- A MASD address in the physical-space graph: ores.cpp,
+-- ores.cpp.eventing-integration-test (the NATS test generation
+-- facet), ...
+entity PhysicalSpace {
+    address: String
+}
+
+-- An entity org model (e.g. ores.compute.app.org) -- the codegen
+-- input. The survey classifies every model: bound to a profile, or
+-- recorded as a genuine no-match.
+entity CodegenModel {
+    name: String
+    component: Component
+    metatype: String
+    format: current | legacy
+    classification: unclassified | profile_bound | recorded_no_match
+    no_match_reason: String?
+    bound_profile: Profile?
+    -- The feature combination the entity actually needs: the values
+    -- its declared flags and handcrafted artefacts require. The
+    -- no-match record keeps these values -- never silently dropped.
+    needs: Set<FeatureAssignment>
+    enabled_spaces: Set<PhysicalSpace>
+    -- Protocol conformance: the Qt drawer names the standard codegen'd
+    -- message class set (get/save/delete/history request, response and
+    -- message_type per the refdata/dq convention). A hand-crafted
+    -- protocol (list_Xs_request, missing delete classes) is false.
+    protocol_is_standard: Boolean
+    -- Survey finding: the entity has a human save flow (a detail
+    -- dialog or a service save path an actor drives).
+    save_capable: Boolean
+    -- Recorded reason when a save-capable entity still lacks the
+    -- change-reason cache (e.g. machine-written list-only entities:
+    -- grid machinery writes results, no human edit flow).
+    change_reason_exception: String?
+    -- The Qt drawer carries a changed_event class key for this entity.
+    has_changed_event: Boolean
+    -- Resolution of an orphan notify trigger: subscribed (a service
+    -- consumes the channel) or removed (the trigger is dropped).
+    notify_resolution: pending | subscribed | removed
+
+    is_classified: classification = profile_bound
+        or (classification = recorded_no_match and no_match_reason != null)
+}
+
+-- One generated or hand-crafted file under a component: the checked-in
+-- baseline the regeneration output is compared against.
+entity Artefact {
+    path: String
+    model: CodegenModel
+    is_excluded: Boolean
+}
+
+-- One drift manifestation: the regeneration produced output that
+-- differs from the checked-in artefact.
+entity Diff {
+    artefact: Artefact
+    component: Component
+    kind: unclassified | improved_code | lost_code
+    state: open | resolved
+    resolution: unresolved | signed_off | model_fixed | paste_block_added
+        | service_class_extracted | brought_under_codegen
+    sign_off_note: String?
+
+    transitions state {
+        open -> resolved
+    }
+}
+
+-- A hand-written code block on the model that codegen injects into
+-- the generated file at its :implements UUID marker -- it survives
+-- every regeneration.
+entity PasteBlock {
+    model: CodegenModel
+    uuid: String
+    body: String
+}
+
+-- A hand-crafted class (e.g. a compute service) that carries code the
+-- templates cannot generate. The artefact it backs is excluded from
+-- the generation set, with the exclusion recorded.
+entity ServiceClass {
+    path: String
+    component: Component
+    purpose: String
+    backs: Artefact
+}
+
+-- A rare proposal to extend the profile catalogue: a feature
+-- combination that recurs across entities but no profile names yet.
+-- Deep analysis and the catalogue update happen before approval.
+entity ProfileProposal {
+    slug: String
+    feature_assignments: Set<FeatureAssignment>
+    enabled_spaces: Set<PhysicalSpace>
+    analysis: String?
+    state: proposed | approved | rejected
+
+    transitions state {
+        proposed -> approved
+        proposed -> rejected
+    }
+}
+
+-- A rare proposal to extend the template feature vocabulary: a
+-- variability knob the templates do not branch on yet, whose need
+-- recurs across entities (e.g. a system-tenant union read scope:
+-- system-tenant rows visible to every tenant). Until the feature
+-- lands, the hand-crafted repository it would generate stays a
+-- recorded, excluded ServiceClass -- the proposal keeps that
+-- exclusion honest rather than permanent.
+entity TemplateFeatureProposal {
+    feature: String
+    rationale: String?
+    state: proposed | approved | rejected
+
+    transitions state {
+        proposed -> approved
+        proposed -> rejected
+    }
+}
+
+-- A known weakness in the drift check itself: a drift type the check
+-- misses, or a checking approach that can be improved. Recording a
+-- gap demotes nothing on its own, but a component cannot reach
+-- drift-free while a gap is open -- its zero-diff claim is not fully
+-- verified.
+entity DriftCheckGap {
+    description: String
+    state: open | resolved
+
+    transitions state {
+        open -> resolved
+    }
+}
+
+-- ------------------------------------------------------------
+-- Value Types
+-- ------------------------------------------------------------
+
+-- One variability feature with the value the entity needs or the
+-- profile fixes (e.g. has_tenant_id = true, has_pagination = false).
+value FeatureAssignment {
+    feature: Feature
+    value: Boolean
+}
+
+-- ------------------------------------------------------------
+-- Contracts
+-- ------------------------------------------------------------
+
+contract GenerationEngine {
+    regenerate_all: (component: Component, address: String) -> Set<Diff>
+
+    @invariant DeterministicOutput
+        -- The same models and address always produce the same output:
+        -- regeneration is reproducible, run to run.
+    @invariant CleanRegenerationStaysClean
+        -- A component with no open diffs regenerates to no new diffs:
+        -- an in-sync tree stays in-sync.
+    @invariant PasteBlocksSurviveRegeneration
+        -- A paste block declared on a model appears in its generated
+        -- artefact at the :implements UUID marker on every run:
+        -- codegen never overwrites injected code.
+}
+
+-- ------------------------------------------------------------
+-- Rules
+-- ------------------------------------------------------------
+
+-- A component enters the loop when the engineer starts its survey:
+-- it is admitted from outside (the component catalogue), not created
+-- by codegen. Admission is idempotent -- one component, one survey.
+rule AdmitComponent {
+    when: SurveyStarted(engineer, slug)
+    requires: (Component where slug = slug).count = 0
+    ensures: Component.created(
+        slug: slug,
+        status: not_audited,
+        ci_covered: false
+    )
+}
+
+-- Survey: bind the model to the profile whose assignments match its
+-- needs exactly, on a compatible metatype. Binding means the profile
+-- is the entity's configuration -- not a best-effort approximation.
+rule BindModelToProfile {
+    when: ModelBoundToProfile(engineer, model, profile)
+    requires: (model.classification = unclassified
+            or model.classification = recorded_no_match)
+        and profile.feature_assignments = model.needs
+        and (profile.metatype = model.metatype
+            or profile.metatype = null)
+    ensures: model.classification = profile_bound
+    ensures: model.bound_profile = profile
+}
+
+-- Survey: no profile meets the entity's needs -- record the no-match
+-- with a reason. The entity's needs (its actual feature values) stay
+-- recorded on the model.
+rule RecordNoMatch {
+    when: NoMatchRecorded(engineer, model, reason)
+    requires: model.classification != profile_bound
+        and reason != ""
+    ensures: model.classification = recorded_no_match
+    ensures: model.no_match_reason = reason
+}
+
+-- Model format: a legacy-format model is not codegen-eligible -- it is
+-- itself drift. Modernize it before the loop can audit it.
+rule ModernizeModelFormat {
+    when: ModelFormatModernized(engineer, model)
+    requires: model.format = legacy
+    ensures: model.format = current
+}
+
+-- A new profile is proposed only when the combination recurs across
+-- at least two models and no profile names it yet: profile additions
+-- are rare, deliberate acts, never invented for a single entity.
+rule ProposeNewProfile {
+    when: NewProfileProposed(engineer, slug, assignments, spaces)
+    requires: (Profile where slug = slug).count = 0
+        and (CodegenModel where needs = assignments).count >= 2
+    ensures: ProfileProposal.created(
+        slug: slug,
+        feature_assignments: assignments,
+        enabled_spaces: spaces,
+        state: proposed
+    )
+}
+
+-- Approval requires the deep analysis record; the created profile is
+-- the catalogue update -- the index in variability_profiles.org is
+-- derived data and follows.
+rule ApproveNewProfile {
+    when: NewProfileApproved(engineer, proposal)
+    requires: proposal.state = proposed
+        and proposal.analysis != null
+        and proposal.analysis != ""
+    ensures: Profile.created(
+        slug: proposal.slug,
+        feature_assignments: proposal.feature_assignments,
+        enabled_spaces: proposal.enabled_spaces
+    )
+    ensures: proposal.state = approved
+}
+
+-- A template feature is proposed the same rare way: a recurring need
+-- no template branch covers yet, with the rationale on record. The
+-- proposal is the trigger for the template change; until the feature
+-- lands, the artefacts it would generate stay excluded ServiceClasses.
+rule ProposeTemplateFeature {
+    when: TemplateFeatureProposed(engineer, feature, rationale)
+    requires: (TemplateFeatureProposal where feature = feature).count = 0
+        and rationale != ""
+    ensures: TemplateFeatureProposal.created(
+        feature: feature,
+        rationale: rationale,
+        state: proposed
+    )
+}
+
+rule ApproveTemplateFeature {
+    when: TemplateFeatureApproved(engineer, proposal)
+    requires: proposal.state = proposed
+    ensures: proposal.state = approved
+}
+
+-- The loop's entry: regenerate the component's models. The engine's
+-- output is one diff per artefact whose generated content differs
+-- from what is checked in.
+rule RegenerateComponent {
+    when: RegenerationRequested(engineer, component)
+    for d in GenerationEngine.regenerate_all(component, config.regeneration_address):
+        ensures: Diff.created(
+            artefact: d.artefact,
+            component: component,
+            kind: unclassified,
+            state: open,
+            resolution: unresolved
+        )
+    ensures: RegenerationCompleted(engineer, component)
+}
+
+-- A regeneration that still surfaces diffs puts the component back
+-- into audit: drift is reopened.
+rule DriftReopened {
+    when: RegenerationCompleted(engineer, component)
+    requires: component.open_diffs.count >= 1
+        and (component.status = not_audited or component.status = drift_free)
+    ensures: component.status = audited
+}
+
+-- A regeneration that no longer surfaces a diff for an artefact
+-- closes the artefact's open diff: the fix is verified by the
+-- regeneration itself, never assumed.
+rule DriftResolved {
+    when: RegenerationCompleted(engineer, component)
+    for d in component.open_diffs where d not in GenerationEngine.regenerate_all(component, config.regeneration_address):
+        ensures: d.state = resolved
+}
+
+-- The loop converges: a regeneration completing with zero open diffs
+-- on a fully classified, current-format component promotes it to
+-- drift-free and into the CI gate's coverage.
+rule ComponentConverges {
+    when: RegenerationCompleted(engineer, component)
+    requires: component.open_diffs.count = 0
+        and component.unclassified_models.count = 0
+        and component.legacy_models.count = 0
+        and (DriftCheckGap where state = open).count = 0
+        and (component.status = not_audited or component.status = audited)
+    ensures: component.status = drift_free
+    ensures: component.ci_covered = true
+}
+
+-- The engineer inspects each diff and declares its kind: the
+-- templates improved, or handcrafted code was lost.
+rule ClassifyDiff {
+    when: DiffClassified(diff, kind)
+    requires: diff.state = open
+        and diff.kind = unclassified
+        and kind in {improved_code, lost_code}
+    ensures: diff.kind = kind
+}
+
+-- Path (a): the templates improved -- the diff is genuine progress,
+-- not code loss. The engineer signs it off with a note; the generated
+-- output becomes the new checked-in baseline.
+rule SignOffImprovement {
+    when: ImprovementSignedOff(engineer, diff, note)
+    requires: diff.state = open
+        and diff.kind = improved_code
+        and note != ""
+    ensures: diff.sign_off_note = note
+    ensures: diff.resolution = signed_off
+    ensures: diff.state = resolved
+}
+
+-- Path (b1): the model is wrong -- a missing variability option, a
+-- mis-set feature, a missing physical space (e.g. the NATS
+-- eventing-integration-test facet disabled). The correction updates
+-- the model so the templates generate the lost code themselves. The
+-- diff stays open until the next regeneration proves it.
+rule FixModelForLostCode {
+    when: ModelCorrectionApplied(engineer, diff, correction)
+    requires: diff.state = open
+        and diff.kind = lost_code
+    ensures: diff.model.needs = correction.feature_assignments
+    ensures: diff.model.enabled_spaces = correction.enabled_spaces
+    ensures: diff.resolution = model_fixed
+}
+
+-- Path (b2): the code is genuinely bespoke for this entity and cannot
+-- come from a template yet -- capture it as a paste block on the
+-- model; codegen injects it at its :implements UUID marker on every
+-- regeneration.
+rule AddPasteBlock {
+    when: PasteBlockAdded(engineer, diff, uuid, body)
+    requires: diff.state = open
+        and diff.kind = lost_code
+        and uuid != ""
+        and body != ""
+    ensures: PasteBlock.created(
+        model: diff.model,
+        uuid: uuid,
+        body: body
+    )
+    ensures: diff.resolution = paste_block_added
+}
+
+-- Path (b3): the code is a coherent hand-crafted unit the templates
+-- cannot express -- a genuinely bespoke flow, not entity CRUD (e.g. a
+-- report-submission handler). It moves to a service class -- a
+-- hand-crafted artefact, excluded from the generation set with the
+-- exclusion recorded against it. A thin CRUD facade service is NOT
+-- this path: it is brought under codegen (BringThinFacadeUnderCodegen).
+rule ExtractServiceClass {
+    when: ServiceClassExtracted(engineer, diff, path, purpose)
+    requires: diff.state = open
+        and diff.kind = lost_code
+        and path != ""
+        and purpose != ""
+    ensures: ServiceClass.created(
+        path: path,
+        component: diff.component,
+        purpose: purpose,
+        backs: diff.artefact
+    )
+    ensures: diff.artefact.is_excluded = true
+    ensures: diff.resolution = service_class_extracted
+}
+
+-- Path (b4): the lost code is a thin CRUD facade -- a hand-written
+-- service whose list/find/save/history methods only delegate to the
+-- repository (id-nil validation, stamp, read_latest/read_all) and
+-- carry no bespoke logic. The generated standard-CRUD service covers
+-- that API exactly (list_*s with pagination, count_*s, find_*s by
+-- uuid, save_*s, delete_*s, remove_*, get_*_history); custom reads
+-- map to FK :list_by: flags. The hand-written files are replaced by
+-- generated ones -- no exclusion, no artefact survives it.
+rule BringThinFacadeUnderCodegen {
+    when: ThinFacadeVerified(engineer, diff)
+    requires: diff.state = open
+        and diff.kind = lost_code
+    ensures: diff.resolution = brought_under_codegen
+}
+
+-- Protocol conformance: a hand-crafted message protocol (list_Xs
+-- request naming, a partial capability set, missing delete classes)
+-- is drift in the model, not a design input. The model's Qt drawer is
+-- modernized to name the standard class set (get/save/delete/history
+-- request, response and message_type per the refdata/dq convention);
+-- protocol, handlers and services regenerate from those keys.
+rule StandardizeProtocolClasses {
+    when: ProtocolStandardized(engineer, model)
+    requires: model.format = current
+        and model.protocol_is_standard = false
+    ensures: model.protocol_is_standard = true
+}
+
+-- Change-reason policy: every save-capable entity carries the
+-- change-reason cache (has_change_reason_cache) unless the survey
+-- records a genuine exception -- a machine-written, list-only entity
+-- with no human edit flow (e.g. grid machinery writing results).
+rule SaveCapableNeedsChangeReasonCache {
+    when: ChangeReasonPolicyApplied(engineer, model, exception)
+    requires: model.save_capable = true
+    ensures: (model.needs where feature.name = "has_change_reason_cache"
+            and value = true).count = 1
+        or model.change_reason_exception = exception
+}
+
+-- Eventing consistency: an entity with the eventing-integration-test
+-- space enabled carries a changed_event class in its Qt drawer and a
+-- service subscription on its notify channel. An enabled entity
+-- without either is drift.
+rule EventingNeedsChangedEvent {
+    when: EventingConsistencyChecked(engineer, model)
+    requires: (model.enabled_spaces where address = "ores.cpp.eventing-integration-test").count = 1
+    ensures: model.has_changed_event = true
+}
+
+-- An orphan notify trigger -- a trigger with no service consumer -- is
+-- drift either way it is fixed: subscribe the service to the channel,
+-- or remove the trigger. The resolution is recorded on the model.
+rule NotifyTriggerOrphanResolved {
+    when: NotifyTriggerOrphanResolved(engineer, model, action)
+    requires: action in {subscribed, removed}
+        and model.notify_resolution = pending
+    ensures: model.notify_resolution = action
+}
+
+-- The check itself can be wrong: when the engineer finds a drift
+-- type the check misses, or a checking approach worth improving, the
+-- gap is recorded -- the tooling update that follows is ordinary
+-- code work.
+rule RecordDriftCheckGap {
+    when: DriftCheckGapRecorded(engineer, description)
+    requires: description != ""
+    ensures: DriftCheckGap.created(
+        description: description,
+        state: open
+    )
+}
+
+-- The gap closes when the updated check is in place and has verified
+-- the component.
+rule ResolveDriftCheckGap {
+    when: DriftCheckGapResolved(engineer, gap)
+    requires: gap.state = open
+    ensures: gap.state = resolved
+}
+
+-- The CI gate: regenerate every covered component; the gate passes
+-- exactly when every covered component regenerates with zero diffs.
+rule DriftGatePasses {
+    when: CIDriftCheckRequested(ci, components)
+    for c in components where c.ci_covered:
+        requires: GenerationEngine.regenerate_all(c, config.regeneration_address).count = 0
+    ensures: DriftGatePassed(ci)
+}
+
+-- Any covered component that regenerates with a diff fails the gate,
+-- naming the offending component.
+rule DriftGateFails {
+    when: CIDriftCheckRequested(ci, components)
+    for c in components where c.ci_covered:
+        requires: GenerationEngine.regenerate_all(c, config.regeneration_address).count >= 1
+        ensures: DriftGateFailed(ci, c)
+}
+
+-- ------------------------------------------------------------
+-- Invariants
+-- ------------------------------------------------------------
+
+-- A drift-free component regenerates with zero diffs: this is the
+-- loop's convergence condition -- the same check the CI gate enforces
+-- on every covered component, every PR.
+invariant DriftFreeComponentsRegenerateClean {
+    for c in Components where c.status = drift_free:
+        GenerationEngine.regenerate_all(c, config.regeneration_address).count = 0
+}
+
+-- A drift-free component is current-format and fully classified:
+-- every model bound to a profile, or a recorded no-match.
+invariant DriftFreeComponentsAreFullyClassified {
+    for m in CodegenModels where m.component.status = drift_free:
+        m.format = current
+        and m.is_classified
+}
+
+-- Binding means the profile: a bound model carries exactly the
+-- profile's feature values, and at least the profile's enabled
+-- physical spaces (incl. the NATS eventing-integration-test facet).
+invariant BoundModelsMatchTheirProfile {
+    for m in CodegenModels where m.classification = profile_bound and m.bound_profile != null:
+        m.needs = m.bound_profile.feature_assignments
+        and (m.bound_profile.enabled_spaces - m.enabled_spaces).count = 0
+}
+
+-- A no-match is genuine: no profile in the catalogue meets the
+-- entity's needs -- classification is never faked to reach zero
+-- drift.
+invariant NoMatchIsGenuine {
+    for m in CodegenModels where m.classification = recorded_no_match:
+        (Profile where feature_assignments = m.needs).count = 0
+}
+
+invariant NoMatchModelsCarryReason {
+    for m in CodegenModels where m.classification = recorded_no_match:
+        m.no_match_reason != null
+}
+
+-- Zero drift is never bought with code loss: an accepted diff must
+-- have been classified as an improvement, and lost code resolves only
+-- through a genuine fix path.
+invariant SignedOffDiffsAreImprovements {
+    for d in Diffs where d.resolution = signed_off:
+        d.kind = improved_code
+}
+
+invariant LostCodeTakesAFixPath {
+    for d in Diffs where d.kind = lost_code and d.state = resolved:
+        d.resolution = model_fixed
+            or d.resolution = paste_block_added
+            or d.resolution = service_class_extracted
+            or d.resolution = brought_under_codegen
+}
+
+-- A current-format model names the standard codegen'd message class
+-- set: a hand-crafted protocol is itself drift, fixed in the model.
+invariant CurrentFormatNamesStandardClasses {
+    for m in CodegenModels where m.format = current:
+        m.protocol_is_standard = true
+}
+
+-- Eventing is consistent: an entity with the eventing facet enabled
+-- carries a changed_event class for its consumers to receive.
+invariant EventingEnabledModelsCarryChangedEvent {
+    for m in CodegenModels where (m.enabled_spaces where address = "ores.cpp.eventing-integration-test").count = 1:
+        m.has_changed_event = true
+}
+
+-- The change-reason policy holds: save-capable entities carry the
+-- cache, or a recorded exception explains why not. A save flow with
+-- no change reasons is never silent.
+invariant SaveCapableModelsCarryChangeReasonCache {
+    for m in CodegenModels where m.save_capable = true:
+        (m.needs where feature.name = "has_change_reason_cache" and value = true).count = 1
+            or m.change_reason_exception != null
+}
+
+-- Excluded artefacts are always backed by a recorded service class:
+-- exclusions are documented, never silent.
+invariant ExclusionsAreRecorded {
+    for a in Artefacts where a.is_excluded:
+        (ServiceClass where backs = a).count = 1
+}
+
+-- Every resolved diff carries its record: a sign-off note for
+-- improvements, a fix resolution for lost code.
+invariant ResolvedDiffsCarryRecords {
+    for d in Diffs where d.state = resolved:
+        d.resolution != unresolved
+        and (d.kind = improved_code implies d.sign_off_note != null)
+}
+
+-- ------------------------------------------------------------
+-- Surfaces
+-- ------------------------------------------------------------
+
+surface CodegenDriftLoop {
+    facing engineer: DriftEngineer
+
+    contracts:
+        demands GenerationEngine
+
+    exposes:
+        for c in Components:
+            c.slug
+            c.status
+            c.ci_covered
+            c.open_diffs.count
+            for d in c.diffs:
+                d.artefact.path
+                d.kind
+                d.state
+                d.resolution
+        for m in CodegenModels:
+            m.name
+            m.metatype
+            m.format
+            m.classification
+            m.bound_profile?.slug
+            m.no_match_reason
+            m.needs.count
+            m.protocol_is_standard
+            m.save_capable
+            m.change_reason_exception
+            m.has_changed_event
+            m.notify_resolution
+        for p in Profiles:
+            p.slug
+            for s in p.enabled_spaces:
+                s.address
+        for p in ProfileProposals:
+            p.slug
+            p.state
+        for p in TemplateFeatureProposals:
+            p.feature
+            p.state
+        for g in DriftCheckGaps:
+            g.description
+            g.state
+
+    provides:
+        SurveyStarted(engineer, slug)
+        RegenerationRequested(engineer, component)
+        ModelBoundToProfile(engineer, model, profile)
+        NoMatchRecorded(engineer, model, reason)
+        ModelFormatModernized(engineer, model)
+        NewProfileProposed(engineer, slug, assignments, spaces)
+        NewProfileApproved(engineer, proposal)
+        TemplateFeatureProposed(engineer, feature, rationale)
+        TemplateFeatureApproved(engineer, proposal)
+        DiffClassified(diff, kind)
+        ImprovementSignedOff(engineer, diff, note)
+        ModelCorrectionApplied(engineer, diff, correction)
+        PasteBlockAdded(engineer, diff, uuid, body)
+        ServiceClassExtracted(engineer, diff, path, purpose)
+        ThinFacadeVerified(engineer, diff)
+        ProtocolStandardized(engineer, model)
+        ChangeReasonPolicyApplied(engineer, model, exception)
+        EventingConsistencyChecked(engineer, model)
+        NotifyTriggerOrphanResolved(engineer, model, action)
+        DriftCheckGapRecorded(engineer, description)
+        DriftCheckGapResolved(engineer, gap)
+
+    @guarantee LoopConvergesToZeroDrift
+        -- A component the loop has driven to drift-free regenerates
+        -- with zero diffs: the engineer never signs off a state that
+        -- does not regenerate clean.
+    @guarantee HandcraftedCodeIsNeverLost
+        -- The loop never deletes handcrafted code to reach zero
+        -- drift: lost-code diffs resolve only through a model fix, a
+        -- paste block, or a service-class extraction, and every
+        -- accepted improvement is recorded with a note.
+    @guarantee FixesAreVerifiedByRegeneration
+        -- A lost-code fix counts as resolved only once a regeneration
+        -- no longer produces a diff for its artefact.
+}
+
+actor CI {
+    identified_by: "the GitHub Actions pr.yml workflow"
+}
+
+surface CIDriftGate {
+    facing ci: CI
+
+    contracts:
+        demands GenerationEngine
+
+    exposes:
+        for c in Components where c.ci_covered:
+            c.slug
+            c.open_diffs.count
+
+    provides:
+        CIDriftCheckRequested(ci, components)
+
+    @guarantee DriftFailsTheGate
+        -- The gate passes exactly when every covered component
+        -- regenerates with zero diffs; any open diff fails it.
+    @guarantee GateUsesTheSameEngine
+        -- The gate regenerates with the same engine the developer
+        -- loop uses: a diff the engineer would see is a diff the gate
+        -- sees.
+}
+
+-- Decisions (2026-08-10), answering the draft's open questions:
+--   Q1 profile additions: rare by construction -- a proposal must
+--     name a combination that recurs across at least two models and
+--     no profile covers yet (variability_profiles.org's "never
+--     invented in the abstract" rule). Approval requires the deep
+--     analysis record; the created profile is the catalogue update.
+--   Q2 diff kinds: two -- improved code (sign off, recorded) and lost
+--     handcrafted code (three genuine fix paths). Any other
+--     appearance of a diff is one of the two after inspection.
+--   Q3 when a fix counts as done: only when a regeneration no longer
+--     surfaces a diff for the artefact (DriftResolved) -- never at
+--     the moment the model is edited.
+--   Q4 who joins CI coverage: ComponentConverges promotes a component
+--     to drift_free and ci_covered after a regeneration completes
+--     with zero open diffs on a fully classified, current-format
+--     component -- the same bar the per-component drift stories
+--     state, and the reason the pr.yml codegen-drift job's
+--     --components grows over time.
+--   Q5 rerunning: the loop re-enters at RegenerationRequested any
+--     time -- a model edit, a template improvement, or the CI gate
+--     re-audits the fleet on every PR.
+--   Q6 the check itself: the drift check is not fixed -- when it
+--     misses a drift type or its approach can be improved, the
+--     engineer records the gap (DriftCheckGap), the tooling is
+--     updated, and the gap closes only once the updated check has
+--     verified the component. A component reaches drift-free only on
+--     a gap-free check: its zero-diff claim is as strong as the check
+--     that verifies it.
+--   Q7 admission: a component enters the loop when its survey starts
+--     (AdmitComponent). The component is an external input -- the
+--     loop does not create components, it admits them once, from the
+--     component catalogue.
+
+-- Decisions (2026-08-11), from the ores.compute survey:
+--   Q8 thin facades: the 6 hand-written compute service files are
+--     thin CRUD facades (list/find/save/history over the repository,
+--     id-nil validation, stamp, read_latest/read_all -- no bespoke
+--     logic). They are brought under codegen: the generated
+--     standard-CRUD service replaces them (BringThinFacadeUnderCodegen).
+--     The compute survey corrected the earlier assumption that a
+--     minimal list/find/save/history API is service-class material:
+--     that API is exactly what the standard-CRUD template generates.
+--   Q9 standard class set: the conformance bar is the refdata/dq
+--     convention -- get/save/delete/history request, response and
+--     message_type classes plus changed_event, change-reason,
+--     pagination and uuid-primary-key keys. A hand-crafted protocol
+--     (compute's list_apps_request naming, per-entity capability
+--     gaps: app save+history no delete, host save+delete no history,
+--     result nothing) is drift fixed in the model, never preserved.
+--     The model is the source of the protocol, handlers and services.
+--   Q10 change-reason policy: save-capable entities carry
+--     has_change_reason_cache. The exception is a machine-written,
+--     list-only entity with no human edit flow (compute result: grid
+--     machinery writes results). The exception is recorded on the
+--     model -- never silent (SaveCapableModelsCarryChangeReasonCache).
+--   Q11 eventing consistency: an entity with the eventing facet
+--     enabled carries a changed_event class and a service
+--     subscription. Compute's host had a notify trigger and no
+--     changed event and no subscription -- drift, fixed by adding
+--     host_changed_event and subscribing application.cpp to
+--     ores_compute_hosts. The junction's orphan notify trigger is
+--     drift either way it is fixed: subscribe or remove
+--     (NotifyTriggerOrphanResolved).
+--   Q12 custom reads map to FK :list_by: flags: result's
+--     read_by_workunit and workunit's read_by_batch are generated by
+--     :list_by: true on the FK columns -- the model-fix path, not
+--     hand-written repository code.
+--   Q13 the system-tenant union read (compute app/app_version: the
+--     system tenant's apps are visible to every tenant) is a genuine
+--     business rule with no template branch. It is recorded as a
+--     TemplateFeatureProposal (:system_tenant_visible:); until the
+--     feature lands the two repositories stay excluded, recorded
+--     ServiceClasses.
+--   Q14 machine-written saves: compute host/result/workunit save
+--     without stamping, unlike app/app_version/batch. The difference
+--     is triaged per entity at regen -- the generated service stamps
+--     when the table carries audit columns; a genuine behavioural
+--     difference is a model key or a recorded decision, never a
+--     silent hand-maintained divergence.
+--   Q15 history migration: legacy per-entity HistoryDialogs
+--     (compute AppHistoryDialog, AppVersionHistoryDialog + .ui) are
+--     superseded by the generic ores::qt::HistoryDialog; the entities
+--     bind to it via the standard history class keys. Their removal
+--     is a signed-off improvement with a migration note.

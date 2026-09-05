@@ -24,6 +24,12 @@ set(files
     "config/options.cpp"
     "config/parser.cpp"
     "main.cpp"
+    "messaging/app_event_registrar.cpp"
+    "messaging/app_version_event_registrar.cpp"
+    "messaging/batch_event_registrar.cpp"
+    "messaging/host_event_registrar.cpp"
+    "messaging/result_event_registrar.cpp"
+    "messaging/workunit_event_registrar.cpp"
 )
 
 # Headers must be listed for AUTOMOC to find Q_OBJECT declarations.
@@ -37,5 +43,11 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/config/parser.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/config/parser_exception.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/export.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/app_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/app_version_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/batch_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/host_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/result_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/messaging/workunit_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.service/ores.compute.service.hpp"
 )

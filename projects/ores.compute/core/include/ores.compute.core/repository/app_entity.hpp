@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_APP_ENTITY_HPP
-#define ORES_COMPUTE_REPOSITORY_APP_ENTITY_HPP
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_APP_ENTITY_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_APP_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -40,7 +40,9 @@ struct app_entity {
     sqlgen::PrimaryKey<std::string> id;
     std::string tenant_id;
     int version = 0;
+
     std::string name;
+
     std::optional<std::string> description;
     std::string modified_by;
     std::string performed_by;

@@ -11,7 +11,7 @@
 #+entity_plural: batches
 #+entity_title: Batch
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-11
 
 Tracks the lifecycle of a collection of workunits that together constitute a
 financial computation (e.g., a risk report run). The Assimilator monitors
@@ -19,32 +19,31 @@ batch completion to trigger downstream report generation.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     compute
-:has_tenant_id: true
+:schema:    public
+:product:   ores
+:component: compute
+:profile:   uuid-identified-lookup
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID primary key for the batch.
 
-* Natural keys
-
 ** external_ref
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
 :END:
 
 External reference linking this batch to the originating finance system or project.
-
-* Columns
 
 ** status
 :PROPERTIES:
@@ -89,21 +88,44 @@ Lifecycle status: open, processing, assimilating, or closed.
 :iterator_var: b
 :END:
 
+** Table display
+
+| column       | header       |
+|--------------+--------------|
+| id           | ID           |
+| external_ref | External Ref |
+| status       | Status       |
+| modified_by  | Modified By  |
+| recorded_at  | Recorded At  |
+
 ** Qt
 :PROPERTIES:
-:domain_include:       ores.compute/domain/batch.hpp
-:domain_class:         compute::domain::batch
-:protocol_include:     ores.compute/messaging/batch_protocol.hpp
-:collection_name:      batches
-:item_var:             batch
-:key_field:            external_ref
-:has_uuid_primary_key: true
-:has_pagination:       true
-:get_request_class:    compute::messaging::list_batches_request
-:get_response_class:   compute::messaging::list_batches_response
-:settings_group:       BatchListWindow
-:window_title:         Compute Batches
-:icon:                 TextBulletListSquare
+:domain_include:          ores.compute.api/domain/batch.hpp
+:domain_class:            compute::domain::batch
+:protocol_include:        ores.compute.api/messaging/batch_protocol.hpp
+:collection_name:         batches
+:item_var:                batch
+:key_field:               external_ref
+:has_uuid_primary_key:    true
+:get_request_class:       compute::messaging::get_batches_request
+:get_response_class:      compute::messaging::get_batches_response
+:get_message_type:        get_batches_request
+:save_request_class:      compute::messaging::save_batch_request
+:save_response_class:     compute::messaging::save_batch_response
+:save_message_type:       save_batch_request
+:delete_request_class:    compute::messaging::delete_batch_request
+:delete_response_class:   compute::messaging::delete_batch_response
+:delete_message_type:     delete_batch_request
+:history_request_class:   compute::messaging::get_batch_history_request
+:history_response_class:  compute::messaging::get_batch_history_response
+:history_message_type:    get_batch_history_request
+:settings_group:          BatchListWindow
+:window_title:            Compute Batches
+:icon:                    TextBulletListSquare
+:changed_event_class:     compute::eventing::batch_changed_event
+:changed_event_include:   ores.compute.api/eventing/batch_changed_event.hpp
+:has_change_reason_cache: true
+:has_pagination:          true
 :END:
 
 *** Columns (Qt model)

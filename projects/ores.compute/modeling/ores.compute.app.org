@@ -11,39 +11,38 @@
 #+entity_plural: apps
 #+entity_title: App
 #+created: 2026-06-01
-#+updated: 2026-06-01
+#+updated: 2026-08-11
 
 Represents the high-level definition of an engine that can be executed on
 grid nodes (e.g., ORE_STUDIO, LLAMA_CPP, LEDGER). The BOINC equivalent of 'app'.
 
 * Flags
 :PROPERTIES:
-:schema:        public
-:product:       ores
-:component:     compute
-:has_tenant_id: true
+:schema:    public
+:product:   ores
+:component: compute
+:profile:   uuid-identified-lookup
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID primary key for the app.
 
-* Natural keys
-
 ** name
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:         text
+:cpp_type:     std::string
+:natural_key:  true
 :END:
 
 Unique application identifier, e.g. 'ORE_STUDIO', 'LLAMA_CPP', 'LEDGER'.
-
-* Columns
 
 ** description
 :PROPERTIES:
@@ -74,7 +73,14 @@ Human-readable description of the application engine.
 :entity_plural_short:   apps
 :entity_singular_words: compute app
 :entity_plural_words:   compute apps
+:system_tenant_visible: true
 :END:
+
+The platform seeds shared compute apps under the system tenant (the
+canonical apps every tenant runs). =:system_tenant_visible: true= makes the
+generated repository read own-tenant OR system-tenant rows on every read
+path, so tenant-scoped queries still see the platform apps. Mutations stay
+own-tenant scoped.
 
 ** Domain includes
 
@@ -87,21 +93,44 @@ Human-readable description of the application engine.
 :iterator_var: a
 :END:
 
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| id          | ID          |
+| name        | Name        |
+| description | Description |
+| modified_by | Modified By |
+| recorded_at | Recorded At |
+
 ** Qt
 :PROPERTIES:
-:domain_include:       ores.compute/domain/app.hpp
-:domain_class:         compute::domain::app
-:protocol_include:     ores.compute/messaging/app_protocol.hpp
-:collection_name:      apps
-:item_var:             app
-:key_field:            name
-:has_uuid_primary_key: true
-:has_pagination:       true
-:get_request_class:    compute::messaging::list_apps_request
-:get_response_class:   compute::messaging::list_apps_response
-:settings_group:       AppListWindow
-:window_title:         Compute Apps
-:icon:                 Apps
+:domain_include:          ores.compute.api/domain/app.hpp
+:domain_class:            compute::domain::app
+:protocol_include:        ores.compute.api/messaging/app_protocol.hpp
+:collection_name:         apps
+:item_var:                app
+:key_field:               name
+:has_uuid_primary_key:    true
+:get_request_class:       compute::messaging::get_apps_request
+:get_response_class:      compute::messaging::get_apps_response
+:get_message_type:        get_apps_request
+:save_request_class:      compute::messaging::save_app_request
+:save_response_class:     compute::messaging::save_app_response
+:save_message_type:       save_app_request
+:delete_request_class:    compute::messaging::delete_app_request
+:delete_response_class:   compute::messaging::delete_app_response
+:delete_message_type:     delete_app_request
+:history_request_class:   compute::messaging::get_app_history_request
+:history_response_class:  compute::messaging::get_app_history_response
+:history_message_type:    get_app_history_request
+:settings_group:          AppListWindow
+:window_title:            Compute Apps
+:icon:                    Apps
+:changed_event_class:     compute::eventing::app_changed_event
+:changed_event_include:   ores.compute.api/eventing/app_changed_event.hpp
+:has_change_reason_cache: true
+:has_pagination:          true
 :END:
 
 *** Columns (Qt model)

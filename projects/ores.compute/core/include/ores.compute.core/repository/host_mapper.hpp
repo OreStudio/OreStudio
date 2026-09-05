@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_REPOSITORY_HOST_MAPPER_HPP
-#define ORES_COMPUTE_REPOSITORY_HOST_MAPPER_HPP
+#ifndef ORES_COMPUTE_CORE_REPOSITORY_HOST_MAPPER_HPP
+#define ORES_COMPUTE_CORE_REPOSITORY_HOST_MAPPER_HPP
 
 #include "ores.compute.api/domain/host.hpp"
+#include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/host_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -29,7 +30,7 @@ namespace ores::compute::repository {
 /**
  * @brief Maps host domain entities to data storage layer and vice-versa.
  */
-class host_mapper {
+class ORES_COMPUTE_CORE_EXPORT host_mapper {
 private:
     inline static std::string_view logger_name = "ores.compute.repository.host_mapper";
 

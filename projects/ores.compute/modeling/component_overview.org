@@ -11,6 +11,7 @@
 #+name: compute
 #+full_name: ores.compute
 #+brief: BOINC-inspired distributed compute grid domain types.
+#+component_kind: composite
 
 * Summary
 

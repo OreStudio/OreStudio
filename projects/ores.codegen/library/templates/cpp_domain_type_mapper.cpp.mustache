@@ -96,10 +96,23 @@ domain::{{entity_singular}}
     r.identity.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
 {{/is_uuid}}
 {{#is_optional_uuid}}
+{{#render_is_optional_uuid}}
     r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+{{/render_is_optional_uuid}}
+{{#render_is_uuid}}
+    r.identity.{{name}} = v.{{name}}.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.{{name}}) : boost::uuids::uuid{};
+{{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
+{{#render_is_optional_timestamp}}
     r.identity.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
+{{/render_is_optional_timestamp}}
+{{#render_is_timestamp}}
+    if (v.{{name}})
+        r.identity.{{name}} = timestamp_to_timepoint(*v.{{name}});
+    else
+        r.identity.{{name}} = {};
+{{/render_is_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     r.identity.{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
@@ -107,6 +120,9 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.identity.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
+{{#is_nullable_numeric}}
+    r.identity.{{name}} = v.{{name}}.value_or({});
+{{/is_nullable_numeric}}
 {{#is_already_optional}}
     r.identity.{{name}} = v.{{name}};
 {{/is_already_optional}}
@@ -122,10 +138,23 @@ domain::{{entity_singular}}
     r.{{name}} = boost::lexical_cast<boost::uuids::uuid>(v.{{name}});
 {{/is_uuid}}
 {{#is_optional_uuid}}
+{{#render_is_optional_uuid}}
     r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::lexical_cast<boost::uuids::uuid>(*v.{{name}})) : std::nullopt;
+{{/render_is_optional_uuid}}
+{{#render_is_uuid}}
+    r.{{name}} = v.{{name}}.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.{{name}}) : boost::uuids::uuid{};
+{{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
+{{#render_is_optional_timestamp}}
     r.{{name}} = v.{{name}}.has_value() ? std::optional(timestamp_to_timepoint(*v.{{name}})) : std::nullopt;
+{{/render_is_optional_timestamp}}
+{{#render_is_timestamp}}
+    if (v.{{name}})
+        r.{{name}} = timestamp_to_timepoint(*v.{{name}});
+    else
+        r.{{name}} = {};
+{{/render_is_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     r.{{name}} = timestamp_to_timepoint(std::string_view{v.{{name}}});
@@ -133,6 +162,9 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
+{{#is_nullable_numeric}}
+    r.{{name}} = v.{{name}}.value_or({});
+{{/is_nullable_numeric}}
 {{#is_already_optional}}
     r.{{name}} = v.{{name}};
 {{/is_already_optional}}
@@ -233,10 +265,23 @@ domain::{{entity_singular}}
     r.{{name}} = boost::uuids::to_string(v.identity.{{name}});
 {{/is_uuid}}
 {{#is_optional_uuid}}
+{{#render_is_optional_uuid}}
     r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.identity.{{name}})) : std::nullopt;
+{{/render_is_optional_uuid}}
+{{#render_is_uuid}}
+    r.{{name}} = v.identity.{{name}} == boost::uuids::uuid{} ? std::nullopt :
+                                                                std::optional(boost::uuids::to_string(v.identity.{{name}}));
+{{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
+{{#render_is_optional_timestamp}}
     r.{{name}} = v.identity.{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.identity.{{name}})) : std::nullopt;
+{{/render_is_optional_timestamp}}
+{{#render_is_timestamp}}
+    r.{{name}} = v.identity.{{name}} != std::chrono::system_clock::time_point{} ?
+                     std::optional(ores::platform::time::datetime::to_db_string(v.identity.{{name}})) :
+                     std::nullopt;
+{{/render_is_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.identity.{{name}});
@@ -244,6 +289,9 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.{{name}} = v.identity.{{name}}.empty() ? std::nullopt : std::optional(v.identity.{{name}});
 {{/is_nullable_string}}
+{{#is_nullable_numeric}}
+    r.{{name}} = v.identity.{{name}} == 0 ? std::nullopt : std::optional(v.identity.{{name}});
+{{/is_nullable_numeric}}
 {{#is_already_optional}}
     r.{{name}} = v.identity.{{name}};
 {{/is_already_optional}}
@@ -259,10 +307,23 @@ domain::{{entity_singular}}
     r.{{name}} = boost::uuids::to_string(v.{{name}});
 {{/is_uuid}}
 {{#is_optional_uuid}}
+{{#render_is_optional_uuid}}
     r.{{name}} = v.{{name}}.has_value() ? std::optional(boost::uuids::to_string(*v.{{name}})) : std::nullopt;
+{{/render_is_optional_uuid}}
+{{#render_is_uuid}}
+    r.{{name}} = v.{{name}} == boost::uuids::uuid{} ? std::nullopt :
+                                                      std::optional(boost::uuids::to_string(v.{{name}}));
+{{/render_is_uuid}}
 {{/is_optional_uuid}}
 {{#is_optional_timestamp}}
+{{#render_is_optional_timestamp}}
     r.{{name}} = v.{{name}}.has_value() ? std::optional(ores::platform::time::datetime::to_db_string(*v.{{name}})) : std::nullopt;
+{{/render_is_optional_timestamp}}
+{{#render_is_timestamp}}
+    r.{{name}} = v.{{name}} != std::chrono::system_clock::time_point{} ?
+                     std::optional(ores::platform::time::datetime::to_db_string(v.{{name}})) :
+                     std::nullopt;
+{{/render_is_timestamp}}
 {{/is_optional_timestamp}}
 {{#is_required_timestamp}}
     r.{{name}} = ores::platform::time::datetime::to_iso8601_utc(v.{{name}});
@@ -270,6 +331,9 @@ domain::{{entity_singular}}
 {{#is_nullable_string}}
     r.{{name}} = v.{{name}}.empty() ? std::nullopt : std::optional(v.{{name}});
 {{/is_nullable_string}}
+{{#is_nullable_numeric}}
+    r.{{name}} = v.{{name}} == 0 ? std::nullopt : std::optional(v.{{name}});
+{{/is_nullable_numeric}}
 {{#is_already_optional}}
     r.{{name}} = v.{{name}};
 {{/is_already_optional}}

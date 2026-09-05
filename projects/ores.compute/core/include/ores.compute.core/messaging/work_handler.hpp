@@ -137,11 +137,11 @@ public:
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Assigned to host on work.pull";
                 stamp(r, ctx);
-                result_svc.save(r);
+                result_svc.save_result(r);
 
                 service::workunit_service wu_svc(ctx);
                 const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
-                const auto wu_opt = wu_svc.find(wu_id_str);
+                const auto wu_opt = wu_svc.get_workunit(wu_id_str);
                 if (!wu_opt) {
                     reply(nats_,
                           msg,
@@ -176,13 +176,13 @@ public:
         if (auto req = decode<heartbeat_message>(msg)) {
             try {
                 service::host_service svc(ctx_);
-                auto existing = svc.find(req->host_id);
+                auto existing = svc.get_host(req->host_id);
                 if (existing) {
                     auto h = *existing;
                     h.last_rpc_time = std::chrono::system_clock::now();
                     h.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                     stamp(h, ctx_);
-                    svc.save(h);
+                    svc.save_host(h);
                 } else {
                     // Auto-register the host on first heartbeat.
                     BOOST_LOG_SEV(work_handler_lg(), info)
@@ -204,7 +204,7 @@ public:
                     BOOST_LOG_SEV(work_handler_lg(), info)
                         << "Assigned display name: " << h.display_name;
                     stamp(h, ctx_);
-                    svc.save(h);
+                    svc.save_host(h);
                 }
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(work_handler_lg(), error)
@@ -231,7 +231,7 @@ public:
                 if (r.host_id == boost::uuids::uuid{})
                     continue;
                 const auto host_id_str = boost::uuids::to_string(r.host_id);
-                const auto host_opt = host_svc.find(host_id_str);
+                const auto host_opt = host_svc.get_host(host_id_str);
                 if (!host_opt)
                     continue;
 
@@ -246,7 +246,7 @@ public:
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
                 r.change_commentary = "Host went stale; result re-queued";
                 stamp(r, ctx_);
-                result_svc.save(r);
+                result_svc.save_result(r);
                 ++reaped;
                 BOOST_LOG_SEV(work_handler_lg(), info)
                     << "Reaped result " << boost::uuids::to_string(r.id) << " from stale host "

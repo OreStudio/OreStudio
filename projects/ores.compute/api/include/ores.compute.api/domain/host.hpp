@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_DOMAIN_HOST_HPP
-#define ORES_COMPUTE_DOMAIN_HOST_HPP
+#ifndef ORES_COMPUTE_API_DOMAIN_HOST_HPP
+#define ORES_COMPUTE_API_DOMAIN_HOST_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace ores::compute::domain {
 
@@ -55,12 +56,6 @@ struct host final {
     std::string external_id;
 
     /**
-     * @brief Whimsical adjective+animal display name assigned on first registration.
-     * Display-only; never used as a key.
-     */
-    std::string display_name;
-
-    /**
      * @brief Physical site or region identifier.
      */
     std::string location;
@@ -68,7 +63,7 @@ struct host final {
     /**
      * @brief Total logical CPU cores available.
      */
-    int cpu_count;
+    int cpu_count = 0;
 
     /**
      * @brief Total system memory in megabytes.
@@ -79,6 +74,12 @@ struct host final {
      * @brief GPU model identifier, e.g. 'A100' or NULL if no GPU.
      */
     std::string gpu_type;
+
+    /**
+     * @brief Whimsical adjective+animal display name assigned on first registration. Display-only;
+     * never used as a key.
+     */
+    std::string display_name;
 
     /**
      * @brief Timestamp of the last heartbeat received from this node.
@@ -117,6 +118,16 @@ struct host final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for host, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const host&) {
+    return "ores.compute.host";
+}
 
 }
 

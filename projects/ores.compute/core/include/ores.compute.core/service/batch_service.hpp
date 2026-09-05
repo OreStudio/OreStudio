@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_SERVICE_BATCH_SERVICE_HPP
-#define ORES_COMPUTE_SERVICE_BATCH_SERVICE_HPP
+#ifndef ORES_COMPUTE_CORE_SERVICE_BATCH_SERVICE_HPP
+#define ORES_COMPUTE_CORE_SERVICE_BATCH_SERVICE_HPP
 
 #include "ores.compute.api/domain/batch.hpp"
 #include "ores.compute.core/export.hpp"
 #include "ores.compute.core/repository/batch_repository.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::compute::service {
 
 /**
  * @brief Service for managing compute batches.
+ *
+ * Provides a higher-level interface for compute batch operations,
+ * wrapping the underlying repository.
  */
 class ORES_COMPUTE_CORE_EXPORT batch_service {
 private:
@@ -47,15 +52,78 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a batch_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit batch_service(context ctx);
 
-    std::vector<domain::batch> list();
+    /**
+     * @brief Lists compute batches with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of compute batches for the requested page.
+     */
+    std::vector<domain::batch> list_batches(std::uint32_t offset, std::uint32_t limit);
 
-    std::optional<domain::batch> find(const std::string& id);
+    /**
+     * @brief Gets the total count of active compute batches.
+     *
+     * @return Total number of active compute batches.
+     */
+    std::uint32_t count_batches();
 
-    void save(const domain::batch& v);
 
-    std::vector<domain::batch> history(const std::string& id);
+    /**
+     * @brief Retrieves a single compute batch as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The compute batch at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::batch> get_batch_at_version(const std::string& id, std::uint32_t version);
+
+    /**
+     * @brief Retrieves a single compute batch by its primary key.
+     *
+     * @return The compute batch if found, std::nullopt otherwise.
+     */
+    std::optional<domain::batch> get_batch(const std::string& id);
+
+    /**
+     * @brief Saves a compute batch (creates or updates).
+     *
+     * @param batch The compute batch to save.
+     * @throws std::exception on failure.
+     */
+    void save_batch(const domain::batch& batch);
+
+    /**
+     * @brief Saves a batch of compute batches.
+     *
+     * @param batches The compute batches to save.
+     * @throws std::exception on failure.
+     */
+    void save_batches(const std::vector<domain::batch>& batches);
+
+    /**
+     * @brief Deletes a compute batch by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_batch(const std::string& id);
+
+    /**
+     * @brief Deletes compute batches by their primary keys.
+     */
+    void delete_batches(const std::vector<std::string>& ids);
+
+    /**
+     * @brief Retrieves all historical versions of a compute batch.
+     */
+    std::vector<domain::batch> get_batch_history(const std::string& id);
 
 private:
     context ctx_;

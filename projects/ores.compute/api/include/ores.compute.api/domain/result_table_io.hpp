@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_COMPUTE_DOMAIN_RESULT_TABLE_IO_HPP
-#define ORES_COMPUTE_DOMAIN_RESULT_TABLE_IO_HPP
+#ifndef ORES_COMPUTE_API_DOMAIN_RESULT_TABLE_IO_HPP
+#define ORES_COMPUTE_API_DOMAIN_RESULT_TABLE_IO_HPP
 
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/export.hpp"

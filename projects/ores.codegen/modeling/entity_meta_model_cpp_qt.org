@@ -214,6 +214,22 @@ per-field properties, layered on top of the plain =field=/=label=/
   existing entity with a combo field, e.g. =book='s =book_status=
   column, for the complete worked shape. *(Gap: this needs its own
   worked example on this page — flag for follow-up.)*
+- =tooltip_field= — list-column only. When set, the generated
+  =Client<Entity>Model::data()= returns the value of the named field
+  for =Qt::ToolTipRole= on this column's cells. Used for columns whose
+  displayed text is a human-friendly stand-in for the real identifier
+  (e.g. the host =DisplayName= column tooltips the =external_id=).
+  Plain-field access only; no =field_access= nesting.
+- =data_paste= — list-column only. When set to a paste-block kind
+  UUID, the generated =data()= case for this column emits the pasted
+  body inside a =case <EnumName>: { ... }= block instead of the plain
+  type-driven =return=. The body is pasted verbatim (a
+  =<<paste:UUID>>= marker is emitted per column and resolved by the
+  standard paste mechanism, so the block must be declared in the same
+  model with =:implements: <that UUID>=). Use for display logic a
+  single field cannot express — fallbacks, empty-value placeholders,
+  lookups. The ={{item_var}}= name (e.g. =host=) is in scope inside
+  the body.
 
 * Paste blocks
 

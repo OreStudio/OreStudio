@@ -111,7 +111,6 @@ QVariant ClientHostModel::data(const QModelIndex& index, int role) const {
     if (role == Qt::ToolTipRole && index.column() == DisplayName) {
         return QString::fromStdString(host.external_id);
     }
-
     if (role == Qt::ForegroundRole) {
         return recency_foreground_color(host.external_id);
     }
@@ -120,8 +119,15 @@ QVariant ClientHostModel::data(const QModelIndex& index, int role) const {
 }
 
 QVariant ClientHostModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case DisplayName:
@@ -216,7 +222,7 @@ void ClientHostModel::fetch_hosts(std::uint32_t offset, std::uint32_t limit) {
                             .error_details = {}};
                 }
 
-                compute::messaging::list_hosts_request request;
+                compute::messaging::get_hosts_request request;
                 request.offset = offset;
                 request.limit = limit;
 
@@ -224,13 +230,27 @@ void ClientHostModel::fetch_hosts(std::uint32_t offset, std::uint32_t limit) {
                     self->clientManager_->process_authenticated_request(std::move(request));
 
                 if (!result) {
-                    BOOST_LOG_SEV(lg(), error)
-                        << "Failed to fetch compute hosts: " << result.error();
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .hosts = {},
                             .total_available_count = 0,
-                            .error_message = QString::fromStdString(
-                                "Failed to fetch compute hosts: " + result.error()),
+                            .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .hosts = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
@@ -302,6 +322,7 @@ const compute::domain::host* ClientHostModel::getHost(int row) const {
         return nullptr;
     return &hosts_[idx];
 }
+
 
 QVariant ClientHostModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

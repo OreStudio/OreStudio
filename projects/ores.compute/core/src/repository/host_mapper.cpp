@@ -20,14 +20,17 @@
 #include "ores.compute.core/repository/host_mapper.hpp"
 #include "ores.compute.api/domain/host_json_io.hpp" // IWYU pragma: keep.
 #include "ores.database/repository/mapper_helpers.hpp"
+#include "ores.platform/time/datetime.hpp"
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <chrono>
+#include <format>
+#include <sstream>
 
 namespace ores::compute::repository {
 
 using namespace ores::logging;
 using namespace ores::database::repository;
-using ores::platform::time::datetime;
 
 domain::host host_mapper::map(const host_entity& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping db entity: " << v;
@@ -36,12 +39,14 @@ domain::host host_mapper::map(const host_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.external_id = v.external_id;
-    r.display_name = v.display_name.value_or("");
+
     r.location = v.location.value_or("");
     r.cpu_count = v.cpu_count;
     r.ram_mb = v.ram_mb;
     r.gpu_type = v.gpu_type.value_or("");
+    r.display_name = v.display_name.value_or("");
     if (v.last_rpc_time)
         r.last_rpc_time = timestamp_to_timepoint(*v.last_rpc_time);
     else
@@ -64,16 +69,18 @@ host_entity host_mapper::map(const domain::host& v) {
     r.id = boost::uuids::to_string(v.id);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.external_id = v.external_id;
-    r.display_name = v.display_name.empty() ? std::nullopt : std::optional(v.display_name);
+
     r.location = v.location.empty() ? std::nullopt : std::optional(v.location);
     r.cpu_count = v.cpu_count;
     r.ram_mb = v.ram_mb;
     r.gpu_type = v.gpu_type.empty() ? std::nullopt : std::optional(v.gpu_type);
-    if (v.last_rpc_time != std::chrono::system_clock::time_point{})
-        r.last_rpc_time = datetime::to_db_string(v.last_rpc_time);
-    else
-        r.last_rpc_time = std::nullopt;
+    r.display_name = v.display_name.empty() ? std::nullopt : std::optional(v.display_name);
+    r.last_rpc_time =
+        v.last_rpc_time != std::chrono::system_clock::time_point{} ?
+            std::optional(ores::platform::time::datetime::to_db_string(v.last_rpc_time)) :
+            std::nullopt;
     r.credit_total = v.credit_total;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;

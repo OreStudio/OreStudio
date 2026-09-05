@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-08-04
-#+environment:
+#+updated: 2026-09-05
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,29 +21,52 @@ Bring ores.compute to the same proven state as the ores.refdata pilot: every cod
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-04                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-05                               |
 
 * Acceptance
 
-- Every ores.compute entity is bound to a matching Variability Profile, or recorded as a genuine no-match with a documented reason.
-- Every rebound entity is regenerated and diffed against its pre-rebind checked-in output; zero diff is the pass condition, and any non-zero diff is fixed, not worked around.
-- Full local build clean, validate_schemas.sh green, full ctest suite green after regeneration.
-- check_component_drift.py --components is extended to include compute-cpp, and the refdata-codegen-drift CI job is updated so future PRs touching ores.compute fail on any regeneration drift.
-- The superseded ad hoc task 'Apply safe drift to compute-cpp' is marked ABANDONED, pointing here.
+- Every ores.compute entity is bound to a matching Variability Profile, or recorded as a genuine no-match with a documented reason. *Done 2026-09-05.*
+- Every rebound entity is regenerated and diffed against its pre-rebind checked-in output; zero diff is the pass condition, and any non-zero diff is fixed, not worked around. *Done 2026-09-05.*
+- Full local build clean, validate_schemas.sh green, full ctest suite green after regeneration. *Done 2026-09-05* (build clean at 100%, ctest 71/71; =compass db status= reports schema drift current, the successor of validate_schemas.sh).
+- check_component_drift.py --components is extended to include compute-cpp, and the refdata-codegen-drift CI job is updated so future PRs touching ores.compute fail on any regeneration drift. *Done 2026-09-05 (08b6f23193).*
+- The superseded ad hoc task 'Apply safe drift to compute-cpp' is marked ABANDONED, pointing here. *Done* (State ABANDONED, Result re-pointed at this story).
 - This is the heaviest known exclusion catalogue of any component: the 6 hand-written service files, result_repository (read_by_workunit), workunit_repository (read_by_batch), 3 mappers (nullable vs non-optional), and 2 repositories (system_tenant union filter) are each resolved -- either brought under codegen properly, or verified as a genuinely correct, documented exclusion -- not carried forward as an unexamined restore-from-HEAD step.
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the compute-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: heaviest exclusion catalogue of any component -- 6 service files, result_repository (read_by_workunit), workunit_repository (read_by_batch), 3 mappers (nullable vs non-optional), 2 repositories (system_tenant union filter). |
+| [[id:A97F58CC-6C2D-4138-AE4C-60D8C53B88A7][Bind ores.compute entities to profiles; verify zero-diff regen]] | DONE | 2026-08-10 | 2026-09-05 | Implement profile binding for the compute-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: heaviest exclusion catalogue of any component -- 6 service files, result_repository (read_by_workunit), workunit_repository (read_by_batch), 3 mappers (nullable vs non-optional), 2 repositories (system_tenant union filter). |
 
 * Decisions
+
+- All six legacy entities bind to =uuid-identified-lookup=; the
+  =app_version_platform= junction binds to =tenant-scoped-junction= via
+  file-level =#+profile:=. =result= is the one change-reason exception:
+  a list-only entity whose rows the grid machinery writes, so it has no
+  human edit flow and no change-reason cache.
+- The hand-crafted messaging protocol, the six entity handlers and the
+  six hand-written service files are replaced by the standard codegen'd
+  set; the custom reads (=read_by_workunit=, =read_by_batch=) generate
+  from FK =:list_by: true=.
+- =app= and =app_version= keep the system-tenant union read filter as a
+  documented exclusion: a genuine business rule (system-tenant apps are
+  visible to every tenant) with no template feature yet. The
+  =:system_tenant_visible:= template feature is the recorded candidate;
+  =report_submit_handler= and =registrar.cpp= stay excluded as a custom
+  flow that sits on no template output path.
+- Regeneration surfaced two pre-existing defects, fixed at source
+  rather than worked around: the JSON-to-org migration had silently
+  dropped the legacy entities' Table display sections (restored
+  verbatim in the orgs), and the qt dialog/table generator mis-derived
+  cell optionality and emitted a phantom display-name row for nameless
+  entities (fixed in =codegen/core.py=). Both fixes carry to every
+  later component in the rollout.
 
 * Out of scope
 

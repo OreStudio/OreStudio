@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
-#+environment: jolly_knuth
+#+updated: 2026-09-05
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Survey every ores.compute entity against the profile catalogue, rebind matches, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][Entity classification and drift baseline: ores.compute]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-05                               |
 
 * Acceptance
 
@@ -164,8 +164,8 @@ Rebased the session's codegen onto latest main (branch
 components. Main's repository template gained the
 =:has_workspace_id:= read logic (read_at_version workspace fix) since
 the branch base; the merge combined it with the branch's
-=:system_tenant_visible:= template feature ({{{sys_decl}}} /
-{{{tenant_where}}}). Refdata and compute-cpp both regenerate
+=:system_tenant_visible:= template feature (={{{sys_decl}}}= /
+={{{tenant_where}}}=). Refdata and compute-cpp both regenerate
 byte-identically to the committed tree (drift checks pass).
 
 *** Sign-off: doc-comment rendering improvements (improved_code)
@@ -233,3 +233,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed 2026-09-05. Bound all seven ores.compute entities per the Plan
+survey: app, app_version, batch, host, result and workunit to
+=uuid-identified-lookup=, the app_version_platform junction to
+=tenant-scoped-junction=. Regenerated the component after binding. All
+six hand-written service files, the hand-crafted messaging protocol and
+the six entity handlers are replaced by the standard codegen'd set; the
+custom reads generate from FK =:list_by: true=; result is the one
+change-reason exception (list-only entity, grid machinery writes).
+Two documented exclusions remain: the app/app_version system-tenant
+union filter (genuine business rule; =:system_tenant_visible:= recorded
+as the template-feature candidate) and report_submit_handler plus
+registrar.cpp (custom flow on no template output path).
+
+Regeneration pre-empted the zero-additional-diff gate: the pre-rebind
+baseline was not a true regeneration of main, so the gate only holds
+after fixing two defects at source. The JSON-to-org model migration had
+silently dropped the six legacy entities' Table display sections;
+restored them verbatim in the orgs (81ddb04d60) and regenerated the
+table displays (7aea9d2326). The qt detail-dialog generator emitted a
+display-name row unconditionally, which bound a phantom =.name= member
+for entities with no name column and the regenerated dialogs did not
+compile; the row is now gated on the name member existing, with a name
+carried as the natural key counted as a real member (core.py, dccbe5d574,
+86393b44a8, 9a5c60a45b). The five DetailDialog cpp/ui pairs regenerated
+(d755eede45); the compute qt and shell call sites adapted (bb34072366,
+31f994beeb). The env DB's app_version_platforms table was stale against
+repo DDL; refreshed so the api/core suites could run. The site build
+surfaced a latent org-export defect in this doc's 2026-08-25 note,
+which wrote the ={{{sys_decl}}}= and ={{{tenant_where}}}= splices bare;
+org parsed them as macros and the publish aborted. Wrapped in verbatim
+per repo convention.
+
+Acceptance: every entity surveyed and every match rebound (survey
+table above); regenerated output byte-identical to the committed tree
+for refdata, reporting, marketdata and compute-cpp
+(check_component_drift.py, 2026-09-05); the exclusion catalogue is
+resolved or documented with its reason; full build clean at 100% with
+ores.qt.exe linked; ctest 71/71 green; schema drift current per
+=compass db status= (0.0.25), the validate_schemas.sh successor;
+compute-cpp covered by the CI drift gate (08b6f23193).

@@ -18,6 +18,9 @@
  *
  */
 #include "ores.database/domain/context.hpp"
+// System-scoped entity (see the SQL flags): rows belong to the system
+// tenant, so the write context below is stamped system and needs the
+// tenant_id helpers.
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -35,6 +38,7 @@
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <thread>
@@ -64,7 +68,11 @@ TEST_CASE("write_tenant_publishes_nats_changed_event", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto& party_ctx = h.context();
+    // Tenant rows belong to the system tenant: the insert trigger
+    // stamps tenant_id = system, so the RLS write policy admits the write
+    // only under a system-scoped context -- the per-run tenant GUC would
+    // reject the forced row.
+    auto party_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), h.db_user());
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled

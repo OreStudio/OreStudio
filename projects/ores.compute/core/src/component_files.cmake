@@ -95,6 +95,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/result_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/result_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/result_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/result_submit_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/telemetry_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/work_handler.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.compute.core/messaging/workunit_handler.hpp"

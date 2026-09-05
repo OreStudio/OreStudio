@@ -28,6 +28,7 @@
 #include "ores.compute.service/app/application_exception.hpp"
 #include "ores.compute.service/app/batch_workflow_bridge.hpp"
 #include "ores.compute.service/app/compute_grid_poller.hpp"
+#include "ores.compute.service/app/workunit_dispatcher.hpp"
 #include "ores.database/service/context_factory.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -106,6 +107,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     ev::service::registrar::register_mapping<cev::host_changed_event>(
         event_source, "ores.compute.host", "ores_compute_hosts");
 
+    // Grid dispatch seam: creates the result rows and publishes the JetStream
+    // assignments for shell-saved workunits. Lives here, subscribed to the
+    // in-process event bus (not in the generated workunit handler, which
+    // regeneration would strip — see workunit_dispatcher.hpp). Must be
+    // constructed before event_source.start() so no change is missed.
+    app::workunit_dispatcher dispatcher(nats, make_context(cfg.database));
+
     auto app_sub =
         event_bus.subscribe<cev::app_changed_event>([&nats](const cev::app_changed_event& e) {
             publish_entity_event(nats,
@@ -146,6 +154,9 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
                                                                  .entity_ids = e.workunit_ids,
                                                                  .tenant_id = e.tenant_id});
         });
+
+    auto dispatch_sub = event_bus.subscribe<cev::workunit_changed_event>(
+        [&dispatcher](const cev::workunit_changed_event& e) { dispatcher.dispatch(e); });
 
     auto result_sub =
         event_bus.subscribe<cev::result_changed_event>([&nats](const cev::result_changed_event& e) {

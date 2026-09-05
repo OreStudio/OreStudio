@@ -35,6 +35,7 @@
 #include "ores.compute.core/messaging/platform_handler.hpp"
 #include "ores.compute.core/messaging/report_submit_handler.hpp"
 #include "ores.compute.core/messaging/result_registrar.hpp"
+#include "ores.compute.core/messaging/result_submit_handler.hpp"
 #include "ores.compute.core/messaging/telemetry_handler.hpp"
 #include "ores.compute.core/messaging/work_handler.hpp"
 #include "ores.compute.core/messaging/workunit_registrar.hpp"
@@ -82,6 +83,15 @@ registrar::register_handlers(ores::nats::service::client& nats,
     }));
     subs.push_back(nats.subscribe(reap_work_message::nats_subject,
                                   [wh](ores::nats::message msg) { wh->reap(std::move(msg)); }));
+
+    // Result submit: trusted wrapper nodes (no JWT, same transport trust as
+    // the heartbeat). Kept out of the generated result handler, which is
+    // user-session gated and regenerated on every bind.
+    auto result_submit = std::make_shared<result_submit_handler>(nats, ctx);
+    subs.push_back(nats.queue_subscribe(
+        submit_result_request::nats_subject,
+        "ores.compute.service",
+        [result_submit](ores::nats::message msg) { result_submit->submit(std::move(msg)); }));
 
     // ----------------------------------------------------------------
     // Telemetry

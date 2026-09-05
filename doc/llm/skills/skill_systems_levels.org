@@ -9,12 +9,23 @@
 #+created: 2026-08-26
 #+updated: 2026-08-26
 
-This page concerns identity and authority: what an actor is, what role
-it adopts, and what that role permits it to see and to change. It holds
-whether or not anything is running.
+* Summary
 
-For how an agent is configured, isolated and left to run, see
-[[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]].
+A regulator presented with more variety than it can use stops regulating. This
+page holds the framework's answer to that: a session declares the [[id:926B916E-A57E-498E-99AB-720B583C0362][System]] it
+acts as, and that declaration attenuates the catalogue to the portion in scope
+for the work.
+
+Attenuation comes in two strengths, and the difference decides what the
+framework may claim. An advisory default is convenience and regulates nothing,
+since an agent may disregard it without consequence. A binding constraint
+regulates, because it holds whether or not the agent would prefer otherwise. One
+row of the table below binds; the rest are ergonomics, and are named as such
+([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]).
+
+This document states the actor vocabulary, the System a session or delegate acts
+as, what each level sees, and the boundary a read-only System cannot cross. For
+how an agent is configured, isolated and left to run, see [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]].
 
 * Detail
 
@@ -47,6 +58,8 @@ The owning rule: a session owns its delegates' work. A delegate's
 summary of what it did is not evidence; the artefact it produced is.
 Review the diff, not the report.
 
+** The Level Attenuates the Catalogue
+
 A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][System]] once, at the start. That sets the
 cybernetic level, and the level selects the slice of the catalogue in
 scope by default.
@@ -54,7 +67,7 @@ scope by default.
 #+ATTR_HTML: :class hug-leading
 | Level | System           | Horizon    | Sees                                                        |
 |-------+------------------+------------+-------------------------------------------------------------|
-| S1    | Agent            | Hours      | Action regulatory function in full, methods, stance, specification        |
+| S1    | Agent            | Hours      | Execution in full, sequencing, citation, declaration        |
 | S2    | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
 | S3    | Sprint Planner   | Weeks      | Sprint and backlog actions, planning and review methods     |
 | S3*   | Auditor          | Continuous | Read-only and audit actions only                            |
@@ -120,19 +133,23 @@ prose. Only surprises forced by something outside our control — a
 platform, a vendor, a protocol we cannot reshape — earn a comment
 instead of a fix.
 
-That is the =encode-lessons-in-structure= principle made operational: a
-finding that ends in a structural flag outlives a finding that ends in a
-deletion.
+That is =encode-lessons-in-structure= made operational ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack
+Collection]]): a finding that ends in a structural flag outlives a finding that
+ends in a deletion.
 
 
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
 Every System, its level, the regulatory functions it sees, and whether it may
-mutate. Populated when levels are assigned. # END generated inventory
+mutate. Populated when levels are assigned.
+# END generated inventory
 
 * See also
 
-- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
-- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the model this axis applies.
-- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]] — the role-shaped counterpart to skills.
+- [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] — why attenuation is structural, and when a
+  constraint may be called regulation.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the five Systems and this project's departures from them.
+- [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][Systems]] — the priming context each System loads.
+- [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]] — how a delegate is configured and bounded at spawn.

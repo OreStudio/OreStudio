@@ -43,6 +43,7 @@ Bring ores.iam to the same proven state as the ores.refdata pilot: every codegen
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:4DDA81C4-4306-4022-A022-75A3A23BE4A0][Bind ores.iam entities to profiles; verify zero-diff regen]] | DONE | 2026-09-05 | 2026-09-05 | Implement profile binding for ores.iam's org-mode entity set (iam and iam-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
+| [[id:4335B0BE-F70C-4C76-9020-4B14B778895B][Grant iam_service select on refdata for the account_party soft FK]] | DONE | 2026-09-05 | 2026-09-05 | The regenerated ores_iam_account_parties_insert_fn runs under the plain invoker idiom, so its soft-FK validation subselect against ores_refdata_parties_tbl executes as the iam service user. The service registry granted iam_service select on ores_assets_ and ores_dq_ only, so the first live tenant provisioning on a fresh DB failed with 'permission denied for table ores_refdata_parties_tbl'. Add ores_refdata_ to iam's Select prefixes in service_registry.org and regenerate iam_service_db_grants_create.sql. |
 
 * Decisions
 

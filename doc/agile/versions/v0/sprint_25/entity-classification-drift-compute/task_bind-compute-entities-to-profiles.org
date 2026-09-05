@@ -231,7 +231,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Round 1 (claude bot): phantom =ores.compute= scaffold — top-level CMakeLists.txt plus =src/=, =tests/=, =include/= subtrees never reached by add_subdirectory | =ores.compute/= | Accept | Fixed in 060cd50144 + ff4c34bfc4. Root cause: the org loader defaults an undeclared =#+component_kind:= to =flat=, whose bootstrap archetypes emit the whole scaffold into the component root; =ores.compute= is a sub-component container (api/client/core/service/wrapper own their orgs) and had no =composite= key, so every regen re-wrote the phantom and the drift gate committed it. All eight container orgs now declare =#+component_kind: composite=, both phantom scaffolds (compute + analytics) are deleted, and resolve_targets raises on any container root that would emit a flat scaffold again (regression-tested). |
+| 2 | Round 1 (claude bot, minor): =_strip_org_markup= verbatim-regex fix has no unit test | =org_loader.py= | Accept | Fixed in 4fed1d8e9e — regression test added (=tests/test_org_loader_markup.py=) covering prose =equals= legends surviving stripping. |
 
 * Result
 

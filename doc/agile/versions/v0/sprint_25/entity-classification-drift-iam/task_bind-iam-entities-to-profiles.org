@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-09-05
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ Survey every ores.iam entity (projects/ores.iam/modeling) against the profile ca
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-05                               |
 
 * Acceptance
 
@@ -45,10 +45,10 @@ Survey every ores.iam entity (projects/ores.iam/modeling) against the profile ca
 
 ** Survey (2026-09-05)
 
-All seven codegen-eligible orgs under projects/ores.iam/modeling were
-surveyed against the profile catalogue. Six orgs match a profile and
-one is a junction; there is no genuine no-match. The iam and iam-cpp
-catalogue entries share this modeling_dir, so this is one survey.
+All six codegen-eligible orgs under projects/ores.iam/modeling were
+surveyed against the profile catalogue; there is no genuine no-match.
+The iam and iam-cpp catalogue entries share this modeling_dir, so this
+is one survey.
 
 | Org                              | Kind     | Profile                        | Change in this unit |
 |----------------------------------+----------+--------------------------------+---------------------|
@@ -109,6 +109,40 @@ faker::company::companyName() to match every sibling org (05c1a89a2d).
 4. 90fc228c60 [agile] task start flips.
 5. b85c6ac327 [ci] drift gate extended to iam,iam-cpp.
 6. 05c1a89a2d [iam] tenant generator faker fix.
+7. bec4d7d61d [ores.iam] restore the tenant provisioning protocol and
+   handler lost in the C3 regen (custom flow, no template output
+   path).
+8. ffc22e94f6 [agile] record the iam survey and SQL rule restorations.
+9. ef7a2a8ee2 [iam] restore the cross-tenant tenant_lookups lost in
+   regeneration (hand-authored; RLS-subject plain reads).
+10. e8094a710d [shell, qt] adapt the tenant history command to the
+    regenerated response member.
+11. d61e26fd61 [ores.qt] adapt IamPlugin to the regenerated
+    TenantController API.
+12. 4e3fc08cd6 [ores.codegen] seed transitive FK ancestors in generated
+    eventing tests.
+13. 4bad7fffe7 [iam] fix the tenant type generator; declare the account
+    seeding snippet in the org.
+14. 53363539e8 [iam, compute, refdata] regenerate outputs after seed
+    closure and generator fix.
+15. 5ea58e41b2 [ores.codegen] split ancestor seeding into declare and
+    write phases.
+16. 94ade14712 [compute, refdata] regenerate eventing tests after the
+    two-phase seeding split.
+17. 5433e022c5 [ores.codegen] let the parent_seed org block name its
+    own includes.
+18. 7de2f9b47e [iam] declare the account seeding includes in the
+    contact-information org.
+19. 6ada58025f [ores.codegen] emit the parent_seed snippet's named
+    includes in the test head.
+20. a9ecc71021 [ores.codegen] suffix synthetic :unique: plain-string
+    columns with the process counter.
+21. aaab07e8c1 [ores.codegen] emit the system-scoped write context in
+    generated eventing tests.
+22. 72687b2bb2 [ores.iam] regenerate the tenant generator and eventing
+    test; sweep tenants.
+23. 15e4abbc25 [ores.iam] align the tenant lookup test with the
+    tenants_read_policy design.
 
 * Notes
 
@@ -160,3 +194,60 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed 2026-09-05. Bound the six ores.iam codegen-eligible orgs per the
+Plan survey: =ores.iam.tenant= to =uuid-identified-lookup=,
+=ores.iam.account_party_junction= to =tenant-scoped-junction=,
+=ores.iam.account_contact_information= to
+=self-referencing-hierarchy=; =account_type=, =tenant_status= and
+=tenant_type= were pre-bound =simple-lookup= entities and regenerated
+byte-identically through the unit. Every committed SQL rule the
+pre-rebind iam tables carried has a codegen home: the four tenant table
+checks via the Checks section, the status = 'terminated' delete rule
+via the new =** Delete sets= section, the hostname active-record unique
+index via the new column =:unique:= flag, the type/status insert
+validations via the generated lookup validate fns, and the
+account_party soft-FK blocks via the junction foreign-keys section.
+Template-era modernization on the regenerated tables
+(clock_timestamp, the security-definer function-attribute form, the
+junction insert fn losing its legacy attribute) is the sign-off class
+the refdata anchors already carry; regeneration also surfaced a latent
+generator bug the old template never rendered, the tenant name snippet
+calling the nonexistent =faker::company::name()=, fixed to
+=companyName()= to match every sibling org (05c1a89a2d).
+
+Regeneration surfaced two further losses from the earlier C3-era
+regeneration, both restored at source: the tenant provisioning
+protocol and handler (a custom flow with no template output path,
+restored by hand, bec4d7d61d) and the cross-tenant =tenant_lookups=
+(the hand-authored counterpart of =tenant_repository=; no template
+emits the file, and it keeps the pre-rebind unfiltered reads,
+ef7a2a8ee2). The shell tenant-history command and the qt IamPlugin
+were adapted to the regenerated APIs (e8094a710d, d61e26fd61). The
+drift gate now covers iam and iam-cpp (b85c6ac327, per the compute
+unit's extension of the pr-raise check list); a full retangle leaves
+the tracked tree byte-identical to the committed output.
+
+Moving the acceptance runs onto a recreated test DB (=compass db
+recreate=) surfaced three defects the previous DB had masked, each
+fixed at source rather than worked around. Generated eventing tests
+now seed transitive FK ancestors in a two-phase declare/write split
+and write under the system-scoped context (4e3fc08cd6, 5ea58e41b2,
+aaab07e8c1); synthetic =:unique:= plain-string columns take the
+process-counter suffix, ending the tenant-hostname collisions on
+unique indexes (a9ecc71021); and the tenant lookup test now asserts
+what the committed =tenants_read_policy= admits -- the row's own
+tenant context and the system context resolve the system-owned tenant
+rows, a peer tenant's context stays isolated -- with the constraint
+documented in the =tenant_lookups= header (15e4abbc25).
+
+Acceptance: every entity surveyed and every match rebound (survey
+table above); regenerated output byte-identical to the committed tree
+for refdata, reporting, marketdata, compute-cpp, iam and iam-cpp
+(check_component_drift.py, 2026-09-05); no genuine no-match; the
+=tenant_type= =has_tenant_id= drift closed pre-branch and independently
+confirmed by the zero-diff regen; the =service_find_prefix= gap on
+=tenant_type= and =tenant_status= was already declared at the branch
+point and stayed byte-stable; full build clean at 100% with
+ores.qt.exe linked (linux-clang-debug-make); ctest 71/71 green on the
+recreated DB; iam and iam-cpp covered by the drift gate.

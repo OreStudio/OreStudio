@@ -25,6 +25,7 @@ Operations/Settlement/Billing split).
 :schema:    public
 :product:   ores
 :component: iam
+:profile:   self-referencing-hierarchy
 :has_tenant_id:    true
 :END:
 

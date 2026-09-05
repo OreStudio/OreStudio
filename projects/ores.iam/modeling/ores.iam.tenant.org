@@ -27,14 +27,17 @@ Tenants are identified by:
 :schema:        public
 :product:       ores
 :component:     iam
+:profile:       uuid-identified-lookup
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:          id
 :type:            uuid
 :cpp_type:        boost::uuids::uuid
+:primary_key:     true
 :skip_uuid_check: true
 :END:
 
@@ -42,12 +45,11 @@ UUID uniquely identifying this tenant.
 
 The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for tenant records.
 
-* Natural keys
-
 ** code
 :PROPERTIES:
-:type:     text
-:cpp_type: std::string
+:type:        text
+:cpp_type:    std::string
+:natural_key: true
 :END:
 
 Unique code for stable referencing.
@@ -57,8 +59,6 @@ Examples: 'system', 'acme', 'demo'.
 #+begin_src cpp :name generator
 std::string(faker::word::noun()) + "_tenant"
 #+end_src
-
-* Columns
 
 ** name
 :PROPERTIES:
@@ -104,6 +104,7 @@ std::string(faker::lorem::sentence())
 :type:     text
 :cpp_type: std::string
 :nullable: false
+:unique:   true
 :END:
 
 Unique hostname for tenant routing.
@@ -132,6 +133,30 @@ Tenant lifecycle status (FK to tenant_statuses).
 :tablename:    ores_iam_tenants_tbl
 :system_scope: true
 :END:
+
+** Checks
+
+| expression                                                                  |
+|-----------------------------------------------------------------------------|
+| "id" <> 'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid or "code" = 'system'   |
+| "tenant_id" = ores_utility_system_tenant_id_fn()                            |
+| "code" <> ''                                                                |
+| "hostname" <> ''                                                            |
+
+** Delete sets
+
+| expression            |
+|-----------------------+|
+| status = 'terminated' |
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function              |
+|--------+----------------------------------|
+| type   | ores_iam_validate_tenant_type_fn   |
+| status | ores_iam_validate_tenant_status_fn |
 
 * C++
 
@@ -184,9 +209,9 @@ Tenant lifecycle status (FK to tenant_statuses).
 
 ** Qt
 :PROPERTIES:
-:domain_include:         ores.iam/domain/tenant.hpp
+:domain_include:         ores.iam.api/domain/tenant.hpp
 :domain_class:           iam::domain::tenant
-:protocol_include:       ores.iam/messaging/tenant_protocol.hpp
+:protocol_include:       ores.iam.api/messaging/tenant_protocol.hpp
 :collection_name:        tenants
 :item_var:               tenant
 :key_field:              code

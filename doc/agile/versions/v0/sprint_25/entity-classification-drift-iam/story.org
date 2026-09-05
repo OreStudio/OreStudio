@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Bring ores.iam to the same proven state as the ores.refdata pilot: every codegen
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -42,7 +42,7 @@ Bring ores.iam to the same proven state as the ores.refdata pilot: every codegen
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:4DDA81C4-4306-4022-A022-75A3A23BE4A0][Bind ores.iam entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for ores.iam's org-mode entity set (iam and iam-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
+| [[id:4DDA81C4-4306-4022-A022-75A3A23BE4A0][Bind ores.iam entities to profiles; verify zero-diff regen]] | STARTED | 2026-09-05 | | Implement profile binding for ores.iam's org-mode entity set (iam and iam-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
 
 * Decisions
 

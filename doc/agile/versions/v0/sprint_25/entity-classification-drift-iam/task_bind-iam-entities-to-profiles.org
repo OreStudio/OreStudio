@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-iam:
 #+owner: marco
-#+branch:
+#+branch: feature/bind-iam-entities-to-profiles
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ Survey every ores.iam entity (projects/ores.iam/modeling) against the profile ca
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

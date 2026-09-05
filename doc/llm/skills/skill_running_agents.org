@@ -15,23 +15,28 @@ building, not the catalogue as it stands today. Where this page and the
 current catalogue disagree, the catalogue is what runs.
 #+end_note
 
-This page concerns operation rather than authority. It covers why work
-is delegated, how parallel writers are kept apart, what configures an
-agent, and what an agent needs before it can be left running without a
-person watching.
+* Summary
 
-For the actor vocabulary and what each role may see and change, see
-[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]].
+A regulator must reach the system it regulates. This page states how: how an
+agent is configured, where it may write, what it may do without asking, and what
+it needs before it can be left running with nobody watching.
+
+The unattended case is the one that tests the framework. An advisory default
+helps an agent choose well while a person is present and does nothing at three
+in the morning, so an unattended run depends only on the parts that bind
+([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]). Which parts those are is stated at the end
+of this document.
+
+For the actor vocabulary and what each role may see and change, see [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and
+levels]].
 
 * Detail
 
-
-The purpose of this framework is that the mode ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]])
-can be started on an agent and left to run. Everything above serves that: the levels
-decide what an agent can see, the methods decide what it does in what
-order, the recipes are what it reaches for, and the independent checkers
-are how it knows it succeeded. This section states how agents are
-configured and bounded.
+The framework is built so that the mode ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]) can be started
+on an agent and left to run. The levels decide what an agent sees, the methods
+decide what it does in what order, the recipes are what it reaches for, and the
+independent checkers are how it knows it succeeded. This document states how
+agents are configured and bounded.
 
 
 ** Grounds for Delegation
@@ -46,18 +51,24 @@ Three reasons, and they are the only three.
 - *Isolation.* Work that must not touch the parent's working tree gets
   its own.
 
-*Not* a reason: hoping a second attempt will be better than the first.
-Every delegate runs the same model as its parent, by policy, so a
-re-attempt varies the sampling and nothing else. Where a genuine second
-perspective is needed the answer is deliberation or an independent
-checker, not another agent.
+*Not* a reason: hoping a second attempt on the same model will be better than
+the first. A re-attempt at identical configuration varies the sampling and
+nothing else, and where a genuine second perspective is needed the answer is
+deliberation or an independent checker rather than another agent.
 
-That is the single-model correction to the pattern this is borrowed
-from. Fan-out for *coverage* survives intact, because its value is
-parallelism. Fan-out for *competition* — several attempts at one brief,
-judged and grafted — does not, because its value was model diversity and
-we have none. Use coverage freely; reach for competition only on design
-questions, and prefer the deliberation regulatory function there.
+Fan-out has two shapes and they fare differently here. Fan-out for *coverage*
+survives intact, because its value is parallelism and parallelism does not
+depend on diversity. Fan-out for *competition*, several attempts at one brief
+judged and grafted, depends on diversity and is therefore weakened rather than
+lost. Cross-family diversity is unavailable to this project. Diversity across
+models within the family is available, and =arena= supplies it ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack
+Collection]]).
+
+The bound is worth stating wherever competition is used. Models trained together
+share more priors than models trained apart, so an intra-family bakeoff is a
+weaker instrument than a cross-family one and a stronger one than a single agent
+trying twice. Use coverage freely; reach for competition on design questions,
+and say which of the two you are relying on.
 
 ** Isolation
 
@@ -83,17 +94,18 @@ Five fields, and the model is deliberately not among them.
 #+ATTR_HTML: :class hug-leading
 | Field           | Decides                                          |
 |-----------------+--------------------------------------------------|
-| Function        | The role: what it must read first, what it may do |
+| System          | The role: what it must read first, what it may do |
 | Level           | Which slice of the catalogue it sees             |
 | Environment     | Which worktree and database it may write to      |
 | Finish condition | When it is done, checkable by the agent itself  |
 | Authority       | What it may do without asking                    |
 
-The model is inherited from the session that spawned the agent. We do
-not route roles to model tiers: the operator chooses one model and every
-delegate uses it. This costs the model-diversity benefits described
-above, and the substitution is stated where it matters rather than
-papered over.
+The model is inherited from the session that spawned the agent. Roles are not
+routed to model tiers by default: the operator chooses one model and every
+delegate uses it, which keeps the configuration small and the behaviour
+predictable. Where an instrument depends on diversity, as =arena= and
+=interrogate= do, the model is named explicitly for that call and the bound on
+what it buys is stated.
 
 ** Unattended Runs
 
@@ -147,11 +159,11 @@ unattended result trustworthy rather than merely finished.
 ** Consequences for the Framework
 
 The parts of this architecture that matter most to an unattended run
-are the ones that bind rather than advise: the finish condition, the
-authority boundary, the read-only functions, the isolation, and the
-independent checkers. Everything advisory — the regulatory function vocabulary, the
-default visibility at most levels — helps an agent choose well while
-someone is watching, and does nothing at three in the morning.
+are the ones that bind rather than advise: the finish condition, the authority
+boundary, the read-only Systems, the isolation, and the independent checkers.
+Everything advisory, including the regulatory functions themselves and the
+default visibility at most levels, helps an agent choose well while someone is
+watching and does nothing at three in the morning.
 
 
 ** Inventory
@@ -163,6 +175,9 @@ inventory, and a written copy of it would be wrong within the hour.
 
 * See also
 
-- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
-- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Functions and levels]] — the roles an agent adopts.
+- [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] — which constraints bind, and which advise.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] — the roles an agent adopts, and the read-only boundary.
 - [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what an unattended agent is running.
+- [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]] — the checkers an unattended run depends on.
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — =arena=, =swarm= and the decision trail.

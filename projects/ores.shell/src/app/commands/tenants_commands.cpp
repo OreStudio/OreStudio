@@ -197,7 +197,7 @@ void tenants_commands::process_tenant_history(std::ostream& out,
         return;
     }
 
-    const auto& versions = result->versions;
+    const auto& versions = result->history;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << versions.size()
                               << " history entries.";
 

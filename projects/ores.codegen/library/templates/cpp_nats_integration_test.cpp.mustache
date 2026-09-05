@@ -249,10 +249,12 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
         }
     }
 {{/parent_is_party}}
+{{! Every ancestor row is declared up front, then written in the second
+    loop below: the write phase patches a referencing row onto its
+    seeded ancestor before the referencing row's own write, so every
+    patch target (a row one step shallower in the chain, declared here)
+    must exist before any write runs. }}
 {{#parent_required_fks}}
-    // Seed the active {{parent_entity_singular}} row {{table}} references:
-    // the referencing row's insert trigger rejects a synthetic key that
-    // matches no active row, so it must be written first.
     auto {{var}} = ores::{{component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
 {{#parent_has_audit_group}}
     {{var}}.audit.change_reason_code = "system.test";
@@ -260,6 +262,11 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{^parent_has_audit_group}}
     {{var}}.change_reason_code = "system.test";
 {{/parent_has_audit_group}}
+{{/parent_required_fks}}
+{{#parent_required_fks}}
+    // Seed the active {{parent_entity_singular}} row {{table}} references:
+    // the referencing row's insert trigger rejects a synthetic key that
+    // matches no active row, so it must be written first.
     ores::{{component}}::repository::{{parent_entity_singular}}_repository {{var}}_repo;
     {{var}}_repo.write(party_ctx, {{var}});
     {{parent_var}}.{{column}} = {{var}}.{{target_column}};

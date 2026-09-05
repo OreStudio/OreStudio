@@ -634,7 +634,6 @@ void ComputeConsoleWindow::on_new_app_version() {
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
-    dlg->setHttpBaseUrl(http_base_url_);
     dlg->setVersion(version);
     dlg->setCreateMode(true);
     connect(dlg, &AppVersionDetailDialog::app_versionSaved, this, [this](const QString&) {
@@ -658,7 +657,6 @@ void ComputeConsoleWindow::on_new_work_unit() {
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
-    dlg->setHttpBaseUrl(http_base_url_);
     dlg->setCreateMode(true);
     connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) { refresh(); });
     show_detail_as_window(dlg, tr("New Work Unit"));
@@ -817,7 +815,6 @@ void ComputeConsoleWindow::on_task_double_clicked(const QModelIndex& index) {
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
-    dlg->setHttpBaseUrl(http_base_url_);
     dlg->setWorkunit(task->workunit);
     dlg->setCreateMode(false);
     connect(dlg, &WorkunitDetailDialog::workunitSaved, this, [this](const QString&) { refresh(); });
@@ -857,7 +854,6 @@ void ComputeConsoleWindow::on_app_version_double_clicked(const QModelIndex& inde
     dlg->setClientManager(client_manager_);
     dlg->setUsername(client_manager_ ? client_manager_->currentUsername() : "");
     dlg->setChangeReasonCache(change_reason_cache_);
-    dlg->setHttpBaseUrl(http_base_url_);
     // setCreateMode() must precede setVersion(): setVersion() gates its
     // loadAssignedPlatforms() fetch on !createMode_, which defaults to
     // true, so calling it before setCreateMode(false) silently skipped

@@ -20,6 +20,7 @@
 #include "ores.qt/UploadEnginesDialog.hpp"
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
+#include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.client/client/package_publisher.hpp"

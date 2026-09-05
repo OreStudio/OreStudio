@@ -86,8 +86,6 @@ void ComputePlugin::on_login(const plugin_context& ctx) {
                                                                    ctx_.change_reason_cache,
                                                                    ctx_.username,
                                                                    this);
-    if (!ctx_.http_base_url.empty())
-        appVersionController_->setHttpBaseUrl(ctx_.http_base_url);
     connectControllerSignals(appVersionController_.get());
 
     computeDashboardController_ = std::make_unique<ComputeDashboardController>(

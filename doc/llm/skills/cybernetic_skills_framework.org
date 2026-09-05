@@ -64,10 +64,6 @@ On this criterion the failures fall into three classes.
 | Misapplied default   | The agent holds variety, but the general case rather than this one | A generally correct procedure applied where local practice differs | Constrain choice and order |
 | Unattenuated variety | Variety presented exceeds what the regulator can use               | Poor selection from a large undifferentiated catalogue             | Reduce the variety shown   |
 
-The class is named for the holder because this document uses /model/ in the
-theorem's sense at two levels, and the two must not be confused. An absent
-domain model is the agent's, not the framework's.
-
 The classification is informative in one respect the surface descriptions
 conceal. The first and third failures constitute a single class. In both, the
 agent acts without a fact it required; they differ only in why the fact was

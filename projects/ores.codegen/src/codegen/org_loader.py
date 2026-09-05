@@ -839,9 +839,15 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     # integration test cannot call a generated synthetic generator for
     # it, so the org supplies the seed code verbatim. Emitted by
     # cpp_nats_integration_test.cpp.mustache in place of the auto
-    # parent seeding, which only fires for org-resolved parents.
+    # parent seeding, which only fires for org-resolved parents. The
+    # sibling ``parent_seed_includes`` block names the headers the
+    # snippet needs: the auto include emission derives its paths from
+    # the parent's org metadata, which by definition does not exist
+    # here.
     if "parent_seed" in node.src_blocks:
         out["parent_seed_snippet"] = node.src_blocks["parent_seed"]
+    if "parent_seed_includes" in node.src_blocks:
+        out["parent_seed_includes"] = node.src_blocks["parent_seed_includes"]
     return out
 
 

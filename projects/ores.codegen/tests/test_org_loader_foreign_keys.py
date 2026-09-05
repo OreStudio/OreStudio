@@ -82,6 +82,11 @@ def test_parent_seed_block_becomes_parent_seed_snippet():
 :error_message: Invalid account_id: %.
 :END:
 
+#+begin_src cpp :name parent_seed_includes
+#include "ores.iam.api/generators/account_generator.hpp"
+#include "ores.iam.core/repository/account_repository.hpp"
+#+end_src
+
 #+begin_src cpp :name parent_seed
     auto account_id_parent = generate_synthetic_account(ctx);
     account_id_parent_repo.write(account_id_parent);
@@ -91,6 +96,13 @@ def test_parent_seed_block_becomes_parent_seed_snippet():
     )
     assert fk["parent_seed_snippet"].startswith("    auto account_id_parent")
     assert "v.account_id = account_id_parent.id;" in fk["parent_seed_snippet"]
+    # The sibling block names the snippet's headers: the auto include
+    # emission derives its paths from the parent's org metadata, which
+    # a hand-authored table does not have.
+    assert "#include \"ores.iam.api/generators/account_generator.hpp\"" in (
+        fk["parent_seed_includes"])
+    assert "#include \"ores.iam.core/repository/account_repository.hpp\"" in (
+        fk["parent_seed_includes"])
 
 
 def test_fk_without_parent_seed_block_has_no_snippet():

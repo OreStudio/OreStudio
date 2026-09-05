@@ -74,6 +74,14 @@
 {{/parent_required_fks}}
 {{/parent_is_party}}
 {{/parent_entity_singular}}
+{{#parent_seed_snippet}}
+{{#parent_seed_includes}}
+// Parent-seed snippet includes ({{table}}): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
+{{{parent_seed_includes}}}
+{{/parent_seed_includes}}
+{{/parent_seed_snippet}}
 {{/nullable}}
 {{/foreign_keys}}
 #include "ores.testing/make_generation_context.hpp"

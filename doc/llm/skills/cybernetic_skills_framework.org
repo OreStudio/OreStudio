@@ -64,13 +64,17 @@ On this criterion the failures fall into three classes.
 | Misapplied default   | The agent holds variety, but the general case rather than this one | A generally correct procedure applied where local practice differs | Constrain choice and order |
 | Unattenuated variety | Variety presented exceeds what the regulator can use               | Poor selection from a large undifferentiated catalogue             | Reduce the variety shown   |
 
-The classification is informative in one respect the surface descriptions
-conceal. The first and third failures constitute a single class. In both, the
-agent acts without a fact it required; they differ only in why the fact was
-absent, being available and unloaded in the one case and absent from training in
-the other. One remedy answers both, and the difference between them determines
-its form rather than its kind. The first requires an obligation to load what
-exists. The second requires that the construct be declared before there is
+Two of those four descriptions are the same failure. An agent that asserts an
+unverified domain fact and an agent that cannot apply a convention we invented
+have both acted without a fact they needed.
+
+They differ in why the fact was missing. The domain fact exists in a knowledge
+document and was not loaded. The convention could not have been known at all,
+because this project invented it.
+
+That difference changes the form of the remedy and not its kind. Both require
+the fact to be supplied. The first requires an obligation to load what already
+exists. The second requires the convention to be written down before there is
 anything to load.
 
 The three classes organise what follows. The first two are answered by classes

@@ -69,6 +69,34 @@ struct reap_work_message {
     static constexpr std::string_view nats_subject = "compute.v1.work.reap";
 };
 
+/**
+ * @brief Submits a finished job from a wrapper node back to the service.
+ *
+ * Subject: compute.v1.results.submit
+ *
+ * This is the wrapper-to-service machine channel, kept distinct from the
+ * generated save_result CRUD flow: wrapper nodes hold no user JWT, so the
+ * user-session-gated save flow rejects them. Like the heartbeat, the submit
+ * is trusted at the transport layer (mTLS + per-environment subjects). The
+ * bind of the result entity to profiles rerouted the wrapper through
+ * save_result and the grid's terminal leg stopped working; this type lives
+ * in the hand-written protocol file so regeneration cannot remove it.
+ */
+struct submit_result_request {
+    using response_type = struct submit_result_response;
+    static constexpr std::string_view nats_subject = "compute.v1.results.submit";
+    std::string result_id;
+    std::string host_id;     // UUID string of the wrapper node that ran the job
+    std::string output_uri;  // where the result archive was uploaded
+    int outcome = 0;         // 1=Success, 3=ClientError, 4=NoReply
+    std::string error_message; // human-readable failure reason; empty on success
+};
+
+struct submit_result_response {
+    bool success = false;
+    std::string message;
+};
+
 }
 
 #endif

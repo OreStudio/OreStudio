@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-compute:
 #+owner: marco
 #+branch: feature/bind-compute-entities-to-profiles
-#+pr:
+#+pr: 2012
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -225,7 +225,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2012][#2012]] | [compute,codegen] Bind compute entities to profiles, zero-diff regen |
 
 * Review
 

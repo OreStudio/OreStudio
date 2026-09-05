@@ -133,27 +133,27 @@ TEST_CASE("write_result_publishes_nats_changed_event", tags) {
     // matches no active row, so the parent must be written first.
     auto workunit_id_parent = ores::compute::generators::generate_synthetic_workunit(ctx);
     workunit_id_parent.change_reason_code = "system.test";
+    auto batch_id_parent = ores::compute::generators::generate_synthetic_batch(ctx);
+    batch_id_parent.change_reason_code = "system.test";
+    auto app_id_parent = ores::compute::generators::generate_synthetic_app(ctx);
+    app_id_parent.change_reason_code = "system.test";
+    auto app_version_id_parent = ores::compute::generators::generate_synthetic_app_version(ctx);
+    app_version_id_parent.change_reason_code = "system.test";
     // Seed the active batch row ores_compute_batches_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    auto batch_id_parent = ores::compute::generators::generate_synthetic_batch(ctx);
-    batch_id_parent.change_reason_code = "system.test";
     ores::compute::repository::batch_repository batch_id_parent_repo;
     batch_id_parent_repo.write(party_ctx, batch_id_parent);
     workunit_id_parent.batch_id = batch_id_parent.id;
     // Seed the active app row ores_compute_apps_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    auto app_id_parent = ores::compute::generators::generate_synthetic_app(ctx);
-    app_id_parent.change_reason_code = "system.test";
     ores::compute::repository::app_repository app_id_parent_repo;
     app_id_parent_repo.write(party_ctx, app_id_parent);
     app_version_id_parent.app_id = app_id_parent.id;
     // Seed the active app_version row ores_compute_app_versions_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    auto app_version_id_parent = ores::compute::generators::generate_synthetic_app_version(ctx);
-    app_version_id_parent.change_reason_code = "system.test";
     ores::compute::repository::app_version_repository app_version_id_parent_repo;
     app_version_id_parent_repo.write(party_ctx, app_version_id_parent);
     workunit_id_parent.app_version_id = app_version_id_parent.id;

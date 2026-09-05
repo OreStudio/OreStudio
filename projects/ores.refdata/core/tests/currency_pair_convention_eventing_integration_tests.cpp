@@ -134,28 +134,28 @@ TEST_CASE("write_currency_pair_convention_publishes_nats_changed_event", tags) {
     // matches no active row, so the parent must be written first.
     auto pair_code_parent = ores::refdata::generators::generate_synthetic_currency_pair(ctx);
     pair_code_parent.change_reason_code = "system.test";
+    auto base_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
+    base_currency_parent.change_reason_code = "system.test";
+    auto quote_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
+    quote_currency_parent.change_reason_code = "system.test";
+    auto classification_parent =
+        ores::refdata::generators::generate_synthetic_currency_pair_classification(ctx);
+    classification_parent.change_reason_code = "system.test";
     // Seed the active currency row ores_refdata_currencies_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    auto base_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    base_currency_parent.change_reason_code = "system.test";
     ores::refdata::repository::currency_repository base_currency_parent_repo;
     base_currency_parent_repo.write(party_ctx, base_currency_parent);
     pair_code_parent.base_currency = base_currency_parent.iso_code;
     // Seed the active currency row ores_refdata_currencies_tbl references:
     // the referencing row's insert trigger rejects a synthetic key that
     // matches no active row, so it must be written first.
-    auto quote_currency_parent = ores::refdata::generators::generate_synthetic_currency(ctx);
-    quote_currency_parent.change_reason_code = "system.test";
     ores::refdata::repository::currency_repository quote_currency_parent_repo;
     quote_currency_parent_repo.write(party_ctx, quote_currency_parent);
     pair_code_parent.quote_currency = quote_currency_parent.iso_code;
     // Seed the active currency_pair_classification row
     // ores_refdata_currency_pair_classifications_tbl references: the referencing row's insert
     // trigger rejects a synthetic key that matches no active row, so it must be written first.
-    auto classification_parent =
-        ores::refdata::generators::generate_synthetic_currency_pair_classification(ctx);
-    classification_parent.change_reason_code = "system.test";
     ores::refdata::repository::currency_pair_classification_repository classification_parent_repo;
     classification_parent_repo.write(party_ctx, classification_parent);
     pair_code_parent.classification = classification_parent.code;

@@ -11,6 +11,7 @@
 #+name: trading
 #+full_name: ores.trading
 #+brief: Trading domain component
+#+component_kind: composite
 
 * Summary
 

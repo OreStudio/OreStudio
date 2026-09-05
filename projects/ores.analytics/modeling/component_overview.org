@@ -11,6 +11,7 @@
 #+name: analytics
 #+full_name: ores.analytics
 #+brief: Analytics and pricing model component
+#+component_kind: composite
 
 * Summary
 

@@ -38,6 +38,13 @@
 # no business-unit reference to query this from post-publish.
 - ores_dq_
 
+# The account_party junction's soft-FK validation
+# (ores_iam_account_parties_insert_fn) reads the party row in
+# ores_refdata_parties_tbl under the plain invoker idiom; the legacy
+# SECURITY DEFINER attribute regeneration dropped made this grant
+# load-bearing (see iam_account_party_create.sql).
+- ores_refdata_
+
 ** Execute prefixes
 
 # Security-definer function that reads the system-tenant template image

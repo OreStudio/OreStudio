@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-iam:
 #+owner: marco
 #+branch: feature/bind-iam-entities-to-profiles
-#+pr:
+#+pr: 2014
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -185,7 +185,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2014][#2014]] | [iam,codegen] Bind iam entities to profiles, zero-diff regen |
 
 * Review
 

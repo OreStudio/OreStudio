@@ -91,7 +91,6 @@ void HostDetailDialog::setupConnections() {
     connect(ui_->closeButton, &QPushButton::clicked, this, &HostDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &HostDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &HostDetailDialog::onFieldChanged);
 }
 
 void HostDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -127,14 +126,12 @@ void HostDetailDialog::markDirty() {
 void HostDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
-    ui_->nameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void HostDetailDialog::updateUiFromHost() {
     ui_->codeEdit->setText(QString::fromStdString(host_.external_id));
-    ui_->nameEdit->setText(QString::fromStdString(host_.name));
 
     populateProvenance(host_.version,
                        host_.modified_by,
@@ -151,7 +148,6 @@ void HostDetailDialog::updateHostFromUi() {
     if (createMode_) {
         host_.external_id = ui_->codeEdit->text().trimmed().toStdString();
     }
-    host_.name = ui_->nameEdit->text().trimmed().toStdString();
     host_.modified_by = username_;
 }
 
@@ -172,9 +168,8 @@ void HostDetailDialog::updateSaveButtonState() {
 
 bool HostDetailDialog::validateInput() {
     const QString external_id_val = ui_->codeEdit->text().trimmed();
-    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !external_id_val.isEmpty() && !name_val.isEmpty();
+    return true && !external_id_val.isEmpty();
 }
 
 void HostDetailDialog::onSaveClicked() {

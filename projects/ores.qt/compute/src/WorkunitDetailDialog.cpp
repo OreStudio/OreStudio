@@ -91,7 +91,6 @@ void WorkunitDetailDialog::setupConnections() {
     connect(ui_->closeButton, &QPushButton::clicked, this, &WorkunitDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &WorkunitDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &WorkunitDetailDialog::onFieldChanged);
 }
 
 void WorkunitDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -127,14 +126,12 @@ void WorkunitDetailDialog::markDirty() {
 void WorkunitDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
-    ui_->nameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void WorkunitDetailDialog::updateUiFromWorkunit() {
     ui_->codeEdit->setText(QString::fromStdString(workunit_.input_uri));
-    ui_->nameEdit->setText(QString::fromStdString(workunit_.name));
 
     populateProvenance(workunit_.version,
                        workunit_.modified_by,
@@ -151,7 +148,6 @@ void WorkunitDetailDialog::updateWorkunitFromUi() {
     if (createMode_) {
         workunit_.input_uri = ui_->codeEdit->text().trimmed().toStdString();
     }
-    workunit_.name = ui_->nameEdit->text().trimmed().toStdString();
     workunit_.modified_by = username_;
 }
 
@@ -172,9 +168,8 @@ void WorkunitDetailDialog::updateSaveButtonState() {
 
 bool WorkunitDetailDialog::validateInput() {
     const QString input_uri_val = ui_->codeEdit->text().trimmed();
-    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !input_uri_val.isEmpty() && !name_val.isEmpty();
+    return true && !input_uri_val.isEmpty();
 }
 
 void WorkunitDetailDialog::onSaveClicked() {

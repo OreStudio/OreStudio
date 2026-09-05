@@ -91,7 +91,6 @@ void BatchDetailDialog::setupConnections() {
     connect(ui_->closeButton, &QPushButton::clicked, this, &BatchDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &BatchDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &BatchDetailDialog::onFieldChanged);
 }
 
 void BatchDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -127,14 +126,12 @@ void BatchDetailDialog::markDirty() {
 void BatchDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
-    ui_->nameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void BatchDetailDialog::updateUiFromBatch() {
     ui_->codeEdit->setText(QString::fromStdString(batch_.external_ref));
-    ui_->nameEdit->setText(QString::fromStdString(batch_.name));
 
     populateProvenance(batch_.version,
                        batch_.modified_by,
@@ -151,7 +148,6 @@ void BatchDetailDialog::updateBatchFromUi() {
     if (createMode_) {
         batch_.external_ref = ui_->codeEdit->text().trimmed().toStdString();
     }
-    batch_.name = ui_->nameEdit->text().trimmed().toStdString();
     batch_.modified_by = username_;
 }
 
@@ -172,9 +168,8 @@ void BatchDetailDialog::updateSaveButtonState() {
 
 bool BatchDetailDialog::validateInput() {
     const QString external_ref_val = ui_->codeEdit->text().trimmed();
-    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !external_ref_val.isEmpty() && !name_val.isEmpty();
+    return true && !external_ref_val.isEmpty();
 }
 
 void BatchDetailDialog::onSaveClicked() {

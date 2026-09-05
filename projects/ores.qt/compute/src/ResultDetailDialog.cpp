@@ -91,7 +91,6 @@ void ResultDetailDialog::setupConnections() {
     connect(ui_->closeButton, &QPushButton::clicked, this, &ResultDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &ResultDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &ResultDetailDialog::onFieldChanged);
 }
 
 void ResultDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -127,14 +126,12 @@ void ResultDetailDialog::markDirty() {
 void ResultDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
-    ui_->nameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void ResultDetailDialog::updateUiFromResult() {
     ui_->codeEdit->setText(QString::fromStdString(result_.modified_by));
-    ui_->nameEdit->setText(QString::fromStdString(result_.name));
 
     populateProvenance(result_.version,
                        result_.modified_by,
@@ -151,7 +148,6 @@ void ResultDetailDialog::updateResultFromUi() {
     if (createMode_) {
         result_.modified_by = ui_->codeEdit->text().trimmed().toStdString();
     }
-    result_.name = ui_->nameEdit->text().trimmed().toStdString();
     result_.modified_by = username_;
 }
 
@@ -172,9 +168,8 @@ void ResultDetailDialog::updateSaveButtonState() {
 
 bool ResultDetailDialog::validateInput() {
     const QString modified_by_val = ui_->codeEdit->text().trimmed();
-    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !modified_by_val.isEmpty() && !name_val.isEmpty();
+    return true && !modified_by_val.isEmpty();
 }
 
 void ResultDetailDialog::onSaveClicked() {

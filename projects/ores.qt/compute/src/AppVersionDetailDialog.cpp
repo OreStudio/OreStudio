@@ -92,7 +92,6 @@ void AppVersionDetailDialog::setupConnections() {
     connect(ui_->closeButton, &QPushButton::clicked, this, &AppVersionDetailDialog::onCloseClicked);
 
     connect(ui_->codeEdit, &QLineEdit::textChanged, this, &AppVersionDetailDialog::onCodeChanged);
-    connect(ui_->nameEdit, &QLineEdit::textChanged, this, &AppVersionDetailDialog::onFieldChanged);
 }
 
 void AppVersionDetailDialog::setClientManager(ClientManager* clientManager) {
@@ -128,14 +127,12 @@ void AppVersionDetailDialog::markDirty() {
 void AppVersionDetailDialog::setReadOnly(bool readOnly) {
     readOnly_ = readOnly;
     ui_->codeEdit->setReadOnly(true);
-    ui_->nameEdit->setReadOnly(readOnly);
     ui_->saveButton->setVisible(!readOnly);
     ui_->deleteButton->setVisible(!readOnly);
 }
 
 void AppVersionDetailDialog::updateUiFromVersion() {
     ui_->codeEdit->setText(QString::fromStdString(app_version_.wrapper_version));
-    ui_->nameEdit->setText(QString::fromStdString(app_version_.name));
 
     populateProvenance(app_version_.version,
                        app_version_.modified_by,
@@ -152,7 +149,6 @@ void AppVersionDetailDialog::updateVersionFromUi() {
     if (createMode_) {
         app_version_.wrapper_version = ui_->codeEdit->text().trimmed().toStdString();
     }
-    app_version_.name = ui_->nameEdit->text().trimmed().toStdString();
     app_version_.modified_by = username_;
 }
 
@@ -173,9 +169,8 @@ void AppVersionDetailDialog::updateSaveButtonState() {
 
 bool AppVersionDetailDialog::validateInput() {
     const QString wrapper_version_val = ui_->codeEdit->text().trimmed();
-    const QString name_val = ui_->nameEdit->text().trimmed();
 
-    return true && !wrapper_version_val.isEmpty() && !name_val.isEmpty();
+    return true && !wrapper_version_val.isEmpty();
 }
 
 void AppVersionDetailDialog::onSaveClicked() {

@@ -1,0 +1,213 @@
+:PROPERTIES:
+:ID: 180D0EB5-C08A-4C96-B266-3DF593E8F5E3
+:END:
+#+title: Review and write academic prose
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:writing:academic:
+#+created: 2026-09-05
+#+updated: 2026-09-05
+
+#+begin_export markdown
+---
+name: doc-review-academic
+description: Layered review of argumentative documentation: claim, spine, paragraph, sentence, term, evidence, honesty.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Use this skill when writing or reviewing an org-roam document that makes
+an argument: knowledge, meta, investigation and design documents. It is
+the mandated style for that corpus.
+
+Do not use it for an agent's replies to a person, which follow
+[[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][ASD-STE100]], nor for skills, memories and specifications, which are
+written for agents to execute.
+
+* How to use this skill
+
+Review in the order below and stop at the first layer that fails.
+Structure governs sentences and sentences govern words, so repairing a
+clause inside a paragraph that has no point is wasted work.
+
+Report findings per layer. Do not rewrite the document unless asked;
+the author keeps the judgement.
+
+** 1. Claim
+
+State the document's claim in one sentence, using only what the document
+says.
+
+If you cannot, the document has no claim and every later layer is
+premature. A document that surveys without concluding is a reference,
+and belongs under a different standard.
+
+** 2. Spine
+
+For each section, say in one clause which move it makes toward the
+claim. Swales' three moves name the usual sequence: establish the
+territory, establish the niche, occupy the niche.
+
+- A section you can only describe as "it lists X" is not arguing.
+- A section whose move duplicates its neighbour's should merge.
+- A finding stated before the evidence that produces it is asserted, not
+  derived. Move it after.
+
+** 3. Paragraph
+
+State each paragraph's single idea. Two ideas means split it. No idea
+means cut it.
+
+The first sentence carries that idea. A paragraph opening on
+meta-commentary about the document, rather than on its subject, has
+buried its point by one sentence.
+
+** 4. Sentence
+
+Gopen and Swan's reader-expectation rules. Each has a mechanical test.
+
+#+ATTR_HTML: :class hug-leading
+| Rule                   | Test                                                       |
+|------------------------+------------------------------------------------------------|
+| Topic position         | Does the opening name what the sentence is about?          |
+| Stress position        | Does the ending carry what the reader should remember?     |
+| Old before new         | Does known material precede the new claim?                 |
+| Subject and verb close | Count the words between them; over about seven, rewrite    |
+| Action in the verb     | Find nominalisations and turn them back into verbs         |
+
+Two further rules earn their place in this corpus.
+
+- *Every referring expression resolves once.* "The first", "the second",
+  "it", "them", "this". Each must have exactly one antecedent a reader
+  can find without counting back through a list. An ordinal referring to
+  an unnamed list is the commonest failure here; name the thing instead.
+- *No chained pronouns.* Two referring expressions in one sentence, each
+  pointing at a different antecedent, is one too many.
+
+** 5. Term
+
+List every term the document uses more than three times. For each, state
+its one referent.
+
+- A term with two referents is either split into two terms, or the
+  document says which is meant at each use.
+- A term the corpus already owns keeps the corpus meaning. Check the
+  [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] before coining.
+- One name per thing, throughout. Rewording an unchanged idea teaches
+  the reader a second thing that does not exist.
+
+** 6. Evidence
+
+Every claim is derived from something stated, cited to a source, or
+labelled as unsupported. There is no fourth option.
+
+- Verify each citation against the source before it lands. Author, year,
+  venue and page.
+- Attribute the argument to whoever made it, not to whoever is more
+  famous.
+- An aphorism is not a premise. "A definition admitting everything
+  discriminates nothing" argues by maxim; state the criterion instead.
+
+** 7. Honesty
+
+- State limits rather than leaving a reader to infer them.
+- Claim no more than the evidence carries. Where a mechanism only
+  advises, say it advises.
+- State current or target state, never the difference from an earlier
+  draft. A document does not narrate its own writing.
+- An aside earns a note box only when it is genuinely tangential. A box
+  explaining the document's relationship to another document is a
+  symptom, not an aside.
+
+* Worked example
+
+Before, from an early draft of [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]:
+
+#+begin_quote
+The classification is informative in one respect the surface
+descriptions conceal. The first and third failures constitute a single
+class. In both, the agent acts without a fact it required; they differ
+only in why the fact was absent, being available and unloaded in the one
+case and absent from training in the other. One remedy answers both, and
+the difference between them determines its form rather than its kind.
+The first requires an obligation to load what exists. The second
+requires that the construct be declared before there is anything to
+load.
+#+end_quote
+
+After:
+
+#+begin_quote
+Two of those four descriptions are the same failure. An agent that
+asserts an unverified domain fact and an agent that cannot apply a
+convention we invented have both acted without a fact they needed.
+
+They differ in why the fact was missing. The domain fact exists in a
+knowledge document and was not loaded. The convention could not have
+been known at all, because this project invented it.
+
+That difference changes the form of the remedy and not its kind. Both
+require the fact to be supplied. The first requires an obligation to
+load what already exists. The second requires the convention to be
+written down before there is anything to load.
+#+end_quote
+
+The failures, by layer.
+
+- *Paragraph.* The first sentence is meta-commentary about the
+  classification, so the point arrives one sentence late.
+- *Sentence, topic position.* That sentence opens on "the
+  classification" while the paragraph is about two failures being one.
+- *Sentence, stress position.* It ends on "conceal", which the reader
+  does not need to remember.
+- *Sentence, referring expressions.* "The first and third failures"
+  needs the reader to count back through an unnumbered list of four. The
+  rewrite names them.
+- *Sentence, chained pronouns.* "they differ", "them" and "its" chain
+  across one sentence with different antecedents.
+- *Term.* "Failures", "classes" and "descriptions" appear for
+  overlapping things without the document saying whether they differ.
+- *Sentence, action in the verb.* "Constitute a single class" is a
+  nominalisation of "are the same failure".
+
+* Recipes
+
+- [[id:D4E65EF1-54F4-47E1-9388-58BE9E36FBE3][How do I create a recipe?]] — the doc contract this skill reviews against.
+
+* Reference
+
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the structure of the corpus this skill governs.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the register of record for terms.
+- [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] — the standard for replies to a person.
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — =technical-writing= and =unslop=, which own
+  product documentation and slop patterns respectively.
+
+Sources. Gopen, G. D. and Swan, J. A. (1990). /The Science of Scientific
+Writing/. American Scientist 78(6), 550-558. Swales, J. M. (1990).
+/Genre Analysis: English in Academic and Research Settings/. Cambridge
+University Press.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -673,7 +673,8 @@ The placement procedure. Take the first match.
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
 Every skill, grouped by the regulatory function it offers. Populated when the
-classification task lands. # END generated inventory
+classification task lands.
+# END generated inventory
 
 * See also
 

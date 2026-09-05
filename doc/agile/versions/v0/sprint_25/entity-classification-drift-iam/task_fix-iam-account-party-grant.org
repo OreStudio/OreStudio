@@ -8,7 +8,7 @@
 #+filetags: :entity-classification-drift-iam:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-iam-account-party-grant
-#+pr:
+#+pr: 2016
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-05
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2016][#2016]] | [iam,sql] Grant iam_service select on refdata for the account_party soft FK |
 
 * Review
 

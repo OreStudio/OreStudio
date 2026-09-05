@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 77101559-5AE3-4390-94AC-65D88D866D63
+:END:
+#+title: Task: Fix the compute grid dispatch and wrapper result-submit channels dropped by the ores.compute bind
+#+description: Restore the two side effects bind PR #2012 dropped: the workunit dispatch seam in the service app layer and the trusted wrapper result-submit channel (compute.v1.results.submit) with its Validator and Assimilator.
+#+type: task
+#+level: s1
+#+filetags: :shell-compute-grid-management:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-compute-grid-dispatch
+#+pr: 2015
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-05
+#+updated: 2026-09-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bind PR #2012 (the ores.compute entity bind) replaced the hand-written
+workunit save path and the wrapper result reporting path with the
+generated CRUD service. Two side effects the grid depends on were lost
+in that replacement: the dispatch seam that publishes JetStream
+assignments for saved workunits, and the trusted result-submit channel
+wrappers report through (wrapper nodes hold no JWT, so the generated
+save_result CRUD rejects them). Post-merge, the smoke script this story
+owns failed: batches never drained and results never landed. Restore
+both channels in the hand-written files that per-entity regeneration
+cannot remove, and prove the grid drains again live.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-05                               |
+
+* Acceptance
+
+- Saved workunits are dispatched again: the service creates the result
+  row and publishes the JetStream assignment for platform x64-linux.
+- Wrapper nodes submit finished jobs over compute.v1.results.submit and
+  the service accepts them without a user session; results land with
+  server_state Done and outcome Success.
+- The Validator sets canonical_result_id at target redundancy and the
+  Assimilator closes the batch when every workunit is canonical.
+- Live smoke on brave_hopper: 10/10 results success and every online
+  host exercised (SMOKE PASS).
+- Full build clean; ctest 71/71 green; roundtrip and drift checks
+  clean.
+
+* Plan
+
+Restore each dropped channel in the hand-written files that per-entity
+codegen regeneration cannot remove: the machine protocol structs belong
+in work_protocol.hpp (result_protocol.hpp regenerates on every bind), the
+trusted handler is a new header beside the hand-written work_handler.hpp,
+its subscription goes in the aggregate registrar.cpp next to the heartbeat
+and report-submit blocks, and the dispatch seam lives in the service app
+layer, subscribed to the in-process event bus before event_source.start().
+The wrapper call site returns to the submit protocol; the handler replies
+a typed envelope on every path (never error_reply), so a rejected request
+can never again surface as a wrapper decode failure. Verify with a full
+build and ctest, then redeploy the fleet and run the story's smoke script
+live: dispatch, drain, and assert every online host was exercised.
+
+* Notes
+
+Found by the post-merge system test of the compute/iam bind PRs (the
+ores.shell-only test program). Placed in this story because it is the
+sprint's open compute-grid story and its smoke script is the artifact
+that caught the regression; the parent bind story
+[[id:1D13F6BF-DD96-40AC-9286-BD540D94FA75][ores.compute drift story]] is
+closed. The fix commits and PR description carry the full finding
+write-up.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2015][#2015]] | [ores.compute] Restore grid dispatch and result-submit channels |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Restored both channels on brave_hopper and proved the grid drains.
+
+- Finding #4 (dispatch): the service app layer regains workunit_dispatcher,
+  an event_bus subscriber that creates the result row and publishes the
+  JetStream assignment for shell-saved workunits, constructed before
+  event_source.start() so no change event is missed.
+- Finding #5 (result submit): the wrapper reports over the trusted
+  compute.v1.results.submit channel again — submit_result_request /
+  submit_result_response in the hand-written work_protocol.hpp, the
+  trusted result_submit_handler (no verifier, heartbeat-grade transport
+  trust), its queue subscription in the aggregate registrar.cpp, and the
+  reverted wrapper call site. The handler stamps the audit fields, runs
+  the Validator (canonical_result_id at target redundancy) and the
+  Assimilator (batch closed when all workunits canonical), and replies a
+  typed envelope so wrapper decode failures cannot recur.
+
+Verification: build clean (linux-clang-debug-make); ctest 71/71 green;
+roundtrip clean; cmake-sources drift clean for ores.compute (12 stale
+lists elsewhere pre-date this branch — untracked codegen residue in six
+other components, untouched here); codegen drift regenerates
+refdata/reporting/marketdata byte-identical. Live smoke on brave_hopper
+(smoke-fix3): SMOKE PASS — results 10/10 success, 5/5 online hosts
+exercised, canonical ids set, batch closed by the Assimilator. The
+system-test residue (smoke-fix1's ten state-2 rows, the st250905 dead
+batch, the stale queue consumer, the post-restart settle transient) is
+recorded in the post-merge system-test report (#79): smoke-fix1's ten
+state-2 rows are inert (pre-fix submit failures; the reaper only re-queues
+state 4), and the fleet needs a settle period after restart before the
+JetStream queue group covers every member (smoke-fix2 hit 3/5 hosts).

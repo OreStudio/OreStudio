@@ -18,7 +18,8 @@ current catalogue disagree, the catalogue is what runs.
 * Summary
 
 Verification establishes whether a claim about the work is true, and it is how
-this framework obtains its error signal. A [[id:F5CB5A45-6557-410B-9E4F-542957561A16][declaration]] states the target
+this framework obtains its error signal. A
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][declaration]] states the target
 state, a recording registers the state reached, and verification is what
 establishes the difference between them. A regulator with no error signal does
 not regulate, which is why the rungs below are obligations rather than good
@@ -65,7 +66,8 @@ generator improvement that every other component wants inside a feature
 nobody else is reading.
 
 A hand-written workaround for a generator gap is the failure this rung
-exists to prevent. See [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
+exists to prevent. See [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the
+template, never the output]].
 
 ** Rung 1: Drift
 
@@ -137,9 +139,10 @@ only see pixels, so it cannot answer the question an agent actually has.
 A skill is a prompt, so changing one changes agent behaviour in a way
 reading the diff cannot show.
 
-The protocol is taken from pstack's eval playbook ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]]). One
-part of it does not transfer, for the reason recurring throughout this document:
-it wants a judge drawn from a different model family, and this project has one.
+The protocol is taken from pstack's eval playbook
+([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]]). One part
+of it does not transfer, for the reason recurring throughout this document: it
+wants a judge drawn from a different model family, and this project has one.
 
 ** The Observer Effect
 
@@ -243,7 +246,8 @@ it was used and the work landed.
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every independent checker, what it proves, and where it is enforced. Populated when the ladder lands.
+Every independent checker, what it proves, and where it is enforced. Populated
+when the ladder lands.
 # END generated inventory
 
 * See also

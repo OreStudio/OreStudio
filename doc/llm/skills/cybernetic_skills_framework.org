@@ -79,9 +79,10 @@ anything to load.
 
 The three classes organise what follows. The first two are answered by classes
 of document, derived under /Deriving the Functions/ below and set out in detail
-in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]; the obligation the first imposes is treated in
-[[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]. The third is answered by
-no document, since supplying further documents is what produced it, and is
+in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]; the
+obligation the first imposes is treated in
+[[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]. The third is answered
+by no document, since supplying further documents is what produced it, and is
 treated under /Variety Attenuation/.
 
 The classification is drawn from observation of practice in this project. It is
@@ -107,8 +108,9 @@ second kind, and this document specifies it as such.
 
 *** Cybernetic Foundations
 
-Cybernetics supplies the results this document relies upon, and [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]]
-states them in general form. Three are used here.
+Cybernetics supplies the results this document relies upon, and
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states them in general
+form. Three are used here.
 
 Wiener (1948) characterises regulation by a structure common to every substrate
 in which it occurs: a goal, a sensor that measures the present state, and a
@@ -132,7 +134,8 @@ and its model is the document type system. The agent regulates the work, and its
 model is the domain knowledge it holds. Both follow from the same theorem
 applied one level apart, and each use below names which is meant.
 
-Beer applied this apparatus to organisations in the [[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]], whose
+Beer applied this apparatus to organisations in the
+[[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]], whose
 recursive five-system architecture this project adopts as a lens rather than as
 a blueprint ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]).
 
@@ -140,8 +143,9 @@ a blueprint ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]).
 
 The literature on agent skills divides on what a skill is made of. One lineage
 stores executable routines; the other stores verbal lessons, and the =SKILL.md=
-format belongs to the second. [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] reviews both
-and treats the specification the format follows.
+format belongs to the second. [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills
+in the Compass Skill Framework]] reviews both and treats the specification the
+format follows.
 
 One result from that literature bears directly on the argument here. Liu et al.
 (2026) describe their apparatus not as an abstraction over the agent but as
@@ -163,10 +167,11 @@ identified before anything further can be said of it.
 
 The project is the viable system, in Beer's sense of a system that maintains
 itself. The agent is its operational element, System 1
-in Beer's numbering ([[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]]), and the remaining systems regulate it at
-progressively longer horizons. The skills framework is not itself one of those
-systems. It is the means by which their constraints reach the agent, and
-through which the agent's own conduct is constrained.
+in Beer's numbering ([[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]]),
+and the remaining systems regulate it at progressively longer horizons. The
+skills framework is not itself one of those systems. It is the means by which
+their constraints reach the agent, and through which the agent's own conduct is
+constrained.
 
 From this it follows the following: the framework does not regulate the
 codebase, the build, or the domain; instead, it regulates /conduct/. A document
@@ -206,10 +211,11 @@ what the framework regulates.
 
 *** What Is Not Regulated Is a Black Box
 
-[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] defines the black box as the practice of characterising a system by
-its inputs and outputs alone, without knowledge of its internal structure, and
-states the condition under which the practice is appropriate: when the internals
-are inaccessible, or irrelevant to the regulatory task.
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] defines the black box
+as the practice of characterising a system by its inputs and outputs alone,
+without knowledge of its internal structure, and states the condition under
+which the practice is appropriate: when the internals are inaccessible, or
+irrelevant to the regulatory task.
 
 The second condition applies to every tool the framework invokes and does not
 regulate. A compiler is characterised by what it is given and what it returns.
@@ -278,18 +284,21 @@ A declaration must be checkable, because a goal an outcome cannot be compared
 against yields no error, and a regulator with no error signal does not
 regulate.
 
-These classes are the *regulatory functions* ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). A regulatory function denotes a regulatory
-function and is answerable to that account.
+These classes are the *regulatory functions*
+([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). A
+regulatory function denotes a regulatory function and is answerable to that
+account.
 
 *** Consequences of the Derivation
 
 Three properties follow that a chosen taxonomy could not supply.
 
 The classes are motivated. Loading exists because a regulator must hold a model
-of what it regulates, which is the theorem, and [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] treats the obligation
+of what it regulates, which is the theorem, and
+[[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] treats the obligation
 this places on an agent before it acts. Convening exists because a regulator
-whose variety is insufficient must acquire more, and an independent judgement is
-variety the agent does not itself command.
+whose variety is insufficient must acquire more, and an independent judgement
+is variety the agent does not itself command.
 
 The classes are bounded. A candidate class must name a regulatory function, so
 the question whether some further class exists admits an answer rather than
@@ -325,8 +334,9 @@ presented to it has not been attenuated.
 Attenuation is therefore a structural obligation rather than an ergonomic
 preference. The framework attenuates by level: a session declares the system it
 acts as, and that declaration selects the portion of the catalogue in scope by
-default ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]). Nothing is forbidden, and an agent may reach beyond
-its level by saying so. What changes is what it is shown first.
+default ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]).
+Nothing is forbidden, and an agent may reach beyond its level by saying so.
+What changes is what it is shown first.
 
 ** Recursion
 
@@ -371,7 +381,9 @@ Ashby (1952) treats this case directly. An adaptive system requires a second and
 slower loop around the first: one that does not adjust the regulated variables
 but alters the structure of the regulator, and that acts only when the first
 loop fails to hold an essential variable within its bounds. He named the
-property *ultrastability*, and [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states it in general form.
+property *ultrastability*, and
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states it in general
+form.
 
 The distinction from homeostasis is what makes the property necessary here.
 Homeostasis maintains a variable against disturbances the regulator was built
@@ -459,7 +471,8 @@ Three limitations are stated here rather than left for a reader to infer.
 No baseline has been measured. The failures reported in /Observed Failures/ are
 drawn from practice and are not quantified, so no claim is made concerning the
 magnitude of any improvement the framework produces. Establishing such a
-baseline is prerequisite to any such claim ([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]).
+baseline is prerequisite to any such claim
+([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]).
 
 The correspondence with Beer's model is a lens and not an implementation. This
 project's five systems are named after his and do not discharge the obligations

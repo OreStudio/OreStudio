@@ -44,7 +44,8 @@ Survey every ores.compute entity against the profile catalogue, rebind matches, 
 * Plan
 
 Survey of all 8 models, the exclusion catalogue, and the strategy per the
-codegen drift loop (spec: [[id:...][codegen-drift-loop]]).
+codegen drift loop (spec:
+[[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]]).
 
 ** Survey
 

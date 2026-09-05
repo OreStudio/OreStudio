@@ -23,6 +23,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::iam::domain {
 
@@ -85,6 +86,16 @@ struct account_party final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for account_party, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const account_party&) {
+    return "ores.iam.account_party";
+}
 
 }
 

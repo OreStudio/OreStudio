@@ -19,7 +19,6 @@
  */
 #include "ores.iam.core/repository/tenant_mapper.hpp"
 #include "ores.database/repository/mapper_helpers.hpp"
-#include "ores.database/service/tenant_context.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -34,11 +33,14 @@ domain::tenant tenant_mapper::map(const tenant_entity& v) {
 
     domain::tenant r;
     r.version = v.version;
+    r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.id = boost::lexical_cast<boost::uuids::uuid>(v.id.value());
+
     r.code = v.code;
+
     r.name = v.name;
     r.type = v.type;
-    r.description = v.description;
+    r.description = v.description.value_or("");
     r.hostname = v.hostname;
     r.status = v.status;
     r.modified_by = v.modified_by;
@@ -55,15 +57,15 @@ tenant_entity tenant_mapper::map(const domain::tenant& v) {
     BOOST_LOG_SEV(lg(), trace) << "Mapping domain entity: " << v;
 
     tenant_entity r;
-    const auto id_str = boost::lexical_cast<std::string>(v.id);
-    r.id = id_str;
-    // All tenants are owned by the system tenant
-    r.tenant_id = database::service::tenant_context::system_tenant_id;
+    r.id = boost::uuids::to_string(v.id);
+    r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;
+
     r.code = v.code;
+
     r.name = v.name;
     r.type = v.type;
-    r.description = v.description;
+    r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
     r.hostname = v.hostname;
     r.status = v.status;
     r.modified_by = v.modified_by;

@@ -73,6 +73,7 @@ on "ores_iam_tenants_tbl" (id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 
+-- Unique hostname for active records
 create unique index if not exists tenants_hostname_uniq_idx
 on "ores_iam_tenants_tbl" (hostname)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -85,25 +86,11 @@ begin
     -- All tenants belong to the system tenant
     NEW.tenant_id := ores_utility_system_tenant_id_fn();
 
-    -- Validate type FK
-    if not exists (
-        select 1 from ores_iam_tenant_types_tbl
-        where type = NEW.type
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid tenant type: %. Must exist in ores_iam_tenant_types_tbl.',
-            NEW.type using errcode = '23503';
-    end if;
+    -- Validate type
+    NEW.type := ores_iam_validate_tenant_type_fn(NEW.tenant_id, NEW.type);
 
-    -- Validate status FK
-    if not exists (
-        select 1 from ores_iam_tenant_statuses_tbl
-        where status = NEW.status
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid tenant status: %. Must exist in ores_iam_tenant_statuses_tbl.',
-            NEW.status using errcode = '23503';
-    end if;
+    -- Validate status
+    NEW.status := ores_iam_validate_tenant_status_fn(NEW.tenant_id, NEW.status);
 
     -- Validate change_reason_code (use system tenant for tenants records)
     NEW.change_reason_code := ores_dq_validate_change_reason_fn(ores_utility_system_tenant_id_fn(), NEW.change_reason_code);
@@ -122,33 +109,38 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_iam_tenants_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_iam_tenants_insert_trg
 before insert on "ores_iam_tenants_tbl"
 for each row execute function ores_iam_tenants_insert_fn();
 
 create or replace rule ores_iam_tenants_delete_rule as
-on delete to "ores_iam_tenants_tbl" do instead
+on delete to "ores_iam_tenants_tbl" do instead (
     update "ores_iam_tenants_tbl"
-    set valid_to = current_timestamp,
+    set valid_to = clock_timestamp(),
         status = 'terminated'
     where id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

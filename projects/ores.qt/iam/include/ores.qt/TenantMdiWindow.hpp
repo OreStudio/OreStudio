@@ -25,13 +25,13 @@
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/ClientTenantModel.hpp"
 #include "ores.qt/EntityListMdiWindow.hpp"
+#include "ores.qt/PaginationWidget.hpp"
 #include <QSortFilterProxyModel>
 #include <QTableView>
 #include <QToolBar>
 
 namespace ores::qt {
 
-class BadgeCache;
 
 /**
  * @brief MDI window for displaying and managing tenants.
@@ -54,29 +54,31 @@ private:
 public:
     explicit TenantMdiWindow(ClientManager* clientManager,
                              const QString& username,
-                             BadgeCache* badgeCache = nullptr,
                              QWidget* parent = nullptr);
     ~TenantMdiWindow() override = default;
-
-public slots:
-    void doReload() override;
 
 signals:
     void statusChanged(const QString& message);
     void errorOccurred(const QString& error_message);
     void showTenantDetails(const iam::domain::tenant& tenant);
     void addNewRequested();
-    void onboardRequested();
     void tenantDeleted(const QString& code);
-    void tenantReset(const QString& code);
     void showTenantHistory(const iam::domain::tenant& tenant);
+    // Extra signal declarations seam: a future
+    // :implements 67D24D2F-2D98-49EB-9A1D-32F1D8BFA76A block is expected
+    // to declare any entity-specific signals (e.g. a cross-navigation
+    // request to a related entity's list window) — see
+    // paste_blocks_in_codegen.org. Left empty when no entity implements
+    // this kind.
 
 public slots:
     void addNew();
     void editSelected();
     void deleteSelected();
-    void resetSelected();
     void viewHistorySelected();
+
+protected:
+    void doReload() override;
 
 private slots:
     void onDataLoaded();
@@ -98,20 +100,18 @@ private:
 
     ClientManager* clientManager_;
     QString username_;
-    BadgeCache* badgeCache_;
 
     QToolBar* toolbar_;
     QTableView* tableView_;
     ClientTenantModel* model_;
     QSortFilterProxyModel* proxyModel_;
+    PaginationWidget* paginationWidget_;
 
     // Toolbar actions
     QAction* reloadAction_;
     QAction* addAction_;
-    QAction* onboardAction_;
     QAction* editAction_;
     QAction* deleteAction_;
-    QAction* resetAction_;
     QAction* historyAction_;
 };
 

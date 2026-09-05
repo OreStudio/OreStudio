@@ -20,13 +20,9 @@
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
-#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.core/repository/tenant_entity.hpp"
 #include "ores.iam.core/repository/tenant_mapper.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
-#include <algorithm>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::iam::repository {
@@ -40,142 +36,139 @@ std::string tenant_repository::sql() {
     return generate_create_table_sql<tenant_entity>(lg());
 }
 
-tenant_repository::tenant_repository(context ctx)
-    : ctx_(std::move(ctx)) {}
-
-void tenant_repository::write(const domain::tenant& tenant) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenant to database: " << tenant.name;
-
-    execute_write_query(ctx_, tenant_mapper::map(tenant), lg(), "writing tenant to database");
+void tenant_repository::write(context ctx, const domain::tenant& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenant. " << "id: " << v.id;
+    execute_write_query(ctx, tenant_mapper::map(v), lg(), "Writing tenant to database.");
 }
 
-void tenant_repository::write(const std::vector<domain::tenant>& tenants) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing tenants to database. Count: " << tenants.size();
-
-    execute_write_query(ctx_, tenant_mapper::map(tenants), lg(), "writing tenants to database");
+void tenant_repository::write(context ctx, const std::vector<domain::tenant>& v) {
+    BOOST_LOG_SEV(lg(), debug) << "Writing tenants. Count: " << v.size();
+    execute_write_query(ctx, tenant_mapper::map(v), lg(), "Writing tenants to database.");
 }
 
-std::vector<domain::tenant> tenant_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::tenant> tenant_repository::read_latest(context ctx) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("name"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c);
 
     return execute_read_query<tenant_entity, domain::tenant>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
         lg(),
         "Reading latest tenants");
 }
 
-std::vector<domain::tenant> tenant_repository::read_all_latest() {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all latest tenants including deleted";
-
-    const std::string sql = "SELECT * FROM ores_iam_read_all_latest_tenants_fn()";
-    const auto rows = execute_raw_multi_column_query(
-        ctx_, sql, lg(), "Reading all latest tenants including deleted");
-
-    std::vector<domain::tenant> result;
-    result.reserve(rows.size());
-
-    for (const auto& row : rows) {
-        if (row.size() >= 14 && row[0] && row[1] && row[2] && row[3] && row[4] && row[5] &&
-            row[7] && row[8] && row[9] && row[10] && row[11] && row[12]) {
-            domain::tenant t;
-            t.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-            t.version = std::stoi(*row[2]);
-            t.type = *row[3];
-            t.code = *row[4];
-            t.name = *row[5];
-            t.description = row[6].value_or("");
-            t.hostname = *row[7];
-            t.status = *row[8];
-            t.modified_by = *row[9];
-            t.change_reason_code = *row[10];
-            t.change_commentary = *row[11];
-            t.recorded_at = timestamp_to_timepoint(std::string_view{*row[12]});
-            result.push_back(std::move(t));
-        }
-    }
-
-    // Sort by name for consistent ordering
-    std::ranges::sort(result, [](const auto& a, const auto& b) { return a.name < b.name; });
-
-    BOOST_LOG_SEV(lg(), debug) << "Read all latest tenants. Total: " << result.size();
-    return result;
-}
-
-std::vector<domain::tenant> tenant_repository::read_latest(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant. ID: " << id;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
-    const auto id_str = boost::lexical_cast<std::string>(id);
+std::vector<domain::tenant> tenant_repository::read_latest(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("id"_c == id_str && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
 
     return execute_read_query<tenant_entity, domain::tenant>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
         lg(),
-        "Reading latest tenant by ID.");
+        "Reading latest tenant by id.");
 }
 
-std::vector<domain::tenant> tenant_repository::read_latest_by_code(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant by code: " << code;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+std::vector<domain::tenant> tenant_repository::read_all(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading all tenant versions. " << "id: " << id;
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("code"_c == code && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "id"_c == id) |
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<tenant_entity, domain::tenant>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
         lg(),
-        "Reading latest tenant by code.");
+        "Reading all tenant versions by id.");
+}
+
+std::optional<domain::tenant>
+tenant_repository::read_at_version(context ctx, const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading tenant at version. " << "id: " << id
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<tenant_entity>> |
+                       where("tenant_id"_c == tid && "id"_c == id && "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<tenant_entity, domain::tenant>(
+        ctx,
+        query,
+        [](const auto& entities) { return tenant_mapper::map(entities); },
+        lg(),
+        "Reading tenant at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
+void tenant_repository::remove(context ctx, const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing tenant. " << "id: " << id;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<tenant_entity> |
+                       where("tenant_id"_c == tid && "id"_c == id && "valid_to"_c == max.value());
+
+    execute_delete_query(ctx, query, lg(), "Removing tenant from database.");
 }
 
 std::vector<domain::tenant>
-tenant_repository::read_latest_by_hostname(const std::string& hostname) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenant by hostname: " << hostname;
-
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+tenant_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest tenants with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<tenant_entity>> |
-                       where("hostname"_c == hostname && "valid_to"_c == max.value());
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("id"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
 
     return execute_read_query<tenant_entity, domain::tenant>(
-        ctx_,
+        ctx,
         query,
         [](const auto& entities) { return tenant_mapper::map(entities); },
         lg(),
-        "Reading latest tenant by hostname.");
+        "Reading latest tenants with pagination.");
 }
 
-std::vector<domain::tenant> tenant_repository::read_history(const boost::uuids::uuid& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading tenant history. ID: " << id;
+std::uint32_t tenant_repository::get_total_tenant_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active tenant count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
 
-    const auto id_str = boost::lexical_cast<std::string>(id);
-    const auto query = sqlgen::read<std::vector<tenant_entity>> | where("id"_c == id_str) |
-                       order_by("valid_from"_c.desc());
+    struct count_result {
+        long long count;
+    };
 
-    return execute_read_query<tenant_entity, domain::tenant>(
-        ctx_,
-        query,
-        [](const auto& entities) { return tenant_mapper::map(entities); },
-        lg(),
-        "Reading tenant history.");
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::select_from<tenant_entity>(sqlgen::count().as<"count">()) |
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active tenant count: " << count;
+    return count;
 }
 
-void tenant_repository::remove(const boost::uuids::uuid& tenant_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing tenant from database: " << tenant_id;
-
-    // Delete the tenant - the database rule will close the temporal record
-    // instead of actually deleting it (sets valid_to = current_timestamp)
-    const auto id_str = boost::lexical_cast<std::string>(tenant_id);
-    const auto query = sqlgen::delete_from<tenant_entity> | where("id"_c == id_str);
-
-    execute_delete_query(ctx_, query, lg(), "removing tenant from database");
+void tenant_repository::remove(context ctx, const std::vector<std::string>& ids) {
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<tenant_entity> |
+                       where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
+    execute_delete_query(ctx, query, lg(), "Batch removing tenants.");
 }
+
 
 }

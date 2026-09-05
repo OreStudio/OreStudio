@@ -17,20 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_API_DOMAIN_TENANT_TABLE_HPP
-#define ORES_IAM_API_DOMAIN_TENANT_TABLE_HPP
+#ifndef ORES_IAM_CORE_PRESENTATION_TENANT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_IAM_CORE_PRESENTATION_TENANT_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.iam.api/domain/tenant.hpp"
-#include "ores.iam.api/export.hpp"
-#include <string>
+#include "ores.iam.core/export.hpp"
 #include <vector>
 
-namespace ores::iam::domain {
+namespace ores::iam::presentation {
 
 /**
- * @brief Converts tenants to the table format.
+ * @brief Renders a tenant to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<tenant>& v);
+[[nodiscard]] ORES_IAM_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_tenant_fields(const domain::tenant& v);
 
 }
 

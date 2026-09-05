@@ -24,12 +24,9 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/AbstractClientModel.hpp"
 #include "ores.qt/ClientManager.hpp"
-#include "ores.qt/ColumnMetadata.hpp"
 #include "ores.qt/RecencyPulseManager.hpp"
 #include "ores.qt/RecencyTracker.hpp"
-#include <QAbstractTableModel>
 #include <QFutureWatcher>
-#include <QSize>
 #include <vector>
 
 namespace ores::qt {
@@ -37,7 +34,7 @@ namespace ores::qt {
 /**
  * @brief Model for displaying tenants fetched from the server.
  *
- * This model extends QAbstractTableModel and fetches tenant
+ * This model extends AbstractClientModel and fetches tenant
  * data asynchronously using the ores.comms client.
  */
 class ClientTenantModel final : public AbstractClientModel {
@@ -68,87 +65,6 @@ public:
         ColumnCount
     };
 
-    /**
-     * @brief Column metadata: header text, style, visibility, and width.
-     *
-     * Order must match the Column enum.
-     */
-    static constexpr std::size_t kColumnCount = std::size_t(ColumnCount);
-    static constexpr std::array<ColumnMetadata, kColumnCount> kColumns = {{
-        {.column = Code,
-         .header = std::string_view("Code"),
-         .style = column_style::text_left,
-         .hidden_by_default = false,
-         .default_width = kColumnWidthAuto},
-        {.column = Name,
-         .header = std::string_view("Name"),
-         .style = column_style::text_left,
-         .hidden_by_default = false,
-         .default_width = kColumnWidthAuto},
-        {.column = Type,
-         .header = std::string_view("Type"),
-         .style = column_style::text_left,
-         .hidden_by_default = false,
-         .default_width = kColumnWidthAuto},
-        {.column = Hostname,
-         .header = std::string_view("Hostname"),
-         .style = column_style::text_left,
-         .hidden_by_default = false,
-         .default_width = kColumnWidthAuto},
-        {.column = Status,
-         .header = std::string_view("Status"),
-         .style = column_style::badge_centered,
-         .hidden_by_default = false,
-         .default_width = kColumnWidthAuto},
-        {.column = Version,
-         .header = std::string_view("Version"),
-         .style = column_style::mono_center,
-         .hidden_by_default = false,
-         .default_width = 70},
-        {.column = ModifiedBy,
-         .header = std::string_view("Modified By"),
-         .style = column_style::text_left,
-         .hidden_by_default = false,
-         .default_width = kColumnWidthAuto},
-        {.column = RecordedAt,
-         .header = std::string_view("Recorded At"),
-         .style = column_style::mono_left,
-         .hidden_by_default = false,
-         .default_width = kColumnWidthAuto},
-    }};
-
-    /**
-     * @brief Default window size for the tenant list window.
-     */
-    inline static const QSize kDefaultWindowSize = {900, 400};
-
-    /**
-     * @brief Settings group name for persisting window and column state.
-     */
-    static constexpr std::string_view kSettingsGroup = "TenantListWindow";
-
-    /**
-     * @brief Returns a static vector of column styles (built once per process).
-     */
-    static std::vector<column_style> const& columnStyles() {
-        static std::vector<column_style> const kStylesVector = []() {
-            std::vector<column_style> result;
-            result.reserve(kColumnCount);
-            for (std::size_t i = 0; i < kColumnCount; ++i)
-                result.push_back(kColumns[i].style);
-            return result;
-        }();
-        return kStylesVector;
-    }
-
-    /**
-     * @brief Returns a static QVector of hidden column indices (built once per process).
-     */
-    static QVector<int> defaultHiddenColumns() {
-        static QVector<int> const result = ::ores::qt::defaultHiddenColumns<kColumnCount>(kColumns);
-        return result;
-    }
-
     explicit ClientTenantModel(ClientManager* clientManager, QObject* parent = nullptr);
     ~ClientTenantModel() override = default;
 
@@ -172,14 +88,30 @@ public:
      */
     const iam::domain::tenant* getTenant(int row) const;
 
-signals:
-    /**
-     * @brief Emitted when data has been successfully loaded.
-     */
 
     /**
-     * @brief Emitted when an error occurs during data loading.
+     * @brief Load a specific page of data.
      */
+    void load_page(std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Get the page size used for pagination.
+     */
+    std::uint32_t page_size() const {
+        return page_size_;
+    }
+
+    /**
+     * @brief Set the page size for pagination.
+     */
+    void set_page_size(std::uint32_t size);
+
+    /**
+     * @brief Get the total number of records available on the server.
+     */
+    std::uint32_t total_available_count() const {
+        return total_available_count_;
+    }
 
 private slots:
     void onTenantsLoaded();
@@ -192,13 +124,18 @@ private:
     struct FetchResult {
         bool success;
         std::vector<iam::domain::tenant> tenants;
+        std::uint32_t total_available_count;
         QString error_message;
         QString error_details;
     };
 
+    void fetch_tenants(std::uint32_t offset, std::uint32_t limit);
+
     ClientManager* clientManager_;
     std::vector<iam::domain::tenant> tenants_;
     QFutureWatcher<FetchResult>* watcher_;
+    std::uint32_t page_size_{100};
+    std::uint32_t total_available_count_{0};
     bool is_fetching_{false};
 
     using TenantKeyExtractor = std::string (*)(const iam::domain::tenant&);

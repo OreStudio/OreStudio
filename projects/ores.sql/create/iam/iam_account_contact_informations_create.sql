@@ -132,7 +132,6 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent

@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_API_DOMAIN_TENANT_TABLE_HPP
-#define ORES_IAM_API_DOMAIN_TENANT_TABLE_HPP
+#ifndef ORES_IAM_SERVICE_MESSAGING_TENANT_EVENT_REGISTRAR_HPP
+#define ORES_IAM_SERVICE_MESSAGING_TENANT_EVENT_REGISTRAR_HPP
 
-#include "ores.iam.api/domain/tenant.hpp"
-#include "ores.iam.api/export.hpp"
-#include <string>
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::iam::domain {
+namespace ores::iam::service::messaging {
 
-/**
- * @brief Converts tenants to the table format.
- */
-ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<tenant>& v);
+[[nodiscard]] ores::eventing::service::subscription
+register_tenant_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                              ores::eventing::service::event_bus& event_bus,
+                              ores::nats::service::client& nats);
 
-}
+} // namespace ores::iam::service::messaging
 
 #endif

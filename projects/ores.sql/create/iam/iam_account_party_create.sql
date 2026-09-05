@@ -70,37 +70,12 @@ on "ores_iam_account_parties_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create or replace function ores_iam_account_parties_insert_fn()
-returns trigger
-security definer
-set search_path = public, pg_temp
-as $$
+returns trigger as $$
 declare
     current_version integer;
 begin
     -- Validate tenant_id
     new.tenant_id := ores_iam_validate_tenant_fn(new.tenant_id);
-
-    -- Validate account_id (soft FK)
-    if not exists (
-        select 1 from ores_iam_accounts_tbl
-        where tenant_id = new.tenant_id and id = new.account_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid account_id: %. No account found with this id.',
-            new.account_id
-            using errcode = '23503';
-    end if;
-
-    -- Validate party_id (soft FK)
-    if not exists (
-        select 1 from ores_refdata_parties_tbl
-        where tenant_id = new.tenant_id and id = new.party_id
-          and valid_to = ores_utility_infinity_timestamp_fn()
-    ) then
-        raise exception 'Invalid party_id: %. No active party found with this id.',
-            new.party_id
-            using errcode = '23503';
-    end if;
 
     -- Version management
     select version into current_version
@@ -119,25 +94,52 @@ begin
         end if;
         new.version = current_version + 1;
 
-        -- Close existing record
+        -- Close existing record.
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. the same junction pair touched
+        -- twice in one transaction) would collide with itself.
+        -- clock_timestamp() always advances.
         update "ores_iam_account_parties_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = new.tenant_id
         and account_id = new.account_id
         and party_id = new.party_id
         and valid_to = ores_utility_infinity_timestamp_fn()
-        and valid_from < current_timestamp;
+        and valid_from < clock_timestamp();
     else
         new.version = 1;
     end if;
 
-    new.valid_from = current_timestamp;
+    new.valid_from = clock_timestamp();
     new.valid_to = ores_utility_infinity_timestamp_fn();
 
     new.modified_by := ores_iam_validate_account_username_fn(new.modified_by);
     new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     new.change_reason_code := ores_dq_validate_change_reason_fn(new.tenant_id, new.change_reason_code);
+
+    -- Validate account_id (soft FK to ores_iam_accounts_tbl)
+    if not exists (
+        select 1 from ores_iam_accounts_tbl
+        where tenant_id = new.tenant_id
+          and id = new.account_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid account_id: %. No account found with this id.', new.account_id
+            using errcode = '23503';
+    end if;
+
+    -- Validate party_id (soft FK to ores_refdata_parties_tbl)
+    if not exists (
+        select 1 from ores_refdata_parties_tbl
+        where tenant_id = new.tenant_id
+          and id = new.party_id
+          and valid_to = ores_utility_infinity_timestamp_fn()
+    ) then
+        raise exception 'Invalid party_id: %. No active party found with this id.', new.party_id
+            using errcode = '23503';
+    end if;
 
     return new;
 end;
@@ -152,7 +154,7 @@ create or replace rule ores_iam_account_parties_delete_rule as
 on delete to "ores_iam_account_parties_tbl"
 do instead
   update "ores_iam_account_parties_tbl"
-  set valid_to = current_timestamp
+  set valid_to = clock_timestamp()
   where tenant_id = old.tenant_id
   and account_id = old.account_id
   and party_id = old.party_id

@@ -57,9 +57,11 @@ void account_party_repository::write(const std::vector<domain::account_party>& a
 }
 
 std::vector<domain::account_party> account_party_repository::read_latest() {
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("valid_to"_c == max.value()) | order_by("account_id"_c, "party_id"_c);
+                       where("tenant_id"_c == tid && "valid_to"_c == max.value()) |
+                       order_by("account_id"_c, "party_id"_c);
 
     return execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
@@ -73,36 +75,44 @@ std::vector<domain::account_party>
 account_party_repository::read_latest_by_account(const boost::uuids::uuid& account_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Account: " << account_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto account_id_str = boost::uuids::to_string(account_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("account_id"_c == account_id_str && "valid_to"_c == max.value()) |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+                             "valid_to"_c == max.value()) |
                        order_by("party_id"_c);
 
-    return execute_read_query<account_party_entity, domain::account_party>(
+    auto rows = execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
         lg(),
         "Reading latest account parties by account.");
+
+    return rows;
 }
 
 std::vector<domain::account_party>
 account_party_repository::read_latest_by_party(const boost::uuids::uuid& party_id) {
     BOOST_LOG_SEV(lg(), debug) << "Reading latest account parties. Party: " << party_id;
 
-    const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto party_id_str = boost::uuids::to_string(party_id);
-    const auto query = sqlgen::read<std::vector<account_party_entity>> |
-                       where("party_id"_c == party_id_str && "valid_to"_c == max.value()) |
-                       order_by("account_id"_c);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query =
+        sqlgen::read<std::vector<account_party_entity>> |
+        where("tenant_id"_c == tid && "party_id"_c == party_id_str && "valid_to"_c == max.value()) |
+        order_by("account_id"_c);
 
-    return execute_read_query<account_party_entity, domain::account_party>(
+    auto rows = execute_read_query<account_party_entity, domain::account_party>(
         ctx_,
         query,
         [](const auto& entities) { return account_party_mapper::map(entities); },
         lg(),
         "Reading latest account parties by party.");
+
+    return rows;
 }
 
 void account_party_repository::remove(const boost::uuids::uuid& account_id,
@@ -112,8 +122,10 @@ void account_party_repository::remove(const boost::uuids::uuid& account_id,
 
     const auto account_id_str = boost::uuids::to_string(account_id);
     const auto party_id_str = boost::uuids::to_string(party_id);
+    const auto tid = ctx_.tenant_id().to_string();
     const auto query = sqlgen::delete_from<account_party_entity> |
-                       where("account_id"_c == account_id_str && "party_id"_c == party_id_str);
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str &&
+                             "party_id"_c == party_id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing account party from database");
 }
@@ -122,8 +134,9 @@ void account_party_repository::remove_by_account(const boost::uuids::uuid& accou
     BOOST_LOG_SEV(lg(), debug) << "Removing all account parties from database: " << account_id;
 
     const auto account_id_str = boost::uuids::to_string(account_id);
-    const auto query =
-        sqlgen::delete_from<account_party_entity> | where("account_id"_c == account_id_str);
+    const auto tid = ctx_.tenant_id().to_string();
+    const auto query = sqlgen::delete_from<account_party_entity> |
+                       where("tenant_id"_c == tid && "account_id"_c == account_id_str);
 
     execute_delete_query(ctx_, query, lg(), "removing all account parties from database");
 }

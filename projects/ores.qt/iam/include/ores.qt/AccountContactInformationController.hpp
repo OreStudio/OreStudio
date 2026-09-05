@@ -35,6 +35,7 @@
 namespace ores::qt {
 
 class AccountContactInformationMdiWindow;
+class AccountContactInformationDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 class ImageCache;
@@ -97,6 +98,14 @@ private:
     void showAddWindow(boost::uuids::uuid accountId = {});
     void
     showDetailWindow(const iam::domain::account_contact_information& accountContactInformation);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * AccountContactInformationDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(AccountContactInformationDetailDialog* detailDialog);
     void
     showHistoryWindow(const iam::domain::account_contact_information& accountContactInformation);
 

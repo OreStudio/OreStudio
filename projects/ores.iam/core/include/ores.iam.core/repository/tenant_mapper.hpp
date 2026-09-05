@@ -17,10 +17,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_TENANT_MAPPER_HPP
-#define ORES_IAM_REPOSITORY_TENANT_MAPPER_HPP
+#ifndef ORES_IAM_CORE_REPOSITORY_TENANT_MAPPER_HPP
+#define ORES_IAM_CORE_REPOSITORY_TENANT_MAPPER_HPP
 
 #include "ores.iam.api/domain/tenant.hpp"
+#include "ores.iam.core/export.hpp"
 #include "ores.iam.core/repository/tenant_entity.hpp"
 #include "ores.logging/make_logger.hpp"
 
@@ -29,7 +30,7 @@ namespace ores::iam::repository {
 /**
  * @brief Maps tenant domain entities to data storage layer and vice-versa.
  */
-class tenant_mapper {
+class ORES_IAM_CORE_EXPORT tenant_mapper {
 private:
     inline static std::string_view logger_name = "ores.iam.repository.tenant_mapper";
 

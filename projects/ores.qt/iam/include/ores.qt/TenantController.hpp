@@ -27,12 +27,15 @@
 #include "ores.qt/EntityListMdiWindow.hpp"
 #include <QMainWindow>
 #include <QMdiArea>
+#include <expected>
+#include <functional>
+#include <vector>
 
 namespace ores::qt {
 
 class TenantMdiWindow;
+class TenantDetailDialog;
 class DetachableMdiSubWindow;
-class BadgeCache;
 class ChangeReasonCache;
 
 /**
@@ -59,36 +62,57 @@ public:
                      ClientManager* clientManager,
                      ChangeReasonCache* changeReasonCache,
                      const QString& username,
-                     BadgeCache* badgeCache = nullptr,
                      QObject* parent = nullptr);
 
     void showListWindow() override;
     void closeAllWindows() override;
     void reloadListWindow() override;
 
+
 signals:
     void statusMessage(const QString& message);
     void errorMessage(const QString& error);
-    void onboardRequested();
 
 protected:
     EntityListMdiWindow* listWindow() const override;
+    void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private slots:
     void onShowDetails(const iam::domain::tenant& tenant);
     void onAddNewRequested();
-    void onTenantReset(const QString& code);
     void onShowHistory(const iam::domain::tenant& tenant);
     void onRevertVersion(const iam::domain::tenant& tenant);
     void onOpenVersion(const iam::domain::tenant& tenant, int versionNumber);
+    void onOpenHistoryVersion(const QString& entityId, int versionNumber);
+    void onRevertHistoryVersion(const QString& entityId, int versionNumber);
 
 private:
     void showAddWindow();
     void showDetailWindow(const iam::domain::tenant& tenant);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * TenantDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(TenantDetailDialog* detailDialog);
     void showHistoryWindow(const iam::domain::tenant& tenant);
 
-    ChangeReasonCache* changeReasonCache_{nullptr};
-    BadgeCache* badgeCache_{nullptr};
+    /**
+     * @brief Fetches the full typed tenant history (the
+     * existing per-entity iam::messaging::get_tenant_history_request/
+     * iam::messaging::get_tenant_history_response, unrelated to the generic
+     * history.v1.get subject) and hands it to @p callback on the UI
+     * thread. Used to resolve HistoryDialog's generic (entity_id,
+     * version) signals back to a typed tenant, since the
+     * generic dialog holds no typed domain data.
+     */
+    void fetchTenantHistory(
+        const QString& entityId,
+        std::function<void(std::expected<std::vector<iam::domain::tenant>, QString>)> callback);
+
+    ChangeReasonCache* changeReasonCache_;
     TenantMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

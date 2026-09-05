@@ -21,6 +21,7 @@
 #define ORES_IAM_DOMAIN_ACCOUNT_PARTY_TABLE_HPP
 
 #include "ores.iam.api/domain/account_party.hpp"
+#include "ores.iam.api/export.hpp"
 #include <string>
 #include <vector>
 
@@ -29,7 +30,7 @@ namespace ores::iam::domain {
 /**
  * @brief Converts account_parties to the table format.
  */
-std::string convert_to_table(const std::vector<account_party>& v);
+ORES_IAM_API_EXPORT std::string convert_to_table(const std::vector<account_party>& v);
 
 }
 

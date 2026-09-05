@@ -70,7 +70,7 @@ std::string(faker::word::noun()) + "_tenant"
 Human-readable display name for the tenant.
 
 #+begin_src cpp :name generator
-std::string(faker::company::name())
+std::string(faker::company::companyName())
 #+end_src
 
 ** type

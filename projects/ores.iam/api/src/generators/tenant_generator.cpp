@@ -42,7 +42,7 @@ domain::tenant generate_synthetic_tenant(utility::generation::generation_context
     r.id = ctx.generate_uuid();
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
     r.code = std::string(faker::word::noun()) + "_tenant" + "-" + std::to_string(idx);
-    r.name = std::string(faker::company::name());
+    r.name = std::string(faker::company::companyName());
     r.type = "organisation";
     r.description = std::string(faker::lorem::sentence());
     r.hostname = std::string(faker::word::noun()) + ".example.com";

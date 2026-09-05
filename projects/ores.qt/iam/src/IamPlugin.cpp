@@ -123,13 +123,8 @@ void IamPlugin::on_login(const plugin_context& ctx) {
                                                            ctx_.client_manager,
                                                            ctx_.change_reason_cache,
                                                            ctx_.username,
-                                                           ctx_.badge_cache,
                                                            this);
     connectControllerSignals(tenantController_.get());
-    connect(tenantController_.get(),
-            &TenantController::onboardRequested,
-            this,
-            &IamPlugin::show_onboarding_wizard);
 
     tenantTypeController_ = std::make_unique<TenantTypeController>(ctx_.main_window,
                                                                    ctx_.mdi_area,

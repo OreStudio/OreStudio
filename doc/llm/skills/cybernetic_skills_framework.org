@@ -161,7 +161,8 @@ the framing is not idiosyncratic to this project.
 A regulator is defined relative to what it regulates, so that system must be
 identified before anything further can be said of it.
 
-The project is the viable system. The agent is its operational element, System 1
+The project is the viable system, in Beer's sense of a system that maintains
+itself. The agent is its operational element, System 1
 in Beer's numbering ([[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]]), and the remaining systems regulate it at
 progressively longer horizons. The skills framework is not itself one of those
 systems. It is the means by which their constraints reach the agent, and
@@ -296,9 +297,19 @@ remaining a matter of preference.
 
 And one case is settled that a classification by relation leaves open. Acting
 upon a thing, whether by editing, moving or deleting it, is not a distinct
-function. It is what an effector does, and execution is already the effector. The universal ability to operate upon an
-artefact is therefore absent from the list for a reason, rather than by the
-observation that a universal property fails to discriminate.
+function. It is what an effector does, and execution is already the effector.
+The universal ability to operate upon an artefact is therefore absent from the
+list for a reason, rather than by the observation that a universal property
+fails to discriminate.
+
+The strongest evidence that these are functions rather than categories of
+document is that one set of them serves every level of recursion. A declaration
+fixes a goal whether that goal is a task's acceptance criterion or a version's
+objective. A recording registers state whether the state is a task's status or a
+sprint's outcome. A taxonomy of documents would need one set per level, because
+a task and a version are different kinds of document. A set of functions does
+not, because a regulator at any horizon must still set a goal and sense the
+state it reached.
 
 ** Variety Attenuation
 
@@ -319,20 +330,16 @@ its level by saying so. What changes is what it is shown first.
 
 ** Recursion
 
-The defining property of Beer's model is recursion: every system is itself a
-viable system, containing the same functions at a shorter horizon.
+The defining property of Beer's model is recursion: every viable system contains
+smaller viable systems, each holding the same five Systems at a shorter horizon.
 
-The regulatory functions are correspondingly indifferent to level. A declaration fixes a
-goal whether that goal is a task's acceptance criterion or a version's
-objective. A recording registers state whether the state is a task's status or a
-sprint's outcome. This is why one set of regulatory functions suffices rather
-than one set per level, and it is the strongest available evidence that they
-are functions rather than categories of document.
+Recursion is why this framework needs one set of regulatory functions rather
+than one per level, and /Consequences of the Derivation/ treats that as evidence
+for the derivation. What follows here is the consequence for scope. A framework
+whose regulatory functions hold at every horizon can be specified once and
+applied at any of them, so nothing below is stated per level.
 
 ** Binding Constraint and Ergonomics
-
-A distinction must be maintained that is easily lost, and this document states
-it as a rule governing its own claims.
 
 A constraint regulates only if it binds. An arrangement that recommends,
 suggests, or renders a preferred course more convenient does not regulate,
@@ -374,7 +381,8 @@ the only response available to a disturbance it was not built for.
 The essential variable here is whether the agent's conduct remains within
 acceptable bounds for the work. A failure is the signal that it has not. The
 second loop converts that signal into a change of structure, and the framework's
-structure is its regulatory functions, its type system and its catalogue.
+structure is its regulatory functions, its document type system and its
+catalogue.
 
 *** The Loop Specified
 
@@ -439,7 +447,8 @@ improve, the variety the regulator must supply falls.
 
 A skill therefore becomes removable when the agent ceases to act incorrectly at
 that point without it. Without such a criterion the pressure runs in one
-direction only: skills accumulate, and nothing prompts their removal. The framework should expect to contract as the agents it
+direction only: skills accumulate, and nothing prompts their removal. The
+framework should expect to contract as the agents it
 regulates improve, and should treat that contraction as the apparatus working
 rather than as capability lost.
 

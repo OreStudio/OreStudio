@@ -37,6 +37,11 @@ namespace ores::iam::repository {
 // (system tenant acting for all tenants). These functions keep the
 // pre-rebind, unfiltered queries. No codegen template emits this file, so
 // regeneration leaves it alone.
+//
+// The reads are plain queries, so row-level security still applies: a
+// session resolves what the tenants_read_policy admits -- the system
+// tenant (every row) and a tenant's own record by id. Bootstrap callers
+// run under the system-scoped base context, never under a peer tenant's.
 
 /**
  * @brief Reads the latest version of all non-deleted tenants, ordered by name.

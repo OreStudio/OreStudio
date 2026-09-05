@@ -1,0 +1,47 @@
+:PROPERTIES:
+:ID: D342ECFD-EE6A-4296-BD0B-A02CC376804E
+:END:
+#+title: Skills are missing the frontmatter and regulatory function their contract requires
+#+description: Fifty-one of eighty SKILL.org files carry no type or level frontmatter, and none of the eighty declares its regulatory function, which the skill contract states must be declared per instance because it cannot be inferred from the type.
+#+type: capture
+#+level: cross
+#+filetags: :llm:skills:claude_code:contract:hygiene:
+#+created: 2026-09-05
+#+updated: 2026-09-05
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The skill document contract requires =#+type: skill= and =#+level: cross= in
+frontmatter, and requires each skill to declare the regulatory function it
+implements, on the grounds that a skill is the one document type whose function
+cannot be inferred from its type.
+
+Fifty-one of eighty skills carry neither frontmatter field. None of the eighty
+declares a regulatory function. The scaffold =compass add skill= emits neither,
+which is why the gap is uniform rather than scattered.
+
+* Why
+
+The declaration is not decoration. [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] states that a skill
+may be a principle, a method or an action, so its function genuinely cannot be
+read off the type. Dispatch depends on knowing which, and the attenuator that
+selects a slice of the catalogue by level depends on the level field.
+
+Both are therefore prerequisites of work already planned rather than tidiness.
+The catalogue cannot be attenuated by level while most skills carry no level,
+and it cannot be dispatched over while none declares what it implements.
+
+Fix the scaffold first, so new skills are correct on creation, then sweep the
+existing eighty. The sweep is mechanical for the frontmatter and a judgement per
+skill for the function.
+
+* References
+
+- [[id:E8BE5E74-46AB-4233-9181-621187960603][Document type: skill]] — the contract these skills do not meet.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — why the declaration cannot be inferred.
+
+* See also
+
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the other policy the registers govern.

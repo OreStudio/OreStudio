@@ -46,6 +46,35 @@ Bring ores.iam to the same proven state as the ores.refdata pilot: every codegen
 
 * Decisions
 
+- Every SQL rule the pre-rebind iam tables carried was restored
+  through codegen, never dropped: the standing directive (extend
+  codegen or use paste blocks unless a drop is signed off) applies,
+  and the #1961 audit found that PR set an adds-only precedent this
+  unit followed. New template features: the =** Delete sets= org
+  table (soft-delete SET extension) and the column =:unique:= flag
+  (active-record partial index). The tenant table checks, the
+  status = 'terminated' delete-set member, the hostname unique index,
+  the type/status insert validations, and the account_party soft FKs
+  all have org homes in the committed tree.
+- Tenant type/status validation moved from inline trigger blocks to
+  the generated validate fns of the lookup SQL. The 23503 rejection
+  rule is unchanged; the message text (allowed-values listing) and
+  bootstrap pass-through differ from the committed blocks and were
+  accepted as an idiom improvement.
+- The junction insert function lost its legacy security-definer
+  attribute in regeneration. This is the current template idiom, not
+  a drop: all nine committed refdata junction outputs already ship
+  the plain form; the iam junction simply predated that template era.
+- The drift gate now covers iam and iam-cpp. The refdata-codegen-drift
+  CI job named in this story's acceptance was deleted with pr.yml
+  (ea283ef0b9); its successor is the pr-raise local check list, which
+  the compute unit extended to compute-cpp and this unit extended to
+  iam,iam-cpp after the six-component convergence check passed.
+- Template-era modernization on regenerated iam output
+  (clock_timestamp, security-definer function-attribute form, delete-
+  rule parens) is the sign-off class the refdata anchors already
+  carry, verified byte-identical against the current template.
+
 * Out of scope
 
 -

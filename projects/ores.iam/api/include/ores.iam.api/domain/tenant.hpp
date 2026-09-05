@@ -17,13 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_DOMAIN_TENANT_HPP
-#define ORES_IAM_DOMAIN_TENANT_HPP
+#ifndef ORES_IAM_API_DOMAIN_TENANT_HPP
+#define ORES_IAM_API_DOMAIN_TENANT_HPP
 
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::iam::domain {
 
@@ -31,9 +33,9 @@ namespace ores::iam::domain {
  * @brief A tenant representing an isolated organisation or the system platform.
  *
  * Core entity for multi-tenancy support. Each tenant represents an isolated
- * organisation with its own users, roles, and data. The system tenant (max UUID,
- * ffffffff-ffff-ffff-ffff-ffffffffffff) is a special tenant used for shared
- * reference data and system administration.
+ * organisation with its own users, roles, and data. The system tenant is a
+ * special tenant used for shared reference data and system administration;
+ * its id is the maximum UUID value (ffffffff-ffff-ffff-ffff-ffffffffffff).
  *
  * Tenants are identified by:
  * - id: UUID primary key (SQL also has tenant_id = id for self-reference)
@@ -47,10 +49,15 @@ struct tenant final {
     int version = 0;
 
     /**
+     * @brief Tenant identifier for multi-tenancy isolation.
+     */
+    utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
+
+    /**
      * @brief UUID uniquely identifying this tenant.
      *
-     * The system tenant has UUID ffffffff-ffff-ffff-ffff-ffffffffffff (max UUID).
-     * In SQL, tenant_id = id for tenant records.
+     * The system tenant has the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffffff. In SQL,
+     * tenant_id = id for tenant records.
      */
     boost::uuids::uuid id;
 
@@ -62,12 +69,15 @@ struct tenant final {
     std::string code;
 
     /**
-     * @brief Human-readable name for the tenant.
+     * @brief Human-readable display name for the tenant.
      */
     std::string name;
 
     /**
-     * @brief Tenant type classification (FK to tenant_types).
+     * @brief Tenant type classification (FK to tenant_types). The synthetic generator emits the
+     * canonical automation type: the type/status insert validations reject any value with no active
+     * tenant_type row, and the seed data (iam_tenant_types_populate.sql) seeds the four
+     * system-tenant types, of which automation is the system-process default.
      */
     std::string type;
 
@@ -92,6 +102,11 @@ struct tenant final {
     std::string modified_by;
 
     /**
+     * @brief Username of the account that performed this action.
+     */
+    std::string performed_by;
+
+    /**
      * @brief Code identifying the reason for the change.
      *
      * References change_reasons table (soft FK).
@@ -104,15 +119,20 @@ struct tenant final {
     std::string change_commentary;
 
     /**
-     * @brief Username of the account that performed this operation.
-     */
-    std::string performed_by;
-
-    /**
      * @brief Timestamp when this version of the record was recorded.
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for tenant, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const tenant&) {
+    return "ores.iam.tenant";
+}
 
 }
 

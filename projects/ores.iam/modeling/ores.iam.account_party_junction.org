@@ -21,6 +21,11 @@ Junction table linking IAM accounts to parties. Each account can be
 associated with one or more parties, controlling which parties a user
 can act on behalf of.
 
+* Flags
+:PROPERTIES:
+:profile: tenant-scoped-junction
+:END:
+
 * Left
 :PROPERTIES:
 :column:        account_id
@@ -66,6 +71,25 @@ ctx.generate_uuid()
 :tablename: ores_iam_account_parties_tbl
 :END:
 
+* Foreign keys
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:error_message: Invalid account_id: %. No account found with this id.
+:END:
+
+ID of the IAM account; must exist in ores_iam_accounts_tbl.
+
+** party_id
+:PROPERTIES:
+:table:         ores_refdata_parties_tbl
+:error_message: Invalid party_id: %. No active party found with this id.
+:END:
+
+ID of the party this account is associated with; must exist in
+ores_refdata_parties_tbl.
+
 * Repository
 :PROPERTIES:
 :name_singular_short: account_party
@@ -76,6 +100,11 @@ ctx.generate_uuid()
 :END:
 
 * C++
+
+** Flags
+:PROPERTIES:
+:subcomponent: api
+:END:
 
 ** Domain includes
 

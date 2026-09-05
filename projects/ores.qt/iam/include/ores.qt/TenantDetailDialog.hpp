@@ -24,6 +24,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/ClientManager.hpp"
 #include "ores.qt/DetailDialogBase.hpp"
+#include <vector>
+
 
 namespace Ui {
 class TenantDetailDialog;
@@ -60,6 +62,16 @@ public:
     void setCreateMode(bool createMode);
     void setReadOnly(bool readOnly);
 
+    /**
+     * @brief Force the dialog into the unsaved-changes state.
+     *
+     * Used when values are loaded programmatically and must be savable
+     * immediately even though the user typed nothing — e.g. a revert, where
+     * the act of loading a past version's values is itself the change.
+     */
+    void markDirty();
+
+
 signals:
     void tenantSaved(const QString& code);
     void tenantDeleted(const QString& code);
@@ -77,15 +89,16 @@ protected:
     bool hasUnsavedChanges() const override {
         return hasChanges_;
     }
+    QString code() const override;
 
 private:
     void setupUi();
     void setupConnections();
-    void populateLookups();
     void updateUiFromTenant();
     void updateTenantFromUi();
     void updateSaveButtonState();
     bool validateInput();
+
 
     Ui::TenantDetailDialog* ui_;
     ClientManager* clientManager_;

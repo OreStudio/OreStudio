@@ -28,13 +28,9 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTabWidget" name="tabWidget">
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
+     <property name="currentIndex"><number>0</number></property>
      <widget class="QWidget" name="generalTab">
-      <attribute name="title">
-       <string>General</string>
-      </attribute>
+      <attribute name="title"><string>General</string></attribute>
       <layout class="QVBoxLayout" name="generalLayout">
        <item>
         <widget class="QGroupBox" name="basicInfoGroup">
@@ -43,7 +39,7 @@
          </property>
          <layout class="QFormLayout" name="formLayout">
           <item row="0" column="0">
-           <widget class="QLabel" name="label_codeEdit">
+           <widget class="QLabel" name="labelCode">
             <property name="text">
              <string>Code:</string>
             </property>
@@ -54,10 +50,13 @@
             <property name="placeholderText">
              <string>Enter tenant code</string>
             </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel" name="label_nameEdit">
+           <widget class="QLabel" name="labelName">
             <property name="text">
              <string>Name:</string>
             </property>
@@ -71,17 +70,21 @@
            </widget>
           </item>
           <item row="2" column="0">
-           <widget class="QLabel" name="label_typeEdit">
+           <widget class="QLabel" name="labelType">
             <property name="text">
              <string>Type:</string>
             </property>
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QComboBox" name="typeCombo"/>
+           <widget class="QLineEdit" name="typeEdit">
+            <property name="placeholderText">
+             <string>Enter tenant type</string>
+            </property>
+           </widget>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_hostnameEdit">
+           <widget class="QLabel" name="labelHostname">
             <property name="text">
              <string>Hostname:</string>
             </property>
@@ -95,14 +98,18 @@
            </widget>
           </item>
           <item row="4" column="0">
-           <widget class="QLabel" name="label_statusEdit">
+           <widget class="QLabel" name="labelStatus">
             <property name="text">
              <string>Status:</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QComboBox" name="statusCombo"/>
+           <widget class="QLineEdit" name="statusEdit">
+            <property name="placeholderText">
+             <string>Enter status</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -123,9 +130,7 @@
       </layout>
      </widget>
      <widget class="QWidget" name="provenanceTab">
-      <attribute name="title">
-       <string>Provenance</string>
-      </attribute>
+      <attribute name="title"><string>Provenance</string></attribute>
       <layout class="QVBoxLayout" name="provenanceTabLayout">
        <item>
         <widget class="ores::qt::ProvenanceWidget" name="provenanceWidget" native="true"/>

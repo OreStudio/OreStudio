@@ -90,7 +90,7 @@ lifecycle is ordered this way.
      =--all= instead; see [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]]).
    - *codegen drift*: =./compass.sh build --direct codegen_templates=
      then
-     =python3 projects/ores.codegen/scripts/check_component_drift.py --components refdata,reporting,marketdata,compute-cpp=.
+     =python3 projects/ores.codegen/scripts/check_component_drift.py --components refdata,reporting,marketdata,compute-cpp,iam,iam-cpp=.
    - *Compass test suite*:
      =projects/ores.compass/venv/bin/pytest projects/ores.compass/tests -q=.
    - *CDash experimental* (code class; visibility only):

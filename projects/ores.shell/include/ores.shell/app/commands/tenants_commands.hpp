@@ -52,9 +52,6 @@ public:
      * @brief Register tenant-related commands.
      *
      * Creates the tenants submenu and adds tenant operations.
-     *
-     * Note: Tenant protocol doesn't support pagination yet, but the
-     * pagination_context is passed for API consistency.
      */
     static void register_commands(cli::Menu& root_menu,
                                   ores::nats::service::nats_client& session,
@@ -67,11 +64,9 @@ public:
      *
      * @param out Output stream for results
      * @param session Client session for connectivity.
-     * @param include_deleted When true, includes soft-deleted tenants.
      */
     static void process_get_tenants(std::ostream& out,
-                                    ores::nats::service::nats_client& session,
-                                    bool include_deleted);
+                                    ores::nats::service::nats_client& session);
 
     /**
      * @brief Process an add tenant request.

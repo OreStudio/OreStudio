@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_EVENTING_TENANT_CHANGED_EVENT_HPP
-#define ORES_IAM_EVENTING_TENANT_CHANGED_EVENT_HPP
+#ifndef ORES_IAM_API_EVENTING_TENANT_CHANGED_EVENT_HPP
+#define ORES_IAM_API_EVENTING_TENANT_CHANGED_EVENT_HPP
 
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include <chrono>
@@ -30,32 +30,22 @@ namespace ores::iam::eventing {
 /**
  * @brief Domain event indicating that tenant data has changed.
  *
- * This event is published when any tenant entity is created, updated, or
- * deleted in the database. Subscribers can use the timestamp to query for
- * changes since that point.
+ * Published when any tenant entity is created, updated, or
+ * deleted. Subscribers use the timestamp to query for changes since that point.
  */
 struct tenant_changed_event final {
     /**
      * @brief The timestamp of when the change occurred (in UTC).
-     *
-     * Clients can use this timestamp to query the database for entities
-     * that have changed since this point.
      */
     std::chrono::system_clock::time_point timestamp;
 
     /**
-     * @brief IDs of tenants that changed.
-     *
-     * Contains the UUIDs (as strings) of tenants that were created, updated,
-     * or deleted. May contain multiple IDs for batch operations.
+     * @brief Changed tenant UUIDs (as strings).
      */
     std::vector<std::string> tenant_ids;
 
     /**
      * @brief The tenant that owns the changed entity.
-     *
-     * For tenant entities, this is always the system tenant since all
-     * tenant records are owned by the system tenant.
      */
     std::string tenant_id;
 };

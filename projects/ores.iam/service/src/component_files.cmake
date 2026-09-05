@@ -24,6 +24,7 @@ set(files
     "main.cpp"
     "messaging/account_contact_information_event_registrar.cpp"
     "messaging/account_type_event_registrar.cpp"
+    "messaging/tenant_event_registrar.cpp"
     "messaging/tenant_status_event_registrar.cpp"
     "messaging/tenant_type_event_registrar.cpp"
 )
@@ -39,6 +40,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.service/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.service/messaging/account_contact_information_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.service/messaging/account_type_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.service/messaging/tenant_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.service/messaging/tenant_status_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.service/messaging/tenant_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.iam.service/ores.iam.service.hpp"

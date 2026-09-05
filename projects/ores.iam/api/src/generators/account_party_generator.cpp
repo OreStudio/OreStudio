@@ -20,6 +20,7 @@
 #include "ores.iam.api/generators/account_party_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <faker-cxx/faker.h> // IWYU pragma: keep.
 
 namespace ores::iam::generators {
 
@@ -47,7 +48,7 @@ std::vector<domain::account_party>
 generate_synthetic_account_parties(std::size_t n, utility::generation::generation_context& ctx) {
     std::vector<domain::account_party> r;
     r.reserve(n);
-    for (std::size_t i = 0; i < n; ++i)
+    while (r.size() < n)
         r.push_back(generate_synthetic_account_party(ctx));
     return r;
 }

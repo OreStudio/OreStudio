@@ -17,13 +17,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_MESSAGING_TENANT_PROTOCOL_HPP
-#define ORES_IAM_MESSAGING_TENANT_PROTOCOL_HPP
+#ifndef ORES_IAM_API_MESSAGING_TENANT_PROTOCOL_HPP
+#define ORES_IAM_API_MESSAGING_TENANT_PROTOCOL_HPP
 
 #include "ores.iam.api/domain/tenant.hpp"
 #include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace ores::iam::messaging {
@@ -31,11 +30,15 @@ namespace ores::iam::messaging {
 struct get_tenants_request {
     using response_type = struct get_tenants_response;
     static constexpr std::string_view nats_subject = "iam.v1.tenants.list";
-    bool include_deleted = false;
+    std::uint32_t offset = 0;
+    std::uint32_t limit = 100;
 };
 
 struct get_tenants_response {
     std::vector<ores::iam::domain::tenant> tenants;
+    int total_available_count = 0;
+    bool success = false;
+    std::string message;
 };
 
 struct save_tenant_request {
@@ -43,8 +46,8 @@ struct save_tenant_request {
     static constexpr std::string_view nats_subject = "iam.v1.tenants.save";
     ores::iam::domain::tenant data;
 
-    static save_tenant_request from(ores::iam::domain::tenant t) {
-        return {.data = std::move(t)};
+    static save_tenant_request from(ores::iam::domain::tenant v) {
+        return {.data = std::move(v)};
     }
 };
 
@@ -71,45 +74,9 @@ struct get_tenant_history_request {
 };
 
 struct get_tenant_history_response {
+    std::vector<ores::iam::domain::tenant> history;
     bool success = false;
     std::string message;
-    std::vector<ores::iam::domain::tenant> versions;
-};
-
-struct complete_tenant_provisioning_command {
-    using response_type = struct complete_tenant_provisioning_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenants.complete-provisioning";
-};
-
-struct complete_tenant_provisioning_response {
-    bool success = false;
-    std::string message;
-};
-
-// --- Acme one-click tenant provisioning (--source acme) ---
-//
-// A single server-side orchestrated request: imports the four-party Acme
-// Bank LEI hierarchy, publishes real GLEIF counterparties (small), then
-// for each operating company publishes its business units, portfolios,
-// books, accounts, and account contact informations. No repeated
-// per-party logins, no orchestration logic client-side -- driven by
-// internal actor impersonation through the real handler pipeline, see
-// ores.iam.core/messaging/tenant_handler.hpp's provision_acme.
-struct provision_acme_tenant_command {
-    using response_type = struct provision_acme_tenant_response;
-    static constexpr std::string_view nats_subject = "iam.v1.tenants.provision-acme";
-};
-
-struct provision_acme_tenant_step {
-    std::string step;
-    std::string action;
-    std::uint64_t record_count = 0;
-};
-
-struct provision_acme_tenant_response {
-    bool success = false;
-    std::string message;
-    std::vector<provision_acme_tenant_step> steps;
 };
 
 }

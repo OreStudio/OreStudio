@@ -57,6 +57,11 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{#has_text_natural_keys}}
     const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
 {{/has_text_natural_keys}}
+{{^has_text_natural_keys}}
+{{#has_unique_suffix_columns}}
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+{{/has_unique_suffix_columns}}
+{{/has_text_natural_keys}}
 {{/primary_key.is_uuid}}
 {{#primary_key.extra_columns}}
 {{#is_uuid}}
@@ -124,14 +129,26 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{/natural_keys}}
 {{#columns}}
 {{#generator_expr}}
+{{#requires_unique_suffix}}
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = {{{generator_expr}}} + "-"
+        + std::to_string(idx);
+{{/requires_unique_suffix}}
+{{^requires_unique_suffix}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = {{{generator_expr}}};
+{{/requires_unique_suffix}}
 {{/generator_expr}}
 {{^generator_expr}}
 {{#is_uuid}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = ctx.generate_uuid();
 {{/is_uuid}}
 {{#is_plain_string}}
+{{#requires_unique_suffix}}
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = std::string(faker::word::noun()) + "-"
+        + std::to_string(idx);
+{{/requires_unique_suffix}}
+{{^requires_unique_suffix}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{name}} = std::string(faker::word::noun());
+{{/requires_unique_suffix}}
 {{/is_plain_string}}
 {{/generator_expr}}
 {{/columns}}

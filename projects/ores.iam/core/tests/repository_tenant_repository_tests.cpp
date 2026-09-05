@@ -20,6 +20,7 @@
 #include "ores.iam.api/domain/tenant.hpp"
 #include "ores.iam.api/domain/tenant_json_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/generators/tenant_generator.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/repository/tenant_repository.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.testing/database_helper.hpp"
@@ -43,6 +44,8 @@ using namespace ores::iam::generators;
 
 using ores::testing::database_helper;
 using ores::iam::repository::tenant_repository;
+using ores::iam::repository::read_active_tenant_by_hostname;
+using ores::iam::repository::read_active_tenant_by_id;
 
 TEST_CASE("write_single_tenant", tags) {
     auto lg(make_logger(test_suite));
@@ -51,11 +54,11 @@ TEST_CASE("write_single_tenant", tags) {
     auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    tenant_repository repo(sys_ctx);
+    tenant_repository repo;
     auto t = generate_synthetic_tenant(gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
-    CHECK_NOTHROW(repo.write(t));
+    CHECK_NOTHROW(repo.write(sys_ctx, t));
 }
 
 TEST_CASE("write_multiple_tenants", tags) {
@@ -65,11 +68,11 @@ TEST_CASE("write_multiple_tenants", tags) {
     auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    tenant_repository repo(sys_ctx);
+    tenant_repository repo;
     auto tenants = generate_synthetic_tenants(3, gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Tenants: " << tenants;
-    CHECK_NOTHROW(repo.write(tenants));
+    CHECK_NOTHROW(repo.write(sys_ctx, tenants));
 }
 
 TEST_CASE("read_latest_tenants", tags) {
@@ -79,13 +82,13 @@ TEST_CASE("read_latest_tenants", tags) {
     auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    tenant_repository repo(sys_ctx);
+    tenant_repository repo;
     auto written = generate_synthetic_tenants(3, gen_ctx);
 
     BOOST_LOG_SEV(lg, debug) << "Written tenants: " << written;
-    repo.write(written);
+    repo.write(sys_ctx, written);
 
-    auto read_tenants = repo.read_latest();
+    auto read_tenants = repo.read_latest(sys_ctx);
     BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
 
     CHECK(!read_tenants.empty());
@@ -99,16 +102,16 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
     auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    tenant_repository repo(sys_ctx);
+    tenant_repository repo;
     auto t = generate_synthetic_tenant(gen_ctx);
     const auto target_id = t.id;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
-    repo.write(t);
+    repo.write(sys_ctx, t);
 
     BOOST_LOG_SEV(lg, debug) << "Target ID: " << target_id;
 
-    auto read_tenants = repo.read_latest(target_id);
+    auto read_tenants = repo.read_latest(sys_ctx, boost::uuids::to_string(target_id));
     BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
 
     REQUIRE(read_tenants.size() == 1);
@@ -117,28 +120,77 @@ TEST_CASE("read_latest_tenant_by_id", tags) {
     CHECK(read_tenants[0].name == t.name);
 }
 
-TEST_CASE("read_latest_tenant_by_code", tags) {
+TEST_CASE("read_active_tenant_lookups_resolve_system_owned_records", tags) {
     auto lg(make_logger(test_suite));
 
     database_helper h;
     auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
     auto gen_ctx = ores::testing::make_generation_context(h);
 
-    tenant_repository repo(sys_ctx);
+    tenant_repository repo;
     auto t = generate_synthetic_tenant(gen_ctx);
-    const auto target_code = t.code;
+    const auto target_id = t.id;
+    const auto target_hostname = t.hostname;
 
     BOOST_LOG_SEV(lg, debug) << "Tenant: " << t;
-    repo.write(t);
+    repo.write(sys_ctx, t);
 
-    BOOST_LOG_SEV(lg, debug) << "Target code: " << target_code;
+    // Tenant rows are system-owned (tenant_id = system, stamped by the
+    // insert trigger), so the generated repository -- whose reads filter on
+    // the tenant carried by the context -- can never read one, not even
+    // under the row's own tenant context. The tenants_read_policy admits a
+    // tenant row to the system tenant (tenant_id = current) and to the
+    // row's own context (id = current); a peer tenant's context stays
+    // isolated. Login resolves tenants by hostname before any tenant
+    // context exists and the registrar warm-up reads on behalf of all
+    // tenants; both run under the system context, and the hand-authored
+    // lookups below (no tenant_id filter) are the reads that resolve the
+    // row there and under the row's own tenant context.
+    auto own_ctx =
+        h.context().with_tenant(ores::utility::uuid::tenant_id::from_uuid(target_id).value(), "");
 
-    auto read_tenants = repo.read_latest_by_code(target_code);
-    BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
+    auto scoped = repo.read_latest(own_ctx, boost::uuids::to_string(target_id));
+    BOOST_LOG_SEV(lg, debug) << "Repository read under own tenant: " << scoped;
+    CHECK(scoped.empty());
 
-    REQUIRE(read_tenants.size() == 1);
-    CHECK(read_tenants[0].code == target_code);
-    CHECK(read_tenants[0].id == t.id);
+    auto by_id = read_active_tenant_by_id(own_ctx, target_id);
+    BOOST_LOG_SEV(lg, debug) << "Read tenants by id: " << by_id;
+    REQUIRE(by_id.size() == 1);
+    CHECK(by_id[0].id == target_id);
+
+    auto by_hostname = read_active_tenant_by_hostname(own_ctx, target_hostname);
+    BOOST_LOG_SEV(lg, debug) << "Read tenants by hostname: " << by_hostname;
+    REQUIRE(by_hostname.size() == 1);
+    CHECK(by_hostname[0].id == target_id);
+
+    auto bootstrap_by_id = read_active_tenant_by_id(sys_ctx, target_id);
+    BOOST_LOG_SEV(lg, debug) << "Bootstrap read tenants by id: " << bootstrap_by_id;
+    REQUIRE(bootstrap_by_id.size() == 1);
+    CHECK(bootstrap_by_id[0].id == target_id);
+
+    auto bootstrap_by_hostname = read_active_tenant_by_hostname(sys_ctx, target_hostname);
+    BOOST_LOG_SEV(lg, debug) << "Bootstrap read tenants by hostname: " << bootstrap_by_hostname;
+    REQUIRE(bootstrap_by_hostname.size() == 1);
+    CHECK(bootstrap_by_hostname[0].id == target_id);
+
+    // A peer tenant's context sees nothing: tenant rows are system-owned
+    // and the policy admits them only to the system tenant and to the
+    // row's own tenant context.
+    const auto other_id = boost::uuids::random_generator()();
+    const auto foreign_ctx =
+        h.context().with_tenant(ores::utility::uuid::tenant_id::from_uuid(other_id).value(), "");
+
+    auto foreign_scoped = repo.read_latest(foreign_ctx, boost::uuids::to_string(target_id));
+    BOOST_LOG_SEV(lg, debug) << "Peer repository read tenants: " << foreign_scoped;
+    CHECK(foreign_scoped.empty());
+
+    auto foreign_by_id = read_active_tenant_by_id(foreign_ctx, target_id);
+    BOOST_LOG_SEV(lg, debug) << "Peer read tenants by id: " << foreign_by_id;
+    CHECK(foreign_by_id.empty());
+
+    auto foreign_by_hostname = read_active_tenant_by_hostname(foreign_ctx, target_hostname);
+    BOOST_LOG_SEV(lg, debug) << "Peer read tenants by hostname: " << foreign_by_hostname;
+    CHECK(foreign_by_hostname.empty());
 }
 
 TEST_CASE("read_nonexistent_tenant", tags) {
@@ -147,12 +199,12 @@ TEST_CASE("read_nonexistent_tenant", tags) {
     database_helper h;
     auto sys_ctx = h.context().with_tenant(ores::utility::uuid::tenant_id::system(), "");
 
-    tenant_repository repo(sys_ctx);
+    tenant_repository repo;
 
     const auto nonexistent_id = boost::uuids::random_generator()();
     BOOST_LOG_SEV(lg, debug) << "Non-existent ID: " << nonexistent_id;
 
-    auto read_tenants = repo.read_latest(nonexistent_id);
+    auto read_tenants = repo.read_latest(sys_ctx, boost::uuids::to_string(nonexistent_id));
     BOOST_LOG_SEV(lg, debug) << "Read tenants: " << read_tenants;
 
     CHECK(read_tenants.size() == 0);

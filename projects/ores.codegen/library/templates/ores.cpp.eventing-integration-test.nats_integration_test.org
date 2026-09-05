@@ -29,6 +29,12 @@ The full template source. Edit here and re-tangle with
 {{{cpp_license}}}
 {{#domain_entity}}
 #include "ores.database/domain/context.hpp"
+{{#sql.system_scope}}
+// System-scoped entity (see the SQL flags): rows belong to the system
+// tenant, so the write context below is stamped system and needs the
+// tenant_id helpers.
+#include "ores.utility/uuid/tenant_id.hpp"
+{{/sql.system_scope}}
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
 #include "ores.eventing.api/service/event_bus.hpp"
@@ -101,6 +107,14 @@ The full template source. Edit here and re-tangle with
 {{/parent_required_fks}}
 {{/parent_is_party}}
 {{/parent_entity_singular}}
+{{#parent_seed_snippet}}
+{{#parent_seed_includes}}
+// Parent-seed snippet includes ({{table}}): the parent table is
+// hand-authored with no modeling org, so the snippet's generator and
+// repository headers are named by the org rather than derived.
+{{{parent_seed_includes}}}
+{{/parent_seed_includes}}
+{{/parent_seed_snippet}}
 {{/nullable}}
 {{/foreign_keys}}
 #include "ores.testing/make_generation_context.hpp"
@@ -166,12 +180,22 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
+{{#sql.system_scope}}
+    // {{entity_title}} rows belong to the system tenant: the insert trigger
+    // stamps tenant_id = system, so the RLS write policy admits the write
+    // only under a system-scoped context -- the per-run tenant GUC would
+    // reject the forced row.
+    auto party_ctx = h.context().with_tenant(
+        ores::utility::uuid::tenant_id::system(), h.db_user());
+{{/sql.system_scope}}
+{{^sql.system_scope}}
 {{#sql.party_id_from_session}}
     auto party_ctx = write_test_party_and_scope_context(h, ctx);
 {{/sql.party_id_from_session}}
 {{^sql.party_id_from_session}}
     auto& party_ctx = h.context();
 {{/sql.party_id_from_session}}
+{{/sql.system_scope}}
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled
@@ -276,10 +300,12 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
         }
     }
 {{/parent_is_party}}
+{{! Every ancestor row is declared up front, then written in the second
+    loop below: the write phase patches a referencing row onto its
+    seeded ancestor before the referencing row's own write, so every
+    patch target (a row one step shallower in the chain, declared here)
+    must exist before any write runs. }}
 {{#parent_required_fks}}
-    // Seed the active {{parent_entity_singular}} row {{table}} references:
-    // the parent's own existence check rejects a synthetic key that
-    // matches no active row, so the grandparent must be written first.
     auto {{var}} = ores::{{component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
 {{#parent_has_audit_group}}
     {{var}}.audit.change_reason_code = "system.test";
@@ -287,6 +313,11 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{^parent_has_audit_group}}
     {{var}}.change_reason_code = "system.test";
 {{/parent_has_audit_group}}
+{{/parent_required_fks}}
+{{#parent_required_fks}}
+    // Seed the active {{parent_entity_singular}} row {{table}} references:
+    // the referencing row's insert trigger rejects a synthetic key that
+    // matches no active row, so it must be written first.
     ores::{{component}}::repository::{{parent_entity_singular}}_repository {{var}}_repo;
     {{var}}_repo.write(party_ctx, {{var}});
     {{parent_var}}.{{column}} = {{var}}.{{target_column}};
@@ -306,6 +337,9 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     {{column}}_repo.write(party_ctx, {{column}}_parent);
     v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{column}}_parent.{{target_column}};
 {{/parent_entity_singular}}
+{{#parent_seed_snippet}}
+{{{parent_seed_snippet}}}
+{{/parent_seed_snippet}}
 {{/nullable}}
 {{/foreign_keys}}
 {{#has_identity_group}}

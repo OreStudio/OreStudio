@@ -23,6 +23,7 @@
 #include "ores.iam.api/domain/account_party.hpp"
 #include "ores.iam.api/messaging/account_party_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.qt.headless/FontUtils.hpp"
 #include "ores.qt/ClientDatasetBundleModel.hpp"
 #include "ores.qt/IconUtils.hpp"

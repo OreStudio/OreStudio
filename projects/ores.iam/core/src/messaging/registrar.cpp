@@ -29,6 +29,7 @@
 #include "ores.iam.api/messaging/session_samples_protocol.hpp"
 #include "ores.iam.api/messaging/signup_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_status_protocol.hpp"
 #include "ores.iam.api/messaging/tenant_type_protocol.hpp"
 #include "ores.iam.client/client/service_token_provider.hpp"
@@ -42,9 +43,10 @@
 #include "ores.iam.core/messaging/role_handler.hpp"
 #include "ores.iam.core/messaging/session_handler.hpp"
 #include "ores.iam.core/messaging/tenant_handler.hpp"
+#include "ores.iam.core/messaging/tenant_provisioning_handler.hpp"
 #include "ores.iam.core/messaging/tenant_status_handler.hpp"
 #include "ores.iam.core/messaging/tenant_type_handler.hpp"
-#include "ores.iam.core/repository/tenant_repository.hpp"
+#include "ores.iam.core/repository/tenant_lookups.hpp"
 #include "ores.iam.core/service/cache/party_cache.hpp"
 #include "ores.iam.core/service/cache/party_cache_registrar.hpp"
 #include "ores.iam.core/service/internal_impersonation_service.hpp"
@@ -264,7 +266,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
         signer, [pc](const std::string& tenant_id, const boost::uuids::uuid& party_id) {
             return pc->compute_visible_party_ids(tenant_id, party_id);
         });
-    auto th = std::make_shared<tenant_handler>(nats, ctx, signer, std::move(impersonation));
+    auto th = std::make_shared<tenant_handler>(nats, ctx, signer);
+    auto tph = std::make_shared<tenant_provisioning_handler>(
+        nats, ctx, signer, std::move(impersonation));
     subs.push_back(
         nats.queue_subscribe(get_tenants_request::nats_subject, qg, [th](ores::nats::message msg) {
             th->list(std::move(msg));
@@ -282,12 +286,13 @@ registrar::register_handlers(ores::nats::service::client& nats,
             th->history(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        complete_tenant_provisioning_command::nats_subject, qg, [th](ores::nats::message msg) {
-            th->complete_provisioning(std::move(msg));
+        complete_tenant_provisioning_command::nats_subject, qg,
+        [tph](ores::nats::message msg) {
+            tph->complete_provisioning(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        provision_acme_tenant_command::nats_subject, qg, [th](ores::nats::message msg) {
-            th->provision_acme(std::move(msg));
+        provision_acme_tenant_command::nats_subject, qg, [tph](ores::nats::message msg) {
+            tph->provision_acme(std::move(msg));
         }));
 
     // --- Tenant statuses ---
@@ -362,8 +367,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
 
     std::vector<std::string> tenant_ids;
     try {
-        repository::tenant_repository tenant_repo(ctx);
-        const auto tenants = tenant_repo.read_latest();
+        const auto tenants = repository::read_all_active_tenants(ctx);
         tenant_ids.reserve(tenants.size());
         for (const auto& t : tenants)
             tenant_ids.push_back(boost::uuids::to_string(t.id));

@@ -23,6 +23,7 @@
 #include "ores.qt/ExceptionHelper.hpp"
 #include "ores.qt/RelativeTimeHelper.hpp"
 #include <QtConcurrent>
+#include <boost/uuid/uuid_io.hpp>
 
 namespace ores::qt {
 
@@ -91,7 +92,7 @@ QVariant ClientTenantModel::data(const QModelIndex& index, int role) const {
             case Status:
                 return QString::fromStdString(tenant.status);
             case Version:
-                return tenant.version;
+                return static_cast<qlonglong>(tenant.version);
             case ModifiedBy:
                 return QString::fromStdString(tenant.modified_by);
             case RecordedAt:
@@ -109,8 +110,15 @@ QVariant ClientTenantModel::data(const QModelIndex& index, int role) const {
 }
 
 QVariant ClientTenantModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+    if (orientation != Qt::Horizontal || (role != Qt::DisplayRole && role != Qt::ToolTipRole))
         return {};
+
+    if (role == Qt::ToolTipRole) {
+        switch (section) {
+            default:
+                return {};
+        }
+    }
 
     switch (section) {
         case Code:
@@ -135,46 +143,111 @@ QVariant ClientTenantModel::headerData(int section, Qt::Orientation orientation,
 }
 
 void ClientTenantModel::refresh() {
+    BOOST_LOG_SEV(lg(), debug) << "Calling refresh.";
+
     if (is_fetching_) {
-        BOOST_LOG_SEV(lg(), debug) << "Already fetching, skipping refresh";
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring refresh request.";
         return;
     }
 
     if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot refresh tenant model: disconnected.";
         emit loadError("Not connected to server");
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Starting tenant fetch";
-    is_fetching_ = true;
+    if (!tenants_.empty()) {
+        beginResetModel();
+        tenants_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        total_available_count_ = 0;
+        endResetModel();
+    }
 
+    fetch_tenants(0, page_size_);
+}
+
+void ClientTenantModel::load_page(std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "load_page: offset=" << offset << ", limit=" << limit;
+
+    if (is_fetching_) {
+        BOOST_LOG_SEV(lg(), warn) << "Fetch already in progress, ignoring load_page request.";
+        return;
+    }
+
+    if (!clientManager_ || !clientManager_->isConnected()) {
+        BOOST_LOG_SEV(lg(), warn) << "Cannot load page: disconnected.";
+        return;
+    }
+
+    if (!tenants_.empty()) {
+        beginResetModel();
+        tenants_.clear();
+        recencyTracker_.clear();
+        pulseManager_->stop_pulsing();
+        endResetModel();
+    }
+
+    fetch_tenants(offset, limit);
+}
+
+void ClientTenantModel::fetch_tenants(std::uint32_t offset, std::uint32_t limit) {
+    is_fetching_ = true;
     QPointer<ClientTenantModel> self = this;
 
-    QFuture<FetchResult> future = QtConcurrent::run([self]() -> FetchResult {
+    QFuture<FetchResult> future = QtConcurrent::run([self, offset, limit]() -> FetchResult {
         return exception_helper::wrap_async_fetch<FetchResult>(
             [&]() -> FetchResult {
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Making tenants request with offset=" << offset << ", limit=" << limit;
                 if (!self || !self->clientManager_) {
                     return {.success = false,
                             .tenants = {},
+                            .total_available_count = 0,
                             .error_message = "Model was destroyed",
                             .error_details = {}};
                 }
 
                 iam::messaging::get_tenants_request request;
-                auto response_result =
+                request.offset = offset;
+                request.limit = limit;
+
+                auto result =
                     self->clientManager_->process_authenticated_request(std::move(request));
-                if (!response_result) {
-                    BOOST_LOG_SEV(lg(), error) << "Failed to send request";
+
+                if (!result) {
+                    BOOST_LOG_SEV(lg(), error) << "Failed to send request: " << result.error();
                     return {.success = false,
                             .tenants = {},
-                            .error_message = "Failed to send request",
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result.error()),
+                            .error_details = {}};
+                }
+
+                // A transport-level success (result is set) does not mean the
+                // request itself succeeded -- the server encodes business/
+                // repository failures (e.g. a query error) as a normally-
+                // deserializable response with success=false and a message,
+                // not a transport error. Missing this check silently turns a
+                // real backend failure into "0 rows loaded", indistinguishable
+                // from a genuinely empty result set.
+                if (!result->success) {
+                    BOOST_LOG_SEV(lg(), error) << "Server reported failure: " << result->message;
+                    return {.success = false,
+                            .tenants = {},
+                            .total_available_count = 0,
+                            .error_message = QString::fromStdString(result->message),
                             .error_details = {}};
                 }
 
                 BOOST_LOG_SEV(lg(), debug)
-                    << "Fetched " << response_result->tenants.size() << " tenants";
+                    << "Fetched " << result->tenants.size()
+                    << " tenants, total available: " << result->total_available_count;
                 return {.success = true,
-                        .tenants = std::move(response_result->tenants),
+                        .tenants = std::move(result->tenants),
+                        .total_available_count =
+                            static_cast<std::uint32_t>(result->total_available_count),
                         .error_message = {},
                         .error_details = {}};
             },
@@ -196,19 +269,38 @@ void ClientTenantModel::onTenantsLoaded() {
         return;
     }
 
-    beginResetModel();
-    tenants_ = std::move(result.tenants);
-    endResetModel();
+    total_available_count_ = result.total_available_count;
 
-    const bool has_recent = recencyTracker_.update(tenants_);
-    if (has_recent && !pulseManager_->is_pulsing()) {
-        pulseManager_->start_pulsing();
-        BOOST_LOG_SEV(lg(), debug)
-            << "Found " << recencyTracker_.recent_count() << " tenants newer than last reload";
+    const int new_count = static_cast<int>(result.tenants.size());
+
+    if (new_count > 0) {
+        beginResetModel();
+        tenants_ = std::move(result.tenants);
+        endResetModel();
+
+        const bool has_recent = recencyTracker_.update(tenants_);
+        if (has_recent && !pulseManager_->is_pulsing()) {
+            pulseManager_->start_pulsing();
+            BOOST_LOG_SEV(lg(), debug)
+                << "Found " << recencyTracker_.recent_count() << " tenants newer than last reload";
+        }
     }
 
-    BOOST_LOG_SEV(lg(), info) << "Loaded " << tenants_.size() << " tenants";
+    BOOST_LOG_SEV(lg(), info) << "Loaded " << new_count << " tenants."
+                              << " Total available: " << total_available_count_;
+
     emit dataLoaded();
+}
+
+void ClientTenantModel::set_page_size(std::uint32_t size) {
+    if (size == 0 || size > 1000) {
+        BOOST_LOG_SEV(lg(), warn) << "Invalid page size: " << size
+                                  << ". Must be between 1 and 1000. Using default: 100";
+        page_size_ = 100;
+    } else {
+        page_size_ = size;
+        BOOST_LOG_SEV(lg(), info) << "Page size set to: " << page_size_;
+    }
 }
 
 const iam::domain::tenant* ClientTenantModel::getTenant(int row) const {
@@ -217,6 +309,7 @@ const iam::domain::tenant* ClientTenantModel::getTenant(int row) const {
         return nullptr;
     return &tenants_[idx];
 }
+
 
 QVariant ClientTenantModel::recency_foreground_color(const std::string& code) const {
     if (recencyTracker_.is_recent(code) && pulseManager_->is_pulse_on()) {

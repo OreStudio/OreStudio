@@ -17,11 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_ACCOUNT_PARTY_ENTITY_HPP
-#define ORES_IAM_REPOSITORY_ACCOUNT_PARTY_ENTITY_HPP
+#ifndef ORES_IAM_CORE_REPOSITORY_ACCOUNT_PARTY_ENTITY_HPP
+#define ORES_IAM_CORE_REPOSITORY_ACCOUNT_PARTY_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+#include <optional>
+#include <ostream>
 #include <string>
 
 namespace ores::iam::repository {

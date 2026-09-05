@@ -259,22 +259,46 @@ boost::asio::awaitable<void> report_scheduling_service::reconcile() {
     BOOST_LOG_SEV(lg(), info) << "Starting scheduler reconciliation for report definitions.";
 
 
-    // Step 1: ask the IAM service for all active tenants.
+    // Step 1: ask the IAM service for all active tenants, paging until the
+    // server-reported total is exhausted.
     BOOST_LOG_SEV(lg(), debug) << "Requesting active tenant list from IAM.";
     std::vector<ores::iam::domain::tenant> tenants;
+    const auto& codec = ores::nats::default_wire_codec();
+    constexpr std::uint32_t page_size = 100;
     try {
-        const ores::iam::messaging::get_tenants_request tenant_req{.include_deleted = false};
-        const auto& codec = ores::nats::default_wire_codec();
-        const auto reply_msg = svc_nats_.authenticated_request(
-            ores::iam::messaging::get_tenants_request::nats_subject, codec.encode(tenant_req));
+        std::uint32_t offset = 0;
+        int total_available = 0;
+        while (true) {
+            ores::iam::messaging::get_tenants_request tenant_req;
+            tenant_req.offset = offset;
+            tenant_req.limit = page_size;
 
-        auto resp = codec.decode<ores::iam::messaging::get_tenants_response>(reply_msg.data);
-        if (!resp) {
-            BOOST_LOG_SEV(lg(), error)
-                << "Failed to parse tenant list response; aborting reconciliation.";
-            co_return;
+            const auto reply_msg = svc_nats_.authenticated_request(
+                ores::iam::messaging::get_tenants_request::nats_subject, codec.encode(tenant_req));
+
+            auto resp = codec.decode<ores::iam::messaging::get_tenants_response>(reply_msg.data);
+            if (!resp) {
+                BOOST_LOG_SEV(lg(), error)
+                    << "Failed to parse tenant list response; aborting reconciliation.";
+                co_return;
+            }
+            if (!resp->success) {
+                BOOST_LOG_SEV(lg(), error) << "IAM failed to list tenants: " << resp->message
+                                           << "; aborting reconciliation.";
+                co_return;
+            }
+
+            total_available = resp->total_available_count;
+            auto& page = resp->tenants;
+            for (auto& t : page)
+                tenants.push_back(std::move(t));
+
+            offset += static_cast<std::uint32_t>(page.size());
+            const auto received_all =
+                page.empty() || offset >= static_cast<std::uint32_t>(total_available);
+            if (received_all)
+                break;
         }
-        tenants = std::move(resp->tenants);
     } catch (const std::exception& e) {
         BOOST_LOG_SEV(lg(), error) << "Failed to retrieve tenant list from IAM: " << e.what();
         co_return;

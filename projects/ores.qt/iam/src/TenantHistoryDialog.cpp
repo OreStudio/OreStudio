@@ -66,7 +66,7 @@ void TenantHistoryDialog::loadHistory() {
             historyLoadFailed(QString::fromStdString(response.message));
             return;
         }
-        versions_ = std::move(response.versions);
+        versions_ = std::move(response.history);
         historyLoaded();
     });
 }

@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_TENANT_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_TENANT_REPOSITORY_HPP
+#ifndef ORES_IAM_CORE_REPOSITORY_TENANT_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_TENANT_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/tenant.hpp"
 #include "ores.iam.core/export.hpp"
 #include "ores.logging/make_logger.hpp"
-#include <boost/uuid/uuid.hpp>
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,63 +49,68 @@ private:
 public:
     using context = ores::database::context;
 
-    explicit tenant_repository(context ctx);
-
     /**
      * @brief Returns the SQL created by sqlgen to construct the table.
      */
     std::string sql();
 
     /**
-     * @brief Writes a tenant to database.
+     * @brief Writes tenants to database.
      */
     /**@{*/
-    void write(const domain::tenant& tenant);
-    void write(const std::vector<domain::tenant>& tenants);
+    void write(context ctx, const domain::tenant& v);
+    void write(context ctx, const std::vector<domain::tenant>& v);
     /**@}*/
 
     /**
-     * @brief Reads all latest active tenants.
-     *
-     * Returns only tenants where valid_to = infinity (not deleted).
+     * @brief Reads latest tenants, possibly filtered by primary key.
      */
-    std::vector<domain::tenant> read_latest();
+    /**@{*/
+    std::vector<domain::tenant> read_latest(context ctx);
+    std::vector<domain::tenant> read_latest(context ctx, const std::string& id);
+    /**@}*/
 
     /**
-     * @brief Reads the latest version of all tenants including deleted.
-     *
-     * Returns the most recent version of each tenant, regardless of whether
-     * it has been soft-deleted (valid_to != infinity).
+     * @brief Reads all tenants, possibly filtered by primary key.
      */
-    std::vector<domain::tenant> read_all_latest();
+    std::vector<domain::tenant> read_all(context ctx, const std::string& id);
 
     /**
-     * @brief Reads a specific tenant by ID.
+     * @brief Reads a single tenant as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
      */
-    std::vector<domain::tenant> read_latest(const boost::uuids::uuid& id);
+    std::optional<domain::tenant>
+    read_at_version(context ctx, const std::string& id, std::uint32_t version);
 
     /**
-     * @brief Reads a specific tenant by code.
+     * @brief Reads latest tenants with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
      */
-    std::vector<domain::tenant> read_latest_by_code(const std::string& code);
+    std::vector<domain::tenant> read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
 
     /**
-     * @brief Reads a specific tenant by hostname.
+     * @brief Gets the total count of active tenants.
+     * @param ctx Repository context with database connection
+     * @return Total number of active tenants
      */
-    std::vector<domain::tenant> read_latest_by_hostname(const std::string& hostname);
-
-    /**
-     * @brief Reads all historical versions of a tenant.
-     */
-    std::vector<domain::tenant> read_history(const boost::uuids::uuid& id);
+    std::uint32_t get_total_tenant_count(context ctx);
 
     /**
      * @brief Deletes a tenant by closing its temporal validity.
      */
-    void remove(const boost::uuids::uuid& tenant_id);
+    void remove(context ctx, const std::string& id);
 
-private:
-    context ctx_;
+    /**
+     * @brief Deletes tenants by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& ids);
 };
 
 }

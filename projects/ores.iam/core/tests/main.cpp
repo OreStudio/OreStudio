@@ -44,6 +44,12 @@ int main(int argc, char* argv[]) {
         "ores_iam_tenant_types_tbl");
     ores::testing::database_lifecycle_listener::register_pre_run_sweep_table(
         "ores_iam_tenant_statuses_tbl");
+    // The repository and eventing tests also write synthetic tenants into the
+    // shared system tenant (the insert trigger stamps tenant_id = system),
+    // and the hostname unique index is partial on OPEN rows -- an aborted run
+    // leaves rows the next run's counter restarts collide with.
+    ores::testing::database_lifecycle_listener::register_pre_run_sweep_table(
+        "ores_iam_tenants_tbl");
 
     return Catch::Session().run(argc, argv);
 }

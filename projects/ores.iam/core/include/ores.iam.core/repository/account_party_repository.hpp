@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_IAM_REPOSITORY_ACCOUNT_PARTY_REPOSITORY_HPP
-#define ORES_IAM_REPOSITORY_ACCOUNT_PARTY_REPOSITORY_HPP
+#ifndef ORES_IAM_CORE_REPOSITORY_ACCOUNT_PARTY_REPOSITORY_HPP
+#define ORES_IAM_CORE_REPOSITORY_ACCOUNT_PARTY_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.iam.api/domain/account_party.hpp"

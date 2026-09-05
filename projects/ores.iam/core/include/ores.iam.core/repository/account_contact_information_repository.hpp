@@ -72,7 +72,6 @@ public:
                                                                  const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all account contact informations, possibly filtered by primary key.
      */

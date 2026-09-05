@@ -136,11 +136,11 @@ TEST_CASE("write_workunit_publishes_nats_changed_event", tags) {
     // matches no active row, so the parent must be written first.
     auto app_version_id_parent = ores::compute::generators::generate_synthetic_app_version(ctx);
     app_version_id_parent.change_reason_code = "system.test";
-    // Seed the active app row ores_compute_apps_tbl references:
-    // the parent's own existence check rejects a synthetic key that
-    // matches no active row, so the grandparent must be written first.
     auto app_id_parent = ores::compute::generators::generate_synthetic_app(ctx);
     app_id_parent.change_reason_code = "system.test";
+    // Seed the active app row ores_compute_apps_tbl references:
+    // the referencing row's insert trigger rejects a synthetic key that
+    // matches no active row, so it must be written first.
     ores::compute::repository::app_repository app_id_parent_repo;
     app_id_parent_repo.write(party_ctx, app_id_parent);
     app_version_id_parent.app_id = app_id_parent.id;

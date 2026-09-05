@@ -20,6 +20,7 @@
 #include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.iam.api/domain/tenant_table_io.hpp" // IWYU pragma: keep.
 #include "ores.iam.api/messaging/tenant_protocol.hpp"
+#include "ores.iam.api/messaging/tenant_provisioning_protocol.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
@@ -42,6 +43,9 @@ std::string format_time(std::chrono::system_clock::time_point tp) {
     return ores::platform::time::datetime::to_local_display_string(tp);
 }
 
+// The tenant model caps its page size at 1000; mirror that.
+constexpr int list_limit = 1000;
+
 } // anonymous namespace
 
 void tenants_commands::register_commands(cli::Menu& root_menu,
@@ -52,16 +56,9 @@ void tenants_commands::register_commands(cli::Menu& root_menu,
     tenants_menu->Insert(
         "get",
         [&session](std::ostream& out) {
-            process_get_tenants(std::ref(out), std::ref(session), false);
+            process_get_tenants(std::ref(out), std::ref(session));
         },
         "Retrieve active tenants from the server");
-
-    tenants_menu->Insert(
-        "get-all",
-        [&session](std::ostream& out) {
-            process_get_tenants(std::ref(out), std::ref(session), true);
-        },
-        "Retrieve all tenants including deleted");
 
     tenants_menu->Insert(
         "add",
@@ -105,14 +102,11 @@ void tenants_commands::register_commands(cli::Menu& root_menu,
     root_menu.Insert(std::move(tenants_menu));
 }
 
-void tenants_commands::process_get_tenants(std::ostream& out,
-                                           nats_client& session,
-                                           bool include_deleted) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request. "
-                               << "include_deleted=" << include_deleted;
+void tenants_commands::process_get_tenants(std::ostream& out, nats_client& session) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get tenants request.";
 
     iam::messaging::get_tenants_request req;
-    req.include_deleted = include_deleted;
+    req.limit = list_limit;
 
     auto result = do_auth_request<iam::messaging::get_tenants_response>(
         out, session, "iam.v1.tenants.list", req);
@@ -121,6 +115,8 @@ void tenants_commands::process_get_tenants(std::ostream& out,
 
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->tenants.size() << " tenants.";
     out << result->tenants << std::endl;
+    out << result->tenants.size() << " of " << result->total_available_count << " tenants shown."
+        << std::endl;
 }
 
 void tenants_commands::process_add_tenant(std::ostream& out,
@@ -201,7 +197,7 @@ void tenants_commands::process_tenant_history(std::ostream& out,
         return;
     }
 
-    const auto& versions = result->versions;
+    const auto& versions = result->history;
     BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << versions.size()
                               << " history entries.";
 

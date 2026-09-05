@@ -2293,6 +2293,10 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             # defaults False so needs_counter below falls back to the primary
             # key check alone.
             domain_entity.setdefault('has_text_natural_keys', False)
+        domain_entity['unique_keys'] = [
+            {'column': col['name']} for col in domain_entity.get('columns', [])
+            if col.get('unique') is True
+        ]
         # A required (NOT NULL) plain timestamp column needs the same
         # ores.platform/time/datetime.hpp + <chrono>/<format>/<sstream>
         # includes a timestamp natural key needs -- broaden the flag rather

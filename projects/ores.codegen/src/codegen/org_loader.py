@@ -1134,6 +1134,12 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
             expressions = [r["expression"] for r in rows if r.get("expression")]
             if expressions:
                 de.setdefault("sql", {})["extra_checks"] = expressions
+        delete_sets_section = _section(sql_section, "Delete sets")
+        if delete_sets_section and delete_sets_section.tables:
+            rows = _parse_org_table_rows(delete_sets_section)
+            sets = [r["expression"] for r in rows if r.get("expression")]
+            if sets:
+                de.setdefault("sql", {})["extra_delete_sets"] = sets
         bitemporal_nk_section = _section(sql_section, "Bitemporal natural keys")
         if bitemporal_nk_section and bitemporal_nk_section.tables:
             rows = _parse_org_table_rows(bitemporal_nk_section)

@@ -168,6 +168,20 @@ on "{{domain_entity.sql_name_base}}_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 {{/domain_entity.sql.nullable_tenant_id}}
 {{/domain_entity.has_tenant_in_pk}}
+{{#domain_entity.unique_keys}}
+
+-- Unique {{column}} for active records
+{{#domain_entity.has_tenant_in_pk}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
+on "{{domain_entity.sql_name_base}}_tbl" (tenant_id, {{column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_in_pk}}
+{{^domain_entity.has_tenant_in_pk}}
+create unique index if not exists {{domain_entity.index_name_prefix}}_{{column}}_uniq_idx
+on "{{domain_entity.sql_name_base}}_tbl" ({{column}})
+where valid_to = ores_utility_infinity_timestamp_fn();
+{{/domain_entity.has_tenant_in_pk}}
+{{/domain_entity.unique_keys}}
 {{#domain_entity.indexes}}
 
 create{{#unique}} unique{{/unique}} index if not exists {{domain_entity.index_name_prefix}}_{{name}}_idx

@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: 4335B0BE-F70C-4C76-9020-4B14B778895B
+:END:
+#+title: Task: Grant iam_service select on refdata for the account_party soft FK
+#+description: The regenerated ores_iam_account_parties_insert_fn runs under the plain invoker idiom, so its soft-FK validation subselect against ores_refdata_parties_tbl executes as the iam service user. The service registry granted iam_service select on ores_assets_ and ores_dq_ only, so the first live tenant provisioning on a fresh DB failed with 'permission denied for table ores_refdata_parties_tbl'. Add ores_refdata_ to iam's Select prefixes in service_registry.org and regenerate iam_service_db_grants_create.sql.
+#+type: task
+#+level: s1
+#+filetags: :entity-classification-drift-iam:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-iam-account-party-grant
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-05
+#+updated: 2026-09-05
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bind PR #2014 regenerated the iam junction templates; the account_party
+insert function now runs under the plain invoker idiom, so its soft-FK
+validation subselect against ores_refdata_parties_tbl executes as the
+iam service user. The registry grants covered ores_assets_ and ores_dq_
+only, so first live tenant provisioning on a fresh database failed with
+"permission denied for table ores_refdata_parties_tbl". ctest never
+caught it: the tests run as privileged roles. Express the refdata grant
+for iam_service in the service registry model and regenerate, so the
+generated grants file is lossless again.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:C7AB2C55-5EF6-4DCE-8000-A2BEB3184971][Entity classification and drift baseline: ores.iam]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-05                               |
+
+* Acceptance
+
+- service_registry.org grants iam_service select on ores_refdata_ and
+  regeneration of iam_service_db_grants_create.sql is a no-op (lossless
+  model again).
+- Live tenant provisioning on a fresh database succeeds: the account_party
+  soft-FK validation subselect runs without a permission error.
+- Full build clean; ctest 71/71 green.
+
+* Plan
+
+Extend the per-service cross-domain Select prefixes for iam_service in
+service_registry.org with ores_refdata_ (the model capability the
+investigate-hand-added-service-grants story added), then regenerate
+iam_service_db_grants_create.sql from the model so the grant is
+generator-owned, never hand-added. Prove losslessness: regeneration
+before and after the edit must reproduce the committed file (the diff
+is exactly the one grant line, then a no-op). Verify live with tenant
+provisioning on a fresh database.
+
+* Notes
+
+Found by the post-merge system test of the compute/iam bind PRs: first
+live tenant provisioning on a fresh database failed with "permission
+denied for table ores_refdata_parties_tbl". Same drift class the
+investigate-hand-added-service-grants story closed (regeneration must be
+lossless); this instance was a new cross-domain reference the bind's
+junction regeneration introduced. ctest cannot see it — the tests run as
+privileged roles — so the live test is the only evidence.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+service_registry.org gains ores_refdata_ in iam_service's Select
+prefixes; iam_service_db_grants_create.sql regenerated — the diff is the
+single grant line. Losslessness proven twice: regeneration was a no-op
+before the edit (baseline) and is a no-op after it (re-verified
+2026-09-05 on the fix branch). Live tenant provisioning on a fresh
+database then succeeded end to end, including the account_party insert
+with its soft-FK validation against ores_refdata_parties_tbl.
+
+Verification: full build clean and ctest 71/71 green on the fix branch
+(linux-clang-debug-make); regeneration no-op (above).

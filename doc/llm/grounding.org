@@ -83,34 +83,35 @@ lag the code it documents.
 What the framework asserts of these documents is weaker and different in
 kind. It asserts that an agent must prefer them to its own recall,
 because its recall is a statistical reconstruction and they are a
-record ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]]). Preference over recall is a claim about
-provenance. Correctness is a claim about content. Only the first is
-being made.
+record ([[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]]).
+Preference over recall is a claim about provenance. Correctness is a claim
+about content. Only the first is being made.
 
 Ground truth does have a proper place in this project, but a different
 one. An evaluation of a skill requires cases whose correct outcome is
 known independently, and those cases are ground truth in the strict
-sense ([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]). That is a construct for measuring the framework,
-not a construct within it.
+sense ([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]). That is a
+construct for measuring the framework, not a construct within it.
 
 ** The Static Sense: What an Agent Loads
 
-The static component of grounding is discharged by the /loading/ regulatory function,
-which classifies those documents an agent reads to inform work rather
-than acts upon ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Three types carry the weight of it, and
-they differ in the condition under which each is read.
+The static component of grounding is discharged by the /loading/ regulatory
+function, which classifies those documents an agent reads to inform work rather
+than acts upon ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory
+Functions]]). Three types carry the weight of it, and they differ in the
+condition under which each is read.
 
-[[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][Knowledge]] is read by relevance to the work. It states what a domain
-concept means, and an agent about to touch a concept is expected to
-resolve it here first.
+[[id:9AB395D6-0265-4DEB-BA95-04D24C8444AF][Knowledge]] is read by relevance to
+the work. It states what a domain concept means, and an agent about to touch a
+concept is expected to resolve it here first.
 
-[[id:8A2A2873-BE08-48DA-B02F-CF541479E6B1][Recipes]] are read on demand, when a command is needed. They state how an
-operation is performed in this system, which is frequently not how it is
-performed elsewhere.
+[[id:8A2A2873-BE08-48DA-B02F-CF541479E6B1][Recipes]] are read on demand, when a
+command is needed. They state how an operation is performed in this system,
+which is frequently not how it is performed elsewhere.
 
-[[id:FC7CE460-131C-40BA-B46A-2D64525C6789][Memories]] are read unconditionally. They record corrections that have
-already been made once, and their purpose is defeated if an agent
-consults them only when it suspects it needs to.
+[[id:FC7CE460-131C-40BA-B46A-2D64525C6789][Memories]] are read unconditionally.
+They record corrections that have already been made once, and their purpose is
+defeated if an agent consults them only when it suspects it needs to.
 
 ** The Dynamic Sense: How Common Ground Is Built
 
@@ -119,10 +120,11 @@ when the material does not exist, and that case is the common one on
 unfamiliar work.
 
 The framework's answer is the rule that an unresolved concept becomes
-the first task rather than an assumption ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods]]). An agent that cannot
-resolve a term to a document does not proceed on its reconstruction of
-what the term probably means. It stops and asks, or it writes the
-missing document and has it reviewed.
+the first task rather than an assumption
+([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods]]). An agent that cannot
+resolve a term to a document does not proceed on its reconstruction of what the
+term probably means. It stops and asks, or it writes the missing document and
+has it reviewed.
 
 This is dynamic grounding in the sense Chandu, Bisk and Black intend. It
 is a request for clarification, and it treats the absence of common
@@ -151,11 +153,10 @@ it is thin.
 | Common sense           | The contextual assumptions a concept carries     | Principles            |
 | Personalised consensus | What these parties have agreed, over their history | Memories            |
 
-The fourth is the one most easily overlooked and the one memories exist
-to serve. A memory does not record a general truth. It records what this
-project decided, which is precisely the "personalised consensus"
-category, and which is why a memory is neither knowledge nor a
-principle.
+Personalised consensus is the one most easily overlooked, and the one
+memories exist to serve. A memory does not record a general truth. It
+records what this project decided, which is why a memory is neither
+knowledge nor a principle.
 
 ** Constraints: Why the Framework Is Documentary
 
@@ -189,12 +190,12 @@ Knowledge, recipes and memories do not ground; an agent grounds itself
 by reading them. Naming the set after the activity invited the reader to
 treat the two as one thing.
 
-The second is that the set had ceased to be well defined. When regulatory functions
-were extended across every document type, loading came to be implemented
-by most of them, including tasks, stories, sprints and designs. The
-collective noun continued to name three. A term that names three members
-of a set containing fifteen is a fossil of an earlier taxonomy rather
-than a description of the current one.
+The second is that the set had ceased to be well defined. When regulatory
+functions were extended across every document type, loading came to be
+implemented by most of them, including tasks, stories, sprints and designs. The
+collective noun continued to name three. A term that names three members of a
+set containing fifteen is a fossil of an earlier taxonomy rather than a
+description of the current one.
 
 Where the set must be referred to, "the types implementing loading"
 states it exactly and in the vocabulary the model already supplies. The
@@ -214,14 +215,16 @@ Memories are read at the opening of the session, unconditionally. What
 the session establishes is recorded before it closes.
 
 The obligation is proportionate to the work. A method that fires on
-every trivial change trains people to route around it ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods]]). The
-obligation binds where the cost of a wrong assumption exceeds the cost
-of checking, which is the condition it exists to serve.
+every trivial change trains people to route around it
+([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods]]). The obligation binds
+where the cost of a wrong assumption exceeds the cost of checking, which is the
+condition it exists to serve.
 
 * References
 
 - Chandu, K. R., Bisk, Y. and Black, A. W. (2021). /Grounding 'Grounding' in
-  NLP/. Findings of ACL 2021, 4283–4305. [[https://arxiv.org/abs/2106.02192][arXiv:2106.02192]]
+NLP/. Findings of ACL 2021, 4283–4305.
+[[https://arxiv.org/abs/2106.02192][arXiv:2106.02192]]
 - Clark, H. H. and Brennan, S. E. (1991). /Grounding in Communication/. In
   Resnick, L. B., Levine, J. M. and Teasley, S. D. (eds.), /Perspectives on
   Socially Shared Cognition/, 127–149. American Psychological Association.

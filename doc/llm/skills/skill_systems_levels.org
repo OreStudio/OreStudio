@@ -12,9 +12,9 @@
 * Summary
 
 A regulator presented with more variety than it can use stops regulating. This
-page holds the framework's answer to that: a session declares the [[id:926B916E-A57E-498E-99AB-720B583C0362][System]] it
-acts as, and that declaration attenuates the catalogue to the portion in scope
-for the work.
+page holds the framework's answer to that: a session declares the
+[[id:926B916E-A57E-498E-99AB-720B583C0362][System]] it acts as, and that
+declaration attenuates the catalogue to the portion in scope for the work.
 
 Attenuation comes in two strengths, and the difference decides what the
 framework may claim. An advisory default is convenience and regulates nothing,
@@ -25,7 +25,8 @@ row of the table below binds; the rest are ergonomics, and are named as such
 
 This document states the actor vocabulary, the System a session or delegate acts
 as, what each level sees, and the boundary a read-only System cannot cross. For
-how an agent is configured, isolated and left to run, see [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]].
+how an agent is configured, isolated and left to run, see
+[[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]].
 
 * Detail
 
@@ -60,9 +61,9 @@ Review the diff, not the report.
 
 ** The Level Attenuates the Catalogue
 
-A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][System]] once, at the start. That sets the
-cybernetic level, and the level selects the slice of the catalogue in
-scope by default.
+A session declares its [[id:926B916E-A57E-498E-99AB-720B583C0362][System]]
+once, at the start. That sets the cybernetic level, and the level selects the
+slice of the catalogue in scope by default.
 
 #+ATTR_HTML: :class hug-leading
 | Level | System           | Horizon    | Sees                                                        |
@@ -84,10 +85,10 @@ Attenuation has two strengths, and they must not be confused.
   channel that can be talked into editing what it observes is not an
   audit channel. This row is enforced.
 
-Constraint flows down and signal flows up, unchanged from the [[id:926B916E-A57E-498E-99AB-720B583C0362][levels
-model]]: a method at S1 inherits the story goal from S2, which inherited
-the sprint mission from S3; a task result becomes a story result becomes
-a sprint retrospective.
+Constraint flows down and signal flows up, unchanged from the
+[[id:926B916E-A57E-498E-99AB-720B583C0362][levels model]]: a method at S1
+inherits the story goal from S2, which inherited the sprint mission from S3; a
+task result becomes a story result becomes a sprint retrospective.
 
 ** Systems Adopted by Delegates
 
@@ -133,9 +134,9 @@ prose. Only surprises forced by something outside our control — a
 platform, a vendor, a protocol we cannot reshape — earn a comment
 instead of a fix.
 
-That is =encode-lessons-in-structure= made operational ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack
-Collection]]): a finding that ends in a structural flag outlives a finding that
-ends in a deletion.
+That is =encode-lessons-in-structure= made operational
+([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]]): a finding
+that ends in a structural flag outlives a finding that ends in a deletion.
 
 
 ** Inventory

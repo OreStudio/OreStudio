@@ -17,29 +17,34 @@ mechanism by which a target resolves to the operations available on it, the
 three entry points into the model, and a map of the pages treating each part in
 detail.
 
-[[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] specifies the framework: it derives the
-regulatory functions from the primitives of a control loop, states which things
-the framework models and which it leaves to the agent, and gives the criterion
-by which a skill is retired. Read it for what the framework is and why. Read
-this page to find your way around it.
+[[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]
+specifies the framework: it derives the regulatory functions from the
+primitives of a control loop, states which things the framework models and
+which it leaves to the agent, and gives the criterion by which a skill is
+retired. Read it for what the framework is and why. Read this page to find your
+way around it.
 
-The framework rests on academic foundations, principally [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]],
-and on empirical foundations drawn from [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill collections]] published by other
-developers. We have attributed provenance as fully as we can, but please report
-any we may have missed.
+The framework rests on academic foundations, principally
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] and
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]], and on empirical foundations
+drawn from [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][skill collections]]
+published by other developers. We have attributed provenance as fully as we
+can, but please report any we may have missed.
 
 * Detail
 
 ** Key Concepts
 
 A skill in agent tooling is "a document that an assistant loads to perform a
-/kind/ of work" (/c.f./ [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]]). The compass framework refines that
-general notion: a [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][skill]] is one /action/ applied to one /typed target/. Compass
-represents a skill as a document type, one of many defined by the [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][documentation
+/kind/ of work" (/c.f./ [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent
+skills]]). The compass framework refines that general notion: a
+[[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][skill]] is one /action/ applied to
+one /typed target/. Compass represents a skill as a document type, one of many
+defined by the [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][documentation
 ontology]]; that same ontology supplies some of the types the targets are drawn
 from. A comparative analysis was performed across academic and industrial
-literature (/c.f./ [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]), and resulted in the
-action model that follows.
+literature (/c.f./ [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the
+Compass Skill Framework]]), and resulted in the action model that follows.
 
 *** The Dispatch Model
 
@@ -70,7 +75,8 @@ and offer the methods of those interfaces. The one departure is *scope*, which
 has no counterpart in an ordinary trait system. There an interface belongs to
 the class and every caller sees the same methods; here the caller's role decides
 which methods it is offered, so the same object presents a smaller surface to a
-session at S1 than to one at S3* (/c.f./ [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic levels]]).
+session at S1 than to one at S3* (/c.f./
+[[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic levels]]).
 #+end_quote
 
 The three sections below take those parts in turn: what a thing is and what it
@@ -79,10 +85,12 @@ operation is found and who may be offered it.
 
 *** Types and Regulatory Functions
 
-A [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] classifies artefacts (/c.f./ [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]]) by the relation an agent
-bears to them: the agent /loads/ a source, /cites/ a stance, /sequences/ a
-method, /executes/ an action, /declares/ a specification, /convenes/ a
-deliberation, and /records/ against an artefact carrying a lifecycle.
+A [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] classifies
+artefacts (/c.f./ [[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]])
+by the relation an agent bears to them: the agent /loads/ a source, /cites/ a
+stance, /sequences/ a method, /executes/ an action, /declares/ a specification,
+/convenes/ a deliberation, and /records/ against an artefact carrying a
+lifecycle.
 
 A type may implement several regulatory functions, which is why the
 classification is by regulatory function rather than by class. A recipe
@@ -100,24 +108,27 @@ a type. The distinction matters because it is what keeps the catalogue small.
 Actions are registered against a target's type rather than written into it,
 which makes this closer to multiple dispatch than to methods on a class. An
 operation whose behaviour does not vary across implementing types is written
-once and inherited by all of them, in the way a regulatory function carries a default
-implementation, and only genuinely type-specific behaviour is specialised. A
-catalogue that instead paired every operation with every type by hand would grow
-as the product of the two, and every pairing left unwritten would be a
-capability that could not be found.
+once and inherited by all of them, in the way a regulatory function carries a
+default implementation, and only genuinely type-specific behaviour is
+specialised. A catalogue that instead paired every operation with every type by
+hand would grow as the product of the two, and every pairing left unwritten
+would be a capability that could not be found.
 
 *** Dispatch and Scope
 
-[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Dispatch]] resolves a target's type and offers the operations its regulatory functions declare,
-so the applicable operations are computed rather than remembered. An agent
-holding an artefact can therefore ask what may be done with it, rather than
-needing to know the name of the action it wants.
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Dispatch]] resolves a target's type
+and offers the operations its regulatory functions declare, so the applicable
+operations are computed rather than remembered. An agent holding an artefact
+can therefore ask what may be done with it, rather than needing to know the
+name of the action it wants.
 
-Scope narrows that offer. An actor declares a [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][System]], whose [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]]
-determines which operations are in scope for it. At most levels the narrowing is
-a default: an agent is offered less but may reach outside its scope on request.
-At the audit level it is a constraint, since an auditor that can be persuaded to
-modify what it observes is not an auditor.
+Scope narrows that offer. An actor declares a
+[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][System]], whose
+[[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic level]] determines which
+operations are in scope for it. At most levels the narrowing is a default: an
+agent is offered less but may reach outside its scope on request. At the audit
+level it is a constraint, since an auditor that can be persuaded to modify what
+it observes is not an auditor.
 
 Scope is also where this model departs from a trait system in a typed language.
 There a trait belongs to the type alone, and every caller sees the same
@@ -127,13 +138,17 @@ engaging it, and the level is what carries that dependence.
 *** Application
 
 The framework applies these concepts to carry a /unit of work/, most often a
-[[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], from an unverified beginning to a verified end. A [[id:E8311826-9900-4932-AFFB-A8AF663414DF][method]] governs the flow,
-and its phases are determined dynamically as the work proceeds rather than fixed
-in advance. Each phase cites the principles that govern its judgement and calls
-the actions that operate on the relevant artefacts, preferring [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][generated]]
+[[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], from an unverified beginning
+to a verified end. A [[id:E8311826-9900-4932-AFFB-A8AF663414DF][method]]
+governs the flow, and its phases are determined dynamically as the work
+proceeds rather than fixed in advance. Each phase cites the principles that
+govern its judgement and calls the actions that operate on the relevant
+artefacts, preferring [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][generated]]
 structure wherever generation is possible. The extent to which the work must
-climb the [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification]] ladder follows from what it changed. An agent may be
-configured and [[id:54AD5986-34A0-4B19-9F20-D9A024225036][left running]] against a checkable finish condition.
+climb the [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification]] ladder
+follows from what it changed. An agent may be configured and
+[[id:54AD5986-34A0-4B19-9F20-D9A024225036][left running]] against a checkable
+finish condition.
 
 ** Entry Points
 
@@ -151,8 +166,9 @@ way allows each to be exercised and tested on its own.
 
 ** Terminology
 
-The framework uses a fixed vocabulary. The [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] is the register of record;
-the table below fixes usage within the framework.
+The framework uses a fixed vocabulary. The
+[[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] is the register of
+record; the table below fixes usage within the framework.
 
 #+ATTR_HTML: :class hug-leading
 | Term         | Concept                                                   |
@@ -197,8 +213,9 @@ reader may arrive at independently.
 | [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] | How do we establish that it worked.                                       |
 | [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]         | How is generated structure kept correct.                                  |
 
-The order above suits a first reading. [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] presents the same
-material in the order a session encounters it.
+The order above suits a first reading.
+[[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] presents the
+same material in the order a session encounters it.
 
 * See also
 

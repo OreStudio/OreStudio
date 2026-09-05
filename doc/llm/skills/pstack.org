@@ -24,20 +24,21 @@ No upstream skill is forked.
 
 ** Why Reference Rather Than Fork
 
-Forking severs a feedback path. [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] requires a
-second loop that changes the regulator when it fails; a forked copy stops
-tracking the moment upstream improves, so the framework would hold regulation it
-could not update. A stale fork also fails silently, where a broken reference
-fails loudly.
+Forking severs a feedback path. [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The
+Cybernetic Skills Framework]] requires a second loop that changes the regulator
+when it fails; a forked copy stops tracking the moment upstream improves, so
+the framework would hold regulation it could not update. A stale fork also
+fails silently, where a broken reference fails loudly.
 
 The good regulator theorem does not require ownership. A regulator must model
 what it regulates, not author it. The classification below is that model.
 
-[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] gives the same answer from the other side. A forked skill is a
-hand-maintained copy that varies predictably from its original, and the
-prescribed response to that shape is never to copy it but to expose the
-variability. Where an upstream skill is right in shape and wrong in local
-detail, we write a thin local skill holding only the difference.
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] gives the same answer from
+the other side. A forked skill is a hand-maintained copy that varies
+predictably from its original, and the prescribed response to that shape is
+never to copy it but to expose the variability. Where an upstream skill is
+right in shape and wrong in local detail, we write a thin local skill holding
+only the difference.
 
 ** The Adoption Criterion
 
@@ -171,10 +172,10 @@ Two conflicts were real.
 *** never-block-on-the-human and grounding
 
 The principle directs an agent to proceed on reversible work rather than ask.
-The [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][grounding]] obligation directs it to stop when a concept resolves to no
-document. The two look opposed and are not. The principle's condition is
-reversibility, and the obligation's subject is one of the things that decides
-whether a choice is reversible.
+The [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][grounding]] obligation directs
+it to stop when a concept resolves to no document. The two look opposed and are
+not. The principle's condition is reversibility, and the obligation's subject
+is one of the things that decides whether a choice is reversible.
 
 Both are adopted, and the recording function reconciles them. An agent that
 proceeds on an unresolved concept states the assumption it proceeded on, and
@@ -196,8 +197,9 @@ Ours is retired as a standard and kept as a binding. What survives is the part
 upstream cannot know: which of the three writing standards this project applies
 where. STE governs an agent's replies to a person, thesis prose governs the
 org-roam documentation, and writing for agents governs skills, memories and
-specifications ([[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]]). The binding names the
-standard and cites =technical-writing= and =unslop= for how to meet it.
+specifications ([[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the
+Compass Skill Framework]]). The binding names the standard and cites
+=technical-writing= and =unslop= for how to meet it.
 
 *** Convening: interrogate and council
 

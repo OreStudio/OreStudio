@@ -17,11 +17,12 @@ current catalogue disagree, the catalogue is what runs.
 
 * Summary
 
-A method is this framework's instrument of [[id:F5CB5A45-6557-410B-9E4F-542957561A16][sequencing]]: it constrains the
+A method is this framework's instrument of
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][sequencing]]: it constrains the
 order in which action is taken, which is one of the functions a regulator must
-discharge. It carries a piece of work from an unverified beginning to a verified
-end, and its phases are what make that progression checkable rather than
-asserted.
+discharge. It carries a piece of work from an unverified beginning to a
+verified end, and its phases are what make that progression checkable rather
+than asserted.
 
 This document holds the catalogue of methods, the discipline their phases share,
 the mode that routes work to them, and the course a session takes through the
@@ -95,29 +96,32 @@ framework's parts are reached during a piece of work, and it doubles as a
 reading order for someone meeting the cluster for the first time.
 
 A session opens with =agile-find-bearings= and declares its *System*,
-which fixes the level and attenuates the catalogue ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]). It picks
-up work with =agile-find-heading= and =agile-start-task=, inheriting the
-sprint mission and story goal as constraints from above.
+which fixes the level and attenuates the catalogue
+([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]). It picks up
+work with =agile-find-heading= and =agile-start-task=, inheriting the sprint
+mission and story goal as constraints from above.
 
 It then enters =compass-helm=, which matches the work to a *method* and
 copies that method's phases in. The method opens by
 grounding itself in the domain, resolving each concept it touches to a
 knowledge document and treating an unresolved one as the first task
-([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). It states a finish condition, backed by a *specification*
-where behaviour is involved.
+([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). It states
+a finish condition, backed by a *specification* where behaviour is involved.
 
 The method's phases cite *principles* for judgement calls and call
 *actions* for anything touching an artefact, reaching for a *recipe*
-whenever a command is needed ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Where an artefact turns out to
-be generated, the edit goes to its model or template rather than its
-output ([[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]). At a fork the evidence cannot settle,
-the method convenes *deliberation* and records the verdict on the task.
+whenever a command is needed
+([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Where an
+artefact turns out to be generated, the edit goes to its model or template
+rather than its output ([[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated
+artefacts]]). At a fork the evidence cannot settle, the method convenes
+*deliberation* and records the verdict on the task.
 
 Verification climbs the ladder as far as the work requires, routing
 first to the checkers that do not share the session model's priors
-([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]). The session closes with =agile-close-task= and
-=pr-raise=, and what generalises is routed into a memory, a principle or
-a skill edit, with approval rather than automatically.
+([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]). The session closes
+with =agile-close-task= and =pr-raise=, and what generalises is routed into a
+memory, a principle or a skill edit, with approval rather than automatically.
 
 ** Inventory
 

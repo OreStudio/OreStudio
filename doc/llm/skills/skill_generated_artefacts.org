@@ -24,7 +24,8 @@ and whether the two have drifted apart.
 The drift checks are the framework's sharpest instrument. They are mechanical,
 they run from outside the work, and they are indifferent to how convincing an
 agent's reasoning was, which makes them the clearest case of a constraint that
-binds rather than advises ([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]).
+binds rather than advises ([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The
+Cybernetic Skills Framework]]).
 
 The variability model owns the profiles and features themselves; this document
 owns the decision procedure that consumes them.
@@ -37,17 +38,20 @@ owns the decision procedure that consumes them.
 
 Codegen is the same architecture applied to code rather than to skills, and it
 is further along. Its meta-types are typed targets, its eleven named
-[[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]] are a closed register, its features are the axes that register is
-built from, and zero-diff regeneration is a falsifiable predicate. Where this
-document and the [[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][variability model]] disagree, the variability model wins.
+[[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][profiles]] are a closed register,
+its features are the axes that register is built from, and zero-diff
+regeneration is a falsifiable predicate. Where this document and the
+[[id:0BD6F9EC-34DD-44D9-8AA1-917EE5966396][variability model]] disagree, the
+variability model wins.
 
 ** Why Code Is Generated and the Catalogue Is Not
 
-[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] records that this framework departs from [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] over what
-to do once a schematic and repetitive pattern has been found. MASD generates the
-instances; the skills catalogue declines to, and computes the pairing at
-dispatch instead. Read alone, that reads as a rejection of generation. It is
-not, and this document is the case that shows why.
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] records that
+this framework departs from [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]]
+over what to do once a schematic and repetitive pattern has been found. MASD
+generates the instances; the skills catalogue declines to, and computes the
+pairing at dispatch instead. Read alone, that reads as a rejection of
+generation. It is not, and this document is the case that shows why.
 
 The divergence turns on the consumer, not on the analysis. A compiler is
 indifferent to how many files it is handed, so materialising every instance
@@ -68,7 +72,8 @@ generated-file marker on the artefact, means the artefact is generated.
 
 *Hand-editing a generated artefact is not a legal verb*, and the
 dispatcher does not offer it. The edit goes to the model or to the
-template — see [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template, never the output]].
+template — see [[id:C88C4034-1DE6-4945-8CF1-393EC9E0805F][fix the template,
+never the output]].
 
 ** Profile Selection
 
@@ -90,17 +95,18 @@ classified is one nobody can tell is broken.
 | Template drift | A =.mustache= was edited instead of its literate org source | =template-drift.yml=       |
 | Model drift    | An entity no longer matches its bound profile                | The model-drift check      |
 
-These are S3* work: continuous, from outside, and binding ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and
-levels]]). They are also the most valuable verification available, because they
-are mechanical and indifferent to how convincing an agent's reasoning was. A
-drift check does not read the diff and decide whether it is plausible; it
-regenerates and compares.
+These are S3* work: continuous, from outside, and binding
+([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]). They are
+also the most valuable verification available, because they are mechanical and
+indifferent to how convincing an agent's reasoning was. A drift check does not
+read the diff and decide whether it is plausible; it regenerates and compares.
 
 
 ** Inventory
 
 # BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Model type, the profile it binds to, and the drift check guarding it. Populated when the drift checks are wired.
+Model type, the profile it binds to, and the drift check guarding it. Populated
+when the drift checks are wired.
 # END generated inventory
 
 * See also

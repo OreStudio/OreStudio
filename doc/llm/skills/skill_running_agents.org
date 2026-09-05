@@ -24,19 +24,20 @@ it needs before it can be left running with nobody watching.
 The unattended case is the one that tests the framework. An advisory default
 helps an agent choose well while a person is present and does nothing at three
 in the morning, so an unattended run depends only on the parts that bind
-([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]). Which parts those are is stated at the end
-of this document.
+([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]).
+Which parts those are is stated at the end of this document.
 
-For the actor vocabulary and what each role may see and change, see [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and
-levels]].
+For the actor vocabulary and what each role may see and change, see
+[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]].
 
 * Detail
 
-The framework is built so that the mode ([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]) can be started
-on an agent and left to run. The levels decide what an agent sees, the methods
-decide what it does in what order, the recipes are what it reaches for, and the
-independent checkers are how it knows it succeeded. This document states how
-agents are configured and bounded.
+The framework is built so that the mode
+([[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]) can be
+started on an agent and left to run. The levels decide what an agent sees, the
+methods decide what it does in what order, the recipes are what it reaches for,
+and the independent checkers are how it knows it succeeded. This document
+states how agents are configured and bounded.
 
 
 ** Grounds for Delegation
@@ -61,8 +62,8 @@ survives intact, because its value is parallelism and parallelism does not
 depend on diversity. Fan-out for *competition*, several attempts at one brief
 judged and grafted, depends on diversity and is therefore weakened rather than
 lost. Cross-family diversity is unavailable to this project. Diversity across
-models within the family is available, and =arena= supplies it ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack
-Collection]]).
+models within the family is available, and =arena= supplies it
+([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]]).
 
 The bound is worth stating wherever competition is used. Models trained together
 share more priors than models trained apart, so an intra-family bakeoff is a

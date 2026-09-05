@@ -26,16 +26,18 @@ follow from it.
 
 ** Background
 
-The format is specified by Anthropic and described in [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]]. In summary,
-a skill is a directory containing a =SKILL.md= file, whose frontmatter carries a
-=name= and a =description= and whose body holds the instructions the assistant
+The format is specified by Anthropic and described in
+[[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]]. In summary, a skill
+is a directory containing a =SKILL.md= file, whose frontmatter carries a =name=
+and a =description= and whose body holds the instructions the assistant
 follows. The specification fixes no length, imposes no internal structure, and
 requires no relationship between one skill and another.
 
 ORE Studio held a position on the term before this framework. The project
-[[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] records that a skill is /task-shaped/, being invoked in one session to
-perform a unit of work, and contrasts it with a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], which is
-/role-shaped/ and describes what an actor does across many sessions. That
+[[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] records that a skill is
+/task-shaped/, being invoked in one session to perform a unit of work, and
+contrasts it with a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], which
+is /role-shaped/ and describes what an actor does across many sessions. That
 distinction survives into the definition proposed below, but it does not by
 itself resolve the questions the following sections raise.
 
@@ -116,28 +118,31 @@ prompt-equivalent skills on top of an executable library has an effect that is
 The academic literature establishes that a textual skill lacks an activation
 condition. Practitioner collections face the same problem without the option of
 changing the runtime, and their responses show what can be done within the
-specification. [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]] describes what the collections contain; this
-section analyses the choices they make.
+specification. [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]]
+describes what the collections contain; this section analyses the choices they
+make.
 
 **** Indexing Axes
 
 Each collection selects an axis along which to index its skills, and the axis
 determines how activation is decided.
 
-[[https://github.com/cursor/plugins/tree/main/pstack][pstack]] indexes by the *shape of the work*. Twenty-two playbooks each address one
-shape: a defect to reproduce, a feature to build, a structure to change, a
-metric to improve. Twenty-one principles each state one rule of judgement, and
-the remaining skills are workflow tools. A router matches a request to a
-playbook.
+[[https://github.com/cursor/plugins/tree/main/pstack][pstack]] indexes by the
+*shape of the work*. Twenty-two playbooks each address one shape: a defect to
+reproduce, a feature to build, a structure to change, a metric to improve.
+Twenty-one principles each state one rule of judgement, and the remaining
+skills are workflow tools. A router matches a request to a playbook.
 
-The [[https://github.com/mattpocock/skills][Matt Pocock collection]] indexes by *invocation*. User-invoked skills are thin
-and orchestrate; model-invoked skills hold the reusable discipline. A
-user-invoked skill may call a model-invoked one and never another user-invoked
-one, which yields a two-layer composition.
+The [[https://github.com/mattpocock/skills][Matt Pocock collection]] indexes by
+*invocation*. User-invoked skills are thin and orchestrate; model-invoked
+skills hold the reusable discipline. A user-invoked skill may call a
+model-invoked one and never another user-invoked one, which yields a two-layer
+composition.
 
-The [[https://github.com/0xnyk/council-of-high-intelligence][Council of High Intelligence]] indexes by *analytical lens*. One coordinating
-skill convenes a panel drawn from eighteen sub-agents, each supplying a distinct
-perspective on a decision.
+The [[https://github.com/0xnyk/council-of-high-intelligence][Council of High
+Intelligence]] indexes by *analytical lens*. One coordinating skill convenes a
+panel drawn from eighteen sub-agents, each supplying a distinct perspective on
+a decision.
 
 **** Activation Without a Runtime Predicate
 
@@ -296,9 +301,9 @@ Each clause corresponds to one limitation identified above.
 - *At a stated level* declares the audience. The skill states the [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][cybernetic
   level]] it serves, which determines the sessions that see it by default.
 - *Offering exactly one regulatory function* admits non-executable material. The skill
-  states the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] it offers, which fixes the relation an agent bears to
-  it, and one of the six is citation, which is borne by material that is not
-  run at all.
+states the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] it
+offers, which fixes the relation an agent bears to it, and one of the six is
+citation, which is borne by material that is not run at all.
 
 The correspondence is one to one, which is a property of the construction rather
 than a coincidence: the clauses were derived from the limitations and no clause
@@ -318,9 +323,10 @@ target; such material is either a stance, if it constrains judgement, or a
 memory, if it records a correction.
 
 No exclusion is a rejection. Each names the document type that receives the
-material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] carries the procedure that assigns it. The
-definition is therefore narrow without being lossy: it excludes by redirecting
-rather than by discarding.
+material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory
+Functions]] carries the procedure that assigns it. The definition is therefore
+narrow without being lossy: it excludes by redirecting rather than by
+discarding.
 
 *** Derived Properties
 
@@ -333,7 +339,8 @@ worth accepting.
 Because the target type is declared, the operations applying to a target are
 computed from its type rather than recalled. A collection no longer grows as the
 product of operations and types, since an operation is registered once against a
-type and inherited by every target of that type. [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] sets out the
+type and inherited by every target of that type.
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] sets out the
 mechanism.
 
 **** Admissibility of Judgement
@@ -355,7 +362,8 @@ Because the level is declared, a session that has declared its System sees a
 subset of the collection rather than the whole. At most levels the filter is a
 default that may be overridden on request; at the audit level it is a
 constraint, since an auditor that can be persuaded to modify what it observes is
-not an auditor. [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] treats the mechanism.
+not an auditor. [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]
+treats the mechanism.
 
 **** Overlap Detection
 
@@ -366,20 +374,24 @@ comparison rather than by reading.
 * References
 
 - Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents with
-  Skill Programs/. arXiv:2605.17734. [[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
+Skill Programs/. arXiv:2605.17734.
+[[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
 - Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K. and Yao, S.
   (2023). /Reflexion: language agents with verbal reinforcement learning/.
-  [[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Cited as characterised in Liu et al. (2026).
+[[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Cited as characterised
+in Liu et al. (2026).
 - Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L. and
   Anandkumar, A. (2023). /Voyager: an open-ended embodied agent with large
-  language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Cited as characterised in Liu et al.
-  (2026).
+language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Cited
+as characterised in Liu et al. (2026).
 - Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K. and Cao, Y.
   (2023). /ReAct: synergizing reasoning and acting in language models/.
-  [[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Cited as characterised in Liu et al. (2026).
+[[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Cited as characterised
+in Liu et al. (2026).
 - Zhao, A., Huang, D., Xu, Q., Lin, M., Liu, Y. and Huang, G. (2024). /ExpeL:
-  llm agents are experiential learners/. [[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Cited as
-  characterised in Liu et al. (2026).
+llm agents are experiential learners/.
+[[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Cited as characterised
+in Liu et al. (2026).
 
 * See also
 

@@ -33,8 +33,9 @@ namespace ores::iam::domain {
  * @brief A tenant representing an isolated organisation or the system platform.
  *
  * Core entity for multi-tenancy support. Each tenant represents an isolated
- * organisation with its own users, roles, and data. The system tenant (UUID all zeros)
- * is a special tenant used for shared reference data and system administration.
+ * organisation with its own users, roles, and data. The system tenant is a
+ * special tenant used for shared reference data and system administration;
+ * its id is the maximum UUID value (ffffffff-ffff-ffff-ffff-ffffffffffff).
  *
  * Tenants are identified by:
  * - id: UUID primary key (SQL also has tenant_id = id for self-reference)
@@ -55,8 +56,8 @@ struct tenant final {
     /**
      * @brief UUID uniquely identifying this tenant.
      *
-     * The system tenant has UUID 00000000-0000-0000-0000-000000000000. In SQL, tenant_id = id for
-     * tenant records.
+     * The system tenant has the maximum UUID value, ffffffff-ffff-ffff-ffff-ffffffffffff. In SQL,
+     * tenant_id = id for tenant records.
      */
     boost::uuids::uuid id;
 

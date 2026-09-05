@@ -25,8 +25,9 @@
  * Tenant Table
  *
  * Core entity for multi-tenancy support. Each tenant represents an isolated
- * organisation with its own users, roles, and data. The system tenant (UUID all zeros)
- * is a special tenant used for shared reference data and system administration.
+ * organisation with its own users, roles, and data. The system tenant is a
+ * special tenant used for shared reference data and system administration;
+ * its id is the maximum UUID value (ffffffff-ffff-ffff-ffff-ffffffffffff).
  *
  * Tenants are identified by:
  * - id: UUID primary key (SQL also has tenant_id = id for self-reference)

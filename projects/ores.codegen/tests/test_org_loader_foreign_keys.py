@@ -67,6 +67,47 @@ def test_target_column_honours_explicit_override():
     assert fk["target_column"] == "code"
 
 
+def test_parent_seed_block_becomes_parent_seed_snippet():
+    """A named parent_seed source block under the FK heading is captured
+    verbatim: the eventing test emits it for parent tables that have no
+    modeling org (hand-authored tables such as iam accounts)."""
+    [fk] = _foreign_keys(
+        """
+* Foreign keys
+
+** account_id
+:PROPERTIES:
+:table:         ores_iam_accounts_tbl
+:nullable:      false
+:error_message: Invalid account_id: %.
+:END:
+
+#+begin_src cpp :name parent_seed
+    auto account_id_parent = generate_synthetic_account(ctx);
+    account_id_parent_repo.write(account_id_parent);
+    v.account_id = account_id_parent.id;
+#+end_src
+"""
+    )
+    assert fk["parent_seed_snippet"].startswith("    auto account_id_parent")
+    assert "v.account_id = account_id_parent.id;" in fk["parent_seed_snippet"]
+
+
+def test_fk_without_parent_seed_block_has_no_snippet():
+    [fk] = _foreign_keys(
+        """
+* Foreign keys
+
+** owner_id
+:PROPERTIES:
+:table:         ores_example_owners_tbl
+:error_message: Invalid owner_id: %.
+:END:
+"""
+    )
+    assert "parent_seed_snippet" not in fk
+
+
 def test_referenced_column_is_not_a_recognised_override():
     """The dead key from the calendar_rule/calendar_exception bug: setting
     :referenced_column: must NOT silently look like a working override --

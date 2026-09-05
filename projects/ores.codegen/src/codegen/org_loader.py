@@ -833,6 +833,15 @@ def _soft_fk_validation_node_to_dict(node: OrgNode) -> dict[str, Any]:
     # target with a differently-named PK (e.g. ores_assets_images_tbl's
     # image_id).
     out.setdefault("target_column", "id")
+    # A named ``parent_seed`` source block under the FK heading is the
+    # seeding snippet for a parent table with no modeling org (a
+    # hand-authored table such as ores_iam_accounts_tbl): the eventing
+    # integration test cannot call a generated synthetic generator for
+    # it, so the org supplies the seed code verbatim. Emitted by
+    # cpp_nats_integration_test.cpp.mustache in place of the auto
+    # parent seeding, which only fires for org-resolved parents.
+    if "parent_seed" in node.src_blocks:
+        out["parent_seed_snippet"] = node.src_blocks["parent_seed"]
     return out
 
 

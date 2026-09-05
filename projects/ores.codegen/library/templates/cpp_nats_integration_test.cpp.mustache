@@ -251,8 +251,8 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{/parent_is_party}}
 {{#parent_required_fks}}
     // Seed the active {{parent_entity_singular}} row {{table}} references:
-    // the parent's own existence check rejects a synthetic key that
-    // matches no active row, so the grandparent must be written first.
+    // the referencing row's insert trigger rejects a synthetic key that
+    // matches no active row, so it must be written first.
     auto {{var}} = ores::{{component}}::{{parent_generator_facet_name}}::generate_synthetic_{{parent_entity_singular}}(ctx);
 {{#parent_has_audit_group}}
     {{var}}.audit.change_reason_code = "system.test";
@@ -279,6 +279,9 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     {{column}}_repo.write(party_ctx, {{column}}_parent);
     v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{column}}_parent.{{target_column}};
 {{/parent_entity_singular}}
+{{#parent_seed_snippet}}
+{{{parent_seed_snippet}}}
+{{/parent_seed_snippet}}
 {{/nullable}}
 {{/foreign_keys}}
 {{#has_identity_group}}

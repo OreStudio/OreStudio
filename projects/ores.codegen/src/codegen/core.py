@@ -1449,6 +1449,52 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
     }
 
 
+def _plan_required_seeds(mfks, parent_var, org_by_table, component, path):
+    """Plan the ordered seed actions a written parent row needs first.
+
+    Each non-nullable soft FK of the parent row must reference an active
+    row of its own, so seeding a parent row means seeding (and patching)
+    every mandatory ancestor up the FK chain before the parent's insert
+    runs. Returns a flat, write-ordered action list; every item seeds one
+    ancestor entity, and items deeper in the chain precede the item of
+    the entity that references them. ``parent_var`` names the variable
+    the seeded entity will be patched into; ``path`` is the set of tables
+    already on the current chain (cycle guard for self-referential
+    hierarchies). Skipped like the direct-parent resolution: nullable
+    FKs, unresolvable tables (no modeling org), parties (the direct
+    parent's party branch is the single party-seeding mechanism) and
+    cross-component parents.
+    """
+    items = []
+    for mfk in mfks:
+        grandparent = _parent_entity_info(
+            (org_by_table.get(mfk.get('table')) or {}).get('org'))
+        if not grandparent or not grandparent['entity_singular']:
+            continue
+        if grandparent['entity_singular'] == 'party':
+            continue
+        if grandparent['component'] != component:
+            continue
+        if mfk.get('table') in path:
+            continue
+        var = mfk['column'] + '_parent'
+        items.extend(_plan_required_seeds(
+            grandparent['mandatory_fks'], var, org_by_table, component,
+            path | {mfk.get('table')}))
+        items.append({
+            'var': var,
+            'column': mfk['column'],
+            'table': mfk['table'],
+            'parent_var': parent_var,
+            'parent_entity_singular': grandparent['entity_singular'],
+            'parent_generator_facet_name': (
+                grandparent['generator_facet_name'] or 'generators'),
+            'target_column': mfk.get('target_column'),
+            'parent_has_audit_group': grandparent['has_audit_group'],
+        })
+    return items
+
+
 def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_processing_batch=False, prefix=None, target_template=None, target_output=None):
     """
     Generate output files from a model using the appropriate templates.
@@ -2595,29 +2641,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 # parent_requires_party branch above already seeds it, so
                 # exactly one mechanism emits the party. Cross-component
                 # and unresolvable parents are skipped like the level
-                # above. One level of depth covers every current model
-                # (currency has no mandatory FKs of its own).
-                fk['parent_required_fks'] = []
-                for mfk in parent['mandatory_fks']:
-                    grandparent = _parent_entity_info(
-                        (org_by_table.get(mfk.get('table')) or {}).get('org'))
-                    if not grandparent or not grandparent['entity_singular']:
-                        continue
-                    if grandparent['entity_singular'] == 'party':
-                        continue
-                    if grandparent['component'] != domain_entity.get('component'):
-                        continue
-                    fk['parent_required_fks'].append({
-                        'var': mfk['column'] + '_parent',
-                        'column': mfk['column'],
-                        'table': mfk['table'],
-                        'parent_var': fk['column'] + '_parent',
-                        'parent_entity_singular': grandparent['entity_singular'],
-                        'parent_generator_facet_name': (
-                            grandparent['generator_facet_name'] or 'generators'),
-                        'target_column': mfk.get('target_column'),
-                        'parent_has_audit_group': grandparent['has_audit_group'],
-                    })
+                # above. The plan closes the FK chain transitively (an
+                # ancestor with mandatory FKs of its own -- app_version's
+                # app_id, say -- seeds them first), not just one level.
+                fk['parent_required_fks'] = _plan_required_seeds(
+                    parent['mandatory_fks'], fk['column'] + '_parent',
+                    org_by_table, domain_entity.get('component'),
+                    set())
                 # Whether the FK column sits inside the child's identity
                 # group (trading entities) or is a flat domain field
                 # (refdata) -- set here, after the columns loop above has

@@ -3082,6 +3082,15 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             if 'detail_fields' not in qt:
                 key_field = qt.get('key_field', 'code')
                 column_names = {c.get('name') for c in domain_entity.get('columns', [])}
+                # A display name carried as the natural key (refdata's
+                # code-keyed lookups, e.g. rounding_type) is a real
+                # member too, but the parser catalogues natural keys
+                # under natural_keys, not columns -- include them or the
+                # name row below is gated off for every such lookup.
+                column_names.update(
+                    nk.get('column')
+                    for nk in domain_entity.get('natural_keys', [])
+                    if nk.get('column'))
                 key_is_name = key_field == 'name'
                 fields = [
                     {'field': key_field, 'label': key_field.replace('_', ' ').title(),

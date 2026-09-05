@@ -73,7 +73,10 @@ struct tenant final {
     std::string name;
 
     /**
-     * @brief Tenant type classification (FK to tenant_types).
+     * @brief Tenant type classification (FK to tenant_types). The synthetic generator emits the
+     * canonical automation type: the type/status insert validations reject any value with no active
+     * tenant_type row, and the seed data (iam_tenant_types_populate.sql) seeds the four
+     * system-tenant types, of which automation is the system-process default.
      */
     std::string type;
 

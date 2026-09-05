@@ -110,6 +110,15 @@ TEST_CASE("write_account_contact_information_publishes_nats_changed_event", tags
     // the chain wired above -> NATS.
     auto v = generate_synthetic_account_contact_information(ctx);
     v.change_reason_code = "system.test";
+    // Seed the active account row ores_iam_accounts_tbl references: the
+    // insert trigger's existence check rejects a synthetic key that
+    // matches no active row, so the parent must be written first. The
+    // account repository takes its context in the constructor.
+    auto account_id_parent = ores::iam::generators::generate_synthetic_account(ctx);
+    account_id_parent.change_reason_code = "system.test";
+    ores::iam::repository::account_repository account_id_parent_repo(party_ctx);
+    account_id_parent_repo.write(account_id_parent);
+    v.account_id = account_id_parent.id;
     const auto id_str = boost::uuids::to_string(v.id);
     BOOST_LOG_SEV(lg, debug) << "Account Contact Information: " << v;
 

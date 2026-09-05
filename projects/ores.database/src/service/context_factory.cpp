@@ -49,9 +49,8 @@ context context_factory::make_context(const configuration& cfg) {
 
     // The underlying pool probes fail fast; the retry policy (num_attempts,
     // wait, backoff shape) is applied by tenant_aware_pool::acquire().
-    sqlgen::ConnectionPoolConfig pool_config{.size = cfg.pool_size,
-                                             .num_attempts = 1,
-                                             .wait_time_in_seconds = 0};
+    sqlgen::ConnectionPoolConfig pool_config{
+        .size = cfg.pool_size, .num_attempts = 1, .wait_time_in_seconds = 0};
 
     auto pool_result = make_connection_pool<context::connection_type>(pool_config, credentials);
 
@@ -62,9 +61,9 @@ context context_factory::make_context(const configuration& cfg) {
 
     pool_acquire_policy policy{.num_attempts = cfg.num_attempts,
                                .wait_time_in_seconds = cfg.wait_time_in_seconds,
-                               .strategy = cfg.database_options.pool_backoff == "linear"
-                                               ? pool_backoff_strategy::linear
-                                               : pool_backoff_strategy::exponential};
+                               .strategy = cfg.database_options.pool_backoff == "linear" ?
+                                               pool_backoff_strategy::linear :
+                                               pool_backoff_strategy::exponential};
 
     // Convert string tenant to tenant_id, defaulting to system tenant
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();

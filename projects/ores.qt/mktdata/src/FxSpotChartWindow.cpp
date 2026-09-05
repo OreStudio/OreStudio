@@ -20,9 +20,9 @@
 #include "ores.qt/FxSpotChartWindow.hpp"
 #include "ores.marketdata.api/messaging/market_observation_protocol.hpp"
 #include "ores.qt/ExceptionHelper.hpp"
-#include "ores.utility/uuid/tenant_id.hpp"
 #include "ores.qt/IconUtils.hpp"
 #include "ores.qt/WatermarkChartView.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <QActionGroup>
 #include <QApplication>
 #include <QBrush>

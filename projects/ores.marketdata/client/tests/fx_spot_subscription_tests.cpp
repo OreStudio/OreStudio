@@ -32,26 +32,22 @@ const std::string party = "64eddccd-3ebc-4e69-abcb-91e18a81e72c";
 
 TEST_CASE("ore_key_to_subject builds the per-party subject", "[fx_spot_subscription]") {
     REQUIRE(ore_key_to_subject("FX/RATE/EUR/USD", tenant, workspace, party) ==
-            "marketdata.v1.tick." + tenant + "." + workspace + "." + party +
-                ".fx.rate.eur.usd");
+            "marketdata.v1.tick." + tenant + "." + workspace + "." + party + ".fx.rate.eur.usd");
 }
 
 TEST_CASE("ore_key_to_subject passes through already-lowercase key", "[fx_spot_subscription]") {
     REQUIRE(ore_key_to_subject("fx/rate/gbp/usd", tenant, workspace, party) ==
-            "marketdata.v1.tick." + tenant + "." + workspace + "." + party +
-                ".fx.rate.gbp.usd");
+            "marketdata.v1.tick." + tenant + "." + workspace + "." + party + ".fx.rate.gbp.usd");
 }
 
-TEST_CASE("ore_key_to_subject separates parties of the same source",
-          "[fx_spot_subscription]") {
+TEST_CASE("ore_key_to_subject separates parties of the same source", "[fx_spot_subscription]") {
     const std::string other_party = "4acd51dc-1068-4e3f-bb3e-5f5e908f4a01";
     const auto us = ore_key_to_subject("FX/RATE/EUR/USD", tenant, workspace, party);
     const auto them = ore_key_to_subject("FX/RATE/EUR/USD", tenant, workspace, other_party);
     REQUIRE(us != them);
 }
 
-TEST_CASE("ore_key_to_subject separates workspaces of the same party",
-          "[fx_spot_subscription]") {
+TEST_CASE("ore_key_to_subject separates workspaces of the same party", "[fx_spot_subscription]") {
     const std::string scenario = "b3c0d4e5-f607-4819-a2b3-c4d5e6f70819";
     const auto live = ore_key_to_subject("FX/RATE/EUR/USD", tenant, workspace, party);
     const auto alt = ore_key_to_subject("FX/RATE/EUR/USD", tenant, scenario, party);

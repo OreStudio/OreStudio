@@ -122,15 +122,14 @@ void feed_ingest_loop::refresh() {
         if (b.asset_class != domain::asset_class::fx) {
             // ir_curve ticks are self-describing and need no binding; a
             // non-FX binding would subscribe to the wrong payload type.
-            BOOST_LOG_SEV(lg(), warn) << "Skipping non-FX feed binding for '"
-                                      << b.source_name << "'";
+            BOOST_LOG_SEV(lg(), warn)
+                << "Skipping non-FX feed binding for '" << b.source_name << "'";
             continue;
         }
-        wanted.insert(feed_ingest_loop::subscription_key{
-            b.source_name,
-            b.tenant_id.to_string(),
-            boost::uuids::to_string(b.party_id),
-            boost::uuids::to_string(b.workspace_id)});
+        wanted.insert(feed_ingest_loop::subscription_key{b.source_name,
+                                                         b.tenant_id.to_string(),
+                                                         boost::uuids::to_string(b.party_id),
+                                                         boost::uuids::to_string(b.workspace_id)});
     }
 
     // Unsubscribe anything no longer wanted
@@ -145,11 +144,10 @@ void feed_ingest_loop::refresh() {
     for (const auto& b : bindings) {
         if (!b.enabled || b.asset_class != domain::asset_class::fx)
             continue;
-        const feed_ingest_loop::subscription_key key{
-            b.source_name,
-            b.tenant_id.to_string(),
-            boost::uuids::to_string(b.party_id),
-            boost::uuids::to_string(b.workspace_id)};
+        const feed_ingest_loop::subscription_key key{b.source_name,
+                                                     b.tenant_id.to_string(),
+                                                     boost::uuids::to_string(b.party_id),
+                                                     boost::uuids::to_string(b.workspace_id)};
         if (!subs_.contains(key))
             subscribe_binding_locked(key, b.ore_key);
     }
@@ -167,15 +165,14 @@ void feed_ingest_loop::subscribe_binding_locked(const subscription_key& key,
     const std::string producer_subject = ores::marketdata::domain::synthetic_tick_subject(
         ores::marketdata::domain::fx_spot_kind_token, key.source_name);
     const std::string source_name = key.source_name;
-    const std::string publish_subject = ore_key_to_publish_subject(
-        key.tenant_id, key.workspace_id, key.party_id, ore_key);
+    const std::string publish_subject =
+        ore_key_to_publish_subject(key.tenant_id, key.workspace_id, key.party_id, ore_key);
     const std::string ore_key_copy = ore_key;
 
-    BOOST_LOG_SEV(lg(), info) << "INGEST SUBSCRIBE: source='" << key.source_name
-                              << "' tenant='" << key.tenant_id << "' party='" << key.party_id
-                              << "' workspace='" << key.workspace_id << "' listening on '"
-                              << producer_subject << "' → republishing on '" << publish_subject
-                              << "'";
+    BOOST_LOG_SEV(lg(), info) << "INGEST SUBSCRIBE: source='" << key.source_name << "' tenant='"
+                              << key.tenant_id << "' party='" << key.party_id << "' workspace='"
+                              << key.workspace_id << "' listening on '" << producer_subject
+                              << "' → republishing on '" << publish_subject << "'";
 
     auto st = std::make_shared<feed_stats>();
     st->series_identity = ore_key;
@@ -192,13 +189,8 @@ void feed_ingest_loop::subscribe_binding_locked(const subscription_key& key,
     // duplicate observations and duplicate republish.
     auto sub = nats_.subscribe(
         producer_subject,
-        [this,
-         ore_key_copy,
-         publish_subject,
-         source_name,
-         st,
-         party_uuid,
-         tenant_id](ores::nats::message msg) {
+        [this, ore_key_copy, publish_subject, source_name, st, party_uuid, tenant_id](
+            ores::nats::message msg) {
             auto tick = ores::nats::default_wire_codec().decode<domain::fx_spot_tick>(msg.data);
             if (!tick) {
                 BOOST_LOG_SEV(lg(), warn)
@@ -278,9 +270,9 @@ void feed_ingest_loop::subscribe_binding_locked(const subscription_key& key,
 
 // Called only from refresh(), which holds mu_.
 void feed_ingest_loop::unsubscribe_binding_locked(const subscription_key& key) {
-    BOOST_LOG_SEV(lg(), info) << "INGEST UNSUBSCRIBE: source='" << key.source_name
-                              << "' tenant='" << key.tenant_id << "' party='" << key.party_id
-                              << "' workspace='" << key.workspace_id << "'";
+    BOOST_LOG_SEV(lg(), info) << "INGEST UNSUBSCRIBE: source='" << key.source_name << "' tenant='"
+                              << key.tenant_id << "' party='" << key.party_id << "' workspace='"
+                              << key.workspace_id << "'";
     subs_.erase(key);
     fx_stats_.erase(key); // mu_ already held by caller (refresh)
 }
@@ -305,8 +297,8 @@ void feed_ingest_loop::on_tick(const ores::nats::message& msg) {
         const std::string source(source_name);
         std::lock_guard lock(mu_);
         if (!bound_sources_.contains(source) && unbound_warned_.insert(source).second)
-            BOOST_LOG_SEV(lg(), warn) << "Dropping tick for unbound source '" << source
-                                      << "' — no enabled feed_binding";
+            BOOST_LOG_SEV(lg(), warn)
+                << "Dropping tick for unbound source '" << source << "' — no enabled feed_binding";
     } else
         BOOST_LOG_SEV(lg(), warn) << "Unknown tick kind '" << kind << "' on subject '"
                                   << msg.subject << "'";
@@ -471,11 +463,11 @@ void feed_ingest_loop::log_status() const {
         const bool ever = (last_tp != system_clock::time_point::min());
         const auto age_s = ever ? duration_cast<seconds>(now - last_tp).count() : -1LL;
 
-        BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: source='" << key.source_name
-                                  << "' tenant='" << key.tenant_id << "' party='" << key.party_id
-                                  << "' workspace='" << key.workspace_id << "' ore_key='"
-                                  << st->series_identity << "' subject='" << st->nats_subject
-                                  << "' publish='" << st->publish_subject << "' ticks=" << count
+        BOOST_LOG_SEV(lg(), info) << "INGEST STATUS: source='" << key.source_name << "' tenant='"
+                                  << key.tenant_id << "' party='" << key.party_id << "' workspace='"
+                                  << key.workspace_id << "' ore_key='" << st->series_identity
+                                  << "' subject='" << st->nats_subject << "' publish='"
+                                  << st->publish_subject << "' ticks=" << count
                                   << (ever ? std::format(" last_tick={}s ago", age_s) :
                                              " last_tick=never");
     }

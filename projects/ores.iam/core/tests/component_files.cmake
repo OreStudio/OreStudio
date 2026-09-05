@@ -17,6 +17,7 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "account_contact_information_eventing_integration_tests.cpp"
     "account_type_eventing_integration_tests.cpp"
     "main.cpp"
     "messaging_account_party_handler_tests.cpp"
@@ -35,6 +36,7 @@ set(files
     "service_account_tests.cpp"
     "service_authorization_check_permission_tests.cpp"
     "service_internal_impersonation_service_tests.cpp"
+    "tenant_eventing_integration_tests.cpp"
     "tenant_status_eventing_integration_tests.cpp"
     "tenant_type_eventing_integration_tests.cpp"
 )

@@ -126,7 +126,7 @@ public:
                 "Bootstrap mode cleared on tenant activation");
             // Piggyback the onboarding.tenant flag on the same tenant
             // activation event — same scope, same trust model, same
-            // caller (tenant_handler::complete_provisioning).
+            // caller (tenant_provisioning_handler::complete_provisioning).
             svc.set_onboarding_tenant_complete(
                 true,
                 ctx.service_account(),

@@ -71,7 +71,6 @@ public:
     std::vector<domain::party_role_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all party role types, possibly filtered by primary key.
      */

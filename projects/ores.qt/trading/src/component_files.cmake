@@ -18,6 +18,7 @@
 #
 set(files
     "BondInstrumentForm.cpp"
+    "ClientPartyRoleTypeModel.cpp"
     "ClientTradeModel.cpp"
     "CommodityInstrumentForm.cpp"
     "CompositeInstrumentForm.cpp"
@@ -42,6 +43,9 @@ set(files
     "OrgExplorerMdiWindow.cpp"
     "OrgExplorerTradeModel.cpp"
     "OrgExplorerTreeModel.cpp"
+    "PartyRoleTypeController.cpp"
+    "PartyRoleTypeDetailDialog.cpp"
+    "PartyRoleTypeMdiWindow.cpp"
     "PortfolioExplorerMdiWindow.cpp"
     "PortfolioExplorerTradeModel.cpp"
     "PortfolioExplorerTreeModel.cpp"
@@ -58,6 +62,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AdaptiveStackedWidget.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/BondInstrumentForm.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientPartyRoleTypeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientTradeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/CommodityInstrumentForm.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/CompositeInstrumentForm.hpp"
@@ -83,6 +88,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/OrgExplorerMdiWindow.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/OrgExplorerTradeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/OrgExplorerTreeModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/PartyRoleTypeController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/PartyRoleTypeDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/PartyRoleTypeMdiWindow.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/PortfolioExplorerMdiWindow.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/PortfolioExplorerTradeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/PortfolioExplorerTreeModel.hpp"

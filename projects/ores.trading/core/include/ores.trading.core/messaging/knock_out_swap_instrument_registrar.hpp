@@ -17,22 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_TABLE_HPP
-#define ORES_TRADING_API_DOMAIN_KNOCK_OUT_SWAP_INSTRUMENT_TABLE_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_KNOCK_OUT_SWAP_INSTRUMENT_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_KNOCK_OUT_SWAP_INSTRUMENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/knock_out_swap_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <string>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Converts knock_out_swap_instruments to the table format.
- */
-ORES_TRADING_API_EXPORT std::string
-convert_to_table(const std::vector<knock_out_swap_instrument>& v);
+std::vector<ores::nats::service::subscription> register_knock_out_swap_instrument_handlers(
+    ores::nats::service::client& nats,
+    ores::database::context ctx,
+    std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

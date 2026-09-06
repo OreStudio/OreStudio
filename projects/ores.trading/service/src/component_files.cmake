@@ -43,6 +43,7 @@ set(files
     "messaging/fx_vanilla_option_instrument_event_registrar.cpp"
     "messaging/fx_variance_swap_instrument_event_registrar.cpp"
     "messaging/inflation_swap_instrument_event_registrar.cpp"
+    "messaging/knock_out_swap_instrument_event_registrar.cpp"
     "messaging/party_role_type_event_registrar.cpp"
     "messaging/trade_type_event_registrar.cpp"
 )
@@ -77,6 +78,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/knock_out_swap_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/party_role_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/ores.trading.service.hpp"

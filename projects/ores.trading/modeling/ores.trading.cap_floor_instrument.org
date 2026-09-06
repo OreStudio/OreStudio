@@ -21,24 +21,25 @@ Legs are defined separately in the swap_legs table.
 :schema:           public
 :product:          ores
 :component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:          trading-instrument
 :END:
 
-* Primary key
+* Natural keys
+
+* Columns
+
+** instrument_id
 :PROPERTIES:
-:column:   instrument_id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:group:       identity
+:primary_key: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
 UUID uniquely identifying this cap/floor instrument.
 
 Surrogate key for the instrument record.
-
-* Natural keys
-
-* Columns
 
 ** trade_type_code
 :PROPERTIES:
@@ -125,6 +126,27 @@ Human-readable notes about this instrument.
 :PROPERTIES:
 :tablename: ores_trading_cap_floor_instruments_tbl
 :END:
+
+** Checks
+
+| expression |
+|------------|
+| "maturity_date" > "start_date" |
+
+** Indexes
+
+| name     | columns              | unique | current_only | where_extra          |
+|----------+----------------------+--------+--------------+----------------------|
+| party    | tenant_id, party_id  | false  | true         |                      |
+| trade_id | tenant_id, trade_id  | true   | true         | trade_id is not null |
+
+* Insert trigger
+
+** Validations
+
+| column          | validation_function                   |
+|-----------------+----------------------------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn    |
 
 * C++
 

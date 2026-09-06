@@ -113,6 +113,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 (local, pre-raise) | Recipe step 1 says the verification record lives in "the PR description (step 2)"; step 3 creates the description | doc/recipes/github/how_do_i_create_a_pr.org | Accept | Fixed in the review commit. |
 | 2 (local, pre-raise) | "/Traceability section/ goes at the end of the body" contradicts the fixed template, where Testing follows Traceability | doc/recipes/github/how_do_i_create_a_pr.org | Accept | Fixed in the review commit. |
+| 3 (review round 1, PR #2022) | The Testing flags use default="" rather than argparse required=True; a comment is warranted so a future reader does not lose the combined-error refusal. Verdict: no correctness, security or design issues. | projects/ores.compass/src/compass_pr.py | Accept | Fixed in 6a19ebd9ae. |
 
 * Result
 

@@ -20,6 +20,7 @@ set(files
     "BondInstrumentForm.cpp"
     "ClientPartyRoleTypeModel.cpp"
     "ClientTradeModel.cpp"
+    "ClientTradeTypeModel.cpp"
     "CommodityInstrumentForm.cpp"
     "CompositeInstrumentForm.cpp"
     "CompositeLegsWidget.cpp"
@@ -55,6 +56,9 @@ set(files
     "TradeDetailDialog.cpp"
     "TradeHistoryDialog.cpp"
     "TradeMdiWindow.cpp"
+    "TradeTypeController.cpp"
+    "TradeTypeDetailDialog.cpp"
+    "TradeTypeMdiWindow.cpp"
     "TradingPlugin.cpp"
 )
 
@@ -64,6 +68,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/BondInstrumentForm.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientPartyRoleTypeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientTradeModel.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientTradeTypeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/CommodityInstrumentForm.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/CompositeInstrumentForm.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/CompositeLegsWidget.hpp"
@@ -100,5 +105,8 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TradeDetailDialog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TradeHistoryDialog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TradeMdiWindow.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TradeTypeController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TradeTypeDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TradeTypeMdiWindow.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/TradingPlugin.hpp"
 )

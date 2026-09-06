@@ -17,28 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_GENERATORS_TRADE_TYPE_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_TRADE_TYPE_GENERATOR_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_TYPE_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/trade_type.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::trading::generators {
+namespace ores::trading::messaging {
 
-/**
- * @brief Generates a synthetic trade_type.
- */
-ORES_TRADING_API_EXPORT domain::trade_type
-generate_synthetic_trade_type(utility::generation::generation_context& ctx);
+void register_trade_type_history_provider(ores::history::service::dispatch_registry& registry);
 
-/**
- * @brief Generates N synthetic trade_types.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::trade_type>
-generate_synthetic_trade_types(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::trading::messaging
 
 #endif

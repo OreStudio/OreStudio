@@ -18,7 +18,6 @@
  *
  */
 #include "ores.compute.service/app/workunit_dispatcher.hpp"
-
 #include "ores.compute.api/domain/result.hpp"
 #include "ores.compute.api/messaging/work_protocol.hpp"
 #include "ores.compute.api/net/compute_storage.hpp"
@@ -98,9 +97,9 @@ void workunit_dispatcher::dispatch_one(const ores::database::context& tenant_ctx
     repository::app_version_platform_repository avp_repo(tenant_ctx);
     const auto avps = avp_repo.read_latest_by_app_version(wu->app_version_id);
     if (avps.empty()) {
-        BOOST_LOG_SEV(lg(), warn)
-            << "No platform packages for app_version " << boost::uuids::to_string(wu->app_version_id)
-            << "; cannot dispatch workunit " << workunit_id;
+        BOOST_LOG_SEV(lg(), warn) << "No platform packages for app_version "
+                                  << boost::uuids::to_string(wu->app_version_id)
+                                  << "; cannot dispatch workunit " << workunit_id;
         return;
     }
 

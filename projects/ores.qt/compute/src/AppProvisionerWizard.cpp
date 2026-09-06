@@ -23,8 +23,8 @@
 #include "ores.compute.api/domain/app_version_platform.hpp"
 #include "ores.compute.api/domain/compute_platform.hpp"
 #include "ores.compute.api/messaging/app_protocol.hpp"
-#include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/app_version_platform_protocol.hpp"
+#include "ores.compute.api/messaging/app_version_protocol.hpp"
 #include "ores.compute.api/messaging/platform_protocol.hpp"
 #include "ores.compute.client/client/package_publisher.hpp"
 #include "ores.qt/ChangeReasonCache.hpp"
@@ -780,8 +780,7 @@ bool AppProvisionerWizard::submit() {
         compute::messaging::save_app_version_request ver_req;
         ver_req.data = std::move(ver);
 
-        BOOST_LOG_SEV(lg(), info) << "Provisioning app_version: "
-                                  << ver_req.data.wrapper_version;
+        BOOST_LOG_SEV(lg(), info) << "Provisioning app_version: " << ver_req.data.wrapper_version;
 
         const auto ver_resp = client_manager_->process_authenticated_request(std::move(ver_req));
 
@@ -812,8 +811,8 @@ bool AppProvisionerWizard::submit() {
             if (!plat_resp || !plat_resp->success) {
                 const QString msg = plat_resp ? QString::fromStdString(plat_resp->message) :
                                                 tr("No response from server");
-                BOOST_LOG_SEV(lg(), error) << "App version platforms save failed: "
-                                           << msg.toStdString();
+                BOOST_LOG_SEV(lg(), error)
+                    << "App version platforms save failed: " << msg.toStdString();
                 MessageBoxHelper::critical(this, tr("Version Create Failed"), msg);
                 return false;
             }

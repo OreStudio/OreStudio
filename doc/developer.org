@@ -77,7 +77,7 @@ Open, monitor, address reviews, and merge pull requests.
 
 | Recipe | What it does |
 |--------+--------------|
-| [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] | Open a pull request with =compass pr create= — title validation, structured body, Traceability table. |
+| [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][How do I create a PR?]] | Open a pull request with =compass pr create= — title validation, the fixed Summary / Changes / Traceability / Testing body template with the mandatory Testing flags, Traceability table. |
 | [[id:F6E88DCC-9240-4632-A9A3-9F36F79C9262][How do I monitor a PR until green?]] | Drive a PR to green CI and zero unresolved threads via =compass pr checks=. |
 | [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] | Identify the failing check via =gh=, read the run log, apply the fix as a new commit. |
 | [[id:26C1DC06-82D2-46C4-94D6-DF9231BA171B][How do I address PR review comments?]] | Read comments via =compass review=, apply fixes as new commits, reply, resolve threads. |

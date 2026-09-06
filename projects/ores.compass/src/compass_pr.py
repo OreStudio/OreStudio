@@ -11,10 +11,14 @@ Subcommands:
                 #+branch: against the current branch (override with
                 --task); idempotent when the PR is already recorded.
   create        Open a PR with the conventions built in: validated
-                [component] title, Summary/Changes body, Traceability
-                table derived from the branch's task and story docs,
-                branch pushed with -u if needed, PR recorded on the
-                task and stamped in the journal.
+                [component] title, fixed body template (Summary /
+                Changes / Traceability / Testing, then the footer) with
+                the Traceability table derived from the branch's task
+                and story docs and the Testing section taken from the
+                required --testing-plan/--testing-evidence/
+                --testing-limitations flags; branch pushed with -u if
+                needed, PR recorded on the task and stamped in the
+                journal.
   merge [pr]    Merge a PR with guard rails: refuses while review
                 threads are unresolved or CI is not green (--force to
                 override, stating what was bypassed; also admin-merges
@@ -179,6 +183,41 @@ def _env_name(project_root):
     return ""
 
 
+def _canonical_body(summary, change_bullets, story_title, story_id,
+                    story_url, task_title, task_id, task_url,
+                    environment, testing_plan, testing_evidence,
+                    testing_limitations):
+    """Assemble the canonical PR body: Summary / Changes /
+    Traceability / Testing, then the footer.
+
+    The Testing section always appears, after the Traceability table
+    and before the footer, carrying Plan., Evidence. and Limitations.
+    paragraphs.
+    """
+    changes = "\n".join(f"- {c}" for c in change_bullets)
+    return (
+        f"## Summary\n\n{summary}\n\n"
+        f"## Changes\n\n{changes}\n\n"
+        "## Traceability\n\n"
+        "| Artefact | Link | ID |\n"
+        "|----------|------|----|\n"
+        f"| Story | [{story_title}]({story_url}) | {story_id} |\n"
+        f"| Task | [{task_title}]({task_url}) | {task_id} |\n"
+        f"| Environment | {environment} | |\n\n"
+        "## Testing\n\n"
+        f"Plan. {testing_plan}\n\n"
+        f"Evidence. {testing_evidence}\n\n"
+        f"Limitations. {testing_limitations}\n\n"
+        "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
+
+
+def _missing_testing_flags(args):
+    """The --testing-* flags with no text, in flag order."""
+    return [f"--testing-{name}"
+            for name in ("plan", "evidence", "limitations")
+            if not getattr(args, f"testing_{name}", "").strip()]
+
+
 def _cmd_create(args, project_root):
     branch = _current_branch(project_root)
     if not branch or branch == "main":
@@ -195,6 +234,14 @@ def _cmd_create(args, project_root):
     if len(args.title) > 72:
         print(f"⚠️  Title is {len(args.title)} chars; convention prefers "
               "<= 72.", file=sys.stderr)
+
+    # The Testing section is mandatory; refuse before any push when a
+    # flag carries no text, naming every missing one at once.
+    missing = _missing_testing_flags(args)
+    if missing:
+        print("❌ Missing text for the Testing section's required "
+              f"flag(s): {', '.join(missing)}", file=sys.stderr)
+        return 1
 
     # Traceability: the branch's task doc and its parent story.
     task_path, task_text = _find_task_doc(project_root, branch, args.task)
@@ -225,19 +272,14 @@ def _cmd_create(args, project_root):
         return 1
 
     summary = args.summary or "(Fill in: what changes, why.)"
-    changes = "\n".join(f"- {c}" for c in (args.change or ["(Fill in.)"]))
+    change_bullets = args.change or ["(Fill in.)"]
     environment = (args.environment or _org_field(task_text, "environment")
                    or _env_name(project_root) or "(none)")
-    body = (
-        f"## Summary\n\n{summary}\n\n"
-        f"## Changes\n\n{changes}\n\n"
-        "## Traceability\n\n"
-        "| Artefact | Link | ID |\n"
-        "|----------|------|----|\n"
-        f"| Story | [{story_title}]({_site_url(story_rel)}) | {story_id} |\n"
-        f"| Task | [{task_title}]({_site_url(task_rel)}) | {task_id} |\n"
-        f"| Environment | {environment} | |\n\n"
-        "🤖 Generated with [Claude Code](https://claude.com/claude-code)")
+    body = _canonical_body(
+        summary, change_bullets, story_title, story_id,
+        _site_url(story_rel), task_title, task_id, _site_url(task_rel),
+        environment, args.testing_plan, args.testing_evidence,
+        args.testing_limitations)
 
     # Ensure the branch exists on the remote under its own name — a
     # branch created off origin/main tracks origin/main until first
@@ -556,6 +598,15 @@ def run(argv, project_root):
                     help="Summary paragraph for the body")
     cr.add_argument("--change", action="append", default=[],
                     help="A Changes bullet (repeatable)")
+    cr.add_argument("--testing-plan", default="",
+                    help="Testing plan prose for the body's Testing "
+                         "section (required)")
+    cr.add_argument("--testing-evidence", default="",
+                    help="Testing evidence prose for the body's Testing "
+                         "section (required)")
+    cr.add_argument("--testing-limitations", default="",
+                    help="Testing limitations prose for the body's "
+                         "Testing section (required)")
     cr.add_argument("--task", default="",
                     help="Task UUID or slug (default: match #+branch: "
                          "against the current branch)")

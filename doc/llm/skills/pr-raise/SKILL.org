@@ -99,7 +99,8 @@ lifecycle is ordered this way.
    Do not raise the PR until the checks for the class are clean. Note
    the class(es), the checks run, and the results (e.g. "doc-only;
    local site build clean" or "code; build clean (<preset>); ctest
-   142/142 passed") — they go into the PR description in step 4.
+   142/142 passed") — they go into the PR body's Testing section in
+   step 4 (=--testing-evidence=).
 
 2. *Run the local code review before raising the PR*. The automatic
    GitHub review (=claude-code-review.yml=) was retired with the
@@ -118,21 +119,27 @@ lifecycle is ordered this way.
    raising the PR, not after review. If it's not done yet, do it now,
    as part of the same commit set the PR will contain from the start.
 
-4. *Raise the PR*, including the change class and the verification
-   from step 1 as an explicit =--change= bullet so it's visible in the
-   PR description (reviewers and future readers can see it happened
-   without asking):
+4. *Raise the PR*, carrying the verification from step 1 in the
+   body's Testing section, not in the Changes bullets. The generator
+   emits one fixed template — Summary / Changes / Traceability /
+   Testing, then the footer — and =compass pr create= refuses a raise
+   that carries no =--testing-plan=, =--testing-evidence= or
+   =--testing-limitations= text:
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] Description" \
      --summary "What changes, why." \
      --change "First change" --change "Second change" \
-     --change "Verification: <class>; <checks run and results>"
+     --testing-plan "<what will be tested and how>" \
+     --testing-evidence "<class>; <checks run and results>" \
+     --testing-limitations "<what was left untested>"
    #+end_src
 
-   Compass validates the title, builds the body, pushes the branch,
-   opens the PR, records it on the task, and stamps the journal. Note
-   the PR number it prints.
+   Compass validates the title and the Testing flags, builds the body
+   (the Testing section appears after the Traceability table as Plan.,
+   Evidence. and Limitations. paragraphs), pushes the branch, opens
+   the PR, records it on the task, and stamps the journal. Note the
+   PR number it prints.
 
 5. *Trigger the on-demand =@claude= review* by posting a PR comment:
 

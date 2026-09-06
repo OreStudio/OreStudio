@@ -8,7 +8,7 @@
 #+filetags: :ui-gap-verification:sprint_25:v0:
 #+owner: marco
 #+branch: feature/ui-gap-verification
-#+pr:
+#+pr: 2019
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-06
@@ -62,7 +62,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2019][#2019]] | [agile] Add desktop-UI verification-gap story to sprint 25 |
 
 * Review
 

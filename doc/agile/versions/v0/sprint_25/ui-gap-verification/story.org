@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 23BDD6F2-90F6-4DC0-AA87-5BFFB7B5D6E4
+:END:
+#+title: Story: Verify the compute-grid and tenant flows from the desktop UI
+#+description: UI verification of the compute-grid and iam/tenant flows that the post-merge system-test report (task EF46C9EF) exercised through ores.shell only: no UI session was available for the run. When a UI session becomes available, drive the same flows through the desktop client and record the deltas: screens, permissions, error rendering, and any UI-only regressions the shell cannot see.
+#+type: story
+#+level: s2
+#+filetags: :ui:verification:sprint_25:v0:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The post-merge system test of the compute and iam binds (the
+[[id:EF46C9EF-F7A3-43E2-8205-BEE99B56B225][post-merge system-test report]]) ran with no desktop UI session
+available. By directive it exercised every flow through ores.shell. The
+shell covers the service surface but not the UI surface: the desktop
+client is a second, independent consumer of the same services, with its
+own rendering of tenants, grids, workunits and results, its own
+permission gating and its own error paths. This story closes that gap:
+when a UI session is available, drive the same compute-grid and
+iam/tenant flows through the desktop client, and record what passes,
+what fails and what the shell-only run could not see.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-06                               |
+
+* Acceptance
+
+- Tenant flows pass through the UI on a live environment:
+  provisioning, lookup, RLS isolation and delete, with the F2 and F3
+  behaviours rendered as the UI intends (the change-reason picker shows
+  the namespaced catalogue; the UI refuses to delete the system
+  tenant).
+- Compute-grid flows pass through the UI: batch creation, dispatch,
+  workunit and result lists, and output download, against the same
+  brave_hopper environment the shell smoke exercised.
+- Each flow records UI-specific findings the shell cannot see:
+  permission gating, error rendering, refresh behaviour, and any
+  divergence between the UI's own protection and the service surface.
+- The verification record lands in this story's tasks with the same
+  evidence discipline as the system-test report: findings, resolution
+  state, and owning PR.
+
+* Notes
+
+Follow-up of the
+[[id:EF46C9EF-F7A3-43E2-8205-BEE99B56B225][post-merge system-test report]],
+which records this story among its follow-ups: the report's S1
+(iam/tenants) and S2 (compute) legs ran through ores.shell only, per
+the shell-only testing directive. The desktop UI is the delivery
+vehicle for the same flows; its verification needs a UI session, so
+this story stays BACKLOG until one is available. Findings F2 and F3 of
+the report are UI-visible first: F2 (the bare =new_record= change
+reason) will fail in the UI's change-reason picker against a strict
+catalogue before it fails anywhere else, and F3 (the unguarded system
+tenant delete) is today protected by the UI only — the UI run is the
+evidence that protection still holds.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+|      |       |       |     |             |
+
+* Decisions
+
+* Out of scope
+
+- Shell re-verification of the compute-grid and tenant flows: the
+  [[id:36E9BEDD-4804-4822-AFD8-8AF961978398][Manage the compute grid from the shell]] story owns the shell side;
+  the system-test report already recorded its evidence.
+- Service-side fixes the UI run may surface: findings land here with
+  their owning fix PR, in the same style as the report.

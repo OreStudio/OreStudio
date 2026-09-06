@@ -76,6 +76,10 @@ void fra_instrument_service::remove_fra_instrument(const std::string& id) {
     BOOST_LOG_SEV(lg(), info) << "Removed fra_instrument: " << id;
 }
 
+void fra_instrument_service::delete_fra_instruments(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
+}
+
 std::vector<domain::fra_instrument>
 fra_instrument_service::get_fra_instrument_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for fra_instrument: " << id;

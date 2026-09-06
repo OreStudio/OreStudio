@@ -40,11 +40,11 @@ Traceability table intact.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:94A3A794-03E7-45B4-B759-F7AEF7BEFC4C][Standardize the compass pr create body template with a Testing section]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-06                               |
 
 * Acceptance
@@ -114,3 +114,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered. =compass pr create= now emits one fixed body template —
+Summary / Changes / Traceability / Testing, then the footer. The
+Testing section carries Plan., Evidence. and Limitations. paragraphs
+fed by the required =--testing-plan=, =--testing-evidence= and
+=--testing-limitations= flags; a raise whose flag text is empty is
+refused before any push, naming every missing flag at once
+(=_missing_testing_flags=, checked in =_cmd_create=). The body
+assembly lives in the pure =_canonical_body= builder.
+
+Ten tests in =test_compass_pr.py= pin the section order, the Changes
+bullets, the Testing paragraphs, the Traceability rows and the
+refusal paths (missing flags, subset missing, blank flags, missing
+title); compass suite 127 passed, 1 skipped. The pr-raise skill, the
+how-do-I-create-a-PR recipe and developer.org document the fixed
+template; the skills bundle is rebuilt (=compass build --direct
+skills=). Class: python tooling + docs. Checks run: compass test
+suite 127 passed / 1 skipped; codegen drift (refdata, reporting,
+marketdata, compute-cpp, iam, iam-cpp) "No drift"; site build clean.
+
+This PR is raised with the new template itself (see the * PRs table);
+PR #2021's body is retrofitted to the fixed template with its
+Traceability table intact.

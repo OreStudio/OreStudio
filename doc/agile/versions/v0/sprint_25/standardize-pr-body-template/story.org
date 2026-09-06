@@ -34,11 +34,11 @@ ships.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
+| Next          | Nothing.                               |
 | Last touched  | 2026-09-06                               |
 
 * Acceptance
@@ -59,9 +59,20 @@ ships.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:03D33800-80BC-4D99-B6E6-8A47AE50FF99][Implement the fixed PR body template with a Testing section in compass pr create]] | STARTED | 2026-09-06 | | Add required --testing-plan/--testing-evidence/--testing-limitations flags to compass pr create behind a canonical body template (Summary / Changes / Traceability / Testing + footer); update the compass tests; update the pr-raise skill, the create-a-PR recipe and the developer.org PR spec to the fixed template; raise this PR using the new template itself. |
+| [[id:03D33800-80BC-4D99-B6E6-8A47AE50FF99][Implement the fixed PR body template with a Testing section in compass pr create]] | DONE | 2026-09-06 | 2026-09-06 | Add required --testing-plan/--testing-evidence/--testing-limitations flags to compass pr create behind a canonical body template (Summary / Changes / Traceability / Testing + footer); update the compass tests; update the pr-raise skill, the create-a-PR recipe and the developer.org PR spec to the fixed template; raise this PR using the new template itself. |
 
 * Decisions
+
+- The PR body template is fixed at the generator: Summary / Changes /
+  Traceability / Testing, then the footer. The Testing section comes
+  from required =--testing-plan=, =--testing-evidence= and
+  =--testing-limitations= flags; a raise is refused before any push,
+  naming every flag with no text at once.
+- Verification belongs in the Testing section's Evidence paragraph
+  (change class; checks run and results), not in a =--change= bullet.
+- A body retrofit rebuilds the full canonical body and applies it with
+  =gh pr edit --body-file=, so the Traceability table survives — never
+  a wholesale overwrite that drops it.
 
 * Out of scope
 

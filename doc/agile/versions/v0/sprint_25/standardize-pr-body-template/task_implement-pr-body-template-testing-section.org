@@ -8,7 +8,7 @@
 #+filetags: :standardize-pr-body-template:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-pr-body-template-testing-section
-#+pr:
+#+pr: 2022
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-06
@@ -105,7 +105,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2022][#2022]] | [compass] Emit mandatory Testing section from pr create flags |
 
 * Review
 

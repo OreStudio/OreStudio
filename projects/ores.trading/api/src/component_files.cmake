@@ -382,6 +382,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/knock_out_swap_instrument_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/party_role_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/rpa_instrument_changed_event.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/swaption_instrument_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/trade_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/eventing/trade_type_changed_event.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/export.hpp"
@@ -448,6 +449,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/knock_out_swap_instrument_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/party_role_type_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/rpa_instrument_protocol.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/swaption_instrument_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_protocol.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/messaging/trade_type_protocol.hpp"
 )

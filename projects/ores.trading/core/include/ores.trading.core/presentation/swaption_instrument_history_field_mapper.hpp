@@ -17,28 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_GENERATORS_SWAPTION_INSTRUMENT_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_SWAPTION_INSTRUMENT_GENERATOR_HPP
+#ifndef ORES_TRADING_CORE_PRESENTATION_SWAPTION_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_SWAPTION_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.trading.api/domain/swaption_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.core/export.hpp"
 #include <vector>
 
-namespace ores::trading::generators {
+namespace ores::trading::presentation {
 
 /**
- * @brief Generates a synthetic swaption_instrument.
+ * @brief Renders a swaption_instrument to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_TRADING_API_EXPORT domain::swaption_instrument
-generate_synthetic_swaption_instrument(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic swaption_instruments.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::swaption_instrument>
-generate_synthetic_swaption_instruments(std::size_t n,
-                                        utility::generation::generation_context& ctx);
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_swaption_instrument_fields(const domain::swaption_instrument& v);
 
 }
 

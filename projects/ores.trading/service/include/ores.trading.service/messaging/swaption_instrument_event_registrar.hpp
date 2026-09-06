@@ -17,29 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_GENERATORS_SWAPTION_INSTRUMENT_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_SWAPTION_INSTRUMENT_GENERATOR_HPP
+#ifndef ORES_TRADING_SERVICE_MESSAGING_SWAPTION_INSTRUMENT_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_SWAPTION_INSTRUMENT_EVENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/swaption_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::trading::generators {
+namespace ores::trading::service::messaging {
 
-/**
- * @brief Generates a synthetic swaption_instrument.
- */
-ORES_TRADING_API_EXPORT domain::swaption_instrument
-generate_synthetic_swaption_instrument(utility::generation::generation_context& ctx);
+[[nodiscard]] ores::eventing::service::subscription register_swaption_instrument_event_mapping(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats);
 
-/**
- * @brief Generates N synthetic swaption_instruments.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::swaption_instrument>
-generate_synthetic_swaption_instruments(std::size_t n,
-                                        utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::trading::service::messaging
 
 #endif

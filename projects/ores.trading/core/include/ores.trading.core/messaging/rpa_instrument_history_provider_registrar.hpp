@@ -17,28 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_GENERATORS_RPA_INSTRUMENT_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_RPA_INSTRUMENT_GENERATOR_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_RPA_INSTRUMENT_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_RPA_INSTRUMENT_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/rpa_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::trading::generators {
+namespace ores::trading::messaging {
 
-/**
- * @brief Generates a synthetic rpa_instrument.
- */
-ORES_TRADING_API_EXPORT domain::rpa_instrument
-generate_synthetic_rpa_instrument(utility::generation::generation_context& ctx);
+void register_rpa_instrument_history_provider(ores::history::service::dispatch_registry& registry);
 
-/**
- * @brief Generates N synthetic rpa_instruments.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::rpa_instrument>
-generate_synthetic_rpa_instruments(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::trading::messaging
 
 #endif

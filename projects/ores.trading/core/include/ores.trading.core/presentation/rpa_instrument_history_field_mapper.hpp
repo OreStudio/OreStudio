@@ -17,27 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_GENERATORS_RPA_INSTRUMENT_GENERATOR_HPP
-#define ORES_TRADING_API_GENERATORS_RPA_INSTRUMENT_GENERATOR_HPP
+#ifndef ORES_TRADING_CORE_PRESENTATION_RPA_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_RPA_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.trading.api/domain/rpa_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
+#include "ores.trading.core/export.hpp"
 #include <vector>
 
-namespace ores::trading::generators {
+namespace ores::trading::presentation {
 
 /**
- * @brief Generates a synthetic rpa_instrument.
+ * @brief Renders a rpa_instrument to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_TRADING_API_EXPORT domain::rpa_instrument
-generate_synthetic_rpa_instrument(utility::generation::generation_context& ctx);
-
-/**
- * @brief Generates N synthetic rpa_instruments.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::rpa_instrument>
-generate_synthetic_rpa_instruments(std::size_t n, utility::generation::generation_context& ctx);
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_rpa_instrument_fields(const domain::rpa_instrument& v);
 
 }
 

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_RPA_INSTRUMENT_TABLE_IO_HPP
-#define ORES_TRADING_DOMAIN_RPA_INSTRUMENT_TABLE_IO_HPP
+#ifndef ORES_TRADING_API_DOMAIN_RPA_INSTRUMENT_TABLE_IO_HPP
+#define ORES_TRADING_API_DOMAIN_RPA_INSTRUMENT_TABLE_IO_HPP
 
 #include "ores.trading.api/domain/rpa_instrument.hpp"
 #include "ores.trading.api/export.hpp"

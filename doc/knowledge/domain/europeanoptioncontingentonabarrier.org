@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: F0727CDB-4696-4C25-BFF5-AF0D302B5A71
+:END:
+#+title: European Option Contingent on a Barrier
+#+description: A plain vanilla European option whose payoff depends on a barrier on another underlying; ORE's EuropeanOptionBarrier product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:europeanoptioncontingentonabarrier:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A European option contingent on a barrier is a plain vanilla European
+option on one underlying, whose payoff depends on a barrier on a
+second underlying. ORE prices it with American or European barrier
+monitoring. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+The product pairs a vanilla European option with a knock-in or
+knock-out barrier on a different asset. The barrier is monitored
+continuously in the American style, or once at expiry in the European
+style. A knock-in makes the option valid only when the barrier
+condition is met. A knock-out kills the payoff when the condition is
+met. The two underlyings can be of different asset classes.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+This product is a plain vanilla European option on a single
+underlying (FX, Equity, Commodity or InterestRate) with a
+knock-in/knock-out feature on another underlying asset. The barrier
+can be continuously monitored (American) or only at the option expiry
+date (European).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+
+ORE describes the knock-in and knock-out logic:
+
+#+begin_quote
+For a knock-in (knock-out) barrier, the option is valid when the
+price of the underlying barrier moves inside (outside) the barrier,
+otherwise the payoff is zero.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+
+ORE scopes the supported asset classes:
+
+#+begin_quote
+For a European-style barrier, we support FX, Equity, Commodity and
+InterestRate underlyings. We do not support InterestRate for
+American-style barriers.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+
+** In plain terms
+
+This trade is an option on one market, gated by another market. The
+option part is a normal European call or put on the option
+underlying. The gate is a barrier on a second underlying. With a
+down-and-in barrier, the option only lives when the second market has
+touched the level from above. With an up-and-out barrier, a touch
+from below kills the option. The gate can watch the second market all
+the time, or only on the expiry date.
+
+** How it works in ORE
+
+The trade container for this product is the
+=EuropeanOptionBarrierData= node, and the trade type is
+=EuropeanOptionBarrier=. =Quantity= is the number of option
+contracts, =PutCall= the option type and =LongShort= the own party
+position. =Strike= is the option strike price. The premium terms are
+=PremiumAmount=, =PremiumCurrency= and =PremiumDate=. =OptionExpiry=
+is the option expiry date. =OptionUnderlying= names the asset the
+option is written on; its supported types are equity, FX, commodity
+and interest rate. =PayCcy= is the settlement currency, and
+=SettlementDate= the settlement date of the exercise payoff, on or
+after the option expiry date.
+
+=BarrierUnderlying= is the underlying monitored against the barrier
+level. Its supported types follow the barrier style. ORE describes
+the European-style input as follows:
+
+#+begin_quote
+For a European-style barrier, the BarrierType must be set to European
+and the BarrierSchedule can be omitted.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+
+=BarrierLevel= is the knock-in or knock-out level. =BarrierType=
+takes =DownIn=, =UpIn=, =DownOut= or =UpOut=. =BarrierStyle= takes
+=American= or =European=. =BarrierSchedule= is optional and lists the
+trading days over which a continuous barrier is monitored. It is
+required only for the American style.
+
+ORE illustrates the barrier mechanics with two examples:
+
+#+begin_quote
+For example, for a European option with a continuous down-in barrier,
+the option payoff will only apply if the barrier underlying price was
+less than or equal to the agreed barrier level at any point over the
+life of the trade.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+
+The companion example describes an up-out barrier: the option is
+knocked out when the barrier underlying price reaches or exceeds the
+agreed level at any point over the life of the trade, and the final
+payoff is then zero.
+
+** Mathematical notes
+
+The payoff is the payoff of a vanilla European option on the option
+underlying, scaled by a barrier indicator on the barrier underlying.
+The barrier indicator is one when the barrier condition holds, and
+zero otherwise. For a knock-in the option is valid only when the
+indicator is one. For a knock-out the option is valid only when the
+indicator is zero. Under American monitoring the condition checks the
+barrier underlying at every point of the barrier schedule. Under
+European monitoring it checks the barrier underlying once, at the
+option expiry date.
+
+** What moves its value (static sensitivities)
+
+- The level of the option underlying at expiry. It drives the vanilla
+  payoff.
+- The volatility of the option underlying.
+- The path of the barrier underlying. It decides whether the barrier
+  condition fires.
+- The volatility of the barrier underlying, and its correlation with
+  the option underlying. Both shape the probability that the barrier
+  is touched.
+- The barrier level, the barrier type and the barrier style.
+- The strike, and the interest rates that discount the payoff.
+
+** How the profile ages (dynamic sensitivities)
+
+Until expiry the option is a vanilla European option whose life
+depends on the barrier. Under the American style the barrier
+underlying is watched on each day of the barrier schedule; a touch
+knocks the option in or out there and then. Under the European style
+the barrier is decided once at expiry, together with the option
+payoff. The payoff settles on the settlement date when the option
+survives.
+
+** Why a customer would want it
+
+A barrier on a second asset prices in a view on two markets with one
+payoff. The knock-in form is cheaper than the plain option because it
+demands a condition on another market. The structure suits investors
+who want equity exposure, say, whose payoff depends on an FX level or
+an interest rate. In ORE Studio a customer books European options
+contingent on barriers to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a short call on the Euro Stoxx 50 with a
+continuous down-and-in FX barrier on EUR-USD. The trade is
+continuously monitored from 2019-12-11 to the expiry date:
+
+#+begin_example
+<Trade id="Equity_EuropeanOptionWithAmericanFxBarrier">
+  <TradeType>EuropeanOptionBarrier</TradeType>
+  <Envelope>
+    .....
+  </Envelope>
+  <EuropeanOptionBarrierData>
+    <Quantity>8523</Quantity>
+    <PutCall>Call</PutCall>
+    <LongShort>Short</LongShort>
+    <Strike>3520</Strike>
+    <PremiumAmount>114.40</PremiumAmount>
+    <PremiumCurrency>EUR</PremiumCurrency>
+    <PremiumDate>2019-12-13</PremiumDate>
+    <OptionExpiry>2020-06-19</OptionExpiry>
+    <OptionUnderlying>
+      <Type>Equity</Type>
+      <Name>RIC:.STOXX50E</Name>
+    </OptionUnderlying>
+    <BarrierUnderlying>
+      <Type>FX</Type>
+      <Name>ECB-EUR-USD</Name>
+    </BarrierUnderlying>
+    <BarrierLevel>1.09335</BarrierLevel>
+    <BarrierType>DownAndIn</BarrierType>
+    <BarrierStyle>American</BarrierStyle>
+    <BarrierSchedule>
+      <Rules>
+        <StartDate>2019-12-11</StartDate>
+        <EndDate>2020-06-19</EndDate>
+        <Tenor>1D</Tenor>
+        <Calendar>USA</Calendar>
+        <Convention>Following</Convention>
+        <TermConvention>Following</TermConvention>
+        <Rule>Forward</Rule>
+      </Rules>
+    </BarrierSchedule>
+    <SettlementDate>2020-06-24</SettlementDate>
+    <PayCcy>USD</PayCcy>
+  </EuropeanOptionBarrierData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=,
+listing =European Option Barrier data (continuous barrier)=. The call
+pays a premium of 114.40 EUR per contract on 2019-12-13.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs
+  =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+  The upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

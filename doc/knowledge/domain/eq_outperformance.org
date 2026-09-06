@@ -1,0 +1,201 @@
+:PROPERTIES:
+:ID: 9033DF60-3AD6-45FB-9DF7-1094D9B489FF
+:END:
+#+title: Equity Outperformance Option
+#+description: An option paying the outperformance of one asset over another; ORE's Equity Outperformance Option product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_outperformance:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+An equity outperformance option pays the difference between the
+returns of two equity indices, against a strike return. ORE prices it
+as a European cash-settled option, with optional knock-in and
+knock-out prices on the second index. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+The outperformance payoff is the positive part of the return of the
+first index minus the return of the second index, minus a strike
+return. The buyer receives that outperformance and pays the strike
+return. The trade may carry a knock-in price and a knock-out price.
+The payoff is then paid only when the second index sits between the
+two prices on the exercise date.
+
+* Detail
+
+** What it is
+
+ORE introduces the product as follows:
+
+#+begin_quote
+An Equity Outperformance option has a payoff that depends on the
+`outperformance' of two equity indices (i.e. the difference between
+their returns) against a strike return. The buyer has the right but
+not the obligation to receive the outperformance in exchange for the
+strike rate at a predetermined time in the future.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+
+ORE describes the barrier condition as follows:
+
+#+begin_quote
+A knockIn and knockOut price may be provided. The payoff is then only
+paid if on the exercise date the price of Index2 is above the
+knockIn price and below the knockOut price.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+
+** In plain terms
+
+An outperformance option is a bet on relative performance. The buyer
+is long the return of index one and short the return of index two,
+through one option. The buyer profits when index one beats index two
+by more than the strike return. A call expects index one to win; a
+put expects index two to win. The barrier condition ties the payout
+to the level of index two on the exercise date.
+
+** How it works in ORE
+
+The data node =EquityOutperformanceOptionData= is the trade data
+container for the =EquityOutperformanceOption= trade type:
+
+#+begin_quote
+The EquityOutperformanceOptionData node includes one OptionData trade
+component sub-node plus elements specific to the Equity
+Outperformance Option.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+
+=OptionData= holds the option terms. =LongShort= takes =Long= or
+=Short=. =OptionType= takes =Call= or =Put=. A call gives the holder
+the right, but not the obligation, to receive the outperformance and
+pay the strike return; a put gives the holder the right to pay the
+outperformance and receive the strike return. =Style= takes
+=European= only, the sole style the trade type allows. =Settlement=
+takes =Cash= or =Physical=. The =ExerciseDates= node must carry
+exactly one =ExerciseDate=. A =Premiums= node is optional and holds
+the premium amounts paid by the option buyer to the seller.
+
+=Currency= is the currency of the option. =Underlying1= and
+=Underlying2= name the two equity underlyings and the equity curves
+used for pricing. ORE notes a constraint on them:
+
+#+begin_quote
+Also note that the equities in Underlying1 and Underlying2 must be
+quoted in the same currency.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+
+=InitialPrice1= and =InitialPrice2= hold the initial prices of the
+two underlyings. =StrikeReturn= is the strike return of the option.
+=Notional= is the notional amount of the trade. All three take any
+positive real number. The optional =KnockInPrice= and
+=KnockOutPrice= bound the second index on the settlement date: the
+payoff pays only when the price of underlying two is above the
+knock-in value and below the knock-out value.
+
+The optional =InitialPriceCurrency1= and =InitialPriceCurrency2=
+apply when an initial price is given in a currency other than its
+underlying's currency. Each then requires its =InitialPriceFXTerms=
+node, which carries the =FXIndex= for the conversion.
+
+** Mathematical notes
+
+ORE states the payoff of the option as the notional N times the
+positive part of the return of index one minus the return of index
+two, minus the strike return:
+
+N x max(0, R1 - R2 - K).
+
+R1 and R2 are the returns of =Underlying1= and =Underlying2=, and K
+is the =StrikeReturn=. The payoff is zero when the second index's
+return closes the gap to the first by K or more. The knock-in and
+knock-out prices add a binary condition on the price of index two at
+the exercise date. ORE states that the pricing methodology was
+generalised from Brigo and Mercurio 2006, section 13.16.2.
+
+** What moves its value (static sensitivities)
+
+- The level of each index at expiry. The return spread decides the
+  payoff.
+- The volatility of each index. Higher volatility widens the
+  distribution of the return spread.
+- The correlation between the two indices. It sets the volatility of
+  the spread: the spread is less volatile than either index.
+- The strike return.
+- The knock-in and knock-out prices, which filter the payoff
+  binarily.
+- The interest rates that discount the payoff.
+
+The payoff is a call on the return spread. The barrier condition
+makes the trade sensitive to the joint level of index two at expiry.
+
+** How the profile ages (dynamic sensitivities)
+
+The trade holds until its single exercise date. Each index return is
+measured from its initial price. At expiry the payoff is the positive
+part of the spread minus the strike return, scaled by the notional.
+The barrier condition checks the price of index two on the same date.
+Cash settlement follows on the settlement date.
+
+** Why a customer would want it
+
+An outperformance option prices a view on relative performance
+directly. It lets an investor benefit when one market beats another,
+without taking a position in either market alone. Banks and asset
+managers use it to trade pairs of indices. In ORE Studio a customer
+books equity outperformance options to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a European cash-settled call on the
+outperformance of the S&P 500 over the NASDAQ 100, with a strike
+return of 1% and a knock-in and knock-out window on the second
+index:
+
+#+begin_example
+<EquityOutperformanceOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <OptionType>Call</OptionType>
+    <Style>European</Style>
+    <Settlement>Cash</Settlement>
+    <ExerciseDates>
+      <ExerciseDate>2022-09-21</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <Currency>USD</Currency>
+  <Notional>500000</Notional>
+  <Underlying1>
+    <Type>Equity</Type>
+    <Name>RIC:.SPX</Name>
+  </Underlying1>
+  <Underlying2>
+    <Type>Equity</Type>
+    <Name>RIC:.NDX</Name>
+  </Underlying2>
+  <InitialPrice1>2140</InitialPrice1>
+  <InitialPrice2>13000</InitialPrice2>
+  <StrikeReturn>0.01</StrikeReturn>
+  <KnockInPrice>12500</KnockInPrice>
+  <KnockOutPrice>14000</KnockOutPrice>
+</EquityOutperformanceOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=,
+listing =Equity Outperformance Option Data=.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/eq_outperformance.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

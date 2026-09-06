@@ -41,12 +41,18 @@ description with domain grounding and ORE examples.
 - [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]] — the American option on a convertible bond: the right to
   sell it back at a strike set from a reference swap, the call and put
   forms, and sensitivities.
+- [[id:6B1D0C78-0CAF-4A1C-BA34-56FB07C4F107][Autocallable Type 01]] — the structured option that pays
+  accumulated amounts on fixing dates and redeems early at a trigger
+  level, and sensitivities.
 - [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]] — prepayment-linked amortisation:
   the notional follows a reference security's prepayments, the Flexi
   Swap pricing proxy, and sensitivities.
 - [[id:00DE9B53-9E4F-4FD4-A5E9-BE00B0956710][Basket Option]] — the option on a weighted basket of assets: the
   vanilla, Asian, average strike and lookback forms, and
   sensitivities.
+- [[id:18891481-BBFE-4731-A677-DB66400A724C][Best Entry Option]] — an option whose payoff uses the best
+  observed entry level of the underlying: the trigger path, the capped
+  participation and the downside branch, and sensitivities.
 - [[id:C00D82F7-942F-4270-AB9F-D0C31F0881A9][Bond Forward (Reference Data)]] — a forward contract on a bond with
   the underlying from reference data: physical or cash settlement,
   the T-Lock form, and sensitivities.
@@ -111,6 +117,8 @@ description with domain grounding and ORE examples.
   protection mechanics, the quanto form, and sensitivities.
 - [[id:B74A3D5C-1001-490D-9840-976C4E85E12F][Credit Linked Swap]] — swap payments with credit triggers: the four
   payment classes and sensitivities.
+- [[id:E63E99AD-6C5E-446B-BE14-57A8D9042AFD][Double Digital Option]] — a fixed payout when two underlyings
+  are simultaneously in the money, and sensitivities.
 - [[id:90BB6829-31EC-4C86-BE17-FDABF670DDB6][Equity Asian Option]] — the averaging option of the equity family: the
   arithmetic or geometric average of the spot, the observation
   schedule, and sensitivities.
@@ -143,6 +151,9 @@ description with domain grounding and ORE examples.
 - [[id:643843A9-B265-49B3-85BA-0E2F261DE7A9][Equity Option Position]] — direct option exposure: the single equity
   option or the weighted basket, the total return swap component
   role, and sensitivities.
+- [[id:9033DF60-3AD6-45FB-9DF7-1094D9B489FF][Equity Outperformance Option]] — the outperformance of one
+  index over another floored at zero, the knock-in and knock-out
+  levels, and sensitivities.
 - [[id:0AE749B3-E51A-4036-8561-622F5EE69C02][Equity Position]] — direct equity exposure: the single underlying or
   the weighted basket, the total return swap component role, and
   sensitivities.
@@ -153,6 +164,9 @@ description with domain grounding and ORE examples.
   touch, the one-touch and no-touch forms, and sensitivities.
 - [[id:D69C0964-9F15-43BC-8A13-66ECED718BED][Equity Variance Swap]] — equity volatility traded directly: the
   realised variance payoff and sensitivities.
+- [[id:F0727CDB-4696-4C25-BFF5-AF0D302B5A71][European Option Contingent on a Barrier]] — a vanilla European
+  option gated by a barrier on another underlying: American or
+  European monitoring, and sensitivities.
 - [[id:90DDE9BB-770F-4337-AF0E-69698AF2A2A1][Extended Accumulator]] — the accumulator that can extend past a
   barrier decision date: the extension trigger and the conditional
   observation dates, and sensitivities.
@@ -192,12 +206,18 @@ description with domain grounding and ORE examples.
   no-touch forms, the fixed payout.
 - [[id:7A2186FB-33C3-4916-B62C-A14468EE713F][FX Variance Swap]] — FX volatility traded directly: the realised
   variance payoff, vega notional, and sensitivities.
+- [[id:2C172183-1513-45EC-9A42-F0F3AB0E1F56][Generic Barrier Option]] — a vanilla, asset-or-nothing or
+  cash-or-nothing payoff with American barriers and a transatlantic
+  barrier at expiry, and sensitivities.
 - [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]] — protection on an index: unfactored
   and factored notional, the bespoke basket, and sensitivities.
 - [[id:6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58][Index Credit Default Swap Option]] — options on index protection:
   strike types, index terms, front-end protection.
 - [[id:37689AC9-DBA5-41AA-866E-19522F733D2E][Knock Out Swap]] — a barrier on a swap: the fixed-versus-floating
   swap that dies on a fixing, and sensitivities.
+- [[id:AEB7149D-EE91-4912-A663-D7A0261B87A0][Performance Option Type 01]] — the capped participation in the
+  performance of a basket against an option strike, and
+  sensitivities.
 - [[id:94B1DBE3-33AB-44F5-B9F1-B71E34A58123][Rate Digital Option]] — a binary bet on a rate fixing: the fixed
   payout above or below strike, and sensitivities.
 - [[id:95005252-270D-44DE-8A26-C61CE5D860E0][Risk Participation Agreement]] — protection on swap counterparties:
@@ -215,6 +235,9 @@ description with domain grounding and ORE examples.
 - [[id:5368EC07-71E8-4906-B897-AA41A57CE0FA][Total Return Swap]] — the return of an asset against a funding leg:
   the generic TRS and CFD forms, the accrual pricing method, and
   sensitivities.
+- [[id:59A56773-6E82-421A-8E64-AA54D46489D4][Window Barrier Option]] — an option with a barrier active only
+  inside a time window: the continuously monitored knock-in or
+  knock-out, and sensitivities.
 - [[id:428BA744-B3D3-486C-A3BF-39E59C6EC11F][Worst Of Basket Swap]] — a swap referencing the worst performing
   basket asset: the fixed coupons, the trigger, knock-out and
   knock-in barriers, and sensitivities.

@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :standardize-pr-body-template:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/implement-pr-body-template-testing-section
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -40,7 +40,7 @@ Traceability table intact.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:94A3A794-03E7-45B4-B759-F7AEF7BEFC4C][Standardize the compass pr create body template with a Testing section]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

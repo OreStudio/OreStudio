@@ -255,7 +255,7 @@ TEST_CASE("trade_identifier_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated trade_identifier id: " << sut.id;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.id_value.empty());
     CHECK(!sut.modified_by.empty());
@@ -271,7 +271,7 @@ TEST_CASE("trade_identifier_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 

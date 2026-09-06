@@ -17,20 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_TRADE_IDENTIFIER_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_TRADE_IDENTIFIER_JSON_IO_HPP
+#ifndef ORES_TRADING_SERVICE_MESSAGING_TRADE_IDENTIFIER_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_TRADE_IDENTIFIER_EVENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/trade_identifier.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::trading::domain {
+namespace ores::trading::service::messaging {
 
-/**
- * @brief Dumps the trade_identifier to a stream in JSON format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const trade_identifier& v);
+[[nodiscard]] ores::eventing::service::subscription register_trade_identifier_event_mapping(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats);
 
-}
+} // namespace ores::trading::service::messaging
 
 #endif

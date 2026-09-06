@@ -1,0 +1,70 @@
+:PROPERTIES:
+:ID: D1896FA3-026B-4056-A4FD-8C18BF9DF4C1
+:END:
+#+title: Story: Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper
+#+description: The continuous GitHub Actions builds on main fail on every OS: the result-mapper codegen template emits value_or({}) for nullable numeric fields, and the CI compilers gcc 13 and Apple clang cannot deduce the template parameter of value_or from a braced-init-list, while the local toolchains and MSVC accept it. The fix emits value_or(0) instead.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:codegen:compute:sprint_25:v0:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Main's continuous GitHub Actions builds are red on every OS. The
+Linux (gcc 13) and macOS (Apple clang) jobs fail to compile
+projects/ores.compute/core/src/repository/result_mapper.cpp. The
+mapper-impl codegen template emits v.<field>.value_or({}) for nullable
+numeric fields, and a braced-init-list cannot deduce the template
+parameter of std::optional<T>::value_or on those compilers. MSVC and
+clang-cl accept the deduction: the Windows jobs compiled the same file
+in the same window and were red for separate reasons (a test-seed
+failure and a transient file-lock link error), both since addressed.
+The local toolchains (g++ 16.2, clang 21.1) also accept the idiom,
+which is why bind PR #2012 built green locally. The fix emits an
+explicit value_or(0) instead, retangles the mapper template, and
+regenerates the compute mapper. Zero is semantically identical to {}
+for the two nullable numerics in play: pgmq_msg_id (nullable bigint to
+std::int64_t) and outcome (nullable int to int, generator default 0),
+both read into non-optional domain scalars. The CI builds return to
+green.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                             |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-06                               |
+
+* Acceptance
+
+- The mapper-impl codegen template emits value_or(0), never
+  value_or({}), for nullable numeric fields.
+- Regenerating the compute mapper is the only drift the template change
+  produces; the codegen drift checks pass.
+- The local build, ctest and site build stay green, and the continuous
+  CI on every OS returns to green after the merge.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:670C711E-2DCB-42DD-9F01-EC45FFF5310D][Implement Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] | DONE | 2026-09-06 | 2026-09-06 | Edit the mapper-impl codegen template to emit value_or(0) for nullable numeric fields, retangle the templates and regenerate the compute mapper, verify codegen drift, the site build, the roundtrip and the full build with ctest, then raise the hotfix PR and roll the story and this task DONE. The story doc, the sprint Hotfixes row and this task ride this branch. |
+
+* Decisions
+
+* Out of scope
+
+- The codegen banner and drift-baseline rollout across components: the
+  [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] story
+  owns it.
+- New bind work: this hotfix changes the template and one regenerated
+  file, nothing else.

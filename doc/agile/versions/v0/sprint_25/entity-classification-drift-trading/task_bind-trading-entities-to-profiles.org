@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-trading:
 #+owner: marco
 #+branch: feature/bind-trading-entities-to-profiles
-#+pr:
+#+pr: 2021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -469,7 +469,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2021][#2021]] | [trading,codegen] Bind trading entities to profiles, zero-diff regen |
 
 * Review
 

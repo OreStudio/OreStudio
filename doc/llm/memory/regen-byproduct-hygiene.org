@@ -2,16 +2,56 @@
 :ID: 9EEF7590-86C3-449F-8387-A21B5B62EF87
 :END:
 #+title: Regen byproduct hygiene
-#+description: Standing rule: every regeneration phase must sweep for unexpected untracked byproducts and account for each one.
+#+description: Standing rule: every regeneration phase must sweep for unexpected untracked byproducts and account for each one; the drift check runs in two modes only; a blocked deletion disposes via tagged stash push and drop.
 #+type: memory
 #+memory_subtype: feedback
 #+level: cross
 #+filetags: :memory:feedback:
 #+created: 2026-09-04
-#+updated: 2026-09-04
+#+updated: 2026-09-06
 
-Every phase that regenerates code must close with a byproduct sweep: git status must show no unexpected untracked files outside the component the phase targets. When one appears, the phase names it and accounts for it (deliberate inclusion in the change, or quarantine in a stash entry whose tag and SHA are recorded) before moving on.
+Every phase that regenerates code must close with a byproduct sweep: git
+status must show no unexpected untracked files outside the component the
+phase targets. When one appears, the phase names it and accounts for it
+(deliberate inclusion in the change, or disposal) before moving on.
 
-*Why:* On 2026-09-04 a regeneration during the junction-template-followups unit left 118 untracked generated files across 14 components that no unit owned; they went unnoticed until a manual sweep found them. Quarantined in stash entry ad0c738b9a (tag quarantine-regen-byproducts-20260904-1538).
+The drift check runs in exactly two modes: (a) all components known to be
+drift-free, the bound set the CI gate covers; or (b) one named component.
+An ad hoc multi-component list is never a valid invocation: a broad sweep
+regenerates every listed component at the full address, and a component
+whose committed baseline predates a template receives the newer per-entity
+families as untracked files. A regeneration that materializes untracked
+files inside a checked component is drift and must fail the check. The
+tooling change that enforces the two modes rides the next bind unit,
+task_bind-trading-entities-to-profiles; until it lands, follow the mode
+rule when invoking the check.
 
-*How to apply:* In any unit that runs a regeneration step (compass codegen regenerate, the codegen_templates tangle, check_component_drift.py, the roundtrip check, the component-file-list regeneration), run git status immediately after the regeneration and before closing the phase. Account for every untracked file that is not the phase own output.
+*Why:* Two incidents produced this rule. On 2026-09-04 a regeneration
+during the junction-template-followups unit left 118 untracked generated
+files across 14 components that no unit owned; they went unnoticed until a
+manual sweep found them, and were quarantined in stash entry ad0c738b9a
+(tag quarantine-regen-byproducts-20260904-1538). On 2026-09-05 a drift
+survey during the iam-bind unit ran check_component_drift.py with a
+17-component list and then a 13-component list; both runs aborted on
+validation errors in out-of-scope models after writing partial output. The
+runs left 142 untracked files across trading (56), dq (37), synthetic
+(18), scheduler (12), analytics (12), database (3) and output/ (4 ER
+diagrams). The check compares with git diff, which cannot see untracked
+files, so nothing flagged the materialization. Two deletion sweeps were
+denied by the permission classifier (untracked-file deletion requires
+user-named targets), and the files survived until 2026-09-06, when the
+user approved their deletion. The 09-04 quarantine ad0c738b9a was disposed
+of the same day under the disposal rule below.
+
+*How to apply:* In any unit that runs a regeneration step (compass codegen
+regenerate, the codegen_templates tangle, check_component_drift.py, the
+roundtrip check, the component-file-list regeneration), run git status
+immediately after the regeneration and before closing the phase. Account
+for every untracked file that is not the phase's own output. Invoke the
+drift check only in its two modes.
+
+*Disposal:* When direct deletion of a confirmed regen byproduct is
+blocked, dispose of it with a tagged stash push and an immediate drop of
+that entry. Record the tag and the entry SHA in the phase notes first; the
+drop keeps the content recoverable through the stash reflog until garbage
+collection.

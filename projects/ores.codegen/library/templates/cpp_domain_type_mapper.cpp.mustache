@@ -121,7 +121,7 @@ domain::{{entity_singular}}
     r.identity.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
 {{#is_nullable_numeric}}
-    r.identity.{{name}} = v.{{name}}.value_or({});
+    r.identity.{{name}} = v.{{name}}.value_or(0);
 {{/is_nullable_numeric}}
 {{#is_already_optional}}
     r.identity.{{name}} = v.{{name}};
@@ -163,7 +163,7 @@ domain::{{entity_singular}}
     r.{{name}} = v.{{name}}.value_or("");
 {{/is_nullable_string}}
 {{#is_nullable_numeric}}
-    r.{{name}} = v.{{name}}.value_or({});
+    r.{{name}} = v.{{name}}.value_or(0);
 {{/is_nullable_numeric}}
 {{#is_already_optional}}
     r.{{name}} = v.{{name}};

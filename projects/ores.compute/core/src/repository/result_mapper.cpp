@@ -42,9 +42,9 @@ domain::result result_mapper::map(const result_entity& v) {
     r.workunit_id = boost::lexical_cast<boost::uuids::uuid>(v.workunit_id);
     r.host_id = v.host_id.has_value() ? boost::lexical_cast<boost::uuids::uuid>(*v.host_id) :
                                         boost::uuids::uuid{};
-    r.pgmq_msg_id = v.pgmq_msg_id.value_or({});
+    r.pgmq_msg_id = v.pgmq_msg_id.value_or(0);
     r.server_state = v.server_state;
-    r.outcome = v.outcome.value_or({});
+    r.outcome = v.outcome.value_or(0);
     r.output_uri = v.output_uri.value_or("");
     r.error_message = v.error_message.value_or("");
     if (v.received_at)

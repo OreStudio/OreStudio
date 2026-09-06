@@ -21,10 +21,12 @@ An ad hoc multi-component list is never a valid invocation: a broad sweep
 regenerates every listed component at the full address, and a component
 whose committed baseline predates a template receives the newer per-entity
 families as untracked files. A regeneration that materializes untracked
-files inside a checked component is drift and must fail the check. The
-tooling change that enforces the two modes rides the next bind unit,
-task_bind-trading-entities-to-profiles; until it lands, follow the mode
-rule when invoking the check.
+files inside a checked component is drift and must fail the check.
+The tooling enforces the two modes (landed 2026-09-06 with the trading
+bind unit): check_component_drift.py takes =--all= over the
+=KNOWN_DRIFT_FREE= registry in the script, or =--component <name>=; no
+other invocation is valid, and a regeneration that materializes
+untracked files fails the check.
 
 *Why:* Two incidents produced this rule. On 2026-09-04 a regeneration
 during the junction-template-followups unit left 118 untracked generated

@@ -2,7 +2,7 @@
 :ID: A8B7F2C9-D416-4E83-B527-9F814E62C1A5
 :END:
 #+title: ores.compute
-#+description: Provides domain types and repository layer for the ORE Studio distributed compute grid. Models the BOINC lexicon: hosts (compute nodes), apps (engine registry), app_versions (wrapper+engine bundles), batches, workunits (job templates), and results (execution instances). Supports PostgreSQL-backed orchestration via the standard temporal entity pattern with full audit trail.
+#+description: Distributed compute grid for ORE Studio — hosts, apps, app_versions, batches, workunits, and results, with the cluster-manager core, the NATS orchestrator service, the worker wrapper, and the client package publisher.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:component:
@@ -10,16 +10,15 @@
 #+updated: 2026-09-06
 #+name: compute
 #+full_name: ores.compute
-#+brief: BOINC-inspired distributed compute grid domain types.
+#+brief: Distributed compute grid component
 #+component_kind: composite
 
 * Summary
 
-Provides domain types and repository layer for the ORE Studio distributed
-compute grid. Models the BOINC lexicon: hosts (compute nodes), apps (engine
-registry), app_versions (wrapper+engine bundles), batches, workunits (job
-templates), and results (execution instances). Supports PostgreSQL-backed
-orchestration via the standard temporal entity pattern with full audit trail.
+=ores.compute= runs ORE Studio's distributed compute grid — hosts register
+with the cluster manager, receive batches assigned to them, and execute each
+run as a worker process. Structured as a composite component with five
+sub-components.
 
 
 * Sub-components

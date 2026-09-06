@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: D16393FC-784B-4BCB-90B9-7010894CD2D2
+:END:
+#+title: Commodity Average Price Option
+#+description: An Asian option on daily commodity price fixings; ORE's CommodityAveragePriceOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityapo:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity average price option is the Asian option of the commodity
+family. Its payoff depends on the average of daily fixings, not on one
+price. ORE models it with the trade type =CommodityAveragePriceOption=.
+This note records the domain grounding, as ORE documents it in its
+product catalogue.
+
+* Summary
+
+The commodity APO is an Asian option. Its underlying is a single-period
+commodity swap that observes daily price fixings. A call receives the
+floating average and pays the fixed strike. A put pays the floating
+average and receives the fixed strike. Exercise happens at the end of
+the calculation period. A barrier, if present, conditions the payoff.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+The (Arithmetic) Average Price Option (APO) is an Asian option with a
+single-period Commodity Swap as an underlying which observes daily
+price fixings in the calculation period.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityapo.tex=.
+
+** In plain terms
+
+A commodity APO is a bet on an average. The daily commodity prices over
+a period decide the payoff. One side pays a fixed price. The other side
+pays what the average turns out to be. The average smooths the swings
+of a single day.
+
+** How it works in ORE
+
+The =CommodityAveragePriceOptionData= node carries =OptionData=, an
+optional =BarrierData=, the commodity =Name=, the =StrikeData=, the
+=Quantity=, and the period dates. Exercise happens at the calculation
+period end, typically on the last floating price fixing date. This
+contrasts with the [[id:8FAE9780-9737-49DB-87E7-D678F3AEBD69][Commodity Swaption]], whose expiry comes before
+the underlying swap starts. In a call option, the owner has the right
+to receive average floating prices and to pay fixed prices. In a put
+option it is the other way around. APOs can occur in combinations,
+such as series of puts and calls at different strikes, and over a
+series of consecutive calculation periods.
+
+** Mathematical notes
+
+The floating average is the arithmetic mean of the daily fixings over
+the period. The call payoff is the difference between that average and
+the strike, when positive. The average reduces the volatility of the
+payoff relative to a single-fixing option. The value prices off the
+commodity forward curve at each observation date and the volatility of
+the average.
+
+** What moves its value (static sensitivities)
+
+- The commodity forward curve at each observation date. It drives the
+  expected average.
+- The volatility of the daily fixings. It sets the value of the
+  average optionality.
+- The strike and the quantity.
+- The barrier level and style, when present.
+- The discount curve of the settlement currency.
+
+A call gains when the average rises above the strike. A put gains when
+the average falls below it.
+
+** How the profile ages (dynamic sensitivities)
+
+Each daily fixing turns part of the average from unknown to known. The
+remaining fixings keep their market exposure. The averaging window
+closes as the period end approaches. At the last fixing date the
+average is known and the option settles. After settlement the trade
+stops.
+
+** Why a customer would want it
+
+A consumer who buys commodities month by month wants protection on the
+period average, not on one date. An airline, a refiner, or a utility
+has exactly this exposure. The average makes the hedge cheaper than a
+series of single-date options. In ORE Studio a customer books commodity
+APOs to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a short call with an up-and-in barrier:
+
+#+begin_example
+<Trade id="...">
+  <TradeType>CommodityAveragePriceOption</TradeType>
+  <Envelope>
+    ...
+  </Envelope>
+  <CommodityAveragePriceOptionData>
+    <OptionData>
+      <LongShort>Short</LongShort>
+      <OptionType>Call</OptionType>
+      <Style>European</Style>
+      <ExerciseDates>
+        <ExerciseDate>2020-01-31</ExerciseDate>
+      </ExerciseDates>
+    </OptionData>
+    <BarrierData>
+      <Type>UpAndIn</Type>
+      <Style>American</Style>
+      <LevelData>
+        <Level>
+          <Value>80</Value>
+        </Level>
+      </LevelData>
+    </BarrierData>
+    <Name>NYMEX:CL</Name>
+    <Currency>USD</Currency>
+    <Quantity>6000</Quantity>
+    <StrikeData>
+      <StrikePrice>
+        <Value>80</Value>
+        <Currency>USD</Currency>
+      </StrikePrice>
+    </StrikeData>
+    <PriceType>FutureSettlement</PriceType>
+    <StartDate>2022-01-01</StartDate>
+    <EndDate>2023-01-31</EndDate>
+  </CommodityAveragePriceOptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityapo.tex=,
+listing =Commodity Average Price Option= (optional elements omitted).
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Asian_option][Wikipedia: Asian option]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/commodityapo.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

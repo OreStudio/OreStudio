@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 48305B53-26C5-474D-8AA2-0DC425F96E3B
+:END:
+#+title: Commodity Option Strip
+#+description: A strip of commodity APOs or European options over periods; ORE's CommodityOptionStrip product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityoptionstrip:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity option strip is a series of commodity options over the
+calculation periods of a swap. ORE models it with the trade type
+=CommodityOptionStrip=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A commodity option strip is a series of options, one per calculation
+period. Each period's option is an APO or a European commodity option,
+set by =IsAveraged=. The strip names its calls and puts separately,
+with strikes, barriers, premiums, style, settlement, and digital
+flags. The product covers averaging and non-averaging variants in one
+structure.
+
+* Detail
+
+** What it is
+
+ORE groups both forms under one node. The node can represent a strip
+of commodity average price options, or a strip of European commodity
+options, one per calculation period. The trade type
+=CommodityOptionStrip= selects the form.
+
+** In plain terms
+
+A commodity option strip is a strip of tickets, one for each period of
+a swap. Each ticket is an option on that period's commodity price. The
+buyer can hedge a stream of purchases, period by period, with a strip
+of options instead of one contract.
+
+** How it works in ORE
+
+The =CommodityOptionStripData= node starts with a =LegData= node of
+type =CommodityFloating=. It names the commodity and the calculation
+periods. The =IsAveraged= flag in its =CommodityFloatingLegData=
+chooses the option type. With =IsAveraged= false, a strip of European
+commodity options is created, one put or call per calculation period.
+The exercise date is the pricing date of the period. With =IsAveraged=
+true, a strip of commodity average price options is created. The
+exercise date is the period end date.
+
+Each calculation period may contain a put and a call, bought or sold.
+The =Calls= and =Puts= nodes set the type, the direction, and the
+strike. Inside =Calls= sit =LongShorts=, =Strikes=, and an optional
+=BarrierData=. =Puts= mirrors it. =LongShorts= and =Strikes= hold one
+entry, shared by all periods, or one entry per period. If =Calls= is
+omitted, the strip has no calls. At least one of =Calls= or =Puts= is
+needed for a valid strip. Calls and puts can carry different barrier
+terms. All calls share the same terms, and all puts share theirs.
+
+The =Style= node sets the exercise style, European or American.
+European is the default. A strip of APOs assumes European and issues a
+warning otherwise. =Settlement= sets cash or physical delivery, with
+cash the default. A strip of APOs assumes cash and issues a warning
+otherwise. =Premiums= adds premium amounts, received or paid.
+=IsDigital= true turns the strip into commodity digitals. =PayoffPerUnit=
+then sets the payoff per commodity unit.
+
+** Mathematical notes
+
+The strip value is the sum of its period option values. Each
+non-averaging option prices on one fixing. Each averaging option
+prices on the period average. Period structure, strikes, and barriers
+enter the value independently, period by period.
+
+** What moves its value (static sensitivities)
+
+- The commodity forward curve at each period's fixing dates.
+- The volatility surface at each period.
+- The strikes, premiums, and barriers of the individual options.
+- The settlement mode and the digital payoff, when selected.
+- The discount curve of the settlement currency.
+
+Each option follows its own direction. A strip of calls gains when
+commodity prices rise across the periods. A strip of puts gains when
+they fall.
+
+** How the profile ages (dynamic sensitivities)
+
+Each period's option settles as its calculation period completes. The
+settled options drop out of the strip. The remaining periods keep
+their exposure. Near the end only the last period option is left. At
+the last period end the strip completes.
+
+** Why a customer would want it
+
+A customer with a rolling commodity exposure can hedge each period
+with its own option. Averaging periods suit buyers of physical
+commodity priced off averages. Non-averaging periods suit single-point
+fixings. The strip books the whole stream in one trade. In ORE Studio
+a customer books commodity option strips to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a strip with a short call and a long put:
+
+#+begin_example
+<Trade id="...">
+  <TradeType>CommodityOptionStrip</TradeType>
+  <Envelope>
+    ...
+  </Envelope>
+  <CommodityOptionStripData>
+    <LegData>
+      <LegType>CommodityFloating</LegType>
+      ...
+    </LegData>
+    <Calls>
+      <LongShorts>
+        <LongShort>Short</LongShort>
+      </LongShorts>
+      <Strikes>
+        <Strike>5.3</Strike>
+      </Strikes>
+      <BarrierData>
+        <Type>UpAndIn</Type>
+        <Style>American</Style>
+        <LevelData>
+          <Level>
+            <Value>70.0</Value>
+          </Level>
+        </LevelData>
+      </BarrierData>
+    </Calls>
+    <Puts>
+      <LongShorts>
+        <LongShort>Long</LongShort>
+      </LongShorts>
+      <Strikes>
+        <Strike>8.17</Strike>
+      </Strikes>
+    </Puts>
+    <Premiums> ... </Premiums>
+    <Style>European</Style>
+    <Settlement>Cash</Settlement>
+  </CommodityOptionStripData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityoptionstrip.tex=,
+listing =Commodity Option Strip= (optional elements omitted).
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Exotic_option][Wikipedia: Exotic option]]. This places the product in the exotic
+  options family.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/commodityoptionstrip.tex=.
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

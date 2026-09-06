@@ -1,0 +1,145 @@
+:PROPERTIES:
+:ID: 0C0FDF39-B4D4-4794-83AD-076B4681830B
+:END:
+#+title: Commodity Swap
+#+description: Floating commodity prices against a fixed price; ORE's CommoditySwap and basis swap forms.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity swap exchanges a series of floating commodity prices
+against a fixed price. ORE models it with the trade type
+=CommoditySwap=, including the basis swap form. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A commodity swap exchanges floating commodity prices against a fixed
+known price, with cash settlement at the end of the swap or monthly.
+Each period pays the average of the differences between the fixings
+and the strike. A commodity basis swap exchanges the spread between
+two floating prices against a fixed spread. The fixings can be
+commodity spot prices or prompt future prices. The trade data uses
+swap legs of commodity fixed and floating type.
+
+* Detail
+
+** What it is
+
+ORE defines the plain form as follows:
+
+#+begin_quote
+A Commodity Swap involves the exchange of floating commodity prices
+against a fixed known commodity price, with cash settlement either at
+the end of the swap or on a monthly basis.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswap.tex=.
+
+ORE defines the basis form as follows:
+
+#+begin_quote
+A Commodity Basis Swap involves the exchange of the spread between
+floating commodity prices against a fixed known spread K, with cash
+settlement either at the end of the swap or on a monthly basis.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswap.tex=.
+
+** In plain terms
+
+A commodity swap is a series of commodity forwards in one contract.
+One side pays an average of market prices over each period. The other
+side pays a fixed price. The exposure is to the price level, settled
+in cash without moving the commodity.
+
+** How it works in ORE
+
+The trade uses =SwapData= with =CommodityFixed= and
+=CommodityFloating= legs. A long position computes the average of the
+difference between the variable fixing and the fixed strike at each
+fixing date. The fixing can be a spot price, possibly the average of
+the high and low values of the day in a given source. It can also be
+the price of the prompt future, the earliest futures expiry after the
+fixing date. The final payoff of a period is the arithmetic average of
+the period contributions, settled in cash with a delay after the
+period, or rolled up into one payment after the swap end.
+
+ORE also supports netting of the floating legs. With
+=RoundNettedFloatingLegs= on, all floating leg cash flows with the
+same payment date are netted into one cash flow. =NettingPrecision=
+sets the rounding of the netted average fixing.
+
+** Mathematical notes
+
+Each pricing date contributes the fixing minus the strike, per unit.
+The period payoff is the arithmetic average of the contributions. The
+swap value is the sum of the period payoffs, discounted. A long
+position gains when the average price rises above the strike.
+
+** What moves its value (static sensitivities)
+
+- The commodity price curve at each fixing date. It drives the
+  expected fixings.
+- The spread of the two references, for a basis swap.
+- The discount curve of the settlement currency.
+- The strike and the quantity per period.
+- The averaging conventions, the fixing source, and the payment lag.
+
+A long fixed-price payer gains when commodity prices fall below the
+strike. The floating receiver gains when they rise.
+
+** How the profile ages (dynamic sensitivities)
+
+Each fixing turns one unknown contribution into a known one. The
+remaining periods keep their exposure to the forward curve. Near the
+end of the swap the outstanding fixings narrow to the last period.
+At maturity the final average settles and the swap stops.
+
+** Why a customer would want it
+
+A consumer with a stream of commodity purchases swaps floating prices
+to fixed and removes budget risk. A producer swaps fixed to floating
+to keep market exposure. The product hedges a price series, not one
+delivery. In ORE Studio a customer books commodity swaps to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows the trade with its two legs:
+
+#+begin_example
+<Trade id="...">
+  <TradeType>CommoditySwap</TradeType>
+  <Envelope>
+  </Envelope>
+  <SwapData>
+    <LegData>
+      <LegType>CommodityFixed</LegType>
+      ...
+    </LegData>
+    <LegData>
+      <LegType>CommodityFloating</LegType>
+      ...
+    </LegData>
+    <RoundNettedFloatingLegs>true</RoundNettedFloatingLegs>
+    <NettingPrecision>2</NettingPrecision>
+  </SwapData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswap.tex=,
+listing =Commodity Swap= (leg detail abbreviated).
+
+The [[id:992F5349-6D73-4780-855C-532B63073191][Commodity Forward]] is the single-period form of the same
+exposure. The [[id:8FAE9780-9737-49DB-87E7-D678F3AEBD69][Commodity Swaption]] options its start.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Commodity_derivative][Wikipedia: Commodity derivative]]. This places the product in the
+  commodity derivatives family.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/commodityswap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -1,0 +1,134 @@
+:PROPERTIES:
+:ID: EC6DB3A0-4B34-4CD2-A3B7-ED004F3FA1B8
+:END:
+#+title: Commodity Option
+#+description: A European or American option on a commodity; ORE's CommodityOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity option is the vanilla option of the commodity family. The
+buyer gains the right to trade a commodity at a set price. ORE models
+it with the trade type =CommodityOption=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A commodity option gives the buyer the right, not the obligation, to
+buy or sell a set amount of a commodity at a predetermined price at
+the end of the contract. The buyer pays a premium for this right. The
+exercise style can be European or American. Settlement is cash or
+physical delivery. The trade data carries one =OptionData= node plus
+commodity-specific elements.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A European Commodity Option gives the buyer the right, but not the
+obligation, to buy a set amount of a commodity, at a predetermined
+price (the strike), at the end of the contract. For this right the
+buyer pays a premium to the seller.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityoption.tex=.
+
+ORE states that vanilla commodity options are supported. The exercise
+style may be European or American. Settlement can be cash or physical
+delivery.
+
+** In plain terms
+
+A commodity option is a ticket to a future price. The buyer pays a
+premium today. If the commodity moves in the buyer's favour, the
+option is used. If not, it expires and only the premium is lost.
+
+** How it works in ORE
+
+The =CommodityOptionData= node includes exactly one =OptionData= node
+and the commodity-specific elements. The =OptionData= names the
+direction, the option type, the exercise style, the settlement, and
+the exercise dates. The =Name= selects the commodity, such as
+=NYMEX:CL= for crude oil. The =StrikeData= and =Quantity= set the
+deal. The option can reference a future price with its own expiry.
+
+** Mathematical notes
+
+A call gains when the commodity price at expiry exceeds the strike. A
+put gains when it falls below. The value prices off the commodity
+forward curve and the volatility surface. An American option adds the
+value of early exercise. The trade is the classic optionality of the
+family, in the [[id:992F5349-6D73-4780-855C-532B63073191][Commodity Forward]]'s terms.
+
+** What moves its value (static sensitivities)
+
+- The commodity forward curve at the expiry point. It sets the
+  moneyness.
+- The commodity volatility surface. It drives the time value.
+- The strike and the quantity.
+- The discount curve of the settlement currency.
+- The exercise style and the settlement mode.
+
+A call gains when the commodity strengthens. A put gains when it
+weakens. Volatility raises the value of both.
+
+** How the profile ages (dynamic sensitivities)
+
+The option loses time value as expiry approaches. The moneyness
+decides its fate at the end. An American option can be exercised early
+when that pays. At expiry a European option settles or expires. After
+settlement the trade stops.
+
+** Why a customer would want it
+
+A consumer buys calls to cap purchase prices. A producer buys puts to
+floor sales prices. Both keep the upside of the market. A dealer
+quotes options to earn premium. In ORE Studio a customer books
+commodity options to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a short European put on crude oil:
+
+#+begin_example
+<CommodityOptionData>
+  <OptionData>
+    <LongShort>Short</LongShort>
+    <OptionType>Put</OptionType>
+    <Style>European</Style>
+    <Settlement>Cash</Settlement>
+    <PayOffAtExpiry>false</PayOffAtExpiry>
+    <ExerciseDates>
+      <ExerciseDate>2029-04-28</ExerciseDate>
+    </ExerciseDates>
+  </OptionData>
+  <Name>NYMEX:CL</Name>
+  <Currency>USD</Currency>
+  <StrikeData>
+    <StrikePrice>
+      <Value>100</Value>
+      <Currency>USD</Currency>
+    </StrikePrice>
+  </StrikeData>
+  <Quantity>500000</Quantity>
+  <IsFuturePrice>true</IsFuturePrice>
+  <FutureExpiryDate>2029-04-28</FutureExpiryDate>
+</CommodityOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityoption.tex=,
+listing =Commodity Option data= (closing tags normalised).
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/commodityoption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

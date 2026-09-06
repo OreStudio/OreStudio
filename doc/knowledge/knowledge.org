@@ -35,6 +35,25 @@ description with domain grounding and ORE examples.
   and CMS; definition, variants, sensitivities, and ORE examples.
 - [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]] — debt securities: definition, reference-data short form,
   credit-risk flag, and sensitivities.
+- [[id:D16393FC-784B-4BCB-90B9-7010894CD2D2][Commodity Average Price Option]] — Asian optionality: the
+  single-period swap observing daily fixings, period-end exercise,
+  and sensitivities.
+- [[id:992F5349-6D73-4780-855C-532B63073191][Commodity Forward]] — the commodity linear building block:
+  definition, CommodityForwardData fields, and sensitivities.
+- [[id:EC6DB3A0-4B34-4CD2-A3B7-ED004F3FA1B8][Commodity Option]] — vanilla commodity optionality: European and
+  American styles, cash or physical settlement, and sensitivities.
+- [[id:48305B53-26C5-474D-8AA2-0DC425F96E3B][Commodity Option Strip]] — a strip of APOs or European options:
+  the per-period options, the Calls and Puts nodes, and
+  sensitivities.
+- [[id:8B992141-85D3-4480-ABAF-9E2BD1BEB01B][Commodity Position]] — direct commodity exposure: the single
+  underlying or weighted basket, and sensitivities.
+- [[id:0C0FDF39-B4D4-4794-83AD-076B4681830B][Commodity Swap]] — floating commodity prices against a fixed
+  price: the averaging payoff, the basis swap form, and
+  sensitivities.
+- [[id:8FAE9780-9737-49DB-87E7-D678F3AEBD69][Commodity Swaption]] — European option on a forward-starting
+  commodity swap: payer and receiver rights, and sensitivities.
+- [[id:1989F85A-42F8-4894-8982-AC34D19B0351][Commodity Variance Swap]] — commodity volatility traded directly:
+  the realised variance payoff and sensitivities.
 - [[id:13D3230A-D5C2-46DA-92E6-1DB128B8392A][CPI Swap]] — inflation swaps: the real-rate leg scaled by the index
   ratio, the InflationSwap trade type, and sensitivities.
 - [[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]] — single-name protection: premium leg,

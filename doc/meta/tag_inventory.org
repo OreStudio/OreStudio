@@ -181,6 +181,14 @@ Tags that describe the business or technical domain of the content.
 | =bond= | Bond instruments and fixed-income cash products. |
 | =calendars= | Business calendars and day-count conventions. |
 | =ci= | Continuous integration. |
+| =commodityapo= | Commodity average price options and Asian commodity options. |
+| =commodityforward= | Commodity forward contracts and commodity derivatives markets. |
+| =commodityoption= | Commodity options and commodity derivatives markets. |
+| =commodityoptionstrip= | Commodity option strips and commodity derivatives markets. |
+| =commodityposition= | Commodity positions and weighted commodity baskets. |
+| =commodityswap= | Commodity swaps and commodity derivatives markets. |
+| =commodityswaption= | Commodity swaptions and commodity derivatives markets. |
+| =commodityvarianceswap= | Commodity variance swaps and commodity volatility markets. |
 | =currencies= | Currency reference data. |
 | =counterparty= | Counterparty entity and management. |
 | =cpiswap= | CPI inflation swaps and inflation-linked markets. |

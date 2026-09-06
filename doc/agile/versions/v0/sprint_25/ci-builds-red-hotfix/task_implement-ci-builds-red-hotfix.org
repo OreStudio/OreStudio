@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 670C711E-2DCB-42DD-9F01-EC45FFF5310D
+:END:
+#+title: Task: Implement Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper
+#+description: Edit the mapper-impl codegen template to emit value_or(0) for nullable numeric fields, retangle the templates and regenerate the compute mapper, verify codegen drift, the site build, the roundtrip and the full build with ctest, then raise the hotfix PR and roll the story and this task DONE. The story doc, the sprint Hotfixes row and this task ride this branch.
+#+type: task
+#+level: s1
+#+filetags: :ci-builds-red-hotfix:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/ci-builds-red-hotfix
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D1896FA3-026B-4056-A4FD-8C18BF9DF4C1][Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Restore green continuous CI on every OS. Bind PR #2012 regenerated the
+compute mappers from the org models and introduced the value_or({})
+idiom for nullable numerics. The CI compilers gcc 13 and Apple clang
+reject it: gcc 13 fails at result_mapper.cpp:45:43 with "no matching
+function for call to 'std::optional<long int>::value_or(<brace-enclosed
+initializer list>) const'" and "couldn't deduce template parameter
+'_Up'" at /usr/include/c++/13/optional:1039. Apple clang fails the same
+way at result_mapper.cpp:45:35 and 47:27 with "no matching member
+function for call to 'value_or'". MSVC and clang-cl accept the
+deduction: the Windows jobs compiled these files and were red for
+separate reasons. The local toolchains (g++ 16.2, clang 21.1) also
+accept the idiom, which is why the bind PR built green locally. This
+task changes the two nullable-numeric emission sites in the mapper-impl
+template to an explicit value_or(0), retangles the codegen templates,
+regenerates the compute mapper, and runs the full verification on the
+branch.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                             |
+| Parent story | [[id:D1896FA3-026B-4056-A4FD-8C18BF9DF4C1][Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] |
+| Now          | Template fix in flight.                |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the hotfix PR when the verification is green. |
+| Last touched | 2026-09-06                               |
+
+* Acceptance
+
+- The mapper-impl codegen template emits value_or(0), never
+  value_or({}), for nullable numeric fields.
+- Regenerating the compute mapper is the only drift the template change
+  produces; the codegen drift check passes.
+- The site build, the template roundtrip, the full build and ctest are
+  green on this branch.
+- The hotfix rides one branch and one PR; this task and the story roll
+  DONE with it.
+
+* Plan
+
+The template projects/ores.codegen/library/templates/
+ores.cpp.repository.mapper_impl.org emits the value_or({}) idiom at two
+=is_nullable_numeric= sites: the identity group (=r.identity.<field> =
+v.<field>.value_or({})=) and the plain group (=r.<field> =
+v.<field>.value_or({})=). Both switch to =value_or(0)=. A direct
+codegen-templates tangle retangles the mustache templates, and the
+per-component regeneration rewrites the compute mapper. The local
+compilers accept the old idiom, so a local green build cannot stand in
+for the CI failure; the fix is proven by removing the idiom from the
+template and from every regenerated file.
+
+* Notes
+
+Evidence of the failure: Ubuntu CI run 34028102867, job
+linux-gcc-debug-ninja, fails at result_mapper.cpp:45:43 with "no
+matching function for call to 'std::optional<long int>::value_or(<brace-
+enclosed initializer list>) const'" and "couldn't deduce template
+parameter '_Up'". macOS run 34033068694, job macos-clang-debug-ninja,
+fails the same way at result_mapper.cpp:45:35 and 47:27 with "no
+matching member function for call to 'value_or'". The Windows jobs
+compiled the same files: run 33972829991 failed only test 58
+(result_eventing_integration_tests, app_id seed, since fixed) and run
+34009148424 failed on a transient file-lock link error. The two
+nullable numerics are pgmq_msg_id (nullable bigint to std::int64_t)
+and outcome (nullable int to int, generator default 0), read from the
+result entity into non-optional domain scalars, so 0 and {} are
+equivalent here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

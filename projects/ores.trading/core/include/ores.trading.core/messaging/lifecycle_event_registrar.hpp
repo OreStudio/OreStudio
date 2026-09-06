@@ -17,28 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_GENERATOR_LIFECYCLE_EVENT_GENERATOR_HPP
-#define ORES_TRADING_GENERATOR_LIFECYCLE_EVENT_GENERATOR_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_LIFECYCLE_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_LIFECYCLE_EVENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/lifecycle_event.hpp"
-#include "ores.trading.api/export.hpp"
-#include "ores.utility/generation/generation_context.hpp"
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
-namespace ores::trading::generator {
+namespace ores::trading::messaging {
 
-/**
- * @brief Generates a synthetic lifecycle_event.
- */
-ORES_TRADING_API_EXPORT domain::lifecycle_event
-generate_synthetic_lifecycle_event(utility::generation::generation_context& ctx);
+std::vector<ores::nats::service::subscription>
+register_lifecycle_event_handlers(ores::nats::service::client& nats,
+                                  ores::database::context ctx,
+                                  std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-/**
- * @brief Generates N synthetic lifecycle_events.
- */
-ORES_TRADING_API_EXPORT std::vector<domain::lifecycle_event>
-generate_synthetic_lifecycle_events(std::size_t n, utility::generation::generation_context& ctx);
-
-}
+} // namespace ores::trading::messaging
 
 #endif

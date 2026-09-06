@@ -37,7 +37,7 @@ std::string lifecycle_event_repository::sql() {
 }
 
 void lifecycle_event_repository::write(context ctx, const domain::lifecycle_event& v) {
-    BOOST_LOG_SEV(lg(), debug) << "Writing lifecycle event: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Writing lifecycle event. " << "code: " << v.code;
     execute_write_query(
         ctx, lifecycle_event_mapper::map(v), lg(), "Writing lifecycle event to database.");
 }
@@ -49,8 +49,21 @@ void lifecycle_event_repository::write(context ctx, const std::vector<domain::li
 }
 
 std::vector<domain::lifecycle_event> lifecycle_event_repository::read_latest(context ctx) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
+    const auto& chain = ctx.workspace_resolution();
+    if (!chain.empty()) {
+        const auto query = sqlgen::read<std::vector<lifecycle_event_entity>> |
+                           where("tenant_id"_c == tid && "workspace_id"_c.in(chain) &&
+                                 "valid_to"_c == max.value()) |
+                           order_by("code"_c);
+        return execute_read_query<lifecycle_event_entity, domain::lifecycle_event>(
+            ctx,
+            query,
+            [](const auto& entities) { return lifecycle_event_mapper::map(entities); },
+            lg(),
+            "Reading latest lifecycle events (workspace resolution chain).");
+    }
     const auto wid = ctx.workspace_id();
     const auto query =
         sqlgen::read<std::vector<lifecycle_event_entity>> |
@@ -67,8 +80,8 @@ std::vector<domain::lifecycle_event> lifecycle_event_repository::read_latest(con
 
 std::vector<domain::lifecycle_event>
 lifecycle_event_repository::read_latest(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading latest lifecycle event. code: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest lifecycle event. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<lifecycle_event_entity>> |
@@ -83,14 +96,15 @@ lifecycle_event_repository::read_latest(context ctx, const std::string& code) {
         "Reading latest lifecycle event by code.");
 }
 
+
 std::vector<domain::lifecycle_event> lifecycle_event_repository::read_all(context ctx,
                                                                           const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading all lifecycle event versions. code: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Reading all lifecycle event versions. " << "code: " << code;
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::read<std::vector<lifecycle_event_entity>> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid && "code"_c == code) |
-                       order_by("version"_c.desc());
+                       order_by("version"_c.desc(), "valid_from"_c.desc());
 
     return execute_read_query<lifecycle_event_entity, domain::lifecycle_event>(
         ctx,
@@ -100,9 +114,32 @@ std::vector<domain::lifecycle_event> lifecycle_event_repository::read_all(contex
         "Reading all lifecycle event versions by code.");
 }
 
+std::optional<domain::lifecycle_event> lifecycle_event_repository::read_at_version(
+    context ctx, const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading lifecycle event at version. " << "code: " << code
+                               << " version: " << version;
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query = sqlgen::read<std::vector<lifecycle_event_entity>> |
+                       where("tenant_id"_c == tid && "workspace_id"_c == wid && "code"_c == code &&
+                             "version"_c == version) |
+                       sqlgen::limit(1);
+
+    const auto entities = execute_read_query<lifecycle_event_entity, domain::lifecycle_event>(
+        ctx,
+        query,
+        [](const auto& entities) { return lifecycle_event_mapper::map(entities); },
+        lg(),
+        "Reading lifecycle event at version.");
+
+    if (entities.empty())
+        return std::nullopt;
+    return entities.front();
+}
+
 void lifecycle_event_repository::remove(context ctx, const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing lifecycle event: " << code;
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    BOOST_LOG_SEV(lg(), debug) << "Removing lifecycle event. " << "code: " << code;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<lifecycle_event_entity> |
@@ -112,14 +149,58 @@ void lifecycle_event_repository::remove(context ctx, const std::string& code) {
     execute_delete_query(ctx, query, lg(), "Removing lifecycle event from database.");
 }
 
+std::vector<domain::lifecycle_event>
+lifecycle_event_repository::read_latest(context ctx, std::uint32_t offset, std::uint32_t limit) {
+    BOOST_LOG_SEV(lg(), debug) << "Reading latest lifecycle events with offset: " << offset
+                               << " and limit: " << limit;
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::read<std::vector<lifecycle_event_entity>> |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        order_by("code"_c) | sqlgen::offset(offset) | sqlgen::limit(limit);
+
+    return execute_read_query<lifecycle_event_entity, domain::lifecycle_event>(
+        ctx,
+        query,
+        [](const auto& entities) { return lifecycle_event_mapper::map(entities); },
+        lg(),
+        "Reading latest lifecycle events with pagination.");
+}
+
+std::uint32_t lifecycle_event_repository::get_total_event_count(context ctx) {
+    BOOST_LOG_SEV(lg(), debug) << "Retrieving total active lifecycle event count";
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+
+    struct count_result {
+        long long count;
+    };
+
+    const auto tid = ctx.tenant_id().to_string();
+    const auto wid = ctx.workspace_id();
+    const auto query =
+        sqlgen::select_from<lifecycle_event_entity>(sqlgen::count().as<"count">()) |
+        where("tenant_id"_c == tid && "workspace_id"_c == wid && "valid_to"_c == max.value()) |
+        sqlgen::to<count_result>;
+
+    const auto r = sqlgen::session(ctx.connection_pool()).and_then(query);
+    ensure_success(r, lg());
+
+    const auto count = static_cast<std::uint32_t>(r->count);
+    BOOST_LOG_SEV(lg(), debug) << "Total active lifecycle event count: " << count;
+    return count;
+}
+
 void lifecycle_event_repository::remove(context ctx, const std::vector<std::string>& codes) {
-    static auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
     const auto tid = ctx.tenant_id().to_string();
     const auto wid = ctx.workspace_id();
     const auto query = sqlgen::delete_from<lifecycle_event_entity> |
                        where("tenant_id"_c == tid && "workspace_id"_c == wid &&
                              "code"_c.in(codes) && "valid_to"_c == max.value());
-    execute_delete_query(ctx, query, lg(), "batch removing lifecycle events");
+    execute_delete_query(ctx, query, lg(), "Batch removing lifecycle events.");
 }
+
 
 }

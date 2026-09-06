@@ -18,6 +18,7 @@
 #
 set(files
     "BondInstrumentForm.cpp"
+    "ClientLifecycleEventModel.cpp"
     "ClientPartyRoleTypeModel.cpp"
     "ClientTradeIdTypeModel.cpp"
     "ClientTradeModel.cpp"
@@ -37,6 +38,9 @@ set(files
     "ImportTradeDialog.cpp"
     "InstrumentFormRegistry.cpp"
     "InstrumentFormUtils.cpp"
+    "LifecycleEventController.cpp"
+    "LifecycleEventDetailDialog.cpp"
+    "LifecycleEventMdiWindow.cpp"
     "OreDateEdit.cpp"
     "OreDoubleSpinBox.cpp"
     "OreImportController.cpp"
@@ -70,6 +74,7 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/AdaptiveStackedWidget.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/BondInstrumentForm.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientLifecycleEventModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientPartyRoleTypeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientTradeIdTypeModel.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ClientTradeModel.hpp"
@@ -90,6 +95,9 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/ImportTradeDialog.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/InstrumentFormRegistry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/InstrumentFormUtils.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/LifecycleEventController.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/LifecycleEventDetailDialog.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/LifecycleEventMdiWindow.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/OreDateEdit.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/OreDoubleSpinBox.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.qt/OreImportController.hpp"

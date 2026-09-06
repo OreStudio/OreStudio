@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/generator/lifecycle_event_generator.hpp"
+#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
@@ -36,12 +37,12 @@ generate_synthetic_lifecycle_event(utility::generation::generation_context& ctx)
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::lifecycle_event r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
-    r.code = std::string(faker::word::noun()) + "_event_" + std::to_string(++counter) + "-" +
-             std::to_string(counter.fetch_add(1, std::memory_order_relaxed));
+    const auto idx = counter.fetch_add(1, std::memory_order_relaxed);
+    r.code = std::string(faker::word::noun()) + "_event" + "-" + std::to_string(idx);
     r.description = std::string(faker::lorem::sentence());
     r.fsm_state_id = std::nullopt;
     r.modified_by = modified_by;

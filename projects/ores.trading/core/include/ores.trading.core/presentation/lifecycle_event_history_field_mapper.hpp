@@ -17,17 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/lifecycle_event_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_CORE_PRESENTATION_LIFECYCLE_EVENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_LIFECYCLE_EVENT_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::trading::repository {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.trading.api/domain/lifecycle_event.hpp"
+#include "ores.trading.core/export.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const lifecycle_event_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::trading::presentation {
+
+/**
+ * @brief Renders a lifecycle_event to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_lifecycle_event_fields(const domain::lifecycle_event& v);
+
 }
 
-}
+#endif

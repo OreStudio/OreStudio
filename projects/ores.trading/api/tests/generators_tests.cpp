@@ -18,7 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/generator/lifecycle_event_generator.hpp"
+#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
 #include "ores.trading.api/generator/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/activity_type_generator.hpp"
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
@@ -39,6 +39,7 @@ const std::string tags("[generators]");
 }
 
 using namespace ores::trading::generator;
+using namespace ores::trading::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 

@@ -17,17 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/lifecycle_event_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_CORE_MESSAGING_LIFECYCLE_EVENT_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_LIFECYCLE_EVENT_HISTORY_PROVIDER_REGISTRAR_HPP
 
-namespace ores::trading::repository {
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-std::ostream& operator<<(std::ostream& s, const lifecycle_event_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+namespace ores::trading::messaging {
 
-}
+void register_lifecycle_event_history_provider(ores::history::service::dispatch_registry& registry);
+
+} // namespace ores::trading::messaging
+
+#endif

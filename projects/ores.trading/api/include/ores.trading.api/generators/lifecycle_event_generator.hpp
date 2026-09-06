@@ -17,17 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/lifecycle_event_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_API_GENERATORS_LIFECYCLE_EVENT_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_LIFECYCLE_EVENT_GENERATOR_HPP
 
-namespace ores::trading::repository {
+#include "ores.trading.api/domain/lifecycle_event.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const lifecycle_event_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::trading::generators {
+
+/**
+ * @brief Generates a synthetic lifecycle_event.
+ */
+ORES_TRADING_API_EXPORT domain::lifecycle_event
+generate_synthetic_lifecycle_event(utility::generation::generation_context& ctx);
+
+/**
+ * @brief Generates N synthetic lifecycle_events.
+ */
+ORES_TRADING_API_EXPORT std::vector<domain::lifecycle_event>
+generate_synthetic_lifecycle_events(std::size_t n, utility::generation::generation_context& ctx);
+
 }
 
-}
+#endif

@@ -21,6 +21,7 @@
 #define ORES_TRADING_CORE_REPOSITORY_TRADE_TYPE_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
+#include "ores.trading.api/domain/product_type.hpp"
 #include "sqlgen/PrimaryKey.hpp"
 #include <optional>
 #include <ostream>

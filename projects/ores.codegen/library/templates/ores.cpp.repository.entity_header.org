@@ -34,6 +34,9 @@ The full template source. Edit here and re-tangle with
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+{{#cpp.includes.entity}}
+#include {{{.}}}
+{{/cpp.includes.entity}}
 
 namespace ores::{{component}}::repository {
 
@@ -126,6 +129,9 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+{{#cpp.includes.entity}}
+#include {{{.}}}
+{{/cpp.includes.entity}}
 
 namespace ores::{{component}}::repository {
 
@@ -166,6 +172,16 @@ std::ostream& operator<<(std::ostream& s, const {{name_singular}}_entity& v);
 #+end_src
 
 * Design notes
+
+** Org entity includes feed the header (2026-09-06)
+
+The ={{#cpp.includes.entity}}= arm emits the org-declared "Entity includes"
+block after the template's standard include set. The org_loader filters
+out the standard tokens, so only includes the template cannot derive --
+e.g. the header of a domain-enum column type such as
+=ores.trading.api/domain/product_type.hpp= for =trade_type='s
+=product_type= column -- reach the emitted header. Org blocks that merely
+repeat the standard set leave regeneration byte-identical.
 
 ** Domain entity vs junction: unified on =db_timestamp= (2026-07-15)
 

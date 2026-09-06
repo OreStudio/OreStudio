@@ -646,6 +646,19 @@ def _parse_typed(value: str) -> Any:
             return value
 
 
+# Tokens the repository entity-header template emits itself. sqlgen::Timestamp
+# is covered transitively: the template's db_timestamp alias comes from
+# ores.database/repository/db_types.hpp, which includes Timestamp.hpp.
+_ENTITY_HEADER_STANDARD_INCLUDES = frozenset({
+    "<string>",
+    "<optional>",
+    "<ostream>",
+    '"ores.database/repository/db_types.hpp"',
+    '"sqlgen/PrimaryKey.hpp"',
+    '"sqlgen/Timestamp.hpp"',
+})
+
+
 def _includes_from_named_block(node: OrgNode) -> list[str]:
     """Extract include tokens from a named ``includes`` babel block.
 
@@ -1279,7 +1292,18 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
         if dom or ent:
             cpp_out["includes"] = {
                 "domain": _includes_from_named_block(dom) if dom else [],
-                "entity": _includes_from_named_block(ent) if ent else [],
+                # The repository entity-header template always emits its own
+                # standard include set (string/optional/ostream/db_types/
+                # PrimaryKey, with Timestamp.hpp arriving via db_types.hpp's
+                # db_timestamp). Org "Entity includes" blocks predate that
+                # fixed list and mostly repeat it, so surface only the tokens
+                # the template cannot derive -- e.g. the header of a
+                # domain-enum column type. Filtering keeps regeneration
+                # byte-stable for orgs whose block duplicates the standard set.
+                "entity": [
+                    t for t in _includes_from_named_block(ent)
+                    if t not in _ENTITY_HEADER_STANDARD_INCLUDES
+                ] if ent else [],
             }
         conv = _section(cpp_section, "Conventions")
         if conv:

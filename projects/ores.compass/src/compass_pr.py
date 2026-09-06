@@ -598,6 +598,9 @@ def run(argv, project_root):
                     help="Summary paragraph for the body")
     cr.add_argument("--change", action="append", default=[],
                     help="A Changes bullet (repeatable)")
+    # default="", not required=True, so _cmd_create can name every
+    # empty Testing flag in one refusal (argparse would stop at the
+    # first missing one).
     cr.add_argument("--testing-plan", default="",
                     help="Testing plan prose for the body's Testing "
                          "section (required)")

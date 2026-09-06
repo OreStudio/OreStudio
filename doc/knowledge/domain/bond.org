@@ -1,0 +1,142 @@
+:PROPERTIES:
+:ID: 691B6CE9-930A-4015-942C-A0DD4B04E690
+:END:
+#+title: Bond
+#+description: A bond is a tradable debt instrument paying scheduled interest and principal; ORE's Bond product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bond:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond is a tradable debt instrument. The issuer borrows money from the
+holder and pays scheduled interest and principal in return. ORE's Bond
+product is both a stand-alone trade and a building block for bond
+derivatives. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+A bond is a security that evidences a loan from the holder to the
+issuer. It pays coupons over its life and repays the principal at
+maturity, on a defined schedule and in a defined currency. In ORE a
+=BondData= block describes the trade. A short form references bond
+reference data. A long form inlines the full leg structure. ORE prices
+a bond as plain interest-rate risk unless a credit curve is attached.
+
+* Detail
+
+** What it is
+
+ORE defines the product's scope as follows:
+
+#+begin_quote
+A Bond is set up using a BondData block, and can be both a
+stand-alone instrument with trade type Bond, or a trade component used
+by multiple bond derivative instruments.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bond.tex=.
+
+** In plain terms
+
+A bond is an IOU that anyone can buy and sell. The borrower, the
+issuer, promises to pay interest on the borrowed amount for a fixed
+period. It repays the amount at the end. Governments and companies
+issue bonds to fund themselves. Investors hold them for income, for
+safety, or to trade them.
+
+** How a bond is specified in ORE
+
+The short form names the bond and the position only:
+
+- =SecurityId=. The identifier of the bond, typically its ISIN with
+  the =ISIN:= prefix. The bond details are read from reference data.
+- =BondNotional=. The size of the position in the bond's currency.
+- =CreditRisk=. Whether the product carries credit sensitivities.
+
+The long form inlines the issuer, the credit curve, the security, the
+reference curve, settlement details, and a full =LegData= block for the
+coupon leg. The leg data selects the coupon structure. It can be fixed,
+floating, zero-coupon, or amortising.
+
+** Credit risk and product class
+
+ORE's own words on the credit flag:
+
+#+begin_quote
+If set to false, the product class will not be set to Credit, and there
+will be no credit sensitivities.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bond.tex=.
+
+A bond whose reference data carries no =CreditCurveId= shows no credit
+sensitivities even with the flag on. This is typical for highly rated
+government bonds. A bond whose reference data sets a =CreditCurveId= is
+an IR/CR product. ORE prices it with credit sensitivities.
+
+** Mathematical notes
+
+The price of a bond is the present value of its remaining coupons and
+principal, discounted at the yield. Fixed coupons make the price move
+inversely with rates. Floating coupons reset and damp that move.
+Duration measures the price sensitivity to a yield shift. It falls as
+maturity approaches.
+
+** What moves its value (static sensitivities)
+
+The risk factors differ by product class:
+
+- Plain IR class. The discount curve in the bond's currency moves the
+  value. It acts through the reference curve and any credit spread
+  embedded in the price.
+- IR/CR class. The credit spread of the issuer moves the value as well.
+  It gives a CS01-type sensitivity to the credit curve.
+- Deal parameters. Coupon level, maturity, notional, and day-count
+  conventions scale or shape every sensitivity.
+
+** How the profile ages (dynamic sensitivities)
+
+A fixed-rate bond converges to par as maturity approaches. Fewer and
+fewer coupons remain. Its duration declines along the way. A
+floating-rate bond stays near par through each reset, because the next
+coupon tracks the market. Around call or redemption features the price
+behaviour changes as the option dates approach.
+
+** Why a customer would want it
+
+Governments and companies issue bonds to borrow. Investors buy them for
+income, for capital preservation, or for trading. A bank books bond
+positions to manage funding, collateral, and credit exposure. In ORE
+Studio a customer imports bond trades, prices them, and runs credit
+and rate sensitivities on the ORE engine.
+
+** Example
+
+ORE's own catalogue shows the short form with reference data:
+
+#+begin_example
+<BondData>
+  <SecurityId>ISIN:XS0982710740</SecurityId>
+  <BondNotional>100000000.0</BondNotional>
+  <CreditRisk>true</CreditRisk>
+</BondData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bond.tex=,
+listing =BondData= (reference-data form).
+
+A full fixed-coupon bond trade sits in the ORE trade corpus at
+=assets/test_data/golden_dataset/Products/Example_Trades/Cash_Bonds.xml=.
+Native ORE example portfolios with bonds sit under
+=external/ore/examples/CreditRisk/Input/CreditPortfolioModel/portfolio.xml=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Bond_(finance)][Wikipedia: Bond (finance)]]. This note follows its general definition.
+- [[https://en.wikipedia.org/wiki/International_Securities_Identification_Number][Wikipedia: ISIN]]. This covers the identifier convention that
+  =SecurityId= uses.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/bond.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 47598B8D-0121-4989-9661-79A8E6D1A070
+:END:
+#+title: FX Forward
+#+description: An FX forward locks an exchange rate for a future currency exchange; ORE's FxForward product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_forward:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX forward is the simplest currency derivative. Two parties agree
+today on a rate at which they will exchange two currencies on a future
+date. ORE models it as the trade type =FxForward=. This note records
+the domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An FX forward locks the exchange rate for a future exchange of one
+currency against another. No money changes hands at trade time. The
+rate is fixed at inception, and the settlement happens on the value
+date. A cash-settled forward, which ORE represents with
+=Settlement=Cash=, is the standard form of a non-deliverable forward.
+The value of the contract between trade date and value date moves with
+market FX rates. It also moves with the interest-rate differential of
+the two currencies.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Fx Forward is a contract that locks in the FX rate for the exchange
+of a set amount of one currency for another at a predetermined time in
+the future. An Fx Forward does not involve any upfront payment.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxforward.tex=.
+
+** In plain terms
+
+Two parties agree to swap currencies on a future date. The rate is
+fixed today. Neither party pays anything now. On the agreed date they
+exchange the agreed amounts, or the difference in cash. The deal
+removes the uncertainty of what the rate will be later.
+
+** How it works in ORE
+
+The =FxForwardData= node names the two sides of the exchange:
+
+- =BoughtCurrency= and =BoughtAmount=. What the holder buys on the
+  value date.
+- =SoldCurrency= and =SoldAmount=. What the holder sells in return.
+- =ValueDate=. The exchange happens on this date. The agreed rate
+  applies then.
+- =Settlement=. =Physical= delivers both currencies. =Cash= settles the
+  difference in one currency. ORE represents a non-deliverable forward
+  as a cash-settled forward.
+- =SettlementData=. The settlement currency, the FX fixing index, and
+  the payment date. These apply when settlement is cash.
+
+The value date follows the [[id:267DD5E8-F095-47C1-B42B-733565306776][FX spot date conventions]] of the pair.
+Restricted currencies use the [[id:CD3E82C6-AE56-4D06-B949-0B3A5CE7A5FC][non-deliverable]] form. Only the
+difference changes hands there.
+
+** Mathematical notes
+
+The forward rate derives from the spot rate and the interest-rate
+differential of the two currencies. The relation is
+[[id:49687AD7-396A-4CD8-B96B-B3F6675C9779][covered interest parity]]. The difference between forward and spot is the
+forward points. They shrink as the value date approaches. A forward is
+a linear product. Its value is proportional to the move in the
+underlying FX rate, with no optionality.
+
+** What moves its value (static sensitivities)
+
+- Spot FX. The dominant driver. The value changes nearly one-for-one
+  with the spot move, scaled by the amounts.
+- Interest rates. They act through the forward points. A rise in the
+  bought currency's rates, relative to the sold currency's, moves the
+  value in the opposite direction.
+- Settlement conventions. Cash settlement adds a small sensitivity to
+  the fixing index and the settlement date.
+
+The sign of the sensitivity depends on which currency is bought. A
+holder buying EUR against USD gains when EUR strengthens.
+
+** How the profile ages (dynamic sensitivities)
+
+Between trade date and value date the contract value fluctuates with
+the market. ORE's own words:
+
+#+begin_quote
+Before the ValueDate, the FxForward contract's value fluctuates with
+market FX rates. At the ValueDate, the settlement becomes
+deterministic.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxforward.tex=.
+
+After the value date, no market risk remains. Only the settlement and
+any payment-lag exposure are left.
+
+** Why a customer would want it
+
+A corporate that will pay or receive foreign currency locks the rate
+now and removes budget uncertainty. A bank hedges its own currency
+positions or quotes forwards to clients. A cash-settled forward gives
+the same hedge where the currency cannot be delivered, or where the
+client must not hold it. Arbitrageurs trade the forward against spot
+and deposits when covered interest parity breaks.
+
+** Example
+
+ORE's own catalogue shows the trade data node:
+
+#+begin_example
+<FxForwardData>
+    <ValueDate>2023-04-09</ValueDate>
+    <BoughtCurrency>EUR</BoughtCurrency>
+    <BoughtAmount>1000000</BoughtAmount>
+    <SoldCurrency>USD</SoldCurrency>
+    <SoldAmount>1500000</SoldAmount>
+    <Settlement>Physical</Settlement>
+</FxForwardData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxforward.tex=,
+listing =FX Forward data= (settlement details omitted).
+
+A cash-settled forward example sits in the ORE trade corpus at
+=assets/test_data/golden_dataset/Products/Example_Trades/FX_Forward.xml=.
+Native ORE example portfolios with FX forwards sit under
+=external/ore/examples/Exposure/Input/portfolio_fx.xml=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
+  definition.
+- [[https://en.wikipedia.org/wiki/Non-deliverable_forward][Wikipedia: Non-deliverable forward]]. This covers the cash-settled
+  variant.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/fxforward.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

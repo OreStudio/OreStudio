@@ -24,6 +24,20 @@ documentation see [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]
 
 Finance concepts the codebase relies on, grouped by topic.
 
+** Products
+
+Knowledge notes for the ORE product set, the trade types the ORE
+engine prices. ORE documents each product in its User Guide products
+catalogue, =Docs/UserGuide/tradedata/=. The notes pair that official
+description with domain grounding and ORE examples.
+
+- [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]] — the interest-rate swap family: vanilla IRS, basis, OIS, BMA,
+  and CMS; definition, variants, sensitivities, and ORE examples.
+- [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]] — debt securities: definition, reference-data short form,
+  credit-risk flag, and sensitivities.
+- [[id:47598B8D-0121-4989-9661-79A8E6D1A070][FX Forward]] — deliverable and cash-settled forwards: definition,
+  FxForwardData fields, the NDF form, and sensitivities.
+
 ** Currency
 
 - [[id:3407B8DF-D446-4658-8B5D-3368FFA44AD8][Currency]] — hub note: the money/currency/cash foundation, ISO 4217

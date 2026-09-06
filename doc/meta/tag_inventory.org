@@ -178,6 +178,7 @@ Tags that describe the business or technical domain of the content.
 | =authentication= | Authentication flows and session management. |
 | =authorization= | Authorisation, roles, permissions. |
 | =build= | Build system, CI, packaging. |
+| =bond= | Bond instruments and fixed-income cash products. |
 | =calendars= | Business calendars and day-count conventions. |
 | =ci= | Continuous integration. |
 | =currencies= | Currency reference data. |
@@ -186,6 +187,8 @@ Tags that describe the business or technical domain of the content.
 | =documentation= | Documentation tooling and conventions. |
 | =domain= | Business domain modelling. |
 | =entity= | Domain entity (also used as type tag). |
+| =finance= | Finance domain, products, and markets. |
+| =fx_forward= | FX forward contracts and the FX derivatives market. |
 | =knowledge_graph= | org-roam knowledge graph management. |
 | =lifecycle= | Entity or component lifecycle management. |
 | =llm_code_review= | LLM-assisted code review tooling. |
@@ -200,6 +203,7 @@ Tags that describe the business or technical domain of the content.
 | =release= | Release management and release notes. |
 | =security= | Security features and hardening (also component tag). |
 | =sprint= | Sprint-level document (also type tag). |
+| =swap= | Swap products and interest-rate derivatives. |
 | =testing= | Test infrastructure, test coverage. |
 | =trading= | Trading domain (also component tag). |
 | =ui= | User interface design and implementation. |

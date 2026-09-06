@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 28DFC605-9F3D-470D-A45B-347EBA4B45B7
+:END:
+#+title: Swap
+#+description: An interest rate swap exchanges streams of interest payments between two parties on a notional; ORE's swap family.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:swap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A swap exchanges two streams of interest payments, its legs, on a
+notional that the parties never exchange. ORE's Swap trade type covers
+vanilla fixed-vs-floating, basis, OIS, BMA, and CMS structures. This
+note records the domain grounding for the whole family, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+An interest rate swap (IRS) is a bilateral contract. It exchanges a
+stream of interest payments for another stream, both computed on a
+notional amount in one currency. The notional itself is not exchanged.
+ORE models the family under the single trade type =Swap=. The common
+use is to transform the interest-rate exposure of an asset or a
+liability. [[id:13341B12-0393-4ECF-B392-CD68A4C0CDFB][Cash flows]] are the underlying building block of every leg.
+
+* Detail
+
+** What it is
+
+ORE defines the core instrument as follows:
+
+#+begin_quote
+An interest rate swap (IRS) is an agreement between two counterparties
+in which one stream of future interest payments (leg) is exchanged for
+another based on a specified notional amount.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swap.tex=.
+
+Two properties are common to the whole family. The notional per leg may
+be fixed, amortising, or accreting. The fixed rate or floating spread
+may vary over the life of the swap.
+
+** In plain terms
+
+Two parties agree to pay each other interest on the same pile of money
+for a set period. One pays a rate that is known in advance. The other
+pays a rate that is reset from the market over time. Only the
+difference between the two payments changes hands, usually
+periodically.
+
+** Variants inside the ORE Swap family
+
+- *Vanilla IRS*. One fixed leg against one floating leg. The floating
+  leg is benchmarked to an IBOR index of a given tenor.
+- *Single-currency basis swap*. Two floating legs. They are benchmarked
+  to two different IBOR indices, or to different tenors of one index.
+- *OIS*. At least one leg is benchmarked to an overnight index rate.
+  That is the rate for overnight unsecured bank lending. The overnight
+  leg compounds on a daily basis.
+- *BMA swap*. One leg is benchmarked to the US SIFMA municipal swap
+  index.
+- *CMS and CMB swaps*. One leg is benchmarked to a longer-maturity
+  market rate. CMS uses a swap rate. CMB uses a class of government
+  bond yields. A CMS leg may carry a cap, floor, or collar.
+
+ORE also models related structures as separate products in its
+catalogue. They are the ZeroCouponSwap, the CrossCurrencySwap, the
+CallableSwap, the FlexiSwap, the BalanceGuaranteedSwap, and the
+KnockOutSwap. Each gets its own product note in this set.
+
+** Mathematical notes
+
+The value of a swap is the difference between the present values of its
+two legs, discounted on the funding curve. A floating leg's expected
+payments come from the projection curve of its index. These two
+[[id:3A6CF3BC-3378-4F84-B0B6-F5D6F488AC33][term structures]] are distinct. See
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][funding and projection curves]]. A CMS leg adds convexity, because the
+index rate and the discount rate are correlated. A cap or floor on the
+leg prices off the interest-rate [[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][volatility]] surface.
+
+** What moves its value (static sensitivities)
+
+- The discount curve. One basis point shifts of it give the DV01 of the
+  trade. Every leg is sensitive to it.
+- The projection curve of each floating index. It drives the expected
+  fixings.
+- The paid or received spread on each leg.
+- Index-convention details, such as day count, payment lag, or business
+  calendar.
+
+A vanilla receive-fixed swap gains value when rates fall. A pay-fixed
+swap gains value when rates rise. The size of the move scales with the
+notional and the remaining life of the trade.
+
+** How the profile ages (dynamic sensitivities)
+
+The value and risk profile evolve as the trade runs its schedule. Each
+fixing turns one unknown payment into a known one. The remaining risk
+migrates along the curve as time passes. An amortising notional shrinks
+the exposure on schedule. At maturity the swap has no residual market
+risk, only the last settlement.
+
+** Why a customer would want it
+
+A borrower with floating-rate debt pays fixed to remove rate risk. An
+investor with fixed coupons pays floating to transform them. Dealers
+quote swaps to manage their own rate books. OIS swaps are the primary
+market for funding rates. They are the anchors of discount-curve
+construction. In ORE Studio a customer books swaps to value them, run
+sensitivities, and feed XVA on the ORE engine.
+
+** Example
+
+A 20-year EUR fixed-vs-floating swap from the ORE trade corpus that ORE
+Studio keeps for its round-trip tests. The fixed leg is shown. The
+floating leg follows in the same file. Source:
+=assets/test_data/golden_dataset/Products/Example_Trades/IR_Swap_Vanilla.xml=.
+
+#+begin_example
+<Portfolio>
+  <Trade id="Swap_20y">
+    <TradeType>Swap</TradeType>
+    <Envelope>
+      <CounterParty>CPTY</CounterParty>
+      <NettingSetId>NS</NettingSetId>
+    </Envelope>
+    <SwapData>
+      <LegData>
+        <Payer>false</Payer>
+        <LegType>Fixed</LegType>
+        <Currency>EUR</Currency>
+        <PaymentConvention>MF</PaymentConvention>
+        <DayCounter>A360</DayCounter>
+        <Notionals>
+          <Notional>10000000</Notional>
+        </Notionals>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2023-02-21</StartDate>
+            <EndDate>2043-02-21</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <Rule>Forward</Rule>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+#+end_example
+
+Native ORE example portfolios with swaps sit under
+=external/ore/examples/=. The Academy and AmericanMonteCarlo
+=Input/portfolio.xml= files both contain swaps.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
+  definition.
+- [[https://en.wikipedia.org/wiki/Overnight_indexed_swap][Wikipedia: Overnight indexed swap]]. This covers the OIS variant.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/swap.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

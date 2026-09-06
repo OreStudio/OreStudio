@@ -269,6 +269,9 @@ How the codebase is put together.
   PR-delta and full-component reviews apply.
 - [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — how to write a
   =component_overview.org= that passes audit.
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component architecture audit]] — the recurring per-component
+  cleanliness check: shape, signed-off folders, naming, tests,
+  documentation, diagrams, and the complexity measure.
 - [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — styling for component
   and system class diagrams.
 - [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — styling for the SQL schema

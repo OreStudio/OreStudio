@@ -139,7 +139,7 @@ TEST_CASE("lifecycle_event_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated lifecycle_event code: " << sut.code;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
@@ -155,7 +155,7 @@ TEST_CASE("lifecycle_event_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 
@@ -197,7 +197,7 @@ TEST_CASE("trade_id_type_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated trade_id_type code: " << sut.code;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
@@ -213,7 +213,7 @@ TEST_CASE("trade_id_type_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 

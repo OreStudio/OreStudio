@@ -247,12 +247,51 @@ a component at zero drift (regenerate, do not hand-edit).
 Walk the tree with the shape in mind. A file lives where its concern
 lives: domain types in =api=, repositories in =core=, handlers in
 =service=. A class whose name, namespace, or folder disagree is a
-finding. Registries are part of the tree: the component appears in the
-right layer page of the [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]], in the
-[[proj:projects/ores.codegen/modeling/component_catalogue.org][=component_catalogue.org=]] registry, and in its messaging references.
+finding.
+
+*** 11. Component registries
+
+The system indexes components in three registries. Each one must show
+the component and its parts:
+
+- The System Model layer pages ([[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]) list every part of a
+  composite, with its dependency column. A part that exists in the tree
+  but not on its layer page is a finding: the refdata audit found
+  =ores.refdata.client= missing while its siblings were listed.
+- =component_catalogue.org=
+  ([[proj:projects/ores.codegen/library/component_catalogue.org][=component_catalogue.org=]]) maps each codegen component name to its
+  modeling directory. Entities live at the group level of a composite;
+  parts need no row here.
+- The component's messaging reference (linked from the part overviews'
+  =See also=) lists the NATS subjects and handlers. A handler without a
+  subject row, or a subject row without a handler, is a finding.
+
 A stale registry entry is a finding; fix it in the same pass.
 
-*** 11. Component documentation
+*** 12. Platform-specific code placement
+
+Platform concerns have one home: =ores.platform=
+([[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]). It owns the cross-platform OS abstractions:
+compiler and architecture =attributes.hpp=, environment variables, the
+=filesystem= and =net= facets, process identity and signals, and time
+conversions. A component must not inline the platform itself. Look for
+preprocessor conditionals on =_WIN32=, =__linux__=, =__APPLE__=,
+compiler or architecture macros (=__GNUC__=, =_MSC_VER=,
+=__x86_64__=), and for direct OS headers (=unistd.h=, =windows.h=,
+=sys/*.h=) outside =ores.platform=:
+
+#+begin_src sh :results verbatim
+grep -rnE '#\s*(ifdef|ifndef|if)\s+(__|_WIN32)|<unistd\.h>|<windows\.h>|<sys/' \
+  projects/ores.<name>/include projects/ores.<name>/src
+#+end_src
+
+An inline conditional is a finding. When the concern has no home in
+=ores.platform= yet, extend that component (add the abstraction, then
+the callers use it); when it has a home, route the caller through it.
+Both directions are mechanical; porting an existing abstraction's
+callers is a record-only finding when it spans many files.
+
+*** 13. Component documentation
 
 Every simple component and every composite part carries a
 =modeling/component_overview.org= with the six required sections,
@@ -266,7 +305,7 @@ composite's root overview is the index shape (=Summary=,
 =Sub-components=, =Entity modules=) and is optional when the parts are
 documented.
 
-*** 12. Diagrams
+*** 14. Diagrams
 
 Every component overview has its =.puml= source and a rendered image
 committed next to it, and the overview's =Diagram= section points at
@@ -280,16 +319,21 @@ schema-owning component or sequence diagrams for its flows. Follow the
 diagram is a finding, and drawing a stub from the conventions skeleton
 is the trivial fix.
 
-*** 13. Complexity measure
+*** 15. Complexity measure
 
 The audit measures complexity; it does not fix it. The measure ranks
-components for the audit backlog and for later refactoring passes. Run
-lizard (https://github.com/terryyin/lizard) over the component's C++
-sources with the same command every time, so numbers stay comparable
-across components and runs:
+components for the audit backlog and for later refactoring passes.
+lizard (https://github.com/terryyin/lizard) runs from the compass
+venv (see =ores.compass= requirements.txt), with the same command
+every time so numbers stay comparable across components and runs.
+Point it at the C++ sources: the part dirs of a composite, the
+=include/= and =src/= of a simple component:
 
 #+begin_src sh :results verbatim
-lizard projects/ores.<name>/include projects/ores.<name>/src
+projects/ores.compass/venv/bin/lizard \
+  projects/ores.<name>/*/include projects/ores.<name>/*/src
+projects/ores.compass/venv/bin/lizard \
+  projects/ores.<name>/include projects/ores.<name>/src
 #+end_src
 
 Record per component: total NLOC, total function count, average
@@ -329,5 +373,6 @@ Every check ends in one of three states:
 - [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the facet catalogues that sign off facet folder
   names.
 - [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — the central home of all SQL artefacts.
+- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] — the central home of all platform-specific code.
 - [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] —
   the program this audit runs behind.

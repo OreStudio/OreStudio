@@ -17,17 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/callable_swap_instrument_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_CORE_PRESENTATION_CALLABLE_SWAP_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_CALLABLE_SWAP_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
 
-namespace ores::trading::repository {
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.trading.api/domain/callable_swap_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include <vector>
 
-std::ostream& operator<<(std::ostream& s, const callable_swap_instrument_entity& v) {
-    rfl::json::write(v, s);
-    return s;
+namespace ores::trading::presentation {
+
+/**
+ * @brief Renders a callable_swap_instrument to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_callable_swap_instrument_fields(const domain::callable_swap_instrument& v);
+
 }
 
-}
+#endif

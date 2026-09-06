@@ -36,3 +36,24 @@ sub-components.
 | Module | Brief |
 |--------+-------|
 | [[id:F944550D-BE82-4CDF-89EF-06334B5ED78E][ores.compute]] | Logical entities for the compute namespace. |
+
+* Audit record
+
+The recurring [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][component architecture audit]] ran on 2026-09-06. The
+triage of each finding is below.
+
+- *Fixed.* The client part had no modelling directory, overview, or
+  diagram, and no row in the component registries. All are in place
+  now. The group overview omitted the client row and truncated the
+  core brief. Stale summaries in the System Model application page,
+  the group overview, and the api overview now match the parts.
+- *Recorded.* The client part has no tests for its package publishing;
+  a test needs shell or Qt scaffolding, so it is not a mechanical fix.
+  The wrapper function =process_assignment= is the complexity hotspot;
+  a refactor pass starts from it. Both wait for a later pass.
+- *Comments.* Pass. Hand-written comments are rare and explain why.
+  Generated files carry only template comments.
+- *Complexity measure.* 9607 NLOC over 466 functions at an average CCN
+  of 2.0. One warning: =process_assignment= at CCN 17. Generated
+  sources dominate the raw total. Read them as a template signal, not
+  a component signal.

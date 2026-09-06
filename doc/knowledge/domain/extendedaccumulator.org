@@ -1,0 +1,229 @@
+:PROPERTIES:
+:ID: 90DDE9BB-770F-4337-AF0E-69698AF2A2A1
+:END:
+#+title: Extended Accumulator
+#+description: An accumulator that can extend past a barrier decision date; ORE's ExtendedAccumulator product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:extendedaccumulator:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+An extended accumulator is an accumulator whose life can extend past
+a barrier decision date. ORE represents it as a scripted trade with
+the node =ExtendedAccumulatorData=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An extended accumulator trades like an accumulator: at each regular
+observation date it buys, or sells, a fixed amount of the underlying
+at a fixed strike. It adds a European barrier decision on the
+=ExtensionDecisionDate=. When the underlying is above the
+=ExtensionTrigger= on that date, the trade continues on the
+conditional observation dates. Otherwise it terminates at the last
+regular observation date.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Extended Accumulator is like an Accumulator with regular and
+conditional observation and settlement dates. After the regular
+observation dates a European barrier is applied on the Extension
+Decision Date. If the barrier is hit the trade terminates, otherwise
+the trade continues with cashflows generated on the conditional
+observation dates.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/extendedaccumulator.tex=.
+
+** In plain terms
+
+An extended accumulator is a forward purchase program with a
+possible second life. The program buys a fixed amount of an asset on
+each observation date, at a fixed strike. On a set decision date the
+underlying is checked against a trigger. Above the trigger, the
+program extends into a second set of observation dates. At or below
+the trigger, the program stops after its regular dates.
+
+** How it works in ORE
+
+The trade is a scripted trade: the trade type is =ScriptedTrade= and
+the node is =ExtendedAccumulatorData=. =LongShort= defines whether
+the trade is long or short. Long means the holder buys the underlying
+asset at each observation date; short means the holder sells it.
+=Strike= is the strike of the installments. For FX it is the amount
+in the domestic currency, =CCY2=, for one unit of the foreign
+currency, =CCY1=. For equity and commodity it is the value for one
+unit of the underlying, expressed in the domestic currency.
+=Underlying= names the underlying index. For FX it has the form
+=FX-SOURCE-CCY1-CCY2=, where =SOURCE= is the fixing source.
+=FixingAmount= is the amount accumulated at each fixing date. For FX
+it is expressed in the foreign currency. For equity it is the number
+of shares. For commodity it is the number of units. A negative
+amount turns a long trade into a short one. =PayCurrency= is the
+payout currency; for a non-quanto trade it is the domestic currency.
+
+The schedule nodes define the two lives of the trade.
+=ObservationDates= and =ObservationSettlementDates= hold the regular
+observation dates and their settlement dates. =ConditionalObservationDates=
+and =ConditionalSettlementDates= hold the conditional dates, which
+pay only when the trade extends. =ExtensionDecisionDate= is the date
+on which the extension condition is decided. =ExtensionTrigger= is
+the level of the underlying below which a trigger event occurs; it
+is expressed in the same way as the strike. When the underlying on
+the decision date is above the trigger, the extension fires and the
+conditional dates pay. Otherwise the trade terminates at the last
+observation date.
+
+ORE summarises the direction of the condition as follows:
+
+#+begin_quote
+If the underlying on the extension decision date is above the
+barrier level, it triggers the extension on conditional observation
+dates. Else, the trade terminate at last observation date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/extendedaccumulator.tex=.
+
+** Mathematical notes
+
+ORE states the payoff formula as follows:
+
+PayOff = omega x FixingAmount x (K - X_A(T)), summed over the
+observation dates.
+
+Here =omega= is 1 for a long position and minus 1 for a short
+position. =FixingAmount= is the fixing amount in currency or units of
+the underlying asset A. =K= is the strike. =X_A(T)= is the fixing
+value of the asset A at each observation date T. The script that
+implements the formula pays every regular installment first. It then
+tests the underlying on the extension decision date. When the
+underlying is above the trigger, it pays the conditional installments
+as well. The current notional of the trade is the fixing amount times
+the strike.
+
+** What moves its value (static sensitivities)
+
+- The underlying price. Each fixing decides the sign and size of an
+  installment.
+- The volatility of the underlying. It drives how often the fixings
+  fall on the profitable side of the strike.
+- The strike and the trigger level.
+- The interest rates that discount the installment payments.
+
+The payoff of every installment is linear in the fixing. The
+extension condition adds a binary path dependence: the value of the
+conditional leg exists only when the trigger fires.
+
+** How the profile ages (dynamic sensitivities)
+
+The regular installments settle on their own dates until the
+decision date. On that date the barrier is observed once, in the
+European style. Above the trigger, the conditional installments
+continue to their last settlement date. At or below the trigger, the
+program stops. The current notional of the trade steps with each
+fixing amount as installments accumulate.
+
+** Why a customer would want it
+
+An accumulator lets a customer accumulate a position in an asset at a
+fixed price over time, instead of buying it today. The extended form
+adds a conditional second phase. In ORE Studio a customer books
+extended accumulators to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a long extended accumulator on EUR-USD. Six
+monthly installments run from September 2019, with the extension
+decision on 25 February 2020:
+
+#+begin_example
+<Trade id="FxExtendedAccumulatorLong">
+  <TradeType>ScriptedTrade</TradeType>
+  <Envelope>
+    <CounterParty>CPTY_A</CounterParty>
+    <NettingSetId>CRIF_20191230</NettingSetId>
+    <AdditionalFields/>
+  </Envelope>
+  <ExtendedAccumulatorData>
+    <LongShort type="longShort">Long</LongShort>
+    <FixingAmount type="number">840336</FixingAmount>
+    <Strike type="number">1.19</Strike>
+    <PayCurrency type="currency">USD</PayCurrency>
+    <Underlying type="index">FX-ECB-EUR-USD</Underlying>
+    <ObservationDates type="event">
+      <ScheduleData>
+        <Dates>
+          <Dates>
+            <Date>2019-09-30</Date>
+            <Date>2019-10-31</Date>
+            <Date>2019-11-28</Date>
+            <Date>2019-12-31</Date>
+            <Date>2020-01-30</Date>
+            <Date>2020-02-27</Date>
+          </Dates>
+        </Dates>
+      </ScheduleData>
+    </ObservationDates>
+    <ObservationSettlementDates type="event">
+      <ScheduleData>
+        <Dates>
+          <Dates>
+            <Date>2019-10-02</Date>
+            <Date>2019-11-02</Date>
+            <Date>2019-12-30</Date>
+            <Date>2020-01-02</Date>
+            <Date>2020-02-03</Date>
+            <Date>2020-03-30</Date>
+          </Dates>
+        </Dates>
+      </ScheduleData>
+    </ObservationSettlementDates>
+    <ExtensionDecisionDate type="event">2020-02-25</ExtensionDecisionDate>
+    <ExtensionTrigger type="number">1.19</ExtensionTrigger>
+    <ConditionalObservationDates type="event">
+      <ScheduleData>
+        <Dates>
+          <Dates>
+            <Date>2020-03-31</Date>
+            <Date>2020-04-30</Date>
+            <Date>2020-05-29</Date>
+            <Date>2020-06-30</Date>
+            <Date>2020-07-31</Date>
+            <Date>2020-08-31</Date>
+          </Dates>
+        </Dates>
+      </ScheduleData>
+    </ConditionalObservationDates>
+    <ConditionalSettlementDates type="event">
+      <ScheduleData>
+        <Dates>
+          <Dates>
+            <Date>2020-03-31</Date>
+            <Date>2020-04-30</Date>
+            <Date>2020-05-29</Date>
+            <Date>2020-06-30</Date>
+            <Date>2020-07-31</Date>
+            <Date>2020-08-31</Date>
+          </Dates>
+        </Dates>
+      </ScheduleData>
+    </ConditionalSettlementDates>
+  </ExtendedAccumulatorData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/extendedaccumulator.tex=,
+the extended accumulator example trade.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/extendedaccumulator.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

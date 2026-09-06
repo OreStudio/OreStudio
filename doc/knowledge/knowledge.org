@@ -35,12 +35,18 @@ description with domain grounding and ORE examples.
   and CMS; definition, variants, sensitivities, and ORE examples.
 - [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]] — debt securities: definition, reference-data short form,
   credit-risk flag, and sensitivities.
+- [[id:6B186A8F-B261-40A4-B950-932AB735AE95][Accumulator]] — the forward purchase of an asset in daily
+  instalments: the accumulator and decumulator forms, the knock-out
+  and leverage features, and sensitivities.
 - [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]] — the American option on a convertible bond: the right to
   sell it back at a strike set from a reference swap, the call and put
   forms, and sensitivities.
 - [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]] — prepayment-linked amortisation:
   the notional follows a reference security's prepayments, the Flexi
   Swap pricing proxy, and sensitivities.
+- [[id:00DE9B53-9E4F-4FD4-A5E9-BE00B0956710][Basket Option]] — the option on a weighted basket of assets: the
+  vanilla, Asian, average strike and lookback forms, and
+  sensitivities.
 - [[id:C00D82F7-942F-4270-AB9F-D0C31F0881A9][Bond Forward (Reference Data)]] — a forward contract on a bond with
   the underlying from reference data: physical or cash settlement,
   the T-Lock form, and sensitivities.
@@ -93,6 +99,9 @@ description with domain grounding and ORE examples.
   commodity swap: payer and receiver rights, and sensitivities.
 - [[id:1989F85A-42F8-4894-8982-AC34D19B0351][Commodity Variance Swap]] — commodity volatility traded directly:
   the realised variance payoff and sensitivities.
+- [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — a position bundling several component trades:
+  the components list, the currency and notional method, the
+  portfolio basket form, and sensitivities.
 - [[id:F5D8E0C4-EC67-4210-AF1C-B664246810C9][Convertible Bond]] — a bond convertible into a prespecified number
   of shares: parity against the bond floor, calls and puts, forced
   conversion, and sensitivities.
@@ -144,6 +153,9 @@ description with domain grounding and ORE examples.
   touch, the one-touch and no-touch forms, and sensitivities.
 - [[id:D69C0964-9F15-43BC-8A13-66ECED718BED][Equity Variance Swap]] — equity volatility traded directly: the
   realised variance payoff and sensitivities.
+- [[id:90DDE9BB-770F-4337-AF0E-69698AF2A2A1][Extended Accumulator]] — the accumulator that can extend past a
+  barrier decision date: the extension trigger and the conditional
+  observation dates, and sensitivities.
 - [[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]] — flexible amortisation: the option to cut the
   notional toward lower bounds, the replication price, and
   sensitivities.
@@ -190,10 +202,22 @@ description with domain grounding and ORE examples.
   payout above or below strike, and sensitivities.
 - [[id:95005252-270D-44DE-8A26-C61CE5D860E0][Risk Participation Agreement]] — protection on swap counterparties:
   the participation rate and the underlying swap.
+- [[id:18E6A88B-6F6E-488F-91B2-B6106C43AF73][Strike Resettable Option]] — an option whose strike resets on a
+  trigger: the observation dates, the trigger price and the reset
+  strike, and sensitivities.
 - [[id:FCC37EB3-D654-4333-B110-3BF4AFA3A237][Swaption]] — an option on a swap: payer and receiver rights,
   European, Bermudan and American styles, and sensitivities.
 - [[id:8F0391AC-D748-459C-8DD8-5ABC8945E438][Synthetic CDO]] — tranched basket protection: attachment and
   detachment points, the CdoData block.
+- [[id:808C159F-5852-45AD-AE49-B7A4488513CC][Target Redemption Forward]] — the forward series that redeems at a
+  target profit: the continuous and digital forms, the exact, full
+  and truncated payment types, and sensitivities.
+- [[id:5368EC07-71E8-4906-B897-AA41A57CE0FA][Total Return Swap]] — the return of an asset against a funding leg:
+  the generic TRS and CFD forms, the accrual pricing method, and
+  sensitivities.
+- [[id:428BA744-B3D3-486C-A3BF-39E59C6EC11F][Worst Of Basket Swap]] — a swap referencing the worst performing
+  basket asset: the fixed coupons, the trigger, knock-out and
+  knock-in barriers, and sensitivities.
 - [[id:2FC69DD5-D685-452B-8BCE-85CBCDD624E5][Year-on-Year Inflation Swap]] — annual inflation exposure: the YY
   leg, its Swap trade type, and sensitivities.
 - [[id:D0F2BDFE-AA84-4472-86E5-AB273E1A8EEC][Zero Coupon Swap]] — the deferred-payment swap: the zero-coupon

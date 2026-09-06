@@ -173,12 +173,14 @@ Tags that describe the business or technical domain of the content.
 | Tag | Description |
 |-----+-------------|
 | =accounts= | User accounts and authentication. |
+| =accumulator= | Accumulators, decumulators and forward-accumulation structures. |
 | =agile= | Agile process, sprint planning, retrospectives. |
 | =architecture= | Software architecture documentation. |
 | =ascot= | Ascot options and convertible bond buyback structures. |
 | =authentication= | Authentication flows and session management. |
 | =authorization= | Authorisation, roles, permissions. |
 | =balanceguaranteedswap= | Balance guaranteed swaps and prepayment-linked amortising structures. |
+| =basketoption= | Basket options and multi-asset option structures. |
 | =build= | Build system, CI, packaging. |
 | =bond= | Bond instruments and fixed-income cash products. |
 | =bondforward_refdata= | Bond forwards settled against reference-data bonds. |
@@ -203,6 +205,7 @@ Tags that describe the business or technical domain of the content.
 | =commodityswap= | Commodity swaps and commodity derivatives markets. |
 | =commodityswaption= | Commodity swaptions and commodity derivatives markets. |
 | =commodityvarianceswap= | Commodity variance swaps and commodity volatility markets. |
+| =compositetrade= | Composite trades and multi-component trade structures. |
 | =convertiblebond= | Convertible bonds and hybrid equity-debt instruments. |
 | =currencies= | Currency reference data. |
 | =counterparty= | Counterparty entity and management. |
@@ -229,6 +232,7 @@ Tags that describe the business or technical domain of the content.
 | =equityposition= | Equity positions and weighted equity baskets. |
 | =equityswap= | Equity swaps and equity derivatives markets. |
 | =equityvarianceswap= | Equity variance swaps and equity volatility markets. |
+| =extendedaccumulator= | Extended accumulators and barrier-extended forward accumulations. |
 | =finance= | Finance domain, products, and markets. |
 | =flexiswap= | Flexi swaps and flexible amortisation structures. |
 | =forwardbond= | Forward bonds, T-Locks and J-Locks. |
@@ -265,13 +269,17 @@ Tags that describe the business or technical domain of the content.
 | =rpa= | Risk participation agreements and counterparty credit risk. |
 | =security= | Security features and hardening (also component tag). |
 | =sprint= | Sprint-level document (also type tag). |
+| =strikeresettableoption= | Strike resettable options and trigger-reset option structures. |
 | =swap= | Swap products and interest-rate derivatives. |
 | =swaption= | Swaptions and the interest rate option market. |
 | =syntheticcdo= | Synthetic collateralised debt obligations and tranches. |
+| =tarf= | Target redemption forwards and forward-accumulation structures. |
 | =testing= | Test infrastructure, test coverage. |
+| =totalreturnswap= | Total return swaps and funded asset exposure structures. |
 | =trading= | Trading domain (also component tag). |
 | =ui= | User interface design and implementation. |
 | =ux= | User experience. |
+| =worstofbasketswap= | Worst of basket swaps and basket trigger structures. |
 | =yyswap= | Year-on-year inflation swaps and inflation-linked markets. |
 | =zerocouponswap= | Zero coupon swaps and zero-coupon interest rate structures. |
 

@@ -1,0 +1,224 @@
+:PROPERTIES:
+:ID: 00DE9B53-9E4F-4FD4-A5E9-BE00B0956710
+:END:
+#+title: Basket Option
+#+description: An option on a basket of underlying assets; ORE's BasketOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:basketoption:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A basket option is an option on a weighted basket of assets instead
+of a single asset. ORE offers five variations: vanilla, Asian,
+average strike, lookback call and lookback put. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A basket option pays the option payoff on the value of a basket of
+underlyings. The basket is a weighted sum of equity, FX or commodity
+indices. The vanilla form strikes the basket at expiry. The Asian
+form strikes the average of the basket over its observation dates.
+The average strike form compares the basket at expiry with its own
+time average. The lookback forms compare the basket at expiry with
+its lowest or highest value over the observation dates.
+
+* Detail
+
+** What it is
+
+ORE scopes the product as follows:
+
+#+begin_quote
+The supported underlying types are Equity, Fx or Commodity resulting
+in corresponding trade types and trade data container names
+EquityBasketOption / EquityBasketOptionData FxBasketOption /
+FxBasketOptionData CommodityBasketOption / CommodityBasketOptionData
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+
+ORE represents basket options as traditional trades or as scripted
+trades. Each variation has its own payoff script. The catalogue maps
+them as follows: the vanilla form runs the =VanillaBasketOption=
+script, the Asian form the =AsianBasketOption= script, the average
+strike form the =AverageStrikeBasketOption= script, and the lookback
+forms the =LookbackCallBasketOption= and =LookbackPutBasketOption=
+scripts.
+
+** In plain terms
+
+A basket option is a bet on several assets at once, through one
+option. The assets are combined with weights into one basket value.
+A vanilla basket call pays when the basket is above the strike at
+expiry. The other forms soften the payoff. The Asian form averages
+the basket over time. The average strike form uses the basket's own
+average as the strike. The lookback forms use the best or worst
+basket value over the observation period.
+
+** How it works in ORE
+
+The vanilla form is the plain option on the basket. ORE describes its
+input as follows:
+
+#+begin_quote
+relevant are the long/short flag, the call/put flag, the payoff type
+(must be set to Vanilla to identify the payoff), and the exercise
+date (exactly one date must be given). A Premiums node can be added
+to represent deterministic option premia to be paid by the option
+holder.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+
+=Currency= is the pay currency. =Notional= is the quantity for
+equity and commodity underlyings, and the foreign amount for an FX
+underlying. =Strike= is the strike of the option, expressed as a
+basket price. =Underlyings= lists the basket constituents, each with
+its =Type=, =Name= and =Weight=. =OptionData= carries =LongShort=,
+=OptionType=, =PayoffType=, one =ExerciseDate= and optionally a
+=Premiums= node. =Settlement= is the settlement date; it defaults to
+the exercise date.
+
+The Asian form adds =ObservationDates= on which the basket value is
+observed for the average. Its payoff type is =Asian=. The averaging
+style is selectable:
+
+#+begin_quote
+PayoffType2 can be optionally set to Arithmetic or Geometric and
+defaults to Arithmetic if not given.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+
+The average strike form uses the same observation dates. Its payoff
+type is =AverageStrike=, and it carries no strike: the strike is the
+average basket value itself. The lookback call and put forms observe
+the basket on the observation dates and track its lowest, or
+highest, value there. Their payoff types are =LookbackCall= and
+=LookbackPut=.
+
+All forms share the currency machinery. The =PayCcy= of the scripted
+form defines the payment currency. ORE describes the quanto case as
+follows:
+
+#+begin_quote
+If CCY1 or the currency of the underlying (for EQ and COMM
+underlyings), this will result in a quanto payoff.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+
+In the scripted representation each variation is a scripted trade
+with its own data node, named after its script, such as
+=VanillaBasketOptionData= or =AsianBasketOptionData=. The nodes carry
+=Expiry=, =Settlement=, the =PutCall= and =LongShort= flags,
+=Notional=, =Strike= where the form has one, the index =Underlyings=
+list and the matching =Weights= list, in the same order, and
+=PayCcy=. The observation-based forms add an =ObservationDates=
+schedule.
+
+** Mathematical notes
+
+The basket value on a date is the weighted sum of its constituents:
+
+basketPrice = sum over u of Underlyings[u](date) x Weights[u].
+
+The scripts implement the payoffs on top of it. The vanilla payoff
+is the positive part of the signed distance from the strike, capped
+at zero:
+
+Payoff = max(PutCall x (basketPrice - Strike), 0).
+
+The option value is the long-short signed notional times the payoff,
+settled at expiry. The Asian script averages the basket over the
+observation dates and applies the same payoff against the strike.
+The average strike script compares the basket at expiry with the time
+average of the basket. The lookback call script pays the basket at
+expiry minus its minimum over the observation dates. The lookback
+put script pays the maximum over the observation dates minus the
+basket at expiry. The lookback forms carry their direction in the
+payoff itself, so they take no call-put flag.
+
+** What moves its value (static sensitivities)
+
+- The prices of the basket constituents.
+- The correlation between the constituents. It drives the volatility
+  of the basket: lower correlation diversifies it.
+- The weights, which set the exposure to each constituent.
+- The volatility of each constituent.
+- The strike, for the forms that carry one.
+- The FX rates, when the pay currency differs from the constituent
+  currencies and the payoff is quanto.
+
+** How the profile ages (dynamic sensitivities)
+
+The observation schedule is the heart of the averaging forms. Each
+observation date adds a sample to the Asian average or to the
+lookback running minimum or maximum. The averaging shortens the
+volatility the payoff sees as samples accumulate. At expiry the final
+basket is fixed and the payoff settles on the settlement date.
+
+** Why a customer would want it
+
+A basket option buys exposure to several assets in one trade, with
+one payoff profile. It costs less than a strip of single-asset
+options because the basket is less volatile than its parts. The
+averaging forms further reduce the cost and smooth the payoff. In ORE
+Studio a customer books basket options to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a vanilla basket call on the S&P 500 and the
+Euro Stoxx 50, struck at 5000, in its traditional representation:
+
+#+begin_example
+<Trade id="VanillaBasketOption#1">
+  <TradeType>EquityBasketOption</TradeType>
+  <Envelope>
+    <CounterParty>CPTY_A</CounterParty>
+    <NettingSetId>CPTY_A</NettingSetId>
+    <AdditionalFields/>
+  </Envelope>
+  <EquityBasketOptionData>
+    <Currency>USD</Currency>
+    <Notional>1</Notional>
+    <Strike>5000</Strike>
+    <Underlyings>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.SPX</Name>
+        <Weight>1.0</Weight>
+      </Underlying>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.STOXX50E</Name>
+        <Currency>EUR</Currency>
+        <Weight>1.0</Weight>
+      </Underlying>
+    </Underlyings>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <PayoffType>Vanilla</PayoffType>
+      <ExerciseDates>
+        <ExerciseDate>2020-02-15</ExerciseDate>
+      </ExerciseDates>
+      <Premiums> ... </Premiums>
+    </OptionData>
+    <Settlement>2020-02-20</Settlement>
+  </EquityBasketOptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=,
+the vanilla basket option example trade. The catalogue shows the
+Asian, average strike and lookback variants with the same basket.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/basketoption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

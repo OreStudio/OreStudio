@@ -1,0 +1,280 @@
+:PROPERTIES:
+:ID: 5368EC07-71E8-4906-B897-AA41A57CE0FA
+:END:
+#+title: Total Return Swap
+#+description: A swap paying the total return of an asset against a funding leg; ORE's generic TRS product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:totalreturnswap:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A total return swap transfers the total return of an asset, its price
+move plus its income, to a counterparty in exchange for a funding
+payment. ORE prices the generic form with an accrual method. The same
+product is also known as a contract for difference. This note records
+the domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+The generic total return swap swaps the performance of an underlying
+asset against one or more funding legs. The underlying can be a
+single bond, equity, commodity or option, or a basket of positions,
+or an arbitrary derivative. The return leg pays the price movement of
+the underlying over each period, plus its cashflows. The funding legs
+pay interest on a notional that follows the underlying price. ORE
+also supports CFDs: total return swaps without funding, usually
+captured with two dates in the return schedule.
+
+* Detail
+
+** What it is
+
+ORE introduces the product as follows:
+
+#+begin_quote
+Generic TRS can be used to represent total return swaps on a wide
+range of underlying assets including e.g. single bonds or equities,
+CFDs on an underlying basket of EquityPositions, proprietary indices
+on equity options and equity or bond indices.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+
+The trade types =TotalReturnSwap= and =ContractForDifference= behave
+exactly the same. The difference is commercial. ORE describes the CFD
+form as follows:
+
+#+begin_quote
+Usually CFDs are traded without a funding component and captured with
+only two dates in the return schedule, namely the start date on which
+the initial price is fixed and a fictitious closing date usually set
+to "tomorrow" or another suitable future date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+
+** In plain terms
+
+A total return swap is a way to own an asset without buying it. The
+asset owner pays the price gains of the asset to the swap buyer, plus
+any income the asset produces. In return the swap buyer pays a
+funding rate on the asset value. The swap buyer gets the economic
+exposure. The asset owner keeps the legal ownership and its
+financing. A CFD is the same idea without the funding leg, used for
+short-term bets on the price.
+
+** How it works in ORE
+
+ORE prices the product with an accrual method, not with a full
+discounting method:
+
+#+begin_quote
+The accrual method is common practice when daily unwind rights are
+present in the trade terms or when the underlying valuation is too
+complex to allow for future projection.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+
+The =TotalReturnSwapData= node is made of four sub-blocks.
+
+=UnderlyingData= holds one or more =Trade= subnodes that describe the
+asset position. Each trade is a full trade of a supported type, such
+as =Bond=, =BondFuture=, =ForwardBond=, =CBO=, =CommodityPosition=,
+=ConvertibleBond=, =CallableBond=, =EquityPosition=,
+=EquityOptionPosition=, =BondPosition= or =CashPosition=. For a
+convertible bond or callable bond, a TRS on the plain bond type is
+enough: the pricer chooses the underlying from the reference data of
+the security id. A =Derivative= subnode holds an arbitrary derivative
+trade with an id, which supports portfolio swaps over several
+underlying derivatives. A =PortfolioIndexTradeData= subnode instead
+references a basket by =BasketName=, with =IndexQuantity= shares of
+the index. ORE notes the independence of the underlying schedule:
+
+#+begin_quote
+Notice that in every case, the UnderlyingData schedule (if applicable
+to the underlying trade type as e.g. for a bond) is completely
+independent from the funding / return schedules: The underlying
+schedule defines the underlying flows to compute its NPV, and is not
+directly related to the return swap itself.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+
+=ReturnData= describes the return leg. =Payer= says whether the leg
+is paid. =Currency= is the currency of the return. When it differs
+from the underlying currency the swap is composite; when it differs
+from the funding currency it is cross currency. Both features can
+occur alone or in combination. The =ScheduleData= node is the
+reference schedule. Valuation dates derive from it with
+=ObservationLag=, =ObservationConvention= and =ObservationCalendar=.
+Payment dates derive from it with =PaymentLag=, =PaymentConvention=
+and =PaymentCalendar=, or come as an explicit =PaymentDates= list of
+one date fewer than the schedule. =InitialPrice= is the underlying
+price on the valuation date of the start date, usually contractual.
+It can be a dirty price for bonds, a weighted price for baskets, an
+absolute amount when several underlyings or a derivative is present,
+or the NPV for a CBO. When omitted it defaults to the price on the
+valuation date of the start date, or to the forward price when that
+date is in the future. =InitialPriceCurrency= says whether the price
+is in the asset, return or funding currency. =FXTerms= is mandatory
+whenever the underlying, return, funding or cashflow currencies
+differ: each differing currency needs an =FXIndex= for the
+conversion. =FXConversion= picks the FX rate used at the start of the
+period, the default, or at its end.
+
+Underlying cashflows flow through the return leg. ORE describes the
+option as follows:
+
+#+begin_quote
+If true, underlying cashflows like coupon or amortisation payments
+from bonds or dividend payments from equities, are paid when they
+occur. If false, these cashflows are paid together with the next
+return payment. If omitted, the default value is false for trade type
+TotalReturnSwap and true for trade type ContractForDifference.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+
+=FundingData= is optional and holds one or more funding =LegData=
+nodes. The allowed leg types are =Fixed=, =Floating=, =CMS=, =CMB=
+and =ZeroCouponFixed=. All funding legs share one payment currency.
+The notional of each funding leg follows a =NotionalType=:
+=PeriodReset= sets it from the underlying price on the last valuation
+date on or before the accrual start date of the coupon, converted at
+the FX rate of the same date; =DailyReset= sets it from the
+underlying price of each day of the accrual period, and supports
+fixed rate legs only; =Fixed= takes the notional given in the leg
+data. Without a =NotionalType=, the leg defaults to =PeriodReset=
+when it carries no notional and to =Fixed= when it does.
+=FundingResetGracePeriod= allows valuation dates a few calendar days
+after the accrual start date to count for the reset.
+=AdditionalCashflowData= is optional: a =Cashflow= leg of unpaid
+amounts in the asset, funding or return currency, included in the
+NPV.
+
+** Mathematical notes
+
+ORE prices the return by accrual. The return over a period is the
+change in value of the underlying position:
+
+(Ntl x today's price x today's Fx rate) - (Ntl x initial price x
+initial Fx rate).
+
+With =FXConversion= =End= the second term converts the initial price
+at today's FX rate instead:
+
+(Ntl x final price x final Fx rate) - (Ntl x initial price x final Fx
+rate).
+
+The funding leg pays its rate on the notional determined by the
+=NotionalType=, as described above. The underlying trade is valued
+with its own engine and its own cashflows.
+
+** What moves its value (static sensitivities)
+
+- The price of the underlying asset. It drives the return leg and the
+  funding notionals.
+- The income of the underlying: coupons and dividends, and the timing
+  of their pass-through.
+- The funding rate of the floating funding leg and its spread.
+- The FX rates, when the return, funding or cashflow currencies
+  differ from the asset currency.
+- The interest rates that discount the flows.
+
+** How the profile ages (dynamic sensitivities)
+
+Each return period settles the price move of the underlying. The
+underlying cashflows pass through on occurrence, or with the next
+return payment, per the flag above. The funding notionals reset per
+period or per day, depending on their type. Because ORE prices by
+accrual, the swap tracks the underlying closely on every valuation
+date, which suits daily unwind rights. A CFD runs from its start date
+to its closing date and then settles.
+
+** Why a customer would want it
+
+A total return swap gives exposure to an asset without owning it.
+Hedge funds use TRSs to lever positions or to short assets they
+cannot borrow. Banks use them to fund long positions. Retail and
+institutional clients use CFDs for leveraged price bets. In ORE
+Studio a customer books TRSs and CFDs to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a generic total return swap on a convertible
+bond, with a daily-reset fixed funding leg, a period-reset floating
+funding leg, and an additional cashflow leg:
+
+#+begin_example
+<TotalReturnSwapData>
+  <UnderlyingData>
+    <Trade>
+      <TradeType>Bond</TradeType>
+      <BondData>
+        <SecurityId>ISIN:XY1000000000</SecurityId>
+        <BondNotional>1000000.00</BondNotional>
+      </BondData>
+    </Trade>
+  </UnderlyingData>
+  <ReturnData>
+    <Payer>false</Payer>
+    <Currency>EUR</Currency>
+    <ScheduleData>...</ScheduleData>
+    <ObservationLag>0D</ObservationLag>
+    <ObservationConvention>P</ObservationConvention>
+    <ObservationCalendar>USD</ObservationCalendar>
+    <PaymentLag>2D</PaymentLag>
+    <PaymentConvention>F</PaymentConvention>
+    <PaymentCalendar>TARGET</PaymentCalendar>
+    <!-- <PaymentDates> -->
+    <!--   <PaymentDate> ... </PaymentDate> -->
+    <!--   <PaymentDate> ... </PaymentDate> -->
+    <!-- </PaymentDates> -->
+    <InitialPrice>1.05</InitialPrice>
+    <InitialPriceCurrency>EUR</InitialPriceCurrency>
+    <FXTerms>
+      <FXIndex>FX-ECB-EUR-USD</FXIndex>
+      <FXIndex>FX-ECB-GBP-USD</FXIndex>
+    </FXTerms>
+    <PayUnderlyingCashFlowsImmediately>false</PayUnderlyingCashFlowsImmediately>
+  </ReturnData>
+  <FundingData>
+    <FundingResetGracePeriod>2</FundingResetGracePeriod>
+    <NotionalType>DailyReset</NotionalType>
+    <LegData>
+      <Payer>true</Payer>
+      <LegType>Fixed</LegType>
+      ...
+    </LegData>
+    <NotionalType>PeriodReset</NotionalType>
+    <LegData>
+      <Payer>true</Payer>
+      <LegType>Floating</LegType>
+      ...
+    </LegData>
+  </FundingData>
+  <AdditionalCashflowData>
+    <LegData>
+      <Payer>false</Payer>
+      <LegType>Cashflow</LegType>
+      ...
+    </LegData>
+  </AdditionalCashflowData>
+</TotalReturnSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=,
+listing =Generic Total Return Swap with Convertible Bond underlying=.
+The catalogue shows further variants: equity basket, bond basket, bond
+future, commodity index and derivative underlyings, a
+=PortfolioIndexTradeData= underlying, and a CFD on STOXX50E with
+initial price 3399.20.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/totalReturnSwap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

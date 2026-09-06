@@ -65,8 +65,7 @@ public:
      * @param out Output stream for results
      * @param session Client session for connectivity.
      */
-    static void process_get_tenants(std::ostream& out,
-                                    ores::nats::service::nats_client& session);
+    static void process_get_tenants(std::ostream& out, ores::nats::service::nats_client& session);
 
     /**
      * @brief Process an add tenant request.

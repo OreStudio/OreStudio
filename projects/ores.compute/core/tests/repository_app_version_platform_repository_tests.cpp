@@ -163,8 +163,7 @@ TEST_CASE("replace_by_app_version_empty_set_drops_all_active", tags) {
                                 "seed");
     REQUIRE(repo.read_latest_by_app_version(av_id).size() == 1);
 
-    repo.replace_by_app_version(
-        av_id, {}, h.db_user(), h.db_user(), "system.new_record", "clear");
+    repo.replace_by_app_version(av_id, {}, h.db_user(), h.db_user(), "system.new_record", "clear");
 
     CHECK(repo.read_latest_by_app_version(av_id).empty());
 }

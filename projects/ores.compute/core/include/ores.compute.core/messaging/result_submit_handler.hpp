@@ -42,7 +42,8 @@ namespace ores::compute::messaging {
 
 namespace {
 inline auto& result_submit_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.compute.messaging.result_submit_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.compute.messaging.result_submit_handler");
     return instance;
 }
 } // namespace
@@ -102,8 +103,8 @@ public:
                 }
                 r.error_message = req->error_message;
                 r.change_reason_code = ores::dq::domain::change_reasons::system_new_record;
-                r.change_commentary =
-                    req->error_message.empty() ? "Output received from wrapper" : req->error_message;
+                r.change_commentary = req->error_message.empty() ? "Output received from wrapper" :
+                                                                   req->error_message;
                 stamp(r, ctx_);
                 result_svc.save_result(r);
 
@@ -114,7 +115,8 @@ public:
                 const auto wu_id_str = boost::uuids::to_string(r.workunit_id);
                 const auto wu_opt = wu_svc.get_workunit(wu_id_str);
                 if (wu_opt && wu_opt->canonical_result_id == boost::uuids::uuid{}) {
-                    const auto wu_results = result_svc.list_results_by_workunit_id(wu_id_str, 0, 1000);
+                    const auto wu_results =
+                        result_svc.list_results_by_workunit_id(wu_id_str, 0, 1000);
                     const int done = static_cast<int>(std::ranges::count_if(
                         wu_results, [](const auto& res) { return res.server_state == 5; }));
                     if (done >= wu_opt->target_redundancy) {
@@ -131,7 +133,8 @@ public:
                         // a canonical result. The workflow bridge publishes
                         // step_completed_event when it sees the closed status.
                         const auto batch_id_str = boost::uuids::to_string(wu.batch_id);
-                        const auto batch_wus = wu_svc.list_workunits_by_batch_id(batch_id_str, 0, 1000);
+                        const auto batch_wus =
+                            wu_svc.list_workunits_by_batch_id(batch_id_str, 0, 1000);
                         const bool all_done = std::ranges::all_of(batch_wus, [](const auto& w) {
                             return w.canonical_result_id != boost::uuids::uuid{};
                         });

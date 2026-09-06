@@ -57,9 +57,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
     // per-FK list-by reads, all to the generated handler. subscription is
     // move-only, so fold each returned vector in with move iterators.
     const auto fold = [&subs](std::vector<ores::nats::service::subscription> s) {
-        subs.insert(subs.end(),
-                    std::make_move_iterator(s.begin()),
-                    std::make_move_iterator(s.end()));
+        subs.insert(
+            subs.end(), std::make_move_iterator(s.begin()), std::make_move_iterator(s.end()));
     };
     fold(register_host_handlers(nats, ctx, verifier));
     fold(register_app_handlers(nats, ctx, verifier));

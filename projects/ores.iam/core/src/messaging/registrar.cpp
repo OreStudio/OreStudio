@@ -267,8 +267,8 @@ registrar::register_handlers(ores::nats::service::client& nats,
             return pc->compute_visible_party_ids(tenant_id, party_id);
         });
     auto th = std::make_shared<tenant_handler>(nats, ctx, signer);
-    auto tph = std::make_shared<tenant_provisioning_handler>(
-        nats, ctx, signer, std::move(impersonation));
+    auto tph =
+        std::make_shared<tenant_provisioning_handler>(nats, ctx, signer, std::move(impersonation));
     subs.push_back(
         nats.queue_subscribe(get_tenants_request::nats_subject, qg, [th](ores::nats::message msg) {
             th->list(std::move(msg));
@@ -286,8 +286,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
             th->history(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(
-        complete_tenant_provisioning_command::nats_subject, qg,
-        [tph](ores::nats::message msg) {
+        complete_tenant_provisioning_command::nats_subject, qg, [tph](ores::nats::message msg) {
             tph->complete_provisioning(std::move(msg));
         }));
     subs.push_back(nats.queue_subscribe(

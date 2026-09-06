@@ -86,9 +86,9 @@ struct submit_result_request {
     using response_type = struct submit_result_response;
     static constexpr std::string_view nats_subject = "compute.v1.results.submit";
     std::string result_id;
-    std::string host_id;     // UUID string of the wrapper node that ran the job
-    std::string output_uri;  // where the result archive was uploaded
-    int outcome = 0;         // 1=Success, 3=ClientError, 4=NoReply
+    std::string host_id;       // UUID string of the wrapper node that ran the job
+    std::string output_uri;    // where the result archive was uploaded
+    int outcome = 0;           // 1=Success, 3=ClientError, 4=NoReply
     std::string error_message; // human-readable failure reason; empty on success
 };
 

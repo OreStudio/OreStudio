@@ -55,9 +55,7 @@ void tenants_commands::register_commands(cli::Menu& root_menu,
 
     tenants_menu->Insert(
         "get",
-        [&session](std::ostream& out) {
-            process_get_tenants(std::ref(out), std::ref(session));
-        },
+        [&session](std::ostream& out) { process_get_tenants(std::ref(out), std::ref(session)); },
         "Retrieve active tenants from the server");
 
     tenants_menu->Insert(

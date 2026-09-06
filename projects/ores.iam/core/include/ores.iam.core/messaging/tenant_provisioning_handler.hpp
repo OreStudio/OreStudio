@@ -71,7 +71,8 @@ namespace ores::iam::messaging {
 namespace {
 
 inline auto& tenant_provisioning_handler_lg() {
-    static auto instance = ores::logging::make_logger("ores.iam.messaging.tenant_provisioning_handler");
+    static auto instance =
+        ores::logging::make_logger("ores.iam.messaging.tenant_provisioning_handler");
     return instance;
 }
 
@@ -94,16 +95,17 @@ using namespace ores::logging;
 class tenant_provisioning_handler {
 public:
     tenant_provisioning_handler(ores::nats::service::client& nats,
-                   ores::database::context ctx,
-                   ores::security::jwt::jwt_authenticator signer,
-                   ores::iam::service::internal_impersonation_service impersonation)
+                                ores::database::context ctx,
+                                ores::security::jwt::jwt_authenticator signer,
+                                ores::iam::service::internal_impersonation_service impersonation)
         : nats_(nats)
         , ctx_(std::move(ctx))
         , signer_(std::move(signer))
         , impersonation_(std::move(impersonation)) {}
 
     void complete_provisioning(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_provisioning_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_provisioning_handler_lg(), msg);
         try {
             auto ctx_expected = ores::service::service::make_request_context(
                 ctx_, msg, std::optional<ores::security::jwt::jwt_authenticator>{signer_});
@@ -136,7 +138,8 @@ public:
                                           tenant_provisioning_handler_lg(),
                                           "complete_provisioning");
 
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info) << "Tenant marked active: " << ids.front();
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "Tenant marked active: " << ids.front();
 
             // Clear the bootstrap_mode flag via the variability service over
             // NATS, so the write happens under its own (correctly-granted) DB
@@ -176,7 +179,8 @@ public:
 
             reply(nats_, msg, complete_tenant_provisioning_response{.success = true});
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(nats_,
                   msg,
                   complete_tenant_provisioning_response{.success = false, .message = e.what()});
@@ -203,7 +207,8 @@ public:
     }
 
     void provision_acme(ores::nats::message msg) {
-        [[maybe_unused]] const auto correlation_id = log_handler_entry(tenant_provisioning_handler_lg(), msg);
+        [[maybe_unused]] const auto correlation_id =
+            log_handler_entry(tenant_provisioning_handler_lg(), msg);
         provision_acme_tenant_response resp;
         resp.success = true;
         auto add_step = [&](std::string step, std::string action, std::uint64_t count = 1) {
@@ -684,11 +689,13 @@ public:
             // provision_acme call for a demo-only cosmetic touch; this
             // belongs in the GLEIF import itself, not bolted on afterwards.
 
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info) << "Acme tenant provisioned: " << tenant_id_str
-                                                     << " (" << resp.steps.size() << " step(s))";
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), info)
+                << "Acme tenant provisioned: " << tenant_id_str << " (" << resp.steps.size()
+                << " step(s))";
             reply(nats_, msg, resp);
         } catch (const std::exception& e) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error) << msg.subject << " failed: " << e.what();
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), error)
+                << msg.subject << " failed: " << e.what();
             reply(
                 nats_, msg, provision_acme_tenant_response{.success = false, .message = e.what()});
         }
@@ -1046,7 +1053,8 @@ private:
             "copy_template_image");
         if (rows.empty() || rows.front().size() < 3 || !rows.front()[0] || !rows.front()[1] ||
             !rows.front()[2]) {
-            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn) << "No system-tenant template image: " << key;
+            BOOST_LOG_SEV(tenant_provisioning_handler_lg(), warn)
+                << "No system-tenant template image: " << key;
             return std::nullopt;
         }
 

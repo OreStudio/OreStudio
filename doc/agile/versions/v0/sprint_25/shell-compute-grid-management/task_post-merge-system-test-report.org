@@ -28,9 +28,11 @@ checks measure template fidelity, and no comparison of pre-bind vs
 post-bind behaviour runs at merge time. The desktop UI was
 unavailable, so by directive the post-merge verification ran through
 ores.shell only. This task records that system test as the #79
-report: the findings (F1-F5), their resolution state, the smoke
-evidence and residue, the root-cause analysis, the limitations of a
-shell-only run, and the follow-ups it generated.
+report: #79 is the test program's harness task number, not a GitHub
+reference. The report covers the findings (F1-F5) with their
+resolution state, the smoke evidence and residue, the root-cause
+analysis, the limitations of a shell-only run, and the follow-ups it
+generated.
 
 * Status
 

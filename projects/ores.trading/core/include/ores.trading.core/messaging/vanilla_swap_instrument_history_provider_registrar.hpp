@@ -17,20 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_VANILLA_SWAP_INSTRUMENT_JSON_IO_HPP
-#define ORES_TRADING_API_DOMAIN_VANILLA_SWAP_INSTRUMENT_JSON_IO_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_VANILLA_SWAP_INSTRUMENT_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_VANILLA_SWAP_INSTRUMENT_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/vanilla_swap_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Dumps the vanilla_swap_instrument to a stream in JSON format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s, const vanilla_swap_instrument& v);
+void register_vanilla_swap_instrument_history_provider(
+    ores::history::service::dispatch_registry& registry);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

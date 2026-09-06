@@ -37,8 +37,20 @@ description with domain grounding and ORE examples.
   credit-risk flag, and sensitivities.
 - [[id:13D3230A-D5C2-46DA-92E6-1DB128B8392A][CPI Swap]] — inflation swaps: the real-rate leg scaled by the index
   ratio, the InflationSwap trade type, and sensitivities.
+- [[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]] — single-name protection: premium leg,
+  protection mechanics, the quanto form, and sensitivities.
+- [[id:B74A3D5C-1001-490D-9840-976C4E85E12F][Credit Linked Swap]] — swap payments with credit triggers: the four
+  payment classes and sensitivities.
 - [[id:47598B8D-0121-4989-9661-79A8E6D1A070][FX Forward]] — deliverable and cash-settled forwards: definition,
   FxForwardData fields, the NDF form, and sensitivities.
+- [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]] — protection on an index: unfactored
+  and factored notional, the bespoke basket, and sensitivities.
+- [[id:6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58][Index Credit Default Swap Option]] — options on index protection:
+  strike types, index terms, front-end protection.
+- [[id:95005252-270D-44DE-8A26-C61CE5D860E0][Risk Participation Agreement]] — protection on swap counterparties:
+  the participation rate and the underlying swap.
+- [[id:8F0391AC-D748-459C-8DD8-5ABC8945E438][Synthetic CDO]] — tranched basket protection: attachment and
+  detachment points, the CdoData block.
 - [[id:2FC69DD5-D685-452B-8BCE-85CBCDD624E5][Year-on-Year Inflation Swap]] — annual inflation exposure: the YY
   leg, its Swap trade type, and sensitivities.
 

@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 1A201C57-AC68-4D0F-94A8-E33490D65EA3
+:END:
+#+title: Credit Default Swap
+#+description: A CDS trades protection on a reference entity's default; ORE's CreditDefaultSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:creditdefaultswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A credit default swap trades the default risk of a reference entity.
+The buyer pays a premium and receives compensation if the entity
+defaults. ORE models it with the trade type =CreditDefaultSwap=, with
+single-name and quanto forms. This note records the domain grounding,
+as ORE documents it in its product catalogue.
+
+* Summary
+
+A credit default swap (CDS) is a bilateral contract on the credit of a
+reference entity. The protection buyer pays a running premium. In
+return, the seller compensates the buyer if the entity defaults or
+experiences a credit event. The payment is tied to a financial
+instrument issued by the entity. The premium leg is a fixed leg; its
+direction marks the trade as bought or sold protection. A fixed
+recovery CDS sets the recovery rate in the contract. The product is
+the atomic building block of the credit family in this set.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A CDS is a credit derivative between two counterparties. The buyer of
+a CDS makes premium payments to the CDS seller. In return, the seller
+agrees that in the event that an underlying reference entity defaults
+or experiences a credit event, seller will compensate the buyer, in
+relation to a financial instrument issued by the reference entity.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/creditdefaultswap.tex=.
+
+** In plain terms
+
+A CDS works like insurance on a loan or a bond. The buyer pays a
+regular premium, like an insurance policy. If the borrower defaults,
+the seller pays the loss. The buyer keeps credit protection without
+holding the underlying instrument.
+
+** How it works in ORE
+
+The trade uses a =CreditDefaultSwapData= block. It must name the
+credit curve with a =CreditCurveId=, or carry a =ReferenceInformation=
+node instead. That node names the reference entity, the tier, the
+currency, and the documentation clause. The =LegData= sub-node is a
+fixed leg and holds the recurring premium. Payer true means the trade
+buys protection. Payer false means it sells protection.
+
+The trade data also controls the default mechanics. =ProtectionStart=
+is the first date on which a credit event triggers the contract. For
+standard CDS it is the trade date. =SettlesAccrual= decides whether the
+accrued premium is due at default. =ProtectionPaymentTime= sets when
+protection and accrual pay, at default, at period end, or at maturity.
+An =UpfrontFee= and =UpfrontDate= express an off-par premium as a
+decimal share of the notional. A =FixedRecoveryRate= turns the trade
+into a fixed recovery CDS.
+
+The quanto form is a CDS whose denomination and settlement currencies
+differ. The catalogue example has a notional of 50 million BRL and
+pays a 6 percent premium. The premium converts to USD with an FX
+fixing two days before settlement.
+
+** Mathematical notes
+
+The premium leg is the present value of the running premium until
+maturity or default, the risky annuity. The protection leg is the
+present value of the loss on default, the notional minus recovery. The
+fair running premium makes the two legs equal. A fixed recovery CDS
+uses the contract's =FixedRecoveryRate= instead of the market
+recovery.
+
+** What moves its value (static sensitivities)
+
+- The credit curve of the reference entity. It is the dominant driver.
+  A spread widening raises the value of bought protection.
+- The discount curve of the premium currency. It prices the risky
+  annuity.
+- The recovery assumption. A lower recovery raises the protection
+  payment and the value.
+- The quanto FX rate, when the currencies differ. It converts premium
+  and protection flows.
+- The premium and the upfront fee. They fix the running cost.
+
+A protection buyer gains when the credit worsens. A protection seller
+gains when the credit improves.
+
+** How the profile ages (dynamic sensitivities)
+
+The trade pays premium on its schedule until maturity or a credit
+event. At default, the protection payment settles and the trade ends.
+The risky annuity shortens as time passes, so the running premium
+carries less and less value. Near maturity, only near-term default
+risk matters. After the protection start date, all credit events count.
+
+** Why a customer would want it
+
+A lender or a bond holder buys CDS to hedge credit exposure. A bank
+sells protection to earn premium on names it likes. Dealers quote CDS
+to manage their credit books. In ORE Studio a customer books CDS to
+value them, run credit sensitivities, and feed XVA on the ORE engine.
+
+** Example
+
+ORE's catalogue shows the single-name form with a credit curve:
+
+#+begin_example
+<CreditDefaultSwapData>
+  <IssuerId>CPTY_A</IssuerId>
+  <CreditCurveId>RED:008CA0|SNRFOR|USD|MR14</CreditCurveId>
+  <SettlesAccrual>Y</SettlesAccrual>
+  <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
+  <ProtectionStart>20160206</ProtectionStart>
+  <UpfrontDate>20160208</UpfrontDate>
+  <UpfrontFee>0.0</UpfrontFee>
+  <LegData>
+    <LegType>Fixed</LegType>
+    <Payer>false</Payer>
+    ...
+  </LegData>
+</CreditDefaultSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/creditdefaultswap.tex=,
+listing =CreditDefaultSwap Data= (leg detail abbreviated).
+
+The family siblings are the [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]] and the
+[[id:8F0391AC-D748-459C-8DD8-5ABC8945E438][Synthetic CDO]].
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Credit_default_swap][Wikipedia: Credit default swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/creditdefaultswap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

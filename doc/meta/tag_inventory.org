@@ -184,12 +184,16 @@ Tags that describe the business or technical domain of the content.
 | =currencies= | Currency reference data. |
 | =counterparty= | Counterparty entity and management. |
 | =cpiswap= | CPI inflation swaps and inflation-linked markets. |
+| =creditdefaultswap= | Single-name credit default swaps and credit markets. |
+| =creditlinkedswap= | Credit linked swaps and structured credit. |
 | =deployment= | Deployment and environment provisioning. |
 | =documentation= | Documentation tooling and conventions. |
 | =domain= | Business domain modelling. |
 | =entity= | Domain entity (also used as type tag). |
 | =finance= | Finance domain, products, and markets. |
 | =fx_forward= | FX forward contracts and the FX derivatives market. |
+| =indexcds= | Index credit default swaps and credit indices. |
+| =indexcdsoption= | Options on index credit default swaps. |
 | =knowledge_graph= | org-roam knowledge graph management. |
 | =lifecycle= | Entity or component lifecycle management. |
 | =llm_code_review= | LLM-assisted code review tooling. |
@@ -202,9 +206,11 @@ Tags that describe the business or technical domain of the content.
 | =rbac= | Role-Based Access Control. |
 | =refdata= | Reference data (currencies, countries, calendars, etc.). |
 | =release= | Release management and release notes. |
+| =rpa= | Risk participation agreements and counterparty credit risk. |
 | =security= | Security features and hardening (also component tag). |
 | =sprint= | Sprint-level document (also type tag). |
 | =swap= | Swap products and interest-rate derivatives. |
+| =syntheticcdo= | Synthetic collateralised debt obligations and tranches. |
 | =testing= | Test infrastructure, test coverage. |
 | =trading= | Trading domain (also component tag). |
 | =ui= | User interface design and implementation. |

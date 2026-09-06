@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 8F0391AC-D748-459C-8DD8-5ABC8945E438
+:END:
+#+title: Synthetic CDO
+#+description: A tranched basket credit derivative; ORE's SyntheticCDO product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:syntheticcdo:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A synthetic CDO sells protection on the losses of a credit basket,
+limited to a tranche. ORE models it with the trade type =SyntheticCDO=
+and a =CdoData= block. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A synthetic collateralised debt obligation (CDO) is a basket credit
+derivative. The protection seller receives a premium and covers the
+portfolio losses of a tranche. The tranche runs from an attachment
+point to a detachment point. Losses below the attachment point fall on
+the protection buyer. Losses above the detachment point fall outside
+the contract. The basket can follow an index such as CDX or iTraxx, or
+name bespoke constituents.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A synthetic CDO is a basket credit derivative, where the protection
+seller receives a premium cash flow in exchange for providing
+(notional) protection against portfolio losses due to defaults in a
+specific tranche characterized by the attachment point A and
+detachment point D.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/syntheticcdo.tex=.
+
+** In plain terms
+
+A synthetic CDO is a slice of the credit risk of a group of
+borrowers. The seller of the slice covers the losses that fall inside
+it. Losses below the slice belong to the buyer. Losses above it belong
+to no one in this contract. The slice pays a premium for that
+exposure.
+
+** How it works in ORE
+
+The trade uses a =CdoData= block. The =AttachmentPoint= is the
+fraction of portfolio loss where protection starts. The
+=DetachmentPoint= is the fraction where it stops. The =Qualifier=
+names the credit index that defines the default and base correlation
+curves used for pricing. A bespoke basket sets the =Qualifier= to the
+index that matches it most closely and names its own constituents in a
+=BasketData= sub-node. A fixed =LegData= holds the premium leg. The
+protection mechanics follow the credit family conventions, with
+settlement, accrual, and upfront terms.
+
+** Mathematical notes
+
+The portfolio loss given default sums the loss of each defaulted
+asset. ORE states the loss of one asset as the notional reduced by the
+recovery: LGD equals (1 minus recovery) times notional. The tranche
+absorbs the portfolio loss between its two points. The premium pays on
+the tranche notional, which shrinks as losses consume the tranche.
+
+** What moves its value (static sensitivities)
+
+- The credit curves of the basket constituents. They drive the loss
+  distribution.
+- The base correlation surface. It prices the tranche between its
+  points.
+- The discount curve of the premium currency.
+- The attachment and detachment points. They set the risk window.
+- The composition and weights of the basket.
+
+A seller of a senior tranche gains when defaults stay below the
+attachment point. A seller of an equity tranche carries the first
+losses.
+
+** How the profile ages (dynamic sensitivities)
+
+Defaults reduce the basket and the outstanding tranche notional. Each
+loss inside the tranche is settled and deducted from the attachment
+base. The remaining premium pays on the reduced notional. Near
+maturity, the loss window narrows to the remaining life. At maturity
+the contract stops with the surviving basket and the residual
+tranche.
+
+** Why a customer would want it
+
+An investor buys a tranche to take a chosen slice of portfolio credit
+risk, from first-loss to senior. A bank sells tranches to transfer the
+risk of its loan book. The product tunes risk and return precisely.
+In ORE Studio a customer books synthetic CDO to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a mezzanine tranche of an index:
+
+#+begin_example
+<CdoData>
+  <Qualifier>RED:2I65BRHH6</Qualifier>
+  <AttachmentPoint>0.12</AttachmentPoint>
+  <DetachmentPoint>0.22</DetachmentPoint>
+  <ProtectionStart>20140425</ProtectionStart>
+  <UpfrontDate/>
+  <UpfrontFee/>
+  <SettlesAccrual>Y</SettlesAccrual>
+  <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
+  <LegData>
+    <LegType>Fixed</LegType>
+    <Payer>true</Payer>
+    ...
+  </LegData>
+  <BasketData>
+    ...
+  </BasketData>
+</CdoData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/syntheticcdo.tex=,
+listing =CDO Data= (leg and basket abbreviated).
+
+The tranche covers portfolio losses between 12 and 22 percent. The
+family basis is the [[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]], applied to the
+basket. The [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]] is the untranched form of
+the same protection.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Collateralized_debt_obligation][Wikipedia: Collateralized debt obligation]]. This note follows
+  its general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/syntheticcdo.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

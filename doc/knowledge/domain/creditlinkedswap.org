@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: B74A3D5C-1001-490D-9840-976C4E85E12F
+:END:
+#+title: Credit Linked Swap
+#+description: A swap with payments contingent on credit events of a reference; ORE's CreditLinkedSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:creditlinkedswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A credit linked swap mixes swap payments with credit contingency. ORE
+models it with the trade type =CreditLinkedSwap=. This note records
+the domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A credit linked swap is a swap whose payments depend on credit events
+of a reference CDS. Some payments happen only if no credit event has
+occurred. Some happen when a credit event has occurred, weighted by
+recovery or loss given default. Some happen regardless of credit
+events. The trade data groups the legs by these classes. The product
+combines a swap structure with credit protection mechanics.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A credit linked swap is a swap where the payments are contingent on
+credit events occurring for a reference CDS.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/creditlinkedswap.tex=.
+
+ORE describes three classes of payments. One class pays only if no
+credit event has occurred for the reference CDS until the payment
+date. Another class pays when a credit event has occurred. Its amount
+is weighted by the recovery rate or by the loss given default rate,
+either actual or fixed by the trade. The third class pays
+independently of any credit events. Payment of the contingent classes
+can fall on the default date, the period end, or the trade maturity,
+per the trade terms.
+
+** In plain terms
+
+A credit linked swap is a swap with a trigger. Most of the time it
+pays like a normal swap. If a named credit defaults, some payments
+change or stop. The structure lets one side pass a credit risk into a
+swap format.
+
+** How it works in ORE
+
+The trade uses a =CreditLinkedSwapData= block. A =CreditCurveId=
+names the referenced CDS credit curve. A =ReferenceInformation= node
+can stand in for it. The payment legs are grouped by class. The
+=IndependentPayments= legs pay regardless of credit events.
+The =ContingentPayments= legs pay only if no credit event has occurred
+until the payment date. The =DefaultPayments= and =RecoveryPayments=
+legs pay when a credit event has occurred. A =FixedRecoveryRate= sets
+a fixed recovery when given. Otherwise the market recovery rate is
+used. =DefaultPaymentTime= controls when the default-dependent legs
+pay, at default, at period end, or at maturity. The underlying legs
+can pay any kind of coupon, fixed rate, Ibor, CMS, or fixed amounts.
+
+** Mathematical notes
+
+Each class of leg prices with its own survival assumption. The
+independent legs are plain swap legs. The contingent legs pay only
+while the reference survives. The default and recovery legs pay on
+the credit event, scaled by recovery or loss given default. The trade
+is a hybrid of swap cash flows and credit protection cash flows.
+
+** What moves its value (static sensitivities)
+
+- The credit curve of the reference CDS. It drives the survival and
+  default probabilities.
+- The discount curve of the payment currency.
+- The recovery assumption, actual or fixed.
+- The legs of each class. Their coupons, rates, and notionals set the
+  payment sizes.
+- The timing of the default-dependent payments.
+
+The credit sensitivity follows the direction of the contingent legs.
+The swap sensitivity follows the independent legs.
+
+** How the profile ages (dynamic sensitivities)
+
+A credit event rewrites the trade. The default and recovery legs
+settle. The contingent legs stop paying where the terms say so. Until
+then, the trade ages like a swap with a survival trigger. Near
+maturity the remaining contingent exposure narrows. At maturity all
+classes stop with the last payments.
+
+** Why a customer would want it
+
+A bank structures a swap so that part of its exposure to a credit is
+shared or hedged. The product links a funding or investment swap to
+credit protection in one contract. In ORE Studio a customer books
+credit linked swaps to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a trade with the four leg groups:
+
+#+begin_example
+<CreditLinkedSwapData>
+  <CreditCurveId>RED:46A844|SNRFOR|USD|XR14</CreditCurveId>
+  <SettlesAccrual>false</SettlesAccrual>
+  <FixedRecoveryRate>0.4</FixedRecoveryRate>
+  <DefaultPaymentTime>atDefault</DefaultPaymentTime>
+  <IndependentPayments>
+    <LegData> ... </LegData>
+  </IndependentPayments>
+  <ContingentPayments>
+    <LegData> ... </LegData>
+  </ContingentPayments>
+  <DefaultPayments>
+    <LegData> ... </LegData>
+  </DefaultPayments>
+  <RecoveryPayments>
+    <LegData> ... </LegData>
+  </RecoveryPayments>
+</CreditLinkedSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/creditlinkedswap.tex=,
+listing =Credit Linked Swap Data= (leg detail abbreviated).
+
+The example sets a fixed recovery of 40 percent. The reference curve
+follows the conventions of the
+[[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]] family.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Credit_derivative][Wikipedia: Credit derivative]]. This places the product in the
+  credit derivative family.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/creditlinkedswap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

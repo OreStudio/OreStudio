@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ Bring ores.trading to the same proven state as the ores.refdata pilot: every cod
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Bind task 62B120E9 in progress.        |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-08-04                               |
+| Next          | Complete the bind task.                |
+| Last touched  | 2026-09-06                               |
 
 * Acceptance
 
@@ -41,7 +41,7 @@ Bring ores.trading to the same proven state as the ores.refdata pilot: every cod
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:62B120E9-AE25-4786-B90B-1BDE8A4ACC34][Bind ores.trading entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for ores.trading's org-mode entity set (trade and trading-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
+| [[id:62B120E9-AE25-4786-B90B-1BDE8A4ACC34][Bind ores.trading entities to profiles; verify zero-diff regen]] | STARTED | 2026-09-06 | | Implement profile binding for ores.trading's org-mode entity set (trade and trading-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
 
 * Decisions
 

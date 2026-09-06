@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-trading:
 #+owner: marco
-#+branch:
+#+branch: feature/bind-trading-entities-to-profiles
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Survey every ores.trading entity (projects/ores.trading/modeling) against the pr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]] |
-| Now          | Not yet started.                       |
+| Now          | Phase 0: drift-gate two-mode tooling.  |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Phase 1: trading baseline and survey.  |
+| Last touched | 2026-09-06                               |
 
 * Acceptance
 
@@ -44,9 +44,82 @@ Survey every ores.trading entity (projects/ores.trading/modeling) against the pr
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Unit plan, written at start on 2026-09-06. The canonical method is the
+codegen-fix-drift skill (steps 1-7); the byproduct-sweep and two-mode
+drift rules of the regen-byproduct-hygiene memory are in force
+throughout.
+
+** Phase 0 — drift-gate tooling, rides this unit first
+
+User rule: bind work must affect only the component under test. The
+2026-09-05 incident (142 untracked regen byproducts from two ad hoc
+17/13-component drift sweeps, invisible to git diff) is fixed at the
+tool, not by discipline:
+
+- check_component_drift.py loses the ad hoc =--components= list and
+  runs in exactly two modes: =--all= regenerates every component known
+  to be drift-free (a registry in the script, seeded with
+  refdata,reporting,marketdata,compute-cpp,iam,iam-cpp, the list the
+  pr-raise skill carried), and =--component NAME= regenerates one named
+  component.
+- Both modes fail when regeneration materializes untracked files under
+  a checked component's project root: git diff cannot see untracked
+  files, so a new template family that postdates a component's
+  committed baseline is drift and must fail the check.
+- pr-raise's local codegen-drift check moves to =--all= (the list now
+  lives only in the script's registry), and codegen-fix-drift step 7
+  words the gate as registry entry.
+- Verified live: =--all= over the seeded registry must end with a clean
+  tree, zero tracked diff and zero untracked materialization.
+
+** Phase 1 — baseline and survey (skill steps 1-2)
+
+Regenerate trade and trading-cpp untouched (one modeling dir,
+projects/ores.trading/modeling; one survey, not two), record
+pre-existing drift, revert. Classify every model file by metatype; only
+entity metatypes carry variability; record the structural exclusions.
+
+** Phase 2 — resolved features and binding (skill steps 3-4)
+
+Compare every profile-assigned feature against each entity's resolved
+value; bind matches with =:profile:=, keep structural fields. Record
+every no-match with its actual feature values. Resolve the known
+starting wrinkles from the Notes table: the service_pagination /
+service_batch_get / has_batch_read gaps on the 21 instrument/lookup
+entities (express recurring patterns in the profile catalogue, not as
+per-entity flags), the trade_service and fra_instrument_service
+exclusions (verify, not assume), and the
+balance_guaranteed_swap_instrument entity_singular_short /
+entity_plural_short fix.
+
+** Phase 3 — per-entity regeneration (skill step 5)
+
+One entity at a time through the scripted pipeline: baseline regen,
+bind, regen, and require the new diff to be an exact subset of the
+baseline (zero additional diff). Any additional diff is a bug in the
+profile, the matching, or a template: fix at the source in
+org_loader.py, the template or the archetype, with a regression test.
+Regenerate a second time and require byte-identical output. The
+regen-byproduct-hygiene sweep closes every regeneration phase.
+
+** Phase 4 — generated-code review, build, tests (skill step 6)
+
+Read the regenerated output as a hand-written PR: naming, shape,
+structure must match the component's best existing code; a finding is a
+template bug. Full local build and ctest green.
+
+** Phase 5 — gate extension, PR, system testing (skill step 7)
+
+Add trade and trading-cpp to the script's known-drift-free registry and
+run =--all= once more. Raise the PR.
+
+System testing follows the bind (compute/iam precedent: post-merge).
+When it starts, the first step is an analysis of ores.shell
+functionality coverage across trading entities: which entities and
+flows the shell can exercise today, and what that permits by way of
+system tests. The expectation is that coverage is thin and the shell
+needs extension; the analysis quantifies the gap and the extension
+rides the system-test work.
 
 * Notes
 

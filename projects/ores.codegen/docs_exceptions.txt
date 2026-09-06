@@ -24,7 +24,6 @@ MISSING_PUML ores.lisp
 MISSING_PUML ores.eventing.api
 MISSING_PUML ores.eventing.core
 MISSING_PUML ores.marketdata.client
-MISSING_PUML ores.refdata.client
 MISSING_PUML ores.seeder
 MISSING_PUML ores.qt.dq
 MISSING_PUML ores.qt.marketdata

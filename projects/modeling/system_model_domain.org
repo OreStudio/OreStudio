@@ -27,6 +27,7 @@ read; it is always a dependency, never a dependent.
 | Sub-component        | Role                                               | Dependencies                    |
 |----------------------+----------------------------------------------------+---------------------------------|
 | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]]     | Shared reference data types and [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] protocol | —                               |
+| [[id:C32C4A3B-1B34-4A4A-A71D-62F25AA874E7][ores.refdata.client]] | Consumer-side helpers: FX rate formatting, convention tenant cache | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]], [[id:DDBC94C4-F350-478B-9E4C-643DEEA803B0][ores.eventing]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] |
 | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]]    | CRUD, validation, coding scheme resolution         | [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]], [[id:3A8F2E91-D4C7-8AB4-5E23-91D6F8C04A72][ores.database]] |
 | [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] | Thin [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]] entrypoint                          | [[id:204DB292-C32B-03E4-9DDB-BFE634F7CE91][ores.refdata.core]], [[id:C9C24C99-F16C-45BE-A262-1C0F4502765E][ores.nats]]    |
 

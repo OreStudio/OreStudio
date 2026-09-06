@@ -284,7 +284,7 @@ TEST_CASE("trade_party_role_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated trade_party_role id: " << sut.id;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.test");
@@ -299,6 +299,6 @@ TEST_CASE("trade_party_role_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }

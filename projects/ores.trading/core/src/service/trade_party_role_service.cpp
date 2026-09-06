@@ -18,7 +18,11 @@
  *
  */
 #include "ores.trading.core/service/trade_party_role_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::trading::service {
 
@@ -27,13 +31,27 @@ using namespace ores::logging;
 trade_party_role_service::trade_party_role_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::trade_party_role> trade_party_role_service::list_roles() {
+std::vector<domain::trade_party_role> trade_party_role_service::list_roles(std::uint32_t offset,
+                                                                           std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all trade party roles";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::trade_party_role> trade_party_role_service::find_role(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding trade party role: " << id;
+std::uint32_t trade_party_role_service::count_roles() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total trade party roles count";
+    return repo_.get_total_role_count(ctx_);
+}
+
+
+std::optional<domain::trade_party_role>
+trade_party_role_service::get_role_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
+}
+
+std::optional<domain::trade_party_role> trade_party_role_service::get_role(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade party role. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -43,29 +61,38 @@ std::optional<domain::trade_party_role> trade_party_role_service::find_role(cons
 void trade_party_role_service::save_role(const domain::trade_party_role& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade Party Role id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade party role: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade party role: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade party role. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved trade party role. " << "id: " << v.id;
 }
 
 void trade_party_role_service::save_roles(const std::vector<domain::trade_party_role>& roles) {
-    for (const auto& r : roles) {
-        if (r.id.is_nil())
+    for (const auto& e : roles) {
+        if (e.id.is_nil())
             throw std::invalid_argument("Trade Party Role id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << roles.size() << " trade party roles";
-    repo_.write(ctx_, roles);
+    auto ts = roles;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void trade_party_role_service::remove_role(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade party role: " << id;
+void trade_party_role_service::delete_role(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade party role. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade party role: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed trade party role. " << "id: " << id;
+}
+
+void trade_party_role_service::delete_roles(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::trade_party_role>
 trade_party_role_service::get_role_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade party role: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade party role. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

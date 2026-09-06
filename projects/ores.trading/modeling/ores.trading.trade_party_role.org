@@ -25,20 +25,18 @@ Supports multiple counterparties per trade in different roles.
 :has_tenant_id: true
 :END:
 
-* Primary key
+* Columns
+
+** id
 :PROPERTIES:
-:column:   id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
 :END:
 
 UUID uniquely identifying this party role assignment.
 
 Surrogate key for the trade party role record.
-
-* Natural keys
-
-* Columns
 
 ** trade_id
 :PROPERTIES:
@@ -89,15 +87,48 @@ std::string("Counterparty")
 
 ** Flags
 :PROPERTIES:
-:tablename: ores_trading_party_roles_tbl
+:tablename:    ores_trading_party_roles_tbl
+:index_prefix: party_roles
 :END:
+
+** Indexes
+
+| name         | columns                   | unique | current_only | where_extra |
+|--------------+---------------------------+--------+--------------+-------------|
+| trade        | tenant_id, trade_id        | false  | true         |             |
+| counterparty | tenant_id, counterparty_id | false  | true         |             |
+
+* Foreign keys
+
+** trade_id
+:PROPERTIES:
+:table:         ores_trading_trades_tbl
+:error_message: Invalid trade_id: %. Trade must exist for tenant.
+:END:
+
+Trade this role assignment belongs to; must exist in ores_trading_trades_tbl.
+
+** counterparty_id
+:PROPERTIES:
+:table:         ores_refdata_counterparties_tbl
+:error_message: Invalid counterparty_id: %. Counterparty must exist for tenant.
+:END:
+
+Counterparty fulfilling the role; must exist in ores_refdata_counterparties_tbl.
+
+* Insert trigger
+
+** Validations
+
+| column | validation_function                     |
+|--------+-----------------------------------------|
+| role   | ores_trading_validate_party_role_type_fn |
 
 * C++
 
 ** Flags
 :PROPERTIES:
-:subcomponent:    api
-:generator_facet_name: generator
+:subcomponent: api
 :END:
 
 ** Repository

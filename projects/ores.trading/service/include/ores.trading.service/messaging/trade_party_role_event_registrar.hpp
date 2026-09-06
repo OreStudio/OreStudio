@@ -17,21 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_TABLE_HPP
-#define ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_TABLE_HPP
+#ifndef ORES_TRADING_SERVICE_MESSAGING_TRADE_PARTY_ROLE_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_TRADE_PARTY_ROLE_EVENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/trade_party_role.hpp"
-#include "ores.trading.api/export.hpp"
-#include <string>
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::trading::domain {
+namespace ores::trading::service::messaging {
 
-/**
- * @brief Converts trade_party_roles to the table format.
- */
-ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<trade_party_role>& v);
+[[nodiscard]] ores::eventing::service::subscription register_trade_party_role_event_mapping(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats);
 
-}
+} // namespace ores::trading::service::messaging
 
 #endif

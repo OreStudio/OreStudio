@@ -17,21 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_TABLE_HPP
-#define ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_TABLE_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_TRADE_PARTY_ROLE_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_TRADE_PARTY_ROLE_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/trade_party_role.hpp"
-#include "ores.trading.api/export.hpp"
-#include <string>
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Converts trade_party_roles to the table format.
- */
-ORES_TRADING_API_EXPORT std::string convert_to_table(const std::vector<trade_party_role>& v);
+void register_trade_party_role_history_provider(
+    ores::history::service::dispatch_registry& registry);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

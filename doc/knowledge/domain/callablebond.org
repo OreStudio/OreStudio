@@ -1,0 +1,137 @@
+:PROPERTIES:
+:ID: 4E78B88B-432F-445D-9FEA-9DBE80718DBF
+:END:
+#+title: Callable Bond
+#+description: A bond with issuer call and investor put rights; ORE's CallableBond product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:callablebond:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A callable bond is a bond with issuer call and investor put rights.
+ORE models it with the trade type =CallableBond=. The container node
+is =CallableBondData=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A callable bond is a bond with issuer call and investor put rights.
+The call style is typically American, the put style Bermudan, but any
+combination of styles is supported. The trade names the bond from
+reference data. The reference data carries the vanilla bond terms
+plus the optional =CallData= and =PutData= schedules that describe the
+rights.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A callable bond is a bond with issuer call and / or investor put
+rights. Typically, the call style is American while the put is
+Bermudan, but we support any combination of styles.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callablebond.tex=.
+
+** In plain terms
+
+A callable bond carries extra rights on top of the vanilla bond. The
+issuer can call the bond back at set prices on set dates. The investor
+can put it back to the issuer. The rights make the bond cheaper for
+the issuer and compensate the investor with a higher coupon.
+
+** How it works in ORE
+
+The =CallableBondData= block names the bond and its quantity.
+=SecurityId= is typically the ISIN with the =ISIN:= prefix.
+=BondNotional= is the notional in the currency of the bond. The
+optional =CreditRisk= flag decides whether credit risk shows on the
+product. The bond terms of the trade are set up in reference data. The
+reference datum carries the =BondData= with the vanilla part of the
+bond, plus the optional =CallData= and =PutData= with the call and put
+terms. Without them there are no calls or puts. =Styles= holds the
+exercise styles, =American= or =Bermudan=. Bermudan also defines
+European exercises, namely as a Bermudan exercise with a single
+exercise date. =ScheduleData= holds a schedule of exercise dates for
+Bermudan exercises, or start and end dates for American exercises.
+=Prices= holds exercise prices in relative terms: a price of 1.02
+means the amount paid on exercise is 1.02 times the current notional
+of the bond, plus accrued interest when the price type is clean.
+=PriceType= gives the flavour of the exercise prices, =Clean= or
+=Dirty=. =IncludeAccrual= decides whether accruals have to be paid on
+exercise, independently of the quoting style. Lists in the sub-nodes
+can be explicit lists or use the =startDate= attribute. An explicit
+value list can be shorter than the list of dates; the last value then
+applies to the remaining dates.
+
+** Mathematical notes
+
+The callable bond splits into a vanilla bond and an embedded option
+position. The issuer call is a short option from the investor's view;
+the investor put is a long option. The exercise prices are quoted in
+relative terms and converted by the current notional. The value is the
+vanilla bond value adjusted for the call and put rights, with American
+and Bermudan exercise valued accordingly.
+
+** What moves its value (static sensitivities)
+
+- The yield curve, which prices the vanilla bond and the embedded
+  options.
+- The credit of the issuer.
+- The volatility of the yield curve; it raises the value of the
+  rights.
+- The exercise prices and the call and put schedules.
+
+The bond is a vanilla bond plus optionality, so rates, credit and
+volatility all move its value. The issuer credit affects both the
+bond floor and the probability of the call.
+
+** How the profile ages (dynamic sensitivities)
+
+The call and put rights run on their schedules. An American call can
+be exercised at any time in its window. Bermudan calls and puts can be
+exercised on their dates. As the bond approaches a call date, the
+issuer compares the call price with the market value. After the call
+periods pass, the bond ages as a vanilla bond to maturity.
+
+** Why a customer would want it
+
+Issuers sell callable bonds to lower their funding cost. Investors buy
+them for the higher coupon and the put protection. The structure is
+common in corporate and agency markets. In ORE Studio a customer books
+callable bonds to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a callable bond trade whose terms are set up in
+reference data:
+
+#+begin_example
+<Trade id="CallableBond">
+  <TradeType>CallableBond</TradeType>
+  <Envelope>...</Envelope>
+  <CallableBondData>
+    <BondData>
+      <SecurityId>ISIN:XS0123456789</SecurityId>
+      <BondNotional>1000000.00</BondNotional>
+    </BondData>
+  </CallableBondData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callablebond.tex=,
+listing =Callable bond set up using reference data=. The source
+describes a Bermudan issuer call on three dates at a clean price of
+100, 100, 102, with accruals paid on exercise, in its =CallData=
+example; the corresponding =Price= values are 1.00, 1.00 and 1.02.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Callable_bond][Wikipedia: Callable bond]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/callablebond.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

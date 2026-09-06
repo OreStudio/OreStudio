@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: 531499CE-C843-4178-8F89-CA901B1BA9AE
+:END:
+#+title: Bond Position
+#+description: A position in a weighted basket of underlying bonds; ORE's BondPosition product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bondposition:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond position holds a weighted basket of underlying bonds. ORE
+models it with the trade type =BondPosition=. The container node is
+=BondBasketData=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A bond position represents a position in a weighted basket of
+underlying bonds. It can be a stand-alone trade type or a trade
+component inside a total return swap. The basket can be built in the
+trade or fetched from reference data by an identifier. Only underlying
+descriptions of type =Bond= are allowed.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A bond position represents a position in a weighted basket of
+underlying bonds.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondposition.tex=.
+
+ORE describes the dual role as follows:
+
+#+begin_quote
+A bond position can be used both as a stand alone trade type
+(TradeType: BondPosition) or as a trade component (BondBasketData)
+used within the TotalReturnSwap (Generic TRS) trade type.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondposition.tex=.
+
+** In plain terms
+
+A bond position is a list of bonds with weights. It lets a trade hold
+several bonds as one position. The same block also builds the asset
+side of a total return swap on a bond basket.
+
+** How it works in ORE
+
+The position is set up using a =BondBasketData= block. =Quantity= is
+the number of units of the weighted basket held. =Identifier= is
+optional: the underlying data can be retrieved from reference data
+through it, when it is not given in the trade itself. =Underlying= is
+optional for the same reason: when the basket lives in reference data,
+the underlying data is populated from there. Each =Underlying= block
+carries a =Type=, a =Name=, an =IdentifierType=, a =Weight= and an
+optional =BidAskAdjustment=. Only underlyings of type =Bond= are
+allowed.
+
+** Mathematical notes
+
+The weighted basket price is:
+
+=Basket-Price = Quantity x sum_i Weight_i x B_i x FX_i=
+
+where =B_i= is the price of the i-th bond in the basket. =FX_i= is the
+FX spot converting from the currency of the i-th bond to the return
+currency when the position sits in a total return swap, and to the
+currency of the first bond in the basket otherwise.
+
+** What moves its value (static sensitivities)
+
+- The price of each bond in the basket.
+- The weights of the basket and the quantity.
+- The FX rates into the return currency.
+- The credit of each issuer.
+
+The position is a linear claim on the basket, so each bond price moves
+the value by its weight.
+
+** How the profile ages (dynamic sensitivities)
+
+A bond position is a static holding with no cash flows of its own. Its
+value tracks the bonds as they age toward maturity. As a trade
+component inside a total return swap, it provides the asset leg whose
+total return is swapped against funding.
+
+** Why a customer would want it
+
+A bond position bundles several bonds into one tradable unit. It is
+the natural asset leg of a bond total return swap, where the return of
+the basket is paid out. In ORE Studio a customer books bond positions
+to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a basket of two US bonds, half each, with small
+bid-ask adjustments:
+
+#+begin_example
+<Trade id="BondPosition">
+  <TradeType>BondPosition</TradeType>
+  <Envelope>...</Envelope>
+  <BondBasketData>
+    <Quantity>1000</Quantity>
+    <Identifier>ISIN:GB00B4KT9Q30</Identifier>
+    <Underlying>
+      <Type>Bond</Type>
+      <Name>US69007TAB08</Name>
+      <IdentifierType>ISIN</IdentifierType>
+      <Weight>0.5</Weight>
+      <BidAskAdjustment>-0.0025</BidAskAdjustment>
+    </Underlying>
+    <Underlying>
+      <Type>Bond</Type>
+      <Name>US750236AW16</Name>
+      <IdentifierType>ISIN</IdentifierType>
+      <Weight>0.5</Weight>
+      <BidAskAdjustment>-0.005</BidAskAdjustment>
+    </Underlying>
+  </BondBasketData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondposition.tex=,
+listing =Bond position data=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Total_return_swap][Wikipedia: Total return swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/bondposition.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

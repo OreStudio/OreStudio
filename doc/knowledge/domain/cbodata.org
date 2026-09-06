@@ -1,0 +1,263 @@
+:PROPERTIES:
+:ID: F8341BB7-33FE-4441-8C2D-56B8DDDCA91C
+:END:
+#+title: Collateral Bond Obligation
+#+description: A tranched securitisation of a portfolio of corporate bonds or loans; ORE's CBO product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:cbodata:
+#+created: 2026-09-06
+#+updated: 2026-09-07
+
+A collateral bond obligation is a tranched securitisation of a
+portfolio of corporate bonds or loans. ORE models it with the trade
+type =CBO=. The container node is =CBOData=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A collateral bond obligation, also called a cashflow CDO, is a
+structured deal backed by a portfolio of corporate bonds or loans.
+The portfolio pays its coupons and capital into a waterfall. The
+waterfall pays the notes of the deal in an order of priority. Senior
+notes are paid first; the equity note receives what is left. The deal
+can be set up in a short version, referencing the structure in a
+static reference datum, or in a long version, where the structure is
+given explicitly.
+
+* Detail
+
+** What it is
+
+ORE describes the underlying portfolio as follows:
+
+#+begin_quote
+The underlying assets consist of a portfolio of corporate bonds or
+loans with either amortising or bullet structures. The portfolio can
+contain fixed or floating rate obligations. Maturities cover a range
+and do need not coincide. We assume that hazard rate data is available
+and provided externally.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+ORE describes the cashflow structure as follows:
+
+#+begin_quote
+The deal is assumed to be structured as a cashflow securitisation.
+Interest and Notional repayments are directed in an order of priority
+first to the note holder.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+ORE describes the role of the equity piece as follows:
+
+#+begin_quote
+Class N notes or equity receive the excess pool coupon available
+after other items in the interest waterfall are discharged.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+** In plain terms
+
+A CBO repackages a pool of corporate bonds into notes with different
+risk. The pool pays its coupons and its capital into a waterfall. The
+waterfall pays the notes in a fixed order of priority. Senior notes
+are paid first. The equity note gets what is left after every other
+item is discharged. Early losses fall on the equity and the junior
+notes first.
+
+** How it works in ORE
+
+ORE defines the two setup forms as follows:
+
+#+begin_quote
+A Cashflow CDO or Collateral Bond Obligation CBO (trade type CBO) can
+be set up in a short version referencing the underlying CBO structure
+in a static CBO reference datum or a long version, where the CBO
+structure is specified explicitly.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+The main building block is the =CBOData= node. It requires two
+components: =CBOInvestment= and =CBOStructure=. In the short version
+the =CBOInvestment= component alone specifies the deal; the
+=CBOStructure= component can be omitted.
+
+The =CBOInvestment= component carries three elements. =TrancheName=
+names the tranche whose results are shown in the report files; the
+name must match one of the names in =CBOTranches=. =Notional= is the
+amount invested in that tranche; it scales the NPV of the generic
+tranche. =StructureId= is the key used when the structure is read
+from reference data.
+
+The =CBOStructure= component carries the general structure. Its
+elements follow:
+
+- =DayCounter= and =PaymentConvention= apply to the tranches.
+- =Currency= defines the currency of the trade.
+- =ReinvestmentEndDate= ends the reinvestment period.
+- =SeniorFee= is a rate paid before all other obligations, at the top
+  of the waterfall.
+- =FeeDayCounter= is the day count convention for the fees.
+- =SubordinatedFee= is a rate paid after all other obligations.
+- =EquityKicker= splits the residual between the senior fee receiver
+  and the equity piece.
+- =BondBasketData= holds the specifications of the underlying bond
+  basket.
+- =CBOTranches= holds the instrument data for the tranches of the
+  deal.
+- =ScheduleData= holds the schedule of the trade.
+
+ORE defines the equity kicker as follows:
+
+#+begin_quote
+EquityKicker: Fraction x of the residual payment, that will be split
+among the senior fee receiver (x) and the equity piece (1-x).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+The fees themselves follow the same pattern. ORE describes them as
+follows:
+
+#+begin_quote
+The fee, expressed as rate, paid before all other obligations, top of
+the waterfall.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+#+begin_quote
+The fee, expressed as rate, paid after all other obligations.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+** Mathematical notes
+
+The deal has =n= tranches, one for each note. Each tranche is defined
+by an attachment point and a detachment point. The tranches absorb the
+losses of the pool in order of seniority, from the equity note up to
+the senior note.
+
+The waterfall is the pricing core of the deal. The interest waterfall
+pays taxes, trustee and administration fees up to their caps, hedge
+payments, the liquidity facility and the servicing fees. It then pays
+the note coupons in seniority order. Senior notes are redeemed early
+when the over-collateralisation or interest coverage tests fail.
+Interest flows down the deflection tests to the subordinated items,
+then to the equity note up to an IRR hurdle. A management incentive
+fee is paid before the final excess reaches the equity note.
+
+The principal waterfall works on capital. It first pays the unpaid
+interest items, then redeems the notes in seniority order. During the
+reinvestment period it buys additional securities instead of
+redeeming notes.
+
+ORE summarises the two waterfalls as follows:
+
+#+begin_quote
+In summary, Interest after tax and expenses goes first to the Senior
+note holders and then on down the order of priority and finally to
+the equity noteholder after ensuring that any tests are satisfied.
+Notional repayments after expenses go to redemption of the senior
+notes and finally to the equity note holder.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+The pool of the deal behaves differently inside and outside the
+reinvestment period. ORE notes a model limit as follows:
+
+#+begin_quote
+Currently the model cannot handle underlying bonds with full
+amortisation within the reinvestment period.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+
+** What moves its value (static sensitivities)
+
+- The credit of the pool issuers. The hazard rates come from outside
+  the trade; defaults and recoveries feed the waterfalls.
+- The level of interest rates, for floating rate coupons and for
+  discounting.
+- The value of the underlying bonds, through their coupons and
+  redemptions.
+- The structure of the deal: the fees, the equity kicker and the
+  over-collateralisation and interest coverage tests.
+- The seniority of the tranche the trade holds.
+
+The value of a booked tranche is its share of the waterfall. The
+senior notes feel the pool only when the losses reach their
+attachment point. The equity note feels every loss first.
+
+** How the profile ages (dynamic sensitivities)
+
+The pool pays its coupons and amortisations into the waterfall on the
+payment dates. Until the reinvestment end date, principal proceeds
+buy more assets instead of redeeming notes. After that date the
+proceeds redeem the notes in seniority order. Failed coverage tests
+can force senior redemptions at any time. As the pool ages and
+defaults, the remaining value flows down the order of priority to the
+equity note last.
+
+** Why a customer would want it
+
+A CBO turns a credit portfolio into tradeable notes of different
+seniority. A customer buys senior notes for low-risk yield, or equity
+notes for leveraged credit exposure. An originator uses the structure
+to fund a portfolio off balance sheet. In ORE Studio a customer books
+CBOs to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long-version CBO on a EUR structure. The
+trade invests 4 million in a junior note of the =Constellation=
+structure, with a senior fee of 1 percent, a subordinated fee of 2
+percent and an equity kicker of 0.25:
+
+#+begin_example
+<CBOData>
+  <CBOInvestment>
+    <TrancheName>JuniorNote</TrancheName>
+    <Notional>4000000.00</Notional>
+    <StructureId>Constellation</StructureId>
+  </CBOInvestment>
+  <CBOStructure>
+    <DayCounter>ACT/ACT</DayCounter>
+    <PaymentConvention>F</PaymentConvention>
+    <Currency>EUR</Currency>
+    <ReinvestmentEndDate>2019-12-31</ReinvestmentEndDate>
+    <SeniorFee>0.01</SeniorFee>
+    <FeeDayCounter>A365</FeeDayCounter>
+    <SubordinatedFee>0.02</SubordinatedFee>
+    <EquityKicker>0.25</EquityKicker>
+    <BondBasketData>
+      ...
+    </BondBasketData>
+    <CBOTranches>
+      ...
+    </CBOTranches>
+    <ScheduleData>
+      ...
+    </ScheduleData>
+  </CBOStructure>
+</CBOData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=,
+listing =CBO Data=. The source elides the contents of the three
+sub-nodes with dots; they are reproduced verbatim.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Collateralized_debt_obligation][Wikipedia: Collateralized debt obligation]]. This note follows its
+  general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/cbodata.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

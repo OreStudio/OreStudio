@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: 0E145E20-C296-4D0F-B26C-2CC5EAA22F3B
+:END:
+#+title: Bond Option (Reference Data)
+#+description: A bond option with the underlying bond set by reference data; ORE's BondOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bondoption_refdata:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond option gives the buyer the right to buy or sell a bond at a
+fixed price. ORE's catalogue documents the product twice: once with
+the full bond data in the trade, and once with the underlying bond
+taken from reference data. This note records the reference-data form,
+as ORE documents it in its product catalogue. The container node is
+=BondOptionData=.
+
+* Summary
+
+A bond option provides the buyer with the right, but not the
+obligation, to buy or sell a given bond at a fixed price either at or
+before a specific date. Only vanilla bond options are supported, the
+exercise style must be European, and only par redemption vanilla
+bonds are supported. The underlying bond is named by its =SecurityId=
+and fetched from reference data. The payoff is the dirty bond value
+less the strike, with the strike interpreted as clean or dirty by
+=PriceType=.
+
+* Detail
+
+** What it is
+
+ORE describes the trade node as follows:
+
+#+begin_quote
+The BondOptionData node is the trade data container for the option
+part of a bond option trade type. Vanilla bond options are supported,
+the exercise style must be European. The BondOptionData node includes
+one and only one OptionData trade component sub-node plus elements
+specific to the bond option.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption_refdata.tex=.
+
+ORE adds a restriction on the bond form:
+
+#+begin_quote
+Note that only par redemption vanilla bonds are supported.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption_refdata.tex=.
+
+** In plain terms
+
+A bond option is a vanilla option on a bond that the trade finds in
+reference data. The buyer names the bond by its identifier, not by a
+full description. The option is European and the bond must be a plain
+par bond. The strike can quote a clean or a dirty price.
+
+** How it works in ORE
+
+The =BondOptionData= node holds one =OptionData= sub-node plus the
+strike, the price type, the default behaviour and the underlying
+bond. =LongShort= takes =Long= or =Short=. =OptionType= takes =Call=
+or =Put=. A call holder has the right to buy the underlying bond at
+the strike. A put holder has the right to sell it. The =Style= is
+=European= only. =Settlement= can be =Cash= or =Physical= but is
+currently ignored. Exactly one =ExerciseDate= must be given.
+=Premiums= is optional. The =StrikeData= node represents the strike
+price or strike yield. With =StrikePrice=, the =Value= field is
+expressed per unit notional: a strike of 101 percent of the bond
+notional is expressed as 1.01. With =StrikeYield=, the =Yield= is
+quoted in decimal form. =PriceType= is mandatory for =StrikePrice= and
+has no impact for =StrikeYield=. =KnocksOut= decides the default
+behaviour. When =true=, the option knocks out if the underlying
+defaults before option expiry. When =false=, the option is written on
+the recovery value. The =BondData= block names the bond: =SecurityId=
+is typically the ISIN with the =ISIN:= prefix, =BondNotional= is the
+notional in the currency of the bond, and the optional =CreditRisk=
+flag decides whether credit risk shows on the product.
+
+** Mathematical notes
+
+The payoff for a bond option is =max(B - X, 0)=, where =B= is always
+the dirty NPV of the underlying bond on the exercise settlement date.
+With =PriceType= =Clean=, =X= is =(Strike + Underlying Bond Accruals) x
+BondNotional=. With =PriceType= =Dirty=, =X= is =Strike x
+BondNotional=. When =StrikeData= uses =StrikeYield=, =PriceType= is
+omitted because it is not relevant in the yield case.
+
+** What moves its value (static sensitivities)
+
+- The price and yield of the underlying bond.
+- The yield volatility of the bond.
+- The strike, quoted as price or yield.
+- The interest rates that discount the payoff.
+- The credit of the issuer, through the default behaviour.
+
+The bond is fetched from reference data, so the valuation depends on
+the reference data of the issuer and the bond.
+
+** How the profile ages (dynamic sensitivities)
+
+The option is European and ages like a vanilla option. Time value
+decays toward expiry. If the issuer fails before expiry, the option
+either knocks out or falls back to the recovery value, as =KnocksOut=
+decides. At expiry the payoff is the dirty bond value less the strike,
+floored at zero.
+
+** Why a customer would want it
+
+A bond option gives cheap, leveraged exposure to a government bond
+without buying it. The reference-data form keeps the trade small,
+because the bond description lives once in the reference data. In ORE
+Studio a customer books bond options to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European call bond option on a bond from
+reference data, with the strike per unit notional:
+
+#+begin_example
+<Trade id="...">
+  <TradeType>BondOption</TradeType>
+  <Envelope>
+      ...
+  </Envelope>
+  <BondOptionData>
+    <OptionData>
+     <LongShort>Long</LongShort>
+     <OptionType>Call</OptionType>
+     <Style>European</Style>
+     <ExerciseDates>
+      <ExerciseDate>20210203</ExerciseDate>
+     </ExerciseDates>
+        ...
+    </OptionData>
+    <StrikeData>
+      <StrikePrice>
+        <Value>1.23</Value>
+      </StrikePrice>
+    </StrikeData>
+    <PriceType>Dirty</PriceType>
+    <KnocksOut>false</KnocksOut>
+    <BondData>
+       <SecurityId>ISIN:XS1234567890</SecurityId>
+       <BondNotional>100000</BondNotional>
+    </BondData>
+  </BondOptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption_refdata.tex=,
+listing =Bond Option data using bond reference data=. The source
+closes the =BondData= element without the leading slash; it is
+normalised here.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/bondoption_refdata.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: C00D82F7-942F-4270-AB9F-D0C31F0881A9
+:END:
+#+title: Bond Forward (Reference Data)
+#+description: A forward contract on a bond with the underlying set by reference data; ORE's ForwardBond product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bondforward_refdata:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond forward is a contract to buy or sell a bond at a future date
+at an agreed price. ORE's catalogue documents the product twice: once
+with the full bond data in the trade, and once with the underlying
+bond taken from reference data. This note records the reference-data
+form, as ORE documents it in its product catalogue. The container node
+is =ForwardBondData=.
+
+* Summary
+
+A forward bond, or bond forward, is an agreement to buy or sell an
+underlying bond at a future point in time at an agreed settlement
+amount. The direction comes from =LongInForward=. The underlying bond
+is named by its =SecurityId= and fetched from reference data. The
+T-Lock and J-Lock forms restrict the underlying to US Treasury and
+Japanese Government bonds, and can be specified by a lock-in yield
+instead of an amount. The trade type is =ForwardBond=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Forward Bond (or Bond Forward) is a contract that establishes an
+agreement to buy or sell (determined by LongInForward) an underlying
+bond at a future point in time (the ForwardMaturityDate) at an agreed
+price (the settlement Amount).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondForward_refdata.tex=.
+
+ORE describes the T-Lock and J-Lock forms as follows:
+
+#+begin_quote
+A T-Lock is a Forward Bond with a US Treasury Bond as underlying,
+whereas a J-Lock is a Forward Bond with a Japanese Government Bond as
+underlying. T-Locks can be specified in terms of a lock-in yield
+rather then a settlement amount. The cash settlement amount is given
+by (bond yield at maturity - lock rate) x DV01 in this case.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondForward_refdata.tex=.
+
+** In plain terms
+
+A bond forward locks the price of a bond today for delivery later. The
+buyer pays the agreed amount at maturity and receives the bond, or the
+cash difference. The T-Lock is the same trade on a Treasury bond, with
+the price expressed as a yield. It lets a mortgage desk lock the
+yield it will pay on a future delivery.
+
+** How it works in ORE
+
+A Forward Bond is set up using a =ForwardBondData= block and the trade
+type is =ForwardBond=. The block has four parts. The =BondData= block
+specifies the underlying bond by =SecurityId= and =BondNotional=. The
+=SecurityId= is typically the ISIN of the underlying bond with the
+=ISIN:= prefix. The optional =CreditRisk= flag decides whether credit
+risk shows on the product. When it is =false=, the product class is
+=RatesFX= instead of =Credit= and there are no credit sensitivities.
+The flag has no effect when the bond reference carries no
+=CreditCurveId=, which is typical for highly rated government bonds.
+The =SettlementData= block holds the settlement terms.
+=ForwardMaturityDate= is the maturity of the forward contract.
+=ForwardSettlementDate= is optional and names the settlement or cash
+payment date. =Settlement= takes =Cash= or =Physical= and defaults to
+physical, except that a trade defined by a =LockRate= defaults to
+cash. =Amount= is the settlement amount, or strike, transferred at
+maturity in return for the bond or its dirty price. It moves from the
+long party to the short party and cannot be negative. Exactly one of
+=Amount= and =LockRate= must be given. =LockRate= sets the payoff as
+=(yield at forward maturity - LockRate) x DV01= for a long position;
+it is expressed in decimal form. =dv01= can override the DV01 derived
+from the bond price. =LockRateDayCounter= is optional and defaults to
+=A360=. =SettlementDirty= decides whether the amount reflects a clean
+or dirty price; the dirty amount is always paid at maturity, and
+accruals are added internally when the flag is false. The =PremiumData=
+block is optional and holds a premium =Date= and =Amount=. The
+=LongInForward= flag decides whether the contract is long or short.
+
+** Mathematical notes
+
+A physically settled forward pays the agreed amount at maturity and
+receives the bond. A cash-settled forward pays the difference between
+the dirty bond price and the amount. The T-Lock variant pays the
+difference between the bond yield at maturity and the lock rate,
+scaled by the DV01 of the bond. The DV01 converts the yield
+difference into a price difference.
+
+** What moves its value (static sensitivities)
+
+- The price and yield of the underlying bond.
+- The forward date and the settlement amount or lock rate.
+- The interest rates that finance the position to maturity.
+- The credit of the issuer, unless the trade opts out of credit risk.
+
+The trade is a linear claim on the underlying bond, so its value
+moves almost one for one with the bond price. The T-Lock form is
+sensitive to the yield curve through both the bond yield and the
+DV01.
+
+** How the profile ages (dynamic sensitivities)
+
+A bond forward has no coupon flows during its life. Only the premium,
+if any, changes hands before maturity. The value converges to the
+difference between the bond price and the agreed amount as maturity
+approaches. At maturity the trade settles physically or in cash.
+
+** Why a customer would want it
+
+A bond forward locks a purchase or sale price without funding the bond
+today. It suits a customer who must deliver a bond at a known future
+date, or who wants a leveraged view on a bond. The T-Lock form locks a
+yield, which is how mortgage pipelines hedge. In ORE Studio a customer
+books forward bonds to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a long, physically settled forward bond with a
+premium, on a bond from reference data:
+
+#+begin_example
+<ForwardBondData>
+  <BondData>
+    <SecurityId>ISIN:XS1234567890</SecurityId>
+    <BondNotional>100000</BondNotional>
+  </BondData>
+  <SettlementData>
+    <ForwardMaturityDate>20160808</ForwardMaturityDate>
+    <Settlement>Physical</Settlement>
+    <ForwardSettlementDate>20160810</ForwardSettlementDate>
+    <Amount>1000000.00</Amount>
+    <SettlementDirty>true</SettlementDirty>
+  </SettlementData>
+  <PremiumData>
+    <Amount>1000.00</Amount>
+    <Date>20160808</Date>
+  </PremiumData>
+  <LongInForward>true</LongInForward>
+</ForwardBondData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondForward_refdata.tex=,
+listing =Forward Bond Data=. The source spells the settlement value
+=Physcial= and closes the =BondData= element without the leading
+slash; both are normalised here.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/bondForward_refdata.tex=.
+  The upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

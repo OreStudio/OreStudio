@@ -35,14 +35,45 @@ description with domain grounding and ORE examples.
   and CMS; definition, variants, sensitivities, and ORE examples.
 - [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]] — debt securities: definition, reference-data short form,
   credit-risk flag, and sensitivities.
+- [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]] — the American option on a convertible bond: the right to
+  sell it back at a strike set from a reference swap, the call and put
+  forms, and sensitivities.
 - [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]] — prepayment-linked amortisation:
   the notional follows a reference security's prepayments, the Flexi
   Swap pricing proxy, and sensitivities.
+- [[id:C00D82F7-942F-4270-AB9F-D0C31F0881A9][Bond Forward (Reference Data)]] — a forward contract on a bond with
+  the underlying from reference data: physical or cash settlement,
+  the T-Lock form, and sensitivities.
+- [[id:B50027E5-44CD-49FA-B4DF-1177E321F156][Bond Future]] — a contract to buy or sell a bond at a future point
+  in time: the named contract, the eligible delivery basket, the
+  cheapest-to-deliver choice, and sensitivities.
+- [[id:52C1431E-517D-40EC-AE9F-838F040A4103][Bond Option]] — the right to buy or sell a given bond at a fixed
+  price: European exercise on the vanilla bond, and sensitivities.
+- [[id:0E145E20-C296-4D0F-B26C-2CC5EAA22F3B][Bond Option (Reference Data)]] — a bond option on a bond from
+  reference data: European exercise on the par redemption vanilla
+  bond, and sensitivities.
+- [[id:531499CE-C843-4178-8F89-CA901B1BA9AE][Bond Position]] — a weighted basket of underlying bonds: the
+  stand-alone position or the total return swap component, and
+  sensitivities.
+- [[id:C96BBC70-71C1-442A-97FF-CCD596C193DB][Bond Repo]] — a secured cash borrowing: the bond posted as
+  collateral against the cash leg, and sensitivities.
+- [[id:0727A454-AB7F-4202-A3A8-A4A183683566][Bond Total Return Swap]] — the return of a bond against a funding
+  leg: coupons, redemptions and clean value changes along the TRS
+  schedule, and sensitivities.
+- [[id:4E78B88B-432F-445D-9FEA-9DBE80718DBF][Callable Bond]] — issuer call and investor put rights on a bond:
+  the American or Bermudan styles, the exercise prices, and
+  sensitivities.
 - [[id:0EE613F9-9A1F-4B03-A1B2-FB4791D6C2EE][Callable Swap]] — cancellable optionality: the swap with an
   embedded physically settled swaption, the call dates, and
   sensitivities.
 - [[id:3DCC5F43-9728-4E67-8720-AE307E780CBF][Cap/Floor]] — a strip of rate options: the caplets or floorlets
   on a floating leg, the collar form, and sensitivities.
+- [[id:940CB31A-BD50-45D6-98AC-4B0D53973825][Cash Position]] — an amount of cash in a currency: the stand-alone
+  trade or the component inside a total return swap, and
+  sensitivities.
+- [[id:F8341BB7-33FE-4441-8C2D-56B8DDDCA91C][Collateral Bond Obligation]] — a tranched securitisation of a bond
+  or loan portfolio: the short and long forms, the waterfalls, and
+  sensitivities.
 - [[id:D16393FC-784B-4BCB-90B9-7010894CD2D2][Commodity Average Price Option]] — Asian optionality: the
   single-period swap observing daily fixings, period-end exercise,
   and sensitivities.
@@ -62,6 +93,9 @@ description with domain grounding and ORE examples.
   commodity swap: payer and receiver rights, and sensitivities.
 - [[id:1989F85A-42F8-4894-8982-AC34D19B0351][Commodity Variance Swap]] — commodity volatility traded directly:
   the realised variance payoff and sensitivities.
+- [[id:F5D8E0C4-EC67-4210-AF1C-B664246810C9][Convertible Bond]] — a bond convertible into a prespecified number
+  of shares: parity against the bond floor, calls and puts, forced
+  conversion, and sensitivities.
 - [[id:13D3230A-D5C2-46DA-92E6-1DB128B8392A][CPI Swap]] — inflation swaps: the real-rate leg scaled by the index
   ratio, the InflationSwap trade type, and sensitivities.
 - [[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]] — single-name protection: premium leg,
@@ -113,6 +147,8 @@ description with domain grounding and ORE examples.
 - [[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]] — flexible amortisation: the option to cut the
   notional toward lower bounds, the replication price, and
   sensitivities.
+- [[id:8CCD37D5-1D16-4972-8582-13595E62381C][Forward Bond]] — a forward contract on a bond: physical or cash
+  settlement, the T-Lock and J-Lock forms, and sensitivities.
 - [[id:11714B3F-A790-4797-BE01-41426289E7C7][Forward Rate Agreement]] — a single-period rate lock: the forward
   rate against a reference IBOR, the long or short position, and
   sensitivities.

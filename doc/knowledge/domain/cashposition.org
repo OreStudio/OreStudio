@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 940CB31A-BD50-45D6-98AC-4B0D53973825
+:END:
+#+title: Cash Position
+#+description: An amount of cash in a currency; ORE's CashPosition product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:cashposition:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A cash position holds an amount of cash in a currency. ORE models it
+with the trade type =CashPosition=. The container node is
+=CashPositionData=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A cash position is the trade representation of an amount of cash in a
+currency. It can be a stand-alone trade type or a trade component
+inside a total return swap. The node carries two elements: the
+=Currency= and the =Amount=.
+
+* Detail
+
+** What it is
+
+ORE defines the trade node as follows:
+
+#+begin_quote
+The CashPositionData node is the trade data container for the
+CashPosition trade type.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cashposition.tex=.
+
+ORE describes the dual role as follows:
+
+#+begin_quote
+A cash position can be used both as a stand alone trade type
+(TradeType: CashPosition) or as a trade component within the
+TotalReturnSwap (Generic TRS) trade type.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cashposition.tex=.
+
+** In plain terms
+
+A cash position is the smallest trade there is: a currency and an
+amount. It books the cash side of a transaction. The amount can be
+positive or negative, so it also books a debt.
+
+** How it works in ORE
+
+The =CashPositionData= node is the trade data container for the
+=CashPosition= trade type. =Currency= is the currency of the cash
+position. =Amount= is the amount of the cash position and can be any
+real number. A negative amount represents a cash debt.
+
+** Mathematical notes
+
+The value of a cash position is its amount in its currency. There is
+no payoff formula and no schedule. The position carries no market
+risk factors of its own.
+
+** What moves its value (static sensitivities)
+
+- The amount itself.
+- Nothing else: cash in its own currency has no market risk factors.
+
+When the position must be valued in another currency, the FX rate into
+that currency applies.
+
+** How the profile ages (dynamic sensitivities)
+
+A cash position has no schedule and no maturity. Its value does not
+change with time. It is the fixed reference against which the other
+legs of a structure are measured.
+
+** Why a customer would want it
+
+A cash position books the funding or return side of a trade. As a
+stand-alone trade it records a cash balance. As a component of a total
+return swap it represents the cash leg against the asset leg. In ORE
+Studio a customer books cash positions to complete the cash flows of a
+structure.
+
+** Example
+
+ORE's catalogue shows one million euro of cash:
+
+#+begin_example
+<CashPositionData>
+    <Currency>EUR</Currency>
+    <Amount>1000000</Amount>
+</CashPositionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cashposition.tex=,
+listing =Cash Position data=.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/cashposition.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

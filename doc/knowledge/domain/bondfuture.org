@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: B50027E5-44CD-49FA-B4DF-1177E321F156
+:END:
+#+title: Bond Future
+#+description: A contract to buy or sell an underlying bond at expiry at an agreed price; ORE's BondFuture product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bondfuture:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond future is an exchange-style contract to buy or sell a bond at
+expiry, with the deliverable bond chosen from a basket. ORE models it
+with the trade type =BondFuture=. The container node is
+=BondFutureData=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A bond future is a contract that establishes an agreement to buy or
+sell an underlying bond at a future point in time at an agreed price.
+The contract seller chooses the deliverable bond from a list of
+eligible securities. That bond is called the cheapest to deliver, or
+CTD. The trade names a contract; the delivery basket and the expiry
+rules live in the =BondFutureReferenceData= for that contract.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Bond Future is a contract that establishes an agreement to buy or
+sell an underlying bond at a future point in time (expiry) at an
+agreed price (strike amount). The underlying bond can be selected by
+the contract seller from a list of eligible securities and is called
+"cheapest to deliver" (CTD). The bond is exchanged with a cash payment
+determined as the future settlement price multiplied by a conversion
+factor that is specific to the CTD bond and which compensates for the
+different yields of the bonds in the underlying basket.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondfuture.tex=.
+
+ORE describes the dual role of the product as follows:
+
+#+begin_quote
+A BondFuture can be used both as a stand alone trade (TradeType:
+BondFuture) or as a trade component (BondFutureData) used within the
+TotalReturnSwap (Generic TRS) trade type.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondfuture.tex=.
+
+** In plain terms
+
+A bond future is a bet on the price of a bond at a fixed date. One
+bond in a basket is delivered, not a named bond. The seller picks the
+bond that is cheapest to deliver, so the future trades against that
+bond. The conversion factor makes the basket bonds comparable.
+
+** How it works in ORE
+
+The =BondFutureData= block holds the trade terms. =ContractName=
+selects both the bond future reference datum and the security specific
+spread used for pricing. =ContractNotional= is the notional of the
+position in the currency of the bond. =LongShort= takes =Long=, =L=,
+=Short= or =S=. The corresponding reference data, which is not part of
+the trade representation, sits in the =BondFutureReferenceData= block.
+=Currency= names the currency of the future. =DeliveryBasket= lists
+the eligible security identifiers, typically ISINs with the =ISIN:=
+prefix. =Settlement= defaults to =Physical=. =DirtyQuotation= decides
+whether the market quote of the future price is dirty or clean, and
+defaults to clean. The last trading and last delivery dates can be
+given explicitly as =LastTradingDate= and =LastDeliveryDate=. They can
+also be derived from =ContractMonth=, =RootDate=, =ExpiryBasis=,
+=SettlementBasis=, =ExpiryLag= and =SettlementLag=. The conversion
+factor can come from market data or be deduced internally. In the
+latter case =DeliverableGrade= restricts the deliverable underlyings,
+with values such as =ZN= for the CME and =TY= for Bloomberg. The
+derivation rules follow the CME Group primer. The last delivery day is
+the last business day of the delivery month. The last trading day is
+the seventh business day preceding it.
+
+** Mathematical notes
+
+Let =sp= be the quoted future settlement price, =ai= the accrued
+interest, =cf= the bond specific conversion factor and =bp= the bond
+price. The short party receives =(sp x cf) + ai= and pays the cost of
+purchasing a bond, =bp + ai=. The cheapest to deliver is the bond for
+which =bp - (sp x cf)= is least. The decision takes place at future
+expiry.
+
+** What moves its value (static sensitivities)
+
+- The price of the deliverable bonds in the basket.
+- The yield curve, which sets the forward prices of the basket.
+- The conversion factors of the basket bonds.
+- The choice of the cheapest to deliver.
+
+The future tracks the CTD bond. When yields move, the CTD can switch,
+and the future then tracks a different bond.
+
+** How the profile ages (dynamic sensitivities)
+
+The trade names a contract with a fixed expiry. As expiry approaches,
+the value converges to the CTD bond price, and the delivery decision
+approaches. At expiry the seller delivers the cheapest bond and the
+buyer pays the settlement price times the conversion factor. Until
+then the future is a linear claim on the CTD with no cash flows.
+
+** Why a customer would want it
+
+A bond future is a liquid, leveraged way to take a position on
+government bond prices. It hedges a bond portfolio without buying the
+bonds. Because delivery is a basket, the future needs no single-bond
+liquidity. In ORE Studio a customer books bond futures to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a bond future trade on a 10-year US Treasury
+note contract:
+
+#+begin_example
+<BondFutureData>
+  <ContractName>with_ref</ContractName>
+  <ContractNotional>1000000</ContractNotional>
+  <LongShort>L</LongShort>
+</BondFutureData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondfuture.tex=,
+listing =BondFutureData=. The example contract =TYU25= carries the
+=DeliveryBasket=, the expiry dates and the =DeliverableGrade= in its
+=BondFutureReferenceData= block; that block is not part of the trade
+representation.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Futures_contract][Wikipedia: Futures contract]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/bondfuture.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

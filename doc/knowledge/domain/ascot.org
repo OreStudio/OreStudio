@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: DBC183E7-9AB4-481A-8A27-A70966EE4D48
+:END:
+#+title: Ascot
+#+description: An American-style option to buy back a convertible bond; ORE's Ascot product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:ascot:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An Ascot is an American-style option to buy back a convertible bond.
+ORE models it with the trade type =Ascot=. The container node is
+=AscotData=. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+An Ascot, or a convertible bond option, gives the holder the right to
+sell a convertible bond back for a strike that is set from the terms
+of a reference swap. The option is American and can be cash or
+physically settled. The call form pays the convertible price less the
+strike. The put form pays the strike less the convertible price. The
+strike is a function of the bond quantity, an upfront payment, asset
+and redemption legs, and a funding leg. The bond details are read from
+reference data.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Ascot or a Convertible Bond Option is an American style option to
+buy back a convertible bond. The buyer of a Call Ascot can exercise
+the deal and get the underlying bond in exchange for paying the
+strike.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ascot.tex=.
+
+The call payout is the convertible price less the strike, floored at
+zero. The put payout is the strike less the convertible price, floored
+at zero. The strike itself is:
+
+=Strike = bondQuantity x (upfrontPayment + assetLeg - redemptionLeg) - fundingLeg=
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ascot.tex=.
+
+** In plain terms
+
+An Ascot protects a convertible bond holder. The holder can hand the
+bond back and receive a strike instead. The strike is fixed at trade
+inception from swap terms, not from the market. The structure turns a
+convertible bond into an asset swap with an embedded exit option.
+
+** How it works in ORE
+
+An Ascot is set up using an =AscotData= block. The =AscotData= node
+has three sub-nodes. The =ConvertibleBondData= node describes the
+underlying convertible bond. Its =BondData= carries the =SecurityId=
+and =BondNotional=; the bond details are read from reference data in
+this case. The =OptionData= node carries the option terms. =LongShort=
+takes =Long= or =Short= and multiplies the option price by +1 or -1.
+=OptionType= takes =Call= or =Put=. The =Style= allows American
+exercise only. =Settlement= can be =Cash= or =Physical=. Exactly one
+=ExerciseDate= must be given. =Premiums= is optional. The
+=ReferenceSwapData= node holds a single =LegData= node that describes
+the funding leg of the reference swap. The asset leg is implied from
+the bond data. =Payer= should always be =false=, because the swap is
+entered from the viewpoint of the asset swap buyer.
+
+** Mathematical notes
+
+The call pays =max(0, convertiblePrice - Strike)= at exercise. The put
+pays =max(0, Strike - convertiblePrice)=. The strike bundles the
+conversion economics into a single number: the bond quantity scales an
+upfront payment plus an asset leg less a redemption leg, and the
+funding leg subtracts the cost of carry. The option can be exercised
+at any time until the exercise date because the style is American.
+
+** What moves its value (static sensitivities)
+
+- The convertible bond price. It combines the equity value of the
+  underlying shares with the credit of the issuer.
+- The volatility of the underlying equity. It drives the conversion
+  optionality.
+- The strike structure: the upfront payment and the asset, redemption
+  and funding legs.
+- The interest rates that discount the funding leg.
+- The credit spread of the issuer.
+
+The option is in the money when the convertible price is on the right
+side of the strike. Every input to the convertible price moves the
+Ascot through it.
+
+** How the profile ages (dynamic sensitivities)
+
+The holder can exercise at any time, so the profile follows the
+convertible bond. Early exercise pays off when the convertible price
+is high against the strike. As the bond ages, conversion value, time
+value and credit all decay toward the exercise date. After exercise
+the bond is delivered for the strike, or the difference is settled in
+cash.
+
+** Why a customer would want it
+
+An Ascot lets an investor hold a convertible bond with a known exit
+price. It is the option half of an asset swap on a convertible. A
+customer who owns the bond can buy the Ascot to cap the downside. In
+ORE Studio a customer books Ascots to value them and run sensitivities
+on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long American call Ascot on a convertible
+bond, funded by a floating reference swap leg:
+
+#+begin_example
+<Trade id="Ascot">
+  <TradeType>Ascot</TradeType>
+  <Envelope>...</Envelope>
+  <AscotData>
+    <ConvertibleBondData>
+      <BondData>
+        <SecurityId>ISIN:XY1000000000</SecurityId>
+        <BondNotional>1000000.00</BondNotional>
+      </BondData>
+    </ConvertibleBondData>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <Style>American</Style>
+      <Settlement>Physical</Settlement>
+      <ExerciseDates>
+        <ExerciseDate>2029-02-03</ExerciseDate>
+      </ExerciseDates>
+    </OptionData>
+    <ReferenceSwapData>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Payer>false</Payer>
+        ...
+      </LegData>
+    </ReferenceSwapData>
+  </AscotData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ascot.tex=,
+listing =Ascot set up using reference data=. The source closes the
+=AscotData= element without the leading slash; it is normalised here.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Convertible_bond][Wikipedia: Convertible bond]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/ascot.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

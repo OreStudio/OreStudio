@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: 0727A454-AB7F-4202-A3A8-A4A183683566
+:END:
+#+title: Bond Total Return Swap
+#+description: A swap paying the total return of a bond against a funding leg; ORE's BondTRS product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bondtotalreturnswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond total return swap pays the total return of a bond against a
+funding leg. ORE models it with the trade type =BondTRS=. The
+container node is =BondTRSData=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A total return swap is a derivative contract in which one
+counterparty pays out the total returns of an underlying asset and
+receives a regular fixed or floating cash flow from the other
+counterparty. The total return of a bond covers its coupons,
+redemptions and amortisations, and the changes in its clean value
+along the schedule. The =BondTRSData= block has three sub-blocks:
+=BondData= for the underlying, =TotalReturnData= for the return leg,
+and =FundingData= for the funding leg.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A total return swap is a derivative contract in which one
+counterparty (short) pays out the total returns of an underlying asset
+and receives a regular fixed or floating cash flow from the other
+counterparty (long). Here we describe total return swaps with an
+underlying bond. The total return of the bond is comprised of
+#+end_quote
+
+#+begin_quote
+coupon, redemption and amortization payments of the bond, including
+recovery payments in case of default
+compensation payments that reflect changes of the clean bond value
+along the TRS schedule.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=.
+
+ORE describes the setup as follows:
+
+A vanilla Bond Total Return Swap (Trade type: BondTRS) is set up
+using a =BondTRSData= block, which the catalogue shows in a listing.
+The block is split into three sub-blocks. ORE describes them as
+follows:
+
+#+begin_quote
+The block is comprised of three sub-blocks, which are BondData,
+TotalReturnData and FundingData.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=.
+
+** In plain terms
+
+A bond total return swap converts the return of a bond into a cash
+flow. One side pays the coupons and the price moves of the bond. The
+other side pays a funding rate on a notional. The bond owner keeps
+the bond but passes its economics to the other side.
+
+** How it works in ORE
+
+The =BondData= block specifies the underlying bond, usually by
+=SecurityId= and =BondNotional=, relying on reference data. One bond
+always corresponds to a face value of one unit of bond currency. The
+=SecurityId= is typically the ISIN with the =ISIN:= prefix.
+Convertible bonds are not supported as underlyings for =BondTRS=; the
+=TotalReturnSwap= trade type should be used for them. The optional
+=CreditRisk= flag decides whether credit risk shows on the product.
+The =TotalReturnData= block specifies the return leg. =Payer= decides
+whether the total return leg is paid. =InitialPrice= is optional and
+holds a contractually given bond price for the first date of the total
+return schedule, in percent. =PriceType= decides whether the payments
+are based on dirty or clean prices. =ObservationLag=,
+=ObservationConvention= and =ObservationCalendar= derive the valuation
+dates from the =ScheduleData= reference schedule. =PaymentLag=,
+=PaymentConvention= and =PaymentCalendar= derive the payment dates,
+which can also be given explicitly in a =PaymentDates= node.
+=FXTerms= is mandatory when the bond currency differs from the return
+currency, which is always assumed to equal the funding leg currency.
+This kind of trade is also known as a composite TRS. =FXIndex= names
+the FX index for the conversion. =ApplyFXIndexFixingDays= decides
+whether the FX fixing date moves back by the usual number of fixing
+days. =PayBondCashFlowsImmediately= decides whether bond cash flows
+are paid when they occur, or together with the next return payment.
+The =FundingData= block specifies the funding leg, which can be of any
+leg type. It contains exactly one =Leg=, and its currency defines the
+currency in which the return is paid. The funding notional can follow
+the return leg through =Indexings= with =FromAssetLeg= set to =true=;
+the notionals node is not required in that case.
+
+** Mathematical notes
+
+The total return leg pays the coupons, redemptions and amortisations
+of the bond plus the change in its clean value along the schedule. The
+funding leg pays a fixed or floating rate on the notional. The two
+legs net against each other on the payment dates. The return currency
+is the funding currency; a composite TRS converts the bond economics
+through an FX index when the currencies differ.
+
+** What moves its value (static sensitivities)
+
+- The price of the underlying bond.
+- The interest rates of the funding leg.
+- The FX rate between the bond currency and the funding currency.
+- The credit of the issuer, through the bond price and the recovery
+  payments.
+
+The swap passes the full economics of the bond to the receiver, so the
+bond price dominates the value. The funding leg offsets the carry.
+
+** How the profile ages (dynamic sensitivities)
+
+The return leg marks to the bond on each date of the schedule. The
+receiver gets the coupons and the price moves as they happen, or at
+the next payment date. The funding leg accrues against it. At each
+payment date the difference between the two legs settles, and the
+trade resets for the next period.
+
+** Why a customer would want it
+
+A bond total return swap gives the return of a bond without funding
+the purchase. It suits a customer who wants bond exposure with
+leverage, or who must warehouse bonds off balance sheet. In ORE Studio
+a customer books bond total return swaps to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a composite bond TRS: a New Zealand bond pays
+its return in USD against a floating USD funding leg:
+
+#+begin_example
+<BondTRSData>
+  <BondData>
+    <SecurityId>ISIN:NZIIBDT005C5</SecurityId>
+    <BondNotional>100000</BondNotional>
+  </BondData>
+  <TotalReturnData>
+    <Payer>false</Payer>
+    <InitialPrice>102.0</InitialPrice>
+    <PriceType>Clean</PriceType>
+    <ObservationLag>0D</ObservationLag>
+    <ObservationConvention>P</ObservationConvention>
+    <ObservationCalendar>USD</ObservationCalendar>
+    <PaymentLag>2D</PaymentLag>
+    <PaymentConvention>F</PaymentConvention>
+    <PaymentCalendar>TARGET</PaymentCalendar>
+    <!-- <PaymentDates> -->
+    <!--   <PaymentDate> ... </PaymentDate> -->
+    <!--   <PaymentDate> ... </PaymentDate> -->
+    <!-- </PaymentDates> -->
+    <FXTerms>
+      <FXIndex>FX-TR20H-NZD-USD</FXIndex>
+    </FXTerms>
+    <ScheduleData>
+    ...
+    </ScheduleData>
+    <PayBondCashFlowsImmediately>false</PayBondCashFlowsImmediately>
+  </TotalReturnData>
+  <FundingData>
+    <LegData>
+      <Payer>true</Payer>
+      <LegType>Floating</LegType>
+      <Currency>USD</Currency>
+      ...
+      <!-- Notionals node is not required, set to 1 internally -->
+      ...
+      <Indexings>
+      <!-- derive the indexing information (bond price, FX) from the total return leg -->
+      <FromAssetLeg>true</FromAssetLeg>
+      </Indexings>
+      ...
+    </LegData>
+  </FundingData>
+</BondTRSData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=,
+listing =Bond Total Return Swap Data with indexed funding leg=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Total_return_swap][Wikipedia: Total return swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

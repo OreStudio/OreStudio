@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 52C1431E-517D-40EC-AE9F-838F040A4103
+:END:
+#+title: Bond Option
+#+description: A right to buy or sell a given bond at a fixed price; ORE's BondOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bondoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond option gives the buyer the right to buy or sell a bond at a
+fixed price. The option is European, and the underlying bond sits in
+the trade. ORE models it with the trade type =BondOption=. The
+container node is =BondOptionData=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A bond option provides the buyer with the right, but not the
+obligation, to buy or sell a given bond at a fixed price either at or
+before a specific date. Options are written on government bonds and
+are traded on an OTC basis. Only vanilla bond options are supported,
+and the exercise style must be European. The =BondOptionData= node
+holds one =OptionData= sub-node plus the strike, the redemption ratio,
+the price type and the default behaviour, together with the underlying
+bond.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A bond option provides the buyer with the right, but not the
+obligation, to buy or sell a given bond at a fixed price either at or
+before a specific date. Options are written on government bonds and
+are traded on an OTC basis.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption.tex=.
+
+ORE describes the trade node as follows:
+
+#+begin_quote
+The BondOptionData node is the trade data container for the option
+part of a bond option trade type. Vanilla bond options are supported,
+the exercise style must be European. The BondOptionData node includes
+one and only one OptionData trade component sub-node plus elements
+specific to the bond option.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption.tex=.
+
+** In plain terms
+
+A bond option is a vanilla option on a government bond. The buyer of a
+call can buy the bond at the strike. The buyer of a put can sell it.
+The strike can be a clean or a dirty price, which decides how accrued
+interest enters the payoff.
+
+** How it works in ORE
+
+The =BondOptionData= node is the trade data container for the option
+part of the =BondOption= trade type. It has one =OptionData= sub-node
+plus elements specific to the bond option. The =OptionData= sub-node
+carries the option terms. The =StrikeData= node holds the strike and
+supports =StrikePrice= and =StrikeYield=. =Redemption= is the
+redemption ratio in percent. =PriceType= decides which strike is used
+for pricing. With =Dirty=, the strike price is used as given. With
+=Clean=, the strike price is set equal to the strike value plus the
+accrued interest at the expiration date of the option. =KnocksOut=
+decides the default behaviour. When it is =true=, the option knocks
+out if the underlying defaults before option expiry. When it is
+=false=, the option is written on the recovery value in case of a
+default. The =BondData= block describes the underlying bond and holds
+the =VolatilityCurveId=, the yield volatility curve used for the
+valuation. This product carries the full bond description in the
+trade; ORE also documents a form that takes the bond from reference
+data.
+
+** Mathematical notes
+
+The option payoff is the bond value less the strike, floored at zero,
+or the strike less the bond value. The exercise style is European, so
+the option can be exercised at expiry only. The strike enters as a
+dirty price when =PriceType= is =Dirty=, and as a clean price plus
+accruals when it is =Clean=. The value comes from a yield volatility
+model of the underlying bond.
+
+** What moves its value (static sensitivities)
+
+- The price and yield of the underlying bond.
+- The yield volatility curve named by =VolatilityCurveId=.
+- The strike and the redemption ratio.
+- The interest rates that discount the payoff.
+- The credit of the issuer, through the default behaviour.
+
+The option is a claim on a bond, so bond yields, volatility and
+credit all move its value. Near the strike it is most sensitive to the
+bond price.
+
+** How the profile ages (dynamic sensitivities)
+
+The option is European and ages like a vanilla option. Time value
+decays toward expiry. The default behaviour decides the outcome if
+the issuer fails before expiry: the option either dies or falls back
+to the recovery value. At expiry the buyer exercises when the bond
+value is on the right side of the strike.
+
+** Why a customer would want it
+
+A bond option gives cheap, leveraged exposure to a government bond
+without buying it. It hedges a bond position or a pipeline of future
+bond purchases. In ORE Studio a customer books bond options to value
+them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a European bond option on a bond with a strike
+in EUR and a dirty price convention:
+
+#+begin_example
+<Trade id="...">
+  <TradeType>BondOption</TradeType>
+  <Envelope>
+      ...
+  </Envelope>
+  <BondOptionData>
+    <OptionData>
+        ...
+    </OptionData>
+    <StrikeData>
+      <StrikePrice>
+        <Value>11809123.56</Value>
+        <Currency>EUR</Currency>
+      </StrikePrice>
+    </StrikeData>
+    <Redemption>100.00</Redemption>
+    <PriceType>Dirty</PriceType>
+    <KnocksOut>false</KnocksOut>
+    <BondData>
+       <VolatilityCurveId>YieldVols-EUR</VolatilityCurveId>
+        ...
+    </BondData>
+  </BondOptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption.tex=,
+listing =Bond Option data=. The source closes the =BondData= element
+without the leading slash; it is normalised here.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/bondoption.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

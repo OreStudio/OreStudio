@@ -8,7 +8,7 @@
 #+filetags: :shell-compute-grid-management:sprint_25:v0:
 #+owner: marco
 #+branch: feature/post-merge-system-test-report
-#+pr:
+#+pr: 2018
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-06
@@ -101,7 +101,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2018][#2018]] | [agile] Post-merge system-test report for the compute and iam binds |
 
 * Review
 

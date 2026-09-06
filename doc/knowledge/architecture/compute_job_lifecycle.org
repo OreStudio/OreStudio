@@ -1,0 +1,368 @@
+:PROPERTIES:
+:ID: 1805BAFC-7E43-4D9C-822F-17C3455C6E00
+:END:
+#+title: Compute job lifecycle
+#+description: How a compute job travels through the grid: engine registration, batch creation and dispatch, worker execution, and result validation — from the shell to the finished output archive.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:compute:grid:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+A compute job is a risk run of the ORE engine on a worker node of the
+=ores.compute= grid. The operator starts from the shell: an engine
+package and an input bundle are uploaded first, then a batch of
+identical jobs is created and dispatched. Dispatch stores one
+workunit per job and the service immediately publishes a JetStream
+assignment for each; a wrapper node of the matching platform consumes
+the assignment, downloads the engine package and the input, runs the
+engine as a child process, and uploads the job's =Output/= directory
+back to storage. A submit message carries the outcome to the service,
+which validates the result, records it on the workunit, and closes the
+batch once every job has a result. The operator then downloads the
+output archive of any result. This document walks that lifecycle end
+to end against the implementation; see [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] for the component
+breakdown and [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] for the numerical engine itself.
+
+* Detail
+
+** Concepts and state vocabulary
+
+The grid uses the BOINC vocabulary: a =batch= holds =workunits=, each
+workunit is executed by one =result= per redundancy copy, and a
+=host= is a worker node. =apps=, =app versions=, and =platforms=
+describe what runs where.
+
+| Entity | What it is | Key fields and states |
+|--------+------------+-----------------------|
+| =app= | A named engine family (e.g. =ORE=). | =name= |
+| =app_version= | One engine build of an app, tied to a wrapper compatibility level. | =engine_version=, =wrapper_version=, =min_ram_mb= |
+| =app_version_platform= | The published engine bundle for one version on one platform. | =platform_code=, =package_uri=, =sha256= |
+| =batch= | A set of identical jobs submitted together, with an operator-chosen =external_ref=. | =status=: =open= → =dispatched= → =closed= |
+| =workunit= | One job of a batch. Carries the shared input bundle and the redundancy target. | =canonical_result_id= empty until a result is accepted; =target_redundancy= (1 for shell dispatch) |
+| =result= | One execution attempt of a workunit on one host. | =server_state=: 1 Inactive, 2 Unsent, 4 InProgress, 5 Done; =outcome=: 1 Success, 3 ClientError, 4 NoReply |
+| =host= | A wrapper node. Registers itself on its first heartbeat and gets a generated display name. | =last_rpc_time=, bumped by each heartbeat; judged online from heartbeat recency |
+
+The =batch= statuses and the result =server_state= transitions are
+shown in [[./compute_job_lifecycle_states.puml][=compute_job_lifecycle_states.puml=]]:
+
+#+caption: State vocabulary of the compute grid: the batch lifecycle, the workunit's canonical-result marker, and the result's server-side state machine (including the legacy pull channel that sets InProgress and the reaper that re-queues results of stale hosts).
+[[proj:doc/knowledge/architecture/compute_job_lifecycle_states.png]]
+
+Source: [[./compute_job_lifecycle_states.puml][=compute_job_lifecycle_states.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/compute_job_lifecycle_states.puml=.
+
+Two points are worth stating explicitly because they are easy to
+misread:
+
+- The workunit has no status column. Its state is derivable: it has no
+  =canonical_result_id= yet, or it has one (the job is done).
+- The JetStream dispatch path never marks a result =InProgress=. The
+  dispatcher creates the result row as =Unsent= and the state stays
+  =Unsent= while the wrapper executes; the submit message moves it
+  straight to =Done=. =InProgress= is set only by the legacy =pull=
+  channel (a wrapper pulling work by host), where the server binds the
+  host and reaps the result back to =Unsent= if that host's heartbeats
+  stop for five minutes.
+
+** The end-to-end flow
+
+The interaction diagram below is the map for everything that follows:
+
+#+caption: The compute job lifecycle from the operator's shell session to the finished output archive: package and input upload, batch dispatch, JetStream assignment, node execution, result submission, and assimilation.
+[[proj:doc/knowledge/architecture/compute_job_lifecycle_sequence.png]]
+
+Source: [[./compute_job_lifecycle_sequence.puml][=compute_job_lifecycle_sequence.puml=]]. Regenerate with
+=plantuml -tpng doc/knowledge/architecture/compute_job_lifecycle_sequence.puml=.
+
+The lifecycle has six stages:
+
+1. Register the engine — upload the ORE package and register the app.
+2. Prepare an input bundle — the job's working-directory snapshot.
+3. Create the batch — with =compute add-batch=.
+4. Dispatch — with =compute dispatch-batch=; the service stores
+   workunits and publishes one assignment per job.
+5. Execute on a node — the wrapper downloads, verifies, runs, and
+   uploads the output.
+6. Validate and close — the service accepts results, marks the
+   workunit, and closes the batch; the operator downloads outputs.
+
+** Stage 1 — register the engine package
+
+The engine package is the self-contained tarball a wrapper downloads
+and runs. It holds the =ore= executable, every non-glibc shared
+library it needs (under =lib/=, RPATH-relative), and the minimal
+=manifest.json= the wrapper reads. ORE Studio vendors one package per
+engine build under =external/ore/packages/=; the ORE 1.8.16.0 build is
+=ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz=:
+
+#+begin_example
+ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
+├── manifest.json          {"executable": "ore-1.8.16.0-4-g3b62ba248-x64-linux",
+│                           "args": ["Input/ore.xml"]}
+├── ore-1.8.16.0-4-g3b62ba248-x64-linux
+└── lib/                   every shared library the engine needs
+#+end_example
+
+The manifest tells the wrapper which executable to spawn and with
+which arguments. For ORE the argument is the job's input file
+=Input/ore.xml=, resolved relative to the job's working directory —
+which is exactly how a packaged Academy example is laid out. The
+wrapper runs the engine with the job directory as its working
+directory, so =Input/=, =Output/=, and =log.txt= inside =ore.xml= all
+resolve inside that directory. See
+[[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] for the engine itself and =external/ore/packages/README.md=
+for how packages are built and self-tested.
+
+Upload the vendored package with =compute publish-package=. The verb
+uploads the tarball to storage under the app's package key, computes
+and verifies its SHA256 server-side, and registers (or merges into)
+the =app=, =app_version=, and =app_version_platform= rows:
+
+#+begin_example
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux \
+    --wrapper-version 1.0.0 \
+    --file external/ore/packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
+logout
+exit
+#+end_example
+
+publish-package merges rather than duplicates: the app row is keyed by
+=name=, the app-version row by (=name=, =engine_version=,
+=wrapper_version=), and the platform rows of a version are replaced
+wholesale (previous platforms are preserved and the published one is
+updated). Passing =--wrapper-version 1.0.0= lines the upload up with
+the row that
+=projects/ores.sql/populate/compute/compute_ore_app_seed.sql= seeds —
+run that seed, or run =compute_populate.sql=, to register the same app
+plus the =x64-linux= platform row that =compute_platforms_seed.sql=
+provides. The seed alone registers only the rows; the package bytes
+still need the =publish-package= upload above.
+
+Storage keys. All blobs live in the =compute= bucket of =ores.storage=
+(=/api/v1/storage/compute/= over HTTP). The seeded ORE package is
+registered at:
+
+| Kind | Key |
+|------+-----|
+| Engine package | =packages/ORE/1.8.16.0-4-g3b62ba248/ORE-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz= |
+| Batch input bundle | =input/{batch_id}.tar.gz= (one per dispatched batch) |
+| Job output archive | =output/{result_id}.tar.gz= (one per finished result) |
+
+** Stage 2 — prepare an input bundle
+
+Every job of a batch runs against the same input bundle: a tarball
+whose root holds the job's input directory, exactly as the engine
+expects it. ORE Studio vendors the sample job
+=external/ore/packages/TA002_IR_Swap.tar.gz=, built from the Academy
+example =TA002_IR_Swap= (a 20-year EUR fixed-vs-float interest-rate
+swap). Its layout is the working-directory snapshot the engine will
+see after extraction:
+
+#+begin_example
+TA002_IR_Swap.tar.gz
+└── Input/
+    ├── ore.xml              the run's main config (inputs, Output/, log.txt)
+    ├── market.txt, fixings.txt
+    ├── todaysmarket.xml, pricingengine.xml, curveconfig.xml,
+    │   conventions.xml, irswap.xml
+#+end_example
+
+The sample's =ExpectedOutput/= (the =curves.csv=, =flows.csv=,
+=npv.csv= the engine should produce) lives in the Academy example and
+is the reference for the package self-test, not part of the job
+bundle. To build a bundle for another job, tar the input directory the
+same way — the archive is uploaded verbatim, and the manifest argument
+=Input/ore.xml= is what pins the engine to that layout.
+
+** Stage 3 — create the batch
+
+=compute add-batch= creates a batch row with status =open=. The batch
+is only a container plus an operator-chosen =external_ref=; nothing
+runs yet:
+
+#+begin_example
+connect $ORES_NATS_URL
+login super_admin@localhost Secure-Password-123
+compute add-batch ir-swap-2026-09-06 15
+logout
+exit
+#+end_example
+
+An =--smoke= batch is bounded to 10–20 jobs and is what the smoke test
+uses. See [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]].
+
+** Stage 4 — dispatch
+
+=compute dispatch-batch= takes the batch reference, the job count, the
+app-version id, and the input tarball:
+
+#+begin_example
+compute list-app-versions          # note the id of the ORE 1.8.16.0-4-g3b62ba248 row
+compute dispatch-batch ir-swap-2026-09-06 15 \
+    <app_version_id> external/ore/packages/TA002_IR_Swap.tar.gz
+#+end_example
+
+Only an =open= batch can be dispatched, and the app version must exist
+(the command resolves it before uploading anything). Dispatch then has
+three parts:
+
+1. *Upload the input bundle* — the tarball goes verbatim to
+   =input/{batch_id}.tar.gz=; every workunit of the batch references
+   that one shared bundle.
+2. *Store the workunits* — one workunit row per job, each with
+   =priority= 1, =target_redundancy= 1, and =input_uri= pointing at
+   the shared bundle. The batch status flips to =dispatched= only
+   after every workunit is saved; a save failure partway leaves the
+   batch =open= so dispatch can be retried.
+3. *Dispatch* — each stored workunit raises a domain event that the
+   service's eventing listener feeds into the =workunit_dispatcher=.
+   For every workunit short of its redundancy target the dispatcher
+   creates a result row (=server_state= =Unsent=) and publishes one
+   work-assignment event onto JetStream, keyed per platform:
+
+#+begin_example
+subject: compute.v1.work.assignments.{tenant_id}.{platform_code}
+payload: result_id, workunit_id, app_version_id,
+         package_uri, package_sha256, input_uri, output_uri
+#+end_example
+
+The event is self-contained — the wrapper needs no further round trips
+to run the job. =package_uri= and =package_sha256= come from the
+app version's published platform row (hence the warning if a version
+has no package: the workunit is stored, no assignment is ever
+published, and the job sits =Unsent= forever). =output_uri= is
+pre-assigned as =output/{result_id}.tar.gz=.
+
+The dispatcher converges on the redundancy target: a workunit whose
+result count is already at target gets no new assignment, and a
+partially failed publish is topped up by the next workunit event
+instead of stranding the workunit. See
+[[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]] for the recipe.
+
+** Stage 5 — execute on a node
+
+A wrapper node is an =ores.compute.wrapper= process pointed at the
+environment (=--host-id= is mandatory; the node also needs its tenant,
+=work_dir=, heartbeat interval, and the storage HTTP base URL). On
+startup it ensures the JetStream stream exists and subscribes a
+durable, queue-grouped consumer on its own triplet:
+
+#+begin_example
+subject:    compute.v1.work.assignments.{tenant_id}.{own platform triplet}
+durable:    compute_wrapper_{tenant_id}_{platform}
+queue:      ores.compute.wrapper.{platform}
+#+end_example
+
+Routing is per-triplet: the orchestrator publishes on the platform
+whose package it resolved, and nodes subscribe only to their own
+platform, so a node never sees an assignment it cannot run. Within one
+platform the queue group spreads assignments across the fleet, and
+JetStream holds a message until a node acknowledges completing it — a
+job survives a node that dies mid-run.
+
+Every =heartbeat_interval= (30 seconds by default) the node publishes
+=compute.v1.work.heartbeat= with its host id. The first heartbeat
+auto-registers the host row and gives it a deterministic
+adjective-animal display name (e.g. =clever-echidna=); later ones bump
+=last_rpc_time=, which is what the grid uses to judge the host online.
+When telemetry is enabled the node additionally publishes node samples
+on =compute.v1.telemetry.node_samples=.
+
+On each assignment the wrapper runs =process_assignment=:
+
+1. *Ensure the package* — =work_dir/packages/{app_version_id}/= holds
+   the extracted engine. If the =manifest.json= is missing, the node
+   downloads =package_uri=, verifies its SHA256 against
+   =package_sha256= (a mismatch aborts the job — a corrupted or
+   tampered package is never run), and extracts the archive.
+2. *Prepare the job directory* — =work_dir/jobs/{result_id}/= is
+   created; the input archive is downloaded from =input_uri= and
+   extracted there. The engine will run with this directory as its
+   working directory.
+3. *Run the engine* — the executable named in the manifest is spawned
+   (Boost.Process; no shell involved) with the manifest arguments and
+   the job directory as =start_dir=. For ORE that is
+   =Input/ore.xml= relative to the job directory; ORE writes its run
+   log to =Output/log.txt= there. The engine's own stdout/stderr go to
+   =engine.log= in the job directory, with the exact command line
+   logged for reproduction.
+4. *Finish* — on exit code 0 the wrapper archives the job's =Output/=
+   directory and uploads it to =output_uri=; on any other exit code
+   there is no archive, and the error message carries the tail of
+   =Output/log.txt=. The engine logs are published to the telemetry
+   log-entry subject for the record.
+5. *Submit* — the node sends a request/reply submit over
+   =compute.v1.results.submit=, the trusted machine channel (wrapper
+   nodes hold no user JWT, so the user-session-gated CRUD flow cannot
+   accept their submissions):
+
+#+begin_example
+subject: compute.v1.results.submit
+payload: result_id, host_id, output_uri,
+         outcome (1=Success, 3=ClientError), error_message
+#+end_example
+
+** Stage 6 — validate, close, and collect
+
+The submit handler (in =ores.compute.core=, queued as
+=ores.compute.service= so one replica validates) is the validator and
+assimilator of the grid:
+
+1. *Record the result* — the result row is marked =Done= with the
+   outcome, the submitting host bound as =host_id=, the output URI,
+   and a received timestamp. This is where the host of a JetStream-run
+   job is recorded — the dispatcher created the row without one.
+2. *Accept on the workunit* — once the workunit has
+   =target_redundancy= (1 in shell dispatch) results in state =Done=,
+   the validator records the last-submitted result's id as the
+   workunit's =canonical_result_id=. Acceptance does not filter by
+   outcome: with redundancy 1 a failed job (=ClientError=) still
+   satisfies the target, so the grid does not re-dispatch it. Outcome
+   checking is the operator's, through =compute grid-stats= or the
+   result list — the smoke-test script asserts every result has
+   outcome Success and fails otherwise.
+3. *Close the batch* — when every workunit of the batch has a
+   canonical result, the batch status moves to =closed= (even if some
+   of those canonical results failed).
+
+The operator watches the drain and collects outputs from the shell:
+
+#+begin_example
+compute grid-stats --watch ir-swap-2026-09-06      # poll until the batch drains
+compute list-workunits                             # canonical_result_id per job
+compute list-results                               # result rows: state, outcome, host
+compute download-output <result_id> <dest_dir>     # fetch output/{result_id}.tar.gz
+#+end_example
+
+The downloaded archive is the =Output/= directory the engine wrote —
+for the TA002 sample, the =curves.csv=, =flows.csv=, and =npv.csv=
+that the Academy example's =ExpectedOutput/= predicts. See
+[[id:E75065F1-5B56-4027-8454-9226E102E725][How do I view compute grid stats from the shell?]] and
+[[id:92E51A3E-935B-49AE-8429-B36181FB9AFA][How do I download a compute result output from the shell?]].
+
+** The whole loop in one script
+
+The smoke-test library script drives the entire lifecycle in one
+session: it adds a 15-job =--smoke= batch, dispatches it to the target
+app version with the sample input, watches =grid-stats= until the
+batch drains, and asserts that every online host was exercised and
+every result has outcome Success. See
+[[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]].
+
+* See also
+
+- [[id:A8B7F2C9-D416-4E83-B527-9F814E62C1A5][ores.compute]] — component group overview.
+- [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] — the ORE engine: what a run computes and how its output is produced.
+- [[id:C4C10772-C8E0-4E0E-B976-C407A6135317][How do I add a compute batch from the shell?]] — add-batch.
+- [[id:A5834202-A38A-4FB4-B341-CAD621C1D8ED][How do I dispatch a compute batch from the shell?]] — dispatch-batch.
+- [[id:E75065F1-5B56-4027-8454-9226E102E725][How do I view compute grid stats from the shell?]] — grid-stats.
+- [[id:92E51A3E-935B-49AE-8429-B36181FB9AFA][How do I download a compute result output from the shell?]] — download-output.
+- [[id:A6E676BD-E907-4F29-8D55-07174C846AA9][How do I download a compute job input from the shell?]] — download-input.
+- [[id:64816867-0D2E-4A9D-A90C-ADD70F3C9B3B][How do I smoke test the compute grid from the shell?]] — the full loop in one script.

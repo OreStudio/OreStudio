@@ -1,0 +1,71 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Compute job lifecycle: batch, workunit, and result states
+
+hide empty description
+
+state "=batch=" as batch {
+    state "open" as b_open
+    state "dispatched" as b_disp
+    state "closed" as b_closed
+}
+
+state "=workunit=" as wu {
+    state "no canonical result" as w_pend
+    state "canonical result set" as w_done
+}
+
+state "=result=" as res {
+    state "1 Inactive" as r_inact
+    state "2 Unsent" as r_unsent
+    state "4 InProgress" as r_prog
+    state "5 Done\n(outcome 1 Success /\n3 ClientError / 4 NoReply)" as r_done
+}
+
+b_open --> b_disp : dispatch-batch saved every\nworkunit of the batch
+b_disp --> b_closed : assimilator: every workunit\nhas a canonical result
+
+w_pend --> w_done : validator accepts a Done result\n(done count reaches target_redundancy)
+
+r_unsent --> r_done : submit (JetStream path;\nhost bound and outcome\nrecorded at submit time)
+r_unsent --> r_prog : legacy pull channel:\nhost claims the result
+r_prog --> r_done : submit (pull path)
+r_prog --> r_unsent : reaper: host heartbeats\nstale for over 5 minutes
+
+note right of r_unsent
+    created by the workunit dispatcher
+    when the assignment is published;
+    stays Unsent while the node runs
+end note
+note right of r_inact
+    reserved; no current flow
+    writes this state
+end note
+note right of w_done
+    the workunit has no status column;
+    canonical_result_id is the marker
+end note
+note right of b_closed
+    batch_workflow_bridge fires
+    step_completed_event for batches
+    linked to a workflow step
+end note
+
+@enduml

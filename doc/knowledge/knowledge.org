@@ -60,8 +60,34 @@ description with domain grounding and ORE examples.
   protection mechanics, the quanto form, and sensitivities.
 - [[id:B74A3D5C-1001-490D-9840-976C4E85E12F][Credit Linked Swap]] — swap payments with credit triggers: the four
   payment classes and sensitivities.
+- [[id:9C395333-73C7-401D-9E71-5333E1645E1A][FX Asian Option]] — the averaging option of the FX family: the
+  arithmetic or geometric average, the observation schedule, and
+  sensitivities.
+- [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]] — the path-dependent core of the FX exotic
+  family: the single monitored barrier, knock-in and knock-out
+  types.
+- [[id:8668F997-2609-47C6-BF5C-EE35F21405EE][FX Digital Barrier Option]] — a digital payout behind a barrier:
+  the four main types, the strike test at expiry.
+- [[id:C880CEB4-4FB7-41AA-8A4A-A650B6FC388C][FX Digital Option]] — the binary bet of the FX family: a fixed
+  payout or nothing, decided by the terminal rate.
+- [[id:0AA6F04D-C049-43D5-8307-82A9562E2883][FX Double Barrier Option]] — a vanilla option inside a corridor:
+  two monitored barriers, the single knock-in or knock-out type.
+- [[id:7BA83993-32A7-4090-A6A9-A07AA3AF2B1D][FX Double Touch Option]] — a fixed payout on a corridor: the
+  double one-touch and double no-touch forms.
+- [[id:4BAF88FA-7FDF-4B01-9A52-7AAE733A02B5][FX European Barrier Option]] — the barrier checked once at expiry:
+  the single European-monitored barrier, the rebate.
 - [[id:47598B8D-0121-4989-9661-79A8E6D1A070][FX Forward]] — deliverable and cash-settled forwards: definition,
   FxForwardData fields, the NDF form, and sensitivities.
+- [[id:B6A26725-EC1A-482D-A920-3CAB8834ED6D][FX KIKO Barrier Option]] — the knock-in knock-out hybrid: two
+  barriers of mixed type, the exercise condition.
+- [[id:199AB340-A254-40A9-8CBE-FBABB17FF51F][FX Option]] — the vanilla of the FX family: European and American
+  styles, cash or physical settlement, and sensitivities.
+- [[id:E9A214DE-AD39-4128-9EDB-106C4A606B90][FX Swap]] — the spot-forward pair: near and far exchanges, the
+  forward points, and sensitivities.
+- [[id:EA6E4A7A-6229-4F8C-93C5-426D1E4CB496][FX Touch Option]] — a pure bet on a touch: the one-touch and
+  no-touch forms, the fixed payout.
+- [[id:7A2186FB-33C3-4916-B62C-A14468EE713F][FX Variance Swap]] — FX volatility traded directly: the realised
+  variance payoff, vega notional, and sensitivities.
 - [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]] — protection on an index: unfactored
   and factored notional, the bespoke basket, and sensitivities.
 - [[id:6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58][Index Credit Default Swap Option]] — options on index protection:

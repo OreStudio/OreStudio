@@ -1,0 +1,156 @@
+:PROPERTIES:
+:ID: 9C395333-73C7-401D-9E71-5333E1645E1A
+:END:
+#+title: FX Asian Option
+#+description: An FX option on an averaged exchange rate; ORE's FxAsianOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_asianoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX Asian option is the averaging option of the FX family. Its
+payoff depends on the average of an exchange rate over a period. ORE
+models it with the trade type =FxAsianOption=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An FX Asian option pays on the averaged foreign exchange rate over a
+pre-set period. At expiry the buyer obtains a cash amount based on the
+average rate, in return for a predetermined strike. The buyer pays a
+premium. The averaging can be arithmetic or geometric. The strike can
+be fixed or floating. The observation dates form a schedule.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+For an FX Asian option, the payoff is determined by the averaged
+foreign exchange rate over a pre-set period of time. At the expiration
+date, this product gives the buyer the right, but not the obligation,
+to obtain a cash amount of averaged rate in return for a predetermined
+strike rate. For this right the buyer pays a premium to the seller.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_asianoption.tex=.
+
+ORE adds that an FX Asian option is a path-dependent option whose
+payoff depends upon the averaged foreign exchange rate over a pre-set
+period of time.
+
+** In plain terms
+
+An FX Asian option is a bet on an average. The exchange rate is
+measured many times over a period. The average decides the payoff, not
+any single day. The average smooths the swings of the rate.
+
+** How it works in ORE
+
+The =FxAsianOptionData= node carries one =OptionData= node plus
+elements specific to the option. The =Currency= is the payoff
+currency. The =Quantity= scales the payoff. The =Strike= is the
+strike rate. The =Underlying= names the FX pair, with =Type= FX. The
+=OptionData= sets the direction and the payoff type.
+=PayoffType= =Asian= or =AverageStrike= identifies a fixed or
+floating strike. =PayoffType2= selects =Arithmetic= or =Geometric=
+averaging, with arithmetic the default. The =ObservationDates= node
+builds the averaging schedule, rules-based or date-based, like a
+=ScheduleData= node. =Settlement= defaults to the exercise date.
+
+** Mathematical notes
+
+ORE states the payoff as follows:
+
+Quantity x max(w x (A(0,T) - K), 0)
+
+A(0,T) is the arithmetic average FX rate over the observation period,
+as amount of CCY2 per one unit of CCY1. K is the strike rate, in the
+same terms. w is 1 for a call, which receives the averaged FX and
+pays the strike, and -1 for a put. In the average-strike form, the
+strike is the average itself.
+
+** What moves its value (static sensitivities)
+
+- The FX forward curve at each observation date. It drives the
+  expected average.
+- The volatility of the rate over the window. The average damps it.
+- The strike and the quantity.
+- The observation schedule and the averaging convention.
+- The discount rate of the payoff currency.
+
+A call gains when the average rises above the strike. A put gains when
+the average falls below it.
+
+** How the profile ages (dynamic sensitivities)
+
+Each observation turns part of the average from unknown to known. The
+remaining observations keep their market exposure. The averaging
+window closes as the period end approaches. Near the end the average
+is largely determined. At expiry the option settles on the final
+average.
+
+** Why a customer would want it
+
+A customer with a stream of FX conversions over time wants protection
+on the average rate, not on one date. The average makes the hedge
+cheaper than a single-date option. In ORE Studio a customer books FX
+Asian options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long arithmetic Asian call:
+
+#+begin_example
+<Trade id="FxAsianOption">
+  <TradeType>FxAsianOption</TradeType>
+  <Envelope>
+    <CounterParty>CPTY_A</CounterParty>
+    <NettingSetId>CPTY_A</NettingSetId>
+    <AdditionalFields />
+  </Envelope>
+  <FxAsianOptionData>
+    <Currency>USD</Currency>
+    <Quantity>100</Quantity>
+    <Strike>1.05</Strike>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-EUR-USD</Name>
+    </Underlying>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <PayoffType>Asian</PayoffType>
+      <PayoffType2>Arithmetic</PayoffType2>
+      <ExerciseDates>
+        <ExerciseDate>2020-07-15</ExerciseDate>
+      </ExerciseDates>
+    </OptionData>
+    <Settlement>2020-07-20</Settlement>
+    <ObservationDates>
+      <Rules>
+        <StartDate>2019-12-27</StartDate>
+        <EndDate>2020-07-06</EndDate>
+        <Tenor>1D</Tenor>
+        <Calendar>US</Calendar>
+        <Convention>F</Convention>
+        <TermConvention>F</TermConvention>
+        <Rule>Forward</Rule>
+      </Rules>
+    </ObservationDates>
+  </FxAsianOptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_asianoption.tex=,
+listing =FX Asian Option data=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Asian_option][Wikipedia: Asian option]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/fx_asianoption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

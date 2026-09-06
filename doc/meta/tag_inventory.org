@@ -200,6 +200,18 @@ Tags that describe the business or technical domain of the content.
 | =entity= | Domain entity (also used as type tag). |
 | =finance= | Finance domain, products, and markets. |
 | =fx_forward= | FX forward contracts and the FX derivatives market. |
+| =fx_asianoption= | FX Asian options and averaged-rate FX derivatives. |
+| =fx_barrieroption= | FX barrier options and path-dependent FX derivatives. |
+| =fx_digitalbarrieroption= | FX digital barrier options and binary FX derivatives. |
+| =fx_digitaloption= | FX digital options and binary FX derivatives. |
+| =fx_doublebarrieroption= | FX double barrier options and path-dependent FX derivatives. |
+| =fx_doubletouchoption= | FX double touch options and binary FX derivatives. |
+| =fx_europeanbarrieroption= | FX European barrier options and path-dependent FX derivatives. |
+| =fx_kikobarrieroption= | FX KIKO barrier options and path-dependent FX derivatives. |
+| =fx_touchoption= | FX touch options and binary FX derivatives. |
+| =fxoption= | FX options and the FX derivatives market. |
+| =fxswap= | FX swaps and the FX derivatives market. |
+| =fxvarianceswap= | FX variance swaps and FX volatility markets. |
 | =indexcds= | Index credit default swaps and credit indices. |
 | =indexcdsoption= | Options on index credit default swaps. |
 | =knowledge_graph= | org-roam knowledge graph management. |

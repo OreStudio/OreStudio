@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 6CAED5F9-21CB-4300-B1B0-89599CFBFC7C
+:END:
+#+title: FX Barrier Option
+#+description: An FX option with a single barrier; ORE's FxBarrierOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_barrieroption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX barrier option is the path-dependent core of the FX exotic
+family. Its life depends on a spot rate reaching a level. ORE models
+it with the trade type =FxBarrierOption=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An FX barrier option exists only while an FX spot condition holds.
+The product has a single continuously monitored barrier around a
+vanilla European FX option. Exercise is European. A knock-in option
+becomes active when spot reaches the barrier. A knock-out option dies
+when spot reaches it. On inactive expiry the payoff is zero or a cash
+rebate. The four main types are up-and-in, down-and-in, up-and-out,
+and down-and-out.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An FX Barrier option is a path-dependent option whose existence
+depends upon an FX spot rate reaching a pre-set barrier level.
+Exercise is European.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_barrieroption.tex=.
+
+ORE adds that the product has a continuously monitored single barrier
+with a vanilla European FX option underlying.
+
+ORE defines the two life modes as follows:
+
+#+begin_quote
+A knock-in option is a barrier option that only comes into
+existence/becomes active when the FX spot rate reaches the barrier
+level at any point in the option's life. Once a barrier is
+knocked-in, the option will not cease to exist until the option
+expires and effectively it becomes a Vanilla FX Option.
+#+end_quote
+
+#+begin_quote
+A knock-out option starts its life active, but ceases to
+exist/becomes inactive, if the barrier is reached during the life of
+the option.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_barrieroption.tex=.
+
+** In plain terms
+
+An FX barrier option is a vanilla option with a condition. The
+condition is a rate level. If the rate touches the level, the option
+switches on or off. The four types pair the level above or below with
+the switching direction.
+
+** How it works in ORE
+
+The =FxBarrierOptionData= node includes one =OptionData= node and one
+=BarrierData= node. The barrier level is quoted as the amount in
+=SoldCurrency= per unit =BoughtCurrency=. The barrier =Type= selects
+one of the four main types. =Levels= holds the level, and =Rebate=
+the cash rebate paid on inactive expiry. =StartDate= sets the start
+of the barrier monitoring, with the associated =Calendar= and
+=FXIndex=. The bought and sold currencies and amounts set the
+underlying exchange.
+
+** Mathematical notes
+
+A barrier option prices as a vanilla option plus a correction for the
+barrier. The knock-in form is a vanilla option that becomes active.
+The knock-out form is a vanilla option that can disappear. When the
+option expires inactive, the payoff is zero or the rebate, a fraction
+of the original premium. The value depends on the distance of spot
+from the barrier and on the volatility.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. Its distance from the barrier sets the state.
+- The volatility of the pair. It drives the probability of touching
+  the barrier.
+- The interest rates in both currencies.
+- The strike, the barrier level, and the rebate.
+- The time to expiry.
+
+Near the barrier the exposure to spot and volatility changes
+direction. This is the classic barrier skew. A knock-out loses value
+as spot approaches the barrier. A knock-in gains.
+
+** How the profile ages (dynamic sensitivities)
+
+The barrier is monitored continuously through the option's life. A
+knock-out can end at any moment. A knock-in waits to activate. After a
+knock-out the trade ends with the rebate or nothing. After a
+knock-in the trade becomes a vanilla FX option and ages like one. At
+expiry the option settles in the money or expires.
+
+** Why a customer would want it
+
+A customer who holds a view on a rate range buys a barrier option at a
+lower premium than the vanilla. An exporter who expects the rate to
+stay in a band sells a knock-out. Barrier options shape the cost of
+hedging. In ORE Studio a customer books FX barrier options to value
+them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European call with an up-and-in barrier:
+
+#+begin_example
+<FxBarrierOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <OptionType>Call</OptionType>
+    <Style>European</Style>
+    <Settlement>Cash</Settlement>
+    <ExerciseDates>
+      <ExerciseDate>2021-12-14</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <BarrierData>
+    <Type>UpAndIn</Type>
+    <Levels>
+      <Level>1.2</Level>
+    </Levels>
+    <Rebate>0.0</Rebate>
+  </BarrierData>
+  <StartDate>2019-01-25</StartDate>
+  <Calendar>TARGET</Calendar>
+  <FXIndex>FX-ECB-EUR-USD</FXIndex>
+  <BoughtCurrency>EUR</BoughtCurrency>
+  <BoughtAmount>1000000</BoughtAmount>
+  <SoldCurrency>USD</SoldCurrency>
+  <SoldAmount>1100000</SoldAmount>
+</FxBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_barrieroption.tex=,
+listing =FX Barrier Option data= (optional elements omitted).
+
+The family includes the
+[[id:0AA6F04D-C049-43D5-8307-82A9562E2883][FX Double Barrier Option]], the
+[[id:4BAF88FA-7FDF-4B01-9A52-7AAE733A02B5][FX European Barrier Option]], and the
+[[id:B6A26725-EC1A-482D-A920-3CAB8834ED6D][FX KIKO Barrier Option]].
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/fx_barrieroption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

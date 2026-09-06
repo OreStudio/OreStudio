@@ -21,11 +21,11 @@ Bring ores.trading to the same proven state as the ores.refdata pilot: every cod
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Bind task 62B120E9 in progress.        |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Complete the bind task.                |
+| Next          | Merge the bind PR, then post-merge system testing per task phase 5. |
 | Last touched  | 2026-09-06                               |
 
 * Acceptance
@@ -41,9 +41,38 @@ Bring ores.trading to the same proven state as the ores.refdata pilot: every cod
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:62B120E9-AE25-4786-B90B-1BDE8A4ACC34][Bind ores.trading entities to profiles; verify zero-diff regen]] | STARTED | 2026-09-06 | | Implement profile binding for ores.trading's org-mode entity set (trade and trading-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
+| [[id:62B120E9-AE25-4786-B90B-1BDE8A4ACC34][Bind ores.trading entities to profiles; verify zero-diff regen]] | DONE | 2026-09-06 | 2026-09-06 | Implement profile binding for ores.trading's org-mode entity set (trade and trading-cpp catalogue entries share the same modeling_dir), rebind every matching entity, regenerate, and confirm byte-identical output, following the ores.refdata pilot method exactly. |
 
 * Decisions
+
+- Trade and trading-cpp stay out of the known-drift-free registry
+  (2026-09-06). The CI-extension acceptance is reframed: trade's
+  hand-authored whole estate -- five-way rfl::Flatten composition
+  beyond org vocabulary, bespoke =trade_service=/=trade_handler=/
+  =fra_instrument_service=, nine Qt files -- is not org-reproducible
+  (37 clobbered outputs measured at bind, commit 4a02aeca6f), so
+  registering either catalogue entry would make the drift check fail by
+  construction. The registry stays seeded with
+  refdata,reporting,marketdata,compute-cpp,iam,iam-cpp, re-verified
+  green (=--all= exit 0, clean tree) under this branch's generator
+  changes. Registry entry for trading awaits an estate rework story.
+- A genuine no-match with recorded feature values beats a forced bind
+  (2026-09-06). =trade_party_role= (no uuid detail-form widget in the
+  Qt drawer vocabulary for non-null soft-FK columns), =trade_identifier=
+  (uuid-identified-lookup features vs string natural key) and =trade=
+  (whole estate) stay unbound with their exclusions documented and, for
+  =trade=, verified by measured clobber rather than assumed.
+- Repository entity headers emit org "Entity includes" blocks through a
+  standard-token filter (2026-09-06). The filter drops the template's
+  own tokens plus legacy staleness (=sqlgen/Timestamp.hpp= arrives via
+  =db_types.hpp=; =boost/uuid/uuid.hpp= is never needed because uuid
+  columns and PK/FK sides render as =std::string=; =<cstdint>= is a
+  stale transcription the canonical headers compile without), and the
+  junction loader path applies the same set, so the registered
+  components regenerate byte-identical. Includes the template cannot
+  derive -- e.g. =trade_type='s =product_type.hpp= -- pass through
+  verbatim. A real future need for a filtered header belongs in the
+  template's fixed include set, not an org block.
 
 * Out of scope
 

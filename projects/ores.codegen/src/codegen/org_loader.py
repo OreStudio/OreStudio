@@ -646,9 +646,16 @@ def _parse_typed(value: str) -> Any:
             return value
 
 
-# Tokens the repository entity-header template emits itself. sqlgen::Timestamp
-# is covered transitively: the template's db_timestamp alias comes from
-# ores.database/repository/db_types.hpp, which includes Timestamp.hpp.
+# Includes the repository entity-header template emits itself, plus the
+# tokens legacy org "Entity includes" blocks add that no emitted member can
+# require: Timestamp.hpp arrives via db_types.hpp (always emitted, and it
+# includes Timestamp.hpp), and every uuid-typed column and PK/FK side
+# renders as std::string, so boost uuid headers are never needed. <cstdint>
+# appears in drift-rollout-era blocks as a stale transcription of pre-org
+# headers; the canonical entity headers compile without it and the registry
+# pins them byte-for-byte. Filtering these tokens keeps regeneration
+# byte-identical; includes the template cannot derive -- e.g. the header of
+# a domain-enum column type -- pass through verbatim.
 _ENTITY_HEADER_STANDARD_INCLUDES = frozenset({
     "<string>",
     "<optional>",
@@ -656,6 +663,8 @@ _ENTITY_HEADER_STANDARD_INCLUDES = frozenset({
     '"ores.database/repository/db_types.hpp"',
     '"sqlgen/PrimaryKey.hpp"',
     '"sqlgen/Timestamp.hpp"',
+    "<boost/uuid/uuid.hpp>",
+    "<cstdint>",
 })
 
 
@@ -1700,7 +1709,16 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
         if dom or ent:
             cpp_out["includes"] = {
                 "domain": _includes_from_named_block(dom) if dom else [],
-                "entity": _includes_from_named_block(ent) if ent else [],
+                # Junction entity headers render the same fixed include set
+                # and stringify both FK sides, so filter org tokens with the
+                # same standard set as domain entities (see
+                # _ENTITY_HEADER_STANDARD_INCLUDES). Without the filter a
+                # junction org repeating the set re-emits the covered tokens
+                # (e.g. sqlgen/Timestamp.hpp) on regeneration.
+                "entity": [
+                    t for t in _includes_from_named_block(ent)
+                    if t not in _ENTITY_HEADER_STANDARD_INCLUDES
+                ] if ent else [],
             }
         conv = _section(cpp_section, "Conventions")
         if conv:

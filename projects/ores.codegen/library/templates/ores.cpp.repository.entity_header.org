@@ -183,6 +183,25 @@ e.g. the header of a domain-enum column type such as
 =product_type= column -- reach the emitted header. Org blocks that merely
 repeat the standard set leave regeneration byte-identical.
 
+The filter (org_loader's =_ENTITY_HEADER_STANDARD_INCLUDES=) also drops
+the tokens legacy blocks add that no emitted member can require, and
+applies to junction entity headers as well as domain ones:
+
+- =sqlgen/Timestamp.hpp= arrives via =db_types.hpp='s =db_timestamp= alias,
+  which the template always emits and which includes Timestamp.hpp;
+- =boost/uuid/uuid.hpp= is never needed: the template renders every
+  uuid-typed column and junction PK/FK side as =std::string=;
+- =<cstdint>= appears in drift-rollout-era blocks as a stale transcription
+  of pre-org headers; the canonical entity headers compile without it and
+  the drift registry pins them byte-for-byte.
+
+Without these drops, the whole-estate drift check flags the four
+registered-component headers whose orgs declare them (compute
+=app_version_platform=, iam =account_party=, reporting
+=report_definition= and =report_instance=). A real future need for one of
+these headers in the entity header belongs in this template's fixed
+include set, not in an org block.
+
 ** Domain entity vs junction: unified on =db_timestamp= (2026-07-15)
 
 Both the ={{#domain_entity}}= and ={{#junction}}= sections now use the

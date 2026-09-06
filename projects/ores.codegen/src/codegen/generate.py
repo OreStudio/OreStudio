@@ -101,12 +101,15 @@ _JUNCTION_MESSAGING_FACETS = frozenset({
 
 # The per-entity history-provider registrar renders every version's actor
 # through build_entity_history_versions(), which requires the entity's
-# domain type to carry modified_by. no_audit_columns entities (hypertable
-# time-series rows that deliberately carry no actor stamps) have no such
-# member, so the generated registrar cannot compile for them. The domain
-# type and the history field mapper already honour no_audit_columns; this
+# domain type to carry flat modified_by and recorded_at members. Two
+# entity shapes lack that flat shape, so the generated registrar cannot
+# compile for them: no_audit_columns entities (hypertable time-series
+# rows that deliberately carry no actor stamps) and field-group-composed
+# entities (domain_audit_group) whose actor stamps fold into the audit
+# member. The domain type and the history field mapper already honour
+# both shapes (the mapper renders v.audit.* for composed entities); this
 # facet is the remaining piece of the same exclusion.
-_NO_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
+_NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS = frozenset({
     "ores.cpp.history-provider-registrar",
 })
 
@@ -193,15 +196,18 @@ def resolve_targets(
                           if f not in _JUNCTION_MESSAGING_FACETS}
     if model_type == "domain_entity":
         entity = model_data.get("domain_entity", {})
-        if (entity.get("sql") or {}).get("no_audit_columns"):
+        if (entity.get("domain_audit_group")
+                or (entity.get("sql") or {}).get("no_audit_columns")):
             # Hard gate, mirroring the junction gate above: the generated
-            # history provider needs the entity's version rows to carry an
-            # actor (modified_by), which a no_audit_columns entity lacks by
-            # design. Runs before the per-archetype override loop so an
-            # explicit :ores.*.enabled: override cannot re-admit a facet
-            # whose output cannot build for this entity.
+            # history provider needs the entity's version rows to carry a
+            # flat actor (modified_by, recorded_at), which no_audit_columns
+            # entities (no stamps at all) and domain_audit_group entities
+            # (stamps folded into the audit member) both lack. Runs before
+            # the per-archetype override loop so an explicit
+            # :ores.*.enabled: override cannot re-admit a facet whose
+            # output cannot build for this entity.
             gen_facets = {f for f in gen_facets
-                          if f not in _NO_AUDIT_HISTORY_PROVIDER_FACETS}
+                          if f not in _NO_FLAT_AUDIT_HISTORY_PROVIDER_FACETS}
     # Per-archetype activation: the entity's ores.* drawer overrides (most-
     # specific wins, archetype depth included) and, for components, the kind
     # discriminator that selects mutually-exclusive variants in one pass.

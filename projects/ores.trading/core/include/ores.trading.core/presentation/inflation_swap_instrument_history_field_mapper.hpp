@@ -17,21 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_INFLATION_SWAP_INSTRUMENT_TABLE_HPP
-#define ORES_TRADING_API_DOMAIN_INFLATION_SWAP_INSTRUMENT_TABLE_HPP
+#ifndef ORES_TRADING_CORE_PRESENTATION_INFLATION_SWAP_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_INFLATION_SWAP_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
 
+#include "ores.diff/domain/field_value.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <string>
+#include "ores.trading.core/export.hpp"
 #include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::presentation {
 
 /**
- * @brief Converts inflation_swap_instruments to the table format.
+ * @brief Renders a inflation_swap_instrument to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
  */
-ORES_TRADING_API_EXPORT std::string
-convert_to_table(const std::vector<inflation_swap_instrument>& v);
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_inflation_swap_instrument_fields(const domain::inflation_swap_instrument& v);
 
 }
 

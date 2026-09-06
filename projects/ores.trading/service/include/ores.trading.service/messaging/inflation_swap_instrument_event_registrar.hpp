@@ -17,22 +17,21 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_INFLATION_SWAP_INSTRUMENT_TABLE_HPP
-#define ORES_TRADING_API_DOMAIN_INFLATION_SWAP_INSTRUMENT_TABLE_HPP
+#ifndef ORES_TRADING_SERVICE_MESSAGING_INFLATION_SWAP_INSTRUMENT_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_INFLATION_SWAP_INSTRUMENT_EVENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/inflation_swap_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <string>
-#include <vector>
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-namespace ores::trading::domain {
+namespace ores::trading::service::messaging {
 
-/**
- * @brief Converts inflation_swap_instruments to the table format.
- */
-ORES_TRADING_API_EXPORT std::string
-convert_to_table(const std::vector<inflation_swap_instrument>& v);
+[[nodiscard]] ores::eventing::service::subscription
+register_inflation_swap_instrument_event_mapping(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats);
 
-}
+} // namespace ores::trading::service::messaging
 
 #endif

@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_INFLATION_SWAP_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_INFLATION_SWAP_INSTRUMENT_SERVICE_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_INFLATION_SWAP_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_INFLATION_SWAP_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/inflation_swap_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/inflation_swap_instrument_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::trading::service {
 
 /**
  * @brief Service for managing inflation swap instruments.
+ *
+ * Provides a higher-level interface for inflation swap instrument operations,
+ * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT inflation_swap_instrument_service {
 private:
@@ -48,27 +53,91 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a inflation_swap_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit inflation_swap_instrument_service(context ctx);
 
-    std::vector<domain::inflation_swap_instrument> list_inflation_swap_instruments();
-
+    /**
+     * @brief Lists inflation swap instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of inflation swap instruments for the requested page.
+     */
     std::vector<domain::inflation_swap_instrument>
     list_inflation_swap_instruments(std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active inflation swap instruments.
+     *
+     * @return Total number of active inflation swap instruments.
+     */
     std::uint32_t count_inflation_swap_instruments();
 
+
+    /**
+     * @brief Retrieves a single inflation swap instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The inflation swap instrument at that version if found, std::nullopt otherwise.
+     */
     std::optional<domain::inflation_swap_instrument>
-    get_inflation_swap_instrument(const std::string& id);
+    get_inflation_swap_instrument_at_version(const std::string& instrument_id,
+                                             std::uint32_t version);
 
-    void save_inflation_swap_instrument(const domain::inflation_swap_instrument& v);
+    /**
+     * @brief Retrieves a single inflation swap instrument by its primary key.
+     *
+     * @return The inflation swap instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::inflation_swap_instrument>
+    get_inflation_swap_instrument(const std::string& instrument_id);
 
-    void remove_inflation_swap_instrument(const std::string& id);
-
+    /**
+     * @brief Retrieves a batch of inflation swap instruments by primary key.
+     */
     std::vector<domain::inflation_swap_instrument>
-    get_inflation_swap_instrument_history(const std::string& id);
+    get_inflation_swap_instruments(const std::vector<std::string>& instrument_ids);
 
+    /**
+     * @brief Saves a inflation swap instrument (creates or updates).
+     *
+     * @param inflation_swap_instrument The inflation swap instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_inflation_swap_instrument(
+        const domain::inflation_swap_instrument& inflation_swap_instrument);
+
+    /**
+     * @brief Saves a batch of inflation swap instruments.
+     *
+     * @param inflation_swap_instruments The inflation swap instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_inflation_swap_instruments(
+        const std::vector<domain::inflation_swap_instrument>& inflation_swap_instruments);
+
+    /**
+     * @brief Deletes a inflation swap instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_inflation_swap_instrument(const std::string& instrument_id);
+
+    /**
+     * @brief Deletes inflation swap instruments by their primary keys.
+     */
+    void delete_inflation_swap_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a inflation swap instrument.
+     */
     std::vector<domain::inflation_swap_instrument>
-    get_inflation_swap_instruments(const std::vector<std::string>& ids);
+    get_inflation_swap_instrument_history(const std::string& instrument_id);
 
 private:
     context ctx_;

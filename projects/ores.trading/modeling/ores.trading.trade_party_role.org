@@ -152,6 +152,17 @@ Counterparty fulfilling the role; must exist in ores_refdata_counterparties_tbl.
 :iterator_var: pr
 :END:
 
+** Table display
+
+| column          | header          |
+|-----------------+-----------------|
+| id              | ID              |
+| trade_id        | Trade ID        |
+| counterparty_id | Counterparty ID |
+| role            | Role            |
+| modified_by     | Modified By     |
+| version         | Version         |
+
 ** Custom repository methods
 
 * See also

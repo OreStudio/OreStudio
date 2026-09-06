@@ -236,7 +236,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_vanilla_swap_instrument(id);
+                    svc.delete_vanilla_swap_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});
@@ -337,7 +337,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_cap_floor_instrument(id);
+                    svc.delete_cap_floor_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});
@@ -438,7 +438,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_swaption_instrument(id);
+                    svc.delete_swaption_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});
@@ -542,7 +542,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_balance_guaranteed_swap_instrument(id);
+                    svc.delete_balance_guaranteed_swap_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});
@@ -645,7 +645,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_callable_swap_instrument(id);
+                    svc.delete_callable_swap_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});
@@ -748,7 +748,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_knock_out_swap_instrument(id);
+                    svc.delete_knock_out_swap_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});
@@ -851,7 +851,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_inflation_swap_instrument(id);
+                    svc.delete_inflation_swap_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});
@@ -951,7 +951,7 @@ public:
             resp.success = true;
             for (const auto& id : req->ids) {
                 try {
-                    svc.remove_rpa_instrument(id);
+                    svc.delete_rpa_instruments({id});
                     resp.results.push_back({id, {true, ""}});
                 } catch (const std::exception& e) {
                     resp.results.push_back({id, {false, e.what()}});

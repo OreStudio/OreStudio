@@ -177,9 +177,12 @@ Tags that describe the business or technical domain of the content.
 | =architecture= | Software architecture documentation. |
 | =authentication= | Authentication flows and session management. |
 | =authorization= | Authorisation, roles, permissions. |
+| =balanceguaranteedswap= | Balance guaranteed swaps and prepayment-linked amortising structures. |
 | =build= | Build system, CI, packaging. |
 | =bond= | Bond instruments and fixed-income cash products. |
 | =calendars= | Business calendars and day-count conventions. |
+| =callableswap= | Callable swaps and cancellable interest rate swaps. |
+| =capfloor= | Interest rate caps, floors, collars, and caplet markets. |
 | =ci= | Continuous integration. |
 | =commodityapo= | Commodity average price options and Asian commodity options. |
 | =commodityforward= | Commodity forward contracts and commodity derivatives markets. |
@@ -199,6 +202,8 @@ Tags that describe the business or technical domain of the content.
 | =domain= | Business domain modelling. |
 | =entity= | Domain entity (also used as type tag). |
 | =finance= | Finance domain, products, and markets. |
+| =flexiswap= | Flexi swaps and flexible amortisation structures. |
+| =forwardrateagreement= | Forward rate agreements and the money market forward curve. |
 | =fx_forward= | FX forward contracts and the FX derivatives market. |
 | =fx_asianoption= | FX Asian options and averaged-rate FX derivatives. |
 | =fx_barrieroption= | FX barrier options and path-dependent FX derivatives. |
@@ -215,6 +220,7 @@ Tags that describe the business or technical domain of the content.
 | =indexcds= | Index credit default swaps and credit indices. |
 | =indexcdsoption= | Options on index credit default swaps. |
 | =knowledge_graph= | org-roam knowledge graph management. |
+| =knockoutswap= | Knock-out swaps and barrier-terminated interest rate swaps. |
 | =lifecycle= | Entity or component lifecycle management. |
 | =llm_code_review= | LLM-assisted code review tooling. |
 | =logging= | Logging and observability. |
@@ -223,6 +229,7 @@ Tags that describe the business or technical domain of the content.
 | =modelling= | Domain or system modelling. |
 | =performance= | Performance measurement and optimisation. |
 | =provisioning= | System provisioning workflows and wizards. |
+| =ratedigitaloption= | Rate digital options and binary interest rate derivatives. |
 | =rbac= | Role-Based Access Control. |
 | =refdata= | Reference data (currencies, countries, calendars, etc.). |
 | =release= | Release management and release notes. |
@@ -230,12 +237,14 @@ Tags that describe the business or technical domain of the content.
 | =security= | Security features and hardening (also component tag). |
 | =sprint= | Sprint-level document (also type tag). |
 | =swap= | Swap products and interest-rate derivatives. |
+| =swaption= | Swaptions and the interest rate option market. |
 | =syntheticcdo= | Synthetic collateralised debt obligations and tranches. |
 | =testing= | Test infrastructure, test coverage. |
 | =trading= | Trading domain (also component tag). |
 | =ui= | User interface design and implementation. |
 | =ux= | User experience. |
 | =yyswap= | Year-on-year inflation swaps and inflation-linked markets. |
+| =zerocouponswap= | Zero coupon swaps and zero-coupon interest rate structures. |
 
 * Story and ancestry slug tags
 

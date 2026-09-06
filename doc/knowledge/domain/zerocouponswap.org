@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: D0F2BDFE-AA84-4472-86E5-AB273E1A8EEC
+:END:
+#+title: Zero Coupon Swap
+#+description: An interest rate swap whose zero-coupon leg pays one final amount at maturity; ORE's ZeroCouponSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:zerocouponswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A zero coupon swap postpones the coupons of one leg into a single
+payment at maturity. That leg behaves like a zero-coupon bond. ORE
+models the product as a =Swap= with one leg of type
+=ZeroCouponFixed=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A zero coupon swap has at least one zero-coupon leg. The leg makes no
+interest coupon payments during the life of the swap. It makes one
+final interest payment at maturity, akin to a zero-coupon bond. The
+zero-coupon leg compounds at the tenor of the swap. ORE sets the
+product up as a swap with a =ZeroCouponFixed= leg.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Zero-Coupon Swap has at least one zero-coupon leg. This leg has no
+interest rate coupon payments during the life of the swap, just one
+final interest payment at maturity, akin to a zero-coupon bond. The
+zero-coupon leg compounds at the tenor of the swap.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/zerocouponswap.tex=.
+
+ORE sets the product up as a swap, trade type =Swap=, with one leg of
+type =ZeroCouponFixed=. The =ZeroCouponFixed= leg carries an
+additional =ZeroCouponFixedLegData= block. The block holds the rates
+and the compounding convention of the leg.
+
+** In plain terms
+
+Swap legs usually exchange coupon streams at regular dates. A
+zero-coupon leg changes that rhythm. It pays nothing during its life.
+One final payment then settles the interest that has accrued. The leg
+suits a party that wants a single bullet payment at a known date.
+
+** How it works in ORE
+
+The product data uses the =SwapData= container of the =Swap= trade
+type. One =LegData= node describes the floating leg. The other
+=LegData= node sets =LegType= to =ZeroCouponFixed= and embeds a
+=ZeroCouponFixedLegData= block. The block lists the =Rates= and the
+=Compounding= convention. ORE's example below pays floating and
+receives zero-coupon fixed at 2 percent with simple compounding.
+
+** Mathematical notes
+
+The zero-coupon leg compounds at the tenor of the swap. It behaves
+like a zero-coupon bond written on the leg notional. The final
+payment depends on the fixed rate, the notional, the tenor, and the
+compounding convention. =Simple= compounding accrues one payment over
+the full life of the leg. The floating leg accrues and pays coupons
+in the usual way.
+
+** What moves its value (static sensitivities)
+
+- The discount curve and the swap rates across maturities.
+- The fixed rate and the compounding convention of the zero-coupon
+  leg.
+- The floating index fixings on the other leg.
+- The notional and the day-count convention.
+- The distance to the single payment date.
+
+The trade concentrates most interest-rate risk in the one final
+payment. Its value therefore loads on the discount factor to that
+maturity.
+
+** How the profile ages (dynamic sensitivities)
+
+The zero-coupon leg accrues steadily toward its final payment. The
+present value of that payment grows as maturity approaches. The
+discount sensitivity of the payment shrinks as the payment date gets
+nearer. The floating leg keeps resetting with the market until
+maturity. At maturity the final payment settles and the trade stops.
+
+** Why a customer would want it
+
+A customer with a bullet liability can match it with a zero-coupon
+leg. A zero-coupon bond issuer can hedge the redemption payment. The
+structure removes the reinvestment decisions that coupon streams
+bring. In ORE Studio a customer books zero coupon swaps to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a swap with a floating leg and a zero-coupon
+fixed leg:
+
+#+begin_example
+<SwapData>
+  <LegData>
+    <LegType>Floating</LegType>
+    <Payer>true</Payer>
+    ...
+  </LegData>
+  <LegData>
+    <LegType>ZeroCouponFixed</LegType>
+    <Payer>false</Payer>
+    ...
+    <ZeroCouponFixedLegData>
+        <Rates>
+            <Rate>0.02</Rate>
+        </Rates>
+        <Compounding>Simple</Compounding>
+    </ZeroCouponFixedLegData>
+  </LegData>
+</SwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/zerocouponswap.tex=,
+listing =Zero Coupon Swap Data=.
+
+The plain vanilla swap family sits in the [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]]
+note. The zero coupon swap is that product with a deferred payment
+leg.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Zero-coupon_bond][Wikipedia: Zero-coupon bond]]. The zero-coupon leg behaves like this
+  instrument.
+- [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/zerocouponswap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

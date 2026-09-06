@@ -35,6 +35,14 @@ description with domain grounding and ORE examples.
   and CMS; definition, variants, sensitivities, and ORE examples.
 - [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]] — debt securities: definition, reference-data short form,
   credit-risk flag, and sensitivities.
+- [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]] — prepayment-linked amortisation:
+  the notional follows a reference security's prepayments, the Flexi
+  Swap pricing proxy, and sensitivities.
+- [[id:0EE613F9-9A1F-4B03-A1B2-FB4791D6C2EE][Callable Swap]] — cancellable optionality: the swap with an
+  embedded physically settled swaption, the call dates, and
+  sensitivities.
+- [[id:3DCC5F43-9728-4E67-8720-AE307E780CBF][Cap/Floor]] — a strip of rate options: the caplets or floorlets
+  on a floating leg, the collar form, and sensitivities.
 - [[id:D16393FC-784B-4BCB-90B9-7010894CD2D2][Commodity Average Price Option]] — Asian optionality: the
   single-period swap observing daily fixings, period-end exercise,
   and sensitivities.
@@ -60,6 +68,12 @@ description with domain grounding and ORE examples.
   protection mechanics, the quanto form, and sensitivities.
 - [[id:B74A3D5C-1001-490D-9840-976C4E85E12F][Credit Linked Swap]] — swap payments with credit triggers: the four
   payment classes and sensitivities.
+- [[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]] — flexible amortisation: the option to cut the
+  notional toward lower bounds, the replication price, and
+  sensitivities.
+- [[id:11714B3F-A790-4797-BE01-41426289E7C7][Forward Rate Agreement]] — a single-period rate lock: the forward
+  rate against a reference IBOR, the long or short position, and
+  sensitivities.
 - [[id:9C395333-73C7-401D-9E71-5333E1645E1A][FX Asian Option]] — the averaging option of the FX family: the
   arithmetic or geometric average, the observation schedule, and
   sensitivities.
@@ -92,12 +106,20 @@ description with domain grounding and ORE examples.
   and factored notional, the bespoke basket, and sensitivities.
 - [[id:6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58][Index Credit Default Swap Option]] — options on index protection:
   strike types, index terms, front-end protection.
+- [[id:37689AC9-DBA5-41AA-866E-19522F733D2E][Knock Out Swap]] — a barrier on a swap: the fixed-versus-floating
+  swap that dies on a fixing, and sensitivities.
+- [[id:94B1DBE3-33AB-44F5-B9F1-B71E34A58123][Rate Digital Option]] — a binary bet on a rate fixing: the fixed
+  payout above or below strike, and sensitivities.
 - [[id:95005252-270D-44DE-8A26-C61CE5D860E0][Risk Participation Agreement]] — protection on swap counterparties:
   the participation rate and the underlying swap.
+- [[id:FCC37EB3-D654-4333-B110-3BF4AFA3A237][Swaption]] — an option on a swap: payer and receiver rights,
+  European, Bermudan and American styles, and sensitivities.
 - [[id:8F0391AC-D748-459C-8DD8-5ABC8945E438][Synthetic CDO]] — tranched basket protection: attachment and
   detachment points, the CdoData block.
 - [[id:2FC69DD5-D685-452B-8BCE-85CBCDD624E5][Year-on-Year Inflation Swap]] — annual inflation exposure: the YY
   leg, its Swap trade type, and sensitivities.
+- [[id:D0F2BDFE-AA84-4472-86E5-AB273E1A8EEC][Zero Coupon Swap]] — the deferred-payment swap: the zero-coupon
+  leg's single final payment, and sensitivities.
 
 ** Currency
 

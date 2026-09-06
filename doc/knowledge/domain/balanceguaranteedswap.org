@@ -1,0 +1,180 @@
+:PROPERTIES:
+:ID: EE7D0A97-FD6D-46AA-9419-C6F01275F7E2
+:END:
+#+title: Balance Guaranteed Swap
+#+description: An amortising swap that follows the prepayments of a reference security; ORE's BalanceGuaranteedSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:balanceguaranteedswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A balance guaranteed swap amortises with the actual prepayments of a
+reference security. The notional path is not known in advance. ORE
+models it with the trade type =BalanceGuaranteedSwap=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A balance guaranteed swap is similar to an amortising interest rate
+swap. Its notional amortisation matches the actual prepayments of a
+Reference Security. The security can be a tranche, a reference pool
+of assets, or securitised interest backed by a pool of assets. The
+notional amortisations are uncertain. ORE prices the product with an
+auxiliary Flexi Swap as a proxy. The proxy's notional schedule
+assumes a zero CPR. Its lower notional bound assumes a MaxCPR.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Balance Guaranteed Swap is similar to an amortizing interest rate
+swap, but the notional amortization matches actual prepayments of a
+Reference Security which can be either a tranche or a reference pool
+of assets, or securitized interest backed by a pool of assets. The
+BGS differs from an amortizing swap in that the notional
+amortizations are uncertain.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/balanceguaranteedswap.tex=.
+
+ORE states the pricing approach as follows:
+
+#+begin_quote
+BGS are priced in ORE using an auxiliary Flexi Swap as a proxy. The
+amortization schedule of the Flexi Swap is set up as the notional
+schedule of the BGS assuming a zero CPR (Conditional Prepayment
+Rate). The lower notional bound of the Flexi Swap is constructed
+assuming a MaxCPR (Maximum Conditional Prepayment Rate) which is
+dependent on the Reference Security. The MaxCPR is estimated on the
+basis of the current CPR, historical CPRs and / or expert judgement
+as to provide a (hypothetical) sufficiently realistic hedge for the
+BGS. The option holder in the Flexi Swap is the payer of the
+structured leg (i.e. the leg replicating the payments of the
+reference security) in the BGS.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/balanceguaranteedswap.tex=.
+
+** In plain terms
+
+The swap balance pays down like a pool of mortgages. When the
+underlying loans prepay faster, the notional falls faster. The path
+is uncertain at trade time. The swap therefore passes the actual
+prepayments of the security into its own schedule. The balance of
+the swap stays aligned with the balance of the security.
+
+** How it works in ORE
+
+The =BalanceGuaranteedSwapData= node is the trade data container for
+the =BalanceGuaranteedSwap= trade type. A BGS must have two legs, one
+fixed and one floating. Each leg typically carries an amortising
+notional. The node also contains a =ReferenceSecurity= sub-node. It
+specifies the Asset Backed Security to which the notional schedule of
+the BGS is linked. Its value is the prefix =ISIN:= followed by an
+ISIN code. The =Tranches= node describes the tranche notionals of the
+security. Each tranche is identified by a =SecurityId= and an
+optional =Description=. Each tranche has a =Seniority= given as a
+positive integer. Lower values mean higher seniority. The most senior
+tranche has seniority 1. The tranche notionals sit in a =Notionals=
+sub-node.
+
+** Mathematical notes
+
+The product needs a prepayment model because its schedule is
+uncertain. CPR is the Conditional Prepayment Rate of the reference
+security. The zero-CPR schedule assumes no prepayment. The MaxCPR
+path assumes the maximum plausible prepayment. ORE prices the BGS as
+a Flexi Swap whose notional can move between these two paths. The
+option holder is the payer of the structured leg. The option value
+covers the prepayment uncertainty of the security.
+
+** What moves its value (static sensitivities)
+
+- The swap rate levels of the fixed and floating legs.
+- The current CPR and the historical CPRs of the security.
+- The MaxCPR estimate for the reference security.
+- The actual prepayment behaviour of the collateral.
+- The discount curve and the spread of the structured leg.
+- The tranche structure and the notional schedules.
+
+Fast prepayment shrinks the notional and the remaining exposure.
+Slow prepayment keeps a larger balance alive for longer.
+
+** How the profile ages (dynamic sensitivities)
+
+Each period the security's actual prepayments set the next notional.
+Realised prepayment replaces the assumption as time passes. Fast
+prepayment amortises the balance down quickly. The remaining swap
+exposure shrinks with it. Slow prepayment leaves a larger balance.
+The optionality between the zero-CPR schedule and the MaxCPR path is
+consumed as prepayments realise.
+
+** Why a customer would want it
+
+A customer that funds or hedges an Asset Backed Security wants the
+swap balance to follow the collateral. A fixed amortisation schedule
+cannot match unknown prepayments. The BGS transfers the prepayment
+uncertainty into the swap. The fixed and floating legs then hedge the
+security's coupon profile. In ORE Studio a customer books balance
+guaranteed swaps to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a balance guaranteed swap on a two-tranche
+security:
+
+#+begin_example
+<BalanceGuaranteedSwapData>
+  <ReferenceSecurity>ISIN:XS0983610930</ReferenceSecurity>
+  <Tranches>
+    <Tranche>
+      <Description>Class A</Description>
+      <SecurityId>ISIN:XS0983610930</SecurityId>
+      <Seniority>1</Seniority>
+      <Notionals>
+      ...
+      </Notionals>
+    </Tranche>
+    <Tranche>
+      <Description>Class B</Description>
+      <SecurityId>ISIN:XS0983610931</SecurityId>
+      <Seniority>2</Seniority>
+      <Notionals>
+      ...
+      </Notionals>
+    </Tranche>
+    <ScheduleData>
+    ...
+    </ScheduleData>
+  </Tranches>
+  <LegData>
+	<LegType>Fixed</LegType>
+	 ...
+  </LegData>
+  <LegData>
+	<LegType>Floating</LegType>
+	 ...
+  </LegData>
+</BalanceGuaranteedSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/balanceguaranteedswap.tex=,
+listing =Balance Guaranteed Swap data=. The source listing repeats
+the opening tag at its end; the closing tag is normalised here.
+
+The auxiliary product used for pricing is the
+[[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]].
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/balanceguaranteedswap.tex=.
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

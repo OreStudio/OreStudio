@@ -1,0 +1,195 @@
+:PROPERTIES:
+:ID: FCC37EB3-D654-4333-B110-3BF4AFA3A237
+:END:
+#+title: Swaption
+#+description: An option to enter an interest rate swap; ORE's Swaption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:swaption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A swaption gives the right, not the obligation, to enter an interest
+rate swap. The right can be European, Bermudan, or American. ORE
+models it with the trade type =Swaption=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A swaption is an option to enter an underlying interest rate swap.
+The underlying swap may have varying notional, rates, and spreads. It
+can be single-currency or cross-currency. A payer swaption enters a
+swap that pays fixed and receives floating. A receiver swaption
+enters a swap that receives fixed and pays floating. A European
+swaption exercises only on its expiration date. A Bermudan swaption
+exercises on a predetermined set of dates. An American swaption
+exercises any time between two dates.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A swaption is an option which gives the buyer the right, but not the
+obligation, to enter into an underlying interest rate swap. The
+underlying swap may have varying notional, rates, and spreads during
+its lifetime, and can be single-currency or cross-currency.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+
+ORE splits swaptions into payer and receiver types. A payer swaption
+has an underlying swap that pays fixed and receives floating. A
+receiver swaption has an underlying swap that receives fixed and pays
+floating.
+
+ORE states the European form as follows:
+
+#+begin_quote
+With a European Swaption, the buyer is only allowed to exercise the
+option and enter into the swap on the expiration date of the
+swaption.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+
+ORE describes the settlement choices as follows:
+
+#+begin_quote
+European Swaption settlement can be either cash or physical delivery
+of the underlying swap. For cash settlement there are different
+methods to compute the settlement price (collateralized cash price,
+par yield curve).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+
+ORE states the Bermudan form as follows:
+
+#+begin_quote
+In a Bermudan Swaption, the buyer is allowed to exercise the option
+and enter into the underlying swap on a predetermined set of dates
+rather than a single expiration date. The underlying swap may have
+varying notional, rates, and spreads during its lifetime.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+
+An American swaption allows exercise any time between two specified
+dates.
+
+** In plain terms
+
+A swaption is an option on a swap. The buyer pays a premium for the
+right to enter the swap later. At the exercise date the buyer decides
+whether the swap is worth entering. A payer swaption gains when
+rates rise. A receiver swaption gains when rates fall. Physical
+settlement creates the actual swap. Cash settlement pays the swap
+value in cash.
+
+** How it works in ORE
+
+The =SwaptionData= node is the trade data container for the
+=Swaption= trade type. The node has exactly one =OptionData= sub-node
+and at least one =LegData= sub-node. Supported exercise styles are
+=European=, =Bermudan=, and =American=. Swaptions of all styles can
+carry an arbitrary number of legs. Cross-currency swaptions are
+supported for all styles. Unless =MidCouponExercise= is true, at
+least one full coupon period must follow the exercise date for a
+European swaption. The same holds after the last exercise date for
+Bermudan and American swaptions. For swaptions, the payer and
+receiver legs of the underlying swap are always from the perspective
+of the party that is long.
+
+** Mathematical notes
+
+A European payer swaption at expiry is worth max(0, V). V is the
+value of the underlying payer swap at that date. The holder exercises
+when the swap has positive value. For a plain fixed-versus-floating
+swap this happens when the market swap rate stands above the fixed
+rate of the swap. A Bermudan swaption allows one decision per
+exercise date. The holder compares exercise value with the value of
+the rights that remain. An American swaption allows exercise any time
+in a window. Physical exercise creates the underlying swap. Cash
+settlement pays a settlement amount computed by the chosen method.
+
+** What moves its value (static sensitivities)
+
+- The level of the underlying swap rate against the fixed rate.
+- The volatility of that swap rate.
+- The discount curve.
+- The exercise schedule and the style.
+- The terms of the legs, including amortisation and day counts.
+
+A payer swaption gains as the swap rate rises above the fixed rate. A
+receiver swaption gains as the swap rate falls. Near the money, the
+value loads on volatility.
+
+** How the profile ages (dynamic sensitivities)
+
+A European swaption holds its optionality until expiry. At expiry one
+decision settles the trade. A Bermudan swaption faces one decision
+per exercise date. A date that passes without exercise consumes that
+right. After physical exercise the trade ages as the underlying swap.
+Its coupons and resets then run to maturity.
+
+** Why a customer would want it
+
+A customer locks today's rates for a future swap need. A treasurer
+hedges the refinancing of a loan. A desk expresses a view on swap
+rate volatility. The swaption is also the engine of callable
+structures. In ORE Studio a customer books swaptions to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long physically settled European receiver
+swaption on sterling:
+
+#+begin_example
+<SwaptionData>
+    <OptionData>
+        <LongShort>Long</LongShort>
+        <Style>European</Style>
+        <Settlement>Physical</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2027-03-02</ExerciseDate>
+        </ExerciseDates>
+        ...
+        <Premiums>
+          <Premium>
+            <Amount>807000</Amount>
+            <Currency>GBP</Currency>
+            <PayDate>2021-06-15</PayDate>
+          </Premium>
+        </Premiums>
+    </OptionData>
+    <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>GBP</Currency>
+        ...
+    </LegData>
+    <LegData>
+        <LegType>Floating</LegType>
+        <Payer>true</Payer>
+        <Currency>GBP</Currency>
+        ...
+    </LegData>
+</SwaptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=,
+listing =Swaption data=.
+
+A callable swap embeds this optionality, see the
+[[id:0EE613F9-9A1F-4B03-A1B2-FB4791D6C2EE][Callable Swap]] note.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Swaption][Wikipedia: Swaption]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/swaption.tex=. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

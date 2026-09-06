@@ -1,0 +1,135 @@
+:PROPERTIES:
+:ID: 11714B3F-A790-4797-BE01-41426289E7C7
+:END:
+#+title: Forward Rate Agreement
+#+description: A single-period lock on a future interest rate; ORE's ForwardRateAgreement product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:forwardrateagreement:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A forward rate agreement locks the rate of a single future interest
+period. The lock is benchmarked to a reference IBOR index. ORE models
+it with the trade type =ForwardRateAgreement=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A forward rate agreement sets a fixed forward rate against a
+reference IBOR index rate and tenor. The difference between the
+forward rate and the reference rate is paid or received at the end of
+the contract. Interest accrues on a predetermined notional from an
+agreed start date to the end of the contract. No notional changes
+hands. ORE settles the contract on its start date.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Forward Rate Agreement is a contract between two counterparties
+that determines a fixed forward interest rate benchmarked to a
+reference IBOR index rate and tenor.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardrateagreement.tex=.
+
+ORE states three properties of the contract:
+
+#+begin_quote
+Difference between the forward rate and the reference rate is to be
+paid/received at the end of the contract.
+Interest is accrued on a predetermined notional amount from an agreed
+upon start date to the end of the FRA contract.
+There are no exchanges of notional.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardrateagreement.tex=.
+
+** In plain terms
+
+A borrower who needs a loan in the future locks its rate today. The
+FRA then pays the difference between the locked rate and the rate
+that actually fixes. The contract creates no loan. The notional only
+scales the payment.
+
+** How it works in ORE
+
+The trade uses the =ForwardRateAgreementData= block. =StartDate= is
+the date on which the FRA expires and settles. =EndDate= is when the
+forward loan or deposit ends. The difference between the two dates is
+the tenor of the underlying loan. =Currency= names the currency of
+the notional. =Index= names the benchmark rate. It has the form
+CCY-INDEX-TENOR, with an integer followed by D, W, M, or Y as the
+tenor. Overnight indices carry no tenor. =LongShort= sets the
+direction. A long position receives the agreed rate. A short position
+pays it. =Strike= is the agreed forward rate in decimal form. The
+value 0.05 means a rate of 5 percent. =Notional= is constant. It
+carries no accretion or amortisation.
+
+** Mathematical notes
+
+An FRA is a forward on one IBOR fixing. At trade time the parties
+agree the strike. At the fixing the reference rate realises. The
+payoff is the difference between the two, scaled by the notional and
+the accrual of the period. The payment lands at the end of the
+contract. No principal ever moves.
+
+** What moves its value (static sensitivities)
+
+- The forward rate for the contract tenor and reference index.
+- The strike and the direction of the position.
+- The discount curve to the payment date.
+- The day-count convention of the accrual period.
+- The distance to the fixing date.
+
+Before the fixing the trade moves one for one with the forward rate.
+The delta is one unit of rate exposure on the notional.
+
+** How the profile ages (dynamic sensitivities)
+
+Until its fixing the trade behaves like a forward on the reference
+index. On the start date the reference rate fixes. The payoff becomes
+a known cash amount from that moment. Only discount risk remains
+until the payment at the end date. At the end date the cash settles
+and the trade stops.
+
+** Why a customer would want it
+
+A customer locks a future borrowing or lending rate without a loan on
+the balance sheet. A treasurer hedges an upcoming funding need. A
+trader takes a view on the short end of the curve. The FRA is also
+the building block of swap replication. In ORE Studio a customer
+books forward rate agreements to value them and run sensitivities on
+the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long FRA on euro six-month Euribor struck at
+0.1 percent:
+
+#+begin_example
+<ForwardRateAgreementData>
+    <StartDate>20161028</StartDate>
+    <EndDate>20351028</EndDate>
+    <Currency>EUR</Currency>
+    <Index>EUR-EURIBOR-6M</Index>
+    <LongShort>Long</LongShort>
+    <Strike>0.001</Strike>
+    <Notional>1000000000</Notional>
+</ForwardRateAgreementData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardrateagreement.tex=,
+listing =Forward Rate Agreement Data=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Forward_rate_agreement][Wikipedia: Forward rate agreement]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/forwardrateagreement.tex=.
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

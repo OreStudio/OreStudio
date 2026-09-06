@@ -1,0 +1,153 @@
+:PROPERTIES:
+:ID: 37689AC9-DBA5-41AA-866E-19522F733D2E
+:END:
+#+title: Knock Out Swap
+#+description: A swap that terminates when a rate fixing breaches a barrier; ORE's KnockOutSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:knockoutswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A knock out swap terminates when a floating index fixing crosses a
+barrier level. The swap is otherwise a vanilla fixed-versus-floating
+swap. ORE models it with the trade type =KnockOutSwap=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A knock out swap is a vanilla fixed-versus-floating interest rate
+swap. It terminates when the float index fixing is above an up-and-
+out barrier or below a down-and-out barrier. The barrier is monitored
+on all floating leg fixing dates on or after the barrier start date.
+ORE requires exactly one =BarrierData= node and exactly two legs, one
+fixed and one floating.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Knock Out Swap refers to a vanilla fixed vs. float Interest Rate
+Swap that terminates when the float index fixing is above ("up and
+out") or below ("down and out") a given barrier level.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/knockoutswap.tex=.
+
+ORE states the mechanics as follows:
+
+#+begin_quote
+A Knock Out Swap is a Swap with one Fixed and one Floating leg, where
+the Swap is terminated if the Floating leg Index hits a barrier. The
+barrier is monitored on all floating leg fixing dates after the
+BarrierStartDate.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/knockoutswap.tex=.
+
+** In plain terms
+
+A knock out swap is a normal swap with a tripwire. If the floating
+rate fixing crosses the barrier on a fixing date, the swap ends. The
+tripwire removes all remaining payments. Otherwise the swap runs to
+maturity like any other.
+
+** How it works in ORE
+
+A knock out swap uses the trade type =KnockOutSwap= and a
+=KnockOutSwapData= block. It must have one =BarrierData= node and two
+legs, one fixed and one floating. The =BarrierData= node carries a
+=Type= of =UpAndOut= or =DownAndOut=. =Levels= holds exactly one
+barrier level. The optional =StrictComparison= element takes 0 or 1
+and defaults to 0. The value 0 checks out-barriers with =<= and =>=.
+The value 1 checks out-barriers with strict < and >. =BarrierStartDate=
+names the date from which the barrier is monitored. The barrier is
+monitored on all floating leg fixing dates that fall on or after that
+date.
+
+** Mathematical notes
+
+The product is a vanilla swap with a barrier condition. The value is
+the swap value minus the value of the remaining payments in the
+states where the barrier is hit. Each floating fixing date is a test
+once monitoring has started. For an up-and-out swap, a fixing above
+the level ends the trade. For a down-and-out swap, a fixing below the
+level ends it. The strictness of the comparison decides whether a
+fixing exactly at the level counts.
+
+** What moves its value (static sensitivities)
+
+- The level of the floating index against the barrier.
+- The swap rate levels of the fixed and floating legs.
+- The volatility of the floating index. It drives the chance of
+  breach.
+- The barrier level and the strictness of the comparison.
+- The barrier start date and the fixing schedule.
+
+The chance of breach rises as the index fixing nears the barrier.
+Close to the level the trade is most sensitive to the index and to
+volatility.
+
+** How the profile ages (dynamic sensitivities)
+
+The swap runs like a vanilla swap before the barrier start date.
+From that date each floating fixing is a test. A breach ends the swap
+at once. No further payments occur after the breach. If no fixing
+breaches, the swap runs to maturity and ages like a plain vanilla
+swap.
+
+** Why a customer would want it
+
+A customer can cap the life of a swap with a knock out feature. An
+up-and-out swap suits a view that rates stay below the level. If
+rates spike, the swap ends and the exposure with it. The barrier
+feature can also cheapen the swap against a vanilla one. In ORE
+Studio a customer books knock out swaps to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an up-and-out knock out swap. The trade ends
+when a floating fixing rises above 5 percent:
+
+#+begin_example
+<Trade id="194837232">
+  <TradeType>KnockOutSwap</TradeType>
+  <Envelope>...</Envelope>
+  <KnockOutSwapData>
+    <!-- BarrierData and BarrierStartDate specify the knock out terms -->
+    <BarrierData>
+      <Type>UpAndOut</Type>
+      <Levels>
+        <Level>0.05</Level>
+      </Levels>
+    </BarrierData>
+    <BarrierStartDate>2024-10-01</BarrierStartDate>
+    <!-- we require exactly one Floating and one Fixed Leg -->
+    <LegData>
+      <LegType>Floating</LegType>
+      ...
+    </LegData>
+    <LegData>
+      <LegType>Fixed</LegType>
+      ...
+    </LegData>
+  </KnockOutSwapData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/knockoutswap.tex=,
+listing =Knock Out Swap=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
+  definition.
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/knockoutswap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

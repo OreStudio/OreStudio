@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 0EE613F9-9A1F-4B03-A1B2-FB4791D6C2EE
+:END:
+#+title: Callable Swap
+#+description: A swap one party can cancel on set dates; ORE's CallableSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:callableswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A callable swap lets one party terminate the swap on specific dates.
+The right is a physically settled swaption embedded in the swap. ORE
+models it with the trade type =CallableSwap=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A callable swap can be terminated by one of the parties on specific
+dates. The product decomposes into a swap and a physically settled
+swaption. The swaption represents the call right. The underlying swap
+must be fixed versus float. Its notional, rates, and spreads may vary
+during its lifetime.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Callable Swap can be terminated by one of the parties on specific
+dates and thus can be decomposed into a swap and a physically settled
+swaption, the latter representing the call right. The underlying swap
+must be fixed versus float and may have varying notional, rates, and
+spreads during its lifetime.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callableswap.tex=.
+
+The =CallableSwapData= node is the trade data container for the
+=CallableSwap= trade type. A callable swap is a swap that can be
+cancelled at predefined dates by one of the counterparties.
+
+** In plain terms
+
+A callable swap is a normal swap with a kill switch. One party holds
+the switch. That party can end the swap on the call dates. If the
+right is never used, the swap runs to maturity like any other. The
+party holding the right pays for it through the terms of the trade.
+
+** How it works in ORE
+
+A callable swap must have at least one leg. Multiple legs are
+allowed. The leg types can be =Floating=, =Fixed=, or =Cashflow=.
+Cross-currency underlyings are supported. The =OptionData= node
+describes the exercise dates. Its =LongShort= flag names the party
+holding the call right. The settlement must always be =Physical=.
+Leg directions follow the =Payer= flag, as for a swap, from the
+perspective of the party to the trade. This differs from a swaption,
+where leg directions follow the party that is long. If exercise
+triggers an exchange of notionals in a cross-currency callable swap,
+the exchange is captured as two exercise fees in the respective
+currencies. Unless =MidCouponExercise= is true, at least one full
+coupon period must follow the exercise date for a European callable
+swap. The same holds after the last exercise date for Bermudan and
+American callable swaps. An exercised callable swap is marked via the
+=ExerciseData= node within =OptionData=.
+
+** Mathematical notes
+
+A callable swap is a swap plus an embedded option. The option is a
+physically settled swaption on the remaining swap. The party holding
+the call right terminates when the swap has become unfavourable to
+receive. ORE values the callable swap with the same machinery as a
+swaption. The exercise dates drive the optionality. Between the
+dates, the swap legs accrue and pay as usual.
+
+** What moves its value (static sensitivities)
+
+- The swap rate levels that set the value of the fixed and floating
+  legs.
+- The volatility of the swap rates, through the embedded option.
+- The exercise dates and the notice conventions.
+- The discount curve.
+- The terms of the legs, including notional amortisation.
+
+The fixed payer benefits when rates fall and the swap runs. The party
+holding the call right benefits when terminating removes an
+unfavourable swap.
+
+** How the profile ages (dynamic sensitivities)
+
+The swap runs coupon by coupon between call dates. On each call date
+the holder decides to terminate or to continue. A date that passes
+without exercise consumes that right. After termination no further
+payments occur. If no call date is used, the swap runs to maturity
+and ages like a plain vanilla swap.
+
+** Why a customer would want it
+
+A customer that may want to exit a swap buys the right to do so. The
+right allows a refinancing when rates move in the customer's favour.
+A bank structures the product for customers with uncertain swap
+needs. In ORE Studio a customer books callable swaps to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a callable swap with a Bermudan call right on
+annual dates from 2031 to 2033:
+
+#+begin_example
+<CallableSwapData>
+    <OptionData>
+      <LongShort>Short</LongShort>
+      <Style>Bermudan</Style>
+      <Settlement>Physical</Settlement>
+      <MidCouponExercise>true</MidCouponExercise>
+      <ExerciseDates>
+        <ExerciseDate>2031-10-01</ExerciseDate>
+        <ExerciseDate>2032-10-01</ExerciseDate>
+        <ExerciseDate>2033-10-01</ExerciseDate>
+      </ExerciseDates>
+      ...
+    </OptionData>
+  <LegData>
+    <LegType>Fixed</LegType>
+    <Payer>false</Payer>
+    <Currency>USD</Currency>
+    ...
+  </LegData>
+  <LegData>
+    <LegType>Floating</LegType>
+    <Payer>true</Payer>
+    <Currency>USD</Currency>
+    ...
+  </LegData>
+</CallableSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callableswap.tex=,
+listing =Callable Swap data=. The source listing repeats the opening
+tag of =MidCouponExercise=; the closing tag is normalised here.
+
+The embedded right is a physically settled swaption, see the
+[[id:FCC37EB3-D654-4333-B110-3BF4AFA3A237][Swaption]] note.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/callableswap.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

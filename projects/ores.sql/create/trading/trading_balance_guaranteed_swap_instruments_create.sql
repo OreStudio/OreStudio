@@ -59,28 +59,28 @@ create table if not exists "ores_trading_balance_guaranteed_swap_instruments_tbl
 );
 
 -- Version uniqueness for optimistic concurrency
-create unique index if not exists bgs_instruments_version_uniq_idx
+create unique index if not exists balance_guaranteed_swap_instruments_version_uniq_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists bgs_instruments_id_uniq_idx
+create unique index if not exists balance_guaranteed_swap_instruments_id_uniq_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists bgs_instruments_tenant_idx
+create index if not exists balance_guaranteed_swap_instruments_tenant_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create index if not exists bgs_instruments_party_idx
+create index if not exists balance_guaranteed_swap_instruments_party_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists bgs_instruments_trade_id_idx
+create unique index if not exists balance_guaranteed_swap_instruments_trade_id_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
   and trade_id is not null;
 
-create index if not exists bgs_instruments_workspace_idx
+create index if not exists balance_guaranteed_swap_instruments_workspace_idx
 on "ores_trading_balance_guaranteed_swap_instruments_tbl" (workspace_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
@@ -119,18 +119,22 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_balance_guaranteed_swap_instruments_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and instrument_id = NEW.instrument_id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -144,9 +148,10 @@ before insert on "ores_trading_balance_guaranteed_swap_instruments_tbl"
 for each row execute function ores_trading_balance_guaranteed_swap_instruments_insert_fn();
 
 create or replace rule ores_trading_balance_guaranteed_swap_instruments_delete_rule as
-on delete to "ores_trading_balance_guaranteed_swap_instruments_tbl" do instead
+on delete to "ores_trading_balance_guaranteed_swap_instruments_tbl" do instead (
     update "ores_trading_balance_guaranteed_swap_instruments_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and instrument_id = OLD.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

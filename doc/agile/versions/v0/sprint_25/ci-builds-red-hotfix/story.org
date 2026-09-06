@@ -37,11 +37,11 @@ green.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                             |
+| State         | DONE                             |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Template fix in flight on branch hotfix/ci-builds-red-hotfix. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Roll the story DONE when the PR merges. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-06                               |
 
 * Acceptance
@@ -57,7 +57,7 @@ green.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:670C711E-2DCB-42DD-9F01-EC45FFF5310D][Implement Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] | STARTED | 2026-09-06 | | Edit the mapper-impl codegen template to emit value_or(0) for nullable numeric fields, retangle the templates and regenerate the compute mapper, verify codegen drift, the site build, the roundtrip and the full build with ctest, then raise the hotfix PR and roll the story and this task DONE. The story doc, the sprint Hotfixes row and this task ride this branch. |
+| [[id:670C711E-2DCB-42DD-9F01-EC45FFF5310D][Implement Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] | DONE | 2026-09-06 | 2026-09-06 | Edit the mapper-impl codegen template to emit value_or(0) for nullable numeric fields, retangle the templates and regenerate the compute mapper, verify codegen drift, the site build, the roundtrip and the full build with ctest, then raise the hotfix PR and roll the story and this task DONE. The story doc, the sprint Hotfixes row and this task ride this branch. |
 
 * Decisions
 

@@ -41,11 +41,11 @@ branch.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                             |
+| State        | DONE                             |
 | Parent story | [[id:D1896FA3-026B-4056-A4FD-8C18BF9DF4C1][Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] |
-| Now          | Template fix in flight.                |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the hotfix PR when the verification is green. |
+| Next         | Nothing. |
 | Last touched | 2026-09-06                               |
 
 * Acceptance
@@ -113,3 +113,19 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Done on 2026-09-06. The mapper-impl template
+(projects/ores.codegen/library/templates/ores.cpp.repository.mapper_impl.org)
+emits =value_or(0)= at both =is_nullable_numeric= sites (identity and
+plain groups); the codegen templates retangle to
+cpp_domain_type_mapper.cpp.mustache with the same change. The compute
+mapper regenerates to the only diff across the eight compute models:
+result_mapper.cpp lines 45 and 47 now read =value_or(0)=. Git grep
+confirms no tracked file carries =value_or({})=.
+
+Verification (linux-clang-debug-make): full build clean; ctest 71/71
+passed, 0 failed; codegen drift clean (refdata, reporting, marketdata
+regenerate byte-identical); domain roundtrip exit 0; site build green.
+The compile failure itself is not reproducible locally, since g++ 16.2
+and clang 21.1 accept the old idiom; the CI record in * Notes proves
+the failure and the post-merge continuous runs on main confirm the fix.

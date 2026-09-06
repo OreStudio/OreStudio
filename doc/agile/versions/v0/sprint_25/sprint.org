@@ -112,7 +112,7 @@ For the definitions of the themes see [[id:A064D838-F127-4DD6-BB42-9A7902039AEE]
 | [[id:81F46448-9FD2-4D33-A162-67B0D986C4DE][Hotfix: read_latest_party_types returns empty results]] | DONE | | 2026-08-19 | party_type_repository::read_latest() returns empty vector despite written records. Temporal field mismatch or trigger malfunction. |
 | [[id:AE32C594-8E9B-4C58-B3D2-B93BB7C219E1][Hotfix: eventing integration test flakes on Windows CI]] | STARTED | 2026-08-25 | | The eventing integration test occasionally fails on Windows CI because a transient notification drop exceeds the poll budget. |
 | [[id:FB225462-5BBA-449D-82FC-BA03B0C7C731][Hotfix: Windows build broken on unistd.h include]] | DONE | | 2026-08-31 | The Windows CI build fails because postgres_listener_service.cpp includes unistd.h, which MSVC does not provide. |
-| [[id:D1896FA3-026B-4056-A4FD-8C18BF9DF4C1][Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] | STARTED | 2026-09-06 | | The result-mapper codegen template emits value_or({}) for nullable numerics; the CI compilers gcc 13 and Apple clang cannot deduce the value_or template parameter from a braced-init-list, while MSVC and clang-cl accept it. The fix emits value_or(0). |
+| [[id:D1896FA3-026B-4056-A4FD-8C18BF9DF4C1][Hotfix: CI builds red across all OSs on value_or({}) in the generated result mapper]] | DONE | 2026-09-06 | 2026-09-06 | The result-mapper codegen template emits value_or({}) for nullable numerics; the CI compilers gcc 13 and Apple clang cannot deduce the value_or template parameter from a braced-init-list, while MSVC and clang-cl accept it. The fix emits value_or(0). |
 
 * Achievements
 

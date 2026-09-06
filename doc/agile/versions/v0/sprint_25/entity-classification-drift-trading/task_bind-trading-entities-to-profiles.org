@@ -28,9 +28,9 @@ Survey every ores.trading entity (projects/ores.trading/modeling) against the pr
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]] |
-| Now          | Group 2 done: party_role_type, trade_type committed. Group 3 starts (nine instruments). |
+| Now          | Group 3 done: nine instruments and both dual-model binds committed; three no-match entities migrated (trade_identifier, trade_party_role, trade). |
 | Waiting on   | Nothing.                               |
-| Next         | Phase 2: nine heading-PK instruments, then the five dual models. |
+| Next         | Phase 4: generated-code review, full build, ctest. |
 | Last touched | 2026-09-06                               |
 
 * Acceptance
@@ -315,6 +315,83 @@ Exclusions to verify (not assume) survive rebind + regen:
   optional<uuid> node filters)
 - =ores.trading.core= =service/fra_instrument_service.{hpp,cpp}=
   (get_swap_legs / get_swap_legs_batch via swap_leg_repository)
+
+** Group 3 close (2026-09-06)
+
+All nine heading-PK instruments are bound to =trading-instrument=, one
+commit each (5ea4b219d7 .. 705fe567c6): primary key migrates to the
+=:primary_key:= column flag on instrument_id and the SQL
+Checks/Indexes/Insert-trigger Validations sections carry the committed
+schema semantics the current templates no longer infer. The
+=balance_guaranteed_swap_instrument= short-name fix
+(entity_singular_short/entity_plural_short bgs_* → full names) rides
+its bind. The era-sync deltas are the registrar-family additions and
+the usual SQL re-expression; =fra_instrument_service.{hpp,cpp}= is the
+first empirically verified bespoke-service exclusion (the regen drops
+the hand-written get_swap_legs accessors; restored byte-identical,
+divergence recorded for the phase-5 registry decision).
+
+The five dual models close with two binds and three recorded no-matches:
+
+- =lifecycle_event= (6304704c82) binds to =workspace-scoped-lookup=,
+  the profile's first bind anywhere. The workspace shape question from
+  the survey resolved by keeping the flag: the org's own
+  =has_tenant_id=/=has_workspace_id= declarations drop as
+  profile-covered and the regenerated output is workspace-scoped — a
+  deliberate delta versus the stale tenant-only committed output last
+  written by the retired lookup sibling (whose duplicate emission was
+  the drift baseline). The Qt drawer is authored to the lookup recipe;
+  fsm_state_id stays out of it — uuid plumbing columns have no edit
+  precedent in any drawer and are not user-facing (same gap family as
+  the Group 2 domain-enum record for trade_type's product_type). The
+  bind also drops the org's singular generator-facet deviation and the
+  singular generator/ pair retires to the repo-wide plural.
+- =trade_id_type= (c5f55d030a) binds to =simple-lookup=. Both retire
+  their =*_lookup_entity.org= siblings per the iam precedent.
+- =trade_identifier= (c5eeb171ea) — NO-MATCH. Deciding conflict:
+  workspace scope. Actual features: real tenant_id AND workspace_id
+  columns; uuid primary key; relationship-bearing (trade_id and
+  issuing_party_id soft FKs, the issuer polymorphic across parties and
+  counterparties). workspace-scoped-lookup is the only workspace-scoped
+  profile and requires a text key with =has_uuid_primary_key: false=;
+  the uuid-keyed profiles are tenant-only; fk-scoped-child requires a
+  modeled parent FK. Org stays unbound with explicit properties; PK
+  migrated; regen delta benign era-sync (eventing family,
+  entity_type_of, pagination arms, wire-format changes).
+- =trade_party_role= (36e1980cbf) — NO-MATCH. Five pinned
+  uuid-identified-lookup features match (heading uuid PK, tenant-scoped,
+  soft FKs, eventing family) but the profile's qt-namespace assignment
+  rows seed the qt key even for a drawer-less org, forcing a full Qt
+  drawer that is unsatisfiable: no uuid detail-form widget exists in
+  the drawer vocabulary for the non-null trade_id/counterparty_id
+  soft-FK columns, and =role= is non-unique so no honest key_field
+  exists. The honest UI is parent-scoped (role grid inside the Trade
+  window), outside any profile. Org stays unbound; SQL keys
+  (Foreign keys, Insert trigger Validations, Indexes with
+  =:index_prefix: party_roles=) make the regen lossless; the generator
+  facet drops to the repo-wide plural default and its test expectation
+  flips to version 0.
+- =trade= (4a02aeca6f) — NO-MATCH, whole-estate exclusion. Actual
+  features: authored Qt drawer (has_uuid_primary_key, has_pagination),
+  generator facet, bespoke trade_service. The PK migrates so the model
+  loads, but a regeneration of the migrated org rewrites the full
+  estate into a flat shape that demolishes the committed hand-authored
+  output: the five-way composed domain
+  (identity/parties/classification/lifecycle/audit per the C1202
+  rfl::Flatten pattern) becomes a flat struct with a different wire
+  format. The composition vocabulary (per-column =:group:= plus
+  =:domain_identity_group:=/=:domain_audit_group:=) can nest at most
+  identity and audit, so the five-group split is not reproducible from
+  the org. The regen additionally clobbers the hand-written mapper,
+  repository, protocol, changed event and generator, the bespoke
+  =trade_service.{hpp,cpp}= (fsm_transition_map, optional<uuid> node
+  filters) and =trade_handler.hpp=, the nine ores.qt Trade UI files,
+  and drops the create.sql temporal trigger plus seven non-unique
+  indexes the org does not express. All 37 regenerated outputs restored
+  byte-identical to HEAD with the measured clobber recorded here — the
+  =trade_service= exclusion from the worklist is now verified, not
+  assumed. Trade's estate stays hand-authored pending the phase-5
+  registry decision.
 
 * Test Scenarios
 

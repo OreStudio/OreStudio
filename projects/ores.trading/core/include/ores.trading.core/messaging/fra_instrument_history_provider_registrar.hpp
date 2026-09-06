@@ -17,22 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_FRA_INSTRUMENT_TABLE_IO_HPP
-#define ORES_TRADING_API_DOMAIN_FRA_INSTRUMENT_TABLE_IO_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_FRA_INSTRUMENT_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_FRA_INSTRUMENT_HISTORY_PROVIDER_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
-#include <vector>
+#include "ores.history.core/service/dispatch_registry.hpp"
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Dumps the fra_instrument objects to a stream in table format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const std::vector<fra_instrument>& v);
+void register_fra_instrument_history_provider(ores::history::service::dispatch_registry& registry);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

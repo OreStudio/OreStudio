@@ -17,22 +17,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_API_DOMAIN_FRA_INSTRUMENT_TABLE_IO_HPP
-#define ORES_TRADING_API_DOMAIN_FRA_INSTRUMENT_TABLE_IO_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_FRA_INSTRUMENT_REGISTRAR_HPP
+#define ORES_TRADING_CORE_MESSAGING_FRA_INSTRUMENT_REGISTRAR_HPP
 
-#include "ores.trading.api/domain/fra_instrument.hpp"
-#include "ores.trading.api/export.hpp"
-#include <iosfwd>
+#include "ores.database/domain/context.hpp"
+#include "ores.nats/service/client.hpp"
+#include "ores.nats/service/subscription.hpp"
+#include "ores.security/jwt/jwt_authenticator.hpp"
+#include <optional>
 #include <vector>
 
-namespace ores::trading::domain {
+namespace ores::trading::messaging {
 
-/**
- * @brief Dumps the fra_instrument objects to a stream in table format.
- */
-ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
-                                                 const std::vector<fra_instrument>& v);
+std::vector<ores::nats::service::subscription>
+register_fra_instrument_handlers(ores::nats::service::client& nats,
+                                 ores::database::context ctx,
+                                 std::optional<ores::security::jwt::jwt_authenticator> verifier);
 
-}
+} // namespace ores::trading::messaging
 
 #endif

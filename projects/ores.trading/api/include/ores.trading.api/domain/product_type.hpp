@@ -22,6 +22,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <ostream>
 #include <rfl.hpp>
 #include <stdexcept>
 #include <string>
@@ -88,6 +89,16 @@ enum class product_type : std::uint8_t {
             return "scripted";
     }
     throw std::invalid_argument("Out-of-range product_type");
+}
+
+/**
+ * @brief Stream a product_type using its string representation.
+ *
+ * Generated table code streams entity members directly; without this
+ * operator a domain-enum member in a table display does not compile.
+ */
+inline std::ostream& operator<<(std::ostream& s, product_type pt) {
+    return s << to_string(pt);
 }
 
 /**

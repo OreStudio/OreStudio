@@ -17,17 +17,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/repository/trade_id_type_entity.hpp"
-#include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
-#include <ostream>
-#include <rfl.hpp>
-#include <rfl/json.hpp>
+#ifndef ORES_TRADING_SERVICE_MESSAGING_TRADE_ID_TYPE_EVENT_REGISTRAR_HPP
+#define ORES_TRADING_SERVICE_MESSAGING_TRADE_ID_TYPE_EVENT_REGISTRAR_HPP
 
-namespace ores::trading::repository {
+#include "ores.eventing.api/service/event_bus.hpp"
+#include "ores.eventing.core/service/postgres_event_source.hpp"
+#include "ores.nats/service/client.hpp"
 
-std::ostream& operator<<(std::ostream& s, const trade_id_type_entity& v) {
-    rfl::json::write(v, s);
-    return s;
-}
+namespace ores::trading::service::messaging {
 
-}
+[[nodiscard]] ores::eventing::service::subscription
+register_trade_id_type_event_mapping(ores::eventing::service::postgres_event_source& event_source,
+                                     ores::eventing::service::event_bus& event_bus,
+                                     ores::nats::service::client& nats);
+
+} // namespace ores::trading::service::messaging
+
+#endif

@@ -53,5 +53,6 @@ set(files
     "repository_fx_vanilla_option_instrument_repository_tests.cpp"
     "repository_fx_variance_swap_instrument_repository_tests.cpp"
     "repository_trade_type_repository_tests.cpp"
+    "trade_id_type_eventing_integration_tests.cpp"
     "trade_type_eventing_integration_tests.cpp"
 )

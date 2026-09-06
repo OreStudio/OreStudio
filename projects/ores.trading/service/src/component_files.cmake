@@ -47,6 +47,7 @@ set(files
     "messaging/party_role_type_event_registrar.cpp"
     "messaging/rpa_instrument_event_registrar.cpp"
     "messaging/swaption_instrument_event_registrar.cpp"
+    "messaging/trade_id_type_event_registrar.cpp"
     "messaging/trade_type_event_registrar.cpp"
     "messaging/vanilla_swap_instrument_event_registrar.cpp"
 )
@@ -85,6 +86,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/party_role_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/rpa_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_id_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/trade_type_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.service/ores.trading.service.hpp"

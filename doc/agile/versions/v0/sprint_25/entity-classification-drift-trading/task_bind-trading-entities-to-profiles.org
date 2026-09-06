@@ -28,9 +28,9 @@ Survey every ores.trading entity (projects/ores.trading/modeling) against the pr
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]] |
-| Now          | Phase 1: entity survey in progress.    |
+| Now          | Phase 1 complete: survey recorded.    |
 | Waiting on   | Nothing.                               |
-| Next         | Phase 1: trading baseline and survey.  |
+| Next         | Phase 2: resolved features and binding.|
 | Last touched | 2026-09-06                               |
 
 * Acceptance
@@ -184,6 +184,86 @@ as the deliberate delta, exactly the lookup-entity migration the
 codegen-fix-drift skill prescribes. The 14 heading-PK orgs additionally
 migrate their primary-key expression to the column flag as part of
 binding, or the component cannot regenerate at all.
+
+** Survey classification (2026-09-06, phase 1 close)
+
+The survey walks the modeling directory once (the trade and
+trading-cpp catalogue entries share it). 36 entity/lookup orgs
+classify into three groups; the other eight files (component_overview,
+module, six field groups) are structural and carry no variability,
+excluded per the pilot precedent.
+
+- *Group 1 - bound, regenerating byte-identical (16 orgs).* The nine
+  =equity_*= and seven =fx_*= instrument orgs carry column-flag
+  primary keys and =:profile: trading-instrument=; their committed
+  outputs are current-era and the probe rewrote them cleanly. Their
+  only delta is a missing family: =*_history_provider_registrar=
+  ({hpp,cpp} x 16, 32 files), a template addition that postdates the
+  instrument conversions and is absent from main - a pure addition to
+  commit with the migration.
+
+- *Group 2 - unbound, regenerating (2 orgs).* =party_role_type= and
+  =trade_type= carry column-flag primary keys (migrated in the
+  2026-08-10 batch-2 rollout, eacb4f9b35) but no =:profile:=. Their
+  committed outputs are 08-10-era and predate two template changes:
+  the generator family moved from =generators/= to =generator/=
+  (committed plural-path files go stale, singular paths materialize)
+  and the =*_history_provider_registrar= family was added. Bind
+  candidate: simple-lookup - the iam analogue (tenant_type,
+  tenant_status, account_type) bound to it; every non-inert
+  assignment matches (tenant-only, text-code key, no Qt drawer, so
+  the Qt-half assignments are inert).
+
+- *Group 3 - legacy heading-PK (18 orgs).* Fourteen orgs fail the
+  loader's column-flag validation (org_loader.py requires
+  =:primary_key:= on a column since 1e0775417d) and generate nothing;
+  the four =*_lookup_entity.org= siblings of lifecycle_event,
+  party_role_type, trade_id_type and trade_type load and generate
+  under the retired lookup-entity emission. Two orgs per model name
+  write the same paths: the probe log writes the party_role_type and
+  trade_type domain headers twice (entity org, then lookup org), the
+  lifecycle_event and trade_id_type headers once (entity org errored,
+  only the lookup org wrote). The 98 tracked files that drifted are
+  the four models' full output sets. The canonical org per pair is
+  the entity org - the lookup orgs retire per the iam precedent
+  (afae8de42f deleted iam's three) and are deleted - and the entity
+  orgs' primary keys then migrate to column flags. Group 3 splits
+  further:
+  - *Nine swap/option instruments* (balance_guaranteed_swap,
+    callable_swap, cap_floor, fra_instrument, inflation_swap,
+    knock_out_swap, rpa_instrument, swaption_instrument,
+    vanilla_swap_instrument): feature-identical to group 1
+    (tenant+workspace flags, =has_batch_read=) except that none sets
+    =party_id_from_session=, which =trading-instrument= fixes true - a
+    real resolved-value mismatch to arbitrate from the per-entity
+    phase-3 diff (alignment with the 16, or genuinely different party
+    sourcing), not to assume either way.
+  - *lifecycle_event, trade_id_type, trade, trade_identifier,
+    trade_party_role*: no current-era committed output (their domain
+    headers last changed 2026-06-05 and predate the eventing
+    families). No catalogue profile fits =trade= (Qt drawer,
+    pagination, bespoke =trade_service= exclusion); expect a recorded
+    no-match with actual feature values, per the business_unit
+    precedent, while its primary key still migrates so the component
+    can regenerate at all. =lifecycle_event= carries a shape
+    question: its entity org declares =has_workspace_id: true= while
+    the committed output (tenant-only, last written by the lookup
+    sibling) does not - migrate to the committed tenant-only shape,
+    or keep the workspace flag as a deliberate delta.
+  - The four =output/*_er.puml= files materialize only for the four
+    dual models (output/ is empty on main); confirm at phase 3
+    whether the entity orgs still emit them once the lookup orgs are
+    gone.
+
+The stale worklist below predates this survey and does not map onto
+the current directory: half its model names (activity_type,
+business_day_convention_type, day_count_fraction_type,
+floating_index_type, fpml_event_type, leg_type,
+payment_frequency_type) are not trading models - four are refdata
+orgs, three do not exist as modeling orgs anywhere. Treat it as
+historical; phase 3 re-derives each per-entity gap from the diffs,
+and the profile catalogue expresses a gap only when it recurs across
+a bound group.
 
 Fuller worklist carried over from the superseded ad hoc task
 (=task_apply_safe_drift_trading.org=), for reference when profile-binding

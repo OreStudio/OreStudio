@@ -73,7 +73,7 @@ evidence that protection still holds.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-|      |       |       |     |             |
+| [[id:D5575FF2-4942-41A7-A9A5-AC25926A794E][Scaffold story: Verify the compute-grid and tenant flows from the desktop UI]] | DONE | 2026-09-06 | 2026-09-06 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 
 * Decisions
 

@@ -183,6 +183,7 @@ Tags that describe the business or technical domain of the content.
 | =ci= | Continuous integration. |
 | =currencies= | Currency reference data. |
 | =counterparty= | Counterparty entity and management. |
+| =cpiswap= | CPI inflation swaps and inflation-linked markets. |
 | =deployment= | Deployment and environment provisioning. |
 | =documentation= | Documentation tooling and conventions. |
 | =domain= | Business domain modelling. |
@@ -208,6 +209,7 @@ Tags that describe the business or technical domain of the content.
 | =trading= | Trading domain (also component tag). |
 | =ui= | User interface design and implementation. |
 | =ux= | User experience. |
+| =yyswap= | Year-on-year inflation swaps and inflation-linked markets. |
 
 * Story and ancestry slug tags
 

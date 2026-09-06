@@ -8,7 +8,7 @@
 #+filetags: :ci-builds-red-hotfix:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/ci-builds-red-hotfix
-#+pr:
+#+pr: 2020
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-06
@@ -104,7 +104,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2020][#2020]] | [ores.codegen] Emit value_or(0) for nullable numerics in result mappers |
 
 * Review
 

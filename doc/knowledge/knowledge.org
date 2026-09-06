@@ -68,6 +68,48 @@ description with domain grounding and ORE examples.
   protection mechanics, the quanto form, and sensitivities.
 - [[id:B74A3D5C-1001-490D-9840-976C4E85E12F][Credit Linked Swap]] — swap payments with credit triggers: the four
   payment classes and sensitivities.
+- [[id:90BB6829-31EC-4C86-BE17-FDABF670DDB6][Equity Asian Option]] — the averaging option of the equity family: the
+  arithmetic or geometric average of the spot, the observation
+  schedule, and sensitivities.
+- [[id:E9DCA7FE-1680-435D-BAD3-956E809BD71C][Equity Auto Delta Hedged Option]] — the discretely hedged structure:
+  batches of European options with an embedded delta-hedging
+  strategy, and sensitivities.
+- [[id:80C9B215-EBBA-4367-902B-C0687C0E43E8][Equity Barrier Option]] — the path-dependent barrier core: the single
+  continuously monitored barrier, knock-in and knock-out forms, and
+  sensitivities.
+- [[id:F3398C7E-E978-45C4-94AA-6EBB6DA98EC9][Equity Cliquet Option]] — the ratchet structure: periodic returns
+  locked in with local and global caps and floors, and sensitivities.
+- [[id:FCD38489-372D-4CD4-9A8A-DB0A332DE26E][Equity Digital Option]] — the binary bet of the equity family: a fixed
+  payout or nothing, decided by the spot at expiry, and sensitivities.
+- [[id:06615BB7-3A1C-407D-8745-010DB52BD053][Equity Double Barrier Option]] — a vanilla option inside a corridor:
+  two continuously monitored barriers, knock-in and knock-out forms,
+  and sensitivities.
+- [[id:44BB5D47-C9CF-4E77-A4A9-50F14044A535][Equity Double Touch Option]] — a fixed payout on a corridor: the
+  double one-touch and double no-touch forms, payout at expiry, and
+  sensitivities.
+- [[id:0415E392-7423-411F-A83B-C791E6BE3078][Equity European Barrier Option]] — the once-checked barrier: a single
+  barrier monitored only at expiry, knock-in and knock-out forms, and
+  sensitivities.
+- [[id:D60CBEE4-AE5C-421B-AAEF-5E56DC75A662][Equity Forward]] — the equity linear building block: the forward
+  purchase or sale of shares or an index, cash settlement, and
+  sensitivities.
+- [[id:67ECE260-9D52-4183-882D-06F795AF9BA1][Equity Futures Option]] — optionality on a futures price: European and
+  American exercise, the futures price flag, and sensitivities.
+- [[id:803F50A7-7DB5-4F6B-81F4-BE48C6EEFAB1][Equity Option]] — vanilla equity optionality: European and American
+  styles, quanto and composite forms, and sensitivities.
+- [[id:643843A9-B265-49B3-85BA-0E2F261DE7A9][Equity Option Position]] — direct option exposure: the single equity
+  option or the weighted basket, the total return swap component
+  role, and sensitivities.
+- [[id:0AE749B3-E51A-4036-8561-622F5EE69C02][Equity Position]] — direct equity exposure: the single underlying or
+  the weighted basket, the total return swap component role, and
+  sensitivities.
+- [[id:D45F8289-3F31-462F-9C98-460CE820F75F][Equity Swap]] — equity performance against funding: the price return
+  or total return coupon, the fixed or floating funding leg, and
+  sensitivities.
+- [[id:45585B0A-31A1-49D9-9CF3-A5C240F9607D][Equity Touch Option]] — the binary barrier bet: a fixed payout on a
+  touch, the one-touch and no-touch forms, and sensitivities.
+- [[id:D69C0964-9F15-43BC-8A13-66ECED718BED][Equity Variance Swap]] — equity volatility traded directly: the
+  realised variance payoff and sensitivities.
 - [[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]] — flexible amortisation: the option to cut the
   notional toward lower bounds, the replication price, and
   sensitivities.

@@ -1,0 +1,164 @@
+:PROPERTIES:
+:ID: 45585B0A-31A1-49D9-9CF3-A5C240F9607D
+:END:
+#+title: Equity Touch Option
+#+description: A cash-or-nothing one-touch option on an equity; ORE's EquityTouchOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_touchoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity touch option pays a fixed amount or nothing, decided by a
+single barrier on the equity spot. The barrier is monitored
+continuously. ORE models it with the trade type =EquityTouchOption=.
+This note records the domain grounding, as ORE documents it in its
+product catalogue.
+
+* Summary
+
+An equity touch option has a continuously monitored single barrier
+with a cash-or-nothing digital underlying. At expiry it pays either a
+fixed predetermined payoff amount or zero, depending on whether the
+equity spot reached the barrier. The four main types are up-and-out,
+down-and-out, up-and-in and down-and-in. A knock-in, or one-touch,
+pays when the barrier is breached. A knock-out, or no-touch, pays when
+it is not. The container node is =EquityTouchOptionData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+This product has a continuously monitored single barrier with a
+Cash-or-Nothing digital underlying.
+
+At expiry an Equity Touch Option pays either a fixed predetermined
+payoff amount or zero (Cash-or-Nothing) depending upon an Equity spot
+rate reaching a pre-set barrier level.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_touchoption.tex=.
+
+ORE describes the four forms as follows:
+
+#+begin_quote
+A Knock-In or One-Touch option has a fixed payout if the barrier is
+breached, and no payout otherwise. The payout can be at expiry or at
+hit.
+
+A Knock-Out or No-Touch option has no payout if the barrier is
+breached, and fixed payout at expiry otherwise.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_touchoption.tex=.
+
+** In plain terms
+
+A touch option is a binary bet on a level. One level sits above or
+below the current price. The one-touch form pays when the price hits
+the level at any time. The no-touch form pays when the price never
+hits it. The payout is a fixed cash amount or nothing.
+
+** How it works in ORE
+
+The =EquityTouchOptionData= node is the trade data container for the
+=EquityTouchOption= trade type. It has one =OptionData= sub-node and
+one =BarrierData= sub-node. The =OptionType= is not required. It is
+inferred from the barrier type: =Call= for an up barrier and =Put=
+for a down barrier. =LongShort= names the side. =PayOffAtExpiry= is
+optional: =true= for payoff at expiry and =false= for payoff at hit.
+For up-and-out and down-and-out barriers only payoff at expiry is
+supported. It defaults to =true=. =Settlement= takes =Cash= or
+=Physical=. Exactly one =ExerciseDate= must be given. =Premiums= is
+optional. =BarrierData= holds the level in =Levels=. The level is
+quoted in the same currency as the underlying equity spot.
+=StrictComparison= is optional and selects the strict or non-strict
+barrier check. =PayoffCurrency= must be consistent with the currency
+of the underlying equity spot. =PayoffAmount= is the fixed payoff
+amount. The underlying comes from =Name= or an =Underlying= node.
+=StartDate=, =Calendar= and =EQIndex= support a check for a barrier
+breach before today's date. The equity index format is =EQ-RIC:Code=.
+
+** Mathematical notes
+
+The product is a digital claim on a barrier event. The one-touch form
+pays the payoff amount if the spot touches the barrier at any time
+during the life. The payout can be at the moment of the hit or at
+expiry. The no-touch form pays at expiry if the spot never touched the
+barrier. No rebates are supported. The value is the discounted
+probability of the event times the payoff amount.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity and its distance to the
+  barrier.
+- The implied volatility of the underlying. It drives the chance of a
+  touch.
+- The barrier level and the time to expiry.
+- The payoff amount and the timing of the payout.
+
+Close to the barrier the chance of a touch rises quickly. The no-touch
+form loses value as the spot nears the level.
+
+** How the profile ages (dynamic sensitivities)
+
+The barrier is monitored continuously from the start date. A one-touch
+option that touches the barrier has its event decided. The payout
+arrives at the hit or at expiry as the trade specifies. A no-touch
+option that touches the barrier is dead from that moment. A no-touch
+option that survives ages toward a more certain payout, while its
+survival probability falls as time passes without a touch.
+
+** Why a customer would want it
+
+A one-touch pays when a level breaks, which suits a customer who
+expects a large move. A no-touch pays when the price stays on one side
+of the level. The fixed payout and known premium make the trade easy
+to size. In ORE Studio a customer books equity touch options to value
+them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an up-and-in touch on the S&P 500 index that
+pays one million when the spot reaches 3300:
+
+#+begin_example
+<EquityTouchOptionData>
+    <OptionData>
+        <LongShort>Long</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2022-03-01</ExerciseDate>
+        </ExerciseDates>
+        ...
+    </OptionData>
+    <BarrierData>
+      <Type>UpAndIn</Type>
+      <Levels>
+        <Level>3300</Level>
+      </Levels>
+    </BarrierData>
+    <PayoffCurrency>USD</PayoffCurrency>
+    <PayoffAmount>1000000</PayoffAmount>
+    <Name>RIC:.SPX</Name>
+    <StartDate>2019-12-27</StartDate>
+    <Calendar>US-NYSE</Calendar>
+    <EQIndex>EQ-RIC:.SPX</EQIndex>
+</EquityTouchOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_touchoption.tex=,
+listing =Equity Touch Option data=. The source ends the =EQIndex= line
+with a stray =>= character; it is normalised here.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/eq_touchoption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

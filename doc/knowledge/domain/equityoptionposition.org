@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: 643843A9-B265-49B3-85BA-0E2F261DE7A9
+:END:
+#+title: Equity Option Position
+#+description: A position in a single equity option or a weighted option basket; ORE's EquityOptionPosition product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityoptionposition:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity option position is exposure to one equity option or to a
+weighted basket of equity options. It works as a stand-alone trade
+type and as a building block inside other products. ORE models it with
+the trade type =EquityOptionPosition=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An equity option position holds one option underlying or several
+weighted option underlyings. As a stand-alone trade it uses the trade
+type =EquityOptionPosition=. As a trade component it is the
+=EquityOptionPositionData= node inside the =TotalReturnSwap= (Generic
+TRS) trade type, where it sets up equity option basket trades. Each
+underlying pairs an equity block with an =OptionData= block and a
+=Strike=. Negative weights flip the side of the position. The position
+price is the quantity times the weighted sum of the option prices.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An equity option position represents a position in a single equity
+option - using a single Underlying node, or in a weighted basket of
+underlying equity options - using multiple Underlying nodes.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoptionposition.tex=.
+
+ORE states the dual role as follows:
+
+#+begin_quote
+An Equity Option Position can be used both as a stand alone trade type
+(TradeType: EquityOptionPosition) or as a trade component
+(EquityOptionPositionData) used within the TotalReturnSwap (Generic
+TRS) trade type, to set up for example Equity Option Basket trades.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoptionposition.tex=.
+
+** In plain terms
+
+An equity option position is a list of options priced as one trade.
+Each line names an equity, its option terms and its strike. Weights
+scale each line. A negative weight turns a long position into a short
+one. The same block can feed an option basket leg inside a total
+return swap.
+
+** How it works in ORE
+
+The =EquityOptionPositionData= node is the trade data container for
+the =EquityOptionPosition= trade type. =Quantity= is the number of
+options written on one underlying share, or the number of units of the
+option basket. The node takes one or more =Underlying= descriptions.
+Each description holds an equity =Underlying= block, an =OptionData=
+block and a =Strike= element, in that order. The option block carries
+=LongShort=, =OptionType=, =Style=, =Settlement= and =ExerciseDates=.
+The style can be =European= or =American=. Exactly one exercise date
+must be given. It represents the European exercise date or the last
+American exercise date. Negative weights are allowed. A long position
+with a negative weight results in a short position, and the other way
+around. For a basket each equity carries a =Weight= value.
+
+** Mathematical notes
+
+The weighted basket price is Basket-Price = Quantity x sum over i of
+Weight_i x p_i x FX_i. Here p_i is the price of the ith option in the
+basket, written on one underlying share. FX_i is the FX spot
+converting from the ith equity currency to the first equity currency,
+which is the currency in which the net present value of the basket is
+expressed.
+
+** What moves its value (static sensitivities)
+
+- The spot price of each underlying equity.
+- The implied volatility of each underlying.
+- The expected dividends and rates that price each option.
+- The weights of the basket lines, including their signs.
+- The FX spot rates between the equity currencies and the first
+  equity currency.
+- The strikes and exercise dates of the options.
+
+Each option line moves with its own underlying and volatility. The
+basket value is the weighted sum of those moves.
+
+** How the profile ages (dynamic sensitivities)
+
+Each option in the basket decays toward its intrinsic value as its
+exercise date approaches. A basket with one expiry behaves like a
+single portfolio of options. After exercise the settled lines drop
+out. The FX conversion rates refresh with each valuation.
+
+** Why a customer would want it
+
+A customer can hold a spread or a basket of equity options in one
+trade. The weighted lines express relative views, such as a call
+spread on the same index. Negative weights build hedged structures
+without separate trades. In ORE Studio a customer books equity option
+positions to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a basket of two S&P 500 calls with strikes 3300
+and 3400, weighted equally:
+
+#+begin_example
+<Trade id="EquityOptionPositionTrade">
+  <TradeType>EquityOptionPosition</TradeType>
+  <EquityOptionPositionData>
+    <!-- basket price = quantity x sum_i ( weight_i x equityOptionPrice_i x fx_i ) -->
+    <Quantity>1000</Quantity>
+    <!-- option #1 -->
+    <Underlying>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>.SPX</Name>
+        <Weight>0.5</Weight>
+        <IdentifierType>RIC</IdentifierType>
+      </Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2021-01-29</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>3300</Strike>
+    </Underlying>
+    <Underlying>
+      ...
+    </Underlying>
+  </EquityOptionPositionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoptionposition.tex=,
+listing =Equity Option position data=, second basket line elided.
+
+The spot-based relative of this product is the
+[[id:0AE749B3-E51A-4036-8561-622F5EE69C02][Equity Position]].
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/equityoptionposition.tex=.
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -201,6 +201,22 @@ Tags that describe the business or technical domain of the content.
 | =documentation= | Documentation tooling and conventions. |
 | =domain= | Business domain modelling. |
 | =entity= | Domain entity (also used as type tag). |
+| =eq_asianoption= | Equity Asian options and averaged-price equity derivatives. |
+| =eq_barrieroption= | Equity barrier options and path-dependent equity derivatives. |
+| =eq_digitaloption= | Equity digital options and binary equity derivatives. |
+| =eq_doublebarrieroption= | Equity double barrier options and path-dependent equity derivatives. |
+| =eq_doubletouchoption= | Equity double touch options and binary equity derivatives. |
+| =eq_europeanbarrieroption= | Equity European barrier options and path-dependent equity derivatives. |
+| =eq_touchoption= | Equity touch options and binary equity derivatives. |
+| =equityautodeltahedgedoption= | Equity auto delta hedged options and discretely hedged structures. |
+| =equitycliquetoption= | Equity cliquet options and ratchet structures. |
+| =equityforward= | Equity forward contracts and equity derivatives markets. |
+| =equityfuturesoption= | Options on equity futures and equity derivatives markets. |
+| =equityoption= | Equity options and equity derivatives markets. |
+| =equityoptionposition= | Equity option positions and weighted option baskets. |
+| =equityposition= | Equity positions and weighted equity baskets. |
+| =equityswap= | Equity swaps and equity derivatives markets. |
+| =equityvarianceswap= | Equity variance swaps and equity volatility markets. |
 | =finance= | Finance domain, products, and markets. |
 | =flexiswap= | Flexi swaps and flexible amortisation structures. |
 | =forwardrateagreement= | Forward rate agreements and the money market forward curve. |

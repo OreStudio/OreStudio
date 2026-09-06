@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 0415E392-7423-411F-A83B-C791E6BE3078
+:END:
+#+title: Equity European Barrier Option
+#+description: A barrier option monitored once at expiry; ORE's EquityEuropeanBarrierOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_europeanbarrieroption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity European barrier option gives the buyer a right that may be
+withdrawn by the equity price at expiry. The barrier is checked once.
+ORE models it with the trade type =EquityEuropeanBarrierOption=. This
+note records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+An equity European barrier option gives the buyer the right to buy a
+set number of shares at a strike at one predetermined time in the
+future. The right may be withdrawn if the equity spot reaches a
+barrier level at that time. The underlying is monitored only at
+expiry, with a single barrier. Exercise is European and the barrier
+is European. Knock-in and knock-out forms are supported. Settlement
+can be cash or physical. The container node is
+=EquityEuropeanBarrierOptionData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Equity European Barrier option gives the buyer the right, but not
+the obligation, to buy a set number of shares of a single name equity
+or an equity index, at a predetermined strike price, at one
+predetermined time in the future. This right may be withdrawn
+depending upon an Equity spot price or index reaching a predetermined
+barrier level at the predetermined time, the underlying is monitored
+only at expiry with a single barrier.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=.
+
+ORE adds the settlement terms as follows:
+
+#+begin_quote
+For this right the buyer pays a premium to the seller. Settlement can
+be either cash or physical delivery.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=.
+
+** In plain terms
+
+A European barrier option is the once-checked relative of the barrier
+family. The barrier does not watch the price through the life of the
+option. It is checked at expiry only. If the price sits on the wrong
+side of the barrier at that moment, the option dies. Otherwise it
+settles like a vanilla option.
+
+** How it works in ORE
+
+The =EquityEuropeanBarrierOptionData= node is the trade data container
+for the =EquityEuropeanBarrierOption= trade type. It has one
+=OptionData= sub-node and one =BarrierData= sub-node. Only the
+European option style is allowed. The barrier level in =BarrierData=
+is quoted in the same currency as the underlying equity spot. Changing
+the option from call to put does not require switching the barrier
+level. The underlying comes from =Name= or an =Underlying= node.
+=StrikeData= holds the strike and supports =StrikePrice= only.
+=Quantity= is the number of units of the underlying covered by the
+transaction.
+
+** Mathematical notes
+
+The four main types are up-and-out, down-and-out, up-and-in and
+down-and-in. An up option starts below the barrier. A down option
+starts above it. The barrier is compared with the spot at expiry, not
+through the life of the option. A knock-out option that expires on the
+wrong side of the barrier pays zero, or a cash rebate paid as a
+fraction of the original premium. A knock-in option becomes active
+only if the spot is on the right side at expiry. The value of the
+product is the vanilla value adjusted for the probability of the spot
+finishing on the wrong side of the barrier.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity and its distance to the
+  barrier.
+- The implied volatility of the underlying. It drives the chance of
+  the expiry check failing.
+- The strike and the barrier level.
+- The interest rates and dividends of the underlying.
+
+Only the terminal spot matters for the barrier, so the product
+behaves like a vanilla option until near expiry.
+
+** How the profile ages (dynamic sensitivities)
+
+The barrier event is decided at expiry, so no breach can end the
+option early. The product ages like a European option for its whole
+life. At expiry the spot is checked against the barrier. A knock-out
+option on the wrong side pays zero or the rebate. A knock-in option
+on the right side pays its vanilla payoff.
+
+** Why a customer would want it
+
+The European barrier is cheaper than a vanilla option and less
+path-dependent than a continuously monitored barrier. It suits a
+customer who accepts a barrier check at the settlement moment only. In
+ORE Studio a customer books equity European barrier options to value
+them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an option on the S&P 500 index with a strike of
+3200 and a quantity of 1000:
+
+#+begin_example
+<EquityEuropeanBarrierOptionData>
+    <OptionData>
+        ...
+    </OptionData>
+    <BarrierData>
+        ...
+    </BarrierData>
+    <Name>RIC:.SPX</Name>
+    <StrikeData>
+      <StrikePrice>
+        <Value>3200.00</Value>
+        <Currency>USD</Currency>
+      </StrikePrice>
+    </StrikeData>
+    <Quantity>1000</Quantity>
+</EquityEuropeanBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=,
+listing =Equity European Barrier Option data=. The source ends the
+=Quantity= line with a stray =>= character; it is normalised here.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=.
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

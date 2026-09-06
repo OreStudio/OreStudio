@@ -1,0 +1,169 @@
+:PROPERTIES:
+:ID: F3398C7E-E978-45C4-94AA-6EBB6DA98EC9
+:END:
+#+title: Equity Cliquet Option
+#+description: A series of forward-start equity options with local and global caps; ORE's EquityCliquetOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equitycliquetoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A cliquet option is a series of consecutive forward-start equity
+options. Each option is struck at a given moneyness when it becomes
+active. ORE models it with the trade type =EquityCliquetOption=. This
+note records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A cliquet option consists of a series of consecutive forward starting
+equity options. Each option is struck at a given moneyness, commonly
+at the money, when it becomes active. The per-period returns can carry
+local caps and floors. The total return can carry a global cap and a
+global floor. The container node is =EquityCliquetOptionData=. A
+=ScheduleData= node defines the valuation dates. The first date starts
+the first option. Each following date closes one period and starts the
+next. The final valuation date settles the whole product.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A cliquet option is an exotic option consisting of a series of
+consecutive forward start options, with each option being struck
+at-the-money when it becomes active.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equitycliquetoption.tex=.
+
+ORE restates the setup as follows:
+
+#+begin_quote
+A cliquet option consists of a series of consecutive forward starting
+equity options, with each option being struck at a given moneyness
+(commonly at-the-money) when it becomes active.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equitycliquetoption.tex=.
+
+** In plain terms
+
+A cliquet option resets itself every period. Each period starts a new
+option at the then-current price. The gain of each period is added up.
+Caps and floors limit each period and the total. The buyer collects
+the sum of the good periods while the caps and floors control the
+cost.
+
+** How it works in ORE
+
+The =EquityCliquetOptionData= node is the trade data container for the
+=EquityCliquetOption= trade type. The underlying comes from =Name= or
+an =Underlying= node. =Currency= is the currency of the notional and
+must equal the currency of the underlying equity. =Notional= scales
+the payoff. =LongShort= names the side and =OptionType= the call or
+put direction. =Moneyness= sets the strike of each forward starting
+option. A value of 1.0 is at the money, 1.1 is 110 percent of the at-
+the-money strike, 0.9 is 90 percent. =LocalCap= and =LocalFloor= limit
+each period's return. =GlobalCap= and =GlobalFloor= limit the total
+return. The =ScheduleData= node defines the valuation dates. The last
+date is the final valuation date. The whole payoff is paid at that
+date plus =SettlementDays=. =SettlementDays= defaults to zero.
+=Premium= is paid for the option and is expressed relative to the
+notional. If a premium is specified, a =PremiumPaymentDate= must also
+be specified. =PremiumCurrency= defaults to the currency of the
+notional.
+
+** Mathematical notes
+
+The payoff is N x min(cap_g, max(floor_g, sum over the periods of the
+period returns)). Each period return is delta x min(cap_l,
+max(floor_l, S_ti / S_ti-1 - M)). S_ti is the price of the underlying
+at the period end. M is the moneyness. Delta is 1 for a call and -1
+for a put. cap_l and floor_l are the local cap and floor. cap_g and
+floor_g are the global cap and floor over the whole product. The local
+limits bind period by period. The global limits bind the accumulated
+sum.
+
+** What moves its value (static sensitivities)
+
+- The spot level of the underlying at each reset date.
+- The implied volatility surface across the option tenors.
+- The local caps and floors of each period.
+- The global cap and floor of the product.
+- The moneyness of the forward-start strikes.
+- The interest rates and dividends of the underlying.
+
+Each period is a new at-the-money option, so the structure is
+sensitive to the volatility term structure. The caps and floors set
+how much optionality each period keeps.
+
+** How the profile ages (dynamic sensitivities)
+
+Period by period a return is locked in. A local cap or floor applies
+when the period return tries to exceed it. The accumulated total moves
+toward the global cap or floor. Once the global cap is reached, the
+remaining periods add nothing. Once the global floor binds, later
+gains rebuild the total. The number of live periods shrinks as the
+schedule advances. The final payoff settles at the last valuation date
+plus the settlement days.
+
+** Why a customer would want it
+
+A cliquet structure suits a customer who expects the market to grind
+upward with periodic setbacks. Each reset gives a fresh at-the-money
+option, so the customer never holds a deep out-of-the-money strike.
+The caps and floors shape the price. In ORE Studio a customer books
+equity cliquet options to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a short call cliquet on the S&P 500 index with
+annual resets:
+
+#+begin_example
+<EquityCliquetOptionData>
+    <Underlying>
+      <Type>Equity</Type>
+      <Name>.SPX</Name>
+      <IdentifierType>RIC</IdentifierType>
+    </Underlying>
+    <Currency>USD</Currency>
+    <Notional>1000000.0</Notional>
+    <LongShort>Short</LongShort>
+    <OptionType>Call</OptionType>
+    <Moneyness>1.0</Moneyness>
+    <LocalCap>0.07</LocalCap>
+    <LocalFloor>-0.06</LocalFloor>
+    <GlobalCap>0.07</GlobalCap>
+    <GlobalFloor>-0.07</GlobalFloor>
+    <ScheduleData>
+      <Dates>
+        <Date>20171231</Date>
+        <Date>20181231</Date>
+        ...
+      </Dates>
+      <Calendar>USD</Calendar>
+      <Convention>F</Convention>
+    </ScheduleData>
+    <SettlementDays>5</SettlementDays>
+    <Premium>0.027</Premium>
+    <PremiumPaymentDate>31-12-2017</PremiumPaymentDate>
+    <PremiumCurrency>USD</PremiumCurrency>
+</EquityCliquetOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equitycliquetoption.tex=,
+listing =Cliquet Option data=, intermediate schedule dates elided.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Cliquet_option][Wikipedia: Cliquet option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/equitycliquetoption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

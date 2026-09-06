@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 0AE749B3-E51A-4036-8561-622F5EE69C02
+:END:
+#+title: Equity Position
+#+description: A position in a single equity or a weighted equity basket; ORE's EquityPosition product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityposition:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity position is direct exposure to a single equity or to a
+weighted basket of equities. It works as a stand-alone trade type and
+as a building block inside other products. ORE models it with the
+trade type =EquityPosition=. This note records the domain grounding, as
+ORE documents it in its product catalogue.
+
+* Summary
+
+An equity position holds one equity underlying or several weighted
+equity underlyings. As a stand-alone trade it uses the trade type
+=EquityPosition=. As a trade component it is the =EquityPositionData=
+node inside the =TotalReturnSwap= (Generic TRS) trade type, where it
+sets up equity basket trades. The position price is the quantity times
+the weighted sum of the underlying prices, each converted to the first
+underlying currency. The container node is =EquityPositionData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An equity position represents a position in a single equity - using a
+single Underlying node, or in a weighted basket of underlying equities
+- using multiple Underlying nodes.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityposition.tex=.
+
+ORE states the dual role as follows:
+
+#+begin_quote
+An Equity Position can be used both as a stand alone trade type
+(TradeType: EquityPosition) or as a trade component (EquityPositionData)
+used within the TotalReturnSwap (Generic TRS) trade type, to set up for
+example Equity Basket trades.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityposition.tex=.
+
+** In plain terms
+
+An equity position is the spot view of the equity family. It says how
+many shares or basket units are held. One share name is enough. A
+basket is a list of names with weights, priced in the currency of the
+first name. The same block also works inside a total return swap when
+the swap pays the return of an equity basket.
+
+** How it works in ORE
+
+The =EquityPositionData= node is the trade data container for the
+=EquityPosition= trade type. =Quantity= is the number of shares or the
+number of basket units held. The node takes one or more =Underlying=
+descriptions. Only equity underlyings are allowed. For a basket each
+underlying carries a =Weight= value. The underlying block names the
+equity with fields such as =Type=, =Name=, =IdentifierType=,
+=Currency= and =Exchange=. The first equity currency is by definition
+the currency in which the net present value of the basket is
+expressed. Other equity currencies convert into it through the FX
+spot.
+
+** Mathematical notes
+
+The weighted basket price is Basket-Price = Quantity x sum over i of
+Weight_i x S_i x FX_i. Here S_i is the price of the ith share in the
+basket. FX_i is the FX spot converting from the ith equity currency to
+the first equity currency. A single-name position is the special case
+of one underlying with a weight of one.
+
+** What moves its value (static sensitivities)
+
+- The spot price of each underlying equity.
+- The weight of each name in the basket.
+- The FX spot rates between the equity currencies and the first
+  equity currency.
+- The quantity of shares or basket units.
+
+The position gains when its underlying prices rise. A name with a
+larger weight moves the position more.
+
+** How the profile ages (dynamic sensitivities)
+
+An equity position is a spot holding. It carries no schedule and no
+optionality. Its value follows the underlying prices day by day until
+the position is closed. The FX conversion rates refresh with each
+valuation.
+
+** Why a customer would want it
+
+A customer can hold direct equity exposure in one trade, single name
+or basket. The same position block plugs into a total return swap when
+the swap needs an equity basket leg. In ORE Studio a customer books
+equity positions to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows an equity basket position with two European
+names, weighted equally:
+
+#+begin_example
+<Trade id="EquityPosition">
+  <TradeType>EquityPosition</TradeType>
+  <Envelope>...</Envelope>
+  <EquityPositionData>
+    <Quantity>1000</Quantity>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>BE0003565737</Name>
+        <Weight>0.5</Weight>
+        <IdentifierType>ISIN</IdentifierType>
+        <Currency>EUR</Currency>
+        <Exchange>XFRA</Exchange>
+      </Underlying>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>GB00BH4HKS39</Name>
+        <Weight>0.5</Weight>
+        <IdentifierType>ISIN</IdentifierType>
+        <Currency>GBP</Currency>
+        <Exchange>XLON</Exchange>
+      </Underlying>
+  </EquityPositionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityposition.tex=,
+listing =Equity position data=.
+
+The option-based relative of this product is the
+[[id:643843A9-B265-49B3-85BA-0E2F261DE7A9][Equity Option Position]].
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Stock][Wikipedia: Stock]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/equityposition.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: 803F50A7-7DB5-4F6B-81F4-BE48C6EEFAB1
+:END:
+#+title: Equity Option
+#+description: An option to buy or sell shares at a strike price; ORE's EquityOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity option gives the buyer the right to buy or sell shares at a
+strike price. European, American, quanto and composite forms are
+supported. ORE models the family with the trade type =EquityOption=.
+This note records the domain grounding, as ORE documents it in its
+product catalogue.
+
+* Summary
+
+An equity option gives the buyer the right, but not the obligation, to
+buy or sell a set number of shares of a single equity name or an
+equity index at a predetermined strike price. A European option
+exercises at the end of the contract. An American option exercises at
+any time up to expiration. In a quanto option the payoff currency
+differs from the currency the equity is quoted in. In a composite
+option the strike currency differs from the underlying currency.
+Settlement can be cash or physical. The container node is
+=EquityOptionData=.
+
+* Detail
+
+** What it is
+
+ORE defines the European and American forms as follows:
+
+#+begin_quote
+A European Equity Option gives the buyer the right, but not the
+obligation, to buy a set number of shares of a single name equity or
+an equity index, at a predetermined strike price, at the end of the
+contract. For this right the buyer pays a premium to the seller.
+
+An American Equity Option gives the buyer the right to buy at any time
+during the life of the option up until the expiration date. The right
+to buy the shares can only be exercised once.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoption.tex=.
+
+ORE defines the quanto and composite forms as follows:
+
+#+begin_quote
+A Quanto European Equity Option is a European Equity Option where the
+currency that the underlying equity (or equity index) is quoted in and
+the option payoff currency are different. The implied FX rate between
+the underlying currency and payoff currency at the option settlement
+date is then equal to one.
+
+In a European Equity Composite Option the strike currency is different
+from the underlying currency. This is unrelated to the CompositeTrade
+trade type.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoption.tex=.
+
+** In plain terms
+
+An equity option is an insurance-like right on a share price. The
+buyer pays a premium up front. In return the buyer can buy at the
+strike if the price rises above it, or sell at the strike if the price
+falls below it. Losses never exceed the premium. A quanto option pays
+in a different currency and ignores the exchange rate at settlement. A
+composite option keeps its strike in a different currency.
+
+** How it works in ORE
+
+The =EquityOptionData= node is the trade data container for the
+=EquityOption= trade type. It has one and only one =OptionData= trade
+component sub-node. =LongShort= names the side, =OptionType= the call
+or put right. =Style= takes =European= or =American=. =Settlement=
+takes =Cash= or =Physical=. A quanto payoff must settle in cash.
+=PayOffAtExpiry= is relevant for American options and defaults to
+=PayOffAtExpiry true=. Exactly one =ExerciseDate= must be given. For
+American options it is the last exercise date. =PaymentData= can set a
+payment date other than the exercise date, except for quanto and
+composite options. =Premiums= carries the premium amounts. The
+underlying comes from =Name= or an =Underlying= node. =Currency= is the
+payment currency. If it differs from the currency the equity is quoted
+in, a quanto payoff applies. For a quanto option, =StrikeCurrency= must
+equal the currency the equity is quoted in. For a composite option it
+must equal the payment currency. The strike can also sit in a
+=StrikeData= node, which supports =StrikePrice= only.
+
+** Mathematical notes
+
+The call payoff per share is max(S - K, 0) and the put payoff is
+max(K - S, 0), scaled by the quantity of shares. A quanto option
+converts the payoff at an implied FX rate of one. For a composite call
+the payoff at expiry is max(X(t) x S(t) - K, 0). Here X(t) is the
+exchange rate at expiry that converts from the underlying currency
+into the strike currency. The payoff can take place at exercise or at
+expiry.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity or index. It sets the
+  moneyness.
+- The implied volatility of the underlying.
+- The strike, the expiry and the style of the option.
+- The expected dividends of the underlying.
+- The interest rates in the payment and underlying currencies.
+- For quanto options, the FX volatility and the equity-FX
+  correlation.
+- For composite options, the FX spot level.
+
+Calls gain when the spot rises. Puts gain when it falls. Time decay
+works against the option buyer.
+
+** How the profile ages (dynamic sensitivities)
+
+An option loses time value as expiry approaches. Its value converges
+to the intrinsic value. A European option cannot exercise early. An
+American option can, and early exercise may be optimal just before a
+dividend. At expiry the option settles in cash or delivers the shares.
+The quanto and composite conversions apply at the settlement date.
+
+** Why a customer would want it
+
+An equity option caps the downside of a share position or a planned
+trade. The buyer pays a known premium and keeps unlimited upside
+potential. American exercise suits holders who may need to act before
+expiry. Quanto options give equity exposure in a home currency without
+FX risk. Composite options express a view on both the equity and the
+exchange rate. In ORE Studio a customer books equity options to value
+them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an American call on the S&P 500 index:
+
+#+begin_example
+<EquityOptionData>
+    <OptionData>
+         <LongShort>Long</LongShort>
+         <OptionType>Call</OptionType>
+         <Style>American</Style>
+         <Settlement>Cash</Settlement>
+         <PayOffAtExpiry>true</PayOffAtExpiry>
+         <ExerciseDates>
+             <ExerciseDate>2022-03-01</ExerciseDate>
+         </ExerciseDates>
+         ...
+    </OptionData>
+    <Name>RIC:.SPX</Name>
+    <Currency>USD</Currency>
+    <Strike>2147.56</Strike>
+    <StrikeCurrency>USD</StrikeCurrency>
+    <Quantity>17000</Quantity>
+</EquityOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoption.tex=,
+listing =Equity Option data=.
+
+The linear counterpart is the [[id:D60CBEE4-AE5C-421B-AAEF-5E56DC75A662][Equity Forward]]. The
+option-on-future variant is the [[id:67ECE260-9D52-4183-882D-06F795AF9BA1][Equity Futures Option]].
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/equityoption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

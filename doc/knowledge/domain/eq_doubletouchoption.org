@@ -1,0 +1,168 @@
+:PROPERTIES:
+:ID: 44BB5D47-C9CF-4E77-A4A9-50F14044A535
+:END:
+#+title: Equity Double Touch Option
+#+description: A cash-or-nothing double touch option on an equity; ORE's EquityDoubleTouchOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_doubletouchoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity double touch option pays a fixed amount or nothing, decided
+by two barrier levels on the equity spot. ORE models it with the trade
+type =EquityDoubleTouchOption=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An equity double touch option has two continuously monitored barriers
+with a cash-or-nothing digital underlying. It pays either a fixed
+predetermined payoff amount or zero, depending on whether the equity
+spot reaches one of the barriers. The knock-in form, or double one-
+touch, pays when a barrier is breached. The knock-out form, or double
+no-touch, pays when no barrier is breached. The current
+implementation supports payout at expiry only. The container node is
+=EquityDoubleTouchOptionData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+This product has two continuously monitored barriers with a
+Cash-or-Nothing digital underlying.
+
+An Equity Double Touch option pays either a fixed predetermined
+payoff amount or zero (Cash-or-Nothing) depending upon an Equity spot
+rate reaching one of the pre-set barrier levels.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=.
+
+ORE describes the two forms as follows:
+
+#+begin_quote
+A Knock-In or Double One-Touch option has a fixed payout if one of the
+barriers is breached, and no payout otherwise.
+
+A Knock-Out or Double No-Touch option has no payout if one of the
+barriers is breached, and fixed payout otherwise.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=.
+
+ORE notes that the current implementation supports equity double
+touch options with payout at expiry only.
+
+** In plain terms
+
+A double touch option is a bet on a corridor. Two levels sit above
+and below the current price. The double one-touch form pays when the
+price touches either level. The double no-touch form pays when the
+price stays inside the corridor for the whole life. Either way the
+payout is a fixed cash amount or nothing.
+
+** How it works in ORE
+
+The =EquityDoubleTouchOptionData= node is the trade data container for
+the =EquityDoubleTouchOption= trade type. It has one =OptionData= sub-
+node and one =BarrierData= sub-node. The =OptionType= can be omitted.
+=LongShort= names the side. =PayOffAtExpiry= takes =true= for payoff
+at expiry and =false= for payoff at hit. Only payoff at expiry is
+currently supported, for both knock-out and knock-in barriers. It
+defaults to =true=. Exactly one =ExerciseDate= must be given.
+=Premiums= is optional. =BarrierData= holds two levels in =Levels= in
+ascending order. =Type= takes =KnockOut= or =KnockIn=. =StrictComparison=
+is optional: it selects <= and >= or the strict < and > for the
+barrier check. It defaults to the non-strict comparison. The barrier
+levels are quoted in the same currency as the underlying equity spot.
+=PayoffCurrency= must be consistent with that currency. =PayoffAmount=
+is the fixed payoff amount. The underlying comes from =Name= or an
+=Underlying= node. =StartDate=, =Calendar= and =EQIndex= support a
+check for a barrier breach before today's date. The equity index
+format is =EQ-RIC:Code=.
+
+** Mathematical notes
+
+The product is a digital claim on a corridor event. The double one-
+touch form pays the payoff amount if the spot touches either barrier
+at any time during the life. The double no-touch form pays if the spot
+stays between the two barriers for the whole life. No rebates are
+supported. The value is the discounted probability of the event times
+the payoff amount.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity and its distance to each
+  barrier.
+- The implied volatility of the underlying. It drives the chance of a
+  touch.
+- The width of the corridor between the two levels.
+- The time to expiry and the payoff amount.
+
+Close to a barrier the chance of a touch rises quickly. The no-touch
+form loses value as the spot nears either level.
+
+** How the profile ages (dynamic sensitivities)
+
+Both barriers are monitored continuously. A double one-touch option
+that touches a barrier has its event decided, and pays at expiry. A
+double no-touch option that touches a barrier is dead from that
+moment. A no-touch option that survives ages toward a more certain
+payout, while its survival probability falls with every day that
+passes without a touch.
+
+** Why a customer would want it
+
+A double no-touch pays when the market stays calm inside a range. It
+suits a customer who expects the index to trade sideways. The double
+one-touch pays when the range breaks, which suits a view of a large
+move in either direction. In ORE Studio a customer books equity double
+touch options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a double one-touch on the S&P 500 index that
+pays one million when the spot touches 3000 or 4500:
+
+#+begin_example
+<EquityDoubleTouchOptionData>
+    <OptionData>
+        <LongShort>Long</LongShort>
+        <PayOffAtExpiry>true</PayOffAtExpiry>
+        <ExerciseDates>
+          <ExerciseDate>2021-12-14</ExerciseDate>
+        </ExerciseDates>
+        ...
+    </OptionData>
+    <BarrierData>
+        ...
+        <Type>KnockIn</Type> <!-- KnockOut or KnockIn -->
+        <Levels>
+            <Level>3000</Level>
+            <Level>4500</Level>
+        </Levels>
+        ...
+    </BarrierData>
+    <PayoffCurrency>USD</PayoffCurrency>
+    <PayoffAmount>1000000</PayoffAmount>
+    <Name>RIC:.SPX</Name>
+    <StartDate>2021-03-01</StartDate>
+    <Calendar>USD</Calendar>
+    <EQIndex>EQ-RIC:.SPX</EQIndex>
+</EquityDoubleTouchOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=,
+listing =Equity Double Touch Option data=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=.
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

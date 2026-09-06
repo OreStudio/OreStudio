@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: FCD38489-372D-4CD4-9A8A-DB0A332DE26E
+:END:
+#+title: Equity Digital Option
+#+description: A cash-or-nothing digital option on an equity; ORE's EquityDigitalOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_digitaloption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity digital option pays a fixed amount or nothing, decided by
+the equity spot at expiry. ORE models it with the trade type
+=EquityDigitalOption=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+An equity digital option is an option whose payout is either zero or a
+fixed predetermined amount. The payout is cash-or-nothing. It depends
+on whether the underlying equity spot expires in the money at the
+expiration date. The product has European exercise with payout at
+expiry. The buyer pays a premium to the seller. The container node is
+=EquityDigitalOptionData=. It holds one =OptionData= sub-node plus the
+strike, payoff amount and quantity.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Equity Digital Option is an option whose payout is either zero or a
+fixed predetermined amount (Cash-or-Nothing). Payout depends on
+whether the underlying Equity spot rate expires in-the-money at the
+expiration date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_digitaloption.tex=.
+
+ORE adds the exercise terms as follows:
+
+#+begin_quote
+Equity Digital Options have European exercise with payout at expiry.
+The buyer of a Equity Digital Option pays a premium to the seller.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_digitaloption.tex=.
+
+** In plain terms
+
+A digital option is a binary bet on a share price. If the price ends
+on the right side of the strike, the buyer receives the fixed payoff
+amount. If not, the buyer receives nothing. There is no middle
+ground. The option is a pure view on the direction.
+
+** How it works in ORE
+
+The =EquityDigitalOptionData= node is the trade data container for the
+=EquityDigitalOption= trade type. It has one =OptionData= sub-node
+plus elements specific to the equity digital option. =LongShort=
+names the side. =OptionType= takes =Call= or =Put=. A call is in the
+money when the underlying equity price is above the strike. A put is
+in the money when it is below. The =Style= is =European= only. Exactly
+one =ExerciseDate= must be given. =Premiums= is optional and holds the
+premium amounts paid by the buyer. =Strike= is the option strike per
+unit of the underlying, expressed in the currency of the underlying
+equity. =PayoffCurrency= is the currency of the payoff amount and must
+be consistent with the currency of the underlying equity spot.
+=PayoffAmount= is the fixed payoff amount per unit of underlying,
+expressed in the payoff currency. The underlying comes from =Name= or
+an =Underlying= node. =Quantity= is the number of units of the
+underlying covered by the transaction.
+
+** Mathematical notes
+
+The payoff per unit is the fixed =PayoffAmount= when the option is in
+the money at expiry, and zero otherwise. For a call the condition is
+the spot above the strike at expiry. For a put it is the spot below
+the strike. The total payout scales with the quantity. The value is
+the discounted probability of finishing in the money times the payoff
+amount.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity and its distance to the
+  strike.
+- The implied volatility of the underlying.
+- The strike and the expiry.
+- The interest rates and dividends of the underlying.
+
+Near the strike the digital is most sensitive to the spot and to
+volatility. The payout does not grow with the depth of the finish in
+the money.
+
+** How the profile ages (dynamic sensitivities)
+
+The digital decays toward its settlement as expiry approaches. Its
+value is the discounted probability of the payoff event. With the spot
+far from the strike, the payout becomes almost certain or almost
+worthless. At expiry the spot decides the payoff and the option
+settles.
+
+** Why a customer would want it
+
+A customer with a fixed view on a share price can take a binary
+payout. The digital pays a known amount for a known premium. It also
+builds spreads and structured payouts where a fixed cash amount is
+needed. In ORE Studio a customer books equity digital options to value
+them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long call digital on the S&P 500 index that
+pays 1000 per unit above strike 3300:
+
+#+begin_example
+<EquityDigitalOptionData>
+    <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <ExerciseDates>
+            <ExerciseDate>2027-02-26</ExerciseDate>
+        </ExerciseDates>
+        ...
+    </OptionData>
+    <Strike>3300</Strike>
+    <PayoffCurrency>USD</PayoffCurrency>
+    <PayoffAmount>1000</PayoffAmount>
+    <Name>RIC:.SPX</Name>
+    <Quantity>1000</Quantity>
+</EquityDigitalOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_digitaloption.tex=,
+listing =Equity Digital Option data=.
+
+* See also
+
+- [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/eq_digitaloption.tex=. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

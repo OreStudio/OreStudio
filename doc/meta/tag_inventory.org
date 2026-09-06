@@ -256,6 +256,7 @@ Tags that describe the business or technical domain of the content.
 | =fxswap= | FX swaps and the FX derivatives market. |
 | =fxvarianceswap= | FX variance swaps and FX volatility markets. |
 | =generic_barrieroption= | Generic barrier options and multi-barrier structured payoffs. |
+| =genericscriptedproducts= | Generic scripted products and flexible payoff script structures. |
 | =indexcds= | Index credit default swaps and credit indices. |
 | =indexcdsoption= | Options on index credit default swaps. |
 | =knowledge_graph= | org-roam knowledge graph management. |
@@ -269,6 +270,7 @@ Tags that describe the business or technical domain of the content.
 | =performance= | Performance measurement and optimisation. |
 | =performanceoption_01= | Performance options and basket performance participation structures. |
 | =provisioning= | System provisioning workflows and wizards. |
+| =rainbow_option= | Rainbow options and best-or-worst multi-asset structures. |
 | =ratedigitaloption= | Rate digital options and binary interest rate derivatives. |
 | =rbac= | Role-Based Access Control. |
 | =refdata= | Reference data (currencies, countries, calendars, etc.). |
@@ -286,6 +288,7 @@ Tags that describe the business or technical domain of the content.
 | =trading= | Trading domain (also component tag). |
 | =ui= | User interface design and implementation. |
 | =ux= | User experience. |
+| =var_and_vol_derivatives= | Exotic variance and volatility swaps and options with barriers and corridors. |
 | =window_barrieroption= | Window barrier options and time-windowed barrier structures. |
 | =worstofbasketswap= | Worst of basket swaps and basket trigger structures. |
 | =yyswap= | Year-on-year inflation swaps and inflation-linked markets. |

@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 2F5B28D9-9AB7-401E-8EF3-612712F626C1
+:END:
+#+title: Generic Scripted Products
+#+description: The scripted trade module and its flexible payoff scripts; ORE's Generic Scripted Products section.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:genericscriptedproducts:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+ORE's product catalogue describes one module that prices an open
+family of payoffs from user-defined scripts: the Scripted Trade
+module. ORE calls the section Generic Scripted Products. Many
+products in the catalogue run on this module under the surface. This
+note records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A scripted trade defines its payoff in a small script language
+instead of picking one product from a fixed list. The script reads
+the trade's data node and writes the option legs. The payoff script
+can ride inside the trade XML or sit in a script library. The module
+covers five of the six ORE asset classes. ORE wraps the module inside
+classic-looking trade types in several product sections, and shows
+the raw scripted input format in the rainbow option and exotic
+variance sections.
+
+* Detail
+
+** What it is
+
+ORE describes the module as follows:
+
+#+begin_quote
+The Scripted Trade module allows flexible definition of new payoffs
+across five of the six asset classes covered in ORE, just by way of
+defining the payoff script.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/genericscriptedproducts.tex=.
+
+ORE states where the script lives:
+
+#+begin_quote
+The payoff script can be embedded into the trade XML or can be placed
+into a separate script library.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/genericscriptedproducts.tex=.
+
+** In plain terms
+
+A scripted trade is a payoff written as a program. The program names
+the market quantities it needs and produces the payments. A new
+product is a new script. No C++ code and no new trade type is needed.
+The rest of the ORE machinery, the pricing, the curves, the
+sensitivities, treats the result as a normal trade.
+
+** How it works in ORE
+
+The catalogue text explains where the two input formats appear. The
+products in the catalogue sections from the double digital option to
+the target redemption forward are internally scripted trades. ORE
+wraps them in their own trade types and data containers, so the trade
+XML looks classic. The rainbow option section and the exotic variance
+and volatility section show the generic scripted trade input format
+in full. ORE prices each variation with its own payoff script, and
+the catalogue lists the scripts. The two families are documented as
+separate knowledge notes: =Rainbow Options= and =Exotic Variance and
+Volatility Derivatives=.
+
+** Mathematical notes
+
+There are no formulas in this section of the catalogue. Each scripted
+product carries its own mathematics inside its payoff script. The
+scripts compute prices and returns from the data node fields, combine
+them, and write option legs. The script language handles conditions,
+loops, schedules and payoffs. See the knowledge notes for the two
+scripted families for their payoff mathematics.
+
+** What moves its value (static sensitivities)
+
+A scripted payoff's value follows its script inputs: the market
+levels it reads, the volatilities of its underlyings, the
+correlations between them, and the rates that discount the payout.
+The concrete drivers differ per product.
+
+** How the profile ages (dynamic sensitivities)
+
+A scripted payoff ages by its schedule. Observation dates fix the
+levels the script reads. Barrier and trigger conditions are checked
+on their dates. The payoff settles on the settlement date the script
+writes. The concrete timing differs per product.
+
+** Why a customer would want it
+
+The module lets a desk express a new payoff without waiting for a
+software release. In ORE Studio a customer books scripted products to
+value them and run sensitivities on the ORE engine, with the same
+support the fixed product set gets.
+
+** Example
+
+This catalogue section holds no trade listing of its own. It points
+at the scripted examples in the two family sections. The rainbow
+option section shows the best of asset or cash option on the S&P 500
+and the Euro Stoxx 50, in the traditional container and as a scripted
+trade with its full payoff script. The exotic variance section shows a
+long call on the realised variance of the S&P 500 as a scripted
+variance option trade with its =VarianceOption= script. Both listings
+are reproduced in the corresponding knowledge notes.
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/genericscriptedproducts.tex=,
+which points at the sections =Rainbow Option= and =Exotic Variance and
+Volatility Derivatives=.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs
+  =Docs/UserGuide/tradedata/genericscriptedproducts.tex=. The
+  upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].
+- Knowledge notes =Rainbow Options= and =Exotic Variance and
+  Volatility Derivatives=, the two scripted families this section
+  introduces.

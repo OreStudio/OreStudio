@@ -1,0 +1,292 @@
+:PROPERTIES:
+:ID: E5C8CE52-C382-4523-8BB9-1A3698ABB0BF
+:END:
+#+title: Rainbow Options
+#+description: European options on the best or worst of a range of assets; ORE's Rainbow Options product family.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:rainbow_option:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+Rainbow options are European calls or puts on the maximum or minimum
+of a range of assets. ORE documents the family in one catalogue
+section with sixteen variations, each with its own payoff script.
+This note records the domain grounding, as ORE documents it in its
+product catalogue.
+
+* Summary
+
+A rainbow option looks at several assets at once and pays off the
+best or the worst of them. The core forms pay the best or worst of
+the weighted asset values against a cash alternative, or a call or a
+put on the maximum or the minimum of the weighted assets. The call
+spread forms sort the assets by performance, weight them by rank and
+apply a floor and a cap. One form adds a knock-in barrier, another
+averages the assets first. Nine worst performance forms complete the
+family. ORE prices the family on equity, FX and commodity
+underlyings, in a traditional container or as scripted trades.
+
+* Detail
+
+** What it is
+
+ORE's catalogue defines rainbow options as European calls or puts on
+the maximum or minimum of a range of assets, with constant weights
+per asset. The catalogue opens with a payoff table of the core forms:
+the best of the weighted assets or cash, the worst of the weighted
+assets or cash, and calls or puts on the maximum or minimum of the
+weighted assets. ORE states the two input representations as follows:
+
+#+begin_quote
+Rainbow Options are represented as traditional trades or scripted
+trades, refer to the scripted trade documentation in
+ore/Docs/ScriptedTrade for an introduction of the latter.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/rainbow_option.tex=.
+
+ORE scopes the asset classes and their trade types:
+
+#+begin_quote
+The supported underlying types are Equity, Fx or Commodity resulting
+in corresponding trade types and trade data container names
+EquityRainbowOption / EquityRainbowOptionData
+FxRainbowOption / FxRainbowOptionData
+CommodityRainbowOption / CommodityRainbowOptionData
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/rainbow_option.tex=.
+
+#+begin_quote
+Trade input and the associated payoff script are described in the
+following for 12 supported Rainbow Option variations.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/rainbow_option.tex=.
+
+** In plain terms
+
+A rainbow option is a bet on the spread across several markets. One
+form pays the best market at the end, with a cash floor. Another pays
+the worst market, with a cash ceiling. Call and put forms buy or sell
+the maximum or the minimum of the group. The spread forms rank the
+markets by their performance, weight the ranks and pay the capped
+result above a floor. A barrier version only pays when one market has
+knocked the structure in. An Asian version looks at average levels
+instead of one final look. The worst performance forms pay the drop
+of the weakest market, with a reduced loss share below par.
+
+** How it works in ORE
+
+The catalogue's variations are:
+
+- Best Of Asset Or Cash Rainbow Option, script
+  =BestOfAssetOrCashRainbowOption=. It pays the greater of the
+  strike and the best weighted asset value at expiry.
+- Worst Of Asset Or Cash Rainbow Option, script
+  =WorstOfAssetOrCashRainbowOption=. It pays the lesser of the
+  strike and the worst weighted asset value at expiry.
+- Put/Call on Max Rainbow Option, script =MaxRainbowOption=. It pays
+  a call or put on the maximum of the weighted asset values against
+  the strike.
+- Put/Call on Min Rainbow Option, script =MinRainbowOption=. It pays
+  a call or put on the minimum of the weighted asset values against
+  the strike.
+- European Rainbow Call Spread Option, script
+  =EuropeanRainbowCallSpreadOption=. It ranks the asset performances,
+  weights them from best to worst, and pays the notional times the
+  capped and floored return.
+- Rainbow Call Spread Barrier Option, script
+  =RainbowCallSpreadBarrierOption=. It adds a knock-in barrier to the
+  call spread, observed on a schedule or at expiry.
+- Asian Rainbow Call Spread Option, script
+  =AsianRainbowCallSpreadOption=. It averages each asset over its
+  averaging dates before the ranking.
+- Worst Performance Rainbow Option 01 through 09, scripts
+  =WorstPerformanceRainbowOption01= through 09. They extend the
+  worst performance structure with further parameters, each variant
+  with its own script.
+
+The first four variations exist in a traditional form. The trade is
+one of =EquityRainbowOption=, =FxRainbowOption= or
+=CommodityRainbowOption= with the matching data node. In the example
+below the option on the best of two equity indices uses
+=EquityRainbowOptionData=. The node carries =Currency=, the pay
+currency; =Notional=, the quantity for equity and commodity
+underlyings or the foreign amount for an FX underlying; =Strike=,
+the cash level of the payoff; =Underlyings=, the basket with one
+=Weight= per underlying; and =OptionData=. The =OptionData= node
+carries the long or short flag, the payoff type, which must name the
+variation, and exactly one exercise date. =Settlement= is the
+settlement date, optional and defaulting to the exercise date.
+
+The call spread and worst performance variations exist only as
+scripted trades. Every variation has a data node under the
+=ScriptedTrade= trade type, named after the variation, with typed
+fields. List fields such as =Underlyings= and =Weights= hold their
+values under repeated =Value= elements, in the same order. Each data
+node names its payoff script, and the catalogue lists the script in
+full. =PayCcy= is the payment currency. For FX the underlying name
+has the form =FX-SOURCE-CCY1-CCY2= and =PayCcy= should be =CCY2=.
+Choosing =CCY1=, or the underlying currency for equity and commodity
+underlyings, produces a quanto payoff.
+
+** Mathematical notes
+
+ORE writes the prices of the n assets at expiry as S-1 to S-n, their
+initial prices with a zero superscript, and constant weights w-1 to
+w-n. A plus-one omega marks a call and a minus-one omega marks a put.
+
+The core payoffs of the payoff table are:
+
+- Best of asset or cash: the maximum of the weighted asset values
+  and the cash level K, that is max(w-1 S-1, ..., w-n S-n, K).
+- Worst of asset or cash: the minimum of the weighted asset values
+  and the cash level K.
+- Call or put on the maximum: the positive part of omega times the
+  maximum of the weighted asset values minus K.
+- Call or put on the minimum: the same form on the minimum of the
+  weighted asset values.
+
+The European rainbow call spread ranks each asset's performance, the
+ratio of its price at expiry to its initial strike. The return is
+the weighted sum of the ranked performances, with the weights applied
+from the best performer to the worst. The payout is the notional
+times the return minus one, floored at the floor and capped at the
+cap. The barrier version strikes the return at a strike instead of
+one, applies a gearing multiplier, and multiplies the payout by a
+knock-in indicator. The knock-in fires when any asset's performance
+touches the barrier level; a Bermudan flag chooses observation on a
+schedule, and the alternative checks once at expiry. The Asian
+version replaces each asset's final price by its average over the
+averaging dates, then applies the same ranking, floor and cap.
+
+The worst performance option 01 observes the basket once, on the
+observation date. The worst performance is the minimum over the
+assets of the final price over the initial price. The payout is the
+quantity times the worst performance minus one. When the worst
+performance is below one, the payout is scaled by the payoff
+multiplier, which reduces the loss share. The option value is the
+long-short signed difference between the payoff, settled on the
+settlement date, and the premium, paid on the premium date. The
+variants 02 to 09 extend this core: 02 adds a floor; 03 and 04 add a
+strike, a cap, a floor and a Bermudan barrier with level and
+schedule; 05 adds a put or call flag with a barrier type and level;
+06 adds strike prices, barrier levels, knock-in prices and a bonus
+coupon; 07 adds two fixed rates with a day count fraction, strike
+prices and trigger levels over determination dates; 08 is a call or
+put on the worst performance against strike prices; 09 adds
+knock-out levels on barrier dates to that form.
+
+** What moves its value (static sensitivities)
+
+- The levels of the underlyings at expiry, or on their averaging
+  dates.
+- The weights of the underlyings, and the rank order in the spread
+  forms.
+- The initial prices and initial strikes, which anchor the
+  performances.
+- The cash level or strike, the floor, the cap and the gearing.
+- The barrier level and the barrier style of the barrier form.
+- The volatility of each underlying and the correlation between
+  them. Both shape the spread of the best and worst performers.
+- The payoff multiplier of the worst performance forms.
+- The interest rates that discount the payoff and the premium.
+
+** How the profile ages (dynamic sensitivities)
+
+The averaging forms fix their asset levels on each averaging date. A
+barrier form watches its schedule until a knock-in fires. The expiry
+date decides the terminal levels, the ranking and the payoff
+branch. The worst performance forms fix the basket on their
+observation date. The settlement date settles the payoff, and the
+premium date settles the premium.
+
+** Why a customer would want it
+
+A rainbow option prices a view on several assets with one payoff. The
+best of forms buy the strongest market with a cash floor. The worst
+performance forms give access to a diversified basket at a lower
+cost, with a capped loss share. The spread forms pay the spread of
+the ranked field. Banks use the family in structured notes that
+reference a basket of indices. In ORE Studio a customer books rainbow
+options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows the best of asset or cash form on two equity
+indices. The trade compares the S&P 500 and the Euro Stoxx 50 at
+expiry and pays the better weighted level, but at least the strike of
+2000. The S&P index is quoted in USD, the Euro Stoxx index carries
+its EUR currency, and the pay currency is USD:
+
+#+begin_example
+<Trade id="BestOfAssetOrCashRainbowOption#1">
+  <TradeType>EquityRainbowOption</TradeType>
+  <Envelope>
+    <CounterParty>CPTY_A</CounterParty>
+    <NettingSetId>CPTY_A</NettingSetId>
+    <AdditionalFields/>
+  </Envelope>
+  <EquityRainbowOptionData>
+    <Currency>USD</Currency>
+    <Notional>1</Notional>
+    <Strike>2000</Strike>
+    <Underlyings>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.SPX</Name>
+        <Weight>1.0</Weight>
+      </Underlying>
+      <Underlying>
+        <Type>Equity</Type>
+        <Name>RIC:.STOXX50E</Name>
+        <Currency>EUR</Currency>
+        <Weight>1.0</Weight>
+      </Underlying>
+    </Underlyings>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <PayoffType>BestOfAssetOrCash</PayoffType>
+      <ExerciseDates>
+        <ExerciseDate>2020-02-15</ExerciseDate>
+      </ExerciseDates>
+    </OptionData>
+    <Settlement>2020-02-20</Settlement>
+  </EquityRainbowOptionData>
+</Trade>
+#+end_example
+
+ORE prices the payoff with the =BestOfAssetOrCashRainbowOption=
+script. The script starts the best price at the strike, scans the
+basket and keeps the highest weighted price, then pays the long or
+short signed notional times that level on the settlement date:
+
+#+begin_example
+REQUIRE SIZE(Underlyings) == SIZE(Weights);
+NUMBER u, thisPrice, bestPrice, Payoff, currentNotional;
+bestPrice = Strike;
+FOR u IN (1, SIZE(Underlyings)) DO
+    thisPrice = Underlyings[u](Expiry) * Weights[u];
+    IF thisPrice > bestPrice THEN
+        bestPrice = thisPrice;
+    END;
+END;
+Option = LongShort * Notional * PAY(bestPrice, Expiry, Settlement, PayCcy);
+currentNotional = Notional * Strike;
+#+end_example
+
+Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/rainbow_option.tex=,
+listing =Payoff script for a BestOfAssetOrCashRainbowOption=. The
+trade listing above it shows the same option in the traditional
+container, with a notional of 1 and a strike of 2000. The same trade
+exists as a scripted trade with a =BestOfAssetOrCashRainbowOptionData=
+node and typed fields.
+
+* See also
+
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+  which inputs =Docs/UserGuide/tradedata/rainbow_option.tex=. The
+  upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

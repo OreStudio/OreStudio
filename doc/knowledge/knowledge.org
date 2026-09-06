@@ -167,6 +167,9 @@ description with domain grounding and ORE examples.
 - [[id:F0727CDB-4696-4C25-BFF5-AF0D302B5A71][European Option Contingent on a Barrier]] — a vanilla European
   option gated by a barrier on another underlying: American or
   European monitoring, and sensitivities.
+- [[id:D3DF8CDD-2BD9-44BC-B805-D06C8A6C2074][Exotic Variance and Volatility Derivatives]] — the variance and
+  volatility family beyond the vanilla swap: barriers, corridors,
+  conditional accrual, baskets and optionality, and sensitivities.
 - [[id:90DDE9BB-770F-4337-AF0E-69698AF2A2A1][Extended Accumulator]] — the accumulator that can extend past a
   barrier decision date: the extension trigger and the conditional
   observation dates, and sensitivities.
@@ -209,6 +212,9 @@ description with domain grounding and ORE examples.
 - [[id:2C172183-1513-45EC-9A42-F0F3AB0E1F56][Generic Barrier Option]] — a vanilla, asset-or-nothing or
   cash-or-nothing payoff with American barriers and a transatlantic
   barrier at expiry, and sensitivities.
+- [[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]] — the scripted trade module: flexible
+  payoff scripts across five asset classes, embedded or library
+  scripts, and sensitivities.
 - [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]] — protection on an index: unfactored
   and factored notional, the bespoke basket, and sensitivities.
 - [[id:6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58][Index Credit Default Swap Option]] — options on index protection:
@@ -218,6 +224,9 @@ description with domain grounding and ORE examples.
 - [[id:AEB7149D-EE91-4912-A663-D7A0261B87A0][Performance Option Type 01]] — the capped participation in the
   performance of a basket against an option strike, and
   sensitivities.
+- [[id:E5C8CE52-C382-4523-8BB9-1A3698ABB0BF][Rainbow Options]] — the best or worst of a range of assets: the
+  asset-or-cash, max and min forms, the spread and worst performance
+  variations, and sensitivities.
 - [[id:94B1DBE3-33AB-44F5-B9F1-B71E34A58123][Rate Digital Option]] — a binary bet on a rate fixing: the fixed
   payout above or below strike, and sensitivities.
 - [[id:95005252-270D-44DE-8A26-C61CE5D860E0][Risk Participation Agreement]] — protection on swap counterparties:

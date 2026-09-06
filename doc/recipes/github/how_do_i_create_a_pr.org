@@ -23,7 +23,7 @@ correctly-formatted title and a structured body?
    does not run a full C++ build/test job on PRs (the old "canary" job
    was removed — it took too long and slowed down development), so
    this local step is the only thing that catches a broken build
-   before review, and the PR description (step 2) is the only record
+   before review, and the PR description (step 3) is the only record
    that it happened: =./compass.sh build --preset <preset>= (not raw
    =cmake --build=, so it takes the host-wide build lock — see
    [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]) then =ctest --preset <preset>=, both
@@ -94,14 +94,15 @@ correctly-formatted title and a structured body?
   surface in the sprint's =* Captures= section. Place it just before
   Traceability. =compass pr create= does not yet generate this section — add
   it by hand (or via =--summary=/body editing) until it does.
-- /Traceability section/ goes at the end of the body, always. It is a
-  Markdown table with three columns — =Artefact=, =Link=, =ID= — and
-  one row per tracked artefact (Story, Task), plus a final
-  =Environment= row so it's visible at a glance alongside Story and
-  Task rather than buried in prose. The =Link= cell contains a
-  markdown hyperlink to the published HTML page; the =ID= cell
-  contains the *full* UUID as read from the =:ID:= property of the
-  =.org= file. Never abbreviate the UUID to just the first segment.
+- /Traceability section/ follows the Changes section and precedes the
+  Testing section, always. It is a Markdown table with three columns —
+  =Artefact=, =Link=, =ID= — and one row per tracked artefact (Story,
+  Task), plus a final =Environment= row so it's visible at a glance
+  alongside Story and Task rather than buried in prose. The =Link=
+  cell contains a markdown hyperlink to the published HTML page; the
+  =ID= cell contains the *full* UUID as read from the =:ID:= property
+  of the =.org= file. Never abbreviate the UUID to just the first
+  segment.
 - /Story and task page URLs/ follow the pattern:
   =https://orestudio.github.io/OreStudio/<path-without-extension>.html=
   where =<path>= is the file path relative to the repo root:

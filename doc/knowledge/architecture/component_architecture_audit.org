@@ -305,6 +305,14 @@ composite's root overview is the index shape (=Summary=,
 =Sub-components=, =Entity modules=) and is optional when the parts are
 documented.
 
+Every summary of the component must describe what the parts actually
+do: the group overview's =Summary= and description, the System Model
+layer page's narrative under the component heading, and any brief in a
+registry table. A summary that contradicts a part overview is a
+finding; the compute audit found the layer page crediting the core
+with the domain model while the core overview describes cluster
+management. Fix the stale prose in the same pass.
+
 *** 14. Diagrams
 
 Every component overview has its =.puml= source and a rendered image
@@ -312,12 +320,33 @@ committed next to it, and the overview's =Diagram= section points at
 the image. The diagram is up to date: it shows the current parts,
 facets, and classes, with no stale nodes. A component draws supporting
 diagrams when its content warrants them, such as ER diagrams for a
-schema-owning component or sequence diagrams for its flows. Follow the
-[[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]], the
+schema-owning component or sequence diagrams for its flows.
+
+Authoring a diagram runs two passes. The automated pass captures most
+entities and some relationships: =build/scripts/generate_component_puml.py=
+parses the C++ headers and emits the type skeleton (namespaces, classes
+and structs with their members, base relationships) into the section
+above the sentinel line. The manual pass cleans up that output and
+makes the diagram more complete: layout, notes, the relationships the
+automated pass cannot infer, and any supporting shapes. The sentinel
+line is the contract between the two passes:
+
+#+begin_src plantuml
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+#+end_src
+
+A refresh rewrites only the section above the sentinel and preserves
+everything below it verbatim, so hand-authored content that must
+survive regeneration lives below it. The script resolves
+simple-component layouts today; parts of a composite keep the same
+file shape so automated support can slot in.
+
+Follow the [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]], the
 [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]], and render with the
 [[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] recipe. A missing or stale
-diagram is a finding, and drawing a stub from the conventions skeleton
-is the trivial fix.
+diagram is a finding. The trivial fix refreshes it through the two
+passes in order: re-run the automated capture, then redo the manual
+cleanup and verify the sentinel section survived.
 
 *** 15. Complexity measure
 

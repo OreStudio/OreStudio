@@ -76,14 +76,17 @@ asserted-replacement edits, the diff-subset check against the baseline
   bind; the Qt =changed_event= declaration follows the sibling lookups
   and is output-neutral. Controller lands the =wireDetailDialogCommon=
   era-sync.
-- =folder= = self-referencing-hierarchy (8cf9600273): the bind
-  materializes the hierarchy machinery the committed tree never had
-  generated (recursive =ores_synthetic_folders_hierarchy_fn=, the
-  =get_hierarchy= chain, eventing test). The committed old-shape
-  hierarchy stack is superseded-era and unwired: a repo-wide sweep
-  found no consumer of the old subject, and the current-template shape
-  is the canonical one refdata's counterparty/party/business_unit use.
-  Verified, not assumed.
+- =folder= = self-referencing-hierarchy (8cf9600273, corrected by
+  35a7558c74): the bind materializes the canonical hierarchy machinery
+  (recursive =ores_synthetic_folders_hierarchy_fn=, the =get_hierarchy=
+  chain, eventing test). Correction: the first bind dropped the
+  explicit =:has_parent_id:= the template keys on, which deleted the
+  machinery and broke the feed-control flow's =resolve_subtree=
+  consumer; the refdata counterparty org - the profile's reference
+  entity - declares =has_parent_id= explicitly alongside the profile,
+  and folder now does the same. The hand-written stack it replaces was
+  already canonical-shaped (the consumer compiles unchanged), not
+  superseded-era.
 - =yield_curve_process_parameter_definition= =
   uuid-surrogate-lookup (e4d9237570): the profile's
   =has_change_reason_cache= flips the feature on; the controller gains

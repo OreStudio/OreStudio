@@ -87,3 +87,45 @@ via its "Verifies task" field.
 | 4| _lint_generator_markers ignores an out-of-order END | projects/ores.compass/src/compass.py | Declined | Markers are flat, never nested, in every use in the corpus. Precise reporting for a case that does not occur would add branching to a check whose value is that it is simple. |
 
 * Result
+
+The framework is specified as a regulator over an agent, and what the earlier
+documents stipulated is now derived.
+
+Scope follows from three results rather than from convention. The good regulator
+theorem requires a regulator to model what it regulates and, through its
+simplicity clause, forbids modelling anything else. Requisite variety bounds
+what must be supplied to the residue the agent does not already absorb. The
+black box covers the rest. The rule that falls out settles which targets the
+framework models without appealing to whether a subject is a file, which is why
+a branch is modelled and a compiler is not.
+
+The seven classes are derived from the primitives of a control loop, so a
+candidate eighth has a test rather than a preference. Declaration is the goal,
+recording the sensor, execution the effector, loading the model the theorem
+requires, citation and sequencing constrain choice and order, and convening
+amplifies variety.
+
+Terminology now agrees with what it borrows from. The session role is a System,
+which is Beer's own term; the seven classes are regulatory functions. Neither
+collides with the other senses the corpus carries, and where a word does carry
+two referents the document says which is meant.
+
+Upstream is classified rather than forked. All 52 pstack skills carry a
+regulatory function and a disposition. Forking was rejected because it severs
+the second loop: a copy stops tracking the moment upstream improves, and a stale
+fork fails silently where a broken reference fails loudly.
+
+Two things were added that the story did not ask for and the work showed were
+needed. A writing standard for argumentative prose, since the register problem
+recurred across every page. And two lint checks, since two rules the framework
+states had nothing enforcing them, and each was found by fixing the same defect
+twice.
+
+Not done, and left to the story's other tasks. No skill is renamed, no
+dispatcher is built, and the catalogue is not attenuated by level. No
+agent-behaviour evaluation was run, so nothing here claims to change how agents
+act; the specification records that under its own Limitations.
+
+One measurement worth carrying forward: nine distinct defects traced to a single
+mechanical rename, of which grep found four and reading found five. The last was
+found by a reviewer.

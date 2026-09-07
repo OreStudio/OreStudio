@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 03D33800-80BC-4D99-B6E6-8A47AE50FF99
+:END:
+#+title: Task: Implement the fixed PR body template with a Testing section in compass pr create
+#+description: Add required --testing-plan/--testing-evidence/--testing-limitations flags to compass pr create behind a canonical body template (Summary / Changes / Traceability / Testing + footer); update the compass tests; update the pr-raise skill, the create-a-PR recipe and the developer.org PR spec to the fixed template; raise this PR using the new template itself.
+#+type: task
+#+level: s1
+#+filetags: :standardize-pr-body-template:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-pr-body-template-testing-section
+#+pr: 2022
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:94A3A794-03E7-45B4-B759-F7AEF7BEFC4C][Standardize the compass pr create body template with a Testing section]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=compass pr create= emits a body with Summary, Changes and a
+Traceability table only. The Testing section exists in no generator:
+PR #2021 was raised without it again, and the hand retrofit that added
+it to PR #2020 overwrote the whole body and dropped the Traceability
+table. This task puts the Testing section in the generator. Required
+=--testing-plan=, =--testing-evidence= and =--testing-limitations=
+flags feed a ## Testing section (Plan, Evidence and Limitations
+paragraphs) emitted after the Traceability table and before the
+footer; a raise with any flag missing refuses with an error naming
+the missing flags. Compass tests pin the body shape. The pr-raise
+skill, the how-do-I-create-a-PR recipe and developer.org describe the
+fixed Summary / Changes / Traceability / Testing + footer template,
+and the skills bundle is rebuilt. This PR itself is raised with the
+new template, and PR #2021's body is retrofitted to it with its
+Traceability table intact.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:94A3A794-03E7-45B4-B759-F7AEF7BEFC4C][Standardize the compass pr create body template with a Testing section]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-06                               |
+
+* Acceptance
+
+- =compass pr create= requires =--testing-plan=, =--testing-evidence=
+  and =--testing-limitations=; the emitted body carries the Testing
+  section with Plan, Evidence and Limitations paragraphs after the
+  Traceability table and before the footer.
+- A raise missing any of the three flags is refused, with an error
+  naming the missing flags.
+- Compass tests cover the body shape and the flag validation; the
+  suite is green.
+- The pr-raise skill, the how-do-I-create-a-PR recipe and developer.org
+  document the fixed template; the skills bundle is rebuilt.
+- This PR is raised with the new template.
+- PR #2021's body carries the fixed template with its Traceability
+  table intact.
+
+* Plan
+
+** Phase 1 — generator. Add the three required flags to the create
+parser, validate their presence before the branch push, and factor the
+body assembly into a pure builder that appends the ## Testing section
+(Plan., Evidence. and Limitations. paragraphs) after the Traceability
+table and before the footer.
+
+** Phase 2 — tests. New =test_compass_pr.py= pins the canonical body
+shape and the flag validation, following the import pattern of
+=test_test_run.py=.
+
+** Phase 3 — docs. Update the pr-raise skill, the
+how-do-I-create-a-PR recipe and the developer.org PR index row to the
+fixed template; rebuild the skills bundle with =compass build --direct
+skills=.
+
+** Phase 4 — close and raise. Finish the bookkeeping, then raise this
+PR with the new template itself. Class: python tooling + docs. Checks:
+compass test suite, drift checks, site build.
+
+** Phase 5 — retrofit. Rebuild PR #2021's body to the fixed template
+with its Traceability table preserved, via =gh pr edit --body-file=
+with the full canonical body.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2022][#2022]] | [compass] Emit mandatory Testing section from pr create flags |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 (local, pre-raise) | Recipe step 1 says the verification record lives in "the PR description (step 2)"; step 3 creates the description | doc/recipes/github/how_do_i_create_a_pr.org | Accept | Fixed in the review commit. |
+| 2 (local, pre-raise) | "/Traceability section/ goes at the end of the body" contradicts the fixed template, where Testing follows Traceability | doc/recipes/github/how_do_i_create_a_pr.org | Accept | Fixed in the review commit. |
+| 3 (review round 1, PR #2022) | The Testing flags use default="" rather than argparse required=True; a comment is warranted so a future reader does not lose the combined-error refusal. Verdict: no correctness, security or design issues. | projects/ores.compass/src/compass_pr.py | Accept | Fixed in 6a19ebd9ae. |
+
+* Result
+
+Delivered. =compass pr create= now emits one fixed body template —
+Summary / Changes / Traceability / Testing, then the footer. The
+Testing section carries Plan., Evidence. and Limitations. paragraphs
+fed by the required =--testing-plan=, =--testing-evidence= and
+=--testing-limitations= flags; a raise whose flag text is empty is
+refused before any push, naming every missing flag at once
+(=_missing_testing_flags=, checked in =_cmd_create=). The body
+assembly lives in the pure =_canonical_body= builder.
+
+Ten tests in =test_compass_pr.py= pin the section order, the Changes
+bullets, the Testing paragraphs, the Traceability rows and the
+refusal paths (missing flags, subset missing, blank flags, missing
+title); compass suite 127 passed, 1 skipped. The pr-raise skill, the
+how-do-I-create-a-PR recipe and developer.org document the fixed
+template; the skills bundle is rebuilt (=compass build --direct
+skills=). Class: python tooling + docs. Checks run: compass test
+suite 127 passed / 1 skipped; codegen drift (refdata, reporting,
+marketdata, compute-cpp, iam, iam-cpp) "No drift"; site build clean.
+
+This PR is raised with the new template itself (see the * PRs table);
+PR #2021's body is retrofitted to the fixed template with its
+Traceability table intact.

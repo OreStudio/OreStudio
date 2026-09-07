@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 94A3A794-03E7-45B4-B759-F7AEF7BEFC4C
+:END:
+#+title: Story: Standardize the compass pr create body template with a Testing section
+#+description: compass pr create emits one fixed body template: Summary, Changes, Traceability and a mandatory Testing section (Plan, Evidence, Limitations) passed via required --testing-plan/--testing-evidence/--testing-limitations flags, plus the footer. PR #2021 was raised without the Testing section again; PR #2020 lost its Traceability table to a wholesale body overwrite -- the generator must carry the whole template so no raise or retrofit drifts from it.
+#+type: story
+#+level: s2
+#+filetags: :compass:pr:devx:sprint_25:v0:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+=compass pr create= assembles the PR body from =--summary= and
+=--change= bullets only. Verification detail folds into the Changes
+bullets as an afterthought, so every raise must be told to include it:
+PR #2021 again carried no Testing section, and the hand retrofit that
+added one to PR #2020 overwrote the body wholesale and lost its
+Traceability table. This story makes the generator carry the whole
+template. Every =compass pr create= raise emits Summary, Changes,
+Traceability, and a mandatory Testing section (Plan, Evidence,
+Limitations) taken from the required
+=--testing-plan=/=--testing-evidence=/=--testing-limitations= flags,
+followed by the footer. The pr-raise skill, the create-a-PR recipe and
+the developer.org PR spec document the fixed template; compass tests
+pin its shape; and the story's own PR is raised with the template it
+ships.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing.                               |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-06                               |
+
+* Acceptance
+
+- =compass pr create= requires =--testing-plan=, =--testing-evidence=
+  and =--testing-limitations=, and emits the Testing section with Plan,
+  Evidence and Limitations paragraphs after the Traceability table and
+  before the footer.
+- Compass tests pin the fixed body shape: section order, flag
+  validation, and Traceability derivation are covered.
+- The pr-raise skill, the how-do-I-create-a-PR recipe and developer.org
+  describe the fixed template, and the skills bundle is rebuilt.
+- The story's own PR is raised with the new template.
+- PR #2021's body is retrofitted to the fixed template with its
+  Traceability table intact.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:03D33800-80BC-4D99-B6E6-8A47AE50FF99][Implement the fixed PR body template with a Testing section in compass pr create]] | DONE | 2026-09-06 | 2026-09-06 | Add required --testing-plan/--testing-evidence/--testing-limitations flags to compass pr create behind a canonical body template (Summary / Changes / Traceability / Testing + footer); update the compass tests; update the pr-raise skill, the create-a-PR recipe and the developer.org PR spec to the fixed template; raise this PR using the new template itself. |
+
+* Decisions
+
+- The PR body template is fixed at the generator: Summary / Changes /
+  Traceability / Testing, then the footer. The Testing section comes
+  from required =--testing-plan=, =--testing-evidence= and
+  =--testing-limitations= flags; a raise is refused before any push,
+  naming every flag with no text at once.
+- Verification belongs in the Testing section's Evidence paragraph
+  (change class; checks run and results), not in a =--change= bullet.
+- A body retrofit rebuilds the full canonical body and applies it with
+  =gh pr edit --body-file=, so the Traceability table survives — never
+  a wholesale overwrite that drops it.
+
+* Out of scope
+
+- Back-filling Testing sections onto older PRs (#2014 and earlier).
+- Enforcing the template on hand-written =gh pr create= calls outside
+  =compass pr create= (documented only).

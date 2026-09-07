@@ -2,12 +2,12 @@
 :ID: CC928252-E0C5-4C3C-A7A8-D613593E4E37
 :END:
 #+title: How do I create a PR?
-#+description: Open a pull request with compass pr create — title validation, structured body, and the Traceability table generated from the branch's task and story.
+#+description: Open a pull request with compass pr create — title validation, the fixed Summary / Changes / Traceability / Testing body template, and the Traceability table generated from the branch's task and story.
 #+type: recipe
 #+level: cross
 #+filetags: :github:pr:gh:recipe:
 #+created: 2026-05-21
-#+updated: 2026-07-11
+#+updated: 2026-09-06
 
 The body content should be assembled via [[id:1882D6DF-4012-4C6E-BF62-0D943EF805B0][How do I generate a PR
 summary?]] before running the =gh= command here.
@@ -23,7 +23,7 @@ correctly-formatted title and a structured body?
    does not run a full C++ build/test job on PRs (the old "canary" job
    was removed — it took too long and slowed down development), so
    this local step is the only thing that catches a broken build
-   before review, and the PR description (step 2) is the only record
+   before review, and the PR description (step 3) is the only record
    that it happened: =./compass.sh build --preset <preset>= (not raw
    =cmake --build=, so it takes the host-wide build lock — see
    [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]) then =ctest --preset <preset>=, both
@@ -35,21 +35,26 @@ correctly-formatted title and a structured body?
    bookkeeping commit is part of the very first push, not a follow-up
    after review.
 
-3. /Create the PR/ with =compass pr create=, including the step-1
-   verification result as a =--change= bullet so it's visible in the
-   description without asking. It validates the title
-   convention, assembles the body (Summary, Changes, and the
-   =## Traceability= table derived from the branch's task and story
-   docs, with an =Environment= row alongside Story and Task), pushes
-   the branch, opens the PR, records it on the task (=#+pr:= and the
-   =* PRs= table), commits and pushes that record, and stamps the
-   session journal:
+3. /Create the PR/ with =compass pr create=. It validates the title
+   convention, refuses the raise when a required Testing flag carries
+   no text, and assembles one fixed body template: =## Summary=,
+   =## Changes=, the =## Traceability= table derived from the branch's
+   task and story docs (with an =Environment= row alongside Story and
+   Task), =## Testing=, then the footer. The step-1 verification
+   result goes in the Testing section, emitted as Plan., Evidence.
+   and Limitations. paragraphs from =--testing-plan=,
+   =--testing-evidence= and =--testing-limitations=, so it is visible
+   in the description without asking. It then pushes the branch, opens
+   the PR, records it on the task (=#+pr:= and the =* PRs= table),
+   commits and pushes that record, and stamps the session journal:
 
    #+begin_src sh :results verbatim
    ./compass.sh pr create --title "[component] One-line description" \
      --summary "What changes, why." \
      --change "First change" --change "Second change" \
-     --change "Verification: local build clean (<preset>); ctest <N>/<N> passed"
+     --testing-plan "What will be tested, and how." \
+     --testing-evidence "Local build clean (<preset>); ctest <N>/<N> passed" \
+     --testing-limitations "What was left untested."
    #+end_src
 
    Use =--draft= for a draft PR, =--task <uuid-or-slug>= when the
@@ -66,11 +71,21 @@ correctly-formatted title and a structured body?
 - /PR body is Markdown, not org-mode./ GitHub renders the body as
   Markdown; use =**bold**=, =`code`=, =[text](url)= etc. — never
   =[[id:...]]= links, =#+begin_src= blocks, or other org syntax.
-- /No "Test plan" section/ in the body.
+- /Body template is fixed./ Every =compass pr create= body has the
+  same four sections — Summary, Changes, Traceability, Testing — then
+  the =🤖 Generated with Claude Code= footer. Sections may be expanded
+  (Notes, Decisions, Follow-ups) and the optional Captures section may
+  be inserted before Traceability, but Testing is never omitted: the
+  generator requires =--testing-plan=, =--testing-evidence= and
+  =--testing-limitations= text and refuses the raise when any is
+  missing.
+- /Testing section/ carries three plain paragraphs — =Plan.=,
+  =Evidence.= and =Limitations.= — one per required flag, under a
+  =## Testing= heading after the Traceability table and before the
+  footer. The Evidence paragraph holds the step-1 verification (change
+  class, checks run, results); Limitations names what was not tested.
 - /Title format/ is =[COMPONENT] Description=. Multi-component PRs
   use =[a,b,c]=.
-- Body sections may be expanded (Notes, Decisions, Follow-ups), but
-  Summary and Changes are the load-bearing pair.
 - /Captures section/ (optional): the captures you filed while working — a
   bug, limitation, or idea noticed in passing and recorded with =compass
   capture= (it lands in the product-backlog inbox, /not/ as a story task).
@@ -79,14 +94,15 @@ correctly-formatted title and a structured body?
   surface in the sprint's =* Captures= section. Place it just before
   Traceability. =compass pr create= does not yet generate this section — add
   it by hand (or via =--summary=/body editing) until it does.
-- /Traceability section/ goes at the end of the body, always. It is a
-  Markdown table with three columns — =Artefact=, =Link=, =ID= — and
-  one row per tracked artefact (Story, Task), plus a final
-  =Environment= row so it's visible at a glance alongside Story and
-  Task rather than buried in prose. The =Link= cell contains a
-  markdown hyperlink to the published HTML page; the =ID= cell
-  contains the *full* UUID as read from the =:ID:= property of the
-  =.org= file. Never abbreviate the UUID to just the first segment.
+- /Traceability section/ follows the Changes section and precedes the
+  Testing section, always. It is a Markdown table with three columns —
+  =Artefact=, =Link=, =ID= — and one row per tracked artefact (Story,
+  Task), plus a final =Environment= row so it's visible at a glance
+  alongside Story and Task rather than buried in prose. The =Link=
+  cell contains a markdown hyperlink to the published HTML page; the
+  =ID= cell contains the *full* UUID as read from the =:ID:= property
+  of the =.org= file. Never abbreviate the UUID to just the first
+  segment.
 - /Story and task page URLs/ follow the pattern:
   =https://orestudio.github.io/OreStudio/<path-without-extension>.html=
   where =<path>= is the file path relative to the repo root:

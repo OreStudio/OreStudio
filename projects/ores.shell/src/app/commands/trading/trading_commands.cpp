@@ -18,6 +18,15 @@
  *
  */
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_accumulator_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_asian_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_barrier_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_digital_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_forward_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_position_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_swap_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/equity_variance_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_accumulator_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_asian_forward_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/fx_barrier_option_instrument_commands.hpp"
@@ -37,6 +46,15 @@ void trading_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session,
                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
+    equity_accumulator_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_asian_option_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_barrier_option_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_digital_option_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_forward_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_option_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_position_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_swap_instrument_commands::register_commands(root_menu, session, pagination);
+    equity_variance_swap_instrument_commands::register_commands(root_menu, session, pagination);
     fx_accumulator_instrument_commands::register_commands(root_menu, session, pagination);
     fx_asian_forward_instrument_commands::register_commands(root_menu, session, pagination);
     fx_barrier_option_instrument_commands::register_commands(root_menu, session, pagination);

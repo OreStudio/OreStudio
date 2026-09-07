@@ -233,6 +233,17 @@ repository profiles regenerate correctly.
 :iterator_var: epi
 :END:
 
+** Table display
+
+|  column                    |  header       |
+|--------------------------|-------------|
+|  identity.instrument_id    |  ID           |
+|  identity.trade_type_code  |  Type         |
+|  underlying_name           |  Underlying   |
+|  currency                  |  Ccy          |
+|  quantity                  |  Quantity     |
+|  audit.recorded_at         |  Recorded At  |
+
 ** Custom repository methods
 
 * See also

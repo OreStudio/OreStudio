@@ -259,6 +259,20 @@ repository profiles regenerate correctly.
 :iterator_var: evsi
 :END:
 
+** Table display
+
+|  column                    |  header           |
+|--------------------------|-----------------|
+|  identity.instrument_id    |  ID               |
+|  identity.trade_type_code  |  Type             |
+|  underlying_name           |  Underlying       |
+|  currency                  |  Ccy              |
+|  notional                  |  Notional         |
+|  variance_strike           |  Variance Strike  |
+|  start_date                |  Start Date       |
+|  maturity_date             |  Maturity Date    |
+|  audit.recorded_at         |  Recorded At      |
+
 ** Custom repository methods
 
 * See also

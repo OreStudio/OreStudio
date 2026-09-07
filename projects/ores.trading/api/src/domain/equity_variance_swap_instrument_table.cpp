@@ -28,10 +28,13 @@ std::string convert_to_table(const std::vector<equity_variance_swap_instrument>&
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Notional"
+          << "Variance Strike" << "Start Date" << "Maturity Date" << "Recorded At" << fort::endr;
 
     for (const auto& evsi : v) {
-        table << fort::endr;
+        table << evsi.identity.instrument_id << evsi.identity.trade_type_code
+              << evsi.underlying_name << evsi.currency << evsi.notional << evsi.variance_strike
+              << evsi.start_date << evsi.maturity_date << evsi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

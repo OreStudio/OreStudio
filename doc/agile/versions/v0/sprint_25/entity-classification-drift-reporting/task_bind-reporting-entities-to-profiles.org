@@ -2,7 +2,7 @@
 :ID: 789D58B7-5282-41E0-879E-F5052AB295C6
 :END:
 #+title: Task: Bind ores.reporting entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the reporting-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: no model changes expected.
+#+description: Implement profile binding for the reporting-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. Known starting point: no model changes expected.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-reporting:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-09-07
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ Survey every ores.reporting entity against the profile catalogue, rebind matches
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Last touched | 2026-09-07                               |
 
 * Acceptance
 

@@ -49,9 +49,21 @@
 (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
 (setq org-publish-timestamp-directory (expand-file-name "./build/output/org-timestamps/"))
 (make-directory org-publish-timestamp-directory t)
-(org-id-update-id-locations
- (seq-remove (lambda (f) (string-match-p "/\\.claude/worktrees/" f))
-             (directory-files-recursively "." "\\.org$")))
+;; A full build rescans every org file to rebuild the id location map.  A
+;; single-file build (see ores-build-page.el) loads the map the last full build
+;; wrote, since rescanning five thousand files to publish one page is the whole
+;; cost the single-file path exists to avoid.
+
+;; setq, not let: the flag is read by `bound-and-true-p' inside the file
+;; being loaded, and a let on an undeclared symbol binds lexically under
+;; lexical-binding, which that would not see.
+(setq ores/org-ids-library-only t)
+(load-file (expand-file-name "ores-org-ids.el"
+                             (file-name-directory
+                              (or load-file-name buffer-file-name))))
+(if (bound-and-true-p ores/site-setup-only)
+    (org-id-locations-load)
+  (ores/org-id-ensure))
 
 ;; Ensure the site's package dependencies are present. A no-op when the cache
 ;; is already warm (the CI pre-warm step, or a developer's local .packages).
@@ -191,7 +203,7 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
          :with-author nil
          :with-creator t
          :with-toc t
-         :section-numbers nil
+         :section-numbers t
          ;; Never interpret a_b / a^b as subscript/superscript: snake_case
          ;; identifiers (is_temporal, valid_from) are pervasive in prose.
          :with-sub-superscript nil
@@ -271,6 +283,10 @@ managed uniformly: copy, then patch index.html with the site chrome."
    "./projects/ores.org-js/agile" site-dir "agile"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
+;; The forms below run the whole-site build.  A caller wanting only the
+;; configuration above -- ores-build-page.el, which publishes a single file --
+;; binds `ores/site-setup-only' before loading this file.
+(unless (bound-and-true-p ores/site-setup-only)
 (condition-case err
     (progn
       ;; Sync org-roam DB before publishing so id: links are resolvable
@@ -299,7 +315,7 @@ managed uniformly: copy, then patch index.html with the site chrome."
       (kill-emacs 0))
   (error
    (message "Build failed: %s" (error-message-string err))
-   (kill-emacs 1)))
+   (kill-emacs 1))))
 
 (provide 'ores-build-site)
 ;;; ores-build-site.el ends here

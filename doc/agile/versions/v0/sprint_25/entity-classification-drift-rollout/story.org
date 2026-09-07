@@ -7,8 +7,8 @@
 #+level: s2
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-03
-#+updated: 2026-09-04
-#+environment: brave_hopper
+#+updated: 2026-09-07
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -32,7 +32,7 @@ the method come from here.
 | Now           | Nothing. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing. |
-| Last touched  | 2026-09-04                               |
+| Last touched  | 2026-09-07                               |
 
 * Acceptance
 
@@ -48,11 +48,13 @@ the method come from here.
 |------+-------+-------+-----+-------------|
 | [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | DONE | 2026-09-03 | 2026-09-04 | Narrowed 2026-08-04, report question settled 2026-09-03 (see Decisions); remaining work is retiring the 3 stale docs and closing the program setup. |
 | [[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]] | DONE | 2026-09-04 | 2026-09-04 | Author the canonical method skill under doc/llm/skills, deployed to .claude/skills via deploy_skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates. |
+| [[id:A88CDEA1-2329-4165-A18B-10689AD86ECF][Re-point drift bind delegation docs at the codegen-fix-drift skill]] | DONE | 2026-09-07 | 2026-09-07 | The eight remaining bind stories/tasks still cite August-vintage method text (ores.refdata pilot, the deleted refdata-codegen-drift CI job, the removed --components mode), the skill lacks the registrar wiring check the trading bind surfaced, and the remaining stories do not scope the post-merge live system test the compute/iam binds ran. One docs PR makes any environment able to claim a remaining bind cold: re-point the method and gate wording at the codegen-fix-drift skill, add the skill's composition check step and the iam/trading worked records, and record the done shape (bind closes at the drift gate; story closes after the live system test). |
 
 * Decisions
 
 - 2026-08-04: re-scoped the 14 ad hoc "Apply safe drift to X-cpp" tasks directly against the codegen component catalogue (=projects/ores.codegen/library/component_catalogue.org=) and the ores.refdata pilot's proven acceptance bar, rather than waiting on the read-only classification/drift report this story originally scoped. Result: 12 new per-component stories (composite components -- ores.dq, ores.iam, ores.trading -- get one story with a task per SQL/C++ subcomponent; the other 9 get one story each), each requiring profile binding, zero-diff regen, and extending the =check_component_drift.py= CI check to that component -- so the bar is "zero drift, CI-enforced," strictly stronger than this story's original "produce a report" scope. =ores.controller= was excluded: the component has been decommissioned (=projects/ores.controller*= no longer exists), so its ad hoc task was marked ABANDONED rather than re-scoped. See the sprint's Stories table for the 12 new story links.
 - 2026-09-03: approved an execution program for the 12 remediation stories, replacing the ad hoc, sprint-by-sprint drift work of the previous sprints. Components run foundations-first: =fix-codegen-template-drift= and =close-systemic-codegen-gaps= land before any component story starts, so a codegen bug found mid-sweep does not waste the sweep. Each component story runs one documented algorithm per component: baseline regen before any model edit, survey every model file, bind entities to profiles, record each no-match with its real feature values, fix codegen gaps at their source, regenerate, require byte-identical output, review the generated code for C++ idiomaticity and smells, and only then extend the =check_component_drift.py= gate list. Partial codegen coverage is not a valid end state; a type too complex to code-generate is an exception that needs a recorded justification per entity. Automation starts granular (level 0: every fix verified by build, test, and byte-identical diff before its PR) and rises only on evidence. PRs stay small and human-reviewable. The algorithm is encoded as a reusable skill (task above) so every story runs the same hardened recipe. The quantified classification report is dropped: each component story produces its own survey, and a read-only cross-component report would be stale before it landed.
+- 2026-09-07: delegation tidy-ups, so any environment can claim a remaining bind cold. The eight remaining bind stories and tasks name the codegen-fix-drift skill as the canonical method (their August text pointed at the ores.refdata pilot), and their gate wording names the registry check: the refdata-codegen-drift CI job the old text cites is deleted, and the =--components= mode is gone. Done shape, decided once: a bind is done at the drift gate; the story is done at the live system test. The bind task closes at the gate (byte-identical regen, build, tests, registry entry, merged PR). The story closes only after the post-merge live system test on a fresh database: recreate the database, provision a tenant, and exercise the component's flows. Defects the test surfaces become follow-up tasks on the story (the compute/iam precedent: the iam service-grant fix rode the iam story). The skill gained the composition check as its step 7: verify every materialized registrar family is actually called from the service registrar/application. The trigger was trading: its messaging stacks were materialized but never registered (the PR #1950 audit findings), and the 2026-09-06 bind landed four registrar families with no caller on main (=lifecycle_event=, =trade_id_type=, =trade_identifier=, =trade_party_role=). The skill's Reference now also cites the iam and trading worked records.
 
 * Out of scope
 

@@ -205,7 +205,35 @@ def get_compass_conn():
     conn.commit()
     return conn
 
+def cmd_index_org_ids(exit_on_failure: bool = True) -> int:
+    """Rebuild .org-id-locations-file, the map used to resolve id: links.
+
+    Distinct from the compass search index and from .org-roam.db: this is
+    the map org-publish consults to turn an [[id:UUID]] link into a path.
+    A page added since the last full build is absent from it, so anything
+    linking to that page fails to publish until this has run.
+    """
+    script = (PROJECT_ROOT / "projects" / "ores.lisp" / "src"
+              / "ores-org-ids.el")
+    print(f"🔗 Rebuilding org-id location map: {script.relative_to(PROJECT_ROOT)}",
+          flush=True)
+    rc = subprocess.run(
+        ["emacs", "-Q", "--script", str(script)],
+        cwd=PROJECT_ROOT).returncode
+    if rc != 0:
+        print(f"❌ org-id scan failed (exit code {rc}).", file=sys.stderr)
+        if exit_on_failure:
+            sys.exit(rc)
+        return rc
+    print("✅ org-id location map rebuilt.")
+    return 0
+
+
 def cmd_index(args):
+    if getattr(args, "org_ids", False):
+        cmd_index_org_ids()
+        return
+
     print("Starting Compass index...")
     print(f"📂 Using org-roam.db: {ORG_ROAM_DB}")
     print(f"🌳 Project root:      {PROJECT_ROOT}")
@@ -2379,14 +2407,80 @@ def _parse_tags_from_filetags_line(line: str) -> list:
     return [t for t in raw.split(":") if t.strip()]
 
 
+_MARKER_BEGIN_RE = re.compile(r"^#\s*BEGIN generated (\w+)\b")
+_MARKER_END_RE = re.compile(r"^#\s*END generated (\w+)\s*$")
+
+# Types whose documents record a moment in the work rather than the state of
+# the system. A durable document must not link to one: the story links to the
+# knowledge document it produced, never the reverse.
+_AGILE_TYPES = {"story", "task", "sprint", "design", "capture", "version",
+                "plan", "retrospective"}
+_DURABLE_DIRS = ("doc/llm/", "doc/meta/", "doc/knowledge/", "doc/recipes/")
+# Both org id-link forms: [[id:UUID]] and [[id:UUID][description]]. A bare link
+# carries no label, so the description group is optional and may be None.
+_ID_LINK_RE = re.compile(r"\[\[id:([0-9A-Fa-f-]{36})\](?:\[([^\]]*)\])?\]")
+
+
+def _lint_generator_markers(files):
+    """Every '# BEGIN generated X' needs '# END generated X' on its own line.
+
+    A reflow that wraps the END marker into the prose above it leaves the block
+    with no terminator the generator can find, and the section then silently
+    fails to populate rather than erroring.
+    """
+    out = []
+    for rel, text in files:
+        open_stack = []
+        for lineno, line in enumerate(text.splitlines(), 1):
+            stripped = line.strip()
+            b = _MARKER_BEGIN_RE.match(stripped)
+            e = _MARKER_END_RE.match(stripped)
+            if b:
+                open_stack.append((b.group(1), lineno))
+            elif e and open_stack and open_stack[-1][0] == e.group(1):
+                open_stack.pop()
+        for kind, lineno in open_stack:
+            out.append((rel, lineno,
+                        f"'# BEGIN generated {kind}' has no matching "
+                        f"'# END generated {kind}' on its own line"))
+    return out
+
+
+def _lint_durable_links(files, id_types):
+    """Report durable documents linking into agile content."""
+    out = []
+    for rel, text in files:
+        if not str(rel).startswith(_DURABLE_DIRS):
+            continue
+        for m in _ID_LINK_RE.finditer(text):
+            kind = id_types.get(m.group(1).upper())
+            if kind in _AGILE_TYPES:
+                label = (m.group(2) or "(no label)").replace("\n", " ")[:50]
+                out.append((rel, kind, label))
+    return out
+
+
+def _collect_org_types(files):
+    """Map every :ID: in the corpus to the #+type: of its document."""
+    types = {}
+    for _rel, text in files:
+        t = re.search(r"^#\+type:\s*(\S+)", text, re.M)
+        kind = t.group(1) if t else None
+        for m in re.finditer(r"^:ID:\s+(\S+)", text, re.M):
+            types[m.group(1).upper()] = kind
+    return types
+
+
 def cmd_lint(argv):
     """compass lint — validate filetags across all .org files."""
     ap = argparse.ArgumentParser(
         prog="compass lint",
         description=(
-            "Validate #+filetags: values across every .org file in the repo. "
-            "Every tag must be lowercase and match [a-z][a-z0-9_-]*. "
-            "Prints the offending file and tag; exits non-zero on any violation."
+            "Validate the org corpus. Checks filetags (every tag lowercase, "
+            "matching [a-z][a-z0-9_-]*), generator markers (every BEGIN has a "
+            "matching END on its own line), and links from durable documents "
+            "into agile content. The first two are enforced; the link check is "
+            "advisory unless --strict-links is given."
         ),
     )
     ap.add_argument(
@@ -2399,6 +2493,10 @@ def cmd_lint(argv):
         help="Exclude a directory prefix (may be repeated). "
              "build/ and venv/ are always excluded.",
     )
+    ap.add_argument(
+        "--strict-links", action="store_true",
+        help="Fail on durable documents linking into agile content. Advisory "
+             "by default while the existing violations are worked through.")
     args = ap.parse_args(argv)
 
     root = Path(PROJECT_ROOT) / args.path
@@ -2406,17 +2504,20 @@ def cmd_lint(argv):
     extra_exclude = set(args.exclude)
     all_exclude = always_exclude | extra_exclude
 
-    violations = []
-
+    files = []
     for org_file in sorted(root.rglob("*.org")):
         rel = org_file.relative_to(Path(PROJECT_ROOT))
         first_part = rel.parts[0] if rel.parts else ""
         if first_part in all_exclude:
             continue
         try:
-            text = org_file.read_text(encoding="utf-8", errors="replace")
+            files.append((rel, org_file.read_text(encoding="utf-8",
+                                                  errors="replace")))
         except OSError:
             continue
+
+    violations = []
+    for rel, text in files:
         for line in text.splitlines():
             if not line.startswith("#+filetags:"):
                 continue
@@ -2426,16 +2527,50 @@ def cmd_lint(argv):
                     violations.append((str(rel), tag, line.strip()))
             break
 
-    if not violations:
-        print("✅  compass lint: all filetags are valid.")
-        return 0
+    markers = _lint_generator_markers(files)
+    links = _lint_durable_links(files, _collect_org_types(files))
 
-    print(f"❌  compass lint: {len(violations)} filetag violation(s):\n",
-          file=sys.stderr)
-    for path, tag, raw in violations:
-        print(f"  {path}: unknown/malformed tag '{tag}'", file=sys.stderr)
-        print(f"    {raw}", file=sys.stderr)
-    return 1
+    failed = False
+
+    if violations:
+        failed = True
+        print(f"❌  filetags: {len(violations)} violation(s):\n", file=sys.stderr)
+        for path, tag, raw in violations:
+            print(f"  {path}: unknown/malformed tag '{tag}'", file=sys.stderr)
+            print(f"    {raw}", file=sys.stderr)
+
+    if markers:
+        failed = True
+        print(f"❌  generator markers: {len(markers)} violation(s):\n",
+              file=sys.stderr)
+        for path, lineno, msg in markers:
+            print(f"  {path}:{lineno}: {msg}", file=sys.stderr)
+
+    if links:
+        by_file = {}
+        for path, kind, label in links:
+            by_file.setdefault(str(path), []).append((kind, label))
+        icon = "❌" if args.strict_links else "⚠️ "
+        stream = sys.stderr if args.strict_links else sys.stdout
+        print(f"{icon}  durable documents linking into agile content: "
+              f"{len(links)} link(s) across {len(by_file)} file(s).", file=stream)
+        if args.strict_links:
+            failed = True
+            for path, hits in sorted(by_file.items()):
+                print(f"  {path}", file=stream)
+                for kind, label in hits:
+                    print(f"    -> {kind}: {label}", file=stream)
+        else:
+            print("   Advisory. Run with --strict-links to list them and fail.",
+                  file=stream)
+
+    if failed:
+        return 1
+    if links:
+        print("✅  compass lint: filetags and generator markers are valid.")
+    else:
+        print("✅  compass lint: all checks pass.")
+    return 0
 
 
 def cmd_sprint(argv):
@@ -5973,6 +6108,7 @@ BUILD_TARGET_ALIASES = {
     "site": "deploy_site",
     "manual": "deploy_manual",
     "org-roam-db-sync": "org_roam_db_sync",
+    "org-ids": "org_ids",
     # .claude/ is generated, never checked in: settings.json tangles from
     # doc/llm/claude_code_settings.org; skills deploy from doc/llm/skills.
     # Recreate the whole directory with: compass build --direct settings skills
@@ -5991,6 +6127,7 @@ EMACS_BUILD_SCRIPTS = {
     "deploy_skills":           "ores-build-skills.el",
     "deploy_settings":         "ores-build-settings.el",
     "org_roam_db_sync":        "ores-sync-org-roam.el",
+    "org_ids":                 "ores-org-ids.el",
     "tangle_shell_scripts":    "ores-build-recipe-scripts.el",
     "tangle_codegen_templates": "ores-build-codegen-templates.el",
     "tangle_clang_format":     "ores-build-clang-format.el",
@@ -6030,7 +6167,8 @@ def _clean_stale_emacs_build_state() -> None:
             entry.unlink()
 
 
-def _run_emacs_target(target: str, dry_run: bool = False) -> int:
+def _run_emacs_target(target: str, dry_run: bool = False,
+                      skip_org_id_scan: bool = False) -> int:
     """Run a single emacs build script directly, bypassing cmake."""
     script = EMACS_BUILD_SCRIPTS.get(target)
     if not script:
@@ -6050,8 +6188,104 @@ def _run_emacs_target(target: str, dry_run: bool = False) -> int:
         return 0
     log_path = _direct_build_log_path(target)
     print(f"📝 Build output: {log_path} (tail -f to follow)")
+    env = None
+    if skip_org_id_scan:
+        env = dict(os.environ, ORES_SKIP_ORG_ID_SCAN="1")
+        print("⏭️  org-id scan suppressed (--no-index)")
     with open(log_path, "w") as log:
-        return _run_logged(cmd, PROJECT_ROOT, log)
+        return _run_logged(cmd, PROJECT_ROOT, log, env=env)
+
+
+# Directories the site build excludes; mirrored here so the changed-file scan
+# considers exactly the files the publish project would.
+_SITE_EXCLUDED = (
+    "/build/", "/vcpkg/", "/.packages/", "/.claude/worktrees/",
+    "/projects/ores.org-js/", "/.git/",
+)
+
+_SITE_OUTPUT = Path("build") / "output" / "site" / "OreStudio"
+
+
+def _site_changed_pages():
+    """Org files whose published HTML is missing or older than the source.
+
+    Two stats per file, so scanning the tree costs a fraction of a second, where
+    asking org-publish to make the same decision means parsing every file. The
+    test is per-file rather than against a single build marker, so it stays
+    correct when pages are rebuilt one at a time."""
+    out_root = PROJECT_ROOT / _SITE_OUTPUT
+    changed = []
+    for src in PROJECT_ROOT.rglob("*.org"):
+        rel = src.relative_to(PROJECT_ROOT)
+        # org-publish skips dot files and dot directories; match it, or the scan
+        # offers pages the site never builds.
+        if any(part.startswith(".") for part in rel.parts):
+            continue
+        if any(seg in f"/{rel}" for seg in _SITE_EXCLUDED):
+            continue
+        html = out_root / rel.with_suffix(".html")
+        try:
+            if not html.exists() or src.stat().st_mtime > html.stat().st_mtime:
+                changed.append(src)
+        except OSError:
+            continue
+    return sorted(changed)
+
+
+def _cmd_site_page(paths, skip_index: bool = False):
+    """compass site page — publish one or more org files to the site output.
+
+    Reuses the configuration and caches the full build wrote, so a page rebuilds
+    in about a second rather than the minutes a whole-site pass costs.
+
+    The org-id map is rebuilt first, because a page linking to a document added
+    since the last full build would otherwise abort the export on an unresolved
+    link. The scan costs about three seconds; --no-index skips it when nothing
+    has been added or renamed."""
+    if not skip_index:
+        rc = cmd_index_org_ids(exit_on_failure=False)
+        if rc != 0:
+            return rc
+    if not paths:
+        changed = _site_changed_pages()
+        if not changed:
+            print("\u2705 No pages have changed since the last build.")
+            return 0
+        print(f"\U0001f50d {len(changed)} changed page(s):")
+        for c in changed:
+            print(f"   {c.relative_to(PROJECT_ROOT)}")
+        paths = [str(c) for c in changed]
+
+
+    script_path = PROJECT_ROOT / _EMACS_LISP_DIR / "ores-build-page.el"
+    if not script_path.is_file():
+        print(f"\u274c Emacs script not found: {script_path}", file=sys.stderr)
+        return 1
+
+    resolved = []
+    for raw_path in paths:
+        candidate = Path(raw_path)
+        if not candidate.is_absolute():
+            candidate = PROJECT_ROOT / candidate
+        if not candidate.is_file():
+            print(f"\u274c Not a file: {raw_path}", file=sys.stderr)
+            return 1
+        if candidate.suffix != ".org":
+            print(f"\u274c Not an org file: {raw_path}", file=sys.stderr)
+            return 1
+        resolved.append(str(candidate))
+
+    cmd = ["emacs", "-Q", "--script", str(script_path), "--"] + resolved
+    print(f"\U0001f528 publishing {len(resolved)} page(s)")
+    proc = subprocess.run(cmd, cwd=PROJECT_ROOT, capture_output=True, text=True)
+    # Emacs writes its progress to stderr; surface only the lines that say what
+    # happened, so a one-second command does not print a load trace.
+    for line in (proc.stderr or "").splitlines():
+        if line.startswith("ores-build-page:") or "Publishing file" in line:
+            print(line)
+    if proc.returncode != 0:
+        print(proc.stderr, file=sys.stderr)
+    return proc.returncode
 
 
 def _cmd_site_show(path, raw=False, width=100):
@@ -6136,6 +6370,18 @@ def cmd_site(argv):
     sub.add_parser("stop", help="Stop the site-preview systemd unit")
     sub.add_parser("status", help="Report the site-preview systemd unit's state")
 
+    sp3 = sub.add_parser("page", help="Publish changed pages to the site "
+                         "output, reusing the caches from the last full "
+                         "build; with no arguments, rebuilds whatever you "
+                         "have just edited")
+    sp3.add_argument("paths", nargs="*", metavar="FILE.org",
+                     help="Org file(s) to publish. Omit to publish every "
+                          "page whose source is newer than its published HTML.")
+    sp3.add_argument("--no-index", action="store_true",
+                     help="Skip the org-id rescan that runs first. Only safe "
+                          "when no page has been added or renamed since the "
+                          "last scan.")
+
     sp2 = sub.add_parser("show", help="Dump a built site page as readable text (no server needed)")
     sp2.add_argument("path", help="Page path relative to the site root, e.g. "
                      "projects/ores.codegen/modeling/org_entity_meta_model.html "
@@ -6147,6 +6393,8 @@ def cmd_site(argv):
     if args.subcmd is None:
         ap.print_help()
         return 0
+    if args.subcmd == "page":
+        return _cmd_site_page(args.paths, skip_index=args.no_index)
     if args.subcmd == "show":
         return _cmd_site_show(args.path, raw=args.raw, width=args.width)
     if args.subcmd == "start":
@@ -6593,6 +6841,10 @@ def cmd_build(argv):
                     help="Print who currently/last held each build-lock "
                          "slot, plus a tail of its build log, and exit "
                          "without building.")
+    ap.add_argument("--no-index", action="store_true",
+                    help="Skip the org-id rescan a direct build runs first "
+                         "(about 3s). Only safe when no page has been added, "
+                         "renamed or deleted since the last scan.")
     args = ap.parse_args(argv)
 
     if args.status:
@@ -6621,7 +6873,8 @@ def cmd_build(argv):
             print("❌ --direct requires at least one target.", file=sys.stderr)
             return 1
         for target in targets:
-            rc = _run_emacs_target(target, dry_run=args.dry_run)
+            rc = _run_emacs_target(target, dry_run=args.dry_run,
+                                   skip_org_id_scan=args.no_index)
             if rc != 0:
                 print(f"❌ Direct build failed for target '{target}' (exit {rc})",
                       file=sys.stderr)
@@ -7132,6 +7385,9 @@ def main():
     index_parser.add_argument("--rebuild", action="store_true", help="Rebuild the entire index from scratch")
     index_parser.add_argument("--org-roam-db-sync", action="store_true",
                               help="Sync .org-roam.db before indexing (same as compass build --direct org-roam-db-sync)")
+    index_parser.add_argument("--org-ids", action="store_true",
+                              help="Rebuild .org-id-locations-file, the map that resolves [[id:...]] links "
+                                   "during a build, then exit. Needed after adding a page other pages link to.")
 
     search_parser = subparsers.add_parser("search", aliases=["find"], help="Search your notes")
     search_parser.add_argument("query", type=str, help="The search query")

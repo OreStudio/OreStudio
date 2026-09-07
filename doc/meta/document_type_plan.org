@@ -16,6 +16,8 @@ page carries only what is specific to =plan=.
 
 * Contract
 
+- Implements :: loading. See
+  [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
 - Lives /inside/ a task or story document as the =* Plan= section.
   Not a separate file. (Previously =plan.org= as a sibling file;
   that was retired when tasks became flat files.)
@@ -23,4 +25,16 @@ page carries only what is specific to =plan=.
 - Transient :: cleared or summarised in =* Notes= when the task or
   story closes; distilled content moves to =* Decisions= on the
   parent story. Plans do not outlive their task.
+
+* Not to be confused with =design=
+
+A plan is /how we will do this work/. A [[id:7ADECB4C-3C03-4B8D-BB2F-A9753EFDA866][design]] is /what the target
+state is, and why/ — the argument that produced the tasks, rather than
+the strategy for executing one of them.
+
+When a story-scoped argument spans many tasks, precedes them, and will
+be distilled into a durable document, it outgrows a =* Plan= section and
+becomes a =design.org= in the story folder. Everything else stays a
+section, as above. A design that produces no durable outcome was a plan
+all along.
 

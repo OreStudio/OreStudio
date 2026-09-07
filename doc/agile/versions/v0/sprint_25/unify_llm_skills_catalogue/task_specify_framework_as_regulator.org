@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 39264768-EE92-4DB1-B048-3C960415B358
+:END:
+#+title: Task: Specify the skills framework as a regulator
+#+description: Respecify the framework as a regulator over an agent, deriving its scope and its seven classes of document from cybernetics rather than stipulating them, and classify the upstream pstack collection against that derivation.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch: feature/refactor-llm-skills
+#+pr: 2030
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The framework states what it regulates, why those seven classes of document and
+no others, and where it stops. Its terminology agrees with the cybernetics it
+borrows from. Its relationship to upstream skill collections is stated per skill
+and is checkable.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Done; PR pending.                      |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- Scope is derived from the good regulator theorem, requisite variety and the
+  black box, rather than stipulated, and the derivation settles which targets
+  the framework models.
+- The seven classes are derived from the primitives of a control loop, so a
+  candidate eighth has a test rather than a preference.
+- The session role is named System, after Beer, and the seven classes are named
+  regulatory functions; neither collides with the other senses the corpus
+  carries.
+- Every upstream pstack skill carries a regulatory function and a disposition,
+  and nothing upstream is forked.
+- The corpus has a writing standard for argumentative prose, grounded in
+  published work and applied across the cluster.
+- Rules the framework states are enforced by lint wherever they can be.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2030][#2030]] | [doc] Specify the skills framework as a regulator over an agent |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1| skill-add step 9 prose still says Functions and doc/functions/ | doc/llm/skills/skill-add/SKILL.org | Fixed | Confirmed: the heading was migrated, the prose below it was not, and doc/functions/ no longer exists. Ninth defect from the rename. |
+| 2| _ID_LINK_RE misses bare [[id:UUID]] links | projects/ores.compass/src/compass.py | Fixed | Real gap. Regex now matches both forms; the count moved 142 to 144, so it was hiding violations. |
+| 3| Two changed-pages implementations, Python mtime and elisp --all | compass.py, ores-build-page.el | Declined | Accurate. compass.py never invokes the elisp --all path, so they cannot disagree today. Consolidating now would be speculative; noted for whoever wires that path up. |
+| 4| _lint_generator_markers ignores an out-of-order END | projects/ores.compass/src/compass.py | Declined | Markers are flat, never nested, in every use in the corpus. Precise reporting for a case that does not occur would add branching to a check whose value is that it is simple. |
+
+* Result
+
+The framework is specified as a regulator over an agent, and what the earlier
+documents stipulated is now derived.
+
+Scope follows from three results rather than from convention. The good regulator
+theorem requires a regulator to model what it regulates and, through its
+simplicity clause, forbids modelling anything else. Requisite variety bounds
+what must be supplied to the residue the agent does not already absorb. The
+black box covers the rest. The rule that falls out settles which targets the
+framework models without appealing to whether a subject is a file, which is why
+a branch is modelled and a compiler is not.
+
+The seven classes are derived from the primitives of a control loop, so a
+candidate eighth has a test rather than a preference. Declaration is the goal,
+recording the sensor, execution the effector, loading the model the theorem
+requires, citation and sequencing constrain choice and order, and convening
+amplifies variety.
+
+Terminology now agrees with what it borrows from. The session role is a System,
+which is Beer's own term; the seven classes are regulatory functions. Neither
+collides with the other senses the corpus carries, and where a word does carry
+two referents the document says which is meant.
+
+Upstream is classified rather than forked. All 52 pstack skills carry a
+regulatory function and a disposition. Forking was rejected because it severs
+the second loop: a copy stops tracking the moment upstream improves, and a stale
+fork fails silently where a broken reference fails loudly.
+
+Two things were added that the story did not ask for and the work showed were
+needed. A writing standard for argumentative prose, since the register problem
+recurred across every page. And two lint checks, since two rules the framework
+states had nothing enforcing them, and each was found by fixing the same defect
+twice.
+
+Not done, and left to the story's other tasks. No skill is renamed, no
+dispatcher is built, and the catalogue is not attenuated by level. No
+agent-behaviour evaluation was run, so nothing here claims to change how agents
+act; the specification records that under its own Limitations.
+
+One measurement worth carrying forward: nine distinct defects traced to a single
+mechanical rename, of which grep found four and reading found five. The last was
+found by a reviewer.

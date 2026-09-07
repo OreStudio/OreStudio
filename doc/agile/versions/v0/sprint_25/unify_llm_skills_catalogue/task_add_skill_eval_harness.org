@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: 0829C5A8-A104-44CA-ADC5-819EFC5F31A1
+:END:
+#+title: Task: Add a skill eval harness driven by mechanical verdicts
+#+description: Re-run closed tasks in a throwaway worktree under a changed skill and grade against what actually landed, using the independent checkers rather than a judge model.
+#+type: task
+#+level: s1
+#+filetags: :llm:skills:eval:verification:unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A skill is a prompt, so changing one changes agent behaviour in a way reading the diff cannot show. Evaluating agent behaviour generally is hard because it needs a grader, but our case is easier than the general one: our work already carries mechanical verdicts. It compiles or it does not, the drift check is clean or it is not, the shell scenario passes or it does not. So a skill eval is a method run against a fixture task with a mechanical verdict. Take closed tasks whose outcome is recorded, re-run them in a throwaway worktree under the changed skill, and compare against what actually landed. Reserve this for skills the whole system leans on, because it is expensive and stochastic at the sample sizes we can afford; ordinary action-skill edits are evidenced by the selection instrumentation instead.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-08-26                               |
+
+* Acceptance
+
+- A fixture set of closed tasks with recorded outcomes exists and can be re-run in a throwaway worktree.
+- Grading uses the independent checkers: compilation, tests, drift and the shell scenario. No judge model grades prose.
+- An eval reports the verdict per fixture task and the difference against what actually landed.
+- The harness is reserved for load-bearing skills, and which skills those are is stated.
+- Where no mechanical verdict is available, the eval says so rather than substituting a model's opinion; the change is then labelled a judgement call.
+- The harness is exercised on one real skill change before the task closes.
+- The relationship to the selection instrumentation is documented: instrumentation is continuous evidence, the harness is for deliberate changes.
+- Blinding follows pstack's protocol: no eval vocabulary anywhere the candidate sees, an organic prompt, sanitised directory names, no chain-eliciting cues, and the candidate is not told others exist.
+- Chain-following is graded from the candidate's transcript — which files it actually opened — never from its own account of what it applied.
+- The two steps of pstack's protocol that need a second model family are recorded as not portable, with the mechanical verdict named as the substitute.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

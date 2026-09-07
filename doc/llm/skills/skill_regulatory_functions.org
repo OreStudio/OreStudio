@@ -1,0 +1,689 @@
+:PROPERTIES:
+:ID: F5CB5A45-6557-410B-9E4F-542957561A16
+:END:
+#+title: Regulatory Functions
+#+description: The criterion by which artefacts are classified, the seven regulatory functions it admits, the document types that offer each, and the procedure that assigns a new artefact among them.
+#+type: knowledge
+#+level: cross
+#+startup: inlineimages
+#+filetags: :llm:skills:claude_code:architecture:regulatory_functions:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+* Summary
+
+A /regulatory function/ is one of the functions a regulator must discharge in
+order to regulate: it sets a goal, senses the state reached, acts, holds a model
+of what it regulates, and commands sufficient variety.
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states the general
+notion, and [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills
+Framework]] derives the seven from the primitives of a control loop.
+
+This document classifies the project's documents by the function each supplies.
+It states the criterion behind that classification and defends it, sets out the
+seven functions and which document types implement each, and closes with the
+procedure that assigns a new artefact among them.
+
+* Detail
+
+** Artefacts, Documents and Targets
+
+Before we proceed, it is important to clarify the terminology.
+
+An *artefact*, in the sense [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]]
+gives the word, is a file or a directory belonging to a software project. The
+regulatory functions classify a subset of the project's artefacts: those the
+skills catalogue holds. Every one of them is a document, so within this page
+artefact and document may be read interchangeably; the wider term is retained
+because the classification would apply equally to a non-document file were the
+catalogue ever to hold one.
+
+A *target* is what an action acts upon, and targets are broader than artefacts.
+A task and an entity model are artefacts, being files. A branch, a pull request,
+a service and a failing test are targets and are not artefacts, since none is a
+file or a directory. Targets are therefore never classified into regulatory
+functions: the criterion below asks what relation an agent bears to a thing,
+and an agent neither loads nor cites nor sequences a branch, it acts on one.
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats targets and
+the operations registered against them.
+
+A *document type* classifies a document by its contract: the frontmatter it
+carries, the sections it must contain, its lifecycle and its location. This is
+orthogonal to the regulatory function, which classifies by the agent's
+relation, and the two stand in a many-to-many relation. Loading spans several
+document types, knowledge, recipe and memory among them, while the skill
+document type spans three functions, since a skill may be a principle, a method
+or an action. The regulatory function cannot
+therefore be inferred from the document type, which is why the definition
+requires it to be declared. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document
+Types]] carries the type ontology.
+
+#+caption: The regulatory functions a type may implement.
+[[proj:doc/llm/skills/skill_regulatory_functions.png]]
+
+** The Classification Criterion
+
+The classification is not freely chosen.
+[[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill
+Framework]] defines a skill as one action applied to one typed target, at a
+stated level, in exactly one regulatory function, and derives the last of those
+clauses from a limitation of the specification: a construct admitting only
+executable instructions has no place for a rule that is cited rather than run,
+nor for an approach to a class of work that issues no command of its own. The
+regulatory function clause repairs that omission, and the present document
+supplies the taxonomy the clause presupposes.
+
+What remains open is which classes the taxonomy should contain, and on what
+basis. A taxonomy is answerable to the question it is built to serve. The
+question here is what an agent should do with an artefact it has encountered,
+and that constrains the choice of criterion more than it might appear.
+
+Classification by subject matter cannot answer it. Knowing that a document
+concerns interest rate curves says nothing about whether the agent should read
+it, follow it, or run it. Classification by author or by age fares no better.
+The classification must be by *the relation the agent bears to the artefact*,
+because that relation is precisely what the agent does with it, and a
+classification by what an agent does is directly actionable where a
+classification by what an artefact contains is not.
+
+*** Methodological Precedent
+
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] asks two questions of any
+corpus of hand-written material: which of its structure is mechanically
+reproducible, and what should replace that structure once it has been found.
+Code generation is the setting in which the questions were posed rather than
+their content, and they survive being asked of another population of artefacts.
+
+The skills catalogue is such a population. MASD therefore supplies a method
+rather than a conclusion, and that distinction governs what follows: the
+analysis transfers whole, and /Divergence in the Remedy/ sets out where the
+remedy does not.
+
+MASD's physical modelling process runs in five stages. It samples representative
+hand-written artefacts, decomposes each into its parts, classifies those into
+/parts/ and /facets/, reconstructs each recurring pattern as an archetype, and
+catalogues the archetype with its variability exposed.
+
+The analysis behind this framework ran the same five stages over a different
+population, our own catalogue together with three published collections. It
+decomposed each skill into the judgement, sequence, command and fact it carried,
+classified those into regulatory functions, reconstructed the uniform cases as
+a computed table, and catalogued the result with the declarations that
+parameterise it.
+
+Three findings follow, each a MASD construct instantiated in the new population.
+
+- *Regulatory Functions and facets.* MASD defines a facet as "an arbitrary
+  partitioning/taxonomy of the logical space", classifying entities "by the role
+  each artefact plays". A regulatory function is a construct of the same kind on
+  a different axis: it classifies by the agent's relation to an artefact rather
+  than by the artefact's place in the physical model. MASD's description of the
+  facet as arbitrary applies to it unchanged, so a taxonomy of this kind is
+  stipulative rather than descriptive, justified by what it makes possible rather
+  than by correspondence to a natural kind in the material. The two differ in
+  exclusivity: a facet partitions, while regulatory functions are not mutually
+  exclusive and one type may carry several.
+
+- *Addressing.* MASD addresses an artefact by a four-segment path,
+  =[technical space].[part].[facet].[archetype]=, so that its location follows
+  from its classification rather than from memory. The framework addresses an
+  operation by the pair of target type and verb for the same reason, and
+  [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats the
+  consequence.
+
+- *Schematic and repetitive patterns.* MASD's central construct is the
+  /Schematic and Repetitive Pattern in Physical Space/: content that "varies
+  predictably across entities but is otherwise mechanically identical", and is
+  therefore generated rather than written by hand. Write $T$ for the set of
+  target types and $V$ for the set of verbs. A catalogue holding one document
+  for each admissible pair in $T \times V$ is such a pattern, since those
+  documents differ only in the two coordinates that index them. The limitation
+  the definition addresses is consequently an SRPP in the skills catalogue, and
+  it is the finding on which the framework's response turns.
+
+The test is operational in both cases. MASD holds that "one determines if a
+physical pattern is schematic and repetitive by reproducing it by automated
+means"; the framework holds that a verb table which cannot be generated is a
+table that should not be built.
+
+*** Divergence in the Remedy
+
+The two diverge over what to do once the pattern has been identified. MASD
+resolves an SRPP by generating the instances, which thereafter exist as files.
+The framework resolves the same pattern by declining to produce the instances at
+all: the pairing of verb and target type is computed when a target is
+dispatched, and no skill document is written for any pairing
+([[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]).
+
+The divergence follows from the consumer. A compiler is indifferent to how many
+files it is handed, so materialising every instance costs nothing and buys
+locality. An agent is not indifferent. Its catalogue is read rather than
+compiled, and the size of that catalogue is itself the cost, because every entry
+competes for attention at the moment of selection. Generating one skill for each
+pairing would reproduce the pattern faithfully and reinstate the very problem
+the analysis was undertaken to solve.
+
+MASD's own test survives the divergence, since reproduction by automated means
+is satisfied by computing the pairing as well as by writing it out. What the
+framework takes from MASD is the analysis: how to recognise mechanically
+reproducible structure, and how to name the axes along which it varies. Code
+generation is where the borrowing stops.
+
+One MASD principle bears on the section that follows. /Evolve Gradually/ directs
+that coverage grow "driven by concrete practice rather than up-front design",
+which is the ground for declining to claim the six values below are exhaustive.
+
+*** Regulatory Functions and Facets
+
+If a regulatory function is the same kind of object as a MASD facet, the
+framework owes an account of why it does not simply declare six facets and
+stop. There are three reasons, and the first is a matter of fact rather than of
+theory.
+
+**** The Facet Slot
+
+Documents already have facets in this project's physical space. The =ores.doc=
+facet group holds four: =ores.doc.knowledge=, =ores.doc.agile=,
+=ores.doc.modeling= and =ores.doc.template=. That partition is by area of the
+documentation, and it is a perfectly good one, but it is not the partition the
+skills catalogue needs. A second partition of the same artefacts along a second
+axis cannot occupy the same slot in a four-segment address.
+
+**** Production and Consumption
+
+The deeper reason is that a facet and a regulatory function are asked different
+things.
+
+A facet answers a question about *production*. MASD's physical space describes
+how artefacts come to exist: one logical entity projects into many artefacts,
+and the facet records which projection a given artefact is, so that grouping all
+the artefacts giving a type its serialisation is exactly what a facet is for.
+
+A regulatory function answers a question about *consumption*. It records what
+an agent does with an artefact once the artefact exists, which is a property of
+the reader rather than of the generator.
+
+Both are true of the same file and neither follows from the other. A knowledge
+document is an artefact of the =ores.doc.knowledge= facet and implements the
+loading function; the first fact concerns how it was produced, the
+second how it is used.
+
+**** Absence of a Mapping
+
+Were the two axes to coincide, one could be derived from the other and only one
+would be needed. They do not.
+
+Most artefacts of the =ores.doc.agile= facet, being stories and tasks, belong to
+no regulatory function at all: they are targets that actions act upon rather
+than members of the catalogue. Conversely one document type spans three
+regulatory functions, since a skill may be a principle, a method or an action,
+so a facet-to-trait function would have to be many-valued. And some regulatory
+function members lie outside the physical space entirely, an Allium
+specification and the deliberation plugin being neither generated by this
+project nor addressed within it.
+
+**** Harmonisation
+
+The framework therefore extends MASD's move rather than duplicating its
+vocabulary. MASD classifies artefacts by role for the purpose of generating
+them; compass classifies a subset of the same artefacts by role for the purpose
+of using them. The method is MASD's, the population overlaps, and the consumer
+differs, which is why a distinct term is warranted and why the two
+classifications coexist on the same file without competing.
+
+** The Term
+
+*** Choice of Term
+
+A document type implements one or more *regulatory functions*, each declaring
+the operations available on it. The term is not borrowed; it names what the
+derivation establishes, and it is answerable to that account rather than to
+convenience.
+
+Two properties of the classification matter here. A type may implement several
+functions: a recipe implements /loading/, being consulted for its command, and
+/execution/, its script being run. A classification permitting one membership
+per type could not express that, and an earlier attempt failed on exactly this
+case. And an operation whose behaviour does not vary across implementing types
+is written once rather than once per type, which is what keeps the catalogue
+from growing as the product of operations and types.
+
+Three alternatives were rejected. /Function/ unqualified collides three ways:
+the literature on the Viable System Model uses it interchangeably with /System/
+for S1 to S5, Liu et al. name their construct a /program function/, and the
+project is written in a programming language. /Channel/ carries information and
+has a capacity in cybernetics, which describes six of the seven but misdescribes
+execution. /Facet/ is MASD's term for a different partition of the same
+artefacts, treated above.
+
+*** Relation to Gibson's Affordances
+
+An earlier framing of this classification was Gibsonian. The connection is
+recorded because one part of it still does work, and because the difference
+between the two framings is instructive.
+
+Gibson coined *affordance* in /The Senses Considered as Perceptual Systems/
+(1966) and stated it in /The Ecological Approach to Visual Perception/ (1979):
+
+#+begin_quote
+The affordances of the environment are what it offers the animal, what it
+provides or furnishes, either for good or ill.
+#+end_quote
+
+That framing classified an artefact by what it offers an agent. The criterion
+defended here is different in kind: a document type is classified by the
+regulatory function it supplies, and the seven are derived from the primitives
+of a control loop rather than observed in the material
+([[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]]).
+The two agree on almost every assignment and disagree on their grounds. A
+derivation is what the earlier framing lacked, and without one there was no
+answer to the question of whether some further class existed.
+
+One element survives independently of the framing that carried it. Norman
+narrowed affordance in 1988 to those possibilities an actor can readily
+perceive. That narrowing justifies a requirement the framework would otherwise
+hold without explanation: a regulatory function an agent cannot detect is one it
+will not use, which is why an artefact must *declare* what it implements rather
+than leaving it to be inferred.
+
+** The Seven Regulatory Functions
+
+The criterion admits seven regulatory functions. Each document type offers one
+or more, and the assignment is declared in the type's own contract under
+=Implements ::= rather than inferred here.
+
+#+ATTR_HTML: :class hug-leading
+| Document type                 | Implements                          |
+|-------------------------------+----------------------------------|
+| Knowledge, investigation, manual, component | loading            |
+| Structure note                | loading                          |
+| Memory                        | loading                          |
+| System                        | loading                          |
+| Meta, decision                | loading, citation                |
+| Recipe                        | loading, execution               |
+| Principle                     | citation                         |
+| Method                        | sequencing                       |
+| Runbook                       | sequencing                       |
+| Action                        | execution                        |
+| Specification                 | declaration                      |
+| Deliberation                  | convening                        |
+| Task, story                   | loading, declaration, recording  |
+| Sprint, version, capture, design | loading, recording            |
+| Test scenario                 | sequencing, declaration, recording |
+
+The skill document type is the exception: a skill implements citation, sequencing
+or execution according to what it contains, so its regulatory function cannot
+be inferred from its type and must be declared on the instance. This is the
+reason the definition of a skill requires the declaration.
+
+An earlier revision named the types implementing loading collectively
+*grounding*. That name is withdrawn. Grounding denotes an activity an agent
+performs, not a class of document, and the set it was taken to name had in any
+case ceased to be well defined once loading was extended across the catalogue.
+The set is referred to as /the types implementing loading/ where it must be
+named at all. [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] treats the
+term and the obligation it carries.
+
+The three types that carry most of the weight differ in the condition under
+which loading occurs: knowledge by relevance to the work, a recipe on demand
+when a command is needed, and a memory unconditionally.
+
+*** The Primary Division
+
+The first division the criterion makes is between loading and everything else,
+and it is the one that carries the most consequence.
+
+An artefact engaged under the loading function contributes to what
+an agent knows before it decides anything, and it carries no procedure of its
+own. An artefact engaged under any of the other five contributes to what the
+agent does, and it always carries one. Loading is therefore the only regulatory
+function that changes the agent rather than the work.
+
+*** Plurality
+
+An artefact may offer more than one regulatory function, and the recipe does.
+This is a consequence of the term rather than an exception to it: a regulatory
+function is a relation, and nothing prevents an artefact standing in several.
+
+The framework requires only that every artefact offer at least one, which the
+criterion guarantees, since an artefact standing in no relation to an agent has
+no place in a catalogue an agent uses. It does not require that the offers be
+disjoint, and a partition would be the stronger claim it does not need.
+
+The router is a second plural case. It declares a System, matches a method and
+dispatches, so it is engaged under sequencing and under execution at different
+points in its own operation.
+
+** The Document Types
+
+Each type is treated below under the regulatory function it offers, with
+attention to the pairs most easily confused.
+
+*** Loading
+
+The types below supply the material an agent brings into working knowledge
+before it acts, and the process of doing so is
+[[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][grounding]]. They differ in the
+question each answers and in the condition under which each is read, and the
+distinctions are necessary ones: a framework that treats them alike cannot say
+when each should be consulted.
+
+**** Knowledge
+
+A knowledge document states a durable fact about the domain or the system: what
+a thing is, how it behaves, and why it is so. It is *descriptive*. Its claims
+are answerable against the world, and where the world and the document disagree
+it is the document that is wrong. Knowledge is atomic, addressed by identifier,
+and outlives any sprint, which distinguishes it from every artefact scoped to a
+piece of work.
+
+Knowledge loads by relevance. An agent about to touch interest rate curves loads
+the curve cluster and nothing else, which is only possible if something can tell
+it which cluster that is. That is what a structure note does, and the
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] page records the
+discipline.
+
+**** Recipes
+
+A [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][recipe]] states how one operation
+is performed in this system. It is
+*operational* where knowledge is conceptual, and it is invariant: the same steps
+produce the same result on every run, so its correctness is a property of the
+system rather than of the situation in which it is invoked. A recipe carries a
+runnable script and is tested, which is what allows a reviewer to re-run it
+rather than take a claim on trust.
+
+Recipes load at the moment an action needs a command. Their fuller role, and the
+boundary that separates them from methods, is set out under /Methods and
+recipes/ below.
+
+**** Memories
+
+A memory records a correction that must not be repeated. It is *prescriptive*
+where knowledge is descriptive: it does not describe the world but constrains
+the agent's behaviour in it, and it is written because something went wrong
+once. The catalogue is [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project
+memory]].
+
+Memories load unconditionally, in every session, whether or not the work touches
+what they concern. That is what makes them expensive in a way the other two are
+not, and it is the argument for keeping them scarce: a memory is paid for by
+every session, so each one competes for attention with every other. A correction
+that applies to one domain is better recorded as knowledge in that domain and
+reached when the domain is.
+
+**** The Grounding Obligation
+
+A knowledge document is not an accompaniment to the work. It is the agent's
+model of the domain it is regulating. Beer's argument transfers
+without modification. A regulator requires a model of the system it regulates,
+and an agent that has not loaded one lacks the variety to act well within it.
+The failure this produces is characteristic: the agent does not stall or refuse,
+it produces something fluent and wrong, and it has no means of noticing.
+
+Grounding is therefore a precondition of the work rather than an adjunct to it.
+Every method opens by naming the domain concepts its work touches and resolving
+each to a knowledge document or a structure note. A concept that resolves to
+nothing is a *knowledge gap*, and on domain-related work closing that gap is the
+first task, ahead of design and ahead of code. A method that proceeds without
+grounding records the omission and its reason, in the same way any other skipped
+phase is recorded.
+
+*** Citation
+
+A stance is a general rule of judgement. It constrains how a choice is made
+without prescribing what is done, which is why it has no procedure and produces
+no artefact: there is nothing in a stance to execute. An agent invokes one by
+*citing* it against a specific decision, and the citation is admissible only
+when it names the choice the rule changed. A principle cited without an
+accompanying decision records nothing and may be disregarded.
+
+Two contrasts fix the boundary. A stance differs from a method in that a method
+orders actions through time whereas a stance constrains the choices made within
+them; the two compose, and a method's phases routinely cite several. A stance
+differs from a recipe in that a recipe is executed and leaves the system
+changed, whereas a stance leaves no trace except in the reasoning that produced
+a decision.
+
+Citation is the one place where an artefact that cannot
+be run is nevertheless a skill. That exemption is deliberate and narrow: a
+principle which cannot be loaded by name cannot be cited by a method, and a
+rule that cannot be cited cannot be shown to have been applied.
+
+The academic literature reviewed in
+[[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill
+Framework]] bears on this regulatory function, and it does not favour it. That
+review finds a rule expressed as text states what an agent should do in
+principle without stating when it applies, and reports such rules being
+disregarded in practice. The regulatory function is therefore constituted as a
+residue rather than as a preference: a rule that can be expressed as a check,
+whether a lint, a validator or a test, is written as one and does not enter the
+regulatory function, which holds only what cannot be checked. A stance
+regulatory function that fails to shrink as checks accumulate is evidence that
+the requirement is not being applied.
+
+*** Sequencing
+
+A method is an ordered sequence of phases carrying a piece of work from an
+unverified beginning to a verified end. It is defined over a *shape of work* — a
+defect to be diagnosed, a behaviour to be added, a structure to be changed —
+rather than over any particular artefact, and it therefore names no specific
+command. A method is control flow without effectors.
+
+Indexing by shape of work is the axis on which the pstack collection organises
+its entire catalogue, as the review of industrial collections in
+[[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill
+Framework]] records. Here it governs one regulatory function among six, the
+artefact axis being carried by actions, so the two axes compose rather than
+compete.
+
+The phases of a method are adaptive rather than fixed. Which of them run and in
+what order depends on what the work reveals as it proceeds, so a method's
+correctness is a property of the judgement it encodes rather than of the system
+it runs against. This is the principal difference between a method and a
+recipe. The two are treated together below, since the distinction between them
+accounts for most misclassification in practice.
+
+A recipe answers /how is this operation performed here?/ A method answers /how
+is this class of work approached?/ From that difference the rest follows.
+
+#+ATTR_HTML: :class hug-leading
+|                              | Recipe                              | Method                                       |
+|------------------------------+-------------------------------------+----------------------------------------------|
+| Question                     | How is this operation performed?    | How is this class of work approached?        |
+| Scope                        | One operation                       | One shape of work, many operations           |
+| Content                      | Commands and a script, tested       | Phases, gates and judgement                  |
+| Behaviour                    | Invariant: the same steps every run | Adaptive: steps follow what the work reveals |
+| Correctness is a property of | The system                          | The judgement                                |
+| Fails when                   | The underlying command changes      | The shape of the work was misjudged          |
+| Example                      | /How is a pull request merged?/     | /Diagnose a defect, then fix it/             |
+
+Two tests settle any case that remains unclear. The first is determinism: where
+the steps are the same on every run the artefact is a recipe, and where they
+depend on what is found it is a method. A method that never branches is a recipe
+that has acquired phases it does not need; a recipe qualified throughout by "it
+depends" is a method that has not yet been written.
+
+The second test is direction of dependence. A method's phase cites a recipe; a
+recipe never cites a method. Where a recipe finds itself explaining /when/ it
+should be run, judgement has leaked downward and belongs to a method. Where a
+method finds itself spelling out a command, an effector has leaked upward and
+belongs to a recipe.
+
+*** Execution
+
+An action is a single operation applied to one typed artefact, together with the
+judgement governing its use: what must hold before it runs, what state it leaves
+behind, and what to do when its guards refuse. The command it issues belongs to
+a recipe, which the action delegates to; what the action itself owns is the
+decision to issue it.
+
+Recipe, action and method therefore divide cleanly. A recipe holds the
+command, an action holds the judgement about that command, and a method holds
+the sequence in which such judgements are made. Each has exactly one source of
+truth, and drift in any of them has exactly one place to appear.
+
+Actions are the regulatory function where uniformity is worth exploiting. Where
+a verb behaves the same way across artefact types it becomes a single skill
+driven by a generated type table; where its procedure genuinely differs per
+type it keeps a skill of its own. The test is whether the *procedure* differs,
+not whether the artefact does.
+
+*** Declaration
+
+A specification states intended behaviour in a form a machine can check, and
+from which tests are generated. Its defining property is that it is *normative*:
+it says what the system ought to do, which is what separates it from knowledge,
+whose claims are descriptive. The consequence matters. Where a knowledge
+document disagrees with the system the document is wrong and is corrected; where
+a specification disagrees with the system, which of the two is wrong is an open
+question, and the disagreement is a finding rather than an error.
+
+That property is what allows a specification to make a method's definition of
+done falsifiable rather than rhetorical. A method's framing phase writes or
+extends a rule; its verification phase runs the tests propagated from that rule.
+In this project specifications are written in Allium.
+
+*** Convening
+
+Deliberation is the procedure by which a contested judgement is settled when the
+available evidence cannot settle it. A method convenes one at a fork it cannot
+resolve, and the product is a verdict recorded against the work, never a silent
+change to the code.
+
+The contrast with verification is what fixes deliberation's place. Verification
+establishes whether a claim is true and is answerable by a checker; deliberation
+decides what should be done where no checker can yet answer, and its output is a
+reasoned position rather than a fact. Confusing the two in either direction is
+costly. Sending a checkable question to deliberation wastes it, and sending an
+unanswerable one to a checker produces a confident verdict with nothing behind
+it.
+
+Deliberation in this project is provided by the Council of High Intelligence,
+consumed as an external plugin. Its instrument is a panel of analytically
+distinct personas, and the limitation that follows should be stated wherever it
+is relied upon: personas vary framing but share the priors of the single
+[[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][model]] beneath them, so
+deliberation is a strong instrument for surfacing a tradeoff and a weak one for
+detecting an error. Error detection routes instead to the checkers set out in
+[[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]], which
+do not share those priors.
+
+** Actions and Regulatory Functions
+
+A regulatory function is a property of an artefact, not of an act. Any single act
+therefore touches at least two of them, one on each side, and confusing the two
+sides is the commonest way to misread this taxonomy.
+
+Consider an agent closing a task. It engages the skill =agile-close-task= under
+that skill's *execution* regulatory function: running the skill is the agent's
+relation to it. The skill's effect engages the task under the task's
+*recording* regulatory function: the state moves to =DONE=, the result is
+written, the story's table is synced. Execution is the agent's relation to the
+action; recording is the action's relation to the task.
+
+The general shape is that an agent *executes* an action, and the action *engages
+a regulatory function of its target*.
+
+Creation is the case that separates two things the framework has otherwise been
+able to treat as one.
+
+An action has a *target*, whose regulatory function it engages. It may also
+have an
+*output*, which is a new artefact. For most actions the two coincide closely
+enough to be ignored: closing a task targets that task and produces nothing new.
+For creation they diverge, and must.
+
+An agent adding a task executes =agile-add-task=. Its target is the *story*, not
+the task, which is why =compass add task= takes the parent as an argument. The
+regulatory function engaged is the story's recording: its table of tasks gains
+a row, which records that this work now exists. The new task document is the
+action's output.
+
+The reason the distinction is forced rather than merely tidy is that nothing can
+offer a relation before it exists. A target must be present for its regulatory
+functions to be engaged, so a creation verb cannot take as its target the thing
+it creates. It takes the container instead, and
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] offers creation
+verbs against the container's type for the same reason.
+
+** Recording and Editing
+
+Two regulatory functions concern acting on an artefact rather than consuming
+it, and the distinction between them is easily missed.
+
+*** Recording
+
+An artefact implements *recording* when it carries a lifecycle that an agent
+advances. A task moves from =BACKLOG= through =STARTED= to =DONE= and receives a
+Result when it closes; a capture moves between the backlog's folders as its
+disposition is settled. Advancing the artefact is not incidental to it. It is
+what the artefact exists for, and it is how the state of work is held.
+
+The regulatory function has a mechanical test, which is why its assignment is
+checkable rather than a matter of judgement: a type implements recording when
+it declares a lifecycle, whether as a TODO vocabulary in its frontmatter or as
+a position among folders. Task, story, sprint, version and test scenario
+declare the first; capture uses the second. Knowledge, recipes, runbooks,
+memories and skills declare neither and afford no recording.
+
+Recording pairs against declaration rather than duplicating it. A declaration
+states what ought to be true, which for a task is its acceptance criteria. A
+recording captures what happened: the state reached, the result written, the
+plan as it was actually worked.
+
+*** Operation
+
+Every artefact additionally offers being *operated on*: edited, moved, renamed,
+deleted. That regulatory function is universal, and a property every member of a
+population shares carries no classificatory information, which is why it is
+absent from the seven above.
+
+It is not absent from the framework. Operating on an artefact is what an action
+does, and the population an action may operate on is wider than the population
+classified here, since it includes targets that are not artefacts at all.
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats that
+population and the operations registered against it.
+
+** Placement
+
+The regulatory functions above give the taxonomy. This procedure applies it.
+Take the first match.
+
+The placement procedure. Take the first match.
+
+1. A durable fact about the domain goes to a *knowledge document*. If it is the
+   entry point to a cluster, a *structure note*.
+2. An account of how one operation is performed here, with a runnable script,
+   goes to a *recipe*. This is also where a method's missing effector goes.
+3. A correction that must not be repeated goes to a *memory*. Keep these scarce:
+   each is paid for by every session.
+4. A rule that is cited rather than run goes to a *principle*.
+5. Intended behaviour that should be checkable goes to a *specification*.
+6. A sequence of phases ending in a verified state, not tied to one artefact
+   type, goes to a *method*.
+7. A change to a *generated* artefact goes to its model or its template, never
+   to the output.
+8. An operation on one artefact type goes to an *action*, at the pairing of type
+   and verb. The action holds the judgement; the recipe holds the command.
+9. A contested judgement goes to *deliberation*, and its verdict is recorded
+   against the work.
+10. A role a session or a delegate acts as goes to a *System*, tagged by level,
+    stating what it must read first and what it may do.
+11. The argument for a change, spanning many tasks, goes to a *design* in the
+    story's own folder rather than to the durable tree.
+
+** Inventory
+
+# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
+Every skill, grouped by the regulatory function it offers. Populated when the
+classification task lands.
+# END generated inventory
+
+* See also
+
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this page sits under.
+- [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — how a verb is selected for a target.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — the discipline the knowledge regulatory function is held under.
+- [[id:DC0BBA22-9D4F-4FDD-B011-E30B02B4B82F][Project memory]] — the memory catalogue.
+- [[id:46F5ED07-9E63-77B4-2783-E0147EFF45D0][Recipes]] — the recipe catalogue.

@@ -1,0 +1,80 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+@startuml
+
+title Codegen — may I touch this, and is it drifting?
+
+skinparam ArrowColor #8AB4F8
+skinparam BackgroundColor transparent
+skinparam DefaultFontColor #E3E3E6
+skinparam TitleFontColor #E3E3E6
+skinparam TitleFontSize 16
+skinparam ArrowFontColor #C9D1D9
+skinparam ArrowFontSize 12
+skinparam note {
+    BackgroundColor #1A1A1E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+}
+skinparam activity {
+    BackgroundColor #2A2A2E
+    BorderColor #58A6FF
+    FontColor #E3E3E6
+    DiamondBackgroundColor #1A1A1E
+    DiamondBorderColor #58A6FF
+    DiamondFontColor #E3E3E6
+}
+
+start
+:An artefact;
+if (Does a codegen model exist,
+or does the file carry the
+generated marker?) then (generated)
+  :Hand-editing is not a legal verb;
+  note right
+    The dispatcher must not
+    offer it. The edit goes
+    to the model or template.
+  end note
+  if (Does its feature combination
+  match a named profile exactly?) then (yes)
+    :Bind the profile;
+  else (no)
+    :Find the nearest profile
+    by Hamming distance;
+    if (Is the diff a gap,
+    or a novel combination?) then (gap)
+      :Close the gap;
+    else (novel)
+      :Name a new profile;
+      note right
+        Never leave loose knobs
+        with no profile. Unnamed
+        variability is
+        indistinguishable
+        from drift.
+      end note
+    endif
+  endif
+  :Regenerate;
+  if (Is the tree dirty?) then (yes)
+    :Artefact drift;
+  else (no)
+    :Zero-diff. Verified.;
+  endif
+else (hand-written)
+  :Edit it directly;
+endif
+stop
+
+@enduml

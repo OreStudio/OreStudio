@@ -2,7 +2,7 @@
 :ID: 6E463DC4-2E12-4564-91C1-55A28D1E1AD3
 :END:
 #+title: Task: Bind ores.database entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the database-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: no model changes expected, smallest component (7 files).
+#+description: Implement profile binding for the database-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. Known starting point: no model changes expected, smallest component (7 files).
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-database:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-09-07
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ Survey every ores.database entity against the profile catalogue, rebind matches,
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Last touched | 2026-09-07                               |
 
 * Acceptance
 

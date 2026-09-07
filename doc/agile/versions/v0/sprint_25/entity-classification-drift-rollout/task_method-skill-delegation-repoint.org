@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: A88CDEA1-2329-4165-A18B-10689AD86ECF
+:END:
+#+title: Task: Re-point drift bind delegation docs at the codegen-fix-drift skill
+#+description: The eight remaining bind stories/tasks still cite August-vintage method text (ores.refdata pilot, the deleted refdata-codegen-drift CI job, the removed --components mode), the skill lacks the registrar wiring check the trading bind surfaced, and the remaining stories do not scope the post-merge live system test the compute/iam binds ran. One docs PR makes any environment able to claim a remaining bind cold: re-point the method and gate wording at the codegen-fix-drift skill, add the skill's composition check step and the iam/trading worked records, and record the done shape (bind closes at the drift gate; story closes after the live system test).
+#+type: task
+#+level: s1
+#+filetags: :entity-classification-drift-rollout:sprint_25:v0:
+#+owner: marco
+#+branch: doc/drift-delegation-tidyups
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: festive_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the eight remaining bind stories delegable to any environment. A
+cold delegate reading them today meets August-vintage text: the method
+pointer names the ores.refdata pilot instead of the codegen-fix-drift
+skill, the gate wording cites the deleted refdata-codegen-drift CI job
+and the removed =--components= mode, and the acceptance names
+validate_schemas.sh, superseded by =compass db status=. The skill
+itself lacks the registrar wiring check the trading bind surfaced
+(materialized registrar families that nothing calls), and the
+remaining stories do not scope the post-merge live system test the
+compute/iam binds ran. One docs PR closes all three gaps.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- The eight remaining bind stories and tasks name the
+  codegen-fix-drift skill as the canonical method; their gate wording
+  names the =KNOWN_DRIFT_FREE= registry check; validate_schemas.sh
+  wording is replaced by its successor. The sprint board rows for
+  those stories match.
+- The codegen-fix-drift skill carries the composition check (verify
+  every materialized registrar family is called from the service
+  registrar/application) and cites the iam and trading worked records
+  in its Reference.
+- The done shape is decided once and recorded in the rollout story's
+  Decisions and in each remaining story's Acceptance: a bind closes at
+  the drift gate; the story closes only after the post-merge live
+  system test on a fresh database.
+- Site export check passes for the doc PR.
+
+* Plan
+
+The work was done out-of-band on =doc/drift-delegation-tidyups= before
+this task was retrofitted, on the festive_dijkstra environment; the
+task records the work (see Result). Method: an asserted-replacement
+script applied the identical re-point to the eight story/task pairs
+(fails loudly on any unexpected text), hand edits for the skill, the
+rollout story decision, and the sprint board rows; verified by the
+site export check and a self-review against the code-review checklist.
+
+* Notes
+
+The four trading registrar families named in the skill step and the
+rollout decision (=lifecycle_event=, =trade_id_type=,
+=trade_identifier=, =trade_party_role=) remain unwired on main. This
+task records them; the fix is code work and does not belong to this
+docs PR.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped in one docs commit on =doc/drift-delegation-tidyups=
+(4d600892d6). The eight remaining bind stories (analytics, database,
+marketdata, reporting, scheduler, synthetic, workflow, workspace),
+their tasks, and their sprint board rows name the codegen-fix-drift
+skill as the canonical method, name the =KNOWN_DRIFT_FREE= registry
+check as the gate (the refdata-codegen-drift CI job and the
+=--components= mode the old text cites are gone), and swap
+validate_schemas.sh for =compass db status=. Each remaining story's
+Acceptance gains the Done shape bullet (bind closes at the drift gate;
+story closes after the post-merge live system test on a fresh
+database), and the 2026-09-07 decision is recorded in the rollout
+story's Decisions. The codegen-fix-drift skill gains the composition
+check as step 7 (gate extension moves to step 8) and cites the iam and
+trading worked records in its Reference; the skill is deployed to
+=.claude/skills= via =compass build --direct skills=.
+
+Acceptance: re-pointed method/gate/schema wording across the eight
+story+task pairs and the sprint board rows (verified by
+asserted-replacement script plus grep sweep — no stale text remains);
+skill composition check and iam/trading Reference records in place
+(site export check passed, so the two new id-links resolve); done
+shape recorded once in the rollout story and in each remaining story;
+site export check exit 0. Misspell check clean under doc/. Self-review
+found one Minor (stale "Break the story into tasks." Next cells),
+fixed in the same commit.

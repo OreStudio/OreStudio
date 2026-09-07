@@ -8,7 +8,7 @@
 #+filetags: :sprint_25:v0:
 #+created: 2026-08-03
 #+updated: 2026-09-07
-#+environment: brave_hopper
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -48,6 +48,7 @@ the method come from here.
 |------+-------+-------+-----+-------------|
 | [[id:7E382539-373A-4499-90A7-A774DF8CDE84][Roll out the classification tool to all remaining components and delete stale docs]] | DONE | 2026-09-03 | 2026-09-04 | Narrowed 2026-08-04, report question settled 2026-09-03 (see Decisions); remaining work is retiring the 3 stale docs and closing the program setup. |
 | [[id:43EE3BC6-C813-45FD-8348-26919720FDAA][Encode the per-component codegen drift-elimination method as a skill]] | DONE | 2026-09-04 | 2026-09-04 | Author the canonical method skill under doc/llm/skills, deployed to .claude/skills via deploy_skills: the per-component algorithm (survey, bind, record no-matches, regenerate, require byte-identical output, review generated code for C++ idiomaticity), the too-complex-to-generate exception rule, and the L0-L2 automation ramp with evidence gates. |
+| [[id:A88CDEA1-2329-4165-A18B-10689AD86ECF][Re-point drift bind delegation docs at the codegen-fix-drift skill]] | DONE | 2026-09-07 | 2026-09-07 | The eight remaining bind stories/tasks still cite August-vintage method text (ores.refdata pilot, the deleted refdata-codegen-drift CI job, the removed --components mode), the skill lacks the registrar wiring check the trading bind surfaced, and the remaining stories do not scope the post-merge live system test the compute/iam binds ran. One docs PR makes any environment able to claim a remaining bind cold: re-point the method and gate wording at the codegen-fix-drift skill, add the skill's composition check step and the iam/trading worked records, and record the done shape (bind closes at the drift gate; story closes after the live system test). |
 
 * Decisions
 

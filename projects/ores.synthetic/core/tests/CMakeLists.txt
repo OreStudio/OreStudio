@@ -31,6 +31,8 @@ target_link_libraries(${tests_target_name}
         ${lib_target_name}
         ores.utility.lib
         ores.testing.lib
+        ores.eventing.api.lib
+        ores.eventing.core.lib
         Catch2::Catch2
         faker-cxx::faker-cxx
         Threads::Threads)

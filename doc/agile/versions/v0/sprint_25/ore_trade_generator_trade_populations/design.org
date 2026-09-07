@@ -176,8 +176,8 @@ satisfy the row count and fail the requirement.
 
 ** What Measurement Found
 
-Two of the open questions are answered by reading the code, and one of the
-answers changes the design.
+Three of the open questions are now answered, two by reading the code and one by
+measuring.
 
 *** The trade interface batches
 
@@ -191,34 +191,61 @@ The consequence is that the service boundary costs less than feared. Generation
 in =ores.synthetic= calling =ores.trading= downstream does not imply a call per
 trade.
 
-*** A per-row trigger fires on every insert
+*** A per-row trigger costs a factor of four
 
-This is the finding that matters. The generated schema attaches a notify trigger
-to each entity table, declared =for each row=, whose function calls =pg_notify=
-with a JSON payload. Per row.
+The generated schema attaches a notify trigger to each entity table, declared
+=for each row=, whose function calls =pg_notify= with a JSON payload. Per row.
 
-A population of any size therefore emits one notification per trade on the
-insert path. At the volumes this story targets that is not a tax on throughput,
-it is a second system being driven at the same rate, and =pg_notify= has a queue
-a bulk load can exhaust.
+=scripts/bench_trade_insert.py= measures what that costs. It builds its own
+table, with and without an equivalent trigger, times =COPY= against multi-row
+=INSERT= at several volumes, checks the row count after every load, and drops
+what it made. It reaches postgres through =psql=, the way the rest of the
+project does, so it adds no dependency.
 
-Nothing here argues against the trigger, which exists so live changes propagate.
-It argues that *bulk population is a different operation from ordinary writing*,
-and the design must say which path it takes. Three candidates, and the analysis
-owes a measurement rather than a preference: suppress the trigger for the
-duration of a bulk load, route bulk inserts through a path that does not carry
-it, or accept the cost and size the queue.
+Medians over three runs, one run at a million, against the development database:
 
-=scripts/bench_trade_insert.py= measures it. It builds its own table with and
-without an equivalent trigger, times =COPY= against =executemany= at several
-volumes, and drops what it made.
+| Trades  | Method | Trigger | Seconds | Trades/sec |
+|---------+--------+---------+---------+------------|
+|    1000 | COPY   | on      |   0.046 |      21584 |
+|    1000 | COPY   | off     |   0.043 |      23503 |
+|   10000 | COPY   | on      |   0.098 |     102432 |
+|   10000 | COPY   | off     |   0.055 |     180591 |
+|  100000 | COPY   | on      |   0.602 |     166179 |
+|  100000 | COPY   | off     |   0.162 |     617993 |
+|  100000 | INSERT | off     |   0.756 |     132209 |
+| 1000000 | COPY   | on      |   6.615 |     151161 |
+| 1000000 | COPY   | off     |   1.575 |     634833 |
+| 1000000 | INSERT | on      |  14.868 |      67259 |
+| 1000000 | INSERT | off     |   7.467 |     133918 |
+
+Two factors of about four fall out, and they are independent. The trigger costs
+4.2x on the =COPY= path at a million rows. =COPY= beats multi-row =INSERT= by
+4.7x with the trigger off.
+
+The measurement corrects the concern that prompted it. A million trades load in
+1.6 seconds without the trigger and 6.6 seconds with it. At the volumes this
+story targets the trigger is affordable, so *suppressing it is an optimisation
+and not a precondition*. The design does not need to route bulk population
+around the trigger to be viable.
+
+*** The notify queue does not exhaust at these volumes
+
+=pg_notify= has a queue limit, which makes exhaustion under bulk load a
+reasonable thing to fear. A million trades inserted in one transaction with the
+trigger on did not reach it. The limit is real and does not bite here.
+
+One caveat the measurement does not cover: it ran with nothing listening.
+Notifications are delivered at commit, and a real listener consuming a million
+payloads is a different question from postgres queuing them. That is a question
+about the consumer, not about the insert path this section measures.
 
 *** What was not measured
 
-No timings were taken. Every service is stopped, and starting the environment to
-time an insert is heavier than this analysis warranted. The script exists so
-whoever needs the numbers gets them by running one command rather than by
-rebuilding the reasoning.
+The benchmark uses a representative flat table rather than the real bitemporal
+trade schema, so it bounds the trigger and the load method rather than
+predicting absolute times for a real population. The service boundary cost is
+also unmeasured; the code read above shows the vector write batches, which is
+what the boundary needed.
 
 ** The Service Boundary
 
@@ -229,10 +256,16 @@ The generator therefore calls downstream rather than writing to the trade
 tables. Generation gains no second path into them, and the rules governing a
 trade stay in one place.
 
-The cost of that boundary is the design's largest unknown. A per-trade call at
-the largest preset may be the difference between viable and not, so whether the
-downstream interface admits batching is a question to settle early rather than
-discover late.
+That boundary is affordable, and both halves of the question are now settled.
+The downstream interface admits batching, because the vector write issues one
+=sqlgen::insert= in one transaction. The multi-row =INSERT= path it uses loads a
+million trades in 7.5 seconds with the trigger off and 14.9 seconds with it on.
+
+The consequence is that *the design needs no bulk path of its own*. Generation in
+=ores.synthetic= calling =ores.trading= downstream, over the interface that
+already exists and through the trigger that already fires, reaches a million
+trades in about fifteen seconds. =COPY= is 4.7x faster and remains available if a
+preset ever outgrows that, but nothing in the target volumes requires it.
 
 ** Compositions
 

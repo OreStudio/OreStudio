@@ -37,6 +37,7 @@ of each reimplementing the tree-walk itself.
 :product:       ores
 :component:     synthetic
 :profile:       self-referencing-hierarchy
+:has_parent_id: true
 :parent_id_column: parent_id
 :hierarchy_name_field: name
 :END:

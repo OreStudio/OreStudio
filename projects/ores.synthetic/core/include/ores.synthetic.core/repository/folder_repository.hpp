@@ -24,6 +24,8 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.synthetic.api/domain/folder.hpp"
 #include "ores.synthetic.core/export.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -112,6 +114,21 @@ public:
      * @brief Deletes folders by closing their temporal validity.
      */
     void remove(context ctx, const std::vector<std::string>& ids);
+
+    /**
+     * @brief Reads the folder hierarchy as a flat set of {id,
+     * parent_id, name} rows, via ores_synthetic_folders_hierarchy_fn.
+     *
+     * @param ctx Repository context with database connection (tenant is
+     * derived from ctx.tenant_id()).
+     * @param root_id The folder to start from.
+     * @param from_root If true, first walks up to the ultimate ancestor and
+     * returns the whole tree the given node belongs to, instead of just its
+     * subtree.
+     * @return Flat hierarchy rows, ready for ores::utility::domain::build_tree.
+     */
+    std::vector<ores::utility::domain::hierarchy_flat_row>
+    get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root);
 };
 
 }

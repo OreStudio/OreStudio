@@ -19,6 +19,7 @@
  */
 #include "ores.synthetic.core/service/folder_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <stdexcept>
 
@@ -93,6 +94,13 @@ void folder_service::delete_folders(const std::vector<std::string>& ids) {
 std::vector<domain::folder> folder_service::get_folder_history(const std::string& id) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for folder. " << "id: " << id;
     return repo_.read_all(ctx_, id);
+}
+
+std::vector<ores::utility::domain::hierarchy_node>
+folder_service::get_hierarchy(const boost::uuids::uuid& root_id, bool from_root) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting hierarchy for folder root: " << root_id;
+    auto rows = repo_.get_hierarchy(ctx_, root_id, from_root);
+    return ores::utility::domain::build_tree(rows);
 }
 
 }

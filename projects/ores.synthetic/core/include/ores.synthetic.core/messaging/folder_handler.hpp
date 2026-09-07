@@ -29,6 +29,7 @@
 #include "ores.service/service/request_context.hpp"
 #include "ores.synthetic.api/messaging/folder_protocol.hpp"
 #include "ores.synthetic.core/service/folder_service.hpp"
+#include <boost/uuid/string_generator.hpp>
 #include <optional>
 
 namespace ores::synthetic::messaging {
@@ -163,6 +164,35 @@ public:
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
                 reply(nats_, msg, delete_folder_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void hierarchy(ores::nats::message msg) {
+        BOOST_LOG_SEV(folder_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        service::folder_service svc(req_ctx);
+        if (auto req = decode<get_folder_hierarchy_request>(msg)) {
+            try {
+                boost::uuids::string_generator gen;
+                auto roots = svc.get_hierarchy(gen(req->root_id), req->from_root);
+                BOOST_LOG_SEV(folder_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_,
+                      msg,
+                      get_folder_hierarchy_response{.success = true, .roots = std::move(roots)});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(folder_handler_lg(), error) << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      get_folder_hierarchy_response{.success = false, .message = e.what()});
             }
         } else {
             BOOST_LOG_SEV(folder_handler_lg(), warn) << "Failed to decode: " << msg.subject;

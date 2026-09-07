@@ -25,6 +25,8 @@
 #include "ores.synthetic.api/domain/folder.hpp"
 #include "ores.synthetic.core/export.hpp"
 #include "ores.synthetic.core/repository/folder_repository.hpp"
+#include "ores.utility/domain/hierarchy.hpp"
+#include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <cstdint>
 #include <optional>
@@ -125,6 +127,18 @@ public:
      * @brief Retrieves all historical versions of a folder.
      */
     std::vector<domain::folder> get_folder_history(const std::string& id);
+
+    /**
+     * @brief Gets the folder hierarchy (as a forest of trees) rooted
+     * at, or containing, the given folder.
+     *
+     * @param root_id The folder to start from.
+     * @param from_root If true, returns the whole tree the given node
+     * belongs to instead of just its subtree.
+     * @return A forest of hierarchy_node trees (normally a single root).
+     */
+    std::vector<ores::utility::domain::hierarchy_node>
+    get_hierarchy(const boost::uuids::uuid& root_id, bool from_root);
 
 private:
     context ctx_;

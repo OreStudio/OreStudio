@@ -8,7 +8,7 @@
 #+filetags: :fix-compute-host-uninitialized-numerics:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-compute-host-uninitialized-numerics
-#+pr:
+#+pr: 2026
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-07
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2026][#2026]] | [ores.compute] Fix valgrind uninitialised-value defects on the host eventing integration test |
 
 * Review
 

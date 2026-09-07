@@ -17,13 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_CAP_FLOOR_INSTRUMENT_REPOSITORY_HPP
-#define ORES_TRADING_REPOSITORY_CAP_FLOOR_INSTRUMENT_REPOSITORY_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_CAP_FLOOR_INSTRUMENT_REPOSITORY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_CAP_FLOOR_INSTRUMENT_REPOSITORY_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.core/export.hpp"
+#include <chrono>
+#include <cstdint>
+#include <optional>
 #include <sqlgen/postgres.hpp>
 #include <string>
 #include <vector>
@@ -47,20 +50,73 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Returns the SQL created by sqlgen to construct the table.
+     */
     std::string sql();
 
+    /**
+     * @brief Writes cap/floor instruments to database.
+     */
+    /**@{*/
     void write(context ctx, const domain::cap_floor_instrument& v);
     void write(context ctx, const std::vector<domain::cap_floor_instrument>& v);
+    /**@}*/
 
+    /**
+     * @brief Reads latest cap/floor instruments, possibly filtered by primary key.
+     */
+    /**@{*/
     std::vector<domain::cap_floor_instrument> read_latest(context ctx);
     std::vector<domain::cap_floor_instrument> read_latest(context ctx,
                                                           const std::string& instrument_id);
     std::vector<domain::cap_floor_instrument>
     read_latest(context ctx, const std::vector<std::string>& instrument_ids);
+    /**@}*/
+
+    /**
+     * @brief Reads all cap/floor instruments, possibly filtered by primary key.
+     */
     std::vector<domain::cap_floor_instrument> read_all(context ctx,
                                                        const std::string& instrument_id);
 
+    /**
+     * @brief Reads a single cap/floor instrument as it stood at a specific
+     * version — the version's own [valid_from, valid_to) window is returned
+     * verbatim, so the caller can compose child entities "as of" the same
+     * window. See the "Temporal composite entity versioning" architecture
+     * doc.
+     * @param ctx Repository context with database connection
+     * @param version The version to fetch
+     */
+    std::optional<domain::cap_floor_instrument>
+    read_at_version(context ctx, const std::string& instrument_id, std::uint32_t version);
+
+    /**
+     * @brief Reads latest cap/floor instruments with pagination support.
+     * @param ctx Repository context with database connection
+     * @param offset Number of records to skip
+     * @param limit Maximum number of records to return
+     */
+    std::vector<domain::cap_floor_instrument>
+    read_latest(context ctx, std::uint32_t offset, std::uint32_t limit);
+
+    /**
+     * @brief Gets the total count of active cap/floor instruments.
+     * @param ctx Repository context with database connection
+     * @return Total number of active cap/floor instruments
+     */
+    std::uint32_t get_total_cap_floor_instrument_count(context ctx);
+
+    /**
+     * @brief Deletes a cap/floor instrument by closing its temporal validity.
+     */
     void remove(context ctx, const std::string& instrument_id);
+
+    /**
+     * @brief Deletes cap/floor instruments by closing their temporal validity.
+     */
+    void remove(context ctx, const std::vector<std::string>& instrument_ids);
 };
 
 }

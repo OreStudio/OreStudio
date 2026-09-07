@@ -17,13 +17,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_TRADE_PARTY_ROLE_HPP
-#define ORES_TRADING_DOMAIN_TRADE_PARTY_ROLE_HPP
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_PARTY_ROLE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -100,6 +101,16 @@ struct trade_party_role final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for trade_party_role, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const trade_party_role&) {
+    return "ores.trading.trade_party_role";
+}
 
 }
 

@@ -32,10 +32,15 @@ per invocation; the composite components (=ores.dq=, =ores.iam=,
 
 Run the steps in order. No step is skippable, and partial codegen
 coverage is not a valid end state. The drift check lives at
-=projects/ores.codegen/scripts/check_component_drift.py=: it
-regenerates the component in place and exits non-zero on any diff
-against the checked-in files. This is the tool that measures, the
-surveys and regenerations below do the work.
+=projects/ores.codegen/scripts/check_component_drift.py= and runs in two
+modes: =--component <name>= regenerates one component in place and
+exits non-zero on any diff against the checked-in files or on any
+untracked file the regeneration materializes; =--all= runs the same
+check over the script's =KNOWN_DRIFT_FREE= registry, the set the
+pr-raise gate covers. Measure a component not yet at zero drift with
+=--component=; it cannot pass =--all= until it joins the registry.
+This is the tool that measures, the surveys and regenerations below do
+the work.
 
 1. *Establish the baseline before any model edit.* Regenerate the
    component's models with the files untouched and diff against the
@@ -102,12 +107,13 @@ surveys and regenerations below do the work.
    template bug: fix the template, never the generated output.
 
 7. *Extend the drift gate last.* Add the component to the
-   drift-check component list and wire the CI job that regenerates
-   the component on every PR and fails on any diff, following the
-   pilot's refdata job. The gate lands only on a component at
-   verified zero drift: it enforces the method, it does not replace
-   it. Run the whole component through the checker once more before
-   the PR that lands the gate.
+   =KNOWN_DRIFT_FREE= registry in check_component_drift.py. The
+   pr.yml-era CI job that regenerated components on every PR was
+   deleted; the gate is the pr-raise skill's local codegen-drift
+   check, which runs =check_component_drift.py --all= over that
+   registry. The gate lands only on a component at verified zero
+   drift: it enforces the method, it does not replace it. Run =--all=
+   once more before the PR that lands the gate.
 
 ** Exception: an entity too complex to code-generate
 

@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
 """
-Regenerate every codegen-eligible model for a set of components and fail if
-the working tree ends up dirty -- i.e. someone hand-edited a generated file
-instead of its .org model source, or a model was changed without running
+Regenerate the codegen-eligible models of drift-free components and fail if
+the working tree ends up dirty -- someone hand-edited a generated file
+instead of its .org model source, or a model changed without running
 `compass codegen regenerate` afterwards.
 
-Deliberately narrow-scoped by default (--components refdata): rolling this
-check out to every component at once would surface a large pre-existing
-drift backlog unrelated to whatever change triggered CI. Extend --components
-as each component is brought to a verified zero-diff state (see
-doc/agile/versions/v0/sprint_24/entity-classification-drift-baseline/), the
-same way ores.refdata was for this check to be trustworthy here.
+The check runs in exactly two modes:
+
+  --all           regenerate every component in the known-drift-free
+                  registry below; the local pr-raise gate covers this set
+  --component X   regenerate one named component, by catalogue slug
+
+An ad hoc multi-component list is never a valid invocation: a component
+whose committed tree predates a template receives the newer per-entity
+families as untracked files on regeneration, and git diff cannot see
+untracked files. The check fails when regeneration materializes
+untracked files that were not already in the tree, so a component joins
+the registry only when its regeneration leaves the tree fully clean.
+See the regen-byproduct-hygiene memory in doc/llm/memory/.
 
 Usage:
-  check_component_drift.py --components refdata
-  check_component_drift.py --components refdata,assets.core
+  check_component_drift.py --all
+  check_component_drift.py --component refdata
 """
 from __future__ import annotations
 
@@ -31,14 +38,48 @@ sys.path.insert(0, str(CODEGEN_DIR / "src"))
 from codegen.generate import cmd_regenerate  # noqa: E402
 from codegen.logging_config import configure  # noqa: E402
 
+# Components verified to regenerate byte-identical to their committed
+# tree, with no untracked materialization. --all checks exactly this
+# set, the drift gate the pr-raise skill runs. A component joins only
+# when codegen-fix-drift step 7 verifies its regeneration leaves the
+# tree fully clean.
+KNOWN_DRIFT_FREE = (
+    "refdata",
+    "reporting",
+    "marketdata",
+    "compute-cpp",
+    "iam",
+    "iam-cpp",
+)
+
+
+def _untracked_files() -> set:
+    ls = subprocess.run(
+        ["git", "ls-files", "--others", "--exclude-standard"],
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if ls.returncode != 0:
+        print(f"git ls-files --others failed:\n{ls.stderr}", file=sys.stderr)
+        sys.exit(ls.returncode)
+    return {line for line in ls.stdout.splitlines() if line}
+
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument(
-        "--components",
-        required=True,
-        metavar="NAME[,NAME...]",
-        help="Comma-separated component slugs to regenerate (e.g. refdata)",
+    modes = ap.add_mutually_exclusive_group(required=True)
+    modes.add_argument(
+        "--all",
+        action="store_true",
+        help="regenerate every known-drift-free component "
+        f"({', '.join(KNOWN_DRIFT_FREE)})",
+    )
+    modes.add_argument(
+        "--component",
+        metavar="NAME",
+        help="regenerate one component by catalogue slug (e.g. refdata)",
     )
     ap.add_argument("--address", default="ores", metavar="ADDRESS")
     ap.add_argument("-v", "--verbose", action="store_true")
@@ -46,7 +87,10 @@ def main() -> int:
 
     configure(verbose=args.verbose)
 
-    for component in (c.strip() for c in args.components.split(",") if c.strip()):
+    components = list(KNOWN_DRIFT_FREE) if args.all else [args.component]
+    untracked_before = _untracked_files()
+
+    for component in components:
         print(f"Regenerating component {component!r} at address {args.address!r}...")
         regen_args = SimpleNamespace(
             component=component, all=False, address=args.address,
@@ -54,9 +98,17 @@ def main() -> int:
         )
         rc = cmd_regenerate(regen_args, CODEGEN_DIR)
         if rc != 0:
-            print(f"codegen regenerate failed for component {component!r}", file=sys.stderr)
+            print(f"codegen regenerate failed for component {component!r}",
+                  file=sys.stderr)
+            materialized = sorted(_untracked_files() - untracked_before)
+            if materialized:
+                print("The failed run materialized untracked files "
+                      "(sweep these before retrying):", file=sys.stderr)
+                for path in materialized:
+                    print(f"  {path}", file=sys.stderr)
             return rc
 
+    failures = 0
     diff = subprocess.run(["git", "diff"], cwd=REPO_ROOT, check=False,
                           capture_output=True, text=True)
     if diff.stdout:
@@ -71,6 +123,26 @@ def main() -> int:
             "Run the regenerate command locally and commit the result.",
             file=sys.stderr,
         )
+        failures += 1
+
+    materialized = sorted(_untracked_files() - untracked_before)
+    if materialized:
+        print("\n--- untracked file(s) materialized by regeneration ---",
+              file=sys.stderr)
+        for path in materialized:
+            print(f"  {path}", file=sys.stderr)
+        print(
+            "Regeneration materialized untracked files: the component's "
+            "committed tree predates a template family, or a generated "
+            "file was never committed. git diff cannot see untracked "
+            "files, so the check fails on them explicitly. Commit the "
+            "files or bring the component to a fully committed state "
+            "before it can pass.",
+            file=sys.stderr,
+        )
+        failures += 1
+
+    if failures:
         return 1
 
     print("No drift: regenerated output matches the checked-in tree.")

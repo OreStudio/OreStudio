@@ -19,7 +19,7 @@
  */
 #include "ores.trading.core/service/inflation_swap_instrument_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
-#include <algorithm>
+#include <cstdint>
 #include <stdexcept>
 
 using ores::service::messaging::stamp;
@@ -32,64 +32,89 @@ inflation_swap_instrument_service::inflation_swap_instrument_service(context ctx
     : ctx_(std::move(ctx)) {}
 
 std::vector<domain::inflation_swap_instrument>
-inflation_swap_instrument_service::list_inflation_swap_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Listing all inflation_swap_instruments";
-    return repo_.read_latest(ctx_);
-}
-
-std::vector<domain::inflation_swap_instrument>
 inflation_swap_instrument_service::list_inflation_swap_instruments(std::uint32_t offset,
                                                                    std::uint32_t limit) {
-    BOOST_LOG_SEV(lg(), debug) << "Listing inflation_swap_instruments with offset=" << offset
-                               << ", limit=" << limit;
-    auto all = repo_.read_latest(ctx_);
-    const auto begin = std::min(static_cast<std::size_t>(offset), all.size());
-    const auto end = std::min(begin + static_cast<std::size_t>(limit), all.size());
-    return {all.begin() + begin, all.begin() + end};
+    BOOST_LOG_SEV(lg(), debug) << "Listing all inflation swap instruments";
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
 std::uint32_t inflation_swap_instrument_service::count_inflation_swap_instruments() {
-    BOOST_LOG_SEV(lg(), debug) << "Counting inflation_swap_instruments";
-    return static_cast<std::uint32_t>(repo_.read_latest(ctx_).size());
+    BOOST_LOG_SEV(lg(), debug) << "Getting total inflation swap instruments count";
+    return repo_.get_total_inflation_swap_instrument_count(ctx_);
+}
+
+
+std::optional<domain::inflation_swap_instrument>
+inflation_swap_instrument_service::get_inflation_swap_instrument_at_version(
+    const std::string& instrument_id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting inflation swap instrument at version. "
+                               << "instrument_id: " << instrument_id << " version: " << version;
+    return repo_.read_at_version(ctx_, instrument_id, version);
 }
 
 std::optional<domain::inflation_swap_instrument>
-inflation_swap_instrument_service::get_inflation_swap_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting inflation_swap_instrument: " << id;
-    auto results = repo_.read_latest(ctx_, id);
+inflation_swap_instrument_service::get_inflation_swap_instrument(const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting inflation swap instrument. "
+                               << "instrument_id: " << instrument_id;
+    auto results = repo_.read_latest(ctx_, instrument_id);
     if (results.empty())
         return std::nullopt;
     return results.front();
 }
 
+std::vector<domain::inflation_swap_instrument>
+inflation_swap_instrument_service::get_inflation_swap_instruments(
+    const std::vector<std::string>& instrument_ids) {
+    return repo_.read_latest(ctx_, instrument_ids);
+}
+
 void inflation_swap_instrument_service::save_inflation_swap_instrument(
     const domain::inflation_swap_instrument& v) {
     if (v.identity.instrument_id.is_nil())
-        throw std::invalid_argument("Inflation swap instrument id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving inflation_swap_instrument: " << v.identity.instrument_id;
+        throw std::invalid_argument("Inflation Swap Instrument instrument_id cannot be empty.");
+    BOOST_LOG_SEV(lg(), debug) << "Saving inflation swap instrument. "
+                               << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
-    BOOST_LOG_SEV(lg(), info) << "Saved inflation_swap_instrument: " << t.identity.instrument_id;
+    BOOST_LOG_SEV(lg(), info) << "Saved inflation swap instrument. "
+                              << "instrument_id: " << v.identity.instrument_id;
 }
 
-void inflation_swap_instrument_service::remove_inflation_swap_instrument(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing inflation_swap_instrument: " << id;
-    repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed inflation_swap_instrument: " << id;
+void inflation_swap_instrument_service::save_inflation_swap_instruments(
+    const std::vector<domain::inflation_swap_instrument>& inflation_swap_instruments) {
+    for (const auto& e : inflation_swap_instruments) {
+        if (e.identity.instrument_id.is_nil())
+            throw std::invalid_argument("Inflation Swap Instrument instrument_id cannot be empty.");
+    }
+    BOOST_LOG_SEV(lg(), debug) << "Saving " << inflation_swap_instruments.size()
+                               << " inflation swap instruments";
+    auto ts = inflation_swap_instruments;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
+}
+
+void inflation_swap_instrument_service::delete_inflation_swap_instrument(
+    const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing inflation swap instrument. "
+                               << "instrument_id: " << instrument_id;
+    repo_.remove(ctx_, instrument_id);
+    BOOST_LOG_SEV(lg(), info) << "Removed inflation swap instrument. "
+                              << "instrument_id: " << instrument_id;
+}
+
+void inflation_swap_instrument_service::delete_inflation_swap_instruments(
+    const std::vector<std::string>& instrument_ids) {
+    repo_.remove(ctx_, instrument_ids);
 }
 
 std::vector<domain::inflation_swap_instrument>
-inflation_swap_instrument_service::get_inflation_swap_instrument_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for inflation_swap_instrument: " << id;
-    return repo_.read_all(ctx_, id);
-}
-
-
-std::vector<domain::inflation_swap_instrument>
-inflation_swap_instrument_service::get_inflation_swap_instruments(
-    const std::vector<std::string>& ids) {
-    return repo_.read_latest(ctx_, ids);
+inflation_swap_instrument_service::get_inflation_swap_instrument_history(
+    const std::string& instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for inflation swap instrument. "
+                               << "instrument_id: " << instrument_id;
+    return repo_.read_all(ctx_, instrument_id);
 }
 
 }

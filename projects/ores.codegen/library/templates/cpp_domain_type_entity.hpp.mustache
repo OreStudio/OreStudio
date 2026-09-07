@@ -9,6 +9,9 @@
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+{{#cpp.includes.entity}}
+#include {{{.}}}
+{{/cpp.includes.entity}}
 
 namespace ores::{{component}}::repository {
 
@@ -101,6 +104,9 @@ std::ostream& operator<<(std::ostream& s, const {{entity_singular}}_entity& v);
 #include <ostream>
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
+{{#cpp.includes.entity}}
+#include {{{.}}}
+{{/cpp.includes.entity}}
 
 namespace ores::{{component}}::repository {
 

@@ -33,7 +33,9 @@ set(files
     "fx_forward_instrument_eventing_integration_tests.cpp"
     "fx_vanilla_option_instrument_eventing_integration_tests.cpp"
     "fx_variance_swap_instrument_eventing_integration_tests.cpp"
+    "lifecycle_event_eventing_integration_tests.cpp"
     "main.cpp"
+    "party_role_type_eventing_integration_tests.cpp"
     "repository_activity_type_repository_tests.cpp"
     "repository_equity_accumulator_instrument_repository_tests.cpp"
     "repository_equity_asian_option_instrument_repository_tests.cpp"
@@ -52,4 +54,6 @@ set(files
     "repository_fx_vanilla_option_instrument_repository_tests.cpp"
     "repository_fx_variance_swap_instrument_repository_tests.cpp"
     "repository_trade_type_repository_tests.cpp"
+    "trade_id_type_eventing_integration_tests.cpp"
+    "trade_type_eventing_integration_tests.cpp"
 )

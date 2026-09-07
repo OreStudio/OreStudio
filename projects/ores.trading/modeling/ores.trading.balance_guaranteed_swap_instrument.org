@@ -21,24 +21,25 @@ amortises in line with an underlying pool of assets (e.g., mortgages).
 :schema:           public
 :product:          ores
 :component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:          trading-instrument
 :END:
 
-* Primary key
+* Natural keys
+
+* Columns
+
+** instrument_id
 :PROPERTIES:
-:column:   instrument_id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:group:       identity
+:primary_key: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
 UUID uniquely identifying this BGS instrument.
 
 Surrogate key for the instrument record.
-
-* Natural keys
-
-* Columns
 
 ** trade_type_code
 :PROPERTIES:
@@ -138,6 +139,28 @@ Human-readable notes about this instrument.
 :tablename: ores_trading_balance_guaranteed_swap_instruments_tbl
 :END:
 
+** Checks
+
+| expression |
+|------------|
+| "maturity_date" > "start_date" |
+| "lockout_days" is null or "lockout_days" >= 0 |
+
+** Indexes
+
+| name     | columns              | unique | current_only | where_extra          |
+|----------+----------------------+--------+--------------+----------------------|
+| party    | tenant_id, party_id  | false  | true         |                      |
+| trade_id | tenant_id, trade_id  | true   | true         | trade_id is not null |
+
+* Insert trigger
+
+** Validations
+
+| column         | validation_function                   |
+|----------------+----------------------------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn    |
+
 * C++
 
 The C++ domain class is decomposed into nested sub-structs (the C1202
@@ -164,8 +187,8 @@ repository profiles regenerate correctly.
 
 ** Repository
 :PROPERTIES:
-:entity_singular_short: bgs_instrument
-:entity_plural_short:   bgs_instruments
+:entity_singular_short: balance_guaranteed_swap_instrument
+:entity_plural_short:   balance_guaranteed_swap_instruments
 :entity_singular_words: balance guaranteed swap instrument
 :entity_plural_words:   balance guaranteed swap instruments
 :END:

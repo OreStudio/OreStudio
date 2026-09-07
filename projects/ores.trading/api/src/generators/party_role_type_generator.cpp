@@ -25,7 +25,7 @@
 #include <string>
 #include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 

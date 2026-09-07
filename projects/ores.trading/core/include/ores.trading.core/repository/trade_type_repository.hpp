@@ -70,7 +70,6 @@ public:
     std::vector<domain::trade_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all trade types, possibly filtered by primary key.
      */

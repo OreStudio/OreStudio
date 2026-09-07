@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: A53CABF8-6B05-43BC-9BE7-901A3BCD0DD4
+:END:
+#+title: Weak-booking model for ores.trading system testing
+#+description: User direction: system-test ores.trading one entity at a time, book trade components separately, expect full ORE instrument coverage, keep test code codegenerable for the coming ores.shell codegen.
+#+type: memory
+#+memory_subtype: user
+#+level: cross
+#+filetags: :memory:user:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+System-test ores.trading with the weak booking model. Book the components of a trade one at a time: the trade envelope, then its instrument, then the rest. Treat each domain entity as independent unless the scenario tests composite-specific behaviour such as versioning. Run per-entity CRUD for every entity in the component; ores.shell has little support for these flows today.
+
+*Why:* User direction given 2026-09-06, before the trading system-test phase starts. ores.shell will be codegenerated soon, so test and support code must keep a shape that codegen can reproduce later. Expectation is full coverage of all ORE instruments; a different finding is significant. Existing coverage checks may compare XML against C++ only, which cannot reveal what is missing from the ORE schema mapping, so an automated gap check is needed.
+
+*How to apply:* When the ores.trading system-test phase starts (post bind-merge): first run the ores.shell functionality-coverage analysis across trading entities, then extend the shell, then automate per-entity CRUD flows one entity at a time. Only reach for composite flows when the scenario under test is composite-specific. Verify ORE instrument coverage and find an automated way to detect instruments absent from the ORE schema.

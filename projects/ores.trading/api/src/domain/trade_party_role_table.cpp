@@ -23,6 +23,7 @@
 
 namespace ores::trading::domain {
 
+
 std::string convert_to_table(const std::vector<trade_party_role>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
@@ -31,7 +32,7 @@ std::string convert_to_table(const std::vector<trade_party_role>& v) {
           << "Version" << fort::endr;
 
     for (const auto& pr : v) {
-        table << boost::uuids::to_string(pr.id) << boost::uuids::to_string(pr.trade_id)
+        table << pr.id << boost::uuids::to_string(pr.trade_id)
               << boost::uuids::to_string(pr.counterparty_id) << pr.role << pr.modified_by
               << pr.version << fort::endr;
     }

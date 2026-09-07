@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_BALANCE_GUARANTEED_SWAP_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_BALANCE_GUARANTEED_SWAP_INSTRUMENT_SERVICE_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_BALANCE_GUARANTEED_SWAP_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_BALANCE_GUARANTEED_SWAP_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/balance_guaranteed_swap_instrument_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::trading::service {
 
 /**
  * @brief Service for managing balance guaranteed swap instruments.
+ *
+ * Provides a higher-level interface for balance guaranteed swap instrument operations,
+ * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT balance_guaranteed_swap_instrument_service {
 private:
@@ -48,29 +53,93 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a balance_guaranteed_swap_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit balance_guaranteed_swap_instrument_service(context ctx);
 
-    std::vector<domain::balance_guaranteed_swap_instrument>
-    list_balance_guaranteed_swap_instruments();
-
+    /**
+     * @brief Lists balance guaranteed swap instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of balance guaranteed swap instruments for the requested page.
+     */
     std::vector<domain::balance_guaranteed_swap_instrument>
     list_balance_guaranteed_swap_instruments(std::uint32_t offset, std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active balance guaranteed swap instruments.
+     *
+     * @return Total number of active balance guaranteed swap instruments.
+     */
     std::uint32_t count_balance_guaranteed_swap_instruments();
 
+
+    /**
+     * @brief Retrieves a single balance guaranteed swap instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The balance guaranteed swap instrument at that version if found, std::nullopt
+     * otherwise.
+     */
     std::optional<domain::balance_guaranteed_swap_instrument>
-    get_balance_guaranteed_swap_instrument(const std::string& id);
+    get_balance_guaranteed_swap_instrument_at_version(const std::string& instrument_id,
+                                                      std::uint32_t version);
 
-    void
-    save_balance_guaranteed_swap_instrument(const domain::balance_guaranteed_swap_instrument& v);
+    /**
+     * @brief Retrieves a single balance guaranteed swap instrument by its primary key.
+     *
+     * @return The balance guaranteed swap instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::balance_guaranteed_swap_instrument>
+    get_balance_guaranteed_swap_instrument(const std::string& instrument_id);
 
-    void remove_balance_guaranteed_swap_instrument(const std::string& id);
-
+    /**
+     * @brief Retrieves a batch of balance guaranteed swap instruments by primary key.
+     */
     std::vector<domain::balance_guaranteed_swap_instrument>
-    get_balance_guaranteed_swap_instrument_history(const std::string& id);
+    get_balance_guaranteed_swap_instruments(const std::vector<std::string>& instrument_ids);
 
+    /**
+     * @brief Saves a balance guaranteed swap instrument (creates or updates).
+     *
+     * @param balance_guaranteed_swap_instrument The balance guaranteed swap instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_balance_guaranteed_swap_instrument(
+        const domain::balance_guaranteed_swap_instrument& balance_guaranteed_swap_instrument);
+
+    /**
+     * @brief Saves a batch of balance guaranteed swap instruments.
+     *
+     * @param balance_guaranteed_swap_instruments The balance guaranteed swap instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_balance_guaranteed_swap_instruments(
+        const std::vector<domain::balance_guaranteed_swap_instrument>&
+            balance_guaranteed_swap_instruments);
+
+    /**
+     * @brief Deletes a balance guaranteed swap instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_balance_guaranteed_swap_instrument(const std::string& instrument_id);
+
+    /**
+     * @brief Deletes balance guaranteed swap instruments by their primary keys.
+     */
+    void delete_balance_guaranteed_swap_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a balance guaranteed swap instrument.
+     */
     std::vector<domain::balance_guaranteed_swap_instrument>
-    get_balance_guaranteed_swap_instruments(const std::vector<std::string>& ids);
+    get_balance_guaranteed_swap_instrument_history(const std::string& instrument_id);
 
 private:
     context ctx_;

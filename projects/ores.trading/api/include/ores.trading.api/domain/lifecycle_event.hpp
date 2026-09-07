@@ -17,14 +17,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_LIFECYCLE_EVENT_HPP
-#define ORES_TRADING_DOMAIN_LIFECYCLE_EVENT_HPP
+#ifndef ORES_TRADING_API_DOMAIN_LIFECYCLE_EVENT_HPP
+#define ORES_TRADING_API_DOMAIN_LIFECYCLE_EVENT_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <chrono>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -96,6 +97,16 @@ struct lifecycle_event final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for lifecycle_event, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const lifecycle_event&) {
+    return "ores.trading.lifecycle_event";
+}
 
 }
 

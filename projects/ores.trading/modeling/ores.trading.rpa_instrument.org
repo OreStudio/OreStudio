@@ -22,24 +22,25 @@ credit risk on a reference counterparty.
 :schema:           public
 :product:          ores
 :component:        trading
-:has_tenant_id:    true
-:has_workspace_id: true
+:profile:          trading-instrument
 :END:
 
-* Primary key
+* Natural keys
+
+* Columns
+
+** instrument_id
 :PROPERTIES:
-:column:   instrument_id
-:type:     uuid
-:cpp_type: boost::uuids::uuid
+:group:       identity
+:primary_key: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
 :END:
 
 UUID uniquely identifying this RPA instrument.
 
 Surrogate key for the instrument record.
-
-* Natural keys
-
-* Columns
 
 ** party_id
 :PROPERTIES:

@@ -23,6 +23,7 @@
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
 #include <string>
+#include <unordered_set>
 
 namespace ores::trading::generator {
 
@@ -30,20 +31,19 @@ using ores::utility::generation::generation_keys;
 
 domain::trade_identifier
 generate_synthetic_trade_identifier(utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::trade_identifier r;
-    r.version = 1;
+    r.version = 0;
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.workspace_id = utility::uuid::live_workspace_id();
     r.id = ctx.generate_uuid();
     r.trade_id = ctx.generate_uuid();
     r.issuing_party_id = std::nullopt;
-    r.id_value = std::string("ID-") + std::to_string(++counter);
+    r.id_value = std::string("ID-") + std::string(faker::string::alphanumeric(10));
     r.id_type = std::string("Internal");
     r.id_scheme = std::string();
     r.modified_by = modified_by;

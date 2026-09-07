@@ -18,7 +18,11 @@
  *
  */
 #include "ores.trading.core/service/trade_id_type_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::trading::service {
 
@@ -27,13 +31,27 @@ using namespace ores::logging;
 trade_id_type_service::trade_id_type_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::trade_id_type> trade_id_type_service::list_id_types() {
+std::vector<domain::trade_id_type> trade_id_type_service::list_id_types(std::uint32_t offset,
+                                                                        std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all trade ID types";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
 }
 
-std::optional<domain::trade_id_type> trade_id_type_service::find_id_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding trade ID type: " << code;
+std::uint32_t trade_id_type_service::count_id_types() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total trade ID types count";
+    return repo_.get_total_id_type_count(ctx_);
+}
+
+
+std::optional<domain::trade_id_type>
+trade_id_type_service::get_id_type_at_version(const std::string& code, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade ID type at version. " << "code: " << code
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, code, version);
+}
+
+std::optional<domain::trade_id_type> trade_id_type_service::get_id_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade ID type. " << "code: " << code;
     auto results = repo_.read_latest(ctx_, code);
     if (results.empty())
         return std::nullopt;
@@ -43,33 +61,38 @@ std::optional<domain::trade_id_type> trade_id_type_service::find_id_type(const s
 void trade_id_type_service::save_id_type(const domain::trade_id_type& v) {
     if (v.code.empty())
         throw std::invalid_argument("Trade ID Type code cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade ID type: " << v.code;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade ID type: " << v.code;
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade ID type. " << "code: " << v.code;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved trade ID type. " << "code: " << v.code;
 }
 
 void trade_id_type_service::save_id_types(const std::vector<domain::trade_id_type>& id_types) {
-    for (const auto& t : id_types) {
-        if (t.code.empty())
+    for (const auto& e : id_types) {
+        if (e.code.empty())
             throw std::invalid_argument("Trade ID Type code cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << id_types.size() << " trade ID types";
-    repo_.write(ctx_, id_types);
+    auto ts = id_types;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void trade_id_type_service::remove_id_type(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade ID type: " << code;
+void trade_id_type_service::delete_id_type(const std::string& code) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade ID type. " << "code: " << code;
     repo_.remove(ctx_, code);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade ID type: " << code;
+    BOOST_LOG_SEV(lg(), info) << "Removed trade ID type. " << "code: " << code;
 }
 
-void trade_id_type_service::remove_id_types(const std::vector<std::string>& codes) {
+void trade_id_type_service::delete_id_types(const std::vector<std::string>& codes) {
     repo_.remove(ctx_, codes);
 }
 
 std::vector<domain::trade_id_type>
 trade_id_type_service::get_id_type_history(const std::string& code) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade ID type: " << code;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade ID type. " << "code: " << code;
     return repo_.read_all(ctx_, code);
 }
 

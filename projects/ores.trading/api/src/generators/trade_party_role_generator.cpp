@@ -19,20 +19,26 @@
  */
 #include "ores.trading.api/generators/trade_party_role_generator.hpp"
 #include "ores.utility/generation/generation_keys.hpp"
+#include "ores.utility/uuid/tenant_id.hpp"
 #include <atomic>
 #include <faker-cxx/faker.h> // IWYU pragma: keep.
+#include <string>
+#include <unordered_set>
 
-namespace ores::trading::generator {
+namespace ores::trading::generators {
 
 using ores::utility::generation::generation_keys;
 
 domain::trade_party_role
 generate_synthetic_trade_party_role(utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
+    const auto tid_str =
+        ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));
 
     domain::trade_party_role r;
-    r.version = 1;
+    r.version = 0;
+    r.tenant_id =
+        utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.id = ctx.generate_uuid();
     r.trade_id = ctx.generate_uuid();
     r.counterparty_id = ctx.generate_uuid();

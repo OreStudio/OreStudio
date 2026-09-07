@@ -97,34 +97,39 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_lifecycle_events_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and code = NEW.code
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_lifecycle_events_insert_trg
 before insert on "ores_trading_lifecycle_events_tbl"
 for each row execute function ores_trading_lifecycle_events_insert_fn();
 
 create or replace rule ores_trading_lifecycle_events_delete_rule as
-on delete to "ores_trading_lifecycle_events_tbl" do instead
+on delete to "ores_trading_lifecycle_events_tbl" do instead (
     update "ores_trading_lifecycle_events_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and code = OLD.code
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

@@ -64,6 +64,8 @@ public:
 
     void remove_fra_instrument(const std::string& id);
 
+    void delete_fra_instruments(const std::vector<std::string>& ids);
+
     std::vector<domain::fra_instrument> get_fra_instrument_history(const std::string& id);
 
     /**

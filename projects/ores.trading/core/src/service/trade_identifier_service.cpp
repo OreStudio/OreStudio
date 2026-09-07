@@ -18,7 +18,11 @@
  *
  */
 #include "ores.trading.core/service/trade_identifier_service.hpp"
+#include "ores.service/messaging/handler_helpers.hpp"
+#include <cstdint>
 #include <stdexcept>
+
+using ores::service::messaging::stamp;
 
 namespace ores::trading::service {
 
@@ -27,14 +31,28 @@ using namespace ores::logging;
 trade_identifier_service::trade_identifier_service(context ctx)
     : ctx_(std::move(ctx)) {}
 
-std::vector<domain::trade_identifier> trade_identifier_service::list_identifiers() {
+std::vector<domain::trade_identifier>
+trade_identifier_service::list_identifiers(std::uint32_t offset, std::uint32_t limit) {
     BOOST_LOG_SEV(lg(), debug) << "Listing all trade identifiers";
-    return repo_.read_latest(ctx_);
+    return repo_.read_latest(ctx_, offset, limit);
+}
+
+std::uint32_t trade_identifier_service::count_identifiers() {
+    BOOST_LOG_SEV(lg(), debug) << "Getting total trade identifiers count";
+    return repo_.get_total_identifier_count(ctx_);
+}
+
+
+std::optional<domain::trade_identifier>
+trade_identifier_service::get_identifier_at_version(const std::string& id, std::uint32_t version) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier at version. " << "id: " << id
+                               << " version: " << version;
+    return repo_.read_at_version(ctx_, id, version);
 }
 
 std::optional<domain::trade_identifier>
-trade_identifier_service::find_identifier(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Finding trade identifier: " << id;
+trade_identifier_service::get_identifier(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Getting trade identifier. " << "id: " << id;
     auto results = repo_.read_latest(ctx_, id);
     if (results.empty())
         return std::nullopt;
@@ -44,30 +62,39 @@ trade_identifier_service::find_identifier(const std::string& id) {
 void trade_identifier_service::save_identifier(const domain::trade_identifier& v) {
     if (v.id.is_nil())
         throw std::invalid_argument("Trade Identifier id cannot be empty.");
-    BOOST_LOG_SEV(lg(), debug) << "Saving trade identifier: " << v.id;
-    repo_.write(ctx_, v);
-    BOOST_LOG_SEV(lg(), info) << "Saved trade identifier: " << v.id;
+    BOOST_LOG_SEV(lg(), debug) << "Saving trade identifier. " << "id: " << v.id;
+    auto t = v;
+    stamp(t, ctx_);
+    repo_.write(ctx_, t);
+    BOOST_LOG_SEV(lg(), info) << "Saved trade identifier. " << "id: " << v.id;
 }
 
 void trade_identifier_service::save_identifiers(
     const std::vector<domain::trade_identifier>& identifiers) {
-    for (const auto& i : identifiers) {
-        if (i.id.is_nil())
+    for (const auto& e : identifiers) {
+        if (e.id.is_nil())
             throw std::invalid_argument("Trade Identifier id cannot be empty.");
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << identifiers.size() << " trade identifiers";
-    repo_.write(ctx_, identifiers);
+    auto ts = identifiers;
+    for (auto& e : ts)
+        stamp(e, ctx_);
+    repo_.write(ctx_, ts);
 }
 
-void trade_identifier_service::remove_identifier(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier: " << id;
+void trade_identifier_service::delete_identifier(const std::string& id) {
+    BOOST_LOG_SEV(lg(), debug) << "Removing trade identifier. " << "id: " << id;
     repo_.remove(ctx_, id);
-    BOOST_LOG_SEV(lg(), info) << "Removed trade identifier: " << id;
+    BOOST_LOG_SEV(lg(), info) << "Removed trade identifier. " << "id: " << id;
+}
+
+void trade_identifier_service::delete_identifiers(const std::vector<std::string>& ids) {
+    repo_.remove(ctx_, ids);
 }
 
 std::vector<domain::trade_identifier>
 trade_identifier_service::get_identifier_history(const std::string& id) {
-    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade identifier: " << id;
+    BOOST_LOG_SEV(lg(), debug) << "Getting history for trade identifier. " << "id: " << id;
     return repo_.read_all(ctx_, id);
 }
 

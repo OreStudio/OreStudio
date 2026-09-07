@@ -17,12 +17,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_TRADE_ID_TYPE_HPP
-#define ORES_TRADING_DOMAIN_TRADE_ID_TYPE_HPP
+#ifndef ORES_TRADING_API_DOMAIN_TRADE_ID_TYPE_HPP
+#define ORES_TRADING_API_DOMAIN_TRADE_ID_TYPE_HPP
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -82,6 +83,16 @@ struct trade_id_type final {
      */
     std::chrono::system_clock::time_point recorded_at;
 };
+
+/**
+ * @brief Dispatch-key identifier for trade_id_type, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const trade_id_type&) {
+    return "ores.trading.trade_id_type";
+}
 
 }
 

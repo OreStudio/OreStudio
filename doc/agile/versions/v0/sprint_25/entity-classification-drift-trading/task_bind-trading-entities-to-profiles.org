@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-trading:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bind-trading-entities-to-profiles
+#+pr: 2021
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-08-04
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Survey every ores.trading entity (projects/ores.trading/modeling) against the pr
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:914050BE-700A-4799-903F-5E27B44185D1][Entity classification and drift baseline: ores.trading]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-06                               |
 
 * Acceptance
 
@@ -44,11 +44,258 @@ Survey every ores.trading entity (projects/ores.trading/modeling) against the pr
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Unit plan, written at start on 2026-09-06. The canonical method is the
+codegen-fix-drift skill (steps 1-7); the byproduct-sweep and two-mode
+drift rules of the regen-byproduct-hygiene memory are in force
+throughout.
+
+** Phase 0 — drift-gate tooling, rides this unit first
+
+User rule: bind work must affect only the component under test. The
+2026-09-05 incident (142 untracked regen byproducts from two ad hoc
+17/13-component drift sweeps, invisible to git diff) is fixed at the
+tool, not by discipline:
+
+- check_component_drift.py loses the ad hoc =--components= list and
+  runs in exactly two modes: =--all= regenerates every component known
+  to be drift-free (a registry in the script, seeded with
+  refdata,reporting,marketdata,compute-cpp,iam,iam-cpp, the list the
+  pr-raise skill carried), and =--component NAME= regenerates one named
+  component.
+- Both modes fail when regeneration materializes untracked files under
+  a checked component's project root: git diff cannot see untracked
+  files, so a new template family that postdates a component's
+  committed baseline is drift and must fail the check.
+- pr-raise's local codegen-drift check moves to =--all= (the list now
+  lives only in the script's registry), and codegen-fix-drift step 7
+  words the gate as registry entry.
+- Verified live: =--all= over the seeded registry must end with a clean
+  tree, zero tracked diff and zero untracked materialization.
+
+** Phase 1 — baseline and survey (skill steps 1-2)
+
+Regenerate trade and trading-cpp untouched (one modeling dir,
+projects/ores.trading/modeling; one survey, not two), record
+pre-existing drift, revert. Classify every model file by metatype; only
+entity metatypes carry variability; record the structural exclusions.
+
+** Phase 2 — resolved features and binding (skill steps 3-4)
+
+Compare every profile-assigned feature against each entity's resolved
+value; bind matches with =:profile:=, keep structural fields. Record
+every no-match with its actual feature values. Resolve the known
+starting wrinkles from the Notes table: the service_pagination /
+service_batch_get / has_batch_read gaps on the 21 instrument/lookup
+entities (express recurring patterns in the profile catalogue, not as
+per-entity flags), the trade_service and fra_instrument_service
+exclusions (verify, not assume), and the
+balance_guaranteed_swap_instrument entity_singular_short /
+entity_plural_short fix.
+
+** Phase 3 — per-entity regeneration (skill step 5)
+
+One entity at a time through the scripted pipeline: baseline regen,
+bind, regen, and require the new diff to be an exact subset of the
+baseline (zero additional diff). Any additional diff is a bug in the
+profile, the matching, or a template: fix at the source in
+org_loader.py, the template or the archetype, with a regression test.
+Regenerate a second time and require byte-identical output. The
+regen-byproduct-hygiene sweep closes every regeneration phase.
+
+** Phase 4 — generated-code review, build, tests (skill step 6)
+
+Read the regenerated output as a hand-written PR: naming, shape,
+structure must match the component's best existing code; a finding is a
+template bug. Full local build and ctest green.
+
+** Phase 5 — gate extension, PR, system testing (skill step 7)
+
+Add trade and trading-cpp to the script's known-drift-free registry and
+run =--all= once more. Raise the PR.
+
+System testing follows the bind (compute/iam precedent: post-merge).
+When it starts, the first step is an analysis of ores.shell
+functionality coverage across trading entities: which entities and
+flows the shell can exercise today, and what that permits by way of
+system tests. The expectation is that coverage is thin and the shell
+needs extension; the analysis quantifies the gap and the extension
+rides the system-test work.
 
 * Notes
+
+** Baseline probe (2026-09-06, phase 1 start)
+
+The phase-0 verification closed with a mode-B probe run of the new
+=--component trade= check on the untouched tree. It failed exactly as
+designed (rc 1) and produced the component-wide baseline record:
+
+- 43 model files regenerate (component_overview, module, field groups,
+  and the entity/lookup models); the probe wrote to the full =ores=
+  address.
+- 14 domain-entity orgs fail loader validation and generate nothing:
+  they express their primary key as the legacy =* Primary key= heading
+  (=[...]:column: ...= on the heading) while org_loader.py has required
+  a =:primary_key: true= column flag since 1e0775417d (2026-07-22,
+  "Unify Columns/:primary_key: model shape"). The failing set:
+  balance_guaranteed_swap_instrument, callable_swap_instrument,
+  cap_floor_instrument, fra_instrument, inflation_swap_instrument,
+  knock_out_swap_instrument, lifecycle_event, rpa_instrument,
+  swaption_instrument, trade, trade_identifier, trade_id_type,
+  trade_party_role, vanilla_swap_instrument. This validation wall is
+  the "trading model" error that aborted the 2026-09-05 sweep.
+- 98 tracked files drifted under current templates (56 core, 39 api,
+  3 sql): whole file bodies shrank to the license banner -- the
+  lookup-era service and domain files (trade_type_service.cpp,
+  party_role_type_service.cpp, the api/domain headers of
+  lifecycle_event / party_role_type / trade_id_type / trade_type) no
+  longer reproduce. Those outputs are generated by the four legacy
+  =*_lookup_entity.org= models (lifecycle_event_lookup_entity,
+  party_role_type_lookup_entity, trade_id_type_lookup_entity,
+  trade_type_lookup_entity), which the lookup-entity retirement
+  migrates to =domain_entity=.
+- 60 untracked files materialized: 56 under projects/ores.trading
+  (eventing-era families the committed tree lacks: registrar /
+  handler / history_provider_registrar / history_field_mapper /
+  changed_event / protocol / generator) and 4 ER diagrams in the
+  repo-root =output/= directory. The count matches the 2026-09-05
+  incident's trading total exactly, confirming deterministic partial
+  regeneration.
+- The documented bespoke exclusions were untouched by the baseline
+  regen: =service/trade_service.{hpp,cpp}= and
+  =service/fra_instrument_service.{hpp,cpp}= show no diff; the
+  rebind-and-regen exclusion risk re-enters only at phase 3.
+
+Disposal of the probe run, per the regen-byproduct-hygiene rule: the
+98 tracked files were reverted with =git checkout --= (pure regen
+output, content recorded in /tmp/drift_trade_check.log); the 60
+untracked byproducts were disposed with a tagged stash push and
+immediate drop of that entry: tag =byproducts-trade-baseline-20260906=,
+entry SHA 840c2db62cd33d1c36b67fd12ec7dc2340b4ab24, recoverable via
+the stash reflog until garbage collection. The tree is clean.
+
+Survey consequence: the per-entity "zero additional diff" rule runs
+against this baseline, so each entity's survey must classify whether
+its committed output is feature-restorable (current templates
+reproduce it once the org carries the profile features -- the
+service_find_prefix / pagination / batch-read wrinkles) or
+superseded-era (lookup_entity outputs under retirement). The former
+binds to byte-identity; the latter lands the current-template shape
+as the deliberate delta, exactly the lookup-entity migration the
+codegen-fix-drift skill prescribes. The 14 heading-PK orgs additionally
+migrate their primary-key expression to the column flag as part of
+binding, or the component cannot regenerate at all.
+
+** Survey classification (2026-09-06, phase 1 close)
+
+The survey walks the modeling directory once (the trade and
+trading-cpp catalogue entries share it). 36 entity/lookup orgs
+classify into three groups; the other eight files (component_overview,
+module, six field groups) are structural and carry no variability,
+excluded per the pilot precedent.
+
+- *Group 1 - bound, regenerating byte-identical (16 orgs).* The nine
+  =equity_*= and seven =fx_*= instrument orgs carry column-flag
+  primary keys and =:profile: trading-instrument=; their committed
+  outputs are current-era and the probe rewrote them cleanly. Their
+  only delta is a missing family: =*_history_provider_registrar=
+  ({hpp,cpp} x 16, 32 files), a template addition that postdates the
+  instrument conversions and is absent from main - a pure addition to
+  commit with the migration.
+
+- *Group 2 - unbound, regenerating (2 orgs).* =party_role_type= and
+  =trade_type= carry column-flag primary keys (migrated in the
+  2026-08-10 batch-2 rollout, eacb4f9b35) but no =:profile:=. Their
+  committed outputs are 08-10-era and predate two template changes:
+  the generator family moved from =generators/= to =generator/=
+  (committed plural-path files go stale, singular paths materialize)
+  and the =*_history_provider_registrar= family was added. Bind
+  candidate: simple-lookup - the iam analogue (tenant_type,
+  tenant_status, account_type) bound to it; every non-inert
+  assignment matches (tenant-only, text-code key, no Qt drawer, so
+  the Qt-half assignments are inert).
+
+- *Group 3 - legacy heading-PK (18 orgs).* Fourteen orgs fail the
+  loader's column-flag validation (org_loader.py requires
+  =:primary_key:= on a column since 1e0775417d) and generate nothing;
+  the four =*_lookup_entity.org= siblings of lifecycle_event,
+  party_role_type, trade_id_type and trade_type load and generate
+  under the retired lookup-entity emission. Two orgs per model name
+  write the same paths: the probe log writes the party_role_type and
+  trade_type domain headers twice (entity org, then lookup org), the
+  lifecycle_event and trade_id_type headers once (entity org errored,
+  only the lookup org wrote). The 98 tracked files that drifted are
+  the four models' full output sets. The canonical org per pair is
+  the entity org - the lookup orgs retire per the iam precedent
+  (afae8de42f deleted iam's three) and are deleted - and the entity
+  orgs' primary keys then migrate to column flags. Group 3 splits
+  further:
+  - *Nine swap/option instruments* (balance_guaranteed_swap,
+    callable_swap, cap_floor, fra_instrument, inflation_swap,
+    knock_out_swap, rpa_instrument, swaption_instrument,
+    vanilla_swap_instrument): feature-identical to group 1
+    (tenant+workspace flags, =has_batch_read=) except that none sets
+    =party_id_from_session=, which =trading-instrument= fixes true - a
+    real resolved-value mismatch to arbitrate from the per-entity
+    phase-3 diff (alignment with the 16, or genuinely different party
+    sourcing), not to assume either way.
+  - *lifecycle_event, trade_id_type, trade, trade_identifier,
+    trade_party_role*: no current-era committed output (their domain
+    headers last changed 2026-06-05 and predate the eventing
+    families). No catalogue profile fits =trade= (Qt drawer,
+    pagination, bespoke =trade_service= exclusion); expect a recorded
+    no-match with actual feature values, per the business_unit
+    precedent, while its primary key still migrates so the component
+    can regenerate at all. =lifecycle_event= carries a shape
+    question: its entity org declares =has_workspace_id: true= while
+    the committed output (tenant-only, last written by the lookup
+    sibling) does not - migrate to the committed tenant-only shape,
+    or keep the workspace flag as a deliberate delta.
+  - The four =output/*_er.puml= files materialize only for the four
+    dual models (output/ is empty on main); confirm at phase 3
+    whether the entity orgs still emit them once the lookup orgs are
+    gone.
+
+The stale worklist below predates this survey and does not map onto
+the current directory: half its model names (activity_type,
+business_day_convention_type, day_count_fraction_type,
+floating_index_type, fpml_event_type, leg_type,
+payment_frequency_type) are not trading models - four are refdata
+orgs, three do not exist as modeling orgs anywhere. Treat it as
+historical; phase 3 re-derives each per-entity gap from the diffs,
+and the profile catalogue expresses a gap only when it recurs across
+a bound group.
+
+** Group 2 close (2026-09-06)
+
+=party_role_type= (a1a951f8e4) and =trade_type= (832c6193ef) are bound
+to =simple-lookup= with their lookup orgs retired, one commit each.
+Two empirical refinements to the survey record, applied to both:
+
+- The Qt half of the profile is not inert for a drawer-less org:
+  binding routes the entity into ores.qt and emits the nine-file CRUD
+  family unconditionally. A drawer-less emission is uncompilable
+  (=Icon::= stubs, empty =window_title=, generic fallback =item_var=),
+  so the drawer is authored per the account_type canonical shape, with
+  the trading messaging classes read from the entity's own protocol
+  header.
+- A drawer cannot model a domain-enum column: the Qt facet's widget
+  vocabulary has no enum-member arm in either the detail dialog or the
+  client model. =trade_type='s =product_type= is therefore omitted from
+  the drawer, following =feed_binding='s =asset_class= precedent (the
+  only other bound Qt entity with an enum column). The domain-enum
+  Qt-combo gap is recorded, not papered over with a template feature
+  mid-bind; it stays latent until a bound entity genuinely needs to
+  edit an enum column.
+
+Both binds verified idempotent (second regen byte-identical), and the
+bind delta over the pre-bind state is the profile consequence plus the
+lookup-era to current-era migration (SQL =clock_timestamp= versioning,
+=NEW= uppercase, =security definer set search_path=, the
+=history_provider_registrar= family, provenance_fields constants, the
+eventing integration test). =drop.sql= regenerated byte-identical for
+both; the ~26 hand-crafted callers of =ores_trading_validate_trade_type_fn=
+are untouched and the fn survives in the current-template create.sql
+with the same signature and system-tenant semantics.
 
 Fuller worklist carried over from the superseded ad hoc task
 (=task_apply_safe_drift_trading.org=), for reference when profile-binding
@@ -69,6 +316,144 @@ Exclusions to verify (not assume) survive rebind + regen:
 - =ores.trading.core= =service/fra_instrument_service.{hpp,cpp}=
   (get_swap_legs / get_swap_legs_batch via swap_leg_repository)
 
+** Group 3 close (2026-09-06)
+
+All nine heading-PK instruments are bound to =trading-instrument=, one
+commit each (5ea4b219d7 .. 705fe567c6): primary key migrates to the
+=:primary_key:= column flag on instrument_id and the SQL
+Checks/Indexes/Insert-trigger Validations sections carry the committed
+schema semantics the current templates no longer infer. The
+=balance_guaranteed_swap_instrument= short-name fix
+(entity_singular_short/entity_plural_short bgs_* → full names) rides
+its bind. The era-sync deltas are the registrar-family additions and
+the usual SQL re-expression; =fra_instrument_service.{hpp,cpp}= is the
+first empirically verified bespoke-service exclusion (the regen drops
+the hand-written get_swap_legs accessors; restored byte-identical,
+divergence recorded for the phase-5 registry decision).
+
+The five dual models close with two binds and three recorded no-matches:
+
+- =lifecycle_event= (6304704c82) binds to =workspace-scoped-lookup=,
+  the profile's first bind anywhere. The workspace shape question from
+  the survey resolved by keeping the flag: the org's own
+  =has_tenant_id=/=has_workspace_id= declarations drop as
+  profile-covered and the regenerated output is workspace-scoped — a
+  deliberate delta versus the stale tenant-only committed output last
+  written by the retired lookup sibling (whose duplicate emission was
+  the drift baseline). The Qt drawer is authored to the lookup recipe;
+  fsm_state_id stays out of it — uuid plumbing columns have no edit
+  precedent in any drawer and are not user-facing (same gap family as
+  the Group 2 domain-enum record for trade_type's product_type). The
+  bind also drops the org's singular generator-facet deviation and the
+  singular generator/ pair retires to the repo-wide plural.
+- =trade_id_type= (c5f55d030a) binds to =simple-lookup=. Both retire
+  their =*_lookup_entity.org= siblings per the iam precedent.
+- =trade_identifier= (c5eeb171ea) — NO-MATCH. Deciding conflict:
+  workspace scope. Actual features: real tenant_id AND workspace_id
+  columns; uuid primary key; relationship-bearing (trade_id and
+  issuing_party_id soft FKs, the issuer polymorphic across parties and
+  counterparties). workspace-scoped-lookup is the only workspace-scoped
+  profile and requires a text key with =has_uuid_primary_key: false=;
+  the uuid-keyed profiles are tenant-only; fk-scoped-child requires a
+  modeled parent FK. Org stays unbound with explicit properties; PK
+  migrated; regen delta benign era-sync (eventing family,
+  entity_type_of, pagination arms, wire-format changes).
+- =trade_party_role= (36e1980cbf) — NO-MATCH. Five pinned
+  uuid-identified-lookup features match (heading uuid PK, tenant-scoped,
+  soft FKs, eventing family) but the profile's qt-namespace assignment
+  rows seed the qt key even for a drawer-less org, forcing a full Qt
+  drawer that is unsatisfiable: no uuid detail-form widget exists in
+  the drawer vocabulary for the non-null trade_id/counterparty_id
+  soft-FK columns, and =role= is non-unique so no honest key_field
+  exists. The honest UI is parent-scoped (role grid inside the Trade
+  window), outside any profile. Org stays unbound; SQL keys
+  (Foreign keys, Insert trigger Validations, Indexes with
+  =:index_prefix: party_roles=) make the regen lossless; the generator
+  facet drops to the repo-wide plural default and its test expectation
+  flips to version 0.
+- =trade= (4a02aeca6f) — NO-MATCH, whole-estate exclusion. Actual
+  features: authored Qt drawer (has_uuid_primary_key, has_pagination),
+  generator facet, bespoke trade_service. The PK migrates so the model
+  loads, but a regeneration of the migrated org rewrites the full
+  estate into a flat shape that demolishes the committed hand-authored
+  output: the five-way composed domain
+  (identity/parties/classification/lifecycle/audit per the C1202
+  rfl::Flatten pattern) becomes a flat struct with a different wire
+  format. The composition vocabulary (per-column =:group:= plus
+  =:domain_identity_group:=/=:domain_audit_group:=) can nest at most
+  identity and audit, so the five-group split is not reproducible from
+  the org. The regen additionally clobbers the hand-written mapper,
+  repository, protocol, changed event and generator, the bespoke
+  =trade_service.{hpp,cpp}= (fsm_transition_map, optional<uuid> node
+  filters) and =trade_handler.hpp=, the nine ores.qt Trade UI files,
+  and drops the create.sql temporal trigger plus seven non-unique
+  indexes the org does not express. All 37 regenerated outputs restored
+  byte-identical to HEAD with the measured clobber recorded here — the
+  =trade_service= exclusion from the worklist is now verified, not
+  assumed. Trade's estate stays hand-authored pending the phase-5
+  registry decision.
+
+** Phase 4/5 close (2026-09-06)
+
+Phase 4 — generated-code review, full build, tests — closed green after
+three fix layers found in review and testing:
+
+- Generator level (3b8b53d462): the repository entity-header template
+  ignored the org-declared "Entity includes" block, so the bind-era
+  regen of =trade_type= dropped the =product_type.hpp= include its
+  domain-enum member names. org_loader now filters the block's standard
+  tokens and the template emits the remainder; =trade_type_entity.hpp=
+  regained the include byte-identical to the pre-bind header.
+- Test expectation (8c9c08a3a7): =trade_type= repo test pointed at the
+  plural generator namespace.
+- ctest caught a real loss (b8905ipim, 4 =CHECK(!table.empty())=
+  failures in domain_trade_party_role_tests): the bind-era regen of
+  =trade_party_role= produced an empty-shell =convert_to_table= because
+  the org lacked a "** Table display" section. Restored the section in
+  the org from the pre-bind output, per the compute #60 precedent
+  (81ddb04d60), regenerated byte-stable, committed f1660218cc. The
+  regenerated converter streams the uuid PK raw — identical semantics to
+  the pre-bind =to_string= via =boost::uuids::operator<<=, matching the
+  compute =host= precedent.
+
+Full build exit 0 through ores.qt.exe (b6848ivr0) and full ctest
+71/71 (bdejl0rkv). Pre-existing empty-shell converters on main
+(instrument =*_table.cpp=) are out of scope; =trade_party_role= was the
+only table converter this branch regressed.
+
+Phase 5 — gate extension — the plan's "add trade and trading-cpp to
+the script's known-drift-free registry" cannot be met as written, and
+the decision is recorded here rather than forcing the gate:
+
+- =trade= does not join KNOWN_DRIFT_FREE: its whole estate is
+  hand-authored and not org-reproducible (five-way rfl::Flatten
+  composition beyond org vocabulary, bespoke =trade_service= and
+  =trade_handler=, nine Qt files; 37 clobbered outputs measured in the
+  Group 3 close above). =fra_instrument_service='s bespoke accessors
+  exclude =fra_instrument= likewise.
+- =trading-cpp= shares =trade='s modeling dir and Qt outputs; the same
+  exclusion applies.
+- Registering either would make =--all= fail by construction. The
+  registry stays at the seeded six; the phase-0 wording in pr-raise
+  ("the list now lives only in the script's registry") is unchanged.
+- The seed itself is re-verified green under this branch's generator
+  changes: retangle clean, then =check_component_drift.py --all= exits
+  0 with a clean tree.
+- One whole-estate follow-up was needed for that green (a3978497e2):
+  the entity-includes arm surfaced stale tokens that drift-rollout-era
+  org blocks carry as transcriptions of pre-org headers —
+  =report_definition= and =report_instance= (reporting) gained
+  =boost/uuid/uuid.hpp= and =<cstdint>=, and the junction loader path
+  (which bypassed the filter) let =sqlgen/Timestamp.hpp= leak into
+  =app_version_platform= (compute) and =account_party= (iam). The
+  filter now drops those tokens too (uuid columns render as string;
+  Timestamp arrives via db_types.hpp; the canonical headers compile
+  without =<cstdint>=) and the junction path applies the same standard
+  set. Includes the template cannot derive — =trade_type='s
+  =product_type.hpp= — still pass through, re-verified byte-identical.
+  The rule is documented in ores.cpp.repository.entity_header.org's
+  design notes.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -84,7 +469,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2021][#2021]] | [trading,codegen] Bind trading entities to profiles, zero-diff regen |
 
 * Review
 
@@ -93,3 +478,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed 2026-09-06. Every ores.trading model in
+projects/ores.trading/modeling was surveyed against the Variability
+Profiles; 43 models regenerate, 14 orgs needed the legacy =* Primary
+key= heading migrated to =:primary_key: true= before the loader would
+validate them.
+
+Bound and regenerated byte-identical (zero additional diff vs
+pre-rebind checked-in output, re-verified on second regen): the
+dual-model lookup entities (=trade_type= simple-lookup,
+=party_role_type= simple-lookup), nine instrument entities, and
+=lifecycle_event= (workspace-scoped-lookup). Bound with documented
+per-entity exclusions: =trade_id_type= (simple-lookup, key_field
+split), =trade_identifier= (NO-MATCH: uuid-identified-lookup features
+but string natural key), =trade_party_role= (NO-MATCH: uuid detail
+widget absent from the Qt drawer vocabulary; org stays unbound with SQL
+keys making regen lossless), and =trade= (NO-MATCH whole-estate: the
+five-way composed hand-authored estate is not org-reproducible; the
+37-clobbered-output measurement verified, not assumed, the
+=trade_service= exclusion). =fra_instrument= is likewise excluded on
+the bespoke =fra_instrument_service= accessors.
+
+Three generator/test fixes shipped: org entity includes now feed
+repository entity headers (3b8b53d462, restoring =trade_type='s
+=product_type.hpp= include), the entity-header include filter gained
+junction-path parity and drops the stale legacy tokens that would
+re-drift four registered-component headers (a3978497e2), and the
+=trade_party_role= "Table display" org section was restored so its
+converter is not an empty shell (f1660218cc, per the compute #60
+precedent).
+
+Acceptance met: full local build exit 0 through ores.qt.exe and full
+ctest 71/71 after regeneration. The phase-5 registry decision is
+recorded in Notes: trade/trading-cpp do not join the known-drift-free
+registry (whole-estate hand-authored exclusions would fail =--all= by
+construction); the seeded six re-verified green with
+=check_component_drift.py --all= exit 0 and a clean tree. The PR for
+this branch carries the diff classification and verification recorded
+in its description.

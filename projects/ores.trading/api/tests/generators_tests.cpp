@@ -18,7 +18,7 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/generator/lifecycle_event_generator.hpp"
+#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
 #include "ores.trading.api/generator/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/activity_type_generator.hpp"
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
@@ -39,6 +39,7 @@ const std::string tags("[generators]");
 }
 
 using namespace ores::trading::generator;
+using namespace ores::trading::generators;
 using namespace ores::logging;
 using ores::utility::generation::generation_context;
 
@@ -138,7 +139,7 @@ TEST_CASE("lifecycle_event_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated lifecycle_event code: " << sut.code;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
@@ -154,7 +155,7 @@ TEST_CASE("lifecycle_event_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 
@@ -196,7 +197,7 @@ TEST_CASE("trade_id_type_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated trade_id_type code: " << sut.code;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.code.empty());
     CHECK(!sut.description.empty());
     CHECK(!sut.modified_by.empty());
@@ -212,7 +213,7 @@ TEST_CASE("trade_id_type_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.code.empty());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 
@@ -254,7 +255,7 @@ TEST_CASE("trade_identifier_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated trade_identifier id: " << sut.id;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.id_value.empty());
     CHECK(!sut.modified_by.empty());
@@ -270,7 +271,7 @@ TEST_CASE("trade_identifier_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }
 
@@ -283,7 +284,7 @@ TEST_CASE("trade_party_role_generator_produces_valid_instance", tags) {
 
     BOOST_LOG_SEV(lg, info) << "Generated trade_party_role id: " << sut.id;
 
-    CHECK(sut.version == 1);
+    CHECK(sut.version == 0);
     CHECK(!sut.id.is_nil());
     CHECK(!sut.modified_by.empty());
     CHECK(sut.change_reason_code == "system.test");
@@ -298,6 +299,6 @@ TEST_CASE("trade_party_role_generator_produces_multiple_instances", tags) {
     CHECK(items.size() == count);
     for (const auto& item : items) {
         CHECK(!item.id.is_nil());
-        CHECK(item.version == 1);
+        CHECK(item.version == 0);
     }
 }

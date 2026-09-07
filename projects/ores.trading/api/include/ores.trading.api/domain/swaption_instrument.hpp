@@ -24,6 +24,7 @@
 #include "ores.trading.api/domain/instrument_identity.hpp"
 #include <chrono>
 #include <string>
+#include <string_view>
 
 namespace ores::trading::domain {
 
@@ -88,6 +89,16 @@ struct swaption_instrument final {
 
     ores::dq::domain::audit_record audit;
 };
+
+/**
+ * @brief Dispatch-key identifier for swaption_instrument, e.g. for the
+ * generic history-diff request and action registries. Single source
+ * of truth: every call site spells entity_type_of(value) regardless
+ * of which entity it holds.
+ */
+[[nodiscard]] constexpr std::string_view entity_type_of(const swaption_instrument&) {
+    return "ores.trading.swaption_instrument";
+}
 
 }
 

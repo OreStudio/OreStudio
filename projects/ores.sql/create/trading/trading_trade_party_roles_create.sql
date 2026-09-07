@@ -17,15 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
 /**
- * Trade Party Roles Table
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
  *
- * Junction table assigning counterparties to roles on a trade.
- * The internal party ("the house") is derived from book_id -> books.party_id.
+ * Trade Party Role Table
  *
- * Hand-crafted: inline soft FK validations for trade_id and counterparty_id
- * cannot be expressed by the standard templates.
+ * Associates a counterparty with a specific role on a trade.
+ * The internal party (the house) is derived from book_id via books.party_id.
+ * Supports multiple counterparties per trade in different roles.
  */
 
 create table if not exists "ores_trading_party_roles_tbl" (
@@ -56,22 +57,18 @@ create unique index if not exists party_roles_version_uniq_idx
 on "ores_trading_party_roles_tbl" (tenant_id, id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists party_roles_id_uniq_idx
 on "ores_trading_party_roles_tbl" (tenant_id, id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists party_roles_tenant_idx
 on "ores_trading_party_roles_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Trade index for role lookups
 create index if not exists party_roles_trade_idx
 on "ores_trading_party_roles_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Counterparty index for exposure queries
 create index if not exists party_roles_counterparty_idx
 on "ores_trading_party_roles_tbl" (tenant_id, counterparty_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
@@ -109,6 +106,9 @@ begin
     -- Validate role
     NEW.role := ores_trading_validate_party_role_type_fn(NEW.tenant_id, NEW.role);
 
+    -- Validate change_reason_code
+    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+
     -- Version management
     select version into current_version
     from "ores_trading_party_roles_tbl"
@@ -124,23 +124,25 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_party_roles_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
-    new.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
-
-    NEW.change_reason_code := ores_dq_validate_change_reason_fn(NEW.tenant_id, NEW.change_reason_code);
+    NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
@@ -151,9 +153,10 @@ before insert on "ores_trading_party_roles_tbl"
 for each row execute function ores_trading_party_roles_insert_fn();
 
 create or replace rule ores_trading_party_roles_delete_rule as
-on delete to "ores_trading_party_roles_tbl" do instead
+on delete to "ores_trading_party_roles_tbl" do instead (
     update "ores_trading_party_roles_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

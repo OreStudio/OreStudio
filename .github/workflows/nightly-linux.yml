@@ -138,7 +138,7 @@ jobs:
           key: sccache-${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja
 
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2.23
+        uses: hendrikmuhs/ccache-action@v1.2.24
         with:
           variant: sccache
           key: ${{matrix.family}}-${{matrix.compiler}}-${{matrix.buildtype}}-ninja

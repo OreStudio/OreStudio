@@ -109,6 +109,52 @@ preserved at =/tmp/drift_synthetic_baseline_20260907.log=.
   template-era (the current-template shape lands as the deliberate
   delta).
 
+** Survey classification (2026-09-07, phase 1 close)
+
+All 9 files under =projects/ores.synthetic/modeling= are
+=ores.codegen.entity=: no field groups, modules, or components to
+exclude. Two survey facts ground the matching: the SQL
+=change_reason_code= column and validation are unconditional
+provenance machinery on versioned tenant tables (=process_parameter_value=
+declares no change-reason feature and its committed SQL still carries
+it), so =has_change_reason_cache= gates only the client-side cache;
+and synthetic has no eventing integration tests on main today, so the
+uuid-identified-lookup Physical-space enablement materializes them as
+a deliberate addition (the compute/iam precedent).
+
+| Entity | Profile candidate | Verdict |
+|--------------------------------------------+---------------------------+---------|
+| =yield_curve_process_type= | =simple-lookup= | MATCH: all 7 assignments agree (text =code= PK, tenant-only, =has_uuid_primary_key: false= declared, change reason and pagination true). Extras stay per-entity: =has_batch_remove=, =display_order=, the =tenant_scope: system= validation, generator facet. |
+| =yield_curve_process_parameter_definition= | =uuid-surrogate-lookup= | MATCH: tenant-only, explicit =has_workspace_id: false=, uuid PK, pagination; no relationships and no changed event, so the surrogate profile (no Physical-space eventing enablement) fits over uuid-identified-lookup. Phase-3 check: the profile's =has_change_reason_cache: true= may add cache plumbing to its committed Qt controller if absent. =system_tenant_validation: true= stays per-entity. |
+| =fx_spot_generation_config= | =uuid-identified-lookup= | MATCH: all 5 assignments agree; changed event and notify trigger are live. The Physical-space enablement materializes its eventing integration test. The =tenant_scope: both= validation and SQL checks stay explicit; capture D583B57B is verified resolved (see below). |
+| =gmm_component= | =uuid-identified-lookup= | MATCH: same shape. |
+| =ir_curve_generation_config= | =uuid-identified-lookup= | MATCH: same shape; the 5-part natural key stays per-entity. |
+| =ir_curve_template_entry= | =uuid-identified-lookup= | MATCH: same shape. |
+| =market_data_generation_config= | =uuid-identified-lookup= | MATCH with records: =nullable_tenant_id: true= and the nullable =party_id= stay explicit (system-scope configs; not profile-covered), and the =scope= / =binding_mode= domain-enum columns stay out of the Qt drawer per the =feed_binding= / =trade_type= enum-gap precedent. |
+| =ir_curve_generation_config_process_parameter_value= | NO-MATCH | =fk-scoped-child= conflicts: it fixes =has_workspace_id: true= against the org's explicit =false=, and fixes =has_explorer_api: true= with none declared. Actual features recorded: uuid PK, tenant-only, =has_workspace_id: false=, parent FKs to =ir_curve_generation_config= and =yield_curve_process_parameter_definition= (the latter =:use_system_tenant: true=), no Qt, no change-reason cache feature, no changed event. Org stays unbound with explicit properties, per the =business_unit= precedent. |
+| =folder= | =self-referencing-hierarchy= | MATCH: tenant, =has_parent_id= (with =prevent_cycle=), uuid PK, workspace false. The Qt half is inert (no drawer; the iam =account_contact_information= precedent). =parent_id_column= and =hierarchy_name_field= stay per-entity, as does the =collection_id= soft FK. |
+
+Deliberate deltas expected at phase 3, each reviewed when it lands:
+
+- The eventing integration tests for the five uuid-identified-lookup
+  entities materialize (new files; compute/iam precedent).
+- The =*_history_provider_registrar= family (18 files) commits with
+  the bind; skill step 7 composes them into =registrar.cpp=.
+- The three Qt controllers land the =wireDetailDialogCommon=
+  template-era shape as their deliberate delta.
+- The =:profile:= declarations replace the covered explicit feature
+  properties; uncovered declarations (=has_batch_remove=,
+  =nullable_tenant_id=, =system_tenant_validation=, =tenant_scope=,
+  hierarchy fields, generator snippets, Qt drawer keys) stay.
+
+Capture disposition: =codegen_sql_validation_fn_drift_synthetic=
+(D583B57B) is verified resolved by this baseline — the model's
+=:tenant_scope: both= now generates the system-tenant canonical-set
+fallback, and the probe reproduced
+=synthetic_fx_spot_generation_configs_create.sql= byte-identically,
+fallback included. The capture can close as superseded with this
+evidence.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

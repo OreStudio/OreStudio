@@ -36,7 +36,7 @@ Swap that terminates when the float index fixing is above ("up and
 out") or below ("down and out") a given barrier level.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/knockoutswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/knockoutswap.tex][knockoutswap.tex]].
 
 ORE states the mechanics as follows:
 
@@ -47,7 +47,7 @@ barrier is monitored on all floating leg fixing dates after the
 BarrierStartDate.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/knockoutswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/knockoutswap.tex][knockoutswap.tex]].
 
 ** In plain terms
 
@@ -140,7 +140,7 @@ when a floating fixing rises above 5 percent:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/knockoutswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/knockoutswap.tex][knockoutswap.tex]],
 listing =Knock Out Swap=.
 
 * See also
@@ -151,6 +151,6 @@ listing =Knock Out Swap=.
 - [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
   definition.
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/knockoutswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/knockoutswap.tex][knockoutswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

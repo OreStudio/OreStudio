@@ -35,7 +35,7 @@ rights. Typically, the call style is American while the put is
 Bermudan, but we support any combination of styles.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callablebond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callablebond.tex][callablebond.tex]].
 
 ** In plain terms
 
@@ -123,7 +123,7 @@ reference data:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callablebond.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callablebond.tex][callablebond.tex]],
 listing =Callable bond set up using reference data=. The source
 describes a Bermudan issuer call on three dates at a clean price of
 100, 100, 102, with accruals paid on exercise, in its =CallData=
@@ -135,6 +135,6 @@ example; the corresponding =Price= values are 1.00, 1.00 and 1.02.
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Callable_bond][Wikipedia: Callable bond]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/callablebond.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callablebond.tex][callablebond.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

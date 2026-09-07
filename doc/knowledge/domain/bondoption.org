@@ -39,7 +39,7 @@ before a specific date. Options are written on government bonds and
 are traded on an OTC basis.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption.tex][bondoption.tex]].
 
 ORE describes the trade node as follows:
 
@@ -51,7 +51,7 @@ one and only one OptionData trade component sub-node plus elements
 specific to the bond option.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption.tex][bondoption.tex]].
 
 ** In plain terms
 
@@ -148,7 +148,7 @@ in EUR and a dirty price convention:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption.tex][bondoption.tex]],
 listing =Bond Option data=. The source closes the =BondData= element
 without the leading slash; it is normalised here.
 
@@ -159,6 +159,6 @@ without the leading slash; it is normalised here.
 
 - [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bondoption.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption.tex][bondoption.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

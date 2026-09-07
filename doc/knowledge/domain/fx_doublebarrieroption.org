@@ -36,7 +36,7 @@ depends upon an FX spot rate reaching one of the two pre-set barrier
 levels. Exercise is European.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_doublebarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doublebarrieroption.tex][fx_doublebarrieroption.tex]].
 
 ORE adds that the product has two continuously monitored barriers with
 a vanilla European FX option underlying.
@@ -134,7 +134,7 @@ levels:
 </FxDoubleBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_doublebarrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doublebarrieroption.tex][fx_doublebarrieroption.tex]],
 listing =FX Double Barrier Option data= (optional elements omitted).
 
 The single-level form is the [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]]. The
@@ -146,6 +146,6 @@ The single-level form is the [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barri
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_doublebarrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doublebarrieroption.tex][fx_doublebarrieroption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

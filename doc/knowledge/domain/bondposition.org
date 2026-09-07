@@ -33,7 +33,7 @@ A bond position represents a position in a weighted basket of
 underlying bonds.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondposition.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondposition.tex][bondposition.tex]].
 
 ORE describes the dual role as follows:
 
@@ -43,7 +43,7 @@ A bond position can be used both as a stand alone trade type
 used within the TotalReturnSwap (Generic TRS) trade type.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondposition.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondposition.tex][bondposition.tex]].
 
 ** In plain terms
 
@@ -128,7 +128,7 @@ bid-ask adjustments:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondposition.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondposition.tex][bondposition.tex]],
 listing =Bond position data=.
 
 * See also
@@ -138,6 +138,6 @@ listing =Bond position data=.
 
 - [[https://en.wikipedia.org/wiki/Total_return_swap][Wikipedia: Total return swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bondposition.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondposition.tex][bondposition.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

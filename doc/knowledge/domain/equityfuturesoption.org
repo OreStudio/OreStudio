@@ -37,7 +37,7 @@ EquityFutureOption trade type. Equity options with exercise styles
 European and American are supported.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityfuturesoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityfuturesoption.tex][equityfuturesoption.tex]].
 
 ** In plain terms
 
@@ -129,7 +129,7 @@ index, with a future expiry before the option expiry:
 </EquityFutureOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityfuturesoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityfuturesoption.tex][equityfuturesoption.tex]],
 listing =Equity Future Option data=.
 
 The spot-based relative of this product is the
@@ -142,6 +142,6 @@ The spot-based relative of this product is the
 
 - [[https://en.wikipedia.org/wiki/Futures_contract][Wikipedia: Futures contract]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equityfuturesoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityfuturesoption.tex][equityfuturesoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

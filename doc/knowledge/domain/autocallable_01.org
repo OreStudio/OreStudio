@@ -48,7 +48,7 @@ The catalogue scopes the underlyings as follows:
 The underlying can be an Equity, FX or Commodity underlying.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/autocallable_01.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]].
 
 ** In plain terms
 
@@ -86,7 +86,7 @@ The maximum amount, per unit of notional, payable by the option
 holder if a trigger event never occurred
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/autocallable_01.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]].
 
 The cap applies when the underlying value is greater than the
 determination level at the last fixing date.
@@ -193,7 +193,7 @@ five annual fixings:
 </Autocallable01Data>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/autocallable_01.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]],
 listing =Autocallable Type 01 data=. The settlement dates follow
 their fixing dates by a few days.
 
@@ -202,6 +202,6 @@ their fixing dates by a few days.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/autocallable_01.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

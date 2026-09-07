@@ -34,7 +34,7 @@ ORE introduces the product as follows:
 There are two types of knock out
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/tarf.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
 
 A TaRF is a sequence of FX, equity or commodity forward contracts.
 Strikes and leverage factors apply to ranges of the underlying
@@ -49,7 +49,7 @@ fixing days where the buyer makes a profit reaches a pre-determined
 target.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/tarf.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
 
 ORE distinguishes three payment types after the knock-out:
 
@@ -59,7 +59,7 @@ full: the unadjusted payment is made
 truncated: no payment is made
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/tarf.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
 
 ** In plain terms
 
@@ -90,7 +90,7 @@ is adjusted so that the cumulated profit since the start of the TaRF
 matches the target amount.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/tarf.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
 
 =TargetAmount= is a currency amount; for FX it is in the domestic
 currency. =TargetPoints= expresses the same target as a percentage
@@ -103,7 +103,7 @@ Pivots, where different strikes apply for different ranges of the
 fixing
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/tarf.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
 
 =OptionData= holds =LongShort= and =PayoffType=. =PayoffType= takes
 the values =TargetFull=, =TargetExact= or =TargetTruncated=,
@@ -144,7 +144,7 @@ bounds and also not for a target amount / cumulated profit cap
 specification in points.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/tarf.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
 
 In the scripted node the ranges are given as parallel lists:
 =RangeUpperBounds=, =RangeLowerBounds=, =RangeLeverages= and
@@ -258,7 +258,7 @@ below 1.05, and a cumulated profit cap of 100000:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/tarf.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]],
 listing =FxTaRF data=. The catalogue also shows an equity TaRF with a
 =FixingCap= of three profitable fixings, a two-times leverage above
 3300 and a strike adjustment of 100.
@@ -268,6 +268,6 @@ listing =FxTaRF data=. The catalogue also shows an equity TaRF with a
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/tarf.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -38,7 +38,7 @@ consecutive forward start options, with each option being struck
 at-the-money when it becomes active.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equitycliquetoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equitycliquetoption.tex][equitycliquetoption.tex]].
 
 ORE restates the setup as follows:
 
@@ -48,7 +48,7 @@ equity options, with each option being struck at a given moneyness
 (commonly at-the-money) when it becomes active.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equitycliquetoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equitycliquetoption.tex][equitycliquetoption.tex]].
 
 ** In plain terms
 
@@ -157,7 +157,7 @@ annual resets:
 </EquityCliquetOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equitycliquetoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equitycliquetoption.tex][equitycliquetoption.tex]],
 listing =Cliquet Option data=, intermediate schedule dates elided.
 
 * See also
@@ -167,6 +167,6 @@ listing =Cliquet Option data=, intermediate schedule dates elided.
 
 - [[https://en.wikipedia.org/wiki/Cliquet_option][Wikipedia: Cliquet option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equitycliquetoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equitycliquetoption.tex][equitycliquetoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

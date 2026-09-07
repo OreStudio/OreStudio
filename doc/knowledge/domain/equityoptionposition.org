@@ -38,7 +38,7 @@ option - using a single Underlying node, or in a weighted basket of
 underlying equity options - using multiple Underlying nodes.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoptionposition.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoptionposition.tex][equityoptionposition.tex]].
 
 ORE states the dual role as follows:
 
@@ -49,7 +49,7 @@ An Equity Option Position can be used both as a stand alone trade type
 TRS) trade type, to set up for example Equity Option Basket trades.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoptionposition.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoptionposition.tex][equityoptionposition.tex]].
 
 ** In plain terms
 
@@ -148,7 +148,7 @@ and 3400, weighted equally:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoptionposition.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoptionposition.tex][equityoptionposition.tex]],
 listing =Equity Option position data=, second basket line elided.
 
 The spot-based relative of this product is the
@@ -161,6 +161,6 @@ The spot-based relative of this product is the
 
 - [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equityoptionposition.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoptionposition.tex][equityoptionposition.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -36,7 +36,7 @@ A CPI swap is an inflation swap where one of the legs has a floating
 rate with coupon payments linked to a supported inflation index.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cpiswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]].
 
 ** In plain terms
 
@@ -55,7 +55,7 @@ A CPI inflation swap can be set up using the InflationSwap trade type,
 with one leg of type CPI.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cpiswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]].
 The remaining legs can be of any leg type, per the catalogue.
 
 The same structure works with the =Swap= trade type and a CPI leg.
@@ -78,7 +78,7 @@ fixing at coupon reset date, taking into account observation lag, and
 if necessary, interpolation between inflation index fixings.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cpiswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]].
 
 A coupon at time Ti equals the product of the notional N, the real
 rate r, the index ratio I(Ti)/I(T0), and the day count fraction of the
@@ -141,7 +141,7 @@ type. The floating leg is abbreviated.
 </InflationSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cpiswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]],
 listing =CPI Swap Data= (using InflationSwap trade type).
 
 The sibling [[id:2FC69DD5-D685-452B-8BCE-85CBCDD624E5][Year-on-Year Inflation Swap]] pays the annual index
@@ -157,6 +157,6 @@ mechanics both products share.
   definition.
 - [[https://en.wikipedia.org/wiki/Consumer_price_index][Wikipedia: Consumer price index]]. This covers the typical
   reference index.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/cpiswap.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

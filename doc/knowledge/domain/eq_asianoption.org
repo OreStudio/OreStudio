@@ -37,7 +37,7 @@ upon the averaged price of an Equity underlying over a pre-set period
 of time.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_asianoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_asianoption.tex][eq_asianoption.tex]].
 
 ** In plain terms
 
@@ -151,7 +151,7 @@ over daily observations:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_asianoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_asianoption.tex][eq_asianoption.tex]],
 listing =Equity Asian Option data=.
 
 * See also
@@ -161,6 +161,6 @@ listing =Equity Asian Option data=.
 
 - [[https://en.wikipedia.org/wiki/Asian_option][Wikipedia: Asian option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_asianoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_asianoption.tex][eq_asianoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

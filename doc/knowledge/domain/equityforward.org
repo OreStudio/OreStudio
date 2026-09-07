@@ -38,7 +38,7 @@ contract. An equity forward does not involve any upfront payment, does
 not pay dividends, and settlement is cash.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityforward.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityforward.tex][equityforward.tex]].
 
 ** In plain terms
 
@@ -120,7 +120,7 @@ ORE's catalogue shows a long US dollar forward on the S&P 500 index:
 </EquityForwardData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityforward.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityforward.tex][equityforward.tex]],
 listing =Equity Forward data=.
 
 The optional counterpart to this product is the
@@ -133,6 +133,6 @@ The optional counterpart to this product is the
 
 - [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equityforward.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityforward.tex][equityforward.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

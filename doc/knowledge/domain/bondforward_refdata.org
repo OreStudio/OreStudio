@@ -39,7 +39,7 @@ bond at a future point in time (the ForwardMaturityDate) at an agreed
 price (the settlement Amount).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondForward_refdata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondForward_refdata.tex][bondForward_refdata.tex]].
 
 ORE describes the T-Lock and J-Lock forms as follows:
 
@@ -51,7 +51,7 @@ rather then a settlement amount. The cash settlement amount is given
 by (bond yield at maturity - lock rate) x DV01 in this case.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondForward_refdata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondForward_refdata.tex][bondForward_refdata.tex]].
 
 ** In plain terms
 
@@ -153,7 +153,7 @@ premium, on a bond from reference data:
 </ForwardBondData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondForward_refdata.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondForward_refdata.tex][bondForward_refdata.tex]],
 listing =Forward Bond Data=. The source spells the settlement value
 =Physcial= and closes the =BondData= element without the leading
 slash; both are normalised here.
@@ -165,7 +165,7 @@ slash; both are normalised here.
 
 - [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bondForward_refdata.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondForward_refdata.tex][bondForward_refdata.tex]].
   The upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

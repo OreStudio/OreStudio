@@ -36,7 +36,7 @@ price (the strike), at the end of the contract. For this right the
 buyer pays a premium to the seller.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoption.tex][commodityoption.tex]].
 
 ORE states that vanilla commodity options are supported. The exercise
 style may be European or American. Settlement can be cash or physical
@@ -122,7 +122,7 @@ ORE's catalogue shows a short European put on crude oil:
 </CommodityOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoption.tex][commodityoption.tex]],
 listing =Commodity Option data= (closing tags normalised).
 
 * See also
@@ -132,6 +132,6 @@ listing =Commodity Option data= (closing tags normalised).
 
 - [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/commodityoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoption.tex][commodityoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

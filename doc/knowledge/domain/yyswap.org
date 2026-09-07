@@ -37,7 +37,7 @@ coupon payments that are exchanged for fixed payments on the other
 leg.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/yyswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]].
 YoYIIS is ORE's shorthand for the year-on-year inflation swap.
 
 ** In plain terms
@@ -56,7 +56,7 @@ A Year on Year inflation swap can be set up with trade type Swap, with
 one leg of type YY.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/yyswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]].
 
 The YY leg carries a =YYLegData= block. It names the inflation index
 and the observation conventions. The structure mirrors the
@@ -116,7 +116,7 @@ fixed-rate leg is abbreviated.
 </SwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/yyswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]],
 listing =Year on Year Swap Data= (using Swap trade type).
 
 * See also
@@ -126,6 +126,6 @@ listing =Year on Year Swap Data= (using Swap trade type).
 
 - [[https://en.wikipedia.org/wiki/Inflation_swap][Wikipedia: Inflation swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/yyswap.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

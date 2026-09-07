@@ -40,7 +40,7 @@ duration of the trade. In exchange the interest to be paid by party A
 will be lower than for an uncollateralised borrowing transaction.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondrepo.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondrepo.tex][bondrepo.tex]].
 
 ** In plain terms
 
@@ -145,7 +145,7 @@ Treasury and pays a fixed rate of 1.78 percent on the cash:
 </BondRepoData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondrepo.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondrepo.tex][bondrepo.tex]],
 listing =Bond Repo Data=.
 
 * See also
@@ -155,6 +155,6 @@ listing =Bond Repo Data=.
 
 - [[https://en.wikipedia.org/wiki/Repurchase_agreement][Wikipedia: Repurchase agreement]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bondrepo.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondrepo.tex][bondrepo.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

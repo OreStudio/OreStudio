@@ -37,7 +37,7 @@ EquityBasketOption / EquityBasketOptionData FxBasketOption /
 FxBasketOptionData CommodityBasketOption / CommodityBasketOptionData
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/basketoption.tex][basketoption.tex]].
 
 ORE represents basket options as traditional trades or as scripted
 trades. Each variation has its own payoff script. The catalogue maps
@@ -70,7 +70,7 @@ to represent deterministic option premia to be paid by the option
 holder.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/basketoption.tex][basketoption.tex]].
 
 =Currency= is the pay currency. =Notional= is the quantity for
 equity and commodity underlyings, and the foreign amount for an FX
@@ -90,7 +90,7 @@ PayoffType2 can be optionally set to Arithmetic or Geometric and
 defaults to Arithmetic if not given.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/basketoption.tex][basketoption.tex]].
 
 The average strike form uses the same observation dates. Its payoff
 type is =AverageStrike=, and it carries no strike: the strike is the
@@ -108,7 +108,7 @@ If CCY1 or the currency of the underlying (for EQ and COMM
 underlyings), this will result in a quanto payoff.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/basketoption.tex][basketoption.tex]].
 
 In the scripted representation each variation is a scripted trade
 with its own data node, named after its script, such as
@@ -213,7 +213,7 @@ Euro Stoxx 50, struck at 5000, in its traditional representation:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/basketoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/basketoption.tex][basketoption.tex]],
 the vanilla basket option example trade. The catalogue shows the
 Asian, average strike and lookback variants with the same basket.
 
@@ -222,6 +222,6 @@ Asian, average strike and lookback variants with the same basket.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/basketoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/basketoption.tex][basketoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

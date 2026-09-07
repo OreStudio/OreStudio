@@ -40,7 +40,7 @@ replicating Range Accrual coupons, where each daily observation can
 be decomposed into a digital option on the rate.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ratedigitaloption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ratedigitaloption.tex][ratedigitaloption.tex]].
 
 The payout direction follows the option type. A call pays when the
 rate fixing is above the strike. A put pays when the rate fixing is
@@ -122,7 +122,7 @@ It pays 10000 euros if the fixing is above 2 percent:
 </RateDigitalOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ratedigitaloption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ratedigitaloption.tex][ratedigitaloption.tex]],
 listing =Rate Digital Option data=.
 
 * See also
@@ -131,6 +131,6 @@ listing =Rate Digital Option data=.
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/ratedigitaloption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ratedigitaloption.tex][ratedigitaloption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

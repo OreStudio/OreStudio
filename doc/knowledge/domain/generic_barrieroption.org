@@ -38,7 +38,7 @@ payoff at maturity can be made conditional on (single) European
 Knock-In or Knock-Out barrier condition ("Transatlantic Barrier").
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 ORE describes the American barriers:
 
@@ -48,7 +48,7 @@ conditions can be defined that are monitored on a defined schedule,
 e.g. a daily schedule between a monitoring start and end date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 ORE states the knock-in and knock-out logic:
 
@@ -58,13 +58,13 @@ The different barrier types are "UpAndIn", "UpAndOut", "DownAndIn",
 payoff is only activated if at least one Knock-In barrier is touched.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 #+begin_quote
 An option that is knocked out, can not knock in again.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 ** In plain terms
 
@@ -89,7 +89,7 @@ and an associated node FxGenericBarrierOptionData,
 EquityGenericBarrierOptionData, CommodityGenericBarrierOptionData.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 A generic barrier option has one or multiple underlyings. The single
 =Underlying= node names one underlying. The =Underlyings= node is the
@@ -138,7 +138,7 @@ or "atExpiry" (i.e. on the settlement date associated to the expiry
 date of the underlying option).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 For knock-in barriers, or a mixed set, only one rebate amount can be
 defined, paid at expiry. ORE describes the Transatlantic rebate as
@@ -150,7 +150,7 @@ specified that is paid when the American barriers do not deactivate
 the underlying option, but the additional Transatlantic Barrier does.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 =StrictComparison= tunes the barrier checks: the value 0 uses
 less-or-equal and greater-or-equal comparisons for knock-in barriers
@@ -167,7 +167,7 @@ KoAfterKi: The option can only knock out after a Knock-In
 KoBeforeKi: The option can only knock out before a Knock-In
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
 
 =TransatlanticBarrier= is optional. It holds one BarrierData block
 with one level per underlying, or the matching number of blocks with
@@ -294,7 +294,7 @@ Transatlantic up-and-out at 1.3:
 </FxGenericBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/generic_barrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]],
 listing =Generic Barrier Option data (FX Underlying)=. The catalogue
 also shows the multi-asset form with two FX underlyings and one
 barrier level per underlying.
@@ -304,7 +304,7 @@ barrier level per underlying.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/generic_barrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
   The upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

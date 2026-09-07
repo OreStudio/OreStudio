@@ -35,7 +35,7 @@ This product has a continuously monitored single barrier with an
 Cash-or-Nothing digital underlying option.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]].
 
 ORE states the payoff condition as follows:
 
@@ -45,7 +45,7 @@ digital Cash-or-Nothing underlying option depending upon an FX spot
 rate reaching a pre-set barrier level.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]].
 
 ORE also notes that the option can be of the same four main types as a
 regular barrier FX option: up-and-out, down-and-out, up-and-in, and
@@ -146,7 +146,7 @@ barrier:
 </FxDigitalBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]],
 listing =FX Digital Barrier Option data= (optional elements omitted).
 
 * See also
@@ -156,6 +156,6 @@ listing =FX Digital Barrier Option data= (optional elements omitted).
 
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the digital payout concept.
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

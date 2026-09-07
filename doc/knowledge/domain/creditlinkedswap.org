@@ -33,7 +33,7 @@ A credit linked swap is a swap where the payments are contingent on
 credit events occurring for a reference CDS.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/creditlinkedswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/creditlinkedswap.tex][creditlinkedswap.tex]].
 
 ORE describes three classes of payments. One class pays only if no
 credit event has occurred for the reference CDS until the payment
@@ -127,7 +127,7 @@ ORE's catalogue shows a trade with the four leg groups:
 </CreditLinkedSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/creditlinkedswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/creditlinkedswap.tex][creditlinkedswap.tex]],
 listing =Credit Linked Swap Data= (leg detail abbreviated).
 
 The example sets a fixed recovery of 40 percent. The reference curve
@@ -141,6 +141,6 @@ follows the conventions of the
 
 - [[https://en.wikipedia.org/wiki/Credit_derivative][Wikipedia: Credit derivative]]. This places the product in the
   credit derivative family.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/creditlinkedswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/creditlinkedswap.tex][creditlinkedswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

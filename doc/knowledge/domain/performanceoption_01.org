@@ -46,7 +46,7 @@ The above payoff includes the strike in the performance calculation.
 There is another variant with excluded strike and payoff:
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/performanceoption_01.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
 
 ** In plain terms
 
@@ -71,7 +71,7 @@ The participation rate. Allowable values are non-negative numbers.
 Usually the value will be between 0 and 1.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/performanceoption_01.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
 
 =ValuationDate= is the valuation date and =SettlementDate= the
 settlement date. =Underlyings= holds the underlyings of the option,
@@ -90,7 +90,7 @@ the underlying basket (see the product description for more details).
 Allowable values are numbers.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/performanceoption_01.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
 
 =StrikeIncluded= is optional. When true, the strike is included in
 the performance calculation of each underlying; this is also the
@@ -196,7 +196,7 @@ calculation:
 </PerformanceOption01Data>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/performanceoption_01.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]],
 listing =Performance Option Type 01 data=.
 
 * See also
@@ -204,7 +204,7 @@ listing =Performance Option Type 01 data=.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/performanceoption_01.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
   The upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

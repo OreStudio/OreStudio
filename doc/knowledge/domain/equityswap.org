@@ -39,7 +39,7 @@ with coupon payments linked to an equity price, either a single stock
 or equity index.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
 
 ORE describes the coupon types as follows:
 
@@ -50,7 +50,7 @@ coupon start and end dates, while a Total Return coupon also includes
 dividend payments during the period.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
 
 ORE describes the setup as follows:
 
@@ -60,7 +60,7 @@ a EquitySwapData node with one leg of type Equity and one more leg -
 called Funding leg - that can be either Fixed or Floating.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
 
 ORE contrasts the pricing method with the total return swap as
 follows:
@@ -72,7 +72,7 @@ underlying uses the accrual method. The accrual method is common
 practice when daily unwind rights are present in the trade terms.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
 
 ** In plain terms
 
@@ -185,7 +185,7 @@ indexing. The funding leg derives its notional from the equity leg:
 </EquitySwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]],
 listing =Equity Swap Data with notional reset and FX indexing=.
 
 * See also
@@ -194,6 +194,6 @@ listing =Equity Swap Data with notional reset and FX indexing=.
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Equity_swap][Wikipedia: Equity swap]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equityswap.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

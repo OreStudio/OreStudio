@@ -46,7 +46,7 @@ compensation payments that reflect changes of the clean bond value
 along the TRS schedule.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondTotalReturnSwap.tex][bondTotalReturnSwap.tex]].
 
 ORE describes the setup as follows:
 
@@ -60,7 +60,7 @@ The block is comprised of three sub-blocks, which are BondData,
 TotalReturnData and FundingData.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondTotalReturnSwap.tex][bondTotalReturnSwap.tex]].
 
 ** In plain terms
 
@@ -187,7 +187,7 @@ its return in USD against a floating USD funding leg:
 </BondTRSData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondTotalReturnSwap.tex][bondTotalReturnSwap.tex]],
 listing =Bond Total Return Swap Data with indexed funding leg=.
 
 * See also
@@ -197,6 +197,6 @@ listing =Bond Total Return Swap Data with indexed funding leg=.
 
 - [[https://en.wikipedia.org/wiki/Total_return_swap][Wikipedia: Total return swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bondTotalReturnSwap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondTotalReturnSwap.tex][bondTotalReturnSwap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

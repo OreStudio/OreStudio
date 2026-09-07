@@ -38,7 +38,7 @@ the cap or floor rate is the strike price, and each floating rate
 reset date is an option expiry date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/capfloor.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]].
 
 ORE states the collar composition as follows:
 
@@ -47,7 +47,7 @@ A collar is the combination of a series of long caplets and short
 floorlets for a long position in the collar.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/capfloor.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]].
 
 ORE also supports the standalone form:
 
@@ -56,7 +56,7 @@ Standalone caps and floors with a single payoff on an IBOR or CMS
 index are also supported.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/capfloor.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]].
 
 ** In plain terms
 
@@ -152,7 +152,7 @@ cap rate and an upfront premium:
 </CapFloorData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/capfloor.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]],
 listing =Cap/Floor data=.
 
 * See also
@@ -162,6 +162,6 @@ listing =Cap/Floor data=.
 
 - [[https://en.wikipedia.org/wiki/Interest_rate_cap_and_floor][Wikipedia: Interest rate cap and floor]]. This note follows its
   general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/capfloor.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

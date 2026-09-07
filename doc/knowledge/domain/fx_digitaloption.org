@@ -36,7 +36,7 @@ whether the underlying FX spot rate expires in-the-money at the
 expiration date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_digitaloption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitaloption.tex][fx_digitaloption.tex]].
 
 ORE adds that digital FX options have European exercise with payout at
 expiry. The buyer of a digital FX option pays a premium to the seller.
@@ -114,7 +114,7 @@ ORE's catalogue shows a long European digital call:
 </FxDigitalOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_digitaloption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitaloption.tex][fx_digitaloption.tex]],
 listing =FX Digital Option data= (optional elements omitted).
 
 * See also
@@ -123,6 +123,6 @@ listing =FX Digital Option data= (optional elements omitted).
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_digitaloption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitaloption.tex][fx_digitaloption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

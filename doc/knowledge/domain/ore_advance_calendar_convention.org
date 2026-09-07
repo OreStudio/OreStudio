@@ -48,7 +48,7 @@ bootstrapping for FX-forward-implied points
 documents the fallback behaviour for FX forwards explicitly: "For cash
 settlement and if a FXIndex is specified defaults to the fx convention
 (field 'AdvanceCalendar') if left blank or omitted, otherwise to
-NullCalendar (no holidays)" (=Docs/UserGuide/tradedata/fxforward.tex=).
+NullCalendar (no holidays)" ([[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxforward.tex][fxforward.tex]]).
 
 ** XML example
 

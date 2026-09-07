@@ -36,7 +36,7 @@ to obtain a cash amount of averaged rate in return for a predetermined
 strike rate. For this right the buyer pays a premium to the seller.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_asianoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_asianoption.tex][fx_asianoption.tex]].
 
 ORE adds that an FX Asian option is a path-dependent option whose
 payoff depends upon the averaged foreign exchange rate over a pre-set
@@ -145,7 +145,7 @@ ORE's catalogue shows a long arithmetic Asian call:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_asianoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_asianoption.tex][fx_asianoption.tex]],
 listing =FX Asian Option data=.
 
 * See also
@@ -154,6 +154,6 @@ listing =FX Asian Option data=.
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Asian_option][Wikipedia: Asian option]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_asianoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_asianoption.tex][fx_asianoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

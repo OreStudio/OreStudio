@@ -38,7 +38,7 @@ not the obligation to receive the outperformance in exchange for the
 strike rate at a predetermined time in the future.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_outperformance.tex][eq_outperformance.tex]].
 
 ORE describes the barrier condition as follows:
 
@@ -48,7 +48,7 @@ paid if on the exercise date the price of Index2 is above the
 knockIn price and below the knockOut price.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_outperformance.tex][eq_outperformance.tex]].
 
 ** In plain terms
 
@@ -70,7 +70,7 @@ component sub-node plus elements specific to the Equity
 Outperformance Option.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_outperformance.tex][eq_outperformance.tex]].
 
 =OptionData= holds the option terms. =LongShort= takes =Long= or
 =Short=. =OptionType= takes =Call= or =Put=. A call gives the holder
@@ -91,7 +91,7 @@ Also note that the equities in Underlying1 and Underlying2 must be
 quoted in the same currency.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_outperformance.tex][eq_outperformance.tex]].
 
 =InitialPrice1= and =InitialPrice2= hold the initial prices of the
 two underlyings. =StrikeReturn= is the strike return of the option.
@@ -191,7 +191,7 @@ index:
 </EquityOutperformanceOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_outperformance.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_outperformance.tex][eq_outperformance.tex]],
 listing =Equity Outperformance Option Data=.
 
 * See also
@@ -199,6 +199,6 @@ listing =Equity Outperformance Option Data=.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_outperformance.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_outperformance.tex][eq_outperformance.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

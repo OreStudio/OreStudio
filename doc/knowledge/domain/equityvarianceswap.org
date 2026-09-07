@@ -40,7 +40,7 @@ pre-agreed variance level (the strike) for the actual amount of
 variance realized over an observation period.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityvarianceswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]].
 
 ORE limits the product as follows:
 
@@ -48,7 +48,7 @@ ORE limits the product as follows:
 Only vanilla variance swaps are supported.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityvarianceswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]].
 
 ** In plain terms
 
@@ -143,7 +143,7 @@ struck at 20 percent volatility:
 </EquityVarianceSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityvarianceswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]],
 listing =Variance Swap data=. The source spells the container node
 name as =EqutiyVarianceSwapData=; it is reproduced verbatim here.
 
@@ -154,6 +154,6 @@ name as =EqutiyVarianceSwapData=; it is reproduced verbatim here.
 
 - [[https://en.wikipedia.org/wiki/Variance_swap][Wikipedia: Variance swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equityvarianceswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

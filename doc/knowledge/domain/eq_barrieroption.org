@@ -38,7 +38,7 @@ depends upon an Equity spot rate reaching a pre-set barrier level.
 Exercise is European.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]].
 
 ORE states the monitoring as follows:
 
@@ -48,7 +48,7 @@ Vanilla European Equity Option Underlying. A set number of shares of a
 single name equity or an equity index is specified by the "Quantity".
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]].
 
 ** In plain terms
 
@@ -145,7 +145,7 @@ ORE's catalogue shows a call on the S&P 500 index with a strike of
 </EquityBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_barrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]],
 listing =Equity Barrier Option data=.
 
 * See also
@@ -155,6 +155,6 @@ listing =Equity Barrier Option data=.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_barrieroption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

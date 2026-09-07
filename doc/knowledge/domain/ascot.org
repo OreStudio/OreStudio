@@ -38,7 +38,7 @@ the deal and get the underlying bond in exchange for paying the
 strike.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ascot.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ascot.tex][ascot.tex]].
 
 The call payout is the convertible price less the strike, floored at
 zero. The put payout is the strike less the convertible price, floored
@@ -46,7 +46,7 @@ at zero. The strike itself is:
 
 =Strike = bondQuantity x (upfrontPayment + assetLeg - redemptionLeg) - fundingLeg=
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ascot.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ascot.tex][ascot.tex]].
 
 ** In plain terms
 
@@ -148,7 +148,7 @@ bond, funded by a floating reference swap leg:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/ascot.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ascot.tex][ascot.tex]],
 listing =Ascot set up using reference data=. The source closes the
 =AscotData= element without the leading slash; it is normalised here.
 
@@ -159,6 +159,6 @@ listing =Ascot set up using reference data=. The source closes the
 
 - [[https://en.wikipedia.org/wiki/Convertible_bond][Wikipedia: Convertible bond]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/ascot.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ascot.tex][ascot.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

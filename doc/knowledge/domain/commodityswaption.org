@@ -35,7 +35,7 @@ Commodity Swap consisting of a sequence of calculation periods. The
 exercise decision is made once before the Swap starts.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswaption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]].
 
 ORE states the exercise directions as follows:
 
@@ -46,7 +46,7 @@ Swaption, the holder of the option has the right to receive the fixed
 prices and to pay the floating prices.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswaption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]].
 
 ** In plain terms
 
@@ -131,7 +131,7 @@ ORE's catalogue shows a long European swaption:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswaption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]],
 listing =Commodity swaption= (leg detail abbreviated).
 
 The underlying is a [[id:0C0FDF39-B4D4-4794-83AD-076B4681830B][Commodity Swap]]. The
@@ -144,6 +144,6 @@ period end rather than before the underlying starts.
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Swaption][Wikipedia: Swaption]]. This covers the general swaption concept.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/commodityswaption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

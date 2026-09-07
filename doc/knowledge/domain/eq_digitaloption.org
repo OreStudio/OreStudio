@@ -37,7 +37,7 @@ whether the underlying Equity spot rate expires in-the-money at the
 expiration date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_digitaloption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_digitaloption.tex][eq_digitaloption.tex]].
 
 ORE adds the exercise terms as follows:
 
@@ -46,7 +46,7 @@ Equity Digital Options have European exercise with payout at expiry.
 The buyer of a Equity Digital Option pays a premium to the seller.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_digitaloption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_digitaloption.tex][eq_digitaloption.tex]].
 
 ** In plain terms
 
@@ -134,7 +134,7 @@ pays 1000 per unit above strike 3300:
 </EquityDigitalOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_digitaloption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_digitaloption.tex][eq_digitaloption.tex]],
 listing =Equity Digital Option data=.
 
 * See also
@@ -144,6 +144,6 @@ listing =Equity Digital Option data=.
 
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_digitaloption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_digitaloption.tex][eq_digitaloption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

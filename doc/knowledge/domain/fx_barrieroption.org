@@ -36,7 +36,7 @@ depends upon an FX spot rate reaching a pre-set barrier level.
 Exercise is European.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_barrieroption.tex][fx_barrieroption.tex]].
 
 ORE adds that the product has a continuously monitored single barrier
 with a vanilla European FX option underlying.
@@ -57,7 +57,7 @@ exist/becomes inactive, if the barrier is reached during the life of
 the option.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_barrieroption.tex][fx_barrieroption.tex]].
 
 ** In plain terms
 
@@ -148,7 +148,7 @@ ORE's catalogue shows a long European call with an up-and-in barrier:
 </FxBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_barrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_barrieroption.tex][fx_barrieroption.tex]],
 listing =FX Barrier Option data= (optional elements omitted).
 
 The family includes the
@@ -162,6 +162,6 @@ The family includes the
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_barrieroption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_barrieroption.tex][fx_barrieroption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -36,7 +36,7 @@ interest rates) are simultaneously in the money w.r.t. given strikes
 and option types at the option expiry.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/doubledigitaloption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]].
 
 ORE notes the range of supported underlying types:
 
@@ -45,7 +45,7 @@ Equity, Commodity and IR underlyings are also supported in arbitrary
 combinations.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/doubledigitaloption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]].
 
 ** In plain terms
 
@@ -84,7 +84,7 @@ Underlying 1 is considered to be in the money if the spot is above
 BinaryLevel1 and BinaryLevelUpper1 at the expiry.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/doubledigitaloption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]].
 
 Underlying 2 is in the money under the same rule with its own level
 and upper bound. =Position= takes =Long= or =Short=. =Underlying1= and
@@ -169,7 +169,7 @@ between 0.006 and 0.008 on the expiry date:
 </DoubleDigitalOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/doubledigitaloption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]],
 listing =Double Digital Option data=. The catalogue also walks through
 a term sheet variant of the same structure with a put on the second
 underlying.
@@ -179,6 +179,6 @@ underlying.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/doubledigitaloption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

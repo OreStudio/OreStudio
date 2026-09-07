@@ -28,7 +28,7 @@ Finance concepts the codebase relies on, grouped by topic.
 
 Knowledge notes for the ORE product set, the trade types the ORE
 engine prices. ORE documents each product in its User Guide products
-catalogue, =Docs/UserGuide/tradedata/=. The notes pair that official
+catalogue, [[https://github.com/OpenSourceRisk/Engine/tree/master/Docs/UserGuide/tradedata][Docs/UserGuide/tradedata/]]. The notes pair that official
 description with domain grounding and ORE examples. The set is
 organised by asset class on the [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] page.
 

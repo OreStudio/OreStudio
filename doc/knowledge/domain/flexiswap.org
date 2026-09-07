@@ -36,7 +36,7 @@ to further reduce the notional in each period to each value between
 the current notional and a specified lower bound for that period.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/flexiswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]].
 
 ORE states the pricing approach as follows:
 
@@ -48,7 +48,7 @@ Product Type "Bermudan Swaption". Flexi Swaps can be single or cross
 currency.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/flexiswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]].
 
 ORE notes that flexi swaps are typically used for swaps linked to
 Asset Backed Securities with flexible amortisation.
@@ -138,7 +138,7 @@ given by =LowerNotionalBounds=:
 </FlexiSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/flexiswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]],
 listing =Flexi Swap data=.
 
 A Balance Guaranteed Swap is priced through an auxiliary flexi swap,
@@ -152,6 +152,6 @@ note.
 
 - [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/flexiswap.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

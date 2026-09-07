@@ -37,7 +37,7 @@ American Knock-In or Knock-Out barrier condition can be defined that
 are monitored continuously between a start and end date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/window_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
 
 ORE lists the barrier types:
 
@@ -46,7 +46,7 @@ The different barrier types are "UpAndIn", "UpAndOut", "DownAndIn",
 "DownAndOut".
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/window_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
 
 ** In plain terms
 
@@ -76,7 +76,7 @@ FixingAmount is expressed as number of units of the underlying
 commodity.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/window_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
 
 =Underlying= names the underlying of the instrument. For an FX
 underlying the name has the form =SOURCE-CCY1-CCY2=, with =CCY1= the
@@ -98,7 +98,7 @@ The barrier is continuously monitored between the StartDate and
 EndDate.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/window_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
 
 The barrier types are =UpAndOut=, =DownAndOut=, =UpAndIn= and
 =DownAndIn=, with exactly one level given as a positive real number.
@@ -110,7 +110,7 @@ Window Barrier Options can be alternatively represented as scripted
 trades, refer to ore/Docs/ScriptedTrade for an introduction.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/window_barrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
 
 In the scripted form the trade type is =ScriptedTrade= and the data
 node is =WindowBarrierOptionData=. The node carries the same terms as
@@ -210,7 +210,7 @@ and expiring in 2026:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/window_barrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]],
 the example FX window barrier option trade. The catalogue shows the
 same trade again as a scripted trade with the =WindowBarrierOptionData=
 node, and lists the payoff script that prices it.
@@ -220,7 +220,7 @@ node, and lists the payoff script that prices it.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/window_barrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
   The upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

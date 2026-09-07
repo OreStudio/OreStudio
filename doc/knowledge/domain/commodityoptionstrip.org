@@ -149,7 +149,7 @@ ORE's catalogue shows a strip with a short call and a long put:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityoptionstrip.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoptionstrip.tex][commodityoptionstrip.tex]],
 listing =Commodity Option Strip= (optional elements omitted).
 
 * See also
@@ -159,6 +159,6 @@ listing =Commodity Option Strip= (optional elements omitted).
 
 - [[https://en.wikipedia.org/wiki/Exotic_option][Wikipedia: Exotic option]]. This places the product in the exotic
   options family.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/commodityoptionstrip.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoptionstrip.tex][commodityoptionstrip.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

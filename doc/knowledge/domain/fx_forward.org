@@ -37,7 +37,7 @@ of a set amount of one currency for another at a predetermined time in
 the future. An Fx Forward does not involve any upfront payment.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxforward.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxforward.tex][fxforward.tex]].
 
 ** In plain terms
 
@@ -98,7 +98,7 @@ market FX rates. At the ValueDate, the settlement becomes
 deterministic.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxforward.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxforward.tex][fxforward.tex]].
 
 After the value date, no market risk remains. Only the settlement and
 any payment-lag exposure are left.
@@ -127,7 +127,7 @@ ORE's own catalogue shows the trade data node:
 </FxForwardData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxforward.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxforward.tex][fxforward.tex]],
 listing =FX Forward data= (settlement details omitted).
 
 A cash-settled forward example sits in the ORE trade corpus at
@@ -144,6 +144,6 @@ Native ORE example portfolios with FX forwards sit under
   definition.
 - [[https://en.wikipedia.org/wiki/Non-deliverable_forward][Wikipedia: Non-deliverable forward]]. This covers the cash-settled
   variant.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fxforward.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxforward.tex][fxforward.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

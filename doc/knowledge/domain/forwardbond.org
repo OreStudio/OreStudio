@@ -37,7 +37,7 @@ bond at a future point in time (the ForwardMaturityDate) at an agreed
 price (the settlement Amount).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardbond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]].
 
 ORE describes the T-Lock and J-Lock forms as follows:
 
@@ -49,7 +49,7 @@ rather then a settlement amount. The cash settlement amount is given
 by (bond yield at maturity - lock rate) x DV01 in this case.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardbond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]].
 
 ** In plain terms
 
@@ -67,7 +67,7 @@ A Forward Bond is set up using a ForwardBondData block as shown below
 and the trade type is ForwardBond.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardbond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]].
 
 The =BondData= block specifies the underlying bond. A long position
 must be taken in the bond, so the =Payer= flag must be =true=. The
@@ -113,7 +113,7 @@ As for the ordinary bond the forward bond pricing requires a recovery
 rate that can be specified in ORE per SecurityId.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardbond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]].
 
 ** Mathematical notes
 
@@ -192,7 +192,7 @@ settlement amount of one million:
 </ForwardBondData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardbond.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]],
 listing =Forward Bond Data=. The source spells the settlement value
 =Physcial= and closes the =IncomeCurveId= element without the leading
 slash; both are normalised here. The catalogue also shows the same
@@ -206,6 +206,6 @@ T-Lock form.
 
 - [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/forwardbond.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

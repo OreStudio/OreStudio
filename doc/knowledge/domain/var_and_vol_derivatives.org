@@ -41,7 +41,7 @@ knock-in/knock-out barrier/s, conditions for the accrual of variance,
 basket underlyings, optionality on the payoff, etc.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 ORE states the input representation:
 
@@ -51,13 +51,13 @@ scripted trades, refer to the scripted trade documentation in
 ore/Docs/ScriptedTrade for an introduction.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 #+begin_quote
 All swaps have an optional cap/floor feature.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 ** In plain terms
 
@@ -113,7 +113,7 @@ option is:
 An option on the realised variance/volatility of an underlying.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 Its node adds =PutCall=, =PremiumAmount= and =PremiumDate=,
 =VarianceReference= and the =ValuationSchedule=. The option carries a
@@ -127,7 +127,7 @@ A capped and/or floored variance swap with a knock-in/knock-out
 feature.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 ORE notes a reuse of the trade type:
 
@@ -137,7 +137,7 @@ variance swaps without barrier, by setting the BarrierType to UpIn
 and BarrierLevel to zero.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 The dual European binary pairs a volatility knock-out with a spot
 knock-out. Its node carries a fixed =SettlementAmount=, a
@@ -152,7 +152,7 @@ when the underlying trades within a pre-specified window defined by
 an upper and lower bound.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 Its node adds =UpperBarrierLevel= and =LowerBarrierLevel=, a
 =CountBothObservations= flag and an =AccrualAdjustment=. The
@@ -165,7 +165,7 @@ variance of one equity index (the Underlying) for the days another
 equity index (the CorridorIndex) is within a corridor.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 The conditional variance swaps accrue variance in a single-barrier
 window. ORE describes the 01 variant:
@@ -177,7 +177,7 @@ a specified single barrier window - (differing from the
 CorridorVarianceSwap that has a double barrier window.)
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 In the 01 variant the variance amount that scales the notional comes
 directly from the =Strike= parameter. The node supports caps, floors,
@@ -193,7 +193,7 @@ notional amount, distinct from the Strike parameter used in the
 payoff calculation.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 The pairwise variance swap is:
 
@@ -202,7 +202,7 @@ A capped and/or floored variance swap on a basket of two underlyings,
 with an optional lag in the variance accrual.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 Its node carries one underlying strike and notional per underlying
 plus a basket notional and basket strike, and a lagged valuation
@@ -215,7 +215,7 @@ A capped and/or floored variance swap that pays on the difference in
 the realised volatilities between two baskets of underlyings.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 The corridor dispersion form restricts the accrual to a corridor, and
 the knock-out form adds a double-barrier knock-out:
@@ -225,7 +225,7 @@ This instrument is a variance dispersion swap with a double-barrier
 knock-out and a corridor feature.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 The pairwise geometric form is documented by its node alone, with two
 baskets, per-pair and basket strikes, basket and variance weights, a
@@ -237,7 +237,7 @@ The gamma swap is:
 A vanilla variance swap with a weight function on the underlying.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 The basket variance swap is:
 
@@ -245,7 +245,7 @@ The basket variance swap is:
 A capped and/or floored variance swap on a basket of underlyings.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
 
 Its trade types are =FxBasketVarianceSwap=, =EquityBasketVarianceSwap=
 and =CommodityBasketVarianceSwap=, with a weight per underlying in the
@@ -365,7 +365,7 @@ The premium is zero and the premium date equals the first valuation
 date. ORE prices the trade with the =VarianceOption= script, shown in
 full in the catalogue.
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]],
 the example variance option trade in the section =Variance Option=.
 
 * See also
@@ -373,8 +373,8 @@ the example variance option trade in the section =Variance Option=.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
   which inputs
-  =Docs/UserGuide/tradedata/var_and_vol_derivatives.tex=. The
+  [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]]. The
   upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

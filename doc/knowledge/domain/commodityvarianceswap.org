@@ -35,7 +35,7 @@ A Commodity Variance or Volatility Swap has a payoff that depends on
 the volatility/variance of an underlying commodity instrument.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityvarianceswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityvarianceswap.tex][commodityvarianceswap.tex]].
 
 ** In plain terms
 
@@ -100,6 +100,6 @@ variance swap section of the catalogue for the node layout.
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Variance_swap][Wikipedia: Variance swap]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/commodityvarianceswap.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityvarianceswap.tex][commodityvarianceswap.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

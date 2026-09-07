@@ -38,7 +38,7 @@ underlying swap may have varying notional, rates, and spreads during
 its lifetime, and can be single-currency or cross-currency.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swaption.tex][swaption.tex]].
 
 ORE splits swaptions into payer and receiver types. A payer swaption
 has an underlying swap that pays fixed and receives floating. A
@@ -53,7 +53,7 @@ option and enter into the swap on the expiration date of the
 swaption.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swaption.tex][swaption.tex]].
 
 ORE describes the settlement choices as follows:
 
@@ -64,7 +64,7 @@ methods to compute the settlement price (collateralized cash price,
 par yield curve).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swaption.tex][swaption.tex]].
 
 ORE states the Bermudan form as follows:
 
@@ -75,7 +75,7 @@ rather than a single expiration date. The underlying swap may have
 varying notional, rates, and spreads during its lifetime.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swaption.tex][swaption.tex]].
 
 An American swaption allows exercise any time between two specified
 dates.
@@ -181,7 +181,7 @@ swaption on sterling:
 </SwaptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swaption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swaption.tex][swaption.tex]],
 listing =Swaption data=.
 
 A callable swap embeds this optionality, see the
@@ -193,6 +193,6 @@ A callable swap embeds this optionality, see the
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Swaption][Wikipedia: Swaption]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/swaption.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swaption.tex][swaption.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

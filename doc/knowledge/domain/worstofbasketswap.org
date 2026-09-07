@@ -38,7 +38,7 @@ receives coupons based on an equity notional amount, subject to a
 coupon trigger event.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/worstofbasketswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
 
 ORE describes the life of the contract as follows:
 
@@ -52,7 +52,7 @@ final determination date, then a final equity amount will be
 delivered to the buyer.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/worstofbasketswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
 
 ** In plain terms
 
@@ -101,7 +101,7 @@ determine whether a coupon trigger event has occurred, upon which a
 fixed coupon is paid out at the corresponding payment date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/worstofbasketswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
 
 Coupons can accumulate. In the traditional data, a coupon not paid
 because its trigger did not fire is paid together with the next
@@ -155,7 +155,7 @@ price at the determination date is paid, although the settlement
 type does not affect pricing.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/worstofbasketswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
 
 ** What moves its value (static sensitivities)
 
@@ -258,7 +258,7 @@ stands at 75% of the initial prices:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/worstofbasketswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]],
 listing =EquityWorstOfBasketSwap data=. The catalogue also shows the
 scripted representation, in which the basket names the two assets
 explicitly: =EQ-RIC:.STOXX50E= and =EQ-RIC:.SPX= with initial prices
@@ -269,6 +269,6 @@ explicitly: =EQ-RIC:.STOXX50E= and =EQ-RIC:.SPX= with initial prices
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/worstofbasketswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

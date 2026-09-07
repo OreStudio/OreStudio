@@ -39,7 +39,7 @@ knock-out, i.e. the contract terminates early if the underlying price
 exceeds some threshold above strike.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/accumulator.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
 
 ORE defines the decumulator as follows:
 
@@ -50,7 +50,7 @@ fixed price. A potential knock-out is set below the strike price (and
 below the spot price at inception).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/accumulator.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
 
 The accumulator investor speculates that the security stays between
 the strike and the knock-out level for the life of the contract.
@@ -79,7 +79,7 @@ of "type 02" meaning that a settlement takes place on specific period
 end dates for all observation dates in that period.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/accumulator.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
 
 =ObservationDates= are the dates on which the underlying is fixed.
 =PricingDates= are optional and define the period end dates. When
@@ -132,7 +132,7 @@ a knock out. On a guaranteed fixing date, Only positive payouts (from
 the buyer/long perspective) are realised.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/accumulator.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
 
 For type 02 accumulators the =FixingFloor= guarantees a number of
 periods instead of observation dates. When a knock-out happens inside
@@ -156,7 +156,7 @@ Put) is inferred from the sign of the Leverage values in RangeBound,
 which are all required to be the same.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/accumulator.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
 
 ** Mathematical notes
 
@@ -380,7 +380,7 @@ a fixing floor of one guaranteed period:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/accumulator.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]],
 the example FX accumulator and equity decumulator trades.
 
 * See also
@@ -388,6 +388,6 @@ the example FX accumulator and equity decumulator trades.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/accumulator.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

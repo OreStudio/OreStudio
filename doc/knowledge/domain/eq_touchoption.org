@@ -40,7 +40,7 @@ payoff amount or zero (Cash-or-Nothing) depending upon an Equity spot
 rate reaching a pre-set barrier level.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_touchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_touchoption.tex][eq_touchoption.tex]].
 
 ORE describes the four forms as follows:
 
@@ -53,7 +53,7 @@ A Knock-Out or No-Touch option has no payout if the barrier is
 breached, and fixed payout at expiry otherwise.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_touchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_touchoption.tex][eq_touchoption.tex]].
 
 ** In plain terms
 
@@ -151,7 +151,7 @@ pays one million when the spot reaches 3300:
 </EquityTouchOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_touchoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_touchoption.tex][eq_touchoption.tex]],
 listing =Equity Touch Option data=. The source ends the =EQIndex= line
 with a stray =>= character; it is normalised here.
 
@@ -162,6 +162,6 @@ with a stray =>= character; it is normalised here.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_touchoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_touchoption.tex][eq_touchoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

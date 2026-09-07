@@ -37,7 +37,7 @@ predetermined price (the strike), at the end of the contract. A
 commodity forward does not involve any upfront payment.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityforward.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityforward.tex][commodityforward.tex]].
 
 ** In plain terms
 
@@ -111,7 +111,7 @@ future:
 </CommodityForwardData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityforward.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityforward.tex][commodityforward.tex]],
 listing =CommodityForwardData= for a forward on the LME Aluminium 3M
 future (optional elements omitted).
 
@@ -125,6 +125,6 @@ The family siblings are the [[id:0C0FDF39-B4D4-4794-83AD-076B4681830B][Commodity
 
 - [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/commodityforward.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityforward.tex][commodityforward.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

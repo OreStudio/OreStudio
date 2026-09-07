@@ -41,7 +41,7 @@ one and only one OptionData trade component sub-node plus elements
 specific to the bond option.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption_refdata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption_refdata.tex][bondoption_refdata.tex]].
 
 ORE adds a restriction on the bond form:
 
@@ -49,7 +49,7 @@ ORE adds a restriction on the bond form:
 Note that only par redemption vanilla bonds are supported.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption_refdata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption_refdata.tex][bondoption_refdata.tex]].
 
 ** In plain terms
 
@@ -152,7 +152,7 @@ reference data, with the strike per unit notional:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondoption_refdata.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption_refdata.tex][bondoption_refdata.tex]],
 listing =Bond Option data using bond reference data=. The source
 closes the =BondData= element without the leading slash; it is
 normalised here.
@@ -164,6 +164,6 @@ normalised here.
 
 - [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bondoption_refdata.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption_refdata.tex][bondoption_refdata.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

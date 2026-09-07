@@ -39,7 +39,7 @@ and do need not coincide. We assume that hazard rate data is available
 and provided externally.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 ORE describes the cashflow structure as follows:
 
@@ -49,7 +49,7 @@ Interest and Notional repayments are directed in an order of priority
 first to the note holder.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 ORE describes the role of the equity piece as follows:
 
@@ -58,7 +58,7 @@ Class N notes or equity receive the excess pool coupon available
 after other items in the interest waterfall are discharged.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 ** In plain terms
 
@@ -80,7 +80,7 @@ in a static CBO reference datum or a long version, where the CBO
 structure is specified explicitly.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 The main building block is the =CBOData= node. It requires two
 components: =CBOInvestment= and =CBOStructure=. In the short version
@@ -119,7 +119,7 @@ EquityKicker: Fraction x of the residual payment, that will be split
 among the senior fee receiver (x) and the equity piece (1-x).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 The fees themselves follow the same pattern. ORE describes them as
 follows:
@@ -129,13 +129,13 @@ The fee, expressed as rate, paid before all other obligations, top of
 the waterfall.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 #+begin_quote
 The fee, expressed as rate, paid after all other obligations.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 ** Mathematical notes
 
@@ -168,7 +168,7 @@ Notional repayments after expenses go to redemption of the senior
 notes and finally to the equity note holder.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 The pool of the deal behaves differently inside and outside the
 reinvestment period. ORE notes a model limit as follows:
@@ -178,7 +178,7 @@ Currently the model cannot handle underlying bonds with full
 amortisation within the reinvestment period.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]].
 
 ** What moves its value (static sensitivities)
 
@@ -250,7 +250,7 @@ percent and an equity kicker of 0.25:
 </CBOData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/cbodata.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]],
 listing =CBO Data=. The source elides the contents of the three
 sub-nodes with dots; they are reproduced verbatim.
 
@@ -261,6 +261,6 @@ sub-nodes with dots; they are reproduced verbatim.
 
 - [[https://en.wikipedia.org/wiki/Collateralized_debt_obligation][Wikipedia: Collateralized debt obligation]]. This note follows its
   general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/cbodata.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

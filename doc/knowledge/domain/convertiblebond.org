@@ -39,7 +39,7 @@ is also possible that the shares are from a different issuer
 from the bond currency in both cases (cross-currency convertibles).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/convertiblebond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
 
 ORE describes the call and put rights as follows:
 
@@ -49,7 +49,7 @@ style) and / or puttable by the investor (typically in Bermudan
 style).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/convertiblebond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
 
 ORE describes forced conversion as follows:
 
@@ -59,7 +59,7 @@ the bond into shares instead of accepting the payment from the issuer
 call ("forced conversion").
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/convertiblebond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
 
 ORE describes the detachable form as follows:
 
@@ -71,7 +71,7 @@ the bond floor npv, where the bond floor denotes the underlying
 vanilla bond stripped of any optionality.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/convertiblebond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
 
 ** In plain terms
 
@@ -101,7 +101,7 @@ still be used to overwrite the information partially, if this seems
 appropriate.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/convertiblebond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
 
 In the explicit form, the block carries five sub-blocks. =BondData=
 holds the vanilla part of the bond. =CallData= and =PutData= hold the
@@ -212,7 +212,7 @@ reference data:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/convertiblebond.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]],
 listing =Convertible bond set up using reference data=. The source
 also shows the explicit form, in which =BondData=, =CallData=,
 =PutData=, =ConversionData= and =DividendProtectionData= are given
@@ -225,6 +225,6 @@ with their details and =Detachable= is set to =false=.
 
 - [[https://en.wikipedia.org/wiki/Convertible_bond][Wikipedia: Convertible bond]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/convertiblebond.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -41,7 +41,7 @@ factor that is specific to the CTD bond and which compensates for the
 different yields of the bonds in the underlying basket.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondfuture.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondfuture.tex][bondfuture.tex]].
 
 ORE describes the dual role of the product as follows:
 
@@ -51,7 +51,7 @@ BondFuture) or as a trade component (BondFutureData) used within the
 TotalReturnSwap (Generic TRS) trade type.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondfuture.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondfuture.tex][bondfuture.tex]].
 
 ** In plain terms
 
@@ -131,7 +131,7 @@ note contract:
 </BondFutureData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bondfuture.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondfuture.tex][bondfuture.tex]],
 listing =BondFutureData=. The example contract =TYU25= carries the
 =DeliveryBasket=, the expiry dates and the =DeliverableGrade= in its
 =BondFutureReferenceData= block; that block is not part of the trade
@@ -144,6 +144,6 @@ representation.
 
 - [[https://en.wikipedia.org/wiki/Futures_contract][Wikipedia: Futures contract]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bondfuture.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondfuture.tex][bondfuture.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -34,7 +34,7 @@ component subtrades. As such it inherits the characteristics of the
 trades defined within it.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/compositetrade.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]].
 
 ORE gives an example of a composite as follows:
 
@@ -43,7 +43,7 @@ Examples of Composite Trades include combinations of vanilla options
 like straddles.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/compositetrade.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]].
 
 ORE defines the container node as follows:
 
@@ -52,7 +52,7 @@ The CompositeTradeData node is the trade data container for the
 CompositeTrade trade type.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/compositetrade.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]].
 
 ** In plain terms
 
@@ -144,7 +144,7 @@ sum notional:
 </CompositeTradeData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/compositetrade.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]],
 listing =Composite trade data=. The catalogue also shows the
 portfolio basket form, in which =PortfolioBasket= is =true= and a
 =BasketName= and =IndexQuantity= are given.
@@ -154,6 +154,6 @@ portfolio basket form, in which =PortfolioBasket= is =true= and a
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/compositetrade.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

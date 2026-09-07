@@ -34,7 +34,7 @@ obligation, to exchange a set amount of one currency for another, at a
 predetermined exchange rate, at one predetermined time in the future.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]].
 
 ORE states that this right may be withdrawn depending upon an FX spot
 rate reaching a predetermined barrier level at the predetermined
@@ -55,7 +55,7 @@ A knock-out option starts its life active, but ceases to exist/becomes
 inactive, if the barrier is reached at expiry.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]].
 
 ** In plain terms
 
@@ -139,7 +139,7 @@ and a rebate:
 </FxEuropeanBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]],
 listing =FX European Barrier Option data= (optional elements omitted).
 
 The continuously monitored form is the [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]].
@@ -150,6 +150,6 @@ The continuously monitored form is the [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

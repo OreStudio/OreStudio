@@ -38,7 +38,7 @@ can be continuously monitored (American) or only at the option expiry
 date (European).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]].
 
 ORE describes the knock-in and knock-out logic:
 
@@ -48,7 +48,7 @@ price of the underlying barrier moves inside (outside) the barrier,
 otherwise the payoff is zero.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]].
 
 ORE scopes the supported asset classes:
 
@@ -58,7 +58,7 @@ InterestRate underlyings. We do not support InterestRate for
 American-style barriers.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]].
 
 ** In plain terms
 
@@ -93,7 +93,7 @@ For a European-style barrier, the BarrierType must be set to European
 and the BarrierSchedule can be omitted.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]].
 
 =BarrierLevel= is the knock-in or knock-out level. =BarrierType=
 takes =DownIn=, =UpIn=, =DownOut= or =UpOut=. =BarrierStyle= takes
@@ -110,7 +110,7 @@ less than or equal to the agreed barrier level at any point over the
 life of the trade.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]].
 
 The companion example describes an up-out barrier: the option is
 knocked out when the barrier underlying price reaches or exceeds the
@@ -211,7 +211,7 @@ continuously monitored from 2019-12-11 to the expiry date:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]],
 listing =European Option Barrier data (continuous barrier)=. The call
 pays a premium of 114.40 EUR per contract on 2019-12-13.
 
@@ -220,8 +220,8 @@ pays a premium of 114.40 EUR per contract on 2019-12-13.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
   which inputs
-  =Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex=.
+  [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/europeanoptioncontingentonabarrier.tex][europeanoptioncontingentonabarrier.tex]].
   The upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

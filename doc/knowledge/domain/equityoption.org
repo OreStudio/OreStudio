@@ -44,7 +44,7 @@ during the life of the option up until the expiration date. The right
 to buy the shares can only be exercised once.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoption.tex][equityoption.tex]].
 
 ORE defines the quanto and composite forms as follows:
 
@@ -60,7 +60,7 @@ from the underlying currency. This is unrelated to the CompositeTrade
 trade type.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoption.tex][equityoption.tex]].
 
 ** In plain terms
 
@@ -158,7 +158,7 @@ ORE's catalogue shows an American call on the S&P 500 index:
 </EquityOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoption.tex][equityoption.tex]],
 listing =Equity Option data=.
 
 The linear counterpart is the [[id:D60CBEE4-AE5C-421B-AAEF-5E56DC75A662][Equity Forward]]. The
@@ -171,6 +171,6 @@ option-on-future variant is the [[id:67ECE260-9D52-4183-882D-06F795AF9BA1][Equit
 
 - [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equityoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoption.tex][equityoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -36,7 +36,7 @@ against a fixed known commodity price, with cash settlement either at
 the end of the swap or on a monthly basis.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswap.tex][commodityswap.tex]].
 
 ORE defines the basis form as follows:
 
@@ -46,7 +46,7 @@ floating commodity prices against a fixed known spread K, with cash
 settlement either at the end of the swap or on a monthly basis.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswap.tex][commodityswap.tex]].
 
 ** In plain terms
 
@@ -130,7 +130,7 @@ ORE's catalogue shows the trade with its two legs:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswap.tex][commodityswap.tex]],
 listing =Commodity Swap= (leg detail abbreviated).
 
 The [[id:992F5349-6D73-4780-855C-532B63073191][Commodity Forward]] is the single-period form of the same
@@ -143,6 +143,6 @@ exposure. The [[id:8FAE9780-9737-49DB-87E7-D678F3AEBD69][Commodity Swaption]] op
 
 - [[https://en.wikipedia.org/wiki/Commodity_derivative][Wikipedia: Commodity derivative]]. This places the product in the
   commodity derivatives family.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/commodityswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswap.tex][commodityswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

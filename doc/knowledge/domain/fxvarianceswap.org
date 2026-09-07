@@ -39,7 +39,7 @@ level (the strike) for the actual amount of variance realized over an
 observation period.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxvarianceswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxvarianceswap.tex][fxvarianceswap.tex]].
 
 ORE notes that the strike is typically set at ATM so the swap
 initially has zero value. If the subsequent realised volatility is
@@ -136,7 +136,7 @@ ORE's catalogue shows a long variance swap on euro-yen:
 </FxVarianceSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxvarianceswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxvarianceswap.tex][fxvarianceswap.tex]],
 listing =Variance Swap data=.
 
 * See also
@@ -145,6 +145,6 @@ listing =Variance Swap data=.
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Variance_swap][Wikipedia: Variance swap]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fxvarianceswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxvarianceswap.tex][fxvarianceswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

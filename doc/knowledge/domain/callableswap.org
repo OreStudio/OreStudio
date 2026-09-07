@@ -36,7 +36,7 @@ must be fixed versus float and may have varying notional, rates, and
 spreads during its lifetime.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callableswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callableswap.tex][callableswap.tex]].
 
 The =CallableSwapData= node is the trade data container for the
 =CallableSwap= trade type. A callable swap is a swap that can be
@@ -139,7 +139,7 @@ annual dates from 2031 to 2033:
 </CallableSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/callableswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callableswap.tex][callableswap.tex]],
 listing =Callable Swap data=. The source listing repeats the opening
 tag of =MidCouponExercise=; the closing tag is normalised here.
 
@@ -153,6 +153,6 @@ The embedded right is a physically settled swaption, see the
 
 - [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/callableswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callableswap.tex][callableswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

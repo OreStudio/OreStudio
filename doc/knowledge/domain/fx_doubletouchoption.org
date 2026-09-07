@@ -36,7 +36,7 @@ This product has two continuously monitored barriers with a
 Cash-or-Nothing digital underlying.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_doubletouchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]].
 
 ORE states the payoff condition as follows:
 
@@ -46,7 +46,7 @@ amount or zero (Cash-or-Nothing) depending upon an FX spot rate
 reaching one of the pre-set barrier levels.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_doubletouchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]].
 
 ORE also states the two forms. A knock-in, or double one-touch, has a
 fixed payout if one of the barriers is breached, and no payout
@@ -142,7 +142,7 @@ ORE's catalogue shows a long double no-touch:
 </FxDoubleTouchOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_doubletouchoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]],
 listing =FX Double Touch Option data= (optional elements omitted).
 
 The single-level form is the [[id:EA6E4A7A-6229-4F8C-93C5-426D1E4CB496][FX Touch Option]].
@@ -154,6 +154,6 @@ The single-level form is the [[id:EA6E4A7A-6229-4F8C-93C5-426D1E4CB496][FX Touch
 
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_doubletouchoption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

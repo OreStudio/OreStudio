@@ -36,7 +36,7 @@ in which one stream of future interest payments (leg) is exchanged for
 another based on a specified notional amount.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/swap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swap.tex][swap.tex]].
 
 Two properties are common to the whole family. The notional per leg may
 be fixed, amortising, or accreting. The fixed rate or floating spread
@@ -161,6 +161,6 @@ Native ORE example portfolios with swaps sit under
 - [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
   definition.
 - [[https://en.wikipedia.org/wiki/Overnight_indexed_swap][Wikipedia: Overnight indexed swap]]. This covers the OIS variant.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/swap.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swap.tex][swap.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

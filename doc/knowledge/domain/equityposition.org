@@ -37,7 +37,7 @@ single Underlying node, or in a weighted basket of underlying equities
 - using multiple Underlying nodes.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityposition.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityposition.tex][equityposition.tex]].
 
 ORE states the dual role as follows:
 
@@ -48,7 +48,7 @@ used within the TotalReturnSwap (Generic TRS) trade type, to set up for
 example Equity Basket trades.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityposition.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityposition.tex][equityposition.tex]].
 
 ** In plain terms
 
@@ -136,7 +136,7 @@ names, weighted equally:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityposition.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityposition.tex][equityposition.tex]],
 listing =Equity position data=.
 
 The option-based relative of this product is the
@@ -148,6 +148,6 @@ The option-based relative of this product is the
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Stock][Wikipedia: Stock]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/equityposition.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityposition.tex][equityposition.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

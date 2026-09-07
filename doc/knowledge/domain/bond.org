@@ -36,7 +36,7 @@ stand-alone instrument with trade type Bond, or a trade component used
 by multiple bond derivative instruments.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bond.tex][bond.tex]].
 
 ** In plain terms
 
@@ -69,7 +69,7 @@ If set to false, the product class will not be set to Credit, and there
 will be no credit sensitivities.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bond.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bond.tex][bond.tex]].
 
 A bond whose reference data carries no =CreditCurveId= shows no credit
 sensitivities even with the flag on. This is typical for highly rated
@@ -124,7 +124,7 @@ ORE's own catalogue shows the short form with reference data:
 </BondData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bond.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bond.tex][bond.tex]],
 listing =BondData= (reference-data form).
 
 A full fixed-coupon bond trade sits in the ORE trade corpus at
@@ -140,6 +140,6 @@ Native ORE example portfolios with bonds sit under
 - [[https://en.wikipedia.org/wiki/Bond_(finance)][Wikipedia: Bond (finance)]]. This note follows its general definition.
 - [[https://en.wikipedia.org/wiki/International_Securities_Identification_Number][Wikipedia: ISIN]]. This covers the identifier convention that
   =SecurityId= uses.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bond.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bond.tex][bond.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

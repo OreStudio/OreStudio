@@ -35,7 +35,7 @@ that determines a fixed forward interest rate benchmarked to a
 reference IBOR index rate and tenor.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardrateagreement.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardrateagreement.tex][forwardrateagreement.tex]].
 
 ORE states three properties of the contract:
 
@@ -47,7 +47,7 @@ upon start date to the end of the FRA contract.
 There are no exchanges of notional.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardrateagreement.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardrateagreement.tex][forwardrateagreement.tex]].
 
 ** In plain terms
 
@@ -123,7 +123,7 @@ ORE's catalogue shows a long FRA on euro six-month Euribor struck at
 </ForwardRateAgreementData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/forwardrateagreement.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardrateagreement.tex][forwardrateagreement.tex]],
 listing =Forward Rate Agreement Data=.
 
 * See also
@@ -133,6 +133,6 @@ listing =Forward Rate Agreement Data=.
 
 - [[https://en.wikipedia.org/wiki/Forward_rate_agreement][Wikipedia: Forward rate agreement]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/forwardrateagreement.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardrateagreement.tex][forwardrateagreement.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

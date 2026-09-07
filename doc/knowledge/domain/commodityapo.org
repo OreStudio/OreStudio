@@ -35,7 +35,7 @@ single-period Commodity Swap as an underlying which observes daily
 price fixings in the calculation period.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityapo.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityapo.tex][commodityapo.tex]].
 
 ** In plain terms
 
@@ -139,7 +139,7 @@ ORE's catalogue shows a short call with an up-and-in barrier:
 </Trade>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/commodityapo.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityapo.tex][commodityapo.tex]],
 listing =Commodity Average Price Option= (optional elements omitted).
 
 * See also
@@ -148,6 +148,6 @@ listing =Commodity Average Price Option= (optional elements omitted).
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Asian_option][Wikipedia: Asian option]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/commodityapo.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityapo.tex][commodityapo.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

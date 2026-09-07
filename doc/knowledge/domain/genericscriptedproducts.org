@@ -39,7 +39,7 @@ across five of the six asset classes covered in ORE, just by way of
 defining the payoff script.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/genericscriptedproducts.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/genericscriptedproducts.tex][genericscriptedproducts.tex]].
 
 ORE states where the script lives:
 
@@ -48,7 +48,7 @@ The payoff script can be embedded into the trade XML or can be placed
 into a separate script library.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/genericscriptedproducts.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/genericscriptedproducts.tex][genericscriptedproducts.tex]].
 
 ** In plain terms
 
@@ -112,7 +112,7 @@ long call on the realised variance of the S&P 500 as a scripted
 variance option trade with its =VarianceOption= script. Both listings
 are reproduced in the corresponding knowledge notes.
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/genericscriptedproducts.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/genericscriptedproducts.tex][genericscriptedproducts.tex]],
 which points at the sections =Rainbow Option= and =Exotic Variance and
 Volatility Derivatives=.
 
@@ -121,9 +121,9 @@ Volatility Derivatives=.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
   which inputs
-  =Docs/UserGuide/tradedata/genericscriptedproducts.tex=. The
+  [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/genericscriptedproducts.tex][genericscriptedproducts.tex]]. The
   upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].
 - Knowledge notes =Rainbow Options= and =Exotic Variance and

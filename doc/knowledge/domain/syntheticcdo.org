@@ -38,7 +38,7 @@ specific tranche characterized by the attachment point A and
 detachment point D.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/syntheticcdo.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/syntheticcdo.tex][syntheticcdo.tex]].
 
 ** In plain terms
 
@@ -124,7 +124,7 @@ ORE's catalogue shows a mezzanine tranche of an index:
 </CdoData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/syntheticcdo.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/syntheticcdo.tex][syntheticcdo.tex]],
 listing =CDO Data= (leg and basket abbreviated).
 
 The tranche covers portfolio losses between 12 and 22 percent. The
@@ -139,6 +139,6 @@ the same protection.
 
 - [[https://en.wikipedia.org/wiki/Collateralized_debt_obligation][Wikipedia: Collateralized debt obligation]]. This note follows
   its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/syntheticcdo.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/syntheticcdo.tex][syntheticcdo.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

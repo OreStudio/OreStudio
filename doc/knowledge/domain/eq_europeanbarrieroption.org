@@ -42,7 +42,7 @@ barrier level at the predetermined time, the underlying is monitored
 only at expiry with a single barrier.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex][eq_europeanbarrieroption.tex]].
 
 ORE adds the settlement terms as follows:
 
@@ -51,7 +51,7 @@ For this right the buyer pays a premium to the seller. Settlement can
 be either cash or physical delivery.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex][eq_europeanbarrieroption.tex]].
 
 ** In plain terms
 
@@ -138,7 +138,7 @@ ORE's catalogue shows an option on the S&P 500 index with a strike of
 </EquityEuropeanBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex][eq_europeanbarrieroption.tex]],
 listing =Equity European Barrier Option data=. The source ends the
 =Quantity= line with a stray =>= character; it is normalised here.
 
@@ -149,6 +149,6 @@ listing =Equity European Barrier Option data=. The source ends the
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex][eq_europeanbarrieroption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

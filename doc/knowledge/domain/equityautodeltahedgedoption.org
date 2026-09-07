@@ -39,7 +39,7 @@ more batches of European equity options with an embedded discrete
 delta-hedging strategy.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex][equityautodeltahedgedoption.tex]].
 
 ** In plain terms
 
@@ -146,7 +146,7 @@ hedging volatility at 5 percent and no drift:
 </EquityAutoDeltaHedgedOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex][equityautodeltahedgedoption.tex]],
 listing =Equity Auto Delta Hedged Option data=, further batches
 elided.
 
@@ -157,7 +157,7 @@ elided.
 
 - [[https://en.wikipedia.org/wiki/Delta_neutral][Wikipedia: Delta neutral]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
   which inputs
-  =Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex=. The
+  [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex][equityautodeltahedgedoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

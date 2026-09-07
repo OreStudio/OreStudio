@@ -39,7 +39,7 @@ pre-set barrier levels. Exercise is European, and barriers are
 American (continuously monitored).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doublebarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]].
 
 ORE describes the barrier behaviour as follows:
 
@@ -55,7 +55,7 @@ exist/becomes inactive, if the one of the barriers is reached during
 the life of the option.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doublebarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]].
 
 ** In plain terms
 
@@ -158,7 +158,7 @@ corridor from 3000 to 3500:
 </EquityDoubleBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doublebarrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]],
 listing =Equity Double Barrier Option data=.
 
 * See also
@@ -168,6 +168,6 @@ listing =Equity Double Barrier Option data=.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_doublebarrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

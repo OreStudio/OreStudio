@@ -36,7 +36,7 @@ final interest payment at maturity, akin to a zero-coupon bond. The
 zero-coupon leg compounds at the tenor of the swap.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/zerocouponswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/zerocouponswap.tex][zerocouponswap.tex]].
 
 ORE sets the product up as a swap, trade type =Swap=, with one leg of
 type =ZeroCouponFixed=. The =ZeroCouponFixed= leg carries an
@@ -123,7 +123,7 @@ fixed leg:
 </SwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/zerocouponswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/zerocouponswap.tex][zerocouponswap.tex]],
 listing =Zero Coupon Swap Data=.
 
 The plain vanilla swap family sits in the [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]]
@@ -139,6 +139,6 @@ leg.
   instrument.
 - [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/zerocouponswap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/zerocouponswap.tex][zerocouponswap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

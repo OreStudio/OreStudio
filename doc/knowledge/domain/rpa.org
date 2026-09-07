@@ -35,7 +35,7 @@ A RPA is a credit derivative between two counterparties. The
 protection buyer pays a premium to the protection seller.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/rpa.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/rpa.tex][rpa.tex]].
 
 In return, the seller agrees to pay a percentage share of the
 liabilities of a referenced underlying swap transaction. The share is
@@ -139,7 +139,7 @@ ORE's catalogue shows a trade with an 80 percent participation rate:
 </RiskParticipationAgreementData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/rpa.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/rpa.tex][rpa.tex]],
 listing =RiskParticipationAgreement Data= (underlying abbreviated).
 
 The example pays a one-off fee of 91171.72 EUR for protection on a
@@ -153,6 +153,6 @@ The example pays a one-off fee of 91171.72 EUR for protection on a
 
 - [[https://en.wikipedia.org/wiki/Credit_derivative][Wikipedia: Credit derivative]]. This places the product in the
   credit derivative family.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/rpa.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/rpa.tex][rpa.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

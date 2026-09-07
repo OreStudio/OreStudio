@@ -34,7 +34,7 @@ This product has a continuously monitored single barrier with a
 Cash-or-Nothing digital underlying.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_touchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]].
 
 ORE states the payoff condition as follows:
 
@@ -44,7 +44,7 @@ amount or zero (Cash-or-Nothing) depending upon an FX spot rate
 reaching a pre-set barrier level.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_touchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]].
 
 ORE also states the two forms. A knock-in, or one-touch, has a fixed
 payout if the barrier is breached, and no payout otherwise. The
@@ -135,7 +135,7 @@ ORE's catalogue shows a long no-touch on dollar-yen:
 </FxTouchOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_touchoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]],
 listing =FX Touch Option data= (optional elements omitted).
 
 The two-level form is the [[id:7BA83993-32A7-4090-A6A9-A07AA3AF2B1D][FX Double Touch Option]].
@@ -147,6 +147,6 @@ The two-level form is the [[id:7BA83993-32A7-4090-A6A9-A07AA3AF2B1D][FX Double T
 
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_touchoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

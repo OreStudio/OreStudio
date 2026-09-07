@@ -35,7 +35,7 @@ option to enter into an index CDS at a specified strike spread or
 strike price.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/indexcdsoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]].
 
 ** In plain terms
 
@@ -68,7 +68,7 @@ protection seller may either have to pay the contract notional if
 default happens before option expiry, or not (knock out).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/indexcdsoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]].
 
 ** Mathematical notes
 
@@ -133,7 +133,7 @@ ORE's catalogue shows a long European option on a 5Y index:
 </IndexCreditDefaultSwapOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/indexcdsoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]],
 listing =IndexCreditDefaultSwapOption Data= (underlying abbreviated).
 
 * See also
@@ -143,6 +143,6 @@ listing =IndexCreditDefaultSwapOption Data= (underlying abbreviated).
 
 - [[https://en.wikipedia.org/wiki/Credit_default_swap_index][Wikipedia: Credit default swap index]]. This covers the
   underlying product.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/indexcdsoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

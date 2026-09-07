@@ -40,7 +40,7 @@ payoff amount or zero (Cash-or-Nothing) depending upon an Equity spot
 rate reaching one of the pre-set barrier levels.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doubletouchoption.tex][eq_doubletouchoption.tex]].
 
 ORE describes the two forms as follows:
 
@@ -52,7 +52,7 @@ A Knock-Out or Double No-Touch option has no payout if one of the
 barriers is breached, and fixed payout otherwise.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doubletouchoption.tex][eq_doubletouchoption.tex]].
 
 ORE notes that the current implementation supports equity double
 touch options with payout at expiry only.
@@ -156,7 +156,7 @@ pays one million when the spot touches 3000 or 4500:
 </EquityDoubleTouchOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doubletouchoption.tex][eq_doubletouchoption.tex]],
 listing =Equity Double Touch Option data=.
 
 * See also
@@ -166,6 +166,6 @@ listing =Equity Double Touch Option data=.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/eq_doubletouchoption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doubletouchoption.tex][eq_doubletouchoption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

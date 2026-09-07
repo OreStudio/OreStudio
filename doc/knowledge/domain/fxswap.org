@@ -37,7 +37,7 @@ uses the FX spot rate, whereas the exchange at the end uses the FX
 forward rate at the start.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxswap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxswap.tex][fxswap.tex]].
 
 ** In plain terms
 
@@ -114,7 +114,7 @@ ORE's catalogue shows a euro-dollar swap:
 </FxSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fxswap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxswap.tex][fxswap.tex]],
 listing =FX Swap data=.
 
 * See also
@@ -124,6 +124,6 @@ listing =FX Swap data=.
 
 - [[https://en.wikipedia.org/wiki/Foreign_exchange_swap][Wikipedia: Foreign exchange swap]]. This note follows its general
   definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fxswap.tex=. The upstream
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxswap.tex][fxswap.tex]]. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

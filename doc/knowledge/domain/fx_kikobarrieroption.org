@@ -36,7 +36,7 @@ once the knock-in barrier is hit the trade becomes a single barrier
 knock-out trade.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_kikobarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_kikobarrieroption.tex][fx_kikobarrieroption.tex]].
 
 ORE states the exercise condition as follows:
 
@@ -45,7 +45,7 @@ The KIKO option can only be exercised if the knock-out barrier is
 never touched and the knock-in barrier is touched at least once.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_kikobarrieroption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_kikobarrieroption.tex][fx_kikobarrieroption.tex]].
 
 ORE notes that the barriers can be any of the four main barrier types.
 One of the barriers must be a knock-in and the other a knock-out.
@@ -140,7 +140,7 @@ down-and-out barrier:
 </FxKIKOBarrierOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/fx_kikobarrieroption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_kikobarrieroption.tex][fx_kikobarrieroption.tex]],
 listing =FX KIKO Barrier Option data= (optional elements omitted).
 
 The two-level form without mixed types is the
@@ -152,6 +152,6 @@ The two-level form without mixed types is the
   with the alphabetical product run.
 
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general definition.
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/fx_kikobarrieroption.tex=.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_kikobarrieroption.tex][fx_kikobarrieroption.tex]].
   The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

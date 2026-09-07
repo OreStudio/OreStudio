@@ -41,7 +41,7 @@ specified region on a set of specified `strike observation dates',
 which is determined by a single barrier.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bestentryoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
 
 ORE introduces the trade types:
 
@@ -53,7 +53,7 @@ FxBestEntryOptionData, EquityBestEntryOptionData,
 CommodityBestEntryOptionData.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bestentryoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
 
 ** In plain terms
 
@@ -88,7 +88,7 @@ option payoff if the underlying index is greater than the strike on
 the expiry date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bestentryoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
 
 =TriggerLevel= is the barrier of the product. ORE describes it as
 follows:
@@ -99,7 +99,7 @@ each strike observation date to determine if a Trigger Event has
 occurred.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bestentryoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
 
 The trigger level is given as a decimal, a percentage of the index
 level on the strike date. When the observed index level reaches the
@@ -121,7 +121,7 @@ Cap: The maximum value of the payoff (before the notional and
 multiplier are applied).
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bestentryoption.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
 
 The cap is given as a decimal percentage. =ExpiryDate= is the date
 when the option expires and the payoff is computed. =SettlementDate=
@@ -220,7 +220,7 @@ improvement:
 </EquityBestEntryOptionData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/bestentryoption.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]],
 listing =Best Entry Option data (Equity Underlying)=. The premium of
 100 USD is paid on 2021-11-22, two days after the strike date, and
 the expiry and settlement both fall on 2021-11-20.
@@ -230,7 +230,7 @@ the expiry and settlement both fall on 2021-11-20.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/bestentryoption.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]]. The
   upstream project is
   [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

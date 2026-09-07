@@ -39,7 +39,7 @@ CFDs on an underlying basket of EquityPositions, proprietary indices
 on equity options and equity or bond indices.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]].
 
 The trade types =TotalReturnSwap= and =ContractForDifference= behave
 exactly the same. The difference is commercial. ORE describes the CFD
@@ -52,7 +52,7 @@ the initial price is fixed and a fictitious closing date usually set
 to "tomorrow" or another suitable future date.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]].
 
 ** In plain terms
 
@@ -75,7 +75,7 @@ present in the trade terms or when the underlying valuation is too
 complex to allow for future projection.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]].
 
 The =TotalReturnSwapData= node is made of four sub-blocks.
 
@@ -100,7 +100,7 @@ schedule defines the underlying flows to compute its NPV, and is not
 directly related to the return swap itself.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]].
 
 =ReturnData= describes the return leg. =Payer= says whether the leg
 is paid. =Currency= is the currency of the return. When it differs
@@ -135,7 +135,7 @@ return payment. If omitted, the default value is false for trade type
 TotalReturnSwap and true for trade type ContractForDifference.
 #+end_quote
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=.
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]].
 
 =FundingData= is optional and holds one or more funding =LegData=
 nodes. The allowed leg types are =Fixed=, =Floating=, =CMS=, =CMB=
@@ -266,7 +266,7 @@ funding leg, and an additional cashflow leg:
 </TotalReturnSwapData>
 #+end_example
 
-Source: ORE User Guide, Products catalogue, =Docs/UserGuide/tradedata/totalReturnSwap.tex=,
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]],
 listing =Generic Total Return Swap with Convertible Bond underlying=.
 The catalogue shows further variants: equity basket, bond basket, bond
 future, commodity index and derivative underlyings, a
@@ -278,6 +278,6 @@ initial price 3399.20.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
   with the alphabetical product run.
 
-- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
-  which inputs =Docs/UserGuide/tradedata/totalReturnSwap.tex=. The
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/totalReturnSwap.tex][totalReturnSwap.tex]]. The
   upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

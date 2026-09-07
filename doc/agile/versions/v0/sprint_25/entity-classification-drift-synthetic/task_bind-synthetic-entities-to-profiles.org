@@ -171,6 +171,32 @@ check_component_drift --all exit 0 with synthetic in the registry on
 a clean tree. The RLS policy file also carries the coordinating
 environment's concurrent null-tenant widening, merged in place.
 
+** Live system test (2026-09-08, ores.shell)
+
+Ran on this environment's fleet against the recreated database, before
+merge (the post-merge confirmation rerun closes the story):
+
+- =provision system= / =provision tenant --source acme= completed end
+  to end; the synthetic data steps (=synthetic.themes.realistic_2026=,
+  =synthetic_ore_samples_2016=, =system_market_data.bindings=,
+  =synthetic_feeds=) wrote through the regenerated repositories and the
+  aligned RLS policies.
+- =synthetic list folders= renders the 11-node hierarchy (the restored
+  =ores_synthetic_folders_hierarchy_fn= chain reads live data).
+- =synthetic list configs= lists the two bound configs with scope,
+  binding mode and party.
+- =synthetic start folder synthetic/2026realistic/fx/fxrates= started
+  the cascade (34 feeds running) through the feed-control flow's
+  =resolve_subtree= over the regenerated repository.
+- =synthetic stop folder= stopped exactly the 13 FX feeds, leaving the
+  21 IR curve feeds running; =synthetic list feeds= confirms.
+- =synthetic validate-vintage= responds correctly (the tested FX feed
+  has no vintage entries - informational, not a failure).
+- =synthetic generate= is not usable post-provisioning: it tries to
+  create a second root party per tenant and the unique index rejects
+  it. Pre-existing flow precondition, unrelated to the bind; noted as
+  a follow-up question for the generation command's intended sequencing.
+
 ** Baseline probe (2026-09-07, phase 1 start)
 
 Probe: =check_component_drift.py --component synthetic= (two-mode

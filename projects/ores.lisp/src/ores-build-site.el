@@ -203,7 +203,7 @@ title='Edit this page on GitHub' aria-label='Edit this page on GitHub'>\
          :with-author nil
          :with-creator t
          :with-toc t
-         :section-numbers nil
+         :section-numbers t
          ;; Never interpret a_b / a^b as subscript/superscript: snake_case
          ;; identifiers (is_temporal, valid_from) are pervasive in prose.
          :with-sub-superscript nil

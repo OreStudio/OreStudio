@@ -1,0 +1,86 @@
+:PROPERTIES:
+:ID: 39264768-EE92-4DB1-B048-3C960415B358
+:END:
+#+title: Task: Specify the skills framework as a regulator
+#+description: Respecify the framework as a regulator over an agent, deriving its scope and its seven classes of document from cybernetics rather than stipulating them, and classify the upstream pstack collection against that derivation.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch: feature/refactor-llm-skills
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The framework states what it regulates, why those seven classes of document and
+no others, and where it stops. Its terminology agrees with the cybernetics it
+borrows from. Its relationship to upstream skill collections is stated per skill
+and is checkable.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Done; PR pending.                      |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the pull request.                |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- Scope is derived from the good regulator theorem, requisite variety and the
+  black box, rather than stipulated, and the derivation settles which targets
+  the framework models.
+- The seven classes are derived from the primitives of a control loop, so a
+  candidate eighth has a test rather than a preference.
+- The session role is named System, after Beer, and the seven classes are named
+  regulatory functions; neither collides with the other senses the corpus
+  carries.
+- Every upstream pstack skill carries a regulatory function and a disposition,
+  and nothing upstream is forked.
+- The corpus has a writing standard for argumentative prose, grounded in
+  published work and applied across the cluster.
+- Rules the framework states are enforced by lint wherever they can be.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

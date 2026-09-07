@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 1D07E7C3-96F7-4760-9ED0-D96888E20EF0
 :END:
-#+title: Task: Add the lifecycle_event and trade verb units
-#+description: Add lifecycle_event_commands and trade_commands to the trading command folder, completing the five-entity surface. The lifecycle_event unit follows the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated.
+#+title: Task: Add the trade-side verb units (lifecycle_event, trade, trade_identifier, trade_party_role)
+#+description: Add lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands to the trading command folder, completing the trade-side surface (the reference trio shipped in the sibling reference task). The lifecycle_event, trade_identifier and trade_party_role units follow the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated.
 #+type: task
 #+level: s1
 #+filetags: :shell-trading-management:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The flagship trade entity is where the codegen-ready skeleton must absorb the hardest payload: the trade domain is five nested sub-structs (identity, parties, classification, lifecycle, audit) and save_trade_request carries a vector of trades, not one object. The unit keeps the currencies skeleton - submenu, pagination, change-reason arguments, table_io rendering - while the add verb builds a single trade from positional arguments mapped to the org field tables. lifecycle_event sits between: it follows the reference pattern but keys on the trade identifier, so an add must reference an existing trade.
+The flagship trade entity is where the codegen-ready skeleton must absorb the hardest payload: the trade domain is five nested sub-structs (identity, parties, classification, lifecycle, audit) and save_trade_request carries a vector of trades, not one object. The unit keeps the currencies skeleton - submenu, pagination, change-reason arguments, table_io rendering - while the add verb builds a single trade from positional arguments mapped to the org field tables. lifecycle_event sits between: it follows the reference pattern but keys on the trade identifier, so an add must reference an existing trade. trade_identifier and trade_party_role round out the trade-side surface: the per-trade identity and party-role rows behind the flagship entity, each with its own subjects and history. This batch runs last in the story: the instrument batches land first under the 2026-09-07 scope decision, and the trade system test needs live instruments and reference rows to attach.
 
 * Status
 
@@ -35,8 +35,8 @@ The flagship trade entity is where the codegen-ready skeleton must absorb the ha
 
 * Acceptance
 
-- lifecycle_event_commands and trade_commands compile under the trading folder; the aggregator now registers all five entity units.
-- Live against the fleet: add a trade, list and page trades, read its history, add a lifecycle event against it, then delete both; change reasons flow through add.
+- lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands compile under the trading folder; the aggregator registers the full entity surface.
+- Live against the fleet: add a trade, list and page trades, read its history, list and history the trade_identifier and trade_party_role rows behind it, add a lifecycle event against it, then delete; change reasons flow through add.
 - Full preset build and ctest green; shell cmake-sources drift clean.
 
 * Plan

@@ -1,0 +1,85 @@
+:PROPERTIES:
+:ID: 94A5EA1A-BA18-49C6-B010-A6A860AA19BA
+:END:
+#+title: Task: Add the equity instrument verb units
+#+description: Add equity_accumulator_commands, equity_asian_option_commands, equity_barrier_option_commands, equity_digital_option_commands, equity_forward_commands, equity_option_commands, equity_position_commands, equity_swap_commands and equity_variance_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live equity-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification.
+#+type: task
+#+level: s1
+#+filetags: :shell-trading-management:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.shell extends the trading command folder to the nine equity
+instrument families, cloned from the fx-batch skeleton. Each unit
+(equity_accumulator, equity_asian_option, equity_barrier_option,
+equity_digital_option, equity_forward, equity_option,
+equity_position, equity_swap, equity_variance_swap) declares the
+entity-specific data: trading.v1 subject family, request and response
+classes from the per-product protocol, save columns from the org
+model, instrument_id key. The batch runs the live equity system test:
+every unit round-trips add, list, history and delete through the shell
+against the fleet, with each save verified at the DB layer and on the
+changed-event stream. Any quirk a family exposes (position versus
+instrument semantics, save columns the fx convention does not cover)
+is resolved here and distilled back into the shared skeleton.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- The nine equity units exist under projects/ores.shell/src/app/commands/trading/ and compile; trading_commands registers them; the shell cmake component files regenerate with no drift.
+- Live against the fleet: add, list and page, history and delete round-trip every equity family through its trading.v1.equity_* subjects; each save lands a DB row (verified via psql) and emits the changed event.
+- Full preset build and ctest green; shell cmake-sources drift clean. The batch lands on feature/shell-trading-instrument-verbs as one [ores.shell] commit.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,79 @@
+:PROPERTIES:
+:ID: 87C25143-65CC-4568-95D9-11127B160DAA
+:END:
+#+title: Story: Manage trading entities from the shell
+#+description: Minimal per-entity ores.shell trading verbs - list, get, add, delete and history over trade_type, party_role_type, trade_id_type, lifecycle_event and trade - built as codegen-ready per-entity command units in a per-component folder, so the ores.trading bind post-merge system test can run without a UI.
+#+type: story
+#+level: s2
+#+filetags: :trading:shell:cli:tooling:sprint_25:v0:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ores.shell gains a minimal trading command surface so trading-system tests run without a UI, mirroring how the compute grid is driven from the shell. Each trading entity gets one command unit in a new per-component folder projects/ores.shell/src/app/commands/trading/, structurally identical to the currencies archetype: register_commands over cli::Menu, nats_client and pagination_context, plus process_get, process_add, process_delete and process_history statics, change-reason arguments on add, and paginated lists. The units keep every entity-specific detail - subject names, request and response classes, key field, column set - as declared data inside one uniform skeleton, because this folder is the proving ground for the future codegen shell facet (backlog capture 8BCD0D1C): a template must emit any unit from the org model keys alone. A hand-written trading_commands aggregator registers the entity units and repl.cpp calls it once, pre-figuring the generated per-component wiring. Scope is the five entities with generated messaging protocols: trade_type, party_role_type, trade_id_type, lifecycle_event and trade. After this story merges, the trading bind post-merge system test (harness task 89) drives the verbs against a fresh fleet.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-07                               |
+
+* Acceptance
+
+- The trading surface registers from repl.cpp with one call to a trading_commands aggregator; each entity unit lives in projects/ores.shell/src/app/commands/trading/ and follows the currencies archetype: submenu get, add, delete and history, pagination callbacks, change-reason arguments on add, history via the history request subject.
+- Verb units cover trade_type, party_role_type, trade_id_type, lifecycle_event and trade, calling the generated ores.trading.api protocols over the trading.v1 NATS subjects; ores.trading.api.lib links into ores.shell and the cmake component files regenerate cleanly.
+- Each task ends with a full preset build and the ctest suite green; the shell cmake-sources drift check stays clean; codegen drift checks stay clean for the components touched.
+- Trade and lifecycle_event units exercise the real payload shapes: trade save is a batch of nested-struct trades, lifecycle_event carries the trade identifier reference.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:A2F00C5D-FD7B-42EF-B7A6-61BE7C0D18C9][Add the trading command folder, reference-entity verb units, and shell wiring]] | DONE | 2026-09-07 | 2026-09-07 | Create projects/ores.shell/src/app/commands/trading/ holding trade_type_commands, party_role_type_commands and trade_id_type_commands units cloned from the currencies archetype, plus the hand-written trading_commands aggregator that registers them. Wire repl.cpp with one aggregator call, add ores.trading.api.lib to the shell link libraries, regenerate the shell cmake component files. |
+| [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the lifecycle_event and trade verb units]] | BACKLOG | | | Add lifecycle_event_commands and trade_commands to the trading command folder, completing the five-entity surface. The lifecycle_event unit follows the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
+
+* Decisions
+
+- Build the units codegen-first: every entity-specific detail (subject
+  names, request and response classes, key field, change-reason args,
+  column set) is declared data inside one uniform currencies-shaped
+  skeleton, because this folder is the proving ground for
+  [[id:8BCD0D1C-AAFB-4FAA-A0E3-022FC6EF93C2][Shell entity commands —
+  top-level commissioning story]]. A template must emit any unit from
+  the org model keys alone; the hand-written trading_commands
+  aggregator and its single repl.cpp call pre-figure the generated
+  per-component wiring.
+- Scope is the five entities that carry generated messaging protocols
+  and table display: trade_type, party_role_type, trade_id_type,
+  lifecycle_event and trade. The reference trio and lifecycle_event
+  prove the small-entity skeleton; trade proves it against the hardest
+  payload (nested sub-structs, batch save, temporal history).
+- Binding an entity to a profile must also compose its registrars
+  into the service fan-out points: the Sep 6 trade_id_type
+  simple-lookup binding regenerated the request and event registrars
+  but never wired them, leaving the trading.v1.trade_id_types subjects
+  unserved until the shell live acceptance (ab49e552f7) caught it.
+
+* Out of scope
+
+- Instrument verb units. The instrument registrars serve CRUD and
+  changed events, but no instrument unit is needed for the bind smoke
+  and the unit pattern targets the reference-plus-flagship surface;
+  instruments are the natural first rollout for the codegen facet.
+- The post-merge trading bind system test (driving these verbs against
+  a fresh fleet, observing the reference entities' changed-event
+  streams) runs after this story merges, as its own report task under
+  this story — mirroring the compute post-merge test report.
+- A trading area in projects/ores.shell/scripts/library/. The smoke
+  scripts land with the post-merge report task.
+

@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 1D07E7C3-96F7-4760-9ED0-D96888E20EF0
+:END:
+#+title: Task: Add the lifecycle_event and trade verb units
+#+description: Add lifecycle_event_commands and trade_commands to the trading command folder, completing the five-entity surface. The lifecycle_event unit follows the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated.
+#+type: task
+#+level: s1
+#+filetags: :shell-trading-management:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The flagship trade entity is where the codegen-ready skeleton must absorb the hardest payload: the trade domain is five nested sub-structs (identity, parties, classification, lifecycle, audit) and save_trade_request carries a vector of trades, not one object. The unit keeps the currencies skeleton - submenu, pagination, change-reason arguments, table_io rendering - while the add verb builds a single trade from positional arguments mapped to the org field tables. lifecycle_event sits between: it follows the reference pattern but keys on the trade identifier, so an add must reference an existing trade.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- lifecycle_event_commands and trade_commands compile under the trading folder; the aggregator now registers all five entity units.
+- Live against the fleet: add a trade, list and page trades, read its history, add a lifecycle event against it, then delete both; change reasons flow through add.
+- Full preset build and ctest green; shell cmake-sources drift clean.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -52,6 +52,7 @@ target_link_libraries(${lib_target_name}
         ores.refdata.api.lib
         ores.reporting.api.lib
         ores.synthetic.api.lib
+        ores.trading.api.lib
         ores.workflow.api.lib
         ores.nats.lib
         ores.orgmode.lib

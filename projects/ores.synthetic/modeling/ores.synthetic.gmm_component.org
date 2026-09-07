@@ -23,7 +23,7 @@ their weights are normalised at generation time. Party- and tenant-scoped.
 :schema:        public
 :product:       ores
 :component:     synthetic
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns
@@ -203,9 +203,6 @@ faker::number::decimal(0.0, 1.0)
 :collection_name:         gmm_components
 :item_var:                gmm_component
 :key_field:               id
-:has_uuid_primary_key:    true
-:has_pagination:          true
-:has_change_reason_cache: true
 :get_request_class:       synthetic::messaging::get_gmm_components_request
 :get_response_class:      synthetic::messaging::get_gmm_components_response
 :get_message_type:        get_gmm_components_request

@@ -71,7 +71,6 @@ public:
     std::vector<domain::gmm_component> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all GMM components, possibly filtered by primary key.
      */

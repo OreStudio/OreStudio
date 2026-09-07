@@ -2,7 +2,7 @@
 :ID: F646B28F-4C6C-4793-BBD1-1FACDFBF9CAF
 :END:
 #+title: Durable documents link into agile content
-#+description: Seventy knowledge, meta and recipe documents hold roughly 130 org-roam links into stories, tasks, sprints and captures, which the one-way rule forbids. Sweep them, absorbing provenance into the durable page where the link carries information rather than deleting it.
+#+description: Knowledge, meta and recipe documents hold org-roam links into stories, tasks, sprints and captures, which the one-way rule forbids. Around 140 links across some 70 files; compass lint reports the live count. Sweep them, absorbing provenance into the durable page where the link carries information rather than deleting it.
 #+type: capture
 #+level: cross
 #+filetags: :documentation:zettelkasten:graph:hygiene:
@@ -14,8 +14,10 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 * What
 
 Seventy documents under =doc/knowledge/=, =doc/meta=, =doc/llm/= and
-=doc/recipes/= carry roughly 130 =[[id:]]= links whose targets are stories,
-tasks, sprints, versions or captures. The rule is that links run one way: a
+=doc/recipes/= carry =[[id:]]= links whose targets are stories,
+tasks, sprints, versions or captures. Around 140 across some 70 files at the
+time of writing; =compass lint= reports the current count, which moves as main
+merges. The rule is that links run one way: a
 story links to the durable document it produced, and the durable document does
 not link back.
 

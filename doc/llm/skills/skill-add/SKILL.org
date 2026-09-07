@@ -76,12 +76,12 @@ propagate to Claude Code.
    task-shape, no embedded inventories.
 
 9. /Cross-reference the new skill from the relevant [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][System]] docs/.
-   Functions list the skills each cybernetic level invokes (see
-   the =* Skills= section of each =doc/functions/s*.org=). A new
-   skill that isn't linked from at least one function is
-   effectively invisible to LLM sessions that load by function.
-   Pick the function(s) the skill belongs to — usually one, often
-   two — and add an id-link with a one-line "when to use" hint.
+   Each System lists the skills its cybernetic level invokes (see
+   the =* Skills= section of each =doc/systems/s*.org=). A new
+   skill that isn't linked from at least one System is effectively
+   invisible to LLM sessions that load by System. Pick the
+   System or Systems the skill belongs to, usually one and often
+   two, and add an id-link with a one-line "when to use" hint.
 
 10. /Update the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]/ — add the new skill under the
    appropriate area heading. This is the canonical inventory.

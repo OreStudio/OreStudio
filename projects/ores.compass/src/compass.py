@@ -2416,7 +2416,9 @@ _MARKER_END_RE = re.compile(r"^#\s*END generated (\w+)\s*$")
 _AGILE_TYPES = {"story", "task", "sprint", "design", "capture", "version",
                 "plan", "retrospective"}
 _DURABLE_DIRS = ("doc/llm/", "doc/meta/", "doc/knowledge/", "doc/recipes/")
-_ID_LINK_RE = re.compile(r"\[\[id:([0-9A-Fa-f-]{36})\]\[([^\]]*)\]\]")
+# Both org id-link forms: [[id:UUID]] and [[id:UUID][description]]. A bare link
+# carries no label, so the description group is optional and may be None.
+_ID_LINK_RE = re.compile(r"\[\[id:([0-9A-Fa-f-]{36})\](?:\[([^\]]*)\])?\]")
 
 
 def _lint_generator_markers(files):
@@ -2453,7 +2455,7 @@ def _lint_durable_links(files, id_types):
         for m in _ID_LINK_RE.finditer(text):
             kind = id_types.get(m.group(1).upper())
             if kind in _AGILE_TYPES:
-                label = m.group(2).replace("\n", " ")[:50]
+                label = (m.group(2) or "(no label)").replace("\n", " ")[:50]
                 out.append((rel, kind, label))
     return out
 

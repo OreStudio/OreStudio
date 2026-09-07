@@ -72,13 +72,13 @@ option exotics from Asian to cliquet, and outperformance.
 | Product | Description |
 |---------+-------------|
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_asianoption.html][Equity Asian Option]] | An Asian option on the average equity price; ORE's EquityAsianOption product. |
-| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityautodeltahedgedoption.html][Equity Auto Delta Hedged Option]] | — Batches of European equity options with an embedded delta-hedging strategy; ORE's EquityAutoDeltaHedgedOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityautodeltahedgedoption.html][Equity Auto Delta Hedged Option]] | Batches of European equity options with an embedded delta-hedging strategy; ORE's EquityAutoDeltaHedgedOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_barrieroption.html][Equity Barrier Option]] | A barrier option on an equity price; ORE's EquityBarrierOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equitycliquetoption.html][Equity Cliquet Option]] | A series of forward-start equity options with local and global caps; ORE's EquityCliquetOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_digitaloption.html][Equity Digital Option]] | A cash-or-nothing digital option on an equity; ORE's EquityDigitalOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_doublebarrieroption.html][Equity Double Barrier Option]] | A double barrier option on an equity price; ORE's EquityDoubleBarrierOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_doubletouchoption.html][Equity Double Touch Option]] | A cash-or-nothing double touch option on an equity; ORE's EquityDoubleTouchOption product. |
-| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_europeanbarrieroption.html][Equity European Barrier Option]] | — A barrier option monitored once at expiry; ORE's EquityEuropeanBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_europeanbarrieroption.html][Equity European Barrier Option]] | A barrier option monitored once at expiry; ORE's EquityEuropeanBarrierOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityforward.html][Equity Forward]] | An agreement to buy or sell shares at a future price; ORE's EquityForward product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityfuturesoption.html][Equity Futures Option]] | An option on an equity future contract; ORE's EquityFutureOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityoption.html][Equity Option]] | An option to buy or sell shares at a strike price; ORE's EquityOption product. |
@@ -110,7 +110,7 @@ variance and position forms.
 
 | Product | Description |
 |---------+-------------|
-| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityapo.html][Commodity Average Price Option]] | — An Asian option on daily commodity price fixings; ORE's CommodityAveragePriceOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityapo.html][Commodity Average Price Option]] | An Asian option on daily commodity price fixings; ORE's CommodityAveragePriceOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityforward.html][Commodity Forward]] | An agreement to buy or sell a commodity at a set price later; ORE's CommodityForward product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityoption.html][Commodity Option]] | A European or American option on a commodity; ORE's CommodityOption product. |
 | [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityoptionstrip.html][Commodity Option Strip]] | A strip of commodity APOs or European options over periods; ORE's CommodityOptionStrip product. |

@@ -20,6 +20,7 @@
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/party_role_type_registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
+#include "ores.trading.core/messaging/trade_id_type_registrar.hpp"
 
 namespace ores::trading::messaging {
 
@@ -48,6 +49,7 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(detail::register_composite_handlers(nats, ctx, verifier));
     append(detail::register_scripted_handlers(nats, ctx, verifier));
     append(register_party_role_type_handlers(nats, ctx, verifier));
+    append(register_trade_id_type_handlers(nats, ctx, verifier));
 
     return subs;
 }

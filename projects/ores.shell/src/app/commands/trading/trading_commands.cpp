@@ -24,9 +24,12 @@
 
 namespace ores::shell::app::commands {
 
+using namespace logging;
+
 void trading_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session,
                                          pagination_context& pagination) {
+    BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
     party_role_type_commands::register_commands(root_menu, session, pagination);
     trade_id_type_commands::register_commands(root_menu, session, pagination);
     trade_type_commands::register_commands(root_menu, session, pagination);

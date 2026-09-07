@@ -21,11 +21,11 @@ Default-constructed compute host domain objects must not hold indeterminate valu
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                 |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Single task in flight; verification running. |
-| Waiting on    | Nothing.                               |
-| Next          | Close out and raise the PR.            |
+| Now           | Nothing.                              |
+| Waiting on    | Nothing.                              |
+| Next          | Nothing.                              |
 | Last touched  | 2026-09-07                               |
 
 * Acceptance
@@ -39,7 +39,7 @@ Default-constructed compute host domain objects must not hold indeterminate valu
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:8A58E339-A244-49EA-9504-D2AC61EE54F9][Declare C++ default values for the compute host ram_mb and credit_total members]] | STARTED | 2026-09-07 | | Add :default_value: 0 to the ram_mb and credit_total member property blocks in the compute host entity org, regenerate compute-cpp so both domain headers emit member initializers, and prove the valgrind DA defect is gone. |
+| [[id:8A58E339-A244-49EA-9504-D2AC61EE54F9][Declare C++ default values for the compute host ram_mb and credit_total members]] | DONE | 2026-09-07 | 2026-09-07 | Add :default_value: 0 to the ram_mb and credit_total member property blocks in the compute host entity org, regenerate compute-cpp so both domain headers emit member initializers, and prove the valgrind DA defect is gone. |
 
 * Decisions
 

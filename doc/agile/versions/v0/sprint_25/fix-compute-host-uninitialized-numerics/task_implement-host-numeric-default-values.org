@@ -29,11 +29,11 @@ stringifies an indeterminate member under valgrind.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:55EF2B1E-C304-4621-AC4D-21F7302B8FBB][Hotfix: Valgrind flags compute host ram_mb/credit_total read uninitialized]] |
-| Now          | Verifying: full build clean, valgrind 0 errors; ctest suite running. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Close out and raise the PR.             |
+| Next         | Nothing. |
 | Last touched | 2026-09-07                               |
 
 * Acceptance
@@ -94,3 +94,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered. The host entity org now declares =:default_value: 0= on the
+=ram_mb= and =credit_total= member blocks, next to their existing
+=:default: 0=. Regenerating compute-cpp emitted
+=std::int64_t ram_mb = 0;= and =double credit_total = 0;= in both
+generated headers (=host.hpp=, =host_entity.hpp=) and changed no other
+file (df0eef8b98).
+
+Verification. Full linux-clang-debug-make preset rebuild clean. Valgrind
+memcheck with =build/valgrind/custom.supp= on the generated
+=write_host_publishes_nats_changed_event= integration test: all tests
+passed, "ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 3 from
+3)" — the CDash dynamic-analysis defect (build 4048425, dynamic
+analysis 8054036: 299 errors across 137 contexts) is gone. Full ctest
+suite green: 71 test executables, zero failures, CDash Experimental
+submitted. compute-cpp drift check: "No drift: regenerated output
+matches the checked-in tree." Site build clean.

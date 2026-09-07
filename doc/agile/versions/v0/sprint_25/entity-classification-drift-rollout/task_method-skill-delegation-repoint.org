@@ -98,7 +98,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5571753106 | Step 7's "tests run as privileged roles" may not read clearly to a cold reader; reviewer leans leave-as-is | codegen-fix-drift/SKILL.org | Accepted (tightened) | The privileged-roles reason belongs to the iam grant case; the wiring case's own reason is that the generated eventing tests register the event mapping inside the test (verified against party_role_type_eventing_integration_tests.cpp), never passing through the production composition points. Step 7 now states that. |
+| 5571753106 | Reviewer relied on the PR's stated site-build and misspell evidence rather than re-running them | (process note) | Declined | Evidence recorded in the PR body's Testing section is the intended flow for the docs class; nothing to change. |
 
 * Result
 

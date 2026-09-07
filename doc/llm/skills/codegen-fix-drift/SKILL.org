@@ -111,10 +111,12 @@ the work.
    mapping, history provider) that compile and check in cleanly but
    that nothing calls. The drift gate cannot see this: it compares
    regeneration output, and an unwired function produces no diff.
-   ctest cannot see it either: the tests run as privileged roles. For
-   every registrar family the regeneration adds or rewrites, find the
-   registration function and confirm the component's composition
-   points call it. The usual composition points are the core
+   ctest cannot see it either: the generated eventing tests register
+   the event mapping inside the test, so they never pass through the
+   production composition points. For every registrar family the
+   regeneration adds or rewrites, find the registration function and
+   confirm the component's composition points call it. The usual
+   composition points are the core
    =messaging/registrar.cpp= fan-out (NATS handlers and history
    providers; the refdata registrar is the canonical shape) and the
    service =application.cpp= event mappings. Trading hit this trap

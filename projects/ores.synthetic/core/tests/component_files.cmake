@@ -23,4 +23,5 @@ set(files
     "main.cpp"
     "organisation_generator_service_tests.cpp"
     "organisation_publisher_integration_tests.cpp"
+    "yield_curve_process_type_eventing_integration_tests.cpp"
 )

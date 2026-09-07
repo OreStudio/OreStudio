@@ -2,7 +2,7 @@
 :ID: 894B369A-CE00-4E6A-B71B-C7BAC8B158BE
 :END:
 #+title: Story: Sized, realistic trade populations for provisioned systems
-#+description: Provisioning a system gains an option to populate its entities with trades, at four sizes from tiny to extra large, each realistic at its own scale rather than a truncation of the next one up. Delivered as datasets and loaded as bulk SQL. ORE's TradeGenerator is read as a reference for how a valid trade is constructed, not necessarily adopted as a dependency.
+#+description: Build trade generation as a composable block rather than a seeding script: a generation request the trade service handles, driven by a persisted configuration carrying book, seed, instrument mix and counts, mirroring the generate_organisation and market data generation configs ores.synthetic already carries. Sized populations, Acme provisioning and a periodic synthetic trade feed then become configurations of one block rather than three mechanisms.
 #+type: story
 #+level: s2
 #+filetags: :ore:acme:synthetic:trading:seeder:sprint_25:v0:
@@ -15,18 +15,34 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-Provisioning a system offers to populate its entities with trades, at a chosen
-size. Four sizes, each serving a purpose the others cannot.
+Trade generation is a *building block*, not a seeding script. The service
+receives a request carrying a configuration, generates against it, and persists
+the result. Everything else is a composition of that block.
 
-Tiny exists so an integration test can assert against a book small enough to
-read. Extra large exists so volume and query performance can be measured against
-something the size of a real institution's book. Medium and large sit between,
-for demonstrations and for work that needs breadth without the cost.
+Three compositions are in view, and only the first is needed now.
 
-Every size is realistic *at its own scale*. A tiny population is a small firm's
-book, not a large firm's book with most of the rows deleted. That distinction is
-the substance of this story: the sizes differ in what a plausible entity of that
-size would actually trade, not only in row count.
+Populating a provisioned system sends the request once, with a configuration
+naming the size. A periodic synthetic trade feed sends the same request on a
+schedule. Amending an existing population sends it in an update mode. None of
+these is a separate mechanism; they differ in who sends the request and what the
+configuration says.
+
+The four sizes follow from this rather than sitting beside it. Tiny, medium,
+large and extra large are named configurations of the same block, so a tiny
+population is realistic because its configuration describes a small firm's book
+and not because a large one was truncated.
+
+The pattern is already established. [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] handles
+=generate_organisation= on =synthetic.v1.organisation.generate=, and carries
+feed configurations alongside per-asset-class generation configurations such as
+[[id:8771702C-0BC4-4955-8D7E-DDBE2497D5B3][market data generation config]]. A trade generation configuration is the missing
+sibling, and the work is to add one rather than to invent a mechanism.
+
+The service boundary follows the same shape. =ores.synthetic= owns what to
+generate and how: the configurations, the algorithms, the seed. It does not own
+trades. Persisting them is =ores.trading='s work, reached downstream, so
+generation gains no second path into the trade tables and the rules that govern
+a trade stay in one place.
 
 * Status
 
@@ -41,19 +57,32 @@ size would actually trade, not only in row count.
 
 * Acceptance
 
-- Provisioning takes a size and populates trades without a manual step. No
-  hand-written XML, no separately run generator, no hand-imported file.
-- Four sizes exist, each with its purpose stated and its row order recorded.
-  Tiny is small enough for an integration test to assert against; extra large is
-  of the order of 400,000 trades.
+- Trade generation is reachable as a request =ores.synthetic= handles, carrying
+  a configuration rather than hard-coded parameters. The configuration names at
+  least the book, the seed, the instrument mix and the counts.
+- The configuration is a persisted entity, following the generation
+  configurations =ores.synthetic= already carries, so a population can be
+  reproduced from what is recorded rather than from how it was invoked.
+- Trades are persisted by =ores.trading=, called downstream, not written by the
+  generator. Generation introduces no second path into the trade tables.
+- The seed makes a population reproducible. The same configuration yields the
+  same book, which is what lets a large population be generated rather than
+  committed.
+- Four sizes exist as named configurations of that one block, each with its
+  purpose stated and its row order recorded. Tiny is small enough for an
+  integration test to assert against; extra large is of the order of 400,000
+  trades.
 - Realism is defined per size and is checkable. A tiny population is realistic
   as a small book rather than as a sample of a large one, and the analysis
   states what differs beyond count: how many asset classes, how many
   counterparties, what maturity spread a firm of that size plausibly has.
-- The sizes are datasets, following the pattern already established under
-  =projects/ores.seeder/datasets/=.
-- The load path is bulk SQL, generated as the rest of a dataset already is, and
-  its cost is measured at the largest size rather than estimated.
+- Populating a provisioned system composes the block without a manual step: no
+  hand-written XML, no separately run generator, no hand-imported file.
+- The design admits the compositions not built now. A scheduled feed sending the
+  same request, and an update mode that amends an existing population, are shown
+  to need no change to the block. Neither is implemented here.
+- The cost is measured at the largest size rather than estimated: how long
+  generation takes and how long persistence takes.
 - Coverage is measured against the =ores.trading= instruments: which the
   generator can populate, which it cannot, and which asset classes a realistic
   book needs that neither side carries.

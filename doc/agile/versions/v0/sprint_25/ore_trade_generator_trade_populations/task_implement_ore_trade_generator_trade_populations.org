@@ -80,6 +80,27 @@ They are not mutually exclusive. A committed dataset for the small sizes and
 algorithmic generation for the large ones is a fifth option, and the survey
 should consider it rather than treating the four as a forced choice.
 
+*** The block already has siblings
+
+=ores.synthetic= is a full service, api/core/service, and already handles
+=generate_organisation_request= on subject =synthetic.v1.organisation.generate=
+with a typed configuration. Beside it sit =feed_config=,
+=market_data_generation_config=, =fx_spot_generation_config= and
+=ir_curve_generation_config=, all persisted entities under
+=projects/ores.synthetic/modeling/=.
+
+A trade generation configuration is the missing sibling. The analysis should
+read those protocols and configs first, because the shape of the answer is
+probably already written down; the question is what a trade configuration
+carries that a market data one does not.
+
+The service boundary is the one design point that is not simply copied.
+=ores.synthetic= owns generation; =ores.trading= owns trades. The generator
+calls downstream rather than writing to the trade tables, so the analysis needs
+to say which call, whether it is per trade or batched, and what that costs at
+the largest size. Batching is likely to be the difference between viable and
+not.
+
 *** What exists already
 
 =projects/ores.ore/core/domain/= carries =trade_mapper= and per-asset-class

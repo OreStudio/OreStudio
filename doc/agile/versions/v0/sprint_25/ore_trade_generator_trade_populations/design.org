@@ -174,6 +174,52 @@ population respects both: a treasury portfolio aggregating in GBP does not
 plausibly hold what an equity desk's book holds. Round-robin assignment would
 satisfy the row count and fail the requirement.
 
+** What Measurement Found
+
+Two of the open questions are answered by reading the code, and one of the
+answers changes the design.
+
+*** The trade interface batches
+
+Every instrument repository exposes both a single and a vector write. The vector
+form is not a loop: it maps the whole vector to entities and hands them to
+=execute_write_query=, which opens one session, begins one transaction, issues
+one =sqlgen::insert=, and commits. A signature is a proxy for this, so the
+implementation was read rather than assumed.
+
+The consequence is that the service boundary costs less than feared. Generation
+in =ores.synthetic= calling =ores.trading= downstream does not imply a call per
+trade.
+
+*** A per-row trigger fires on every insert
+
+This is the finding that matters. The generated schema attaches a notify trigger
+to each entity table, declared =for each row=, whose function calls =pg_notify=
+with a JSON payload. Per row.
+
+A population of any size therefore emits one notification per trade on the
+insert path. At the volumes this story targets that is not a tax on throughput,
+it is a second system being driven at the same rate, and =pg_notify= has a queue
+a bulk load can exhaust.
+
+Nothing here argues against the trigger, which exists so live changes propagate.
+It argues that *bulk population is a different operation from ordinary writing*,
+and the design must say which path it takes. Three candidates, and the analysis
+owes a measurement rather than a preference: suppress the trigger for the
+duration of a bulk load, route bulk inserts through a path that does not carry
+it, or accept the cost and size the queue.
+
+=scripts/bench_trade_insert.py= measures it. It builds its own table with and
+without an equivalent trigger, times =COPY= against =executemany= at several
+volumes, and drops what it made.
+
+*** What was not measured
+
+No timings were taken. Every service is stopped, and starting the environment to
+time an insert is heavier than this analysis warranted. The script exists so
+whoever needs the numbers gets them by running one command rather than by
+rebuilding the reasoning.
+
 ** The Service Boundary
 
 =ores.synthetic= owns generation: the configurations, the algorithms, the seed.
@@ -210,9 +256,9 @@ document deliberately does not pre-empt them.
 - How does cost scale with the number of trades, and where does each approach
   break? Measured at more than one volume, so the shape of the curve is known
   and not one point.
-- Does the downstream trade interface admit batching, and what does a per-trade
-  call cost? The answer probably decides between algorithmic generation and
-  everything else.
+- What does bulk insert cost with and without the per-row notify trigger, and at
+  what volume does the notification queue become the binding constraint?
+  =scripts/bench_trade_insert.py= answers this; it needs a running environment.
 - What does ORE-Python cost per trade, and what does it drag into the seeding
   path? The dependency footprint matters as much as the speed.
 - Which =ores.trading= instruments can each approach populate? Measured per

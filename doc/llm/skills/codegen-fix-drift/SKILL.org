@@ -8,12 +8,12 @@
 #+export_exclude_tags: noexport
 #+filetags: :llm:skill:skills:claude_code:codegen:drift:
 #+created: 2026-09-04
-#+updated: 2026-09-04
+#+updated: 2026-09-07
 
 #+begin_export markdown
 ---
 name: codegen-fix-drift
-description: Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, byte-identical regen, generated-code review, then extend the drift gate.
+description: Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, byte-identical regen, generated-code review, registrar wiring check, then extend the drift gate.
 license: Complete terms in LICENSE.txt
 ---
 #+end_export
@@ -106,7 +106,29 @@ the work.
    constructor order, the generic history dialog). A finding is a
    template bug: fix the template, never the generated output.
 
-7. *Extend the drift gate last.* Add the component to the
+7. *Verify every materialized registrar family is composed.* A bind
+   can materialize registrar families (messaging registrar, event
+   mapping, history provider) that compile and check in cleanly but
+   that nothing calls. The drift gate cannot see this: it compares
+   regeneration output, and an unwired function produces no diff.
+   ctest cannot see it either: the generated eventing tests register
+   the event mapping inside the test, so they never pass through the
+   production composition points. For every registrar family the
+   regeneration adds or rewrites, find the registration function and
+   confirm the component's composition points call it. The usual
+   composition points are the core
+   =messaging/registrar.cpp= fan-out (NATS handlers and history
+   providers; the refdata registrar is the canonical shape) and the
+   service =application.cpp= event mappings. Trading hit this trap
+   twice: the party_role_type and trade_type stacks were materialized
+   but never registered, and the 2026-09-06 bind landed four
+   registrar families that had no caller on main. Each family must
+   end the run in one of two states: composed at the composition
+   points, or recorded as a deliberately unwired subject with its
+   reason (the compute orphaned-junction precedent). Do not leave a
+   family unwired and unrecorded.
+
+8. *Extend the drift gate last.* Add the component to the
    =KNOWN_DRIFT_FREE= registry in check_component_drift.py. The
    pr.yml-era CI job that regenerated components on every PR was
    deleted; the gate is the pr-raise skill's local codegen-drift
@@ -163,6 +185,15 @@ Automation starts granular and rises only on evidence:
 - [[id:163AC07E-19E4-4486-A503-8170D9B46108][Bind ores.dq entities to profiles; verify zero-diff regen]] — the
   second worked record: composite-component survey, idempotency
   verification, deliberate-mismatch recording, no-match reasons.
+- [[id:4DDA81C4-4306-4022-A022-75A3A23BE4A0][Bind ores.iam entities to profiles; verify zero-diff regen]] — the
+  third worked record: SQL rule restorations through codegen,
+  acceptance runs on a recreated database, and the live system test
+  that surfaced the service-grant defect ctest cannot see.
+- [[id:62B120E9-AE25-4786-B90B-1BDE8A4ACC34][Bind ores.trading entities to profiles; verify zero-diff regen]] — the
+  fourth worked record: baseline probe on an unmigrated component,
+  lookup-entity retirement, recorded no-matches, the registry-refusal
+  decision for a hand-authored estate, and the unwired-registrar trap
+  that step 7 now checks for.
 - [[id:623CFC6A-320A-4F71-A595-B3A47FBD06B8][Entity classification and drift baseline: ores.refdata pilot]] — the
   sprint 24 dimension settlement that grounds the survey.
 - [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] — the

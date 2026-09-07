@@ -2,7 +2,7 @@
 :ID: DABB1F4A-B191-4F5C-8736-1FBA8ADBAE45
 :END:
 #+title: Task: Bind ores.workspace entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the workspace-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output. Known starting point: add has_party_id template flag (party_id field across domain struct, entity, mapper, generator); restore workspace_service, workspace_repository, workspace_protocol from HEAD because production is hand-crafted.
+#+description: Implement profile binding for the workspace-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. Known starting point: add has_party_id template flag (party_id field across domain struct, entity, mapper, generator); restore workspace_service, workspace_repository, workspace_protocol from HEAD because production is hand-crafted.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-workspace:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-08-04
+#+updated: 2026-09-07
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ Survey every ores.workspace entity against the profile catalogue, rebind matches
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-08-04                               |
+| Last touched | 2026-09-07                               |
 
 * Acceptance
 

@@ -42,8 +42,8 @@
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/subscription_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
-#include "ores.shell/app/commands/trading/trading_commands.hpp"
 #include "ores.shell/app/commands/tenants_commands.hpp"
+#include "ores.shell/app/commands/trading/trading_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
 #include "ores.shell/app/commands/workflow_commands.hpp"
 #include "ores.utility/rfl/reflectors.hpp"       // IWYU pragma: keep.

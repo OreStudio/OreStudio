@@ -265,6 +265,9 @@ listing =FxTaRF data=. The catalogue also shows an equity TaRF with a
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
   which inputs =Docs/UserGuide/tradedata/tarf.tex=. The upstream
   project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

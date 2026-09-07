@@ -149,6 +149,9 @@ The single-level form is the [[id:EA6E4A7A-6229-4F8C-93C5-426D1E4CB496][FX Touch
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

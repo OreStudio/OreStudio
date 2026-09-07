@@ -145,6 +145,9 @@ listing =Knock Out Swap=.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
   definition.
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.

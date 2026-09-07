@@ -142,6 +142,9 @@ The two-level form is the [[id:7BA83993-32A7-4090-A6A9-A07AA3AF2B1D][FX Double T
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
 - [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

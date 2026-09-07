@@ -201,6 +201,9 @@ listing =Performance Option Type 01 data=.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
   which inputs =Docs/UserGuide/tradedata/performanceoption_01.tex=.
   The upstream project is

@@ -134,6 +134,9 @@ Native ORE example portfolios with bonds sit under
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Bond_(finance)][Wikipedia: Bond (finance)]]. This note follows its general definition.
 - [[https://en.wikipedia.org/wiki/International_Securities_Identification_Number][Wikipedia: ISIN]]. This covers the identifier convention that
   =SecurityId= uses.

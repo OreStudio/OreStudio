@@ -128,6 +128,9 @@ listing =Forward Rate Agreement Data=.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Forward_rate_agreement][Wikipedia: Forward rate agreement]]. This note follows its general
   definition.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

@@ -190,6 +190,9 @@ listing =Equity Swap Data with notional reset and FX indexing=.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Equity_swap][Wikipedia: Equity swap]]. This note follows its general definition.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
   which inputs =Docs/UserGuide/tradedata/equityswap.tex=. The upstream

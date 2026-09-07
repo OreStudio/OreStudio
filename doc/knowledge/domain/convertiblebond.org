@@ -220,6 +220,9 @@ with their details and =Detachable= is set to =false=.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Convertible_bond][Wikipedia: Convertible bond]]. This note follows its general
   definition.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

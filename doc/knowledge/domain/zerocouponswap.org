@@ -132,6 +132,9 @@ leg.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Zero-coupon_bond][Wikipedia: Zero-coupon bond]]. The zero-coupon leg behaves like this
   instrument.
 - [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general

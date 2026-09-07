@@ -148,6 +148,9 @@ The example pays a one-off fee of 91171.72 EUR for protection on a
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Credit_derivative][Wikipedia: Credit derivative]]. This places the product in the
   credit derivative family.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

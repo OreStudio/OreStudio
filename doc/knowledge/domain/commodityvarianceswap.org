@@ -96,6 +96,9 @@ variance swap section of the catalogue for the node layout.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Variance_swap][Wikipedia: Variance swap]]. This note follows its general definition.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
   which inputs =Docs/UserGuide/tradedata/commodityvarianceswap.tex=.

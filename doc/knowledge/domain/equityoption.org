@@ -166,6 +166,9 @@ option-on-future variant is the [[id:67ECE260-9D52-4183-882D-06F795AF9BA1][Equit
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Option_(finance)][Wikipedia: Option (finance)]]. This note follows its general
   definition.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

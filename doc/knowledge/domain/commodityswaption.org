@@ -140,6 +140,9 @@ period end rather than before the underlying starts.
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Swaption][Wikipedia: Swaption]]. This covers the general swaption concept.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,
   which inputs =Docs/UserGuide/tradedata/commodityswaption.tex=. The

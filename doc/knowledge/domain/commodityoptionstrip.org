@@ -154,6 +154,9 @@ listing =Commodity Option Strip= (optional elements omitted).
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Exotic_option][Wikipedia: Exotic option]]. This places the product in the exotic
   options family.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

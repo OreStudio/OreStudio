@@ -138,6 +138,9 @@ exposure. The [[id:8FAE9780-9737-49DB-87E7-D678F3AEBD69][Commodity Swaption]] op
 
 * See also
 
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
 - [[https://en.wikipedia.org/wiki/Commodity_derivative][Wikipedia: Commodity derivative]]. This places the product in the
   commodity derivatives family.
 - ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=,

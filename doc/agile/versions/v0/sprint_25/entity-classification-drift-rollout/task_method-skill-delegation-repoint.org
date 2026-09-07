@@ -8,7 +8,7 @@
 #+filetags: :entity-classification-drift-rollout:sprint_25:v0:
 #+owner: marco
 #+branch: doc/drift-delegation-tidyups
-#+pr:
+#+pr: 2029
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-07
@@ -92,7 +92,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2029][#2029]] | [doc] Re-point drift bind delegation docs at the codegen-fix-drift skill |
 
 * Review
 

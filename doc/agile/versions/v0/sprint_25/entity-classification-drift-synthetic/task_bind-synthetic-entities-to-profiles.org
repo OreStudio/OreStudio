@@ -114,6 +114,40 @@ Zero drift reached 2026-09-07: =check_component_drift.py --component
 synthetic= exits 0 with a clean tree (no tracked diff, no untracked
 materialization).
 
+** Acceptance runs (2026-09-07, phase 4, in progress)
+
+Full build exit 0 through ores.qt.exe after two fixes at source: the
+core tests target lacked the eventing libs the generated tests include
+(CMakeLists, the refdata/compute/trading pattern), and the plugin's
+parameter-definition controller construction gained the change reason
+cache the uuid-surrogate-lookup bind turns on.
+
+First ctest run (NATS down): 64/71, every failure = NATS connect
+refused - environmental. Second run (NATS up): 67/71.
+
+- =ores.trading.core=, =ores.reporting.core=, =ores.compute.core= now
+  pass.
+- =ores.synthetic.core.tests=: 6 eventing tests fail - the generated
+  seeding's INSERT violates the =party_isolation= RLS on
+  =ores_synthetic_market_data_generation_configs_tbl= (and folders).
+  Root cause: the mdc org's party_id generator snippet always stamps a
+  fixed uuid, so the seeded ancestor row's party does not match the
+  test session context the RLS checks. The text-key
+  =yield_curve_process_type= eventing test passes. Fix belongs in the
+  generated seeding / the org generator snippet, not the RLS.
+- =ores.synthetic.service.tests=: 1 failure,
+  =folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts=,
+  NATS request timed out - needs the full fleet up (7 units were still
+  not ready: 5 compute wrappers, iam.service, refdata.service).
+- =ores.iam.core.tests= / =ores.refdata.core.tests=: failed with no
+  detail captured in the run excerpt; their publish tests ran very
+  slowly (10-30s each) - investigate with the
+  code-investigate-test-failure loop.
+
+Next: investigate the four suites (enable logging, per-test logs),
+fix at source, rerun to 71/71, then skill step 8 (KNOWN_DRIFT_FREE
+registry entry + =--all=) and the PR.
+
 ** Baseline probe (2026-09-07, phase 1 start)
 
 Probe: =check_component_drift.py --component synthetic= (two-mode

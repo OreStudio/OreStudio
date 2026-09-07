@@ -49,7 +49,7 @@ struct host_entity {
     std::optional<std::string> gpu_type;
     std::optional<std::string> display_name;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_rpc_time;
-    double credit_total = 0;
+    double credit_total = 0.0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

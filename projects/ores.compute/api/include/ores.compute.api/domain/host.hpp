@@ -89,7 +89,7 @@ struct host final {
     /**
      * @brief Accumulated work units successfully processed by this host.
      */
-    double credit_total = 0;
+    double credit_total = 0.0;
 
     /**
      * @brief Username of the person who last modified this compute host.

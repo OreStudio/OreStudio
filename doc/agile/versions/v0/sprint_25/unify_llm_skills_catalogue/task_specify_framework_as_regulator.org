@@ -8,7 +8,7 @@
 #+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/refactor-llm-skills
-#+pr:
+#+pr: 2030
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-07
@@ -75,7 +75,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2030][#2030]] | [doc] Specify the skills framework as a regulator over an agent |
 
 * Review
 

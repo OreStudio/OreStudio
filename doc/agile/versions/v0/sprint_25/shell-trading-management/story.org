@@ -39,7 +39,7 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:A2F00C5D-FD7B-42EF-B7A6-61BE7C0D18C9][Add the trading command folder, reference-entity verb units, and shell wiring]] | STARTED | 2026-09-07 | | Create projects/ores.shell/src/app/commands/trading/ holding trade_type_commands, party_role_type_commands and trade_id_type_commands units cloned from the currencies archetype, plus the hand-written trading_commands aggregator that registers them. Wire repl.cpp with one aggregator call, add ores.trading.api.lib to the shell link libraries, regenerate the shell cmake component files. |
+| [[id:A2F00C5D-FD7B-42EF-B7A6-61BE7C0D18C9][Add the trading command folder, reference-entity verb units, and shell wiring]] | DONE | 2026-09-07 | 2026-09-07 | Create projects/ores.shell/src/app/commands/trading/ holding trade_type_commands, party_role_type_commands and trade_id_type_commands units cloned from the currencies archetype, plus the hand-written trading_commands aggregator that registers them. Wire repl.cpp with one aggregator call, add ores.trading.api.lib to the shell link libraries, regenerate the shell cmake component files. |
 | [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the lifecycle_event and trade verb units]] | BACKLOG | | | Add lifecycle_event_commands and trade_commands to the trading command folder, completing the five-entity surface. The lifecycle_event unit follows the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
 
 * Decisions
@@ -58,6 +58,11 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
   lifecycle_event and trade. The reference trio and lifecycle_event
   prove the small-entity skeleton; trade proves it against the hardest
   payload (nested sub-structs, batch save, temporal history).
+- Binding an entity to a profile must also compose its registrars
+  into the service fan-out points: the Sep 6 trade_id_type
+  simple-lookup binding regenerated the request and event registrars
+  but never wired them, leaving the trading.v1.trade_id_types subjects
+  unserved until the shell live acceptance (ab49e552f7) caught it.
 
 * Out of scope
 

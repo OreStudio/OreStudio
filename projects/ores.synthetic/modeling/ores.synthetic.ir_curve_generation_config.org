@@ -31,7 +31,7 @@ tenant and a party.
 :schema:        public
 :product:       ores
 :component:     synthetic
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns
@@ -478,9 +478,6 @@ std::nullopt
 :collection_name:         ir_curve_generation_configs
 :item_var:                ir_curve_generation_config
 :key_field:               id
-:has_uuid_primary_key:    true
-:has_pagination:          true
-:has_change_reason_cache: true
 :get_request_class:       synthetic::messaging::get_ir_curve_generation_configs_request
 :get_response_class:      synthetic::messaging::get_ir_curve_generation_configs_response
 :get_message_type:        get_ir_curve_generation_configs_request

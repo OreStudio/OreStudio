@@ -26,11 +26,11 @@ Survey every ores.synthetic entity against the profile catalogue, rebind matches
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:10E43A2D-3388-4F4F-A949-736B2A291B76][Entity classification and drift baseline: ores.synthetic]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-07                               |
 
 * Acceptance
@@ -148,6 +148,29 @@ Next: investigate the four suites (enable logging, per-test logs),
 fix at source, rerun to 71/71, then skill step 8 (KNOWN_DRIFT_FREE
 registry entry + =--all=) and the PR.
 
+** Investigation outcome and close (2026-09-08)
+
+Three defects under the RLS failures, each fixed at source
+(fce56925b4):
+
+- The seven hand-era party-isolation policies moved to the house
+  read-side shape (visible_party_ids membership); each policy's
+  container-widening logic is preserved.
+- The ir_curve_generation_config check-constrained natural keys
+  (index_family, tenor, role) now declare =:no_generator_suffix:=;
+  the generator's uniqueness suffix was producing check-invalid
+  values (=sofr-1=).
+- The ir_curve_template_entry instrument_code generator now emits the
+  catalogue code (IRS), not a display name.
+
+iam.core and refdata.core failures did not reproduce on a steady
+fleet (environmental); the folder-cascade NATS timeout was the
+not-yet-started fleet. Final evidence: full build exit 0, ctest
+71/71 (908s), roundtrip clean, cmake component lists clean,
+check_component_drift --all exit 0 with synthetic in the registry on
+a clean tree. The RLS policy file also carries the coordinating
+environment's concurrent null-tenant widening, merged in place.
+
 ** Baseline probe (2026-09-07, phase 1 start)
 
 Probe: =check_component_drift.py --component synthetic= (two-mode
@@ -261,3 +284,33 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Closed 2026-09-08. All nine ores.synthetic entities were surveyed
+against the profile catalogue; eight bound (yield_curve_process_type to
+simple-lookup, folder to self-referencing-hierarchy,
+yield_curve_process_parameter_definition to uuid-surrogate-lookup, and
+fx_spot_generation_config, gmm_component, ir_curve_generation_config,
+ir_curve_template_entry and market_data_generation_config to
+uuid-identified-lookup), one recorded NO-MATCH
+(ir_curve_generation_config_process_parameter_value: fk-scoped-child
+conflicts on workspace scope and explorer API). Every bind was
+verified per entity: zero additional diff against the baseline, and an
+idempotent second regen. The known starting point (the
+fx_spot_generation_config validation-fn capture, D583B57B) is verified
+resolved: the baseline regen reproduced the system-tenant fallback
+byte-identically; the capture can close as superseded.
+
+The eventing-era history-provider registrar families landed composed
+into the registrar fan-out (step 7); the drift gate now covers
+synthetic (step 8): KNOWN_DRIFT_FREE gained the entry and
+check_component_drift.py --all exits 0 on a clean tree.
+
+Acceptance: every entity surveyed and every match bound; zero
+additional diff per entity with idempotent regen; the no-match
+recorded with actual feature values; pre-existing drift fixed at
+source (the era-sync sign-offs, the hierarchy-machinery restoration,
+the RLS policy shape, the generator validity fixes); full build exit 0
+and ctest 71/71 (908s); schema current per the recreated 0.0.25
+database. The story closes after the post-merge live system test per
+the 2026-09-07 done-shape decision; the ores.shell system test is the
+closing step.

@@ -22,6 +22,7 @@
 #include "ores.synthetic.api/domain/market_data_generation_config_json_io.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <rfl/enums.hpp>
 
 namespace ores::synthetic::repository {
 

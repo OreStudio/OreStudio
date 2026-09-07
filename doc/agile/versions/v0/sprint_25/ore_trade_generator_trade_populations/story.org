@@ -68,10 +68,16 @@ a trade stay in one place.
 - The seed makes a population reproducible. The same configuration yields the
   same book, which is what lets a large population be generated rather than
   committed.
-- Four sizes exist as named configurations of that one block, each with its
-  purpose stated and its row order recorded. Tiny is small enough for an
-  integration test to assert against; extra large is of the order of 400,000
-  trades.
+- Sizes are *named presets* of the configuration, not fixed constants. The
+  parameters a preset sets are the same ones a caller may supply directly, so a
+  load test at an arbitrary volume is a configuration and not a code change.
+- Four presets ship, named and purposed: t0 tiny, small enough for an
+  integration test to assert against, through to the largest, which exists to be
+  loaded at volume. Their parameters are recorded, and adding a fifth requires
+  no code.
+- Volume has no ceiling in the design. Whatever the presets happen to set, the
+  analysis states how cost scales with the number of trades and where each
+  approach breaks, rather than certifying one target figure.
 - Realism is defined per size and is checkable. A tiny population is realistic
   as a small book rather than as a sample of a large one, and the analysis
   states what differs beyond count: how many asset classes, how many
@@ -81,8 +87,9 @@ a trade stay in one place.
 - The design admits the compositions not built now. A scheduled feed sending the
   same request, and an update mode that amends an existing population, are shown
   to need no change to the block. Neither is implemented here.
-- The cost is measured at the largest size rather than estimated: how long
-  generation takes and how long persistence takes.
+- The cost is measured rather than estimated, at more than one volume, so the
+  shape of the curve is known and not just one point: how long generation takes
+  and how long persistence takes.
 - Coverage is measured against the =ores.trading= instruments: which the
   generator can populate, which it cannot, and which asset classes a realistic
   book needs that neither side carries.
@@ -92,6 +99,17 @@ a trade stay in one place.
   valid trade needs, which come from the convention, which from the curve
   config, and which the caller must supply. Whether we depend on it or
   reimplement it is a conclusion of the analysis, not its premise.
+
+* Documents
+
+Everything this story produces or reasons from. The story is the hub:
+the durable documents do not link back here, so this table is the way
+in when history is genuinely needed.
+
+#+ATTR_HTML: :class hug-leading
+| Document | Kind | Purpose |
+|----------|------|---------|
+| [[id:37E54766-CE97-4981-A3C8-B2A232ED9A04][Design: Trade population generation]] | design, transitional | The argument: what exists, what a valid trade needs, the four candidates, and the questions that decide between them |
 
 * Tasks
 

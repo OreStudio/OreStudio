@@ -1,0 +1,231 @@
+:PROPERTIES:
+:ID: 37E54766-CE97-4981-A3C8-B2A232ED9A04
+:END:
+#+title: Design: Trade population generation
+#+description: The argument from today's hand-seeded datasets to trade generation as a composable block: what a valid trade needs, the four candidate approaches with their costs, how sizes become named presets, and where the service boundary falls.
+#+type: design
+#+level: s2
+#+filetags: :ore:acme:synthetic:trading:seeder:design:sprint_25:v0:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+todo: DRAFT STARTED | LANDED SUPERSEDED ABANDONED
+#+outcome:
+
+#+begin_note
+*This document describes a transition, not the current state.* It argues from
+what exists today to a design, and it expires when the work lands. It is scoped
+to the [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Sized, realistic trade populations]] story and lives with it.
+
+Do not link to it from durable documentation. The link runs one way, from here
+to the architecture document this produces, never back.
+#+end_note
+
+* Summary
+
+A system provisioned today has entities, books and portfolios but no trades.
+This document argues that trade generation should be built as a *block* the
+domain exposes, rather than as a seeding script, and sets out the candidate
+approaches with what is known and unknown about each.
+
+Three claims are advanced. Generation belongs behind a request carrying a
+configuration, because the same block then serves provisioning, a periodic feed
+and amendment without becoming three mechanisms. Sizes are presets of that
+configuration rather than constants, because a load test at arbitrary volume
+must be a configuration change and not a code change. And realism is a property
+of the configuration rather than of the row count, because a small book differs
+from a large one in what it trades and not only in how much.
+
+The choice of generation mechanism is left open. Four candidates are described
+with the evidence available; the measurements that would settle it are named,
+and they have not been taken.
+
+* Detail
+
+** The Problem
+
+Provisioning produces a plausible institution with no positions. Acme has 36
+portfolios with owner units, aggregation currencies and a parent hierarchy, and
+nothing in them.
+
+That absence blocks work of three different shapes. An integration test
+asserting on aggregation has nothing to aggregate. A demonstration of risk or
+profit and loss has nothing to price. And query performance cannot be measured,
+because performance questions appear only at volumes nobody produces by hand.
+
+Those three wants differ in what they need, which is the first finding of this
+document. They are not one need at three magnifications.
+
+** What Already Exists
+
+The scoping that preceded this document found more built than expected, and it
+narrows the problem substantially.
+
+*** Generation is already a service capability
+
+=ores.synthetic= is a full service, and it already answers generation requests.
+=generate_organisation_request= is handled on subject
+=synthetic.v1.organisation.generate=, carrying a typed configuration.
+
+Beside it sit persisted configuration entities: =feed_config=,
+=market_data_generation_config=, =fx_spot_generation_config= and
+=ir_curve_generation_config=. Feeds are configured, not coded.
+
+A trade generation configuration is the missing sibling. This is the strongest
+argument in the document, and it argues from precedent rather than from
+principle: the mechanism the story needs is one this project already operates
+for market data, and building trades any other way would create a second pattern
+for the same job.
+
+*** ORE import already exists
+
+=ores.ore= carries =trade_mapper= with per-asset-class mappers for swap, equity,
+FX, commodity, bond and credit, plus an XML importer and exporter.
+
+The consequence is that how ORE trades get in is largely answered, and the open
+question is generation and volume rather than import. It also means the importer
+is available as a *check* on generated output, independently of whether it is
+used to load it.
+
+*** Seeding is Python and file-based
+
+=projects/ores.seeder/= is Python: =src/seeder.py= with datasets beside it, each
+carrying JSON and a =generate_sql.py=. The Acme dataset holds companies, books,
+portfolios and LEI relationships this way.
+
+The pattern works at the scale it currently runs. Whether it extends to trade
+volumes is one of the open questions below.
+
+** What a Valid Trade Requires
+
+ORE's Python =TradeGenerator= is worth reading whether or not it is adopted,
+because it encodes what a trade needs and where each part comes from. Its lesson
+is the lookup.
+
+A trade is built from an index such as =GBP-SONIA=. That index selects a
+convention and a curve config, and those between them supply payment frequency,
+payment calendars, business day conventions and spot lags. The caller supplies
+only notional, maturity, fixed rate and direction.
+
+The distinction that matters is therefore between *market structure*, which is
+looked up and must be right, and *trade particulars*, which are chosen and can
+be varied freely. A generator that gets the second right and the first wrong
+produces trades that look plausible and do not price.
+
+That distinction survives whichever approach is chosen, which is why it is
+recorded here rather than inside one option.
+
+** The Candidates
+
+Four approaches, with what is known. None has been measured, and the
+measurements that would separate them are named under /Open Questions/.
+
+#+ATTR_HTML: :class hug-leading
+| Approach | Mechanism | Known strength | Known risk |
+|----------+-----------+----------------+------------|
+| Committed dataset | Generate once, commit the SQL, seeder loads it | Reviewable; identical for everyone; no generation cost at provision | A large artefact in git, growing with the largest preset |
+| Algorithmic generation | A generator writes through the trade service at provision time, sized by parameters and seeded | No large artefact; volume is a parameter; presets are data | New code, and correctness rests on it rather than on ORE |
+| ORE-Python | Build trades through ORE's own API, emit XML, load through =ores.ore= | Market structure is ORE's own, so conventions are right by construction | A SWIG dependency in the seeding path; per-trade cost unmeasured |
+| Archetypes multiplied | ORE fixes conventions for a small set of archetypes; multiplying across particulars is ours | ORE correctness where it matters, our speed where it does not | Two mechanisms to maintain; archetype coverage bounds instrument coverage |
+
+They are not exclusive. A committed dataset for the small presets and
+algorithmic generation for the large ones is a fifth option, and it matches the
+three wants in /The Problem/ most directly, since the small presets are the ones
+that benefit from being reviewable and identical for everyone.
+
+** Sizes as Presets
+
+A size is a named bundle of configuration parameters, not a constant.
+
+The parameters a preset sets are the same ones a caller may supply. That single
+property is what lets =t0= serve an integration test and a load test at ten
+million trades be a configuration rather than a code change, and it is why the
+sizes are described here as presets rather than as tiers.
+
+#+ATTR_HTML: :class hug-leading
+| Preset | Purpose | Shape |
+|--------+---------+-------|
+| t0 tiny | An integration test asserts against it | Few enough trades to read; one or two asset classes; a handful of counterparties |
+| t1 medium | Demonstrations, and work needing breadth | Every asset class represented; realistic counterparty spread |
+| t2 large | A realistic institutional book | Full breadth, and volume enough to make aggregation non-trivial |
+| t3 extra large | Load and query performance | Volume chosen for the test rather than for realism of size |
+
+The row counts are deliberately absent. They belong in the presets, where they
+can be changed, rather than in a design document, where they would harden.
+
+** Realism
+
+Realism is the requirement most easily lost, because the obvious implementation
+of smaller is to generate fewer rows of the same thing.
+
+A small firm's book is not a large firm's book sampled. It trades fewer asset
+classes, faces fewer counterparties, and has a narrower maturity spread. A tiny
+population produced by uniform sampling from a large one would hold one trade in
+each of a dozen asset classes, which no small firm's book looks like.
+
+Realism is therefore a property of the *configuration*, and the criteria are per
+preset. Each preset asserts a distribution across asset class, currency,
+maturity, notional and counterparty, and states what would count as wrong. Those
+assertions are checkable, which keeps the requirement from becoming a matter of
+taste.
+
+Portfolio assignment is the same argument applied to placement. Acme's
+portfolios carry an owner unit and an aggregation currency, and a realistic
+population respects both: a treasury portfolio aggregating in GBP does not
+plausibly hold what an equity desk's book holds. Round-robin assignment would
+satisfy the row count and fail the requirement.
+
+** The Service Boundary
+
+=ores.synthetic= owns generation: the configurations, the algorithms, the seed.
+=ores.trading= owns trades.
+
+The generator therefore calls downstream rather than writing to the trade
+tables. Generation gains no second path into them, and the rules governing a
+trade stay in one place.
+
+The cost of that boundary is the design's largest unknown. A per-trade call at
+the largest preset may be the difference between viable and not, so whether the
+downstream interface admits batching is a question to settle early rather than
+discover late.
+
+** Compositions
+
+Three uses of one block, of which only the first is needed now.
+
+*Provisioning* sends the request once, with a preset naming the size.
+
+*A periodic feed* sends the same request on a schedule. =ores.synthetic= already
+carries =feed_config= for market data, so this composition needs a configuration
+rather than a mechanism.
+
+*Amendment* sends the request in an update mode, so an existing population
+evolves rather than being replaced. Nothing here builds it; the design is
+required to admit it without change to the block.
+
+* Open Questions
+
+These are the measurements and decisions the analysis task owes, and this
+document deliberately does not pre-empt them.
+
+- How does cost scale with the number of trades, and where does each approach
+  break? Measured at more than one volume, so the shape of the curve is known
+  and not one point.
+- Does the downstream trade interface admit batching, and what does a per-trade
+  call cost? The answer probably decides between algorithmic generation and
+  everything else.
+- What does ORE-Python cost per trade, and what does it drag into the seeding
+  path? The dependency footprint matters as much as the speed.
+- Which =ores.trading= instruments can each approach populate? Measured per
+  asset class, with any instrument neither side carries named.
+- Can each approach produce a realistic small book, or only a truncated large
+  one?
+- Do the small presets benefit enough from being committed to justify
+  maintaining two mechanisms?
+
+* See also
+
+- [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Sized, realistic trade populations for provisioned systems]] — the story this design serves.
+- [[id:A1405F36-C32F-46CE-A550-40015616B986][Evaluate the approaches to generating trade populations]] — the task that answers the open questions.
+- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — the service the block joins.
+- [[id:8771702C-0BC4-4955-8D7E-DDBE2497D5B3][Market data generation config]] — the exemplar a trade generation config follows.
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — the instruments a population must populate.

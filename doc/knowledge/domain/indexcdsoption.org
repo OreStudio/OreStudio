@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58
+:END:
+#+title: Index Credit Default Swap Option
+#+description: An option to enter an index CDS at a strike; ORE's IndexCreditDefaultSwapOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:indexcdsoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An index CDS option is the right to enter an index credit default swap
+at a set strike. ORE models it with the trade type
+=IndexCreditDefaultSwapOption=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An index CDS option gives the right to buy or sell protection on a
+credit index at a strike spread or strike price. The option is usually
+European and exercises on one date. The exercise starts an index CDS
+at the strike terms. The option can carry front end protection, or
+knock out if the index defaults before expiry. The product adds
+optionality to the index CDS family.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An index CDS option, trade type IndexCreditDefaultSwapOption, is an
+option to enter into an index CDS at a specified strike spread or
+strike price.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]].
+
+** In plain terms
+
+An index CDS option is an option on insurance premia. The buyer pays a
+premium for the right to buy or sell index protection later at a rate
+set today. If the market moves in the buyer's favour, the option is
+exercised. Otherwise it expires worthless.
+
+** How it works in ORE
+
+The trade data names the underlying index CDS and the option terms.
+The =OptionData= node holds the usual option mechanics, long or short,
+exercise style, and settlement. The =Strike= and =StrikeType= set the
+level, as a spread or as a price. The underlying
+=IndexCreditDefaultSwapData= node describes the index CDS that the
+exercise starts.
+
+The =IndexTerm= node gives the term of the underlying index CDS, such
+as 5Y or 10Y. ORE uses it to find the right volatility surface. With
+no =IndexTerm=, the market is searched for a surface named after the
+credit curve of the index series. With one, the surface name carries a
+suffix such as =CDXHYS34V1-5Y=. Different terms of one series can then
+use different volatility structures.
+
+ORE describes the credit mechanics as follows:
+
+#+begin_quote
+CDS Options can come with or without front end protection, i.e. the
+protection seller may either have to pay the contract notional if
+default happens before option expiry, or not (knock out).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]].
+
+** Mathematical notes
+
+An option on an index CDS prices off a CDS volatility surface. At
+expiry, the option is worth the difference between the market
+protection value and the strike protection value. Options on credit
+indices include any defaulted entities in the intrinsic value when
+exercised, per ORE's payoff description. Options on single credits are
+extinguished upon default without cash flows other than the upfront
+premium.
+
+** What moves its value (static sensitivities)
+
+- The CDS volatility surface of the index term. It drives the option
+  value.
+- The index credit curve. It sets the level of the underlying
+  protection.
+- The strike spread or price. It fixes the exercise terms.
+- The discount curve of the premium currency.
+- The composition of the index and its defaults before expiry.
+
+A payer of protection gains when the index worsens. A receiver gains
+when it improves. Volatility raises the value of both sides.
+
+** How the profile ages (dynamic sensitivities)
+
+The option loses time value as expiry approaches. A default in the
+index before expiry settles through the front-end protection terms, or
+knocks the option out. At expiry, a European option exercises into the
+index CDS or expires. After exercise, the trade ages like the
+underlying [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]].
+
+** Why a customer would want it
+
+A bank buys index CDS options to cap the cost of future protection. A
+dealer sells them to earn the option premium and to express views on
+credit volatility. The product hedges spread moves without committing
+to the running premium. In ORE Studio a customer books index CDS
+options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European option on a 5Y index:
+
+#+begin_example
+<IndexCreditDefaultSwapOptionData>
+  <IndexTerm>5Y</IndexTerm>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <Style>European</Style>
+    <Settlement>Cash</Settlement>
+    <PayOffAtExpiry>false</PayOffAtExpiry>
+    <ExerciseDates>
+      <ExerciseDate>2023-05-09</ExerciseDate>
+    </ExerciseDates>
+  </OptionData>
+  <IndexCreditDefaultSwapData>
+    ...
+  </IndexCreditDefaultSwapData>
+  <Strike>1.063</Strike>
+  <StrikeType>Price</StrikeType>
+</IndexCreditDefaultSwapOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]],
+listing =IndexCreditDefaultSwapOption Data= (underlying abbreviated).
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Credit_default_swap_index][Wikipedia: Credit default swap index]]. This covers the
+  underlying product.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcdsoption.tex][indexcdsoption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

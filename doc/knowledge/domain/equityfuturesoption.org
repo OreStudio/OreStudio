@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: 67ECE260-9D52-4183-882D-06F795AF9BA1
+:END:
+#+title: Equity Futures Option
+#+description: An option on an equity future contract; ORE's EquityFutureOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityfuturesoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity futures option is an option on the settlement price of an
+equity future. European and American exercise styles are supported.
+ORE models it with the trade type =EquityFutureOption=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+An equity futures option follows the shape of an equity option. Its
+underlying is a future contract settlement price rather than a spot
+price. European and American styles are supported. The container node
+is =EquityFutureOptionData=. It holds one =OptionData= sub-node and a
+=StrikeData= node. The optional =FutureExpiryDate= names the expiry of
+the underlying future when the future price flag is set. Without it,
+the future is assumed to expire with the option.
+
+* Detail
+
+** What it is
+
+ORE introduces the product as follows:
+
+#+begin_quote
+The EquityFutureOptionData node is the trade data container for the
+EquityFutureOption trade type. Equity options with exercise styles
+European and American are supported.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityfuturesoption.tex][equityfuturesoption.tex]].
+
+** In plain terms
+
+An equity futures option is an option whose payout depends on a future
+price, not on a spot price. The future price already carries the
+financing and dividend expectations of the share. The option then bets
+on where that future price lands.
+
+** How it works in ORE
+
+The =EquityFutureOptionData= node is the trade data container for the
+=EquityFutureOption= trade type. It has one and only one =OptionData=
+trade component sub-node plus elements specific to the equity future
+option. =LongShort= names the side and =OptionType= the call or put
+right. =Settlement= takes =Cash= or =Physical=. Exactly one
+=ExerciseDate= must be given. =Premiums= carries the option premium.
+The underlying equity comes from =Name= or an =Underlying= node.
+=Currency= is the currency of the option. =StrikeData= holds the strike
+and supports =StrikePrice= only. =Quantity= is the number of units.
+=FutureExpiryDate= is optional. When =IsFuturePrice= is true and the
+underlying is a future contract settlement price, this element names
+the expiry of that future. Without it the future is assumed to expire
+with the option.
+
+** Mathematical notes
+
+The payoff follows the option form on the future price: the call pays
+max(F - K, 0) per unit and the put pays max(K - F, 0). The future price
+moves with the spot, the rates and the dividends of the underlying
+equity. The value of the option therefore inherits those drivers
+through the forward curve.
+
+** What moves its value (static sensitivities)
+
+- The price of the underlying future or forward.
+- The spot price of the equity, through the future price.
+- The implied volatility of the future price.
+- The expected dividends and the rates that set the future basis.
+- The strike, the expiry and the style of the option.
+
+The future price rises and falls with the underlying equity. An option
+on the future moves in the same direction.
+
+** How the profile ages (dynamic sensitivities)
+
+The option decays toward its intrinsic value as expiry approaches. The
+underlying future also ages and converges to the spot at its own
+expiry. If the future expires before the option, the option's
+underlying becomes the settled spot value. American options keep the
+early exercise right until their last exercise date.
+
+** Why a customer would want it
+
+A customer who trades equity futures wants options on the same
+instrument. The option hedges a future position or expresses a view on
+its direction. Pricing against the future removes the need to model
+the spot-to-future basis inside the option. In ORE Studio a customer
+books equity futures options to value them and run sensitivities on
+the ORE engine.
+
+** Example
+
+ORE's catalogue shows an American call whose underlying is the S&P 500
+index, with a future expiry before the option expiry:
+
+#+begin_example
+<EquityFutureOptionData>
+    <OptionData>
+         <LongShort>Long</LongShort>
+         <OptionType>Call</OptionType>
+         <Style>American</Style>
+         <Settlement>Cash</Settlement>
+         <PayOffAtExpiry>true</PayOffAtExpiry>
+         <ExerciseDates>
+             <ExerciseDate>2022-03-01</ExerciseDate>
+         </ExerciseDates>
+         ...
+    </OptionData>
+    <Name>RIC:.SPX</Name>
+    <Currency>USD</Currency>
+    <StrikeData>
+        <StrikePrice>
+            <Value>2147.56</Value>
+            <Currency>USD</Currency>
+        </StrikePrice>
+    </StrikeData>
+    <Quantity>17000</Quantity>
+    <FutureExpiryDate>2021-01-29</FutureExpiryDate>
+</EquityFutureOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityfuturesoption.tex][equityfuturesoption.tex]],
+listing =Equity Future Option data=.
+
+The spot-based relative of this product is the
+[[id:803F50A7-7DB5-4F6B-81F4-BE48C6EEFAB1][Equity Option]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Futures_contract][Wikipedia: Futures contract]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityfuturesoption.tex][equityfuturesoption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

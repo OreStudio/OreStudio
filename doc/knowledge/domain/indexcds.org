@@ -1,0 +1,147 @@
+:PROPERTIES:
+:ID: FB662CB6-F6E7-4BD5-8616-CC767D60E8C6
+:END:
+#+title: Index Credit Default Swap
+#+description: A credit default swap on an index of reference entities; ORE's IndexCreditDefaultSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:indexcds:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An index credit default swap trades protection on a basket of names
+as one contract. ORE models it with the trade type
+=IndexCreditDefaultSwap=. This note records the domain grounding, as
+ORE documents it in its product catalogue.
+
+* Summary
+
+An index CDS is a credit default swap on an index of reference
+entities, such as CDX or iTraxx. It pays a running premium and settles
+the losses of defaulted constituents. The premium leg uses the
+unfactored notional, which ignores defaults. The factored notional
+shrinks as constituents default. A standard index takes its
+constituents from the credit curve. A bespoke basket names its own
+constituents in a =BasketData= node. The product trades portfolio
+credit risk in one instrument.
+
+* Detail
+
+** What it is
+
+ORE defines the input form as follows:
+
+#+begin_quote
+An index credit default swap (trade type IndexCreditDefaultSwap) is
+set up using an IndexCreditDefaultSwapData block
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcds.tex][indexcds.tex]].
+The block also includes =LegData= and =BasketData= trade component
+sub-nodes.
+
+** In plain terms
+
+An index CDS is insurance on a whole group of borrowers at once. One
+premium covers the basket. If one borrower defaults, the seller pays
+that borrower's loss. The premium base and the protection base shrink
+as defaults happen.
+
+** How it works in ORE
+
+The =LegData= sub-node is a fixed leg and holds the recurring premium.
+Payer true means the trade buys protection. Payer false means it sells
+protection. The notional on the fixed leg is the unfactored notional,
+which excludes any defaults. ORE contrasts it with two other notions.
+The trade date notional is reduced by defaults between series
+inception and the trade date. The current notional, also called the
+factored notional, is reduced by defaults up to the current evaluation
+date.
+
+The =BasketData= sub-node is optional. It specifies the constituent
+reference entities of the index and is intended for non-standard
+indices that need a bespoke basket. When it is omitted, the index
+constituents come from the =CreditCurveId= element in the trade data.
+
+** Mathematical notes
+
+The premium leg is a risky annuity on the unfactored notional. The
+protection leg pays the loss of each defaulted constituent, the
+notional minus its recovery, from the factored base. The mechanics
+follow the single-name [[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]], applied name by
+name to the basket.
+
+** What moves its value (static sensitivities)
+
+- The index credit curve. It prices the basket and its defaults. A
+  spread widening raises the value of bought protection.
+- The discount curve of the premium currency.
+- The composition of the index. Constituent weights and recoveries
+  shape the loss distribution.
+- The premium and any upfront fee. They fix the running cost.
+
+A protection buyer gains when the index worsens. A seller gains when
+it improves.
+
+** How the profile ages (dynamic sensitivities)
+
+Each default of a constituent settles its loss and reduces the
+factored notional. The running premium keeps paying on the unfactored
+base. The protection window shortens as the trade runs. Near
+maturity, only near-term defaults matter. At maturity the trade stops
+with the surviving basket.
+
+** Why a customer would want it
+
+A bank hedges a portfolio of credit exposures with one index trade
+instead of many single-name CDS. An investor sells protection on an
+index to earn the portfolio premium. The product prices and trades
+more cheaply than a bespoke basket. In ORE Studio a customer books
+index CDS to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an index trade with its basket:
+
+#+begin_example
+<IndexCreditDefaultSwapData>
+  <CreditCurveId>RED:2I65BRHH6</CreditCurveId>
+  <SettlesAccrual>Y</SettlesAccrual>
+  <ProtectionPaymentTime>atDefault</ProtectionPaymentTime>
+  <ProtectionStart>20160206</ProtectionStart>
+  <UpfrontDate>20160208</UpfrontDate>
+  <UpfrontFee>0.0</UpfrontFee>
+  <LegData>
+    <LegType>Fixed</LegType>
+    <Payer>false</Payer>
+    ...
+  </LegData>
+  <BasketData>
+    <Name>
+      <IssuerId>CPTY_1</IssuerId>
+      <CreditCurveId>RED:</CreditCurveId>
+      <Notional>100000.0</Notional>
+      <Currency>USD</Currency>
+    </Name>
+    ...
+  </BasketData>
+</IndexCreditDefaultSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcds.tex][indexcds.tex]],
+listing =Index CreditDefaultSwap Data= (constituents abbreviated).
+
+The single-name form is the [[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]]. The
+[[id:6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58][Index Credit Default Swap Option]] trades the right to enter this
+contract.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Credit_default_swap_index][Wikipedia: Credit default swap index]]. This note follows its
+  general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcds.tex][indexcds.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

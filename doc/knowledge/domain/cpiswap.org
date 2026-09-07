@@ -1,0 +1,162 @@
+:PROPERTIES:
+:ID: 13D3230A-D5C2-46DA-92E6-1DB128B8392A
+:END:
+#+title: CPI Swap
+#+description: An inflation swap whose CPI-linked leg pays a real rate scaled by index changes.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:cpiswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A CPI swap exchanges the change in a consumer price index against a
+rate. ORE models it with the =InflationSwap= trade type, or as a
+=Swap= with a CPI leg. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A CPI swap is the standard inflation derivative. One leg pays a real
+coupon, set at inception, scaled by the change of a consumer price
+index. The other leg pays a floating or fixed nominal rate. The
+inflation leg converts a contractual real rate into a nominal payment
+with the index ratio of two fixings. At maturity the inflation leg may
+also pay the index appreciation on the notional. The product protects a
+holder against realised inflation, which is the rise of the index over
+the life of the trade.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A CPI swap is an inflation swap where one of the legs has a floating
+rate with coupon payments linked to a supported inflation index.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]].
+
+** In plain terms
+
+Two parties swap inflation for a fixed or floating rate. One pays a
+real rate, agreed at trade time. The payment grows with the consumer
+price index, so the payer is protected if prices rise faster than the
+rate. The other side receives the real rate and carries the inflation
+risk.
+
+** How it works in ORE
+
+ORE states the input form as follows:
+
+#+begin_quote
+A CPI inflation swap can be set up using the InflationSwap trade type,
+with one leg of type CPI.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]].
+The remaining legs can be of any leg type, per the catalogue.
+
+The same structure works with the =Swap= trade type and a CPI leg.
+The CPI leg carries a =CPILegData= block. It names the inflation
+index, the observation lag, and the interpolation method. The coupons
+start from the index fixing before the issue date. They adjust to the
+fixing at each coupon reset date. ORE supports cross-currency
+inflation swaps, because the currencies of the legs do not need to be
+the same.
+
+** Mathematical notes
+
+ORE's words on the coupon:
+
+#+begin_quote
+Coupons on the inflation leg are calculated starting by the contractual
+real coupon rate and adjusting it to a nominal rate using the change
+from the relevant inflation index fixing before issue date to the index
+fixing at coupon reset date, taking into account observation lag, and
+if necessary, interpolation between inflation index fixings.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]].
+
+A coupon at time Ti equals the product of the notional N, the real
+rate r, the index ratio I(Ti)/I(T0), and the day count fraction of the
+accrual period. The index ratio is the only inflation term. The
+maturity flow, when exchanged, is N times I(T)/I(T0) on the inflation
+leg against the notional on the other leg. CPI coupons and maturity
+flows can be capped or floored.
+
+** What moves its value (static sensitivities)
+
+- The discount curve of the payment currency. All legs are sensitive
+  to it.
+- The inflation index curve. It projects the index fixings that drive
+  the index ratio.
+- The real rate. It fixes the contractual coupon level.
+- The cap or floor, when present. It adds an inflation-volatility
+  sensitivity.
+
+A long-inflation leg gains value when expected inflation rises. The
+index ratio scales every remaining payment, so the exposure grows with
+the ratio level.
+
+** How the profile ages (dynamic sensitivities)
+
+The trade starts from the index level at issue. Each printed fixing
+locks a piece of the index path. The remaining coupons depend on fewer
+and fewer future fixings. The maturity flow, when present, keeps the
+long-dated index exposure until the end. The trade ends with the index
+level at maturity. Only the last coupon and the flow remain uncertain
+in the final period.
+
+** Why a customer would want it
+
+A pension fund with inflation-linked liabilities buys CPI swaps to
+match them. An investor receives real rates to protect purchasing
+power. An issuer of inflation-linked debt swaps the index exposure back
+to nominal. In ORE Studio a customer books CPI swaps to value them and
+run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows the structure with the =InflationSwap= trade
+type. The floating leg is abbreviated.
+
+#+begin_example
+<InflationSwapData>
+  <LegData>
+    <LegType>Floating</LegType>
+    <Payer>true</Payer>
+    ...
+  </LegData>
+  <LegData>
+    <LegType>CPI</LegType>
+    <Payer>false</Payer>
+    ...
+    <CPILegData>
+      ...
+    </CPILegData>
+  </LegData>
+</InflationSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]],
+listing =CPI Swap Data= (using InflationSwap trade type).
+
+The sibling [[id:2FC69DD5-D685-452B-8BCE-85CBCDD624E5][Year-on-Year Inflation Swap]] pays the annual index
+change instead of a real rate. The [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]] note covers the leg
+mechanics both products share.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Inflation_swap][Wikipedia: Inflation swap]]. This note follows its general
+  definition.
+- [[https://en.wikipedia.org/wiki/Consumer_price_index][Wikipedia: Consumer price index]]. This covers the typical
+  reference index.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

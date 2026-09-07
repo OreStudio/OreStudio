@@ -1,0 +1,130 @@
+:PROPERTIES:
+:ID: 992F5349-6D73-4780-855C-532B63073191
+:END:
+#+title: Commodity Forward
+#+description: An agreement to buy or sell a commodity at a set price later; ORE's CommodityForward product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityforward:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity forward is the linear building block of commodity
+derivatives. Two parties fix today the price of a future commodity
+exchange. ORE models it with the trade type =CommodityForward=. This
+note records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A commodity forward is an agreement to buy or sell a set amount of a
+commodity at a predetermined price on a future date. No money changes
+hands at trade time. The trade data names the position, the maturity,
+the commodity, the strike, and the quantity. A forward can reference a
+commodity price or a commodity future. Settlement can be physical. The
+value moves with the commodity forward curve.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Commodity Forward contract is an agreement between two
+counterparties to buy/sell a set amount of a commodity, at a
+predetermined price (the strike), at the end of the contract. A
+commodity forward does not involve any upfront payment.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityforward.tex][commodityforward.tex]].
+
+** In plain terms
+
+A commodity forward is a handshake on a future price. A producer and a
+buyer agree today on the price of a commodity for a later delivery.
+Neither side pays now. At maturity they exchange the commodity and the
+agreed price.
+
+** How it works in ORE
+
+The =CommodityForwardData= node is the trade data container. It names
+the =Position=, long or short, and the =Maturity=. The =Name= selects
+the commodity, such as =NYMEX:CL= for crude oil. The =Strike= and
+=Quantity= set the deal. The =IsFuturePrice= flag says whether the
+reference price is a future price. A forward on a future names the
+future contract and its expiry. =PhysicallySettled= selects physical
+delivery over cash settlement.
+
+** Mathematical notes
+
+A long forward gains when the commodity price rises above the strike.
+The value is the present value of the difference between the forward
+price and the strike, times the quantity. A forward priced on a future
+tracks the future contract, with its own expiry and roll. The trade is
+linear, with no optionality.
+
+** What moves its value (static sensitivities)
+
+- The commodity forward curve at the maturity point. It is the
+  dominant driver.
+- The reference future, when used. Its expiry and settlement drive the
+  price.
+- The discount rate of the trade currency.
+- The strike and the quantity. They scale the exposure.
+- The FX rate, when the commodity currency differs from the trade
+  currency.
+
+A long position gains when the commodity strengthens. A short gains
+when it weakens.
+
+** How the profile ages (dynamic sensitivities)
+
+Between trade date and maturity the value moves with the commodity
+market. The exposure narrows to the remaining time. Near maturity the
+price converges to the settlement price. At maturity the trade settles
+in cash or in the commodity and stops.
+
+** Why a customer would want it
+
+A producer locks the price of a future harvest or output. A consumer
+locks the cost of a future input. A trader takes a view on the
+commodity without storing it. In ORE Studio a customer books commodity
+forwards to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a forward on the LME aluminium three-month
+future:
+
+#+begin_example
+<CommodityForwardData>
+  <Position>Long</Position>
+  <Maturity>2029-08-16</Maturity>
+  <Name>XLME:AH</Name>
+  <Currency>USD</Currency>
+  <Strike>2160</Strike>
+  <Quantity>1000</Quantity>
+  <IsFuturePrice>true</IsFuturePrice>
+  <FutureExpiryDate>2021-11-16</FutureExpiryDate>
+  <PhysicallySettled>true</PhysicallySettled>
+</CommodityForwardData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityforward.tex][commodityforward.tex]],
+listing =CommodityForwardData= for a forward on the LME Aluminium 3M
+future (optional elements omitted).
+
+The family siblings are the [[id:0C0FDF39-B4D4-4794-83AD-076B4681830B][Commodity Swap]] and the
+[[id:EC6DB3A0-4B34-4CD2-A3B7-ED004F3FA1B8][Commodity Option]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityforward.tex][commodityforward.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

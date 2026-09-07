@@ -1,0 +1,173 @@
+:PROPERTIES:
+:ID: 06615BB7-3A1C-407D-8745-010DB52BD053
+:END:
+#+title: Equity Double Barrier Option
+#+description: A double barrier option on an equity price; ORE's EquityDoubleBarrierOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_doublebarrieroption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity double barrier option exists only while the equity spot
+stays between two barrier levels. Both barriers are monitored
+continuously. ORE models it with the trade type
+=EquityDoubleBarrierOption=. This note records the domain grounding,
+as ORE documents it in its product catalogue.
+
+* Summary
+
+An equity double barrier option is a path-dependent option whose
+existence depends on the equity spot rate reaching one of two pre-set
+barrier levels. Exercise is European and the barriers are American,
+that is continuously monitored. Knock-in and knock-out forms are
+supported. The two levels sit in the =BarrierData= node in ascending
+order. The barrier levels are quoted in the currency of the
+underlying equity spot. The container node is
+=EquityDoubleBarrierOptionData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Equity Double Barrier Option is a path-dependent option whose
+existence depends upon an Equity spot rate reaching one of the two
+pre-set barrier levels. Exercise is European, and barriers are
+American (continuously monitored).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]].
+
+ORE describes the barrier behaviour as follows:
+
+#+begin_quote
+A knock-in option is a barrier option that only comes into
+existence/becomes active when the Equity spot rate reaches the one of
+the barrier level at any point in the option's life. Once a barrier is
+knocked-in, the option will not cease to exist until the option
+expires and effectively it becomes a Vanilla Equity Option.
+
+A knock-out option starts its life active, but ceases to
+exist/becomes inactive, if the one of the barriers is reached during
+the life of the option.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]].
+
+** In plain terms
+
+A double barrier option is a vanilla option inside a corridor. Two
+tripwires sit above and below the current price. If the price touches
+either one, the option either dies or comes alive. The corridor makes
+the option cheaper or more exotic than the single-barrier form.
+
+** How it works in ORE
+
+The =EquityDoubleBarrierOptionData= node is the trade data container
+for the =EquityDoubleBarrierOption= trade type. It has one =OptionData=
+sub-node and one =BarrierData= sub-node. The relevant =OptionData=
+fields are =LongShort=, =OptionType=, =Style= and =Settlement=. The
+style allows European exercise only. Settlement can be =Cash= or
+=Physical=. Exactly one =ExerciseDate= must be given. =BarrierData=
+holds the two levels in =Levels= in ascending order. =Type= takes
+=KnockOut= or =KnockIn=. The barrier levels are quoted in the currency
+of the underlying equity spot. The underlying comes from =Name= or an
+=Underlying= node. =Currency= is the currency of the option.
+=StrikeData= holds the strike and supports =StrikePrice= only.
+=Quantity= is the number of units. =StartDate=, =Calendar= and
+=EQIndex= support a check for a barrier breach before today's date.
+The equity index format is =EQ-RIC:Code=.
+
+** Mathematical notes
+
+A knock-in option becomes a vanilla equity option when either barrier
+is reached. A knock-out option ends when either barrier is reached. An
+expired knock-out option that never touched a barrier pays its vanilla
+payoff. An expired knock-in option that never touched a barrier pays
+nothing. The value of the product is the vanilla option value adjusted
+for the probability of touching either barrier.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity and its distance to each
+  barrier.
+- The implied volatility of the underlying. It drives the chance of a
+  breach.
+- The width of the corridor between the two levels.
+- The strike and the exercise date.
+- The interest rates and dividends of the underlying.
+
+Close to a barrier the option is most sensitive to the spot and to
+volatility. The corridor width sets how long the option can survive.
+
+** How the profile ages (dynamic sensitivities)
+
+Both barriers are monitored continuously. A knock-out option that
+touches a barrier ends at once. A knock-in option that touches a
+barrier becomes a vanilla equity option for the rest of its life. An
+out option that survives ages like a vanilla option, with its
+survival probability falling as time passes without a touch.
+
+** Why a customer would want it
+
+A double barrier structure prices the range view of a customer. A
+knock-out call inside a corridor is cheaper than its vanilla
+equivalent. The corridor can also express the expectation that the
+index stays between two levels. In ORE Studio a customer books equity
+double barrier options to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a knock-out call on the S&P 500 index inside a
+corridor from 3000 to 3500:
+
+#+begin_example
+<EquityDoubleBarrierOptionData>
+    <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+            <ExerciseDate>2021-01-29</ExerciseDate>
+        </ExerciseDates>
+    </OptionData>
+    <BarrierData>
+        <Type>KnockOut</Type>
+        <Levels>
+            <Level>3000.00</Level>
+            <Level>3500.00</Level>
+        </Levels>
+    </BarrierData>
+    <Name>RIC:.SPX</Name>
+    <Currency>USD</Currency>
+    <StrikeData>
+      <StrikePrice>
+        <Value>3200.00</Value>
+        <Currency>USD</Currency>
+      </StrikePrice>
+    </StrikeData>
+    <Quantity>1000</Quantity>
+    <StartDate>2019-12-27</StartDate>
+    <Calendar>US-NYSE</Calendar>
+    <EQIndex>EQ-RIC:.SPX</EQIndex>
+</EquityDoubleBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]],
+listing =Equity Double Barrier Option data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]].
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

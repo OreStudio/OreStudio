@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 2D1B9342-FC33-49DF-8F23-5B2248968156
+:END:
+#+title: Composite Trade
+#+description: A hybrid position bundling multiple component trades; ORE's CompositeTrade product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:compositetrade:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A composite trade is a hybrid position made of several component
+trades. ORE models it with the trade type =CompositeTrade=. The
+container node is =CompositeTradeData=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A composite trade bundles several component trades into one position.
+It inherits the characteristics of the trades defined within it. The
+node carries a currency for the results, a method to calculate the
+trade notional from the components, and the list of components. A
+portfolio basket form names a basket from reference data instead.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A composite trade is a hybrid position consisting of multiple
+component subtrades. As such it inherits the characteristics of the
+trades defined within it.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]].
+
+ORE gives an example of a composite as follows:
+
+#+begin_quote
+Examples of Composite Trades include combinations of vanilla options
+like straddles.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]].
+
+ORE defines the container node as follows:
+
+#+begin_quote
+The CompositeTradeData node is the trade data container for the
+CompositeTrade trade type.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]].
+
+** In plain terms
+
+A composite trade is a wrapper around other trades. The wrapper makes
+several trades report as one position in one currency. The
+components keep their own payoff behaviour. A straddle is the classic
+example: one call and one put on the same underlying, booked as a
+single composite trade.
+
+** How it works in ORE
+
+=Currency= defines the currency in which the NPV of the composite
+trade is represented. =NotionalCalculation= is optional and defines
+how the notional of the composite is calculated:
+
+- =Sum=: the sum of the notionals of the constituent trades. This is
+  the default when the field is omitted.
+- =Mean= or =Average=: the mean of the notionals.
+- =First=: the notional of the first constituent trade.
+- =Last=: the notional of the last constituent trade.
+- =Min=: the minimum of the notionals.
+- =Max=: the maximum of the notionals.
+- =Override=: the notional is read directly from the override field.
+
+=NotionalOverride= is optional; when given, it overrides any
+calculation method. =Components= is the portfolio of trades that make
+up the composite. The components are valid trade XMLs of the kind
+that could otherwise be entered into the portfolio, with the
+exception that they can have empty ids.
+
+The node also has a portfolio basket form. =PortfolioBasket= is
+optional and indicates whether the components represent a portfolio
+basket. =BasketName= is the portfolio id. When =PortfolioBasket= is =true=,
+a =BasketName= must be given, and the basket is looked up in the
+reference data. =IndexQuantity= is the number of shares of the
+index.
+
+** Mathematical notes
+
+The composite trade has no payoff of its own. Its value is the value
+of the component trades, valued with their own engines and models.
+The composite aggregates their notionals with the chosen method. Its
+NPV is reported in =Currency=, whatever the currencies of the
+components.
+
+** What moves its value (static sensitivities)
+
+- The risk factors of each component trade. The composite inherits
+  them all.
+- The currency conversion into the reporting currency.
+- The notional aggregation method, which scales the reported
+  quantities.
+
+There is no single dominant risk factor. The profile is the sum of
+the profiles of the components.
+
+** How the profile ages (dynamic sensitivities)
+
+A composite trade has no schedule of its own. Each component ages on
+its own schedule and matures on its own dates. The composite simply
+holds the components until they all run off.
+
+** Why a customer would want it
+
+A composite trade books a strategy as one position. It reports one
+NPV, one notional and one set of results in one currency. A customer
+who trades straddles, or any basket of small trades with a common
+theme, books them as a composite. In ORE Studio a customer books
+composite trades to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a composite with two component trades and a
+sum notional:
+
+#+begin_example
+<CompositeTradeData>
+  <Currency>USD</Currency>
+  <NotionalCalculation>Sum</NotionalCalculation>
+  <Components>
+    <SubTrade id="">
+      <!-- A valid trade xml -->
+    </SubTrade>
+    <SubTrade id="">
+      <!-- A valid trade xml -->
+    </SubTrade>
+  </Components>
+</CompositeTradeData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]],
+listing =Composite trade data=. The catalogue also shows the
+portfolio basket form, in which =PortfolioBasket= is =true= and a
+=BasketName= and =IndexQuantity= are given.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

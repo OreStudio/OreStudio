@@ -1,0 +1,184 @@
+:PROPERTIES:
+:ID: E63E99AD-6C5E-446B-BE14-57A8D9042AFD
+:END:
+#+title: Double Digital Option
+#+description: A binary option paying a fixed amount when two underlyings are simultaneously in the money; ORE's Double Digital Option product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:doubledigitaloption:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A double digital option pays a fixed amount when two underlyings are
+simultaneously in the money at expiry. ORE prices it on FX, equity,
+commodity and interest-rate underlyings in any combination. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+The double digital is a binary option on two underlyings. Each
+underlying has its own strike levels and its own option type: call,
+put or collar. At expiry each underlying must be in the money with
+respect to its type. When both conditions hold at the same time, the
+fixed binary payout is due. When either fails, nothing is paid.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A double digital option is a binary option that pays out a fixed
+amount if the two underlyings (FX spots, Equity or Commodity prices,
+interest rates) are simultaneously in the money w.r.t. given strikes
+and option types at the option expiry.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]].
+
+ORE notes the range of supported underlying types:
+
+#+begin_quote
+Equity, Commodity and IR underlyings are also supported in arbitrary
+combinations.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]].
+
+** In plain terms
+
+A double digital option is an all-or-nothing bet on two markets at
+once. The buyer names a level, or a range, for each market. The
+payout happens only when both markets are on the right side of their
+levels on the same day. One missed market kills the payout. The trade
+suits a view on two markets together, and on how they move together,
+more than on either alone.
+
+** How it works in ORE
+
+The data node =DoubleDigitalOptionData= is the trade data container
+for the =DoubleDigitalOption= trade type. =Expiry= is the expiry date
+of the option and =Settlement= the payout settlement date.
+=BinaryPayout= is the amount paid when the option is in the money.
+
+Each underlying has its own strike node. =BinaryLevel1= is the strike
+for underlying 1, and =BinaryLevel2= the strike for underlying 2. For
+a call or put option the level is the strike; for a collar option it
+is the lower bound. =BinaryLevelUpper1= and =BinaryLevelUpper2= are
+the optional upper bounds, used by collar options only. The meaning
+of a level follows the underlying type. For an FX underlying it is
+the number of units of =CCY2= per unit of =CCY1=; for equity it is
+the price in the equity currency; for commodity the price in the
+commodity currency; for an interest rate it is the rate in decimal
+form. Allowable level values are non-negative numbers.
+
+=Type1= and =Type2= name the option type that applies to each
+underlying: =Call=, =Put= or =Collar=. ORE defines the in-the-money
+condition for a call and put as follows:
+
+#+begin_quote
+Underlying 1 is considered to be in the money if the spot is above
+(Call) / below (Put) the BinaryLevel1 resp. between (Collar) the
+BinaryLevel1 and BinaryLevelUpper1 at the expiry.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]].
+
+Underlying 2 is in the money under the same rule with its own level
+and upper bound. =Position= takes =Long= or =Short=. =Underlying1= and
+=Underlying2= name the two underlyings; each takes =Equity=,
+=Commodity=, =FX= or =IR= as its type. The optional =Underlying3= and
+=Underlying4= turn each side into a spread: when =Underlying3= is
+defined, the first underlying is treated as the fixing of
+=Underlying1= minus the fixing of =Underlying3=. The same applies to
+=Underlying2= with =Underlying4=. Each spread side must match the type
+of the underlying it modifies. =PayCcy= is the currency in which the
+binary payout is paid.
+
+** Mathematical notes
+
+The payout is a fixed amount or nothing. The option pays the binary
+payout when both underlying values satisfy their in-the-money
+conditions at expiry, and pays zero otherwise. Each underlying
+condition is a digital in its own right: the spot above the level for
+a call, below it for a put, or inside the lower and upper bounds for
+a collar. The joint condition is the product of the two digitals. The
+position flag decides whether the holder receives or pays the payout.
+When a spread side is present, the underlying value is the difference
+of two fixings instead of a single fixing.
+
+** What moves its value (static sensitivities)
+
+- The spot levels of both underlyings at expiry. They decide the two
+  digital conditions.
+- The volatility of each underlying. It sets the probability of each
+  condition.
+- The correlation between the two underlyings. The joint condition
+  fires only when both are in the money, so its probability depends
+  on the dependence between them.
+- The strike levels and the upper bounds.
+- The binary payout amount.
+- The interest rates that discount the payout.
+
+** How the profile ages (dynamic sensitivities)
+
+The trade has no cashflows before expiry. Both underlyings diffuse
+until the expiry date. At expiry each spot is compared with its
+levels and type. When both conditions hold, the fixed payout is paid
+on the settlement date. The value of the trade decays toward the
+discounted probability that both digitals fire together.
+
+** Why a customer would want it
+
+A double digital option packages two market views into one binary
+payout. It costs less than two single digitals because it demands
+both conditions at once. The structure suits investors who expect two
+markets to land in specific regions at the same date, and who want a
+known payout if they are right. In ORE Studio a customer books double
+digital options to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a double digital on EUR-USD and JPY-USD. The
+trade pays 12000000 USD when EUR-USD is above 1.1 and JPY-USD sits
+between 0.006 and 0.008 on the expiry date:
+
+#+begin_example
+<DoubleDigitalOptionData>
+  <Expiry>2021-09-01</Expiry>
+  <Settlement>2021-09-03</Settlement>
+  <BinaryPayout>12000000</BinaryPayout>
+  <BinaryLevel1>1.1</BinaryLevel1>
+  <BinaryLevel2>0.006</BinaryLevel2>
+  <BinaryLevelUpper2>0.008</BinaryLevelUpper2>
+  <Type1>Call</Type1>
+  <Type2>Collar</Type2>
+  <Position>Long</Position>
+  <Underlying1>
+    <Type>FX</Type>
+    <Name>ECB-EUR-USD</Name>
+  </Underlying1>
+  <Underlying2>
+    <Type>FX</Type>
+    <Name>ECB-JPY-USD</Name>
+  </Underlying2>
+  <PayCcy>USD</PayCcy>
+</DoubleDigitalOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]],
+listing =Double Digital Option data=. The catalogue also walks through
+a term sheet variant of the same structure with a put on the second
+underlying.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/doubledigitaloption.tex][doubledigitaloption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

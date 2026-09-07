@@ -1,0 +1,310 @@
+:PROPERTIES:
+:ID: 2C172183-1513-45EC-9A42-F0F3AB0E1F56
+:END:
+#+title: Generic Barrier Option
+#+description: A vanilla, asset-or-nothing or cash-or-nothing option with American and expiry barriers; ORE's Generic Barrier Option product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:generic_barrieroption:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A generic barrier option pays a European payoff at maturity, made
+conditional on American barriers and on a single European barrier at
+expiry. ORE prices it on FX, equity and commodity underlyings, single
+or multiple. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+The product pays a vanilla call or put, an asset-or-nothing or a
+cash-or-nothing payoff at maturity. American knock-in and knock-out
+barriers are monitored on a defined schedule. An option that knocks
+out cannot knock in again. A knock-out before a knock-in, and the
+reverse, are separate sub-types. A Transatlantic Barrier adds one
+European barrier check at expiry. Rebates can compensate the holder
+when the barriers deactivate the option.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+Generic Barrier Options pay a (European) vanilla call / put, an
+asset or nothing or a cash or nothing payoff at their maturity. The
+payoff at maturity can be made conditional on (single) European
+Knock-In or Knock-Out barrier condition ("Transatlantic Barrier").
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+ORE describes the American barriers:
+
+#+begin_quote
+In addition, a number of American Knock-In and Knock-Out barrier
+conditions can be defined that are monitored on a defined schedule,
+e.g. a daily schedule between a monitoring start and end date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+ORE states the knock-in and knock-out logic:
+
+#+begin_quote
+The different barrier types are "UpAndIn", "UpAndOut", "DownAndIn",
+"DownAndOut". If at least one Knock-In barrier is defined, the final
+payoff is only activated if at least one Knock-In barrier is touched.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+#+begin_quote
+An option that is knocked out, can not knock in again.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+** In plain terms
+
+A generic barrier option is a customisable barrier package on one
+payoff. The payoff can be a plain call or put, the asset itself, or a
+fixed cash amount. Several American barriers can watch the underlying
+on a schedule, each able to knock the option in or out. Once knocked
+out, the option stays dead. The timing rules decide whether a
+knock-out can happen before or only after a knock-in. A final
+European barrier adds one more condition at expiry. Rebates soften
+the loss when a barrier kills the option.
+
+** How it works in ORE
+
+ORE introduces the trade types:
+
+#+begin_quote
+Generic Barrier Options are defined using one of the trade types
+FxGenericBarrierOption, EquityGenericBarrierOption,
+CommodityGenericBarrierOption depending on the underlying asset class
+and an associated node FxGenericBarrierOptionData,
+EquityGenericBarrierOptionData, CommodityGenericBarrierOptionData.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+A generic barrier option has one or multiple underlyings. The single
+=Underlying= node names one underlying. The =Underlyings= node is the
+alternative form, present when several underlyings are used, and only
+one of the two can be present. In the multi-underlying case every
+barrier must provide one level per underlying. For FX underlyings the
+currency order defines the observed value: for EUR-USD the domestic
+currency is USD and the observed value is USD per EUR, while for
+USD-EUR the roles are reversed.
+
+=PayCurrency= is the payment currency. It is usually the domestic
+currency for an FX underlying, and the equity or commodity currency
+for those types. Quanto payoffs are allowed: the foreign currency
+for FX, or a third currency, or a currency different from the equity
+or commodity currency.
+
+=OptionData= carries the option description. =LongShort= takes =Long=
+or =Short=. =PayoffType= selects =Vanilla=, =AssetOrNothing= or
+=CashOrNothing=. =OptionType= is required for the vanilla payoff and
+takes =Call= or =Put=. =ExerciseDate= is the exercise date. A
+=Premiums= node is optional and holds premiums paid unconditionally.
+=SettlementDate= is optional and used unadjusted as given. Instead of
+it, a settlement lag, convention and calendar can be given relative
+to the exercise date; the two specifications exclude each other. The
+lag defaults to =0D=, the calendar to the underlying calendar, and
+the convention to =Following=. =Quantity= is the option quantity,
+required for the vanilla and asset-or-nothing payoffs; for FX it is
+the amount in foreign currency. =Strike= is required for the vanilla
+payoff. =Amount= is required for the cash-or-nothing payoff.
+
+=Barriers= holds the barrier definition. Its =ScheduleData= node is
+the observation schedule; alternatively a daily schedule with respect
+to the underlying calendar comes from =StartDate= and =EndDate=.
+Each =BarrierData= block defines one barrier with its =Type=, one
+=Levels= entry, and the rebate terms. =Rebate= defaults to zero.
+=RebateCurrency= defaults to =PayCurrency=. =RebatePayTime= takes
+=atExpiry= or =atHit=; only =atExpiry= is allowed for knock-in
+barriers. ORE describes the timing choice for knock-out barriers:
+
+#+begin_quote
+If only Knock-Out barriers are defined, one can associate different
+rebate amounts to each of the barriers. Once the option knocks out at
+a barrier, the associated amount is paid. Furthermore, the timing of
+the payment can be "atHit" (i.e. immediately when the barrier is hit)
+or "atExpiry" (i.e. on the settlement date associated to the expiry
+date of the underlying option).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+For knock-in barriers, or a mixed set, only one rebate amount can be
+defined, paid at expiry. ORE describes the Transatlantic rebate as
+follows:
+
+#+begin_quote
+In both cases a separate Transatlantic Barrier Rebate amount can be
+specified that is paid when the American barriers do not deactivate
+the underlying option, but the additional Transatlantic Barrier does.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+=StrictComparison= tunes the barrier checks: the value 0 uses
+less-or-equal and greater-or-equal comparisons for knock-in barriers
+and strict comparisons for knock-out barriers; 1 uses strict
+comparisons for both; 2 uses less-or-equal and greater-or-equal for
+both. The value defaults to 0.
+
+=KikoType= is required when both knock-in and knock-out barriers are
+defined. ORE lists its values:
+
+#+begin_quote
+KoAlways: The option can knock out any time in the monitoring period
+KoAfterKi: The option can only knock out after a Knock-In
+KoBeforeKi: The option can only knock out before a Knock-In
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+
+=TransatlanticBarrier= is optional. It holds one BarrierData block
+with one level per underlying, or the matching number of blocks with
+one level each. Its type, level, strict comparison and rebate are the
+relevant fields. The rebate is paid when there is no knock-out from
+the American barriers and no payoff from the Transatlantic barrier.
+
+** Mathematical notes
+
+ORE states the payoff types with S the underlying value and K the
+strike. The vanilla payoff is the positive part of S minus K for a
+call, or of K minus S for a put, paid in the pay currency. The
+asset-or-nothing payoff pays S in the pay currency. The
+cash-or-nothing payoff pays the fixed amount in the pay currency.
+
+The American barriers scale the payoff. A knock-out barrier zeroes it
+when touched on the monitoring schedule; a knock-in barrier activates
+it when touched. The sub-type rules order the knock-out relative to a
+knock-in. The Transatlantic barrier applies the same in-or-out logic
+in a single check at expiry. The rebates pay the associated amounts
+at the barrier hit or at expiry, per the =RebatePayTime= setting.
+
+** What moves its value (static sensitivities)
+
+- The underlying value at expiry. It drives the payoff and the
+  Transatlantic barrier.
+- The path of the underlying over the monitoring schedule. It drives
+  the American barriers.
+- The volatility of the underlying.
+- The correlation between underlyings, in the multi-asset form.
+- The barrier levels, types and the =KikoType= ordering.
+- The payoff type and its parameters: strike, amount, quantity.
+- The rebate amounts and their payment timing.
+- The interest rates that discount the payoffs and rebates.
+
+** How the profile ages (dynamic sensitivities)
+
+Each date of the monitoring schedule checks the American barriers. A
+knock-out can end the option at any monitored point, subject to the
+=KikoType= ordering. A knock-in can activate a dormant payoff. The
+Transatlantic barrier is decided once, at expiry, together with the
+payoff. Rebates fall due at the barrier hit or at expiry, per their
+payment time. The settlement date then settles the payoff.
+
+** Why a customer would want it
+
+A generic barrier option assembles several barrier features in one
+trade. The buyer can combine American windows, a European barrier at
+expiry, sub-type ordering and rebates in one contract. The structure
+serves structured products that need precise barrier timing and
+protection against barrier losses. In ORE Studio a customer books
+generic barrier options to value them and run sensitivities on the
+ORE engine.
+
+** Example
+
+ORE's catalogue shows a long vanilla call on EUR-USD struck at 1.2
+with a full barrier structure. The trade monitors a down-and-out at
+1.1 and an up-and-in at 1.3 daily until expiry, and adds a
+Transatlantic up-and-out at 1.3:
+
+#+begin_example
+<FxGenericBarrierOptionData>
+  <Underlying>
+    <Type>FX</Type>
+    <Name>ECB-EUR-USD</Name>
+  </Underlying>
+  <PayCurrency>USD</PayCurrency>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <PayoffType>Vanilla</PayoffType>
+    <OptionType>Call</OptionType>
+    <ExerciseDates>
+      <ExerciseDate>2023-06-06</ExerciseDate>
+    </ExerciseDates>
+  </OptionData>
+  <SettlementDate>2023-06-08</SettlementDate>
+  <Quantity>100000000</Quantity>
+  <Strike>1.2</Strike>
+  <Barriers>
+    <ScheduleData>
+      <Rules>
+        <StartDate>2021-07-10</StartDate>
+        <EndDate>2023-06-06</EndDate>
+        <Tenor>1D</Tenor>
+        <Calendar>TGT,US</Calendar>
+        <Convention>F</Convention>
+        <TermConvention>F</TermConvention>
+        <Rule>Forward</Rule>
+      </Rules>
+    </ScheduleData>
+    <BarrierData>
+      <Type>DownAndOut</Type>
+      <Levels>
+        <Level>1.1</Level>
+      </Levels>
+      <Rebate>1000000</Rebate>
+      <RebateCurrency>USD</RebateCurrency>
+      <RebatePayTime>atExpiry</RebatePayTime>
+      <StrictComparison>1</StrictComparison>
+    </BarrierData>
+    <BarrierData>
+      <Type>UpAndIn</Type>
+      <Levels>
+        <Level>1.3</Level>
+      </Levels>
+      <Rebate>1000000</Rebate>
+      <RebateCurrency>USD</RebateCurrency>
+      <RebatePayTime>atExpiry</RebatePayTime>
+    </BarrierData>
+    <KikoType>KoAfterKi</KikoType>
+  </Barriers>
+  <TransatlanticBarrier>
+    <BarrierData>
+      <Type>UpAndOut</Type>
+      <Levels>
+        <Level>1.3</Level>
+      </Levels>
+      <Rebate>2000000</Rebate>
+      <RebateCurrency>USD</RebateCurrency>
+      <StrictComparison>1</StrictComparison>
+    </BarrierData>
+  </TransatlanticBarrier>
+</FxGenericBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]],
+listing =Generic Barrier Option data (FX Underlying)=. The catalogue
+also shows the multi-asset form with two FX underlyings and one
+barrier level per underlying.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]].
+  The upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

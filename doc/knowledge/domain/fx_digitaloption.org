@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: C880CEB4-4FB7-41AA-8A4A-A650B6FC388C
+:END:
+#+title: FX Digital Option
+#+description: An FX option paying a fixed amount when the rate settles; ORE's FxDigitalOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_digitaloption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX digital option is the binary bet of the FX family. It pays a
+fixed amount or nothing. ORE models it with the trade type
+=FxDigitalOption=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+A digital FX option pays either zero or a fixed predetermined amount,
+cash or nothing. The payout depends on whether the underlying FX spot
+rate expires in the money at the expiration date. Exercise is
+European, with payout at expiry. The buyer pays a premium. The trade
+data names the strike, the payoff amount and currency, and the foreign
+and domestic currencies.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Digital FX Option is an option whose payout is either zero or a
+fixed predetermined amount (Cash-or-Nothing). Payout depends on
+whether the underlying FX spot rate expires in-the-money at the
+expiration date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitaloption.tex][fx_digitaloption.tex]].
+
+ORE adds that digital FX options have European exercise with payout at
+expiry. The buyer of a digital FX option pays a premium to the seller.
+
+** In plain terms
+
+An FX digital option is a bet on one outcome. If the rate settles on
+the right side of the strike, the payout is fixed. If not, the payout
+is zero. There is no middle ground. The fixed payout makes the value
+easy to read as a probability.
+
+** How it works in ORE
+
+The =FxDigitalOptionData= node includes one =OptionData= node plus
+elements specific to the option. The =Strike= sets the boundary. The
+=PayoffAmount= and =PayoffCurrency= set the fixed payout.
+=ForeignCurrency= and =DomesticCurrency= name the rate. The call
+pays when the rate at expiry sits above the strike. The put pays when
+it sits below.
+
+** Mathematical notes
+
+A digital option equals the limit of a call spread as the two strikes
+converge. Its value is the discounted probability that the rate ends
+on the right side of the strike. Volatility changes the value through
+the probability, not through the payoff size. The payoff amount is
+fixed, so the option has no linear payoff tail.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. Its position against the strike sets the odds.
+- The volatility of the pair. It spreads the terminal rate around the
+  forward.
+- The interest rates in both currencies.
+- The strike, the payoff amount, and the payoff currency.
+
+A digital near the strike is volatile to spot. Its delta is highest at
+the money. Away from the strike the value saturates near zero or near
+the full payoff.
+
+** How the profile ages (dynamic sensitivities)
+
+The option loses time value as expiry approaches. At the money, the
+value converges to a coin flip on the payoff. In the money, it
+converges toward the full payoff. Out of the money, it decays to
+zero. At expiry the payout is decided by the fixing and settles.
+
+** Why a customer would want it
+
+A customer who wants a fixed payout on a rate view buys a digital. The
+payout is known in advance, which suits structured products. Dealers
+use digitals to shape option books. In ORE Studio a customer books FX
+digital options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European digital call:
+
+#+begin_example
+<FxDigitalOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <OptionType>Call</OptionType>
+    <Style>European</Style>
+    <ExerciseDates>
+      <ExerciseDate>2021-12-14</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <Strike>1.1</Strike>
+  <PayoffCurrency>USD</PayoffCurrency>
+  <PayoffAmount>100000</PayoffAmount>
+  <ForeignCurrency>EUR</ForeignCurrency>
+  <DomesticCurrency>USD</DomesticCurrency>
+</FxDigitalOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitaloption.tex][fx_digitaloption.tex]],
+listing =FX Digital Option data= (optional elements omitted).
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitaloption.tex][fx_digitaloption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

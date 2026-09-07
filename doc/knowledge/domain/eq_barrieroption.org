@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 80C9B215-EBBA-4367-902B-C0687C0E43E8
+:END:
+#+title: Equity Barrier Option
+#+description: A barrier option on an equity price; ORE's EquityBarrierOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_barrieroption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity barrier option exists only while the equity spot stays on
+one side of a barrier level. The barrier is monitored continuously.
+ORE models it with the trade type =EquityBarrierOption=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+An equity barrier option is a path-dependent option whose existence
+depends on the equity spot rate reaching a pre-set barrier level.
+Exercise is European. The product has a continuously monitored single
+barrier with a vanilla European equity option underlying. Knock-in
+options become active when the barrier is reached. Knock-out options
+cease to exist when it is reached. The barrier level is quoted in the
+currency of the underlying equity spot. The container node is
+=EquityBarrierOptionData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Equity Barrier Option is a path-dependent option whose existence
+depends upon an Equity spot rate reaching a pre-set barrier level.
+Exercise is European.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]].
+
+ORE states the monitoring as follows:
+
+#+begin_quote
+This product has a continuously monitored single barrier with a
+Vanilla European Equity Option Underlying. A set number of shares of a
+single name equity or an equity index is specified by the "Quantity".
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]].
+
+** In plain terms
+
+A barrier option is a vanilla option with a tripwire. The tripwire
+sits above or below the current price. If the price crosses it, the
+option either switches on or switches off. The tripwire makes the
+option cheaper or more exotic than the vanilla form.
+
+** How it works in ORE
+
+The =EquityBarrierOptionData= node is the trade data container for the
+=EquityBarrierOption= trade type. It has one =OptionData= sub-node and
+one =BarrierData= sub-node. Only the European option style is
+allowed. The barrier level in =BarrierData= is quoted in the same
+currency as the underlying equity spot price. Changing the option from
+call to put does not require switching the barrier level. =StartDate=
+is optional. It starts the check for a barrier breach before today's
+date. Without it no check is made and no past breach is assumed.
+=Calendar= and =EQIndex= support that past check. The equity index
+format is =EQ-RIC:Code=. =StrikeData= holds the strike and supports
+=StrikePrice= only. Composite options with a strike currency different
+from the underlying equity currency are not supported. =Quantity= is
+the number of units of the underlying. =Currency= is the payment
+currency. Quanto payoffs are not allowed: the payment currency must
+equal the underlying equity currency up to the major or minor
+distinction.
+
+** Mathematical notes
+
+The four main types are up-and-out, down-and-out, up-and-in and
+down-and-in. An up option starts below the barrier and needs the price
+to rise. A down option starts above the barrier and needs the price to
+fall. A knock-out option dies when the barrier is reached. A knock-in
+option becomes a vanilla equity option when the barrier is reached. An
+option that expires inactive pays zero, or a cash rebate paid as a
+fraction of the original premium. The value of the product is the
+vanilla option value adjusted for the probability of the barrier
+event.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity and its distance to the
+  barrier.
+- The implied volatility of the underlying. It drives the chance of a
+  breach.
+- The strike and the barrier level.
+- The interest rates and dividends of the underlying.
+- The rebate, when one applies.
+
+Close to the barrier the option is most sensitive to the spot and to
+volatility. The barrier probability dominates near the level.
+
+** How the profile ages (dynamic sensitivities)
+
+The barrier is monitored continuously from the start date. A knock-in
+option that triggers becomes a vanilla equity option for the rest of
+its life. A knock-out option that triggers ends at once. If no breach
+occurs, an out option ages like a vanilla option until expiry, while
+its survival probability falls as time passes without a touch.
+
+** Why a customer would want it
+
+A barrier structure lets a customer pay for the optionality they
+expect to use. A knock-out call suits a view that the index stays
+below the barrier. The rebate softens the loss when the option dies.
+In ORE Studio a customer books equity barrier options to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a call on the S&P 500 index with a strike of
+3200 and a start date in 2025:
+
+#+begin_example
+<EquityBarrierOptionData>
+    <OptionData>
+        ...
+    </OptionData>
+    <BarrierData>
+        ...
+    </BarrierData>
+    <StartDate>2025-01-25</StartDate>
+    <Calendar>TARGET</Calendar>
+    <EQIndex>EQ-RIC:.SPX</EQIndex>
+    <Name>RIC:.SPX</Name>
+    <StrikeData>
+      <StrikePrice>
+        <Value>3200.00</Value>
+        <Currency>USD</Currency>
+      </StrikePrice>
+    </StrikeData>
+    <Quantity>1000</Quantity>
+    <Currency>USD</Currency>
+</EquityBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]],
+listing =Equity Barrier Option data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_barrieroption.tex][eq_barrieroption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

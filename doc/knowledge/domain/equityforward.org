@@ -1,0 +1,138 @@
+:PROPERTIES:
+:ID: D60CBEE4-AE5C-421B-AAEF-5E56DC75A662
+:END:
+#+title: Equity Forward
+#+description: An agreement to buy or sell shares at a future price; ORE's EquityForward product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityforward:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity forward locks the price of shares to be bought or sold at a
+future date. The contract is cash settled and pays no dividends. ORE
+models it with the trade type =EquityForward=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An equity forward is an agreement to buy or sell a set number of
+shares of a single equity name or an equity index at a fixed strike at
+maturity. The product involves no upfront payment. It pays no
+dividends. Settlement is cash. Vanilla equity forwards are supported.
+The container node is =EquityForwardData=. The =LongShort= element
+names the direction. =Maturity= is the buy or sell date. =Strike= is
+quoted in the currency of the underlying.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Equity Forward contract is an agreement between two counterparties
+to buy/sell a set number of shares of a single name equity or an
+equity index, at a predetermined strike price, at the end of the
+contract. An equity forward does not involve any upfront payment, does
+not pay dividends, and settlement is cash.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityforward.tex][equityforward.tex]].
+
+** In plain terms
+
+An equity forward is a promise to trade shares later at a price agreed
+today. No money changes hands at inception. At maturity the difference
+between the market price and the agreed price is settled in cash. A
+long forward profits when the share price rises. A short forward
+profits when it falls.
+
+** How it works in ORE
+
+The =EquityForwardData= node is the trade data container for the
+=EquityForward= trade type. Only vanilla equity forwards are
+supported. =LongShort= names the direction: =Long= buys the underlying,
+=Short= sells it. =Maturity= is the date when the shares are bought or
+sold. The underlying is a single equity or an equity index, given by
+=Name= or by an =Underlying= node. That node defines the equity curve
+used for pricing. =Quantity= is the number of units. =Currency= is the
+payment currency. If the underlying is quoted in another currency, the
+=SettlementData= sub-node must carry an =FXIndex= to convert the
+payoff. =Strike= is the agreed buy or sell price. It must be quoted in
+the same currency as the underlying. =StrikeCurrency= is optional and
+defaults to the payment currency. Minor-currency values are converted
+to the major currency. The =SettlementData= node can set a payment
+=Date=. Alternatively its =Rules= sub-node derives the payment date
+from maturity with =PaymentLag=, =PaymentCalendar= and
+=PaymentConvention=.
+
+** Mathematical notes
+
+The payoff of a long forward at maturity is the quantity times the
+difference between the spot and the strike, Quantity x (S_T - K). The
+sign reverses for a short forward. A fair new trade has no upfront
+payment, so its strike equals the market forward price. The forward
+price grows the spot at the risk-free rate and deducts expected
+dividends. Volatility does not enter a linear forward price.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity or index. Each unit of spot
+  moves the value almost one for one.
+- The expected dividends of the underlying.
+- The risk-free rates in the underlying currency.
+- The FX rate when the payment currency differs from the underlying
+  currency.
+- The discount curve in the payment currency.
+
+A long forward gains as the spot rises. A short forward gains as it
+falls.
+
+** How the profile ages (dynamic sensitivities)
+
+The forward ages linearly. Each unit of spot moves the value one for
+one from the moment of the trade. The financing component decays as
+maturity approaches. At maturity the value equals the payoff. The
+contract then settles in cash and the exposure ends.
+
+** Why a customer would want it
+
+A customer can lock the future purchase or sale price of shares or an
+index without paying cash today. The contract hedges a planned equity
+trade. It also expresses a directional view with leverage. Cash
+settlement avoids delivery. In ORE Studio a customer books equity
+forwards to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long US dollar forward on the S&P 500 index:
+
+#+begin_example
+<EquityForwardData>
+  <LongShort>Long</LongShort>
+  <Maturity>2018-06-30</Maturity>
+  <Name>RIC:.SPX</Name>
+  <Currency>USD</Currency>
+  <Strike>2147.56</Strike>
+  <StrikeCurrency>USD</StrikeCurrency>
+  <Quantity>17000</Quantity>
+</EquityForwardData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityforward.tex][equityforward.tex]],
+listing =Equity Forward data=.
+
+The optional counterpart to this product is the
+[[id:803F50A7-7DB5-4F6B-81F4-BE48C6EEFAB1][Equity Option]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Forward_contract][Wikipedia: Forward contract]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityforward.tex][equityforward.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

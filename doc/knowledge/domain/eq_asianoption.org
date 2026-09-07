@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: 90BB6829-31EC-4C86-BE17-FDABF670DDB6
+:END:
+#+title: Equity Asian Option
+#+description: An Asian option on the average equity price; ORE's EquityAsianOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:eq_asianoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity Asian option pays on the averaged price of an equity
+underlying over a set period. The averaging smooths the payoff. ORE
+models it with the trade type =EquityAsianOption=. This note records
+the domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An equity Asian option is a path-dependent option whose payoff depends
+on the averaged price of an equity underlying over a pre-set period.
+The average is arithmetic by default and can be geometric. A fixed-
+strike form compares the average to a strike. A floating-strike form
+compares the final price to the average. The container node is
+=EquityAsianOptionData=. It holds one =OptionData= sub-node and an
+=ObservationDates= schedule. The container node includes the strike,
+quantity and underlying.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Equity Asian Option is a path-dependent option whose payoff depends
+upon the averaged price of an Equity underlying over a pre-set period
+of time.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_asianoption.tex][eq_asianoption.tex]].
+
+** In plain terms
+
+An Asian option looks at the average price instead of the final price.
+Daily fixings over the observation period build the average. A
+customer who fears a price spike on one day prefers the average. The
+payoff is harder to manipulate and cheaper than a vanilla option.
+
+** How it works in ORE
+
+The =EquityAsianOptionData= node is the trade data container for the
+=EquityAsianOption= trade type. It has one =OptionData= trade
+component sub-node plus elements specific to the equity Asian option.
+=StrikeData= holds the strike in =Value= and the currency of the
+underlying and the strike in =Currency=. =Quantity= is the number of
+underlying equities. The node takes one =Underlying= element with
+=Type= set to =Equity=. The =OptionData= fields set =LongShort=,
+=OptionType=, =PayoffType= and the exercise date. =PayoffType= must be
+=Asian= or =AverageStrike=. The first identifies a fixed-strike Asian
+payoff and the second a floating-strike payoff. =PayoffType2= is
+optional and takes =Arithmetic= or =Geometric=. It defaults to
+=Arithmetic=. Exactly one =ExerciseDate= must be given. =Premiums=
+can represent deterministic option premia. =Settlement= is optional
+and defaults to the exercise date. =ObservationDates= holds the Asian
+observation period as a rules-based or dates-based schedule.
+
+** Mathematical notes
+
+The payoff is Payoff = Quantity x MAX(omega x (A(0,T) - K), 0). A(0,T)
+is the arithmetic average of the underlying equity spot price over
+the Asian observation period from start 0 to end T. K is the equity
+strike price. Omega is 1 for a call option and -1 for a put option.
+A geometric average is available through =PayoffType2=. The averaging
+reduces the volatility that reaches the payoff.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity.
+- The implied volatility of the underlying.
+- The strike and the exercise date.
+- The observation schedule and its remaining fixings.
+- The interest rates and dividends of the underlying.
+
+The average lags the spot. A move near the end of the period moves the
+average more than a move near the start.
+
+** How the profile ages (dynamic sensitivities)
+
+Each observation date adds a fixing to the average. Early fixings
+become fixed parts of the average. As the period fills, the average
+stiffens and the option's effective delta falls. Near the final
+observation the average is almost known and the option value
+approaches its settlement value.
+
+** Why a customer would want it
+
+A customer who receives or pays a periodic equity price, such as an
+average-priced buyback, wants an option on that average. The Asian
+payoff matches the exposure and costs less than a vanilla option of
+the same expiry. In ORE Studio a customer books equity Asian options
+to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long call on the average of the S&P 500 index
+over daily observations:
+
+#+begin_example
+<Trade id="EquityAsianOption">
+  <TradeType>EquityAsianOption</TradeType>
+  <Envelope>
+    <CounterParty>CPTY_A</CounterParty>
+    <NettingSetId>CPTY_A</NettingSetId>
+    <AdditionalFields />
+  </Envelope>
+  <EquityAsianOptionData>
+    <Quantity>100</Quantity>
+    <Currency>USD</Currency>
+    <StrikeData>
+      <Value>3100</Value>
+      <Currency>USD</Currency>
+    </StrikeData>
+    <Underlying>
+      <Type>Equity</Type>
+      <Name>RIC:.SPX</Name>
+      <Currency>USD</Currency>
+    </Underlying>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <PayoffType>Asian</PayoffType>
+      <PayoffType2>Arithmetic</PayoffType2>
+      <ExerciseDates>
+        <ExerciseDate>2020-07-15</ExerciseDate>
+      </ExerciseDates>
+      <Premiums> ... </Premiums>
+    </OptionData>
+    <Settlement>2020-07-20</Settlement>
+    <ObservationDates>
+      <Rules>
+        <StartDate>2019-12-27</StartDate>
+        <EndDate>2020-07-06</EndDate>
+        <Tenor>1D</Tenor>
+        <Calendar>US</Calendar>
+        <Convention>F</Convention>
+        <TermConvention>F</TermConvention>
+        <Rule>Forward</Rule>
+      </Rules>
+    </ObservationDates>
+  </EquityAsianOptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_asianoption.tex][eq_asianoption.tex]],
+listing =Equity Asian Option data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Asian_option][Wikipedia: Asian option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_asianoption.tex][eq_asianoption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

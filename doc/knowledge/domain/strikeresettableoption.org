@@ -1,0 +1,176 @@
+:PROPERTIES:
+:ID: 18E6A88B-6F6E-488F-91B2-B6106C43AF73
+:END:
+#+title: Strike Resettable Option
+#+description: An option whose strike resets when the underlying reaches a level; ORE's Strike Resettable Option product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:strikeresettableoption:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A strike resettable option is an option whose strike can reset to a
+new level when the underlying reaches a set level on one of its
+observation dates. ORE offers it for FX, equity and commodity
+underlyings. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+The option trades like a vanilla call or put on one underlying. A
+separate set of observation dates watches the underlying against a
+trigger price. When the underlying crosses the trigger, the strike
+resets to a new level. The payoff at expiry uses the reset strike.
+Without the trigger the payoff uses the initial strike.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+The Strike Resettable Option is an option on a single underlying.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/strikeresettableoption.tex][strikeresettableoption.tex]].
+
+The reset works on a trigger. When the underlying price reaches a
+certain level on an observation date, the strike of the option resets
+to a new strike.
+
+ORE names the trade types per asset class as follows:
+
+#+begin_quote
+Strike Resettable Options are defined using one of the trade types
+FxStrikeResettableOption, EquityStrikeResettableOption,
+CommodityStrikeResettableOption depending on the underlying asset
+class and an associated node FxStrikeResettableOptionData,
+EquityStrikeResettableOptionData, CommodityStrikeResettableOptionData.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/strikeresettableoption.tex][strikeresettableoption.tex]].
+
+** In plain terms
+
+A strike resettable option is a vanilla option with a ratchet. The
+strike is not fixed for life. If the market reaches an agreed level
+on an agreed set of dates, the strike moves to a new agreed level.
+The expiry payoff uses whichever strike applies. The buyer pays a
+premium for the reset feature.
+
+** How it works in ORE
+
+=Underlying= defines the underlying. For FX the order of the
+currencies defines the observed value: for EUR-USD the domestic
+currency is USD and the observed value is dollars per euro, while for
+USD-EUR the domestic currency is EUR. =LongShort= says whether the
+payoff is computed for the holder or the seller of the option.
+=OptionType= says whether the option is a call or a put. =Currency=
+is the payment currency. =Strike= is the initial strike.
+=ResetStrike= is the strike used when the trigger has fired.
+=Quantity= scales the payoff. =Premium=, which defaults to zero, and
+=PremiumDate= record the option premium and its payment date.
+
+ORE describes the trigger mechanism as follows:
+
+#+begin_quote
+If Up, the trigger event occurs when the underlying value is above
+the TriggerPrice on any ObservationDates. If Down, the trigger event
+occurs when the underlying value is below the TriggerPrice on any
+ObservationDates.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/strikeresettableoption.tex][strikeresettableoption.tex]].
+
+=TriggerType= takes the values =Up= or =Down=. =TriggerPrice= is the
+level of the underlying at which the trigger fires.
+=ObservationDates= are the dates on which the underlying index level
+is observed for the reset. =ExpiryDate= is the date on which the
+option expires and the payoff is computed. =SettlementDate= is the
+date on which the payoff settles; ORE uses it unadjusted, as given.
+
+** Mathematical notes
+
+At expiry the payoff is the option payoff on the final index value.
+The mechanics follow the option type: a call pays when the final
+index is above the strike, a put when it is below. The quantity
+scales the payoff and the long-short direction flips it. When the
+reset event has fired, the payoff uses the reset strike. Otherwise it
+uses the initial strike. The final index value is the underlying
+index value on the expiry date.
+
+** What moves its value (static sensitivities)
+
+- The underlying price. It decides both the trigger and the final
+  payoff.
+- The volatility of the underlying. It drives the probability that
+  the trigger fires before expiry.
+- The distance between the trigger price and the reset strike.
+- The interest rates that discount the premium and the payoff.
+
+The reset makes the option path dependent in a binary way: the value
+splits into a triggered branch and an untriggered branch, each with
+its own strike.
+
+** How the profile ages (dynamic sensitivities)
+
+The trigger is observed on the observation dates, not continuously.
+Each observation can fire the reset. After the reset, the payoff at
+expiry uses the reset strike. Without the reset, the initial strike
+stands. On the expiry date the payoff is computed; the settlement
+date follows unadjusted.
+
+** Why a customer would want it
+
+The reset lets a customer change the strike of an option after the
+trade starts. This supports views on the market reaching a level and
+then reversing. In ORE Studio a customer books strike resettable
+options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a put on the S&P 500 with a reset to a higher
+strike when the index trades above 4000:
+
+#+begin_example
+<EquityStrikeResettableOptionData>
+  <LongShort>Long</LongShort>
+  <OptionType>Put</OptionType>
+  <Currency>USD</Currency>
+  <Strike>3500</Strike>
+  <ResetStrike>3650</ResetStrike>
+  <Quantity>10000</Quantity>
+  <TriggerType>Up</TriggerType>
+  <TriggerPrice>4000</TriggerPrice>
+  <SettlementDate>2021-06-25</SettlementDate>
+  <ExpiryDate>2021-06-21</ExpiryDate>
+  <PremiumDate>2021-06-25</PremiumDate>
+  <Premium>100</Premium>
+  <Underlying>
+    <Type>Equity</Type>
+    <Name>RIC:.SPX</Name>
+  </Underlying>
+  <ObservationDates>
+    <Dates>
+      <Dates>
+        <Date>2021-04-26</Date>
+        <Date>2021-05-24</Date>
+        <Date>2021-06-21</Date>
+      </Dates>
+    </Dates>
+  </ObservationDates>
+</EquityStrikeResettableOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/strikeresettableoption.tex][strikeresettableoption.tex]],
+listing =Strike Resettable Option data (Equity Underlying)=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/strikeresettableoption.tex][strikeresettableoption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

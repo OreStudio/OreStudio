@@ -1,0 +1,207 @@
+:PROPERTIES:
+:ID: 6B1D0C78-0CAF-4A1C-BA34-56FB07C4F107
+:END:
+#+title: Autocallable Type 01
+#+description: A structured option that pays accumulated amounts and redeems early below a trigger level; ORE's Autocallable Type 01 product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:autocallable_01:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+An autocallable of type 01 pays the holder a sequence of accumulation
+amounts on fixing dates, and redeems early when the underlying falls
+to a trigger level. ORE prices it on equity, FX and commodity
+underlyings. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+The product is characterised by a notional, a determination level, a
+trigger level, an underlying, fixing dates with matching settlement
+dates, accumulation factors and a cap. On each fixing date the
+holder receives the notional times the accumulation factor when the
+spot is at or below the trigger level. The structure then terminates
+on the settlement date of that fixing. Without a trigger event, the
+holder pays at the last fixing date when the spot is above the
+determination level, capped per unit of notional.
+
+* Detail
+
+** What it is
+
+ORE characterises the autocallable option of type 01 by its data: a
+notional amount, a determination level, a trigger level, the
+reference underlying, a number of fixing dates with matching
+settlement dates, a list of accumulation factors, and a cap. On each
+fixing date, when the underlying spot is at or below the trigger
+level, the option holder receives the notional times the accumulation
+factor for that fixing. The payment falls on the settlement date of
+that fixing, and the structure terminates on this same date.
+
+Without a trigger event on any fixing date, a second branch applies.
+When the underlying spot is above the determination level on the last
+fixing date, the option holder pays an amount to the counterparty.
+The catalogue scopes the underlyings as follows:
+
+#+begin_quote
+The underlying can be an Equity, FX or Commodity underlying.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]].
+
+** In plain terms
+
+An autocallable is a savings-style option on one market. On each
+checking date the market decides the next instalment. When the market
+is at or below the trigger, the holder receives an instalment and the
+product ends. The instalment grows with the fixing dates. When the
+market never falls to the trigger, the holder owes a final capped
+payment at the end, linked to how far the market sits above the
+determination level. The buyer of the structure is short the far
+upside and long the trigger path.
+
+** How it works in ORE
+
+The catalogue shows the trade data container =Autocallable01Data= for
+the =Autocallable_01= trade type. =NotionalAmount= is the notional
+amount of the option. =DeterminationLevel= is the level above which
+the final payment branch fires. For an FX underlying it is the number
+of units of =CCY2= per unit of =CCY1=; for an equity underlying it is
+the equity price in the equity currency. =TriggerLevel= carries the
+same meaning per underlying type, as the level that triggers the
+early redemption. =Underlying= names the option underlying.
+=Position= takes =Long= or =Short=. =PayCcy= is the pay currency of
+the option.
+
+=FixingDates= is the fixing date schedule, given as a =ScheduleData=
+subnode. =SettlementDates= is the settlement date schedule in the
+same form. =AccumulationFactors= is a list of values, one per fixing
+date. =Cap= is the maximum amount, per unit of notional, payable by
+the option holder when no trigger event ever occurred. ORE describes
+its role as follows:
+
+#+begin_quote
+The maximum amount, per unit of notional, payable by the option
+holder if a trigger event never occurred
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]].
+
+The cap applies when the underlying value is greater than the
+determination level at the last fixing date.
+
+** Mathematical notes
+
+ORE states the two payout branches of the product. On the i-th fixing
+date, when a trigger event occurs, the option holder receives:
+
+Payout = NotionalAmount x AccumulationFactor(i).
+
+The structure terminates on the settlement date of that fixing. When
+a trigger event never occurs and the underlying spot at the last
+fixing date is above the determination level, the option holder pays:
+
+Payout = min(Cap, Underlying(fn) - DeterminationLevel).
+
+The payment is capped per unit of notional: the cap multiplies the
+notional of the trade.
+
+** What moves its value (static sensitivities)
+
+- The underlying spot. It decides the trigger branch on each fixing
+  date and the final payment.
+- The volatility of the underlying. It drives the probability of a
+  trigger event.
+- The trigger level and the determination level.
+- The accumulation factors, which set the instalment sizes.
+- The cap, which bounds the final payment.
+- The interest rates that discount the instalments and the final
+  payment.
+
+** How the profile ages (dynamic sensitivities)
+
+The fixing dates are the heartbeat of the product. Each fixing date
+checks the spot against the trigger level. A trigger event pays the
+accumulated amount on the matching settlement date and terminates the
+structure. Without a trigger, the structure runs to the last fixing
+date, where the final payment branch is decided against the
+determination level. The two schedules of dates and the accumulation
+factors shape how the value decays as the structure survives.
+
+** Why a customer would want it
+
+An autocallable pays a coupon-like stream while the market stays
+quiet, and redeems early on a down move. Investors use it when they
+expect the underlying to hold above a level, collecting instalments
+along the way. The final capped payment is the price of that income.
+In ORE Studio a customer books autocallables of type 01 to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long autocallable on EUR-NOK with a notional
+of 12000000 EUR, a determination level of 11.0 and a trigger level of
+9.8. The accumulation factors grow from 0.344 to 1.544 across the
+five annual fixings:
+
+#+begin_example
+<Autocallable01Data>
+  <NotionalAmount>12000000</NotionalAmount>
+  <DeterminationLevel>11.0</DeterminationLevel>
+  <TriggerLevel>9.8</TriggerLevel>
+  <Underlying>
+    <Type>FX</Type>
+    <Name>ECB-EUR-NOK</Name>
+  </Underlying>
+  <Position>Long</Position>
+  <PayCcy>EUR</PayCcy>
+  <FixingDates>
+    <ScheduleData>
+      <Dates>
+        <Dates>
+          <Date>2018-09-27</Date>
+          <Date>2019-09-27</Date>
+          <Date>2020-09-27</Date>
+          <Date>2021-09-29</Date>
+          <Date>2022-09-28</Date>
+        </Dates>
+      </Dates>
+    </ScheduleData>
+  </FixingDates>
+  <SettlementDates>
+    <ScheduleData>
+      <Dates>
+        <Dates>
+          <Date>2018-10-07</Date>
+          <Date>2019-10-09</Date>
+          <Date>2020-10-07</Date>
+          <Date>2021-10-07</Date>
+          <Date>2022-10-07</Date>
+        </Dates>
+      </Dates>
+    </ScheduleData>
+  </SettlementDates>
+  <AccumulationFactors>
+    <Factor>0.344</Factor>
+    <Factor>0.733</Factor>
+    <Factor>0.911</Factor>
+    <Factor>1.123</Factor>
+    <Factor>1.544</Factor>
+  </AccumulationFactors>
+  <Cap>1.0</Cap>
+</Autocallable01Data>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]],
+listing =Autocallable Type 01 data=. The settlement dates follow
+their fixing dates by a few days.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

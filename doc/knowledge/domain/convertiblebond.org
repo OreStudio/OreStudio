@@ -1,0 +1,230 @@
+:PROPERTIES:
+:ID: F5D8E0C4-EC67-4210-AF1C-B664246810C9
+:END:
+#+title: Convertible Bond
+#+description: A bond that converts into a prespecified number of shares; ORE's ConvertibleBond product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:convertiblebond:
+#+created: 2026-09-06
+#+updated: 2026-09-07
+
+A convertible bond is a bond that can be converted into a
+prespecified number of shares. ORE models it with the trade type
+=ConvertibleBond=. The container node is =ConvertibleBondData=. This
+note records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A convertible bond pays like a bond and can be converted into a fixed
+number of shares of an issuer. The shares are usually from the bond
+issuer, but they can come from a different issuer; such a structure
+is an exchangeable. The bond can be callable by the issuer and
+puttable by the investor. Its value splits into the bond floor plus
+the embedded optionality. The number of shares on conversion is the
+bond notional divided by the conversion ratio.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A convertible bond is a bond, that can be converted to a prespecified
+number of shares. The shares are usually from the bond issuer, but it
+is also possible that the shares are from a different issuer
+(exchangeables). In addition, the share currency can be different
+from the bond currency in both cases (cross-currency convertibles).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
+
+ORE describes the call and put rights as follows:
+
+#+begin_quote
+The bond might be callable by the issuer (typically in American
+style) and / or puttable by the investor (typically in Bermudan
+style).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
+
+ORE describes forced conversion as follows:
+
+#+begin_quote
+If a soft call is exercised, the investor has the right to convert
+the bond into shares instead of accepting the payment from the issuer
+call ("forced conversion").
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
+
+ORE describes the detachable form as follows:
+
+#+begin_quote
+For a detachable or stripped convertible bond the optionality can be
+traded separately from the bond. We set the NPV for a detachable
+convertible bond to the difference of the convertible bond npv and
+the bond floor npv, where the bond floor denotes the underlying
+vanilla bond stripped of any optionality.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
+
+** In plain terms
+
+A convertible bond is a bond with a stock option attached. The
+investor receives coupons and the return of principal, exactly like a
+bond. The investor can also hand the bond back and receive shares
+instead. The conversion right is worth more when the share price
+rises. The bond pays a lower coupon than a plain bond of the same
+issuer because of that right.
+
+** How it works in ORE
+
+The trade type is =ConvertibleBond=. The =ConvertibleBondData= block
+names the bond and its quantity. =SecurityId= is typically the ISIN
+of the underlying bond with the =ISIN:= prefix. =BondNotional= is the
+notional of the underlying bond in its currency. The optional
+=CreditRisk= flag decides whether credit risk shows on the product.
+
+The bond terms can come from reference data, or be given explicitly
+in the trade. ORE states the relationship between the two:
+
+#+begin_quote
+All fields that are not given in the trade XML are filled up with the
+information from the reference data if available in the reference
+data. In other words, if reference data is given, the trade xml can
+still be used to overwrite the information partially, if this seems
+appropriate.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]].
+
+In the explicit form, the block carries five sub-blocks. =BondData=
+holds the vanilla part of the bond. =CallData= and =PutData= hold the
+call and put terms; when they are not given, no calls or puts are
+present. =ConversionData= holds the conversion terms and must always
+be given, even when no conversion rights are present; an empty
+conversion date list expresses that case. =DividendProtectionData=
+holds the dividend protection terms. =Detachable= is a flag, false by
+default; when it is =true=, the trade represents the embedded
+optionality only, that is the difference between the full convertible
+bond and the bond floor.
+
+The call and put data are lists of exercise rights. =Styles= holds
+the exercise styles, =American= or =Bermudan=. Bermudan also defines
+European exercises, namely as a Bermudan exercise with a single
+exercise date. =ScheduleData= holds a schedule of exercise dates for
+Bermudan exercises, or start and end dates for American exercises.
+=Prices= holds exercise prices in relative terms: a price of 1.02
+means the amount paid on exercise is 1.02 times the current notional
+of the bond, plus accrued interest when the price type is clean.
+=PriceType= gives the flavour in which the prices are quoted. Lists
+in the sub-nodes can be explicit lists or use the =startDate=
+attribute. An explicit value list can be shorter than the list of
+dates; the last value then applies to the remaining dates.
+
+The trade type supports perpetual schedules. Omitting the =EndDate=
+in a schedule makes the schedule perpetual. Only rule based schedules
+can be perpetual. This applies to the bond leg, the call and put
+data, the conversion data, the conversion resets and the dividend
+protection schedule.
+
+** Mathematical notes
+
+The conversion ratio is the number of shares received for one bond,
+that is for the bond face value. The conversion value, also called
+the parity, is the ratio times the share price. The number of shares
+delivered on conversion is the bond notional divided by the
+conversion ratio; the ratio lives in the underlying bond reference
+data.
+
+The bond reference data in ORE is typically set up with a face value
+of one, even when the market quotes the bond at 100 or 100,000. The
+value of a convertible bond splits into the bond floor and the
+embedded optionality. The floor is the vanilla bond stripped of any
+optionality. The optionality is a conversion right, long for the
+investor, an issuer call, short for the investor, and an investor
+put, long for the investor.
+
+A hard issuer call pays the call price times the current notional,
+plus the accruals when they are due. A call price of 1.00 is a call
+at par; 1.02 is a call at 102 percent. A soft call can only be
+exercised when the share price on the exercise date is above the
+conversion price times a trigger. The issuer call always leaves the
+investor the choice to convert instead, which is the forced
+conversion.
+
+** What moves its value (static sensitivities)
+
+- The share price of the underlying equity, through the conversion
+  right.
+- The volatility of the equity.
+- The interest rates, which price the bond floor and discount the
+  cash flows.
+- The credit of the issuer and the recovery value on default.
+- The FX rate, for cross-currency convertibles.
+- The terms of the deal: the conversion ratio, the call and put
+  schedules, the triggers and the dividend protection.
+
+The value moves like a bond at low share prices and like the equity
+at high share prices. Between the two, the conversion right, the call
+rights and the credit of the issuer all compete.
+
+** How the profile ages (dynamic sensitivities)
+
+As the share price moves, the investor compares the conversion value
+with the bond floor. When a soft call is in the money, the issuer can
+force a conversion and end the bond. The conversion ratio can change
+over time through dividend protection and reset features. When a
+dividend is paid, the protection can adjust the ratio to compensate
+the investor. Near maturity the investor decides between redemption
+and conversion. On a default of the issuer, the claim is bounded by
+the recovery of the bond and the conversion value.
+
+** Why a customer would want it
+
+A convertible bond is hybrid financing. The issuer pays a lower
+coupon than on a plain bond, because the conversion right is
+valuable. The investor keeps the downside protection of a bond and
+gains the upside of the equity. In ORE Studio a customer books
+convertible bonds to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a convertible bond whose terms are set up in
+reference data:
+
+#+begin_example
+<Trade id="ConvertibleBond">
+  <TradeType>ConvertibleBond</TradeType>
+  <Envelope>...</Envelope>
+  <ConvertibleBondData>
+    <BondData>
+      <SecurityId>ISIN:XS0451905367</SecurityId>
+      <BondNotional>1000000.00</BondNotional>
+    </BondData>
+  </ConvertibleBondData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]],
+listing =Convertible bond set up using reference data=. The source
+also shows the explicit form, in which =BondData=, =CallData=,
+=PutData=, =ConversionData= and =DividendProtectionData= are given
+with their details and =Detachable= is set to =false=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Convertible_bond][Wikipedia: Convertible bond]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

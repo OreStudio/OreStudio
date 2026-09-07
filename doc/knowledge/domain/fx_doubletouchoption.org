@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: 7BA83993-32A7-4090-A6A9-A07AA3AF2B1D
+:END:
+#+title: FX Double Touch Option
+#+description: An FX option paying on one or two spot touches before expiry; ORE's FxDoubleTouchOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_doubletouchoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX double touch option is the touch product with two levels. It
+pays a fixed amount depending on whether a rate touches either level.
+ORE models it with the trade type =FxDoubleTouchOption=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+An FX double touch option combines two continuously monitored
+barriers with a cash-or-nothing digital underlying. It pays a fixed
+amount or zero, depending on whether the spot rate reaches one of the
+levels. A knock-in, or double one-touch, pays if a barrier is
+breached. A knock-out, or double no-touch, pays if neither is
+breached. Payout at expiry is the only supported mode. No rebates are
+supported.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+This product has two continuously monitored barriers with a
+Cash-or-Nothing digital underlying.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]].
+
+ORE states the payoff condition as follows:
+
+#+begin_quote
+A FX Double Touch option pays either a fixed predetermined payoff
+amount or zero (Cash-or-Nothing) depending upon an FX spot rate
+reaching one of the pre-set barrier levels.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]].
+
+ORE also states the two forms. A knock-in, or double one-touch, has a
+fixed payout if one of the barriers is breached, and no payout
+otherwise. A knock-out, or double no-touch, has no payout if one of
+the barriers is breached, and a fixed payout otherwise. The buyer pays
+a premium to the seller.
+
+** In plain terms
+
+An FX double touch option is a bet on a corridor. One side bets that
+the rate touches either wall before expiry. The other side bets that
+it never does. The payout is fixed. There is no middle ground.
+
+** How it works in ORE
+
+The =FxDoubleTouchOptionData= node includes one =OptionData= node and
+one =BarrierData= node. The barrier =Type= is =KnockOut= or
+=KnockIn=. =Levels= holds the two levels. The =OptionType= can be
+omitted. =PayOffAtExpiry= selects the payout timing. Only payout at
+expiry is currently supported, for both knock-out and knock-in
+barriers. =PayoffAmount= and =PayoffCurrency= set the fixed payout.
+=ForeignCurrency= and =DomesticCurrency= name the rate.
+=StartDate= sets the monitoring start, with the =Calendar= and
+=FXIndex= naming the fixing source.
+
+ORE notes that the current implementation supports FX double touch
+options with payout at expiry only. No rebates are supported.
+
+** Mathematical notes
+
+The value is the probability of the touch condition, discounted, times
+the fixed payout. A knock-in pays when the rate breaches either level
+at any time before expiry. A knock-out pays when it breaches neither.
+The probability of touching either level rises with volatility and
+with time. With payout at expiry, the timing of the touch does not
+change the payout date.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. Its position inside the corridor sets the state.
+- The volatility of the pair. It drives the touch probability.
+- The interest rates in the two currencies.
+- The two barrier levels and the fixed payout.
+- The payoff currency and the fixing source.
+
+A double no-touch loses value as spot approaches either level. A
+double one-touch gains. Near the levels the delta and vega change
+direction.
+
+** How the profile ages (dynamic sensitivities)
+
+The two levels are monitored continuously. A one-touch can be decided
+at any moment, though the payout waits for expiry. A no-touch stays
+alive while spot stays inside the corridor. As expiry approaches, the
+remaining time to touch shrinks. At expiry the payout settles and the
+trade stops.
+
+** Why a customer would want it
+
+A customer who expects the rate to stay in a range sells a double
+no-touch and collects the premium. A customer who expects a breakout
+buys a double one-touch. In ORE Studio a customer books FX double
+touch options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long double no-touch:
+
+#+begin_example
+<FxDoubleTouchOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <PayOffAtExpiry>true</PayOffAtExpiry>
+    <ExerciseDates>
+      <ExerciseDate>2021-12-14</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <BarrierData>
+    <Type>KnockOut</Type>
+    <Levels>
+      <Level>1.1</Level>
+      <Level>1.2</Level>
+    </Levels>
+  </BarrierData>
+  <ForeignCurrency>EUR</ForeignCurrency>
+  <DomesticCurrency>USD</DomesticCurrency>
+  <PayoffCurrency>USD</PayoffCurrency>
+  <PayoffAmount>100000</PayoffAmount>
+  <StartDate>2019-01-25</StartDate>
+  <FXIndex>FX-ECB-EUR-USD</FXIndex>
+  <Calendar>TARGET</Calendar>
+</FxDoubleTouchOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]],
+listing =FX Double Touch Option data= (optional elements omitted).
+
+The single-level form is the [[id:EA6E4A7A-6229-4F8C-93C5-426D1E4CB496][FX Touch Option]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doubletouchoption.tex][fx_doubletouchoption.tex]].
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

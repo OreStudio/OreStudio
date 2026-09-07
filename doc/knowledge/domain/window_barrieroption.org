@@ -1,0 +1,226 @@
+:PROPERTIES:
+:ID: 59A56773-6E82-421A-8E64-AA54D46489D4
+:END:
+#+title: Window Barrier Option
+#+description: An option with a barrier active only inside a time window; ORE's Window Barrier Option product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:window_barrieroption:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A window barrier option is a vanilla European call or put with an
+American barrier that is monitored only between a start date and an
+end date. ORE prices it on FX, equity and commodity underlyings. This
+note records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+The product pays the payoff of a European vanilla call or put. A
+knock-in or knock-out barrier condition is monitored continuously
+between a start date and an end date, the observation window. Four
+barrier types exist: up-and-in, up-and-out, down-and-in and
+down-and-out. The window can end long before the exercise date. A
+scripted representation expresses the same product with trigger
+probabilities over the window.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+Window Barrier Options pay a (European) vanilla call / put. An
+American Knock-In or Knock-Out barrier condition can be defined that
+are monitored continuously between a start and end date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
+
+ORE lists the barrier types:
+
+#+begin_quote
+The different barrier types are "UpAndIn", "UpAndOut", "DownAndIn",
+"DownAndOut".
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
+
+** In plain terms
+
+A window barrier option is a normal European option with a timed
+barrier. The barrier is not watched for the whole life of the trade.
+It is watched only inside a window, between a start date and an end
+date. If the underlying touches the barrier level inside that window,
+the option knocks in or out. After the window closes, the barrier
+can no longer fire. The vanilla payoff is decided at expiry, much
+later in the typical structure.
+
+** How it works in ORE
+
+The trade containers are =FxWindowBarrierOptionData=,
+=EquityWindowBarrierOptionData= and =CommodityWindowBarrierOptionData=,
+for the =FxWindowBarrierOption=, =EquityWindowBarrierOption= and
+=CommodityWindowBarrierOption= trade types. =Currency= is the payout
+currency. ORE describes the fixing amount per asset class as
+follows:
+
+#+begin_quote
+For FxWindowBarrierOptions: The FixingAmount is expressed in the
+foreign currency (CCY1). For EquityWindowBarrierOptions: The
+FixingAmount is expressed as number of shares/units of the underlying
+equity or equity index. For CommodityWindowBarrierOptions: The
+FixingAmount is expressed as number of units of the underlying
+commodity.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
+
+=Underlying= names the underlying of the instrument. For an FX
+underlying the name has the form =SOURCE-CCY1-CCY2=, with =CCY1= the
+foreign currency and =CCY2= the domestic currency. =Strike= is the
+strike: for FX, the amount in domestic currency per unit of foreign
+currency. =StrikeData= is an optional node for the equity form only;
+it holds the strike in =Value= together with the =Currency= in which
+the underlying and the strike are quoted.
+
+=StartDate= and =EndDate= bound the continuous observation window.
+=OptionData= carries the option terms: =LongShort=, =OptionType=,
+the single =ExerciseDate=, an optional =Premiums= node, and an
+optional =PaymentData= node with the pay date of the exercise.
+=BarrierData= specifies the barrier type and level. ORE describes
+the monitoring:
+
+#+begin_quote
+The barrier is continuously monitored between the StartDate and
+EndDate.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
+
+The barrier types are =UpAndOut=, =DownAndOut=, =UpAndIn= and
+=DownAndIn=, with exactly one level given as a positive real number.
+
+ORE also provides a scripted representation:
+
+#+begin_quote
+Window Barrier Options can be alternatively represented as scripted
+trades, refer to ore/Docs/ScriptedTrade for an introduction.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
+
+In the scripted form the trade type is =ScriptedTrade= and the data
+node is =WindowBarrierOptionData=. The node carries the same terms as
+typed event, number, option-type, barrier-type, long-short, index and
+currency fields, with =Quantity= as the number of option contracts.
+
+** Mathematical notes
+
+The payoff script expresses the pricing. The raw payoff is the
+quantity times the call-put sign times the underlying at expiry minus
+the strike. A trigger probability is computed over the window: the
+probability that the underlying is below the barrier level for some
+barrier types, and above it for the others. For the knock-in types
+the payoff is scaled by the trigger probability; for the knock-out
+types it is scaled by one minus the trigger probability. The option
+is the long-short signed difference between the discounted scaled
+payoff and the discounted premium. The current notional of the trade
+is the quantity times the strike.
+
+** What moves its value (static sensitivities)
+
+- The underlying spot at expiry. It drives the vanilla payoff.
+- The volatility of the underlying, over both the window and the
+  remaining life.
+- The barrier level, and the length and placement of the window
+  relative to the expiry date.
+- The strike.
+- The interest rates that discount the payoff and the premium.
+
+** How the profile ages (dynamic sensitivities)
+
+The barrier lives only inside the window. Before the start date, and
+after the end date, the barrier is dormant. Inside the window the
+trade behaves like an American-barrier option. A knock-out inside the
+window kills the payoff; a knock-in inside the window grants it.
+After the window the trade becomes a plain European option until the
+exercise date, where the vanilla payoff is decided and settled.
+
+** Why a customer would want it
+
+A window barrier option prices a barrier view with a time limit. The
+buyer is protected from barrier events outside the window, which
+makes the structure cheaper than a whole-life barrier for the seller,
+or safer for the buyer. The structure suits views that say a market
+will, or will not, reach a level within a specific period. In ORE
+Studio a customer books window barrier options to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long FX window barrier call on EUR-USD with a
+1.1 strike and an up-and-out barrier at 1.3, monitored during 2023
+and expiring in 2026:
+
+#+begin_example
+<Trade id="FX_Window_BarrierOption">
+  <TradeType>FxWindowBarrierOption</TradeType>
+  <Envelope>
+   ...
+  </Envelope>
+  <FxWindowBarrierOptionData>
+    <Currency>USD</Currency>
+    <FixingAmount>1000000</FixingAmount>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-EUR-USD</Name>
+    </Underlying>
+    <Strike>1.1</Strike>
+    <StartDate>2023-03-01</StartDate>
+    <EndDate>2024-03-01</EndDate>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <OptionType>Call</OptionType>
+      <ExerciseDates>
+        <ExerciseDate>2026-03-01</ExerciseDate>
+      </ExerciseDates>
+      <Premiums>
+        <Premium>
+          <Amount>10900</Amount>
+          <Currency>EUR</Currency>
+          <PayDate>2018-03-01</PayDate>
+        </Premium>
+      </Premiums>
+      <PaymentData>
+        <Dates>
+          <Date>2026-03-01</Date>
+        </Dates>
+      </PaymentData>
+    </OptionData>
+    <BarrierData>
+      <Type>UpAndOut</Type>
+      <Levels>
+        <Level>1.3</Level>
+      </Levels>
+    </BarrierData>
+  </FxWindowBarrierOptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]],
+the example FX window barrier option trade. The catalogue shows the
+same trade again as a scripted trade with the =WindowBarrierOptionData=
+node, and lists the payoff script that prices it.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]].
+  The upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

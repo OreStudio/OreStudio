@@ -1,0 +1,393 @@
+:PROPERTIES:
+:ID: 6B186A8F-B261-40A4-B950-932AB735AE95
+:END:
+#+title: Accumulator
+#+description: A forward purchase of an asset in daily instalments within a price range; ORE's accumulator products.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:accumulator:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+An accumulator is a periodic forward purchase of an underlying asset
+at a fixed strike, with optional knock-out and leverage features. A
+decumulator is its mirror image: a periodic forward sale. ORE offers
+both for FX, equity and commodity underlyings. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An accumulator obliges the investor to buy a fixed amount of an
+underlying on each observation date, at a strike fixed at inception.
+The product can knock out early when the underlying crosses a
+barrier. Leverage can scale the amount bought in ranges of the
+underlying price. A decumulator obliges the investor to sell on each
+observation date. ORE represents both products in a data node per
+asset class.
+
+* Detail
+
+** What it is
+
+ORE defines the accumulator behaviour as follows:
+
+#+begin_quote
+The product settles periodically (e.g. monthly) and allows the
+investor to accumulate a holding in the underlying security over the
+term of the contract. A potential feature of an accumulator is a
+knock-out, i.e. the contract terminates early if the underlying price
+exceeds some threshold above strike.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
+
+ORE defines the decumulator as follows:
+
+#+begin_quote
+A decumulator is the reverse of an accumulator -- in this case, the
+investor is required to sell shares periodically at a pre-determined
+fixed price. A potential knock-out is set below the strike price (and
+below the spot price at inception).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
+
+The accumulator investor speculates that the security stays between
+the strike and the knock-out level for the life of the contract.
+
+** In plain terms
+
+An accumulator is a series of forwards on one asset. Each fixing date
+the investor buys the asset at a price fixed when the trade starts.
+If the market runs away to the knock-out level, the program ends
+early. In the leveraged form the investor buys more on the days the
+asset trades at or above the strike. A decumulator is the same
+program in reverse: the investor sells on each fixing date.
+
+** How it works in ORE
+
+The data node =FxAccumulatorData= is the trade data container for the
+=FxAccumulator= trade type. =EquityAccumulatorData= and
+=CommodityAccumulatorData= play the same role for the equity and
+commodity trade types. ORE distinguishes two product types by the
+settlement pattern:
+
+#+begin_quote
+Here the FX accumulator is of "type 01" meaning that a settlement
+takes place on each observation date while the equity accumulator is
+of "type 02" meaning that a settlement takes place on specific period
+end dates for all observation dates in that period.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
+
+=ObservationDates= are the dates on which the underlying is fixed.
+=PricingDates= are optional and define the period end dates. When
+they are present the product is of type 02, and one settlement per
+period replaces one settlement per observation date. =SettlementDates=
+can be given as an explicit list. For type 01 the number of
+settlement dates equals the number of observation dates. For type 02
+it equals the number of pricing dates. Alternatively
+=SettlementLag=, =SettlementCalendar= and =SettlementConvention=
+derive the settlement dates from the observation dates.
+=DailyFixingAmount= applies to type 01 only. When true, the fixing
+amount for a period is the given amount times the number of calendar
+days in the period. =StartDate= starts the first period and is
+mandatory in this case.
+
+=Strike= is the global strike. FX strikes are domestic currency
+(=CCY2=) per unit of foreign currency (=CCY1=). Equity and commodity
+strikes are per share or per unit, in the currency of the underlying.
+Local strikes can be defined per range inside =RangeBounds=, or a
+range strike adjustment can modify the global strike. The logic is as
+follows: a local strike for an interval wins over the global strike;
+otherwise a global strike plus a local adjustment is used; otherwise
+the global strike stands; without either strike an error is thrown.
+For equity accumulators the =StrikeData= node carries the global
+strike and its currency. =FixingAmount= is the unleveraged notional
+accumulated at each fixing date. For FX it is in the foreign
+currency, for equity in shares, for commodity in units. A negative
+amount turns an accumulator into a decumulator and vice versa.
+=Currency= is the payout currency. =OptionData= holds =LongShort= and
+=PayoffType=, which takes the values =Accumulator= and =Decumulator=.
+A long accumulator is equivalent to a short decumulator, except when
+a =FixingFloor= barrier is present.
+
+=RangeBounds= contains one =RangeBound= node per price range, with
+=RangeFrom=, =RangeTo= and =Leverage=. A leverage of 1 applies by
+default to a range without one. All leverage values in one instrument
+must have the same sign. Type 01 accumulators may give a range its
+own strike.
+
+=Barriers= contains =BarrierData= nodes. =Type= can be =UpAndOut=,
+=DownAndOut= or =FixingFloor=. =Style= can be =European=, monitored
+on the observation dates, or =American=, monitored continuously from
+the start date to the first observation date and between observation
+dates. ORE describes the guaranteed fixings as follows:
+
+#+begin_quote
+For type 01 accumulators (no pricing dates are given), the FixingFloor
+guarantees a specific number of fixings to be settled even in case of
+a knock out. On a guaranteed fixing date, Only positive payouts (from
+the buyer/long perspective) are realised.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
+
+For type 02 accumulators the =FixingFloor= guarantees a number of
+periods instead of observation dates. When a knock-out happens inside
+a guaranteed period, the remaining fixings of that period settle on
+the knock-out day plus the settlement delay. =StrictComparison=
+chooses the barrier comparison: 0 uses less-or-equal and
+greater-or-equal, 1 uses strict comparisons. For equity accumulators
+each barrier level carries its own =Value= and =Currency= in a
+=LevelData= node. =KnockOutSettlementAtPeriodEnd= and
+=KnockOutFixingAtKOSettlement= tune the knock-out settlement of type
+02 products. =FxIndex= defines the FX conversion for composite
+accumulators, where the strike, barrier and pay currency differ from
+the quote currency of the underlying.
+
+ORE also describes the naked option variant as follows:
+
+#+begin_quote
+If true, the payoff represents that of an option, and only positive
+values are accumulated in the instrument. The option type (Call or
+Put) is inferred from the sign of the Leverage values in RangeBound,
+which are all required to be the same.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]].
+
+** Mathematical notes
+
+ORE states the payout formula from the perspective of the long party,
+for each observation date of an accumulator, as:
+
+Payout = RangeBound(Leverage) x FixingAmount x (fix - Strike).
+
+The holder pays the strike times the fixing amount times the leverage
+and receives, or buys, the same number of units of the underlying at
+the fixing. For a decumulator the formula is:
+
+Payout = RangeBound(Leverage) x FixingAmount x (Strike - fix).
+
+The holder pays the fixing value and receives the strike. In the
+naked option form the payout is the absolute leverage times the
+fixing amount times the positive part of the option payoff. The sign
+of the leverage values fixes the option type: a positive leverage
+with a positive part on rising fixings behaves as a call, a negative
+leverage as a put.
+
+ORE also provides a scripted representation of both product types,
+with the trade types =ScriptedTrade= and the nodes
+=Accumulator01Data= and =Accumulator02Data=. In the scripted form the
+ranges are given as parallel lists: =RangeUpperBounds=,
+=RangeLowerBounds= and =RangeLeverages=. A range without an upper
+bound takes the sentinel value 100000; a range without a lower bound
+takes 0. =KnockOutType= takes the values =UpOut= and =DownOut=.
+=AmericanKO= selects continuous barrier monitoring; otherwise the
+barrier is monitored on the fixing dates only. =GuaranteedFixings=
+is the number of first fixings that settle even after a knock-out.
+The current notional of the trade is the fixing amount times the
+strike.
+
+** What moves its value (static sensitivities)
+
+- The underlying price. It decides which range the fixing falls into,
+  whether the barrier is hit, and the size of each installment.
+- The volatility of the underlying. It drives the probability of a
+  knock-out and of range crossings.
+- The strike, the range boundaries and the knock-out level.
+- The leverage values, which scale the exposure within each range.
+- The interest rates that discount the installment payments.
+
+The payoffs are linear in each fixing. The barrier and the range
+structure add path dependence.
+
+** How the profile ages (dynamic sensitivities)
+
+The fixings settle on their own dates. For type 01 each observation
+date settles alone. For type 02 each observation period settles on
+its period end date. The barrier is observed on the observation dates
+in the European style, and continuously from the start date in the
+American style. A knock-out ends the accumulation, except for the
+guaranteed fixings. The current notional grows with each installment
+until the trade runs off or knocks out.
+
+** Why a customer would want it
+
+An accumulator lets a customer build a position in an asset over
+time, at a price fixed today. The decumulator lets a customer sell a
+position over time in the same way. Banks distribute these products
+to investors who want to accumulate or run down holdings without
+trading each day. In ORE Studio a customer books accumulators and
+decumulators to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an FX accumulator of type 01, with one
+settlement per observation date. The barrier structure adds an
+American up-and-out at 1.5 and a fixing floor of two guaranteed
+fixings:
+
+#+begin_example
+<Trade id="FX_ACCUMULATOR">
+  <TradeType>FxAccumulator</TradeType>
+  <Envelope>
+    ...
+  </Envelope>
+  <FxAccumulatorData>
+    <Currency>USD</Currency>
+    <FixingAmount>1000000</FixingAmount>
+    <Strike>1.1</Strike>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-EUR-USD</Name>
+    </Underlying>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <PayoffType>Accumulator</PayoffType>
+    </OptionData>
+    <StartDate>2016-03-01</StartDate>
+    <ObservationDates>
+      <Dates>
+        <Dates>
+          <Date>2017-03-01</Date>
+          <Date>2020-03-01</Date>
+          <Date>2025-03-01</Date>
+          <Date>2029-03-01</Date>
+        </Dates>
+      </Dates>
+    </ObservationDates>
+    <SettlementDates>
+      <Dates>
+        <Dates>
+          <Date>2017-03-03</Date>
+          <Date>2020-03-03</Date>
+          <Date>2025-03-03</Date>
+          <Date>2029-03-03</Date>
+        </Dates>
+      </Dates>
+    </SettlementDates>
+    <RangeBounds>
+      <RangeBound>
+        <RangeTo>1.14</RangeTo>
+        <Leverage>1</Leverage>
+      </RangeBound>
+      <RangeBound>
+        <RangeFrom>1.14</RangeFrom>
+        <Leverage>1</Leverage>
+      </RangeBound>
+    </RangeBounds>
+    <Barriers>
+      <BarrierData>
+        <Type>UpAndOut</Type>
+        <Style>American</Style>
+        <Levels>
+          <Level>1.5</Level>
+        </Levels>
+      </BarrierData>
+      <BarrierData>
+        <Type>FixingFloor</Type>
+        <Levels>
+          <Level>2</Level>
+        </Levels>
+      </BarrierData>
+    </Barriers>
+  </FxAccumulatorData>
+</Trade>
+#+end_example
+
+The catalogue then shows an equity decumulator of type 02. Its
+observation dates run daily over one year, its settlements take place
+on the pricing dates, and its down-and-out barrier sits at 3500 with
+a fixing floor of one guaranteed period:
+
+#+begin_example
+<Trade id="Equity_Decumulator">
+  <TradeType>EquityAccumulator</TradeType>
+  <Envelope>
+    ...
+  </Envelope>
+  <EquityAccumulatorData>
+    <FixingAmount>30</FixingAmount>
+    <StrikeData>
+      <Value>4000</Value>
+      <Currency>EUR</Currency>
+    </StrikeData>
+    <Underlying>
+      <Type>Equity</Type>
+      <Name>.STOXX50</Name>
+      <IdentifierType>RIC</IdentifierType>
+    </Underlying>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <PayoffType>Decumulator</PayoffType>
+    </OptionData>
+    <StartDate>20190925</StartDate>
+    <ObservationDates>
+      <Rules>
+        <StartDate>20190925</StartDate>
+        <EndDate>20200925</EndDate>
+        <Tenor>1D</Tenor>
+        <Calendar>TARGET</Calendar>
+        <Convention>F</Convention>
+        <TermConvention>F</TermConvention>
+        <Rule>Forward</Rule>
+      </Rules>
+    </ObservationDates>
+    <PricingDates>
+      <Dates>
+        <Dates>
+          <Date>20211025</Date>
+          <Date>20211125</Date>
+          ...
+        </Dates>
+      </Dates>
+    </PricingDates>
+    <SettlementLag>2D</SettlementLag>
+    <SettlementCalendar>TARGET</SettlementCalendar>
+    <SettlementConvention>F</SettlementConvention>
+    <RangeBounds>
+      <RangeBound>
+        <RangeTo>4000</RangeTo>
+        <Leverage>1</Leverage>
+      </RangeBound>
+      <RangeBound>
+        <RangeFrom>4000</RangeFrom>
+        <Leverage>2</Leverage>
+      </RangeBound>
+    </RangeBounds>
+    <Barriers>
+      <BarrierData>
+        <Type>DownAndOut</Type>
+        <LevelData>
+          <Level>
+            <Value>3500</Value>
+            <Currency>EUR</Currency>
+          </Level>
+        </LevelData>
+      </BarrierData>
+      <BarrierData>
+        <Type>FixingFloor</Type>
+        <Levels>
+          <Level>1</Level>
+        </Levels>
+      </BarrierData>
+    </Barriers>
+    <KnockOutSettlementAtPeriodEnd>false<KnockOutSettlementAtPeriodEnd>
+  </EquityAccumulatorData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]],
+the example FX accumulator and equity decumulator trades.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

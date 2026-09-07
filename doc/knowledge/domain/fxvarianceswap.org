@@ -1,0 +1,150 @@
+:PROPERTIES:
+:ID: 7A2186FB-33C3-4916-B62C-A14468EE713F
+:END:
+#+title: FX Variance Swap
+#+description: An FX derivative on realised variance or volatility; ORE's FxVarianceSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fxvarianceswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX variance swap trades the volatility of an exchange rate
+directly. Its payoff depends on how much the rate moves, not on where
+it ends. ORE models it with the trade type =FxVarianceSwap=. This
+note records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+An FX variance swap depends on the volatility of an underlying FX
+rate. The counterparties exchange a pre-agreed variance level, the
+strike, for the variance actually realised over an observation period.
+The strike is typically set at the money so the swap starts at zero
+value. The variance form pays on squared volatility. The volatility
+form pays on volatility. Only vanilla variance swaps are supported by
+this trade type.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An FX Variance Swap has a payoff, similar to an Equity Variance
+Swap's payoff, that depends on the volatility of an underlying FX
+rate. The swap counterparties agree to exchange a pre-agreed variance
+level (the strike) for the actual amount of variance realized over an
+observation period.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxvarianceswap.tex][fxvarianceswap.tex]].
+
+ORE notes that the strike is typically set at ATM so the swap
+initially has zero value. If the subsequent realised volatility is
+above the strike level, the buyer of a variance swap, who is long
+volatility, has a positive NPV. The seller, who is short volatility,
+has a negative NPV.
+
+** In plain terms
+
+An FX variance swap is a bet on movement, not direction. One side
+pays the realised variance of an exchange rate over the life of the
+swap. The other side pays a fixed variance agreed at trade time. If
+the rate moves more than expected, the variance buyer gains.
+
+** How it works in ORE
+
+The =FxVarianceSwapData= node carries the swap terms. =StartDate= and
+=EndDate= frame the observation period. =Currency= is the bought
+currency. =Name=, or the =Underlying= node, names the currency pair.
+=LongShort= sets the direction. =Strike= is the volatility strike,
+quoted absolutely, not as a percent. If the swap was struck in terms
+of variance, the square root of that variance is used here.
+=Notional= is the vega notional, the notional in volatility units.
+=Calendar= joins the calendars of the two currencies.
+=MomentType= distinguishes a volatility or variance payoff.
+=Volatility= or =Variance=, with variance the default.
+
+ORE notes that only vanilla variance swaps are supported by this
+trade type. Exotic variance swaps are supported by the scripted trade
+mechanism. FX variance and volatility swaps also cover precious
+metals, with currencies XAU, XAG, XPT, and XPD, and
+cryptocurrencies.
+
+** Mathematical notes
+
+ORE states the variance payoff as follows:
+
+Payoff = N x (RealisedVol^2 - K^2)
+
+N is the variance notional, determined as the vega notional divided
+by 2K. The realised volatility is annualised from the squared daily
+log returns over the observation period. The volatility swap payoff
+is closely related:
+
+Payoff = N x (RealisedVol - K)
+
+** What moves its value (static sensitivities)
+
+- The implied volatility of the FX pair. It prices the variance
+  strike.
+- The realised path of daily returns. It settles the payoff.
+- The vega notional and the strike.
+- The observation schedule and the annualisation convention.
+- The discount rate of the settlement currency.
+
+A long variance position gains when realised movement exceeds the
+strike. It gains from jumps in either direction. Direction of the
+rate itself does not drive the payoff.
+
+** How the profile ages (dynamic sensitivities)
+
+Each day adds one return to the realised variance. Early in life the
+realised part is small and the trade behaves like a forward on
+implied variance. Late in life the realised variance dominates and
+the payoff locks in. At maturity the final variance settles and the
+swap stops.
+
+** Why a customer would want it
+
+A customer with FX exposure wants protection on the volatility of the
+rate. A trader takes a view that FX volatility is cheap or rich.
+Variance swaps isolate that view from direction. In ORE Studio a
+customer books FX variance swaps to value them and run sensitivities
+on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long variance swap on euro-yen:
+
+#+begin_example
+<FxVarianceSwapData>
+  <StartDate>2018-05-10</StartDate>
+  <EndDate>2018-11-12</EndDate>
+  <Currency>EUR</Currency>
+  <Underlying>
+    <Type>FX</Type>
+    <Name>ECB-EUR-JPY</Name>
+  </Underlying>
+  <LongShort>Long</LongShort>
+  <Strike>0.05</Strike>
+  <Notional>200000</Notional>
+  <Calendar>EUR</Calendar>
+  <MomentType>Variance</MomentType>
+</FxVarianceSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxvarianceswap.tex][fxvarianceswap.tex]],
+listing =Variance Swap data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Variance_swap][Wikipedia: Variance swap]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxvarianceswap.tex][fxvarianceswap.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

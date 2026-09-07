@@ -1,0 +1,274 @@
+:PROPERTIES:
+:ID: 428BA744-B3D3-486C-A3BF-39E59C6EC11F
+:END:
+#+title: Worst Of Basket Swap
+#+description: A swap whose coupon references the worst performing asset in a basket; ORE's WorstOfBasketSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:worstofbasketswap:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A worst of basket swap pays coupons while the assets in a basket stay
+above trigger levels, and settles an equity amount on the worst
+performing asset at the end. ORE offers it for FX, equity and
+commodity baskets. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+The buyer of a worst of basket swap receives an initial fixed amount
+and then pays a floating rate. In return the buyer receives fixed
+coupons, subject to a coupon trigger event, and a final equity
+amount linked to the worst performing asset in the basket. A
+knock-out event on any determination date ends the contract. A
+knock-in event on the final determination date delivers the final
+equity amount.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+The buyer receives an initial fixed amount from the seller and then
+pays a floating rate over the life of the contract and in turn
+receives coupons based on an equity notional amount, subject to a
+coupon trigger event.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
+
+ORE describes the life of the contract as follows:
+
+#+begin_quote
+If a knock-out event occurs for any given determination date, then
+the contract is deemed to have terminated at the corresponding
+settlement date, and all payments will cease thereafter, and no final
+equity amount will be paid out (or shares delivered). If no
+knock-out events are triggered, and a knock-in event occurs at the
+final determination date, then a final equity amount will be
+delivered to the buyer.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
+
+** In plain terms
+
+A worst of basket swap is a structured coupon product on a basket of
+assets. The buyer gets an upfront payment, pays a floating rate, and
+collects a high fixed coupon on each date when every asset in the
+basket is above its trigger level. If all assets rise above their
+knock-out levels, the product dies and the payments stop. At the end
+the buyer receives an amount based on the worst performing asset,
+unless that asset fell so far that a knock-in condition fires. The
+worst asset drives the final payout.
+
+** How it works in ORE
+
+The trade types =FxWorstOfBasketSwap=, =EquityWorstOfBasketSwap= and
+=CommodityWorstOfBasketSwap= have the data containers
+=FxWorstOfBasketSwapData=, =EquityWorstOfBasketSwapData= and
+=CommodityWorstOfBasketSwapData=. A scripted representation with the
+=WorstOfBasketSwapData= node is also available. =LongShort= is the
+own party position. =Quantity= is the equity notional amount, or the
+quantity multiplier. =Currency= is the payout currency for all
+cashflows; for FX it is the domestic =CCY2= currency.
+
+The product pays three kinds of flows. The first is the initial
+fixed amount: =InitialFixedRate= times the quantity, paid on
+=InitialFixedPayDate=, which defaults to the first floating pay date.
+
+At each determination date the floating leg pays the quantity times
+the floating rate times the accrual fraction, as long as no
+knock-out occurred before. =FloatingPeriodSchedule= gives the period
+dates and =FloatingPayDates= the payment dates. The floating rate
+fixes on =FloatingFixingSchedule= against =FloatingIndex=, plus the
+=Floatingspread=, and accrues with =FloatingDayCountFraction=. For
+overnight index legs, =FloatingLookback=, =FloatingRateCutoff=,
+=IsAveraged= and =IncludeSpread= tune the fixing mechanics.
+
+The coupon leg pays when a coupon trigger event fires. The trigger is
+checked on each determination date: when every underlying in the
+basket is at or above its =FixedTriggerLevel=, the buyer receives
+=FixedRate= times the quantity. ORE describes the level nodes as
+follows:
+
+#+begin_quote
+For each fixed trigger determination date, the barrier level used to
+determine whether a coupon trigger event has occurred, upon which a
+fixed coupon is paid out at the corresponding payment date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
+
+Coupons can accumulate. In the traditional data, a coupon not paid
+because its trigger did not fire is paid together with the next
+coupon whose trigger fires, unless =AccumulatingFixedCoupons= is
+false. In the scripted data the node is =AccumulatingCoupons=.
+Alternatively =AccruingFixedCoupons= scales the coupon by the
+fraction of days in the period on which the trigger held, using
+=FixedAccrualSchedule=.
+
+The knock-out is checked on =KnockOutDeterminationSchedule= with the
+=KnockOutLevels= barrier nodes. Each =KnockOutLevel= applies to its
+own determination date, except the first date of the schedule. When
+every asset is at or above its level, a knock-out trigger event
+occurs and the contract terminates at the corresponding settlement
+date.
+
+The final equity amount is decided on the last determination date.
+=BermudanKnockIn= selects whether the knock-in is observed on a
+regular basis on =KnockInDeterminationSchedule=, or only on the final
+date. =KnockInLevel= is the barrier, expressed as a percentage of the
+initial prices. The equity amount is paid on =KnockInPayDate=, which
+defaults to the last floating pay date.
+
+** Mathematical notes
+
+ORE states the cashflow amounts, at every settlement date from the
+second on, in terms of the equity notional Q. The floating amount is
+Q times phi times the accrual fraction times the floating rate
+fixing for the previous period. Phi is plus 1 for a long and minus 1
+for a short position. The coupon amount is Q times delta times the
+fixed coupon rate times N. Delta is 1 when a coupon trigger event
+occurs on the determination date, and zero otherwise. N is the number
+of periods until the next coupon trigger event, for accumulating
+coupons; without accumulation N is 1 for the life of the contract.
+
+After a knock-out, all floating and coupon amounts are zero. At the
+final determination date the performance of each asset is its final
+price over its initial price. The worst performance is the minimum
+of these. When the worst performance is below the smaller of the
+strike and the knock-in level, the equity amount pays the quantity
+times the difference between the strike and the worst performance.
+
+ORE notes the settlement mechanics as follows:
+
+#+begin_quote
+In the case of a physical settlement, the seller will deliver a
+number of shares of one of the underlying assets to the buyer at the
+final settlement date for the cost of an agreed strike price. For a
+cash settlement, the net difference between the strike price and the
+price at the determination date is paid, although the settlement
+type does not affect pricing.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]].
+
+** What moves its value (static sensitivities)
+
+- The prices of the basket assets. The worst performer drives the
+  final equity amount.
+- The correlation between the assets. The coupon and knock-out
+  triggers fire only when every asset is above its level, so lower
+  correlation makes both events less likely.
+- The volatility of each asset.
+- The trigger, knock-out and knock-in levels.
+- The floating rate of the floating leg and its spread.
+- The interest rates that discount the flows.
+
+** How the profile ages (dynamic sensitivities)
+
+The initial fixed amount settles at the start. On each determination
+date the floating leg pays while the contract is alive, and the
+coupon trigger is checked across all assets. Unpaid coupons
+accumulate until a trigger fires, or scale by the accrual fraction
+in the accruing variant. A knock-out on any determination date
+terminates the contract at the corresponding settlement date. On the
+final date the worst performing asset is measured against the
+knock-in level to settle the equity amount.
+
+** Why a customer would want it
+
+A worst of basket swap pays an enhanced coupon while the basket
+stays within its trigger structure. The product suits investors who
+expect the assets to hold their levels. The seller keeps the equity
+risk of the worst performer, which is the natural hedge for owning a
+diversified basket. In ORE Studio a customer books worst of basket
+swaps to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an equity worst of basket swap on the Euro
+Stoxx 50 and the S&P 500. The trade receives 4% coupons while the
+basket stays inside the trigger structure, and its knock-in level
+stands at 75% of the initial prices:
+
+#+begin_example
+<Trade id="EQ_WorstOfBasketSwap">
+  <TradeType>EquityWorstOfBasketSwap</TradeType>
+  <Envelope>
+    ......
+  </Envelope>
+  <EquityWorstOfBasketSwapData>
+    <LongShort>Long</LongShort>
+    <Currency>EUR</Currency>
+    <Quantity>1955000</Quantity>
+    <Underlyings>
+      <Underlying>
+        .......
+      </Underlying>
+    </Underlyings>
+    <InitialPrices>
+      <InitialPrice>...</InitialPrice>
+    </InitialPrices>
+    <FloatingPeriodSchedule>
+      <Dates>
+        ...
+      </Dates>
+    </FloatingPeriodSchedule>
+    <FixedDeterminationSchedule>
+            ............
+    </FixedDeterminationSchedule>
+    <KnockOutDeterminationSchedule>
+             .............
+    </KnockOutDeterminationSchedule>
+    <FloatingPayDates>
+      <Dates>
+        ....
+      </Dates>
+    </FloatingPayDates>
+    <KnockInDeterminationSchedule>
+            ............
+    </KnockInDeterminationSchedule>
+    <FixedPayDates>
+      ............
+    </FixedPayDates>
+    <KnockOutLevels>
+      <KnockOutLevel>...</KnockOutLevel>
+    </KnockOutLevels>
+    <FixedTriggerLevels>
+      <FixedTriggerLevel>...</FixedTriggerLevel>
+    </FixedTriggerLevels>
+    <KnockInLevel>0.75</KnockInLevel>
+    <FixedRate>0.04</FixedRate>
+    <FixedAccrualSchedule>
+      <Rules>
+        ...
+      </Rules>
+    </FixedAccrualSchedule>
+    <FloatingIndex>EUR-EURIBOR-3M</FloatingIndex>
+    <FloatingDayCountFraction>Actual/360</FloatingDayCountFraction>
+    <FloatingFixingSchedule>
+          ............
+    </FloatingFixingSchedule>
+  </EquityWorstOfBasketSwapData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]],
+listing =EquityWorstOfBasketSwap data=. The catalogue also shows the
+scripted representation, in which the basket names the two assets
+explicitly: =EQ-RIC:.STOXX50E= and =EQ-RIC:.SPX= with initial prices
+3481.44 and 3714.24.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

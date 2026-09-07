@@ -1,0 +1,159 @@
+:PROPERTIES:
+:ID: D69C0964-9F15-43BC-8A13-66ECED718BED
+:END:
+#+title: Equity Variance Swap
+#+description: A swap of realised equity variance against a volatility strike; ORE's EquityVarianceSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityvarianceswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity variance swap exchanges the realised variance of an equity
+against a pre-agreed volatility strike. Individual stocks and indices
+are supported. ORE models it with the trade type =EquityVarianceSwap=.
+This note records the domain grounding, as ORE documents it in its
+product catalogue.
+
+* Summary
+
+An equity variance swap has a payoff that depends on the volatility of
+an underlying equity instrument. The counterparties exchange a
+pre-agreed variance level, the strike, for the actual amount of
+variance realised over an observation period. The strike is typically
+set at the money so the swap starts with zero value. Only vanilla
+variance swaps are supported. The notional is quoted as a vega
+notional in volatility units. The container node is
+=EquityVarianceSwapData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An Equity Variance Swap has a payoff that depends on the volatility of
+an underlying equity instrument. Underlying individual stocks and
+indices are supported. The swap counterparties agree to exchange a
+pre-agreed variance level (the strike) for the actual amount of
+variance realized over an observation period.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]].
+
+ORE limits the product as follows:
+
+#+begin_quote
+Only vanilla variance swaps are supported.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]].
+
+** In plain terms
+
+A variance swap is a bet on how much a share bounces around. The
+parties agree a volatility level at trade time. If the share then
+moves more than that level, the buyer of variance receives the
+difference. If it moves less, the buyer pays it. Direction does not
+matter: only the size of the daily moves counts.
+
+** How it works in ORE
+
+The =EquityVarianceSwapData= node is the trade data container for the
+=EquityVarianceSwap= trade type. ORE's guide spells the container node
+name as =EqutiyVarianceSwapData=, without the second =i=, in its prose
+and listings. =StartDate= and =EndDate= bound the observation period.
+=Underlying= or =Name= names the equity or index. =LongShort= names
+the side. A long variance swap has positive value if the realised
+variance exceeds the variance strike. =Strike= is the volatility
+strike quoted absolutely, not as a percent. If the swap was struck in
+terms of variance, the square root of that variance is used here.
+=Notional= is the vega notional, that is the notional in volatility
+units. =Calendar= sets the fixing dates. The calendar of the equity
+curve configuration combines with it. =MomentType= distinguishes a
+swap struck in terms of volatility from one struck in terms of
+variance. It defaults to =Variance=. The strike is always quoted as a
+volatility. =AddPastDividends= adds past dividend payments to the
+fixings when calculating accrued variance. It defaults to =false=.
+
+** Mathematical notes
+
+The payoff is N x (RealisedVol squared minus K squared). Here N is the
+variance notional, determined as the vega notional divided by twice
+the strike. K is the strike volatility. RealisedVol is the annualised
+volatility of the daily log returns over the observation period. Each
+daily log return ln(P_t / P_t-1) is squared and summed. The sum is
+scaled by 252 over the expected number of scheduled trading days and
+the square root is taken. P_0 is the official closing price at the
+observation start date. P_t is the official closing price at each
+observation date.
+
+** What moves its value (static sensitivities)
+
+- The implied volatility of the underlying. It sets the fair strike.
+- The realised volatility from the observation start date onward.
+- The dividend treatment of the underlying, through the fixing
+  adjustment flag.
+- The expected number of trading days and the calendar.
+- The discount rate over the observation period.
+
+A swap struck at the market level of variance starts near zero value.
+A long position gains as realised volatility runs above the strike.
+
+** How the profile ages (dynamic sensitivities)
+
+Variance accrues day by day from the observation start date. The
+realised part becomes fixed as fixings land. The remaining
+uncertainty shrinks with the remaining trading days. Close to the end
+date the realised variance is almost known, so the swap value moves
+toward its final payoff. A long swap near expiry behaves like a fixed
+claim.
+
+** Why a customer would want it
+
+A variance swap trades volatility directly, without a directional view
+on the share. Option desks use it to hedge the vega of their books. A
+customer can also express the view that implied volatility is too high
+or too low against realised. The payoff is linear in variance, unlike
+an option position. In ORE Studio a customer books equity variance
+swaps to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long USD variance swap on the S&P 500 index,
+struck at 20 percent volatility:
+
+#+begin_example
+<EquityVarianceSwapData>
+    <StartDate>2016-01-29</StartDate>
+    <EndDate>2016-05-05</EndDate>
+    <Currency>USD</Currency>
+    <Underlying>
+      <Type>Equity</Type>
+      <Name>.SPX</Name>
+      <IdentifierType>RIC</IdentifierType>
+    </Underlying>
+    <LongShort>Long</LongShort>
+    <Strike>0.20</Strike>
+    <Notional>50000</Notional>
+    <Calendar>US</Calendar>
+    <MomentType>Variance</MomentType>
+    <AddPastDividends>true</AddPastDividends>
+</EquityVarianceSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]],
+listing =Variance Swap data=. The source spells the container node
+name as =EqutiyVarianceSwapData=; it is reproduced verbatim here.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Variance_swap][Wikipedia: Variance swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityvarianceswap.tex][equityvarianceswap.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

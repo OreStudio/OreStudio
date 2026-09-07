@@ -1,0 +1,199 @@
+:PROPERTIES:
+:ID: D45F8289-3F31-462F-9C98-460CE820F75F
+:END:
+#+title: Equity Swap
+#+description: A swap of an equity return against a fixed or floating leg; ORE's EquitySwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity swap exchanges the return of an equity leg against a fixed
+or floating funding leg. The equity leg can pay price return, total
+return or dividends. ORE models the family with the trade type
+=EquitySwap=. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+An equity swap has one leg of type =Equity= and one funding leg of
+type =Fixed= or =Floating=. The equity leg links its coupons to the
+price of one single equity name or index. Its notional can be fixed or
+resettable. A resettable notional equates to a fixed quantity of
+shares. Price return coupons pay the price difference over the
+period. Total return coupons add the dividends. The =ReturnType= of
+=Dividend= builds a dividend swap on the same trade type. ORE prices
+equity swaps on discounted cashflows. The container node is
+=EquitySwapData=.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An equity swap is a swap where one of the legs has a floating rate
+with coupon payments linked to an equity price, either a single stock
+or equity index.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
+
+ORE describes the coupon types as follows:
+
+#+begin_quote
+There are two types of equity coupons, Price Return and Total Return.
+Price Return coupons pay the difference in equity price between the
+coupon start and end dates, while a Total Return coupon also includes
+dividend payments during the period.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
+
+ORE describes the setup as follows:
+
+#+begin_quote
+An Equity Swap uses its own trade type EquitySwap, and is set up using
+a EquitySwapData node with one leg of type Equity and one more leg -
+called Funding leg - that can be either Fixed or Floating.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
+
+ORE contrasts the pricing method with the total return swap as
+follows:
+
+#+begin_quote
+Note that pricing for an EquitySwap is based on discounted cashflows,
+whereas pricing for a TotalReturnSwap (GenericTRS) on an equity
+underlying uses the accrual method. The accrual method is common
+practice when daily unwind rights are present in the trade terms.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]].
+
+** In plain terms
+
+An equity swap turns equity returns into a stream of cashflows. One
+side pays what the share does over each period. The other side pays a
+fixed coupon or a floating rate. The trade separates the equity
+exposure from owning the share. A dividend variant pays only the
+dividends of the name.
+
+** How it works in ORE
+
+The =EquitySwapData= node is the trade data container for the
+=EquitySwap= trade type. It holds one leg of type =Equity= and one
+funding leg of type =Fixed= or =Floating=. The equity leg carries an
+=EquityLegData= block. The equity leg can include one single
+underlying equity name only, which may be an equity index. Multi-name
+structures use the =TotalReturnSwap= trade type instead. Cross-currency
+equity swaps are supported. If the funding leg uses =Indexings= with
+=FromAssetLeg= set to true, its notionals derive from the equity leg
+and it must share the equity leg's currency. The =DayCounter= field is
+optional on an equity leg and defaults to =ACT/365=. It does not impact
+pricing, only the accrued amount shown in the cashflows. Within
+=EquityLegData=, =ReturnType= selects the coupon type. =Quantity= and
+=Underlying= name the exposure. =InitialPrice= anchors the first
+period. =NotionalReset= set to true turns the notional into a fixed
+quantity of shares. =FXTerms= converts the equity price from the
+equity currency to the leg currency at the fixing dates. A =ReturnType=
+of =Dividend= builds a dividend swap on the same trade type: it swaps
+the dividends of the name against a fixed or floating leg.
+
+** Mathematical notes
+
+The equity coupons follow the equity return over each period. A price
+return coupon with a resettable notional pays Quantity x (S_end -
+S_start). A total return coupon adds the dividends paid over the
+period. Without notional reset the coupon scales a fixed notional by
+the relative price move. A dividend swap pays the realised dividends.
+The funding leg pays a fixed coupon or a floating index over the same
+schedule. ORE values each cashflow on the discount curve.
+
+** What moves its value (static sensitivities)
+
+- The spot price of the underlying equity or index.
+- The forward prices of the equity, set by rates and expected
+  dividends.
+- The dividend schedule of the underlying.
+- The funding rates of the fixed or floating leg.
+- The FX spot rate when the equity currency differs from the leg
+  currency.
+
+A long equity leg gains as the equity rises. Each settled period locks
+in its realised return.
+
+** How the profile ages (dynamic sensitivities)
+
+Each period the equity coupon is fixed and settled. Resettable
+notionals keep the exposure at a fixed quantity of shares period by
+period. Realised returns replace the forward expectations as time
+passes. The number of remaining coupons shrinks. Late in life the swap
+runs down like a short-dated swap and pays its final coupon at
+maturity.
+
+** Why a customer would want it
+
+A customer can take equity exposure without buying the shares. The
+swap pays the return of the name and receives funding, so it suits a
+funding-versus-equity trade. An equity receiver hedges a planned share
+purchase. A dividend swap monetises or hedges the dividend stream of a
+holding. In ORE Studio a customer books equity swaps to value them and
+run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows an equity swap with a resettable notional and FX
+indexing. The funding leg derives its notional from the equity leg:
+
+#+begin_example
+<EquitySwapData>
+  <LegData>
+    <LegType>Floating</LegType>
+    <Currency>USD</Currency>
+    ...
+    <!-- Notionals node is not required, set to 1 internally -->
+    ...
+    <Indexings>
+      <!-- derive the indexing information (equity price, FX) from the Equity leg -->
+      <FromAssetLeg>true</FromAssetLeg>
+    </Indexings>
+  </LegData>
+  <LegData>
+    <LegType>Equity</LegType>
+      <Currency>USD</Currency>
+      ...
+      <EquityLegData>
+        <Quantity>1000</Quantity>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>.STOXX50E</Name>
+          <IdentifierType>RIC</IdentifierType>
+        </Underlying>
+        <InitialPrice>2937.36</InitialPrice>
+        <NotionalReset>true</NotionalReset>
+        <FXTerms>
+          <EquityCurrency>EUR</EquityCurrency>
+          <FXIndex>FX-ECB-EUR-USD</FXIndex>
+        </FXTerms>
+      </EquityLegData>
+      ...
+  </LegData>
+</EquitySwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]],
+listing =Equity Swap Data with notional reset and FX indexing=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Equity_swap][Wikipedia: Equity swap]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

@@ -1,0 +1,131 @@
+:PROPERTIES:
+:ID: 2FC69DD5-D685-452B-8BCE-85CBCDD624E5
+:END:
+#+title: Year-on-Year Inflation Swap
+#+description: An inflation swap whose leg pays the annual change of an inflation index; ORE's YY leg.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:yyswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A year-on-year inflation swap pays the annual change of an inflation
+index on one leg. ORE models it as a =Swap= with a YY leg, or as a
+sibling of the [[id:13D3230A-D5C2-46DA-92E6-1DB128B8392A][CPI Swap]] in its product catalogue. This note
+records the domain grounding, as ORE documents it.
+
+* Summary
+
+A year-on-year (YoY) inflation swap exchanges annual inflation-linked
+coupons for fixed payments. Each coupon depends on the index change
+over its own one-year period, not on the index level since issue. ORE
+models the product with the =Swap= trade type and one leg of type YY.
+The YY leg carries a =YYLegData= block for the index and observation
+conventions. The coupons can be capped or floored. The product gives
+annual inflation exposure without the long-dated index-ratio accrual of
+a CPI swap.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A YoYIIS is a swap contract where one leg has annual inflation linked
+coupon payments that are exchanged for fixed payments on the other
+leg.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]].
+YoYIIS is ORE's shorthand for the year-on-year inflation swap.
+
+** In plain terms
+
+Two parties swap the yearly change of an inflation index against a
+fixed rate. One side pays the index rise of each coming year. The other
+side pays a fixed rate for the whole life. The exposure resets every
+year, so each coupon covers only its own twelve months.
+
+** How it works in ORE
+
+ORE states the input form as follows:
+
+#+begin_quote
+A Year on Year inflation swap can be set up with trade type Swap, with
+one leg of type YY.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]].
+
+The YY leg carries a =YYLegData= block. It names the inflation index
+and the observation conventions. The structure mirrors the
+[[id:13D3230A-D5C2-46DA-92E6-1DB128B8392A][CPI Swap]], which uses the =InflationSwap= trade type and a CPI leg.
+A year-on-year coupon at time Ti equals the notional times the index
+change I(Ti)/I(Ti-1) minus one, times the day count fraction. The
+fixings Ti-1 and Ti are one year apart. YoY coupons can be capped or
+floored.
+
+** What moves its value (static sensitivities)
+
+- The discount curve of the payment currency. It moves every payment.
+- The inflation index curve. It projects each annual index change.
+- The fixed rate. It sets the level of the non-inflation leg.
+- The cap or floor, when present. It adds an inflation-volatility
+  sensitivity.
+
+A long-inflation leg gains value when the projected index rises. The
+exposure resets each year, so the index curve matters mainly at its
+one-year points.
+
+** How the profile ages (dynamic sensitivities)
+
+Each printed fixing settles one annual coupon. The remaining coupons
+cover the years still ahead. Unlike a CPI swap, no index ratio
+accumulates over the whole life. The exposure rolls forward year by
+year, and the trade keeps a similar annual structure until maturity.
+
+** Why a customer would want it
+
+A customer who wants inflation protection for a defined horizon picks
+YoY exposure when annual index changes matter more than the cumulative
+level. The product suits caps and floors on single-year inflation. In
+ORE Studio a customer books YoY swaps to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows the structure with the =Swap= trade type. The
+fixed-rate leg is abbreviated.
+
+#+begin_example
+<SwapData>
+  <LegData>
+    <LegType>Floating</LegType>
+    <Payer>true</Payer>
+    ...
+  </LegData>
+  <LegData>
+    <LegType>YY</LegType>
+    <Payer>false</Payer>
+    ...
+    <YYLegData>
+      ...
+    </YYLegData>
+  </LegData>
+</SwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]],
+listing =Year on Year Swap Data= (using Swap trade type).
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Inflation_swap][Wikipedia: Inflation swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

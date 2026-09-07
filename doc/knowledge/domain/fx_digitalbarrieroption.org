@@ -1,0 +1,161 @@
+:PROPERTIES:
+:ID: 8668F997-2609-47C6-BF5C-EE35F21405EE
+:END:
+#+title: FX Digital Barrier Option
+#+description: An FX digital option combined with a barrier; ORE's FxDigitalBarrierOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_digitalbarrieroption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX digital barrier option couples a digital payout with a barrier
+condition. It pays a fixed amount if the rate both touches a level and
+settles on the right side of a strike. ORE models it with the trade
+type =FxDigitalBarrierOption=. This note records the domain grounding,
+as ORE documents it in its product catalogue.
+
+* Summary
+
+An FX digital barrier option combines a cash-or-nothing digital
+underlying with a continuously monitored single barrier. At expiry it
+pays either the digital payoff or nothing, depending on whether the
+rate reached the barrier. The four main barrier types apply. A
+knock-in pays if the barrier is breached. A knock-out pays if it is
+not. The strike test at expiry decides the digital payout.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+This product has a continuously monitored single barrier with an
+Cash-or-Nothing digital underlying option.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]].
+
+ORE states the payoff condition as follows:
+
+#+begin_quote
+At expiry a digital FX Barrier option pays either the payoff of a
+digital Cash-or-Nothing underlying option depending upon an FX spot
+rate reaching a pre-set barrier level.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]].
+
+ORE also notes that the option can be of the same four main types as a
+regular barrier FX option: up-and-out, down-and-out, up-and-in, and
+down-and-in. A knock-in or one-touch pays the underlying option payoff
+if the barrier is breached, and no payout otherwise. A knock-out or
+no-touch pays nothing if the barrier is breached, and the underlying
+option payoff otherwise.
+
+** In plain terms
+
+An FX digital barrier option is a digital option with a door. The door
+opens or closes when the rate touches a level. On the paying side, the
+rate must also end past the strike. Both conditions decide the fixed
+payout.
+
+** How it works in ORE
+
+The =FxDigitalBarrierOptionData= node includes one =OptionData= node
+and one =BarrierData= node. This is a single-barrier instrument, so
+the barrier data holds one level. The level is quoted as the amount in
+=DomesticCurrency= per one unit of =ForeignCurrency=. The barrier
+=Type= is one of the four main types. =StrictComparison= chooses the
+boundary of the barrier check. The =Strike= test at expiry uses the
+same currency terms. Call pays when the rate at expiry is above the
+strike. Put pays when it is below. =PayoffAmount= and
+=PayoffCurrency= set the payout. A =StartDate= before today triggers a
+check of past fixings for a breach, with the =Calendar= and
+=FXIndex= naming the fixing source. =FXIndexDailyLows= and
+=FXIndexDailyHighs= track intraday barrier breaches.
+
+** Mathematical notes
+
+The value is the probability that the barrier condition and the
+strike condition both resolve in favour of the buyer, discounted. The
+barrier path probability and the terminal moneyness interact. The
+payout is fixed, so volatility acts through the joint probability,
+not through a payoff tail.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. Its distance from the barrier and the strike sets
+  the state.
+- The volatility of the pair. It drives both the touch probability and
+  the terminal moneyness.
+- The interest rates in both currencies.
+- The barrier level, the strike, and the fixed payout.
+- The payoff currency and the fixing source.
+
+The sensitivities change sign near the barrier. A knock-in gains as
+spot approaches the barrier. A knock-out loses. A digital near the
+strike is sensitive to the terminal rate.
+
+** How the profile ages (dynamic sensitivities)
+
+The barrier is monitored continuously through the option's life. A
+knock-out can end at any moment. A knock-in waits for its breach. At
+expiry the digital strike test decides the final payout. The payout
+settles in the payoff currency and the trade stops.
+
+** Why a customer would want it
+
+A customer who wants a fixed payout on a rate range view buys a
+digital barrier option. The barrier shapes the payout at a lower
+premium than a plain digital. In ORE Studio a customer books FX
+digital barrier options to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a long European digital call with a down-and-in
+barrier:
+
+#+begin_example
+<FxDigitalBarrierOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <OptionType>Call</OptionType>
+    <Style>European</Style>
+    <ExerciseDates>
+      <ExerciseDate>2021-12-14</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <BarrierData>
+    <Type>DownAndIn</Type>
+    <Levels>
+      <Level>1.18</Level>
+    </Levels>
+  </BarrierData>
+  <StartDate>2019-01-25</StartDate>
+  <Calendar>TARGET</Calendar>
+  <FXIndex>FX-ECB-EUR-USD</FXIndex>
+  <Strike>1.1</Strike>
+  <PayoffAmount>100000</PayoffAmount>
+  <PayoffCurrency>USD</PayoffCurrency>
+  <ForeignCurrency>EUR</ForeignCurrency>
+  <DomesticCurrency>USD</DomesticCurrency>
+</FxDigitalBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]],
+listing =FX Digital Barrier Option data= (optional elements omitted).
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the digital payout concept.
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]].
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

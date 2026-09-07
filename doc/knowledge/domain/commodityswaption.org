@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: 8FAE9780-9737-49DB-87E7-D678F3AEBD69
+:END:
+#+title: Commodity Swaption
+#+description: A European option on a forward-starting commodity swap; ORE's CommoditySwaption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityswaption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity swaption is an option on a commodity swap that starts in
+the future. ORE models it with the trade type =CommoditySwaption=.
+This note records the domain grounding, as ORE documents it in its
+product catalogue.
+
+* Summary
+
+A commodity swaption is a European option on a forward-starting
+commodity swap. The underlying swap consists of a sequence of
+calculation periods. The exercise decision is made once, before the
+swap starts. A payer swaption has the right to pay the fixed prices
+and receive the floating prices. A receiver swaption has the
+opposite rights. Settlement is cash or physical.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Commodity Swaption is a European option on a forward starting
+Commodity Swap consisting of a sequence of calculation periods. The
+exercise decision is made once before the Swap starts.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]].
+
+ORE states the exercise directions as follows:
+
+#+begin_quote
+In a Payer Swaption, the holder of the option has the right to pay the
+fixed prices and to receive the floating prices. In a Receiver
+Swaption, the holder of the option has the right to receive the fixed
+prices and to pay the floating prices.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]].
+
+** In plain terms
+
+A commodity swaption is an option on a future price agreement. The
+buyer pays a premium for the right to enter a commodity swap later.
+If commodity prices move in the right direction, the option is
+exercised. Otherwise it expires.
+
+** How it works in ORE
+
+The =CommoditySwaptionData= node carries an =OptionData= node. The
+=LongShort= flag sets the direction from the point of view of the long
+party. The payer and receiver legs of the underlying swap always use
+the perspective of the party that is long. Only the European exercise
+style is supported. The =Settlement= flag selects cash or physical
+delivery. Optional =NoticePeriod=, =NoticeCalendar=, and
+=NoticeConvention= terms move the notice date relative to the exercise
+date. An =ExerciseFees= node holds the exercise fees, if any.
+
+** Mathematical notes
+
+The underlying is a forward-starting commodity swap. Its value at the
+exercise date decides the option. The option prices off the commodity
+volatility surface and the forward curve at the swap start. After
+exercise the position ages like the commodity swap it started.
+
+** What moves its value (static sensitivities)
+
+- The commodity volatility surface. It drives the option value.
+- The commodity forward curve at the swap start. It sets the moneyness
+  of the option.
+- The strike swap rate and the leg conventions.
+- The discount curve of the settlement currency.
+- The settlement mode, cash or physical.
+
+A payer swaption gains when prices rise above the strike. A receiver
+gains when they fall. Volatility raises the value of both sides.
+
+** How the profile ages (dynamic sensitivities)
+
+The option loses time value as the exercise date approaches. The
+exercise decision is made once before the underlying swap starts. At
+exercise the trade becomes the underlying swap and ages with it.
+Without exercise it expires worthless.
+
+** Why a customer would want it
+
+A consumer buys a payer swaption to cap the price of future commodity
+purchases. A producer buys a receiver swaption to protect its sales
+price. A dealer sells swaptions to earn premium. In ORE Studio a
+customer books commodity swaptions to value them and run sensitivities
+on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European swaption:
+
+#+begin_example
+<Trade id="...">
+  <TradeType>CommoditySwaption</TradeType>
+  <Envelope>
+    ...
+  </Envelope>
+  <CommoditySwaptionData>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <Style>European</Style>
+      <Settlement>Cash</Settlement>
+      <ExerciseDates>
+        <ExerciseDate>2023-01-05</ExerciseDate>
+      </ExerciseDates>
+    </OptionData>
+    <LegData>
+      <LegType>CommodityFixed</LegType>
+      ...
+    </LegData>
+    <LegData>
+      <LegType>CommodityFloating</LegType>
+      ...
+    </LegData>
+  </CommoditySwaptionData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]],
+listing =Commodity swaption= (leg detail abbreviated).
+
+The underlying is a [[id:0C0FDF39-B4D4-4794-83AD-076B4681830B][Commodity Swap]]. The
+[[id:D16393FC-784B-4BCB-90B9-7010894CD2D2][Commodity Average Price Option]] differs in its exercise timing, at the
+period end rather than before the underlying starts.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Swaption][Wikipedia: Swaption]]. This covers the general swaption concept.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

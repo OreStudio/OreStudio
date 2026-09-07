@@ -1,0 +1,236 @@
+:PROPERTIES:
+:ID: 18891481-BBFE-4731-A677-DB66400A724C
+:END:
+#+title: Best Entry Option
+#+description: An option whose payoff uses the best observed entry level of the underlying; ORE's Best Entry Option product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bestentryoption:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A best entry option gives a capped participation in the return of an
+index from an entry level, where the entry level can reset to the
+best observed level during a window. ORE prices it on FX, equity and
+commodity underlyings. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+The product is an option on a single underlying. Its payoff depends
+on the best entry of the index into a region on strike observation
+dates, decided by one barrier. When no observation hits the trigger,
+the entry level is the index level on the strike date. When an
+observation hits the trigger, the entry level resets toward the
+lowest observed level, floored by the reset minimum. At expiry the
+final index level is compared with a strike. A final level at or
+above the strike pays a capped participation in the positive return
+from the entry level. A final level below the strike makes the holder
+pay the shortfall.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+The Best Entry Option is an option on a single underlying that has a
+payoff contingent on the `best entry' of the underlying index into a
+specified region on a set of specified `strike observation dates',
+which is determined by a single barrier.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
+
+ORE introduces the trade types:
+
+#+begin_quote
+Best Entry Options are defined using one of the trade types
+FxBestEntryOption, EquityBestEntryOption, CommodityBestEntryOption
+depending on the underlying asset class and an associated node
+FxBestEntryOptionData, EquityBestEntryOptionData,
+CommodityBestEntryOptionData.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
+
+** In plain terms
+
+A best entry option is a view on one index with a good entry point.
+The entry point is the index level that anchors the payoff. It is set
+on the strike date. If the index dips to the trigger level on a
+strike observation date, the entry point improves to the best level
+seen, but only down to the reset minimum. At expiry the index gets a
+final look. If it stands above the strike, the holder collects the
+capped rise above the improved entry point. If it stands below the
+strike, the holder pays the shortfall. The structure rewards the
+holder when the index ends up, after a dip gave a better entry.
+
+** How it works in ORE
+
+=Underlying= names the underlying. For an FX underlying the currency
+order defines the observed value, so that EUR-USD observes USD per
+EUR and USD-EUR observes EUR per USD. =Currency= is the payment
+currency. =Notional= is the notional amount. =LongShort= takes =Long=
+or =Short= and fixes whether the payoff is computed for the holder or
+the seller.
+
+=StrikeDate= is the date whose index level sets the entry level when
+no trigger event occurs. It must fall before the option expiry date.
+=StrikeObservationDates= is the window that decides the entry level.
+ORE describes it as follows:
+
+#+begin_quote
+StrikeObservationDates: The set of dates on which the underlying
+index level is observed - the lowest of which is used to compute the
+option payoff if the underlying index is greater than the strike on
+the expiry date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
+
+=TriggerLevel= is the barrier of the product. ORE describes it as
+follows:
+
+#+begin_quote
+TriggerLevel: The value that is compared to the underlying index on
+each strike observation date to determine if a Trigger Event has
+occurred.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
+
+The trigger level is given as a decimal, a percentage of the index
+level on the strike date. When the observed index level reaches the
+trigger level on any observation date, a trigger event occurs and
+the entry level resets. The improved entry level is the maximum of
+the reset minimum value and the lowest observed index level. The
+reset minimum is also a percentage of the strike-date level, and it
+floors how far the entry can improve. Without a trigger event the
+entry level is the strike-date level.
+
+=Strike= is the strike value used to compute the payoff. It is given
+as a decimal, a percentage of the entry level. =Multiplier= is the
+payoff multiplier for the case where the final index level is above
+the strike; it defaults to one. =Cap= is the payoff ceiling. ORE
+describes it as follows:
+
+#+begin_quote
+Cap: The maximum value of the payoff (before the notional and
+multiplier are applied).
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]].
+
+The cap is given as a decimal percentage. =ExpiryDate= is the date
+when the option expires and the payoff is computed. =SettlementDate=
+is the date when the payoff is settled, used unadjusted as given and
+on or after the expiry date. =Premium= is the option premium, zero by
+default. =PremiumDate= is the date when the premium is paid.
+
+** Mathematical notes
+
+The payoff compares the final index level with a strike level. The
+strike level is the strike value K times the entry level, where the
+entry level is set per the trigger path above. The strike value is a
+decimal, for example 0.85 for a strike at 85 percent of the entry
+level.
+
+When the final level stands at or above the strike level, the payoff
+is the notional times the multiplier times the capped positive return
+of the index from the entry level. The positive return is floored at
+zero: a final level between the strike level and the entry level
+pays nothing. The cap bounds the participation, for example at 6
+percent.
+
+When the final level stands below the strike level, the payoff is
+negative. The holder pays the notional times the shortfall of the
+final level below the strike level, relative to the entry level.
+
+** What moves its value (static sensitivities)
+
+- The final index level at expiry. It selects the payoff branch and
+  sets its size.
+- The entry level, and with it the strike-date level and the
+  observation path of the index.
+- The volatility of the underlying. It drives the chance of a trigger
+  event and the dispersion of the final level.
+- The trigger level and the reset minimum.
+- The strike value, the cap and the multiplier.
+- The notional.
+- The interest rates that discount the premium and the payoff.
+
+** How the profile ages (dynamic sensitivities)
+
+The strike observation dates form the trigger window. Each one checks
+the index against the trigger level. A trigger event resets the entry
+level toward the best observed level, floored by the reset minimum.
+The entry level then stays fixed. The expiry date compares the final
+level with the strike and computes the payoff, positive or negative.
+The payoff settles on the settlement date, and the premium was paid
+on the premium date.
+
+** Why a customer would want it
+
+A best entry option sells participation in an index from an entry
+point that improves with the market path. The buyer keeps the upside
+of a rise from a good level, capped, and carries the downside of a
+finish below the strike. Banks offer it to clients who expect a
+market to dip and recover, because the dip improves the entry level.
+In ORE Studio a customer books best entry options to value them and
+run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long best entry option on the S&P 500 with a
+notional of 1000000 USD. The strike value is 0.85, the cap 0.06 and
+the multiplier 1. The trigger level of 0.95 sits just below the
+strike-date level, and the reset minimum of 0.85 floors the entry
+improvement:
+
+#+begin_example
+<EquityBestEntryOptionData>
+  <LongShort>Long</LongShort>
+  <Strike>0.85</Strike>
+  <Cap>0.06</Cap>
+  <ResetMinimum>0.85</ResetMinimum>
+  <Notional>1000000</Notional>
+  <Multiplier>1</Multiplier>
+  <TriggerLevel>0.95</TriggerLevel>
+  <SettlementDate>2021-11-20</SettlementDate>
+  <PremiumDate>2021-11-22</PremiumDate>
+  <StrikeDate>2020-12-15</StrikeDate>
+  <Underlying>
+    <Type>Equity</Type>
+    <Name>RIC:.SPX</Name>
+  </Underlying>
+  <StrikeObservationDates>
+    <Dates>
+      <Dates>
+        <Date>2021-03-01</Date>
+        <Date>2021-06-01</Date>
+        <Date>2021-09-01</Date>
+      </Dates>
+    </Dates>
+  </StrikeObservationDates>
+  <Currency>USD</Currency>
+  <Premium>100</Premium>
+  <ExpiryDate>2021-11-20</ExpiryDate>
+</EquityBestEntryOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]],
+listing =Best Entry Option data (Equity Underlying)=. The premium of
+100 USD is paid on 2021-11-22, two days after the strike date, and
+the expiry and settlement both fall on 2021-11-20.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bestentryoption.tex][bestentryoption.tex]]. The
+  upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

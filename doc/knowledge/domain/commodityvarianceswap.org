@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: 1989F85A-42F8-4894-8982-AC34D19B0351
+:END:
+#+title: Commodity Variance Swap
+#+description: A swap on commodity volatility or variance; ORE's CommodityVarianceSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityvarianceswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity variance swap trades volatility directly. Its payoff
+depends on how much a commodity price moves, not on where it ends. ORE
+models it with the trade type =CommodityVarianceSwap=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A commodity variance or volatility swap has a payoff that depends on
+the volatility or variance of an underlying commodity instrument. The
+structure mirrors the equity variance swap, with a commodity
+underlying. Two counterparties exchange the realised variance against
+a fixed strike. One notional leg scales the payoff. No money changes
+hands at trade time.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Commodity Variance or Volatility Swap has a payoff that depends on
+the volatility/variance of an underlying commodity instrument.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityvarianceswap.tex][commodityvarianceswap.tex]].
+
+** In plain terms
+
+A commodity variance swap is a bet on movement, not direction. One
+side pays the realised variance of a commodity price over the life of
+the swap. The other side pays a fixed variance agreed at trade time.
+If the commodity moves more than expected, the variance buyer gains.
+
+** How it works in ORE
+
+ORE states that the structure of the input is the same as that of the
+Equity Variance Swap. Only the underlying type changes, to a
+commodity instrument. The trade data carries the variance swap
+conventions, the observation period, and the commodity underlying.
+
+** Mathematical notes
+
+The payoff is the difference between the realised variance and the
+variance strike, scaled by a notional that converts variance into
+money. The realised variance sums the squared daily returns over the
+observation period. A volatility swap variant exchanges the realised
+volatility instead.
+
+** What moves its value (static sensitivities)
+
+- The implied volatility of the commodity. It prices the variance
+  strike.
+- The realised path of daily commodity returns. It settles the payoff.
+- The variance notional. It scales the exposure.
+- The observation schedule and the annualisation convention.
+- The discount curve of the settlement currency.
+
+A long variance position gains when realised movement exceeds the
+strike. It gains from jumps in either direction. Direction of the
+commodity price itself does not drive the payoff.
+
+** How the profile ages (dynamic sensitivities)
+
+Each day adds one return to the realised variance. Early in life the
+realised part is small and the trade trades like a forward on implied
+variance. Late in life the realised variance dominates and the payoff
+locks in. At maturity the final variance settles and the swap stops.
+
+** Why a customer would want it
+
+A producer of a commodity is long the price but hedges its
+volatility. A trader takes a view that commodity volatility is cheap
+or rich. Variance swaps isolate that view from direction. In ORE
+Studio a customer books commodity variance swaps to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue does not show a worked commodity variance swap
+listing. The trade data follows the Equity Variance Swap structure,
+with the underlying type set to a commodity instrument. See the equity
+variance swap section of the catalogue for the node layout.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Variance_swap][Wikipedia: Variance swap]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityvarianceswap.tex][commodityvarianceswap.tex]].
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

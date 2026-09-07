@@ -1,0 +1,380 @@
+:PROPERTIES:
+:ID: D3DF8CDD-2BD9-44BC-B805-D06C8A6C2074
+:END:
+#+title: Exotic Variance and Volatility Derivatives
+#+description: Variance and volatility swaps and options with barriers, corridors, baskets and optionality; ORE's exotic variance product family.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:var_and_vol_derivatives:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+Exotic variance and volatility derivatives are variance or volatility
+swaps and options with extra payoff features on top of the vanilla
+form. ORE documents the family in one catalogue section with fifteen
+variations, each with its own payoff script. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+The family starts from the variance swap, which pays the realised
+variance of an underlying against a strike, and the variance option,
+which pays the positive difference. The variations add features: a
+knock-in or knock-out barrier, a corridor that restricts the variance
+accrual to a window of the underlying, a corridor defined by a second
+index, conditional accrual in a single-barrier window, a pair of
+underlyings, two baskets in the dispersion forms, a weight function,
+and caps and floors throughout. ORE represents every variation as a
+scripted trade, and documents the trade input and the payoff script
+for each one.
+
+* Detail
+
+** What it is
+
+ORE defines the family as follows:
+
+#+begin_quote
+These are vanilla variance/volatility swaps and options on an
+underlying with some additional payoff features, such as
+knock-in/knock-out barrier/s, conditions for the accrual of variance,
+basket underlyings, optionality on the payoff, etc.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+ORE states the input representation:
+
+#+begin_quote
+Exotic variance/volatility swaps and options are represented as
+scripted trades, refer to the scripted trade documentation in
+ore/Docs/ScriptedTrade for an introduction.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+#+begin_quote
+All swaps have an optional cap/floor feature.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+** In plain terms
+
+A variance swap is a bet on how much a market moves. The buyer pays a
+fixed strike and receives the realised variance of the market. The
+exotic family dresses that bet up. A barrier can switch the swap on
+or off. A corridor can make the bet count only on the days the market
+sits inside a window. The window can depend on another market. The
+variance can accrue only under one-sided conditions, or on a pair of
+markets, or on whole baskets. One form weighs the variance by the
+level of the market. Every variation can cap or floor the payout.
+
+** How it works in ORE
+
+The variations of the family, with the script each one prices, are:
+
+- Variance Option, script =VarianceOption=.
+- Variance Swap with KI/KO Barrier, script =KIKOVarianceSwap=.
+- Dual European Binary Option with Volatility and Spot KO Barrier,
+  script =DualEuroBinaryOptionDoubleKO=.
+- Corridor Variance Swap, script =CorridorVarianceSwap=.
+- Indexed Corridor Variance Swap, script =IndexedCorridorVarianceSwap=.
+- Corridor Variance Swap with KI/KO Barrier, script
+  =KIKOCorridorVarianceSwap=.
+- Conditional Variance Swap 01, script =ConditionalVarianceSwap01=.
+- Conditional Variance Swap 02, script =ConditionalVarianceSwap02=.
+- Pairwise Variance Swap, script =PairwiseVarianceSwap=.
+- Variance Dispersion Swap, script =VarianceDispersionSwap=.
+- Corridor Variance Dispersion Swap, script
+  =CorridorVarianceDispersionSwap=.
+- KO Corridor Variance Dispersion Swap, script
+  =KOCorridorVarianceDispersionSwap=.
+- Pairwise Geometric Variance Dispersion Swap, script
+  =PairwiseGeometricVarianceDispersionSwap=.
+- Gamma Swap, script =GammaSwap=.
+- Basket Variance Swap, script =BasketVarianceSwap=.
+
+The trade data nodes live under the =ScriptedTrade= trade type and
+carry typed fields. The common input pattern is the variance swap
+core: =LongShort=, =Strike=, =Notional=, =Underlying=, the daily
+=ValuationSchedule= that defines the variance observation period, a
+=SquaredPayoff= flag that selects variance or volatility, =Cap= and
+=Floor=, =SettlementDate= and =PayCcy=. The =PayCcy= payment
+currency: for FX, the underlying name has the form
+=FX-SOURCE-CCY1-CCY2= and =PayCcy= should be =CCY2=. Choosing =CCY1=,
+or the underlying currency for equity and commodity underlyings,
+produces a quanto payoff.
+
+ORE describes the individual variations as follows. The variance
+option is:
+
+#+begin_quote
+An option on the realised variance/volatility of an underlying.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+Its node adds =PutCall=, =PremiumAmount= and =PremiumDate=,
+=VarianceReference= and the =ValuationSchedule=. The option carries a
+call or put on the realised variance or volatility against the
+strike, with the premium paid on the premium date.
+
+The variance swap with a barrier is:
+
+#+begin_quote
+A capped and/or floored variance swap with a knock-in/knock-out
+feature.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+ORE notes a reuse of the trade type:
+
+#+begin_quote
+Note that this trade type is also used for regular capped/floored
+variance swaps without barrier, by setting the BarrierType to UpIn
+and BarrierLevel to zero.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+The dual European binary pairs a volatility knock-out with a spot
+knock-out. Its node carries a fixed =SettlementAmount=, a
+=SpotBarrierLevel=, a =VolBarrierLevel= with a =VolBarrierDate=, and
+a terminal-only flag.
+
+The corridor variance swap is:
+
+#+begin_quote
+A capped and/or floored variance swap where variance is accrued only
+when the underlying trades within a pre-specified window defined by
+an upper and lower bound.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+Its node adds =UpperBarrierLevel= and =LowerBarrierLevel=, a
+=CountBothObservations= flag and an =AccrualAdjustment=. The
+corridor with a barrier adds a knock-in or knock-out type and level
+of its own. The indexed corridor moves the window to a second index:
+
+#+begin_quote
+Also called Cross Corridor Variance Swap. The payoff depends on the
+variance of one equity index (the Underlying) for the days another
+equity index (the CorridorIndex) is within a corridor.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+The conditional variance swaps accrue variance in a single-barrier
+window. ORE describes the 01 variant:
+
+#+begin_quote
+ConditionalVarianceSwap01 is a type of conditional variance swap that
+accrues variance contributions only when the underlying trades within
+a specified single barrier window - (differing from the
+CorridorVarianceSwap that has a double barrier window.)
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+In the 01 variant the variance amount that scales the notional comes
+directly from the =Strike= parameter. The node supports caps, floors,
+accrual adjustments and the count-both-observations choice. ORE
+describes the 02 variant:
+
+#+begin_quote
+ConditionalVarianceSwap02 accrues variance only when the underlying
+trades within the single barrier window, but differs from the 01
+variant by including an additional VarianceReference parameter. This
+parameter acts as a separate variance strike used to scale the
+notional amount, distinct from the Strike parameter used in the
+payoff calculation.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+The pairwise variance swap is:
+
+#+begin_quote
+A capped and/or floored variance swap on a basket of two underlyings,
+with an optional lag in the variance accrual.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+Its node carries one underlying strike and notional per underlying
+plus a basket notional and basket strike, and a lagged valuation
+schedule with an accrual lag and a payoff limit.
+
+The variance dispersion swap is:
+
+#+begin_quote
+A capped and/or floored variance swap that pays on the difference in
+the realised volatilities between two baskets of underlyings.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+The corridor dispersion form restricts the accrual to a corridor, and
+the knock-out form adds a double-barrier knock-out:
+
+#+begin_quote
+This instrument is a variance dispersion swap with a double-barrier
+knock-out and a corridor feature.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+The pairwise geometric form is documented by its node alone, with two
+baskets, per-pair and basket strikes, basket and variance weights, a
+lag, a cap multiplier, a cap and a floor.
+
+The gamma swap is:
+
+#+begin_quote
+A vanilla variance swap with a weight function on the underlying.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+The basket variance swap is:
+
+#+begin_quote
+A capped and/or floored variance swap on a basket of underlyings.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]].
+
+Its trade types are =FxBasketVarianceSwap=, =EquityBasketVarianceSwap=
+and =CommodityBasketVarianceSwap=, with a weight per underlying in the
+basket.
+
+** Mathematical notes
+
+ORE computes the realised variance from the daily underlying prices
+on the valuation schedule. The daily log return is the natural log of
+the ratio of one price to the previous price. The realised variance
+is the sum of the squared daily log returns, scaled by the number of
+observation days and annualised to 252 days per year. The realised
+volatility is the square root of the realised variance.
+
+The variance option converts the vega notionals. The notional of the
+trade is the vega notional. ORE derives the variance notional from
+the vega notional and the variance reference: with the squared-payoff
+flag set, the payout is the converted notional times the positive
+difference between the realised variance and the squared strike, in
+the call or put direction. With the flag clear, the payout is the
+vega notional times the positive difference between the realised
+volatility and the strike. The strike is quoted as an absolute
+volatility level in decimal form, so a 20 percent volatility strike
+is 0.20. When the option was struck in variance terms, the square
+root of the variance is entered as the strike. The variance reference
+converts between the two notions, so the variance amount used to
+scale the notional can differ from the strike that determines the
+payoff.
+
+The corridor forms accrue only the observations inside the window,
+between the upper and the lower barrier level. The conditional forms
+accrue only inside a single-barrier window. The indexed corridor
+accrues the variance of one index only on the days a second index
+sits in its corridor. The count-both-observations choice and the
+accrual adjustment tune the accrual. The dispersion forms pay on the
+volatility difference between two baskets. Caps and floors bound the
+payouts, and the barrier forms condition them on their knock events.
+
+** What moves its value (static sensitivities)
+
+- The realised path of the underlying, or of each basket member. It
+  drives the realised variance.
+- The implied volatility of the underlying, which sets the expected
+  variance and the option value.
+- The strike, the variance reference and the notional.
+- The corridor levels and the accrual conditions.
+- The barrier types and levels of the barrier forms.
+- The correlation between the basket members and between the baskets,
+  in the dispersion and basket forms.
+- The caps and floors.
+- The interest rates that discount the payouts.
+
+** How the profile ages (dynamic sensitivities)
+
+Each date of the valuation schedule adds a daily return to the
+realised variance, subject to the accrual conditions of the
+variation. Barrier forms watch for their knock events over the
+observation period. The corridor forms accrue only inside their
+windows. The averaging of the variance ends with the schedule, and
+the strike comparison, the cap or floor, and the settlement follow on
+the settlement date.
+
+** Why a customer would want it
+
+A variance or volatility swap trades the size of market moves
+directly, without a view on direction. The exotic forms refine that
+exposure: corridors and conditions shape when the variance counts,
+barriers switch the trade on or off, and the dispersion forms trade
+the spread between baskets. In ORE Studio a customer books exotic
+variance and volatility derivatives to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long call on the realised variance of the
+S&P 500. The trade has a vega notional of 138000 USD, a strike of
+0.19 and a variance reference of 0.19, and observes the index daily
+from 2020-11-26 to 2021-09-18:
+
+#+begin_example
+<Trade id="EQ_VarianceOption">
+  <TradeType>ScriptedTrade</TradeType>
+  <Envelope>
+    .....
+  </Envelope>
+  <VarianceOptionData>
+    <LongShort type="longShort">Long</LongShort>
+    <PutCall type="optionType">Call</PutCall>
+    <PremiumAmount type="number">0</PremiumAmount>
+    <PremiumDate type="event">2020-11-26</PremiumDate>
+    <Notional type="number">138000</Notional>
+    <VarianceReference type="number">0.19</VarianceReference>
+    <Strike type="number">0.19</Strike>
+    <Underlying type="index">EQ-RIC:.SPX</Underlying>
+    <ValuationSchedule type="event">
+      <ScheduleData>
+        <Rules>
+          <StartDate>2020-11-26</StartDate>
+          <EndDate>2021-09-18</EndDate>
+          <Tenor>1D</Tenor>
+          <Convention>Following</Convention>
+          <TermConvention>Following</TermConvention>
+          <Calendar>USA</Calendar>
+          <Rule>Forward</Rule>
+        </Rules>
+      </ScheduleData>
+    </ValuationSchedule>
+    <SquaredPayoff type="bool">true</SquaredPayoff>
+    <SettlementDate type="event">2021-09-22</SettlementDate>
+    <PayCcy type="currency">USD</PayCcy>
+  </VarianceOptionData>
+</Trade>
+#+end_example
+
+The squared-payoff flag is true, so the trade is a variance option.
+The premium is zero and the premium date equals the first valuation
+date. ORE prices the trade with the =VarianceOption= script, shown in
+full in the catalogue.
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]],
+the example variance option trade in the section =Variance Option=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs
+  [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/var_and_vol_derivatives.tex][var_and_vol_derivatives.tex]]. The
+  upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

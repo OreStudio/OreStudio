@@ -1,0 +1,273 @@
+:PROPERTIES:
+:ID: 808C159F-5852-45AD-AE49-B7A4488513CC
+:END:
+#+title: Target Redemption Forward
+#+description: A forward series that redeems early at a target profit; ORE's TaRF product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:tarf:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A target redemption forward is a sequence of forward contracts that
+redeems early when its accumulated profit reaches a target. ORE
+offers it for FX, equity and commodity underlyings. This note records
+the domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A TaRF is a strip of forwards on one underlying. Each fixing date
+settles a forward whose strike, and leverage, depend on the range the
+fixing falls into. Positive profits accumulate toward a cap. When
+the accumulated profit reaches the cap, the trade terminates early.
+In the digital form the trade terminates when the number of
+profitable fixing days reaches a target instead. The payment made
+after the knock-out can be exact, full, or truncated.
+
+* Detail
+
+** What it is
+
+ORE introduces the product as follows:
+
+#+begin_quote
+There are two types of knock out
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
+
+A TaRF is a sequence of FX, equity or commodity forward contracts.
+Strikes and leverage factors apply to ranges of the underlying
+price. The trade terminates, or knocks out, when its accumulated
+profit reaches a pre-determined target. ORE distinguishes two
+knock-out types:
+
+#+begin_quote
+A Continuous TaRF terminates when the profit reaches or exceeds a
+pre-determined target. A Digital TaRF terminates when the number of
+fixing days where the buyer makes a profit reaches a pre-determined
+target.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
+
+ORE distinguishes three payment types after the knock-out:
+
+#+begin_quote
+exact: the payment is adjusted to match the pre-determined target
+full: the unadjusted payment is made
+truncated: no payment is made
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
+
+** In plain terms
+
+A target redemption forward is a strip of forwards that stops
+winning at a target. Each fixing date the buyer settles a forward on
+the underlying. The fixing is profitable when it sits on the
+favourable side of the strike. Profits accumulate, and when they
+reach the target the strip redeems early. The buyer gets the target
+amount, or the last payment, or nothing, per the payment type. In
+the digital form the count of profitable days is the target.
+
+** How it works in ORE
+
+The data node =FxTaRFData= is the trade data container for the
+=FxTaRF= trade type. =EquityTaRFData= and =CommodityTaRFData= play
+the same role for the equity and commodity trade types. =Currency=
+is the payout currency of the TaRF; the target amount and the payout
+formula results are expressed in it. =FixingAmount= is the unlevered
+amount used at each fixing date. For FX it is in the foreign
+currency, for equity in shares, for commodity in units. It must be
+positive for both long and short positions.
+
+ORE describes the target mechanics as follows:
+
+#+begin_quote
+If PayoffType = TargetExact, after a knock-out event the last payout
+is adjusted so that the cumulated profit since the start of the TaRF
+matches the target amount.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
+
+=TargetAmount= is a currency amount; for FX it is in the domestic
+currency. =TargetPoints= expresses the same target as a percentage
+of the fixing amount. ORE lists the extra features as follows:
+
+#+begin_quote
+European Knock Ins (EKI), where no sells or buys happen if a fixing
+is between the strike and the EKI level
+Pivots, where different strikes apply for different ranges of the
+fixing
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
+
+=OptionData= holds =LongShort= and =PayoffType=. =PayoffType= takes
+the values =TargetFull=, =TargetExact= or =TargetTruncated=,
+matching the three payment types above. =ScheduleData= holds the
+fixing dates. =SettlementLag=, =SettlementCalendar= and
+=SettlementConvention= derive the settlement dates from them.
+
+Strikes can be global or local. The =Strike= node gives a strike
+that is constant over time. The =Strikes= node gives time-varying
+strikes, either with a =startDate= attribute from which each strike
+is valid, or mapped to the fixing dates in order. A global strike is
+overwritten by a local strike in a range bound, or modified by a
+range strike adjustment. Without any strike for a range, an error is
+thrown. =RangeBounds= defines the ranges with =RangeFrom= and
+=RangeTo=, and each range carries a =Leverage= and a local =Strike=
+or =StrikeAdjustment=. A range without =RangeFrom= is unbounded
+towards minus infinity; a range without =RangeTo= is unbounded
+towards plus infinity. When the fixing falls outside every range, no
+payout occurs. =RangeBoundSet= is the time-varying form of the same
+information.
+
+=Barriers= carries the cap of the trade. =CumulatedProfitCap=
+terminates the trade when the profit from the long side's view
+reaches the cap, quoted in the domestic currency for FX.
+=CumulatedProfitCapPoints= measures the same profit as an amount
+divided by the fixing amount and by the absolute leverage.
+=FixingCap= terminates the trade when the number of profitable
+fixings reaches the cap; it makes the trade digital.
+=CumulatedProfitCapPoints= cannot combine with the other barrier
+types.
+
+ORE also provides a scripted representation with the =TaRFData= node
+under the trade type =ScriptedTrade=:
+
+#+begin_quote
+This representation does not allow for time varying strikes or range
+bounds and also not for a target amount / cumulated profit cap
+specification in points.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]].
+
+In the scripted node the ranges are given as parallel lists:
+=RangeUpperBounds=, =RangeLowerBounds=, =RangeLeverages= and
+=RangeStrikes=. A range without an upper bound takes the sentinel
+value 100000; a range without a lower bound takes 0. A positive
+leverage makes a bullish TaRF, a negative leverage a bearish one.
+=KnockOutProfitAmount= caps the accumulated profit,
+=KnockOutProfitEvents= caps the profitable fixing days, and
+=TargetType= selects the payment type: minus 1 for truncated, 0 for
+exact, 1 for full. A digital knock-out requires the full type.
+
+** Mathematical notes
+
+ORE states the payout formula for each fixing date of a TaRF, for a
+long position, as the range-bound leverage times the fixing amount
+times the fixing minus the global or local strike. The fixing only
+pays when it falls inside a defined range. Profits accumulate from
+zero: each positive payout adds to the accumulated profit and to the
+count of profitable days. The cap conditions fire when the
+accumulated profit reaches the cap amount, or the count reaches the
+cap number. Under the exact payment type the last payout is adjusted
+so the accumulated profit matches the target. The current notional
+of the scripted trade is the fixing amount times the first range
+strike.
+
+** What moves its value (static sensitivities)
+
+- The underlying price. Each fixing decides the payout size and
+  whether the fixing is profitable.
+- The volatility of the underlying. It drives how fast the profit
+  accumulates toward the cap.
+- The strikes, the range boundaries and the range leverages.
+- The cap level and the target amount.
+- The interest rates that discount the payments.
+
+The per-fixing payout is linear in the fixing. The cap adds a binary
+termination: the trade value concentrates on the path that reaches
+the target.
+
+** How the profile ages (dynamic sensitivities)
+
+Each fixing date settles its forward while the trade is alive.
+Profitable fixings accumulate toward the cap. In the continuous
+form the trade terminates on the fixing that first takes the
+accumulated profit to the cap; the exact payment type tops the last
+payout up to the target. In the digital form the count of profitable
+days decides the termination. Without a cap event the strip runs to
+its last fixing date and then settles.
+
+** Why a customer would want it
+
+A target redemption forward sells a strip of forwards at an
+attractive rate in exchange for capping the upside. Corporate
+treasuries use it to hedge or convert currency at better-than-market
+levels; the cap is the price of the improvement. In ORE Studio a
+customer books target redemption forwards to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long FX TaRF on EUR-USD with exact payment.
+It buys one million euros at 1.1 per fixing, with double leverage
+below 1.05, and a cumulated profit cap of 100000:
+
+#+begin_example
+<Trade id="FX_TARF">
+  <TradeType>FxTaRF</TradeType>
+  <Envelope/>
+  <FxTaRFData>
+    <Currency>USD</Currency>
+    <FixingAmount>1000000</FixingAmount>
+    <TargetAmount>100000</TargetAmount>
+    <Strike>1.1</Strike>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-EUR-USD</Name>
+    </Underlying>
+    <ScheduleData>
+      <Dates>
+        <Dates>
+          <Date>2017-03-01</Date>
+          <Date>2020-03-01</Date>
+          <Date>2025-03-01</Date>
+          <Date>2029-03-01</Date>
+        </Dates>
+      </Dates>
+    </ScheduleData>
+    <OptionData>
+      <LongShort>Long</LongShort>
+      <PayoffType>TargetExact</PayoffType>
+    </OptionData>
+    <RangeBounds>
+      <RangeBound>
+        <RangeTo>1.05</RangeTo>
+        <Leverage>2</Leverage>
+      </RangeBound>
+      <RangeBound>
+        <RangeFrom>1.1</RangeFrom>
+        <Leverage>1</Leverage>
+      </RangeBound>
+    </RangeBounds>
+    <Barriers>
+      <BarrierData>
+        <Type>CumulatedProfitCap</Type>
+        <Levels>
+          <Level>100000</Level>
+        </Levels>
+      </BarrierData>
+    </Barriers>
+  </FxTaRFData>
+</Trade>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]],
+listing =FxTaRF data=. The catalogue also shows an equity TaRF with a
+=FixingCap= of three profitable fixings, a two-times leverage above
+3300 and a strike adjustment of 100.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/tarf.tex][tarf.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

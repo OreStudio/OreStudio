@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 3DCC5F43-9728-4E67-8720-AE307E780CBF
+:END:
+#+title: Cap/Floor
+#+description: A strip of interest rate caplets or floorlets bounding a floating leg; ORE's CapFloor product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:capfloor:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A cap, floor, or collar bounds the floating coupons of an interest
+rate leg. The product is a series of European options on the rate
+fixings. ORE models it with the trade type =CapFloor=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A single floating swap leg benchmarked to IBOR or CMS indices may
+carry a cap, a floor, or a collar. The cap or floor rate is the
+strike. Each floating rate reset date is an option expiry date. The
+result is a series of European caplets or floorlets. A collar is the
+combination of a long cap and a short floor for a long position.
+Standalone caps and floors with a single payoff are also supported.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A single floating swap leg with interest payments benchmarked to IBOR
+or CMS indices, may have a cap, floor, or collar. This creates a
+series of European interest rate options (caplets or floorlets) where
+the cap or floor rate is the strike price, and each floating rate
+reset date is an option expiry date.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]].
+
+ORE states the collar composition as follows:
+
+#+begin_quote
+A collar is the combination of a series of long caplets and short
+floorlets for a long position in the collar.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]].
+
+ORE also supports the standalone form:
+
+#+begin_quote
+Standalone caps and floors with a single payoff on an IBOR or CMS
+index are also supported.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]].
+
+** In plain terms
+
+A floating coupon pays whatever the index fixes. A cap sets a ceiling
+on that payment. A floor sets a floor beneath it. A collar does both.
+The option buyer pays a premium. If the fixing is above the cap rate,
+the caplet pays the difference. If the fixing is below the floor
+rate, the floorlet pays the difference.
+
+** How it works in ORE
+
+The =CapFloorData= node is the trade data container for the
+=CapFloor= trade type. It carries a =LongShort= sub-node for the
+position. One =LegData= sub-node sets the leg type. The type can be
+=Floating= for IBOR and OIS indices, =CMS=, =CMSSpread=,
+=DurationAdjustedCMS=, =CPI=, or =YY=. The =Caps= or =Floors=
+elements, or both, sit outside the leg node. With both, the
+instrument is a collar and =Caps= must come above =Floors=. ORE notes
+that the =Payer= flag is ignored for this instrument. The optional
+=PaymentDates= node in the leg serves only OIS and IBOR indices.
+
+** Mathematical notes
+
+ORE states the caplet payoff on an IBOR floating leg coupon period as
+follows:
+
+Caplet payoff = N x max(0, L - K) x δ
+
+N is the notional. L is the IBOR index fixing for the period. K is
+the cap rate, the strike. δ is the day-count fraction for the coupon
+period. The floorlet payoff is the mirror image:
+
+Floorlet payoff = N x max(0, K - L) x δ
+
+For a caplet or floorlet on a CMS index, L is replaced by the CMS
+rate of the relevant tenor. The standalone form pays:
+
+Payoff = N x max(0, ω x (L - K))
+
+ω is 1 for a cap and -1 for a floor.
+
+** What moves its value (static sensitivities)
+
+- The level of the reference index against the strike.
+- The cap or floor rate itself.
+- The volatility of the index fixings.
+- The reset frequency and the day-count convention.
+- The discount curve.
+
+The cap pays when the fixing exceeds the strike. The floor pays when
+the fixing falls below it. Near the strike, each caplet or floorlet
+shows its strongest gamma and vega.
+
+** How the profile ages (dynamic sensitivities)
+
+Caplets and floorlets settle one per period. Each reset date is the
+expiry date of that period's option. Once a fixing settles, that
+option is decided and gone. The remaining value is the strip of
+options not yet decided. As each period passes, the number of live
+options falls by one.
+
+** Why a customer would want it
+
+A borrower with floating debt buys a cap to bound the funding cost.
+An investor holding floating notes buys a floor to protect income. A
+collar sells one side to pay for the other. In ORE Studio a customer
+books caps and floors to value them and run sensitivities on the ORE
+engine.
+
+** Example
+
+ORE's catalogue shows a long cap on a floating leg with a 5 percent
+cap rate and an upfront premium:
+
+#+begin_example
+<CapFloorData>
+  <LongShort>Long</LongShort>
+  <LegData>
+    <Payer>false</Payer>
+    <LegType>Floating</LegType>
+     ...
+  </LegData>
+  <Caps>
+    <Cap>0.05</Cap>
+  </Caps>
+  <Premiums>
+    <Premium>
+      <Amount>1000</Amount>
+      <Currency>EUR</Currency>
+      <PayDate>2021-01-27</PayDate>
+    </Premium>
+  </Premiums>
+</CapFloorData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]],
+listing =Cap/Floor data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Interest_rate_cap_and_floor][Wikipedia: Interest rate cap and floor]]. This note follows its
+  general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

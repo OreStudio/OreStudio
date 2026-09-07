@@ -1,0 +1,157 @@
+:PROPERTIES:
+:ID: A4785FCB-5001-46DF-8F65-F63BB12526F3
+:END:
+#+title: Flexi Swap
+#+description: A swap with an option to cut the notional toward a lower bound; ORE's FlexiSwap product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:flexiswap:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A flexi swap is an amortising swap with an option to cut the notional
+further. The cut can go down to a lower bound in each period. ORE
+models it with the trade type =FlexiSwap=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+A flexi swap is an amortising swap in which one party has the option
+to reduce the notional further in each period. The notional can move
+to any value between the current notional and a specified lower bound
+for that period. ORE prices the product with the Replication Approach
+described in F. Jamshidian 2005. The replicating basket of Bermudan
+Swaptions is priced with the Bermudan Swaption method. Flexi swaps
+can be single or cross currency.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Flexi Swap is an amortizing swap in which one party has the option
+to further reduce the notional in each period to each value between
+the current notional and a specified lower bound for that period.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]].
+
+ORE states the pricing approach as follows:
+
+#+begin_quote
+Flexi Swaps are priced in ORE following the Replication Approach
+described in (F. Jamshidian, 2005). The replicating basket of
+Bermudan Swaptions is priced using the method as described under
+Product Type "Bermudan Swaption". Flexi Swaps can be single or cross
+currency.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]].
+
+ORE notes that flexi swaps are typically used for swaps linked to
+Asset Backed Securities with flexible amortisation.
+
+** In plain terms
+
+A flexi swap lets the notional breathe. The schedule amortises in the
+usual way. On top of that, one party may cut the notional further in
+each period. The cut can land anywhere between the current notional
+and a stated lower bound. The right matters when the underlying
+collateral prepays at an uncertain speed.
+
+** How it works in ORE
+
+The =FlexiSwapData= node is the trade data container for the flexi
+swap. The swap legs carry an amortising notional and are represented
+by =LegData= sub-nodes. The node also contains an =OptionLongShort=
+element. It names the holder of the prepayment option. A further
+sub-node describes the optional prepayments. In ORE's example the
+sub-node is =LowerNotionalBounds=. It means the notional can be
+reduced to any value between the given lower bound and the original
+notional in each fixed leg period.
+
+** Mathematical notes
+
+A flexi swap is an amortising swap plus a strip of reduction rights.
+Each right allows the holder to cut the notional down to a lower
+bound in one period. ORE prices the rights by the Replication
+Approach. The approach replicates the reduction rights with a basket
+of Bermudan Swaptions. Each Bermudan Swaption in the basket prices
+with the method described under Product Type "Bermudan Swaption".
+The holder exercises a right only when the cut improves the swap
+value.
+
+** What moves its value (static sensitivities)
+
+- The swap rate levels against the fixed coupon.
+- The volatility of the swap rates, through the swaption basket.
+- The amortisation schedule and the lower notional bounds.
+- The identity of the option holder.
+- The discount curve and the index spreads.
+
+The reduction right is worth more when the swap has moved against the
+party that must keep receiving it. The fixed legs and the lower
+bounds define how much notional each right can release.
+
+** How the profile ages (dynamic sensitivities)
+
+Period by period the holder decides whether to cut. A period that
+passes without exercise consumes that period's right. Actual cuts
+shrink the remaining notional. Later exposure shrinks with it. Late
+in life few rights remain. The swap then runs on the reduced schedule
+to maturity.
+
+** Why a customer would want it
+
+A customer in an Asset Backed Security trade needs a swap that
+follows flexible amortisation. The collateral prepays at an uncertain
+speed. A fixed amortisation schedule would mismatch the security. The
+flexi swap lets the notional track the collateral. In ORE Studio a
+customer books flexi swaps to value them and run sensitivities on the
+ORE engine.
+
+** Example
+
+ORE's catalogue shows a flexi swap whose optional prepayments are
+given by =LowerNotionalBounds=:
+
+#+begin_example
+<FlexiSwapData>
+  <LowerNotionalBounds>
+        <Notional>451389557.145667</Notional>
+        <Notional>427876791.621303</Notional>
+        <Notional>404435982.369285</Notional>
+        <Notional>379353200.32956</Notional>
+        ...
+  </LowerNotionalBounds>
+  <OptionLongShort>Short</OptionLongShort>
+  <LegData>
+    <LegType>Fixed</LegType>
+    ...
+  </LegData>
+  <LegData>
+    <LegType>Floating</LegType>
+    ...
+  </LegData>
+</FlexiSwapData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]],
+listing =Flexi Swap data=.
+
+A Balance Guaranteed Swap is priced through an auxiliary flexi swap,
+see the [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]]
+note.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Interest_rate_swap][Wikipedia: Interest rate swap]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/flexiswap.tex][flexiswap.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

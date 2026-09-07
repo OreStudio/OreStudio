@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: 8B992141-85D3-4480-ABAF-9E2BD1BEB01B
+:END:
+#+title: Commodity Position
+#+description: A position in a commodity or weighted commodity basket; ORE's CommodityPosition product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:commodityposition:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A commodity position is the direct holding view of the commodity
+family. It prices a position in one commodity or in a weighted basket.
+ORE models it with the trade type =CommodityPosition=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A commodity position represents a position in a single commodity or in
+a weighted basket of underlying commodities. It can be a standalone
+trade or a component of a total return swap. The position values a
+quantity times the commodity price, or the basket weighted sum of its
+prices. The pricing reference is a spot or future settlement price.
+
+* Detail
+
+** What it is
+
+ORE states that a commodity position represents a position in a single
+commodity, with a single =Underlying= node, or in a weighted basket of
+underlying commodities, with multiple =Underlying= nodes. The node can
+be a standalone trade type, =CommodityPosition=, or a trade component,
+=CommodityPositionData=, inside the TotalReturnSwap trade type.
+
+** In plain terms
+
+A commodity position is the commodity itself in portfolio form. One
+trade holds a quantity of a commodity. The price follows the market
+each day. A basket trade holds several commodities with weights, like
+one index holding.
+
+** How it works in ORE
+
+The =CommodityPositionData= node carries the =Quantity= and the
+underlyings. Each =Underlying= node names a commodity, such as
+=NYMEX:CL= or =ICE:B=. A single commodity uses one node. A weighted
+basket uses several, each with a =Weight=. The =PriceType= selects
+the pricing reference. With =FutureSettlement=, the position refers by
+default to today's prompt (lead) future. =FutureMonthOffset=,
+=DeliveryRollDays=, and =DeliveryRollCalendar= refine which future
+contract prices the position.
+
+ORE notes that a generic TRS does not support rolling of the future
+contracts. Today's prompt future can differ from the prompt future at
+inception. If the initial basket price is not set, the position uses
+the price of today's prompt future at trade inception. The TRS ignores
+the roll yield caused by rolling from one prompt future to the next.
+
+** Mathematical notes
+
+A single position value is the quantity times the commodity price. A
+basket position value is the quantity times the weighted sum of the
+underlying prices:
+
+V = Q x (Sum over i of Weight_i x S_i x FX_i)
+
+The weights set the basket's exposure to each commodity. Each S_i is
+the i-th commodity prompt future or spot price. Each FX_i converts
+from the i-th commodity currency to the first commodity currency. The
+first commodity currency is the currency of the basket NPV.
+
+** What moves its value (static sensitivities)
+
+- The commodity price of each underlying. It drives the value.
+- The FX rate of each underlying's currency to the first commodity
+  currency.
+- The basket weights. They set the share of each commodity.
+- The quantity.
+- The pricing reference, spot or future settlement.
+
+The value moves with the weighted commodity prices. A long position
+gains when the basket rises. A short position gains when it falls.
+
+** How the profile ages (dynamic sensitivities)
+
+The pricing reference decides how the position follows the market. A
+spot reference tracks the spot day by day. A future settlement
+reference follows today's prompt future. The prompt future changes as
+near contracts expire, and a TRS does not accrue the roll yield. The
+position has no maturity of its own. It continues until the trade is
+closed.
+
+** Why a customer would want it
+
+A customer who holds physical commodity wants its value on the books.
+A hedge fund wants an index-like commodity exposure in one trade. A
+bank prices a client's commodity basket position in its portfolio.
+Inside a total return swap, the position pays the swap's return
+leg. In ORE Studio a customer books commodity positions to value them
+and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a basket of two commodities:
+
+#+begin_example
+<CommodityPositionData>
+  <Quantity>1000</Quantity>
+  <Underlying>
+    <Type>Commodity</Type>
+    <Name>NYMEX:CL</Name>
+    <Weight>0.5</Weight>
+    <PriceType>FutureSettlement</PriceType>
+    <FutureMonthOffset>0</FutureMonthOffset>
+    <DeliveryRollDays>0</DeliveryRollDays>
+    <DeliveryRollCalendar>TARGET</DeliveryRollCalendar>
+  </Underlying>
+  <Underlying>
+    <Type>Commodity</Type>
+    <Name>ICE:B</Name>
+    <Weight>0.5</Weight>
+    <PriceType>FutureSettlement</PriceType>
+    <FutureMonthOffset>0</FutureMonthOffset>
+    <DeliveryRollDays>0</DeliveryRollDays>
+    <DeliveryRollCalendar>TARGET</DeliveryRollCalendar>
+  </Underlying>
+</CommodityPositionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityposition.tex][commodityposition.tex]],
+listing =Commodity Position= (optional elements omitted).
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Commodity_market][Wikipedia: Commodity market]]. This places the product in the
+  commodity markets.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityposition.tex][commodityposition.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

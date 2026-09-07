@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 4BAF88FA-7FDF-4B01-9A52-7AAE733A02B5
+:END:
+#+title: FX European Barrier Option
+#+description: An FX European barrier option; ORE's FxEuropeanBarrierOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_europeanbarrieroption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX European barrier option checks its barrier once, at expiry. The
+monitoring is European rather than continuous. ORE models it with the
+trade type =FxEuropeanBarrierOption=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An FX European barrier option is a barrier option whose underlying is
+monitored only at expiry, with a single barrier. The buyer holds the
+right to exchange one currency for another at a set rate. The right
+may be withdrawn if the spot rate reaches the barrier at expiry.
+Settlement is cash or physical. The four main barrier types apply.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A FX European Barrier option gives the buyer the right, but not the
+obligation, to exchange a set amount of one currency for another, at a
+predetermined exchange rate, at one predetermined time in the future.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]].
+
+ORE states that this right may be withdrawn depending upon an FX spot
+rate reaching a predetermined barrier level at the predetermined
+time. The underlying is monitored only at expiry, with a single
+barrier. For this right the buyer pays a premium to the seller.
+Settlement can be either cash or physical delivery.
+
+ORE defines the two life modes at expiry as follows:
+
+#+begin_quote
+A knock-in option is a barrier option that only comes into
+existence/becomes active when the FX spot rate reaches the barrier
+level at expiry.
+#+end_quote
+
+#+begin_quote
+A knock-out option starts its life active, but ceases to exist/becomes
+inactive, if the barrier is reached at expiry.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]].
+
+** In plain terms
+
+An FX European barrier option is a vanilla option with an expiry-day
+condition. The barrier matters only at the end. If the rate sits past
+the level at expiry, the option switches on or off. During the life
+of the option, the barrier does not react.
+
+** How it works in ORE
+
+The =FxEuropeanBarrierOptionData= node includes one =OptionData= node
+and one =BarrierData= node. The barrier level is quoted as the amount
+in =SoldCurrency= per unit =BoughtCurrency=. The barrier =Type=
+selects one of the four main types. =Levels= holds the level, and
+=Rebate= the cash rebate on inactive expiry. The bought and sold
+currencies and amounts set the underlying exchange.
+
+** Mathematical notes
+
+A European barrier option prices against the terminal spot
+distribution, not the path. The barrier event and the expiry fixing
+are the same observation. The value is the vanilla option adjusted by
+the probability that the terminal rate sits past the barrier. A cash
+rebate applies when the option expires inactive.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. Its position against the barrier at expiry sets
+  the state.
+- The volatility of the pair. It spreads the terminal rate around the
+  forward.
+- The interest rates in both currencies.
+- The strike, the barrier level, and the rebate.
+
+The absence of continuous monitoring removes the intraday touch risk.
+The barrier exposure lives at the expiry date. A knock-out loses value
+as the forward rate sits closer to the barrier at expiry.
+
+** How the profile ages (dynamic sensitivities)
+
+The option ages like a vanilla option for most of its life. The
+barrier sleeps until expiry. At expiry the fixing decides both the
+moneyness and the barrier state. The option settles in cash or by
+delivery, or expires with the rebate.
+
+** Why a customer would want it
+
+A customer who wants a cheaper vanilla hedge buys a European barrier
+option. The barrier check at expiry only suits a view on the terminal
+rate. In ORE Studio a customer books FX European barrier options to
+value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European call with an up-and-in barrier
+and a rebate:
+
+#+begin_example
+<FxEuropeanBarrierOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <OptionType>Call</OptionType>
+    <Style>European</Style>
+    <Settlement>Cash</Settlement>
+    <ExerciseDates>
+      <ExerciseDate>2021-12-14</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <BarrierData>
+    <Type>UpAndIn</Type>
+    <Levels>
+      <Level>1.2</Level>
+    </Levels>
+    <Rebate>100000</Rebate>
+  </BarrierData>
+  <BoughtCurrency>EUR</BoughtCurrency>
+  <BoughtAmount>1000000</BoughtAmount>
+  <SoldCurrency>USD</SoldCurrency>
+  <SoldAmount>1100000</SoldAmount>
+</FxEuropeanBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]],
+listing =FX European Barrier Option data= (optional elements omitted).
+
+The continuously monitored form is the [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]].
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

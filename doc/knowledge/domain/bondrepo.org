@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: C96BBC70-71C1-442A-97FF-CCD596C193DB
+:END:
+#+title: Bond Repo
+#+description: A cash borrowing with a bond posted as collateral; ORE's BondRepo product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bondrepo:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A bond repo is a secured cash borrowing: a bond is posted as
+collateral for cash. ORE models it with the trade type =BondRepo=. The
+container node is =BondRepoData=. This note records the domain
+grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+In a bond repo transaction one party receives a cash amount from
+another party for a specified period. At maturity the borrower pays
+back the cash amount plus accrued interest. A bond is delivered as
+collateral for the duration of the trade. The interest paid is lower
+than for an uncollateralised borrowing. The =BondRepoData= block
+contains a =BondData= node for the collateral and a =RepoData= node
+for the cash leg.
+
+* Detail
+
+** What it is
+
+ORE defines the transaction as follows:
+
+#+begin_quote
+In a bond repo transaction one party A receives a cash amount from a
+party B for a specified period. At the maturity of the trade party A
+pays back the cash amount plus accrued interest to party B.
+Intermediate interest payments are also possible. Party A delivers a
+bond to party B as a collateral for the received cash amount for the
+duration of the trade. In exchange the interest to be paid by party A
+will be lower than for an uncollateralised borrowing transaction.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondrepo.tex][bondrepo.tex]].
+
+** In plain terms
+
+A repo is a short-term loan against a bond. The borrower hands over
+the bond and gets cash. At the end the borrower repays the cash with
+interest and gets the bond back. The bond makes the loan cheap and
+safe.
+
+** How it works in ORE
+
+A bond repo trade is set up using the trade type =BondRepo= and a
+=BondRepoData= block. The block contains two nodes. The =BondData=
+node specifies the underlying bond and its quantity. =SecurityId= is
+the identifier of the underlying security, usually of the form
+=ISIN::XY012345679=. =BondNotional= is the effective notional used as
+collateral, so it should include hair cuts. Usually the number =Bond
+Notional x Bond Dirty Price x (1 - Haircut)= corresponds to the
+nominal on the cash leg at trade inception. The optional =CreditRisk=
+flag decides whether credit risk shows on the product. The details of
+the underlying bond are read from the reference data in this case,
+but it is also possible to inline the details in the trade. The
+=RepoData= node contains exactly one =LegData= sub-node that describes
+the payments on the cash leg of the repo. The =Payer= leg determines
+whether interest is paid, a regular repo, or received, a reversed
+repo.
+
+** Mathematical notes
+
+The cash leg is a fixed or floating interest leg over the repo period.
+The collateral leg delivers the bond and returns it at maturity. The
+economics of the trade are the difference between the interest on the
+cash and the value of holding the collateral. A haircut makes the
+collateral value exceed the cash, which protects the lender.
+
+** What moves its value (static sensitivities)
+
+- The repo rate on the cash leg.
+- The price of the collateral bond and its credit.
+- The haircut and the notional of the collateral.
+- The funding rates of the two parties.
+
+The trade is a pair of opposite cash flows, so its value is driven by
+the spread between the repo rate and the funding of the bond.
+
+** How the profile ages (dynamic sensitivities)
+
+The repo runs over a fixed period. Interest accrues on the cash leg,
+with intermediate payments possible. The bond stays with the lender as
+collateral. At maturity the borrower repays the cash plus interest and
+the bond returns. Until then the value tracks the difference between
+the two legs.
+
+** Why a customer would want it
+
+A repo funds a bond position cheaply, or lends cash against safe
+collateral. It is the standard tool of the money market for secured
+funding. In ORE Studio a customer books bond repos to value them and
+run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a three-month USD repo: the borrower posts a US
+Treasury and pays a fixed rate of 1.78 percent on the cash:
+
+#+begin_example
+<BondRepoData>
+  <BondData>
+    <SecurityId>ISIN:US912828X703</SecurityId>
+    <BondNotional>27807597.777444</BondNotional>
+  </BondData>
+  <RepoData>
+    <LegData>
+      <LegType>Fixed</LegType>
+      <Payer>true</Payer>
+      <Currency>USD</Currency>
+      <Notionals>
+        <Notional>28371510.00</Notional>
+      </Notionals>
+      <ScheduleData>
+        <Rules>
+          <StartDate>2020-01-06</StartDate>
+          <EndDate>2020-04-07</EndDate>
+          <Tenor>1Y</Tenor>
+          <Calendar>US</Calendar>
+          <Convention>MF</Convention>
+          <TermConvention>MF</TermConvention>
+          <Rule>Forward</Rule>
+          <EndOfMonth/>
+          <FirstDate/>
+          <LastDate/>
+        </Rules>
+      </ScheduleData>
+      <DayCounter>A360</DayCounter>
+      <PaymentConvention>F</PaymentConvention>
+      <FixedLegData>
+        <Rates>
+          <Rate>0.0178</Rate>
+        </Rates>
+      </FixedLegData>
+    </LegData>
+  </RepoData>
+</BondRepoData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondrepo.tex][bondrepo.tex]],
+listing =Bond Repo Data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Repurchase_agreement][Wikipedia: Repurchase agreement]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondrepo.tex][bondrepo.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

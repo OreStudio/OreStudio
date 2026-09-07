@@ -1,0 +1,136 @@
+:PROPERTIES:
+:ID: 94B1DBE3-33AB-44F5-B9F1-B71E34A58123
+:END:
+#+title: Rate Digital Option
+#+description: A fixed-payout option on an interest rate fixing; ORE's RateDigitalOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:ratedigitaloption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A rate digital option pays a fixed cash amount when a rate fixing is
+above or below a strike. The payout is decided by one fixing date.
+ORE models it with the trade type =RateDigitalOption=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+A rate digital option is a European cash-or-nothing option on an
+interest rate fixing. It pays a fixed cash amount if the fixing on
+the fixing date is above the strike, a call, or below the strike, a
+put. The payout is decided by the fixing on the fixing date. ORE
+notes the trade type is useful for hedging or replicating Range
+Accrual coupons. Each daily observation of such a coupon decomposes
+into a digital option on the rate.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A Rate Digital Option is a European cash-or-nothing option on an
+interest rate fixing. It pays a fixed cash amount if the underlying
+rate index fixing on the fixing date is above the strike (Call) or
+below the strike (Put). This trade type is useful for hedging or
+replicating Range Accrual coupons, where each daily observation can
+be decomposed into a digital option on the rate.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ratedigitaloption.tex][ratedigitaloption.tex]].
+
+The payout direction follows the option type. A call pays when the
+rate fixing is above the strike. A put pays when the rate fixing is
+below the strike.
+
+** In plain terms
+
+A rate digital is a binary bet on a rate. The rate either beats the
+level or it does not. The payout is fixed in advance. There is no
+graduated payoff.
+
+** How it works in ORE
+
+The =RateDigitalOptionData= node is the trade data container for the
+=RateDigitalOption= trade type. It includes one =OptionData= sub-node
+plus elements specific to the product. =LongShort= sets the
+direction. =OptionType= names the condition, call or put.
+=ExerciseDates= holds the single European exercise date. =Index=
+names the underlying rate, for example EUR-EURIBOR-6M. =Strike= sets
+the level in decimal form. =PayoffAmount= and =PayoffCurrency= set
+the fixed payout. =FixingDate= is when the index fixes.
+=PaymentDate= is when the payout settles.
+
+** Mathematical notes
+
+The payout is a fixed cash amount conditional on one event. A call
+pays if the fixing is above the strike. A put pays if the fixing is
+below the strike. The value is the payout times the discounted
+probability of the event under the pricing measure. A digital behaves
+like the limit of a tight call or put spread. Near the strike its
+sensitivity to the rate and to volatility is at its peak.
+
+** What moves its value (static sensitivities)
+
+- The forward level of the reference rate against the strike.
+- The volatility of the reference index.
+- The discount rate to the payment date.
+- The gap between the fixing date and the payment date.
+- The payout amount and its currency.
+
+Far from the strike the value saturates. Deep in the money the
+payout is near certain. Deep out of the money it is near zero.
+
+** How the profile ages (dynamic sensitivities)
+
+Until the fixing, the trade prices the probability of the payout. The
+fixing date decides the outcome. After the fixing the payoff is
+known. Only the discount to the payment date remains. At the payment
+date the cash settles and the trade stops.
+
+** Why a customer would want it
+
+A customer uses the product to hedge Range Accrual coupons. Each
+daily observation of such a coupon is a digital on the rate. A trader
+expresses a cheap binary view on a rate level. In ORE Studio a
+customer books rate digital options to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long call digital on euro six-month Euribor.
+It pays 10000 euros if the fixing is above 2 percent:
+
+#+begin_example
+<RateDigitalOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseDates>
+          <ExerciseDate>2027-06-20</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Index>EUR-EURIBOR-6M</Index>
+      <Strike>0.02</Strike>
+      <PayoffAmount>10000.0</PayoffAmount>
+      <PayoffCurrency>EUR</PayoffCurrency>
+      <FixingDate>2027-06-18</FixingDate>
+      <PaymentDate>2027-06-20</PaymentDate>
+</RateDigitalOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ratedigitaloption.tex][ratedigitaloption.tex]],
+listing =Rate Digital Option data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ratedigitaloption.tex][ratedigitaloption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

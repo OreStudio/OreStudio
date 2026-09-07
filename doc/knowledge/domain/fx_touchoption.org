@@ -1,0 +1,152 @@
+:PROPERTIES:
+:ID: EA6E4A7A-6229-4F8C-93C5-426D1E4CB496
+:END:
+#+title: FX Touch Option
+#+description: An FX option paying when spot touches a level before expiry; ORE's FxTouchOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_touchoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX touch option is a pure bet on a rate touching a level. It has no
+strike optionality beyond that event. ORE models it with the trade
+type =FxTouchOption=. This note records the domain grounding, as ORE
+documents it in its product catalogue.
+
+* Summary
+
+An FX touch option combines a continuously monitored single barrier
+with a cash-or-nothing digital underlying. At expiry it pays a fixed
+amount or zero, depending on whether the spot rate reached the
+barrier. The four main barrier types apply. A knock-in, or one-touch,
+pays if the barrier is breached. A knock-out, or no-touch, pays if it
+is not. No rebates are supported.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+This product has a continuously monitored single barrier with a
+Cash-or-Nothing digital underlying.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]].
+
+ORE states the payoff condition as follows:
+
+#+begin_quote
+At expiry a FX Touch Option pays either a fixed predetermined payoff
+amount or zero (Cash-or-Nothing) depending upon an FX spot rate
+reaching a pre-set barrier level.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]].
+
+ORE also states the two forms. A knock-in, or one-touch, has a fixed
+payout if the barrier is breached, and no payout otherwise. The
+payout can be at expiry or at hit. A knock-out, or no-touch, has no
+payout if the barrier is breached, and a fixed payout at expiry
+otherwise. The buyer pays a premium to the seller.
+
+** In plain terms
+
+An FX touch option is a bet on a single touch. One side bets that the
+rate touches a level before expiry. The other side bets that it never
+does. The payout is fixed. The level, not the strike, is the whole
+game.
+
+** How it works in ORE
+
+The =FxTouchOptionData= node includes one =OptionData= node and one
+=BarrierData= node. The =OptionType= is not required. It is inferred
+from the barrier type, call for an up barrier and put for a down
+barrier. The barrier =Type= is one of the four main types. =Levels=
+holds the level. =PayoffAmount= and =PayoffCurrency= set the fixed
+payout. =ForeignCurrency= and =DomesticCurrency= name the rate.
+=StartDate= sets the monitoring start, with the =Calendar= and
+=FXIndex= naming the fixing source.
+
+** Mathematical notes
+
+The value is the probability of the touch event, discounted, times the
+fixed payout. A one-touch pays when the rate breaches the barrier at
+any time before expiry. A no-touch pays when it never breaches. The
+touch probability rises with volatility and with time. A payout at
+hit settles earlier than a payout at expiry.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. Its distance from the barrier sets the state.
+- The volatility of the pair. It drives the touch probability.
+- The interest rates in the two currencies.
+- The barrier level and the fixed payout.
+- The payout timing, at expiry or at hit.
+
+A no-touch loses value as spot approaches the barrier. A one-touch
+gains. Near the barrier the delta and vega change direction.
+
+** How the profile ages (dynamic sensitivities)
+
+The barrier is monitored continuously. A one-touch can be decided at
+any moment, with the payout at hit or at expiry. A no-touch stays
+alive while spot stays away from the level. As expiry approaches, the
+remaining time to touch shrinks. At expiry the payout settles and the
+trade stops.
+
+** Why a customer would want it
+
+A customer who expects the rate to stay below a level sells a
+no-touch and collects the premium. A customer who expects a move buys
+a one-touch. The products express a pure range view. In ORE Studio a
+customer books FX touch options to value them and run sensitivities on
+the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long no-touch on dollar-yen:
+
+#+begin_example
+<FxTouchOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <PayOffAtExpiry>true</PayOffAtExpiry>
+    <ExerciseDates>
+      <ExerciseDate>2021-12-14</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <BarrierData>
+    <Type>DownAndOut</Type>
+    <Levels>
+      <Level>0.009</Level>
+    </Levels>
+  </BarrierData>
+  <ForeignCurrency>JPY</ForeignCurrency>
+  <DomesticCurrency>USD</DomesticCurrency>
+  <PayoffCurrency>USD</PayoffCurrency>
+  <PayoffAmount>100000</PayoffAmount>
+  <StartDate>2019-01-25</StartDate>
+  <FXIndex>FX-TR20H-USD-JPY</FXIndex>
+  <Calendar>NYB,TKB</Calendar>
+</FxTouchOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]],
+listing =FX Touch Option data= (optional elements omitted).
+
+The two-level form is the [[id:7BA83993-32A7-4090-A6A9-A07AA3AF2B1D][FX Double Touch Option]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Binary_option][Wikipedia: Binary option]]. This places the fixed payout concept.
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This places the barrier condition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

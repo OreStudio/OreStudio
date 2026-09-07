@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: 0AA6F04D-C049-43D5-8307-82A9562E2883
+:END:
+#+title: FX Double Barrier Option
+#+description: An FX option with two barriers around the strike; ORE's FxDoubleBarrierOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fx_doublebarrieroption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An FX double barrier option is the two-level form of the FX barrier
+family. Its life depends on a rate reaching either of two levels. ORE
+models it with the trade type =FxDoubleBarrierOption=. This note
+records the domain grounding, as ORE documents it in its product
+catalogue.
+
+* Summary
+
+An FX double barrier option exists while an FX spot condition between
+two levels holds. The product has two continuously monitored barriers
+around a vanilla European FX option. Exercise is European. The option
+is knock-in or knock-out as a whole. On inactive expiry the payoff is
+zero or a cash rebate. Knock-in knock-out combinations are not
+supported here; the KIKO product covers them.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+An FX Double Barrier option is a path-dependent option whose existence
+depends upon an FX spot rate reaching one of the two pre-set barrier
+levels. Exercise is European.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doublebarrieroption.tex][fx_doublebarrieroption.tex]].
+
+ORE adds that the product has two continuously monitored barriers with
+a vanilla European FX option underlying.
+
+ORE notes that the current implementation does not support options
+with knock-in knock-out (KIKO) or knock-out knock-in (KOKI) barrier
+combinations. The former is covered by the separate FX KIKO Barrier
+Option instrument.
+
+** In plain terms
+
+An FX double barrier option is a vanilla option inside a corridor.
+The corridor has a floor and a ceiling. A knock-in option comes alive
+when the rate touches either level. A knock-out option dies when the
+rate touches either level.
+
+** How it works in ORE
+
+The =FxDoubleBarrierOptionData= node includes one =OptionData= node
+and one =BarrierData= node. The barrier levels are quoted as the
+amount in =SoldCurrency= per unit =BoughtCurrency=. The barrier
+=Type= is =KnockOut= or =KnockIn= for the pair of levels. =Levels=
+holds the two levels, and =Rebate= the cash rebate on inactive
+expiry. The bought and sold currencies and amounts set the underlying
+exchange.
+
+** Mathematical notes
+
+A double barrier option prices as a vanilla option plus a two-sided
+corridor correction. The value depends on the distance of spot from
+both levels. The probability of touching either level rises with
+volatility and with time. When the option expires inactive, the
+payoff is zero or the rebate.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. Its position inside the corridor sets the state.
+- The volatility of the pair. It drives the touch probability of
+  either level.
+- The interest rates in both currencies.
+- The strike, the two barrier levels, and the rebate.
+- The time to expiry.
+
+A knock-out loses value as spot approaches either barrier. A knock-in
+gains. Near the barriers the exposure to spot and volatility changes
+direction.
+
+** How the profile ages (dynamic sensitivities)
+
+The two barriers are monitored continuously. A knock-out can end at
+any moment. A knock-in waits for its first touch. After a knock-out
+the trade ends with the rebate or nothing. After a knock-in the trade
+becomes a vanilla FX option. At expiry the option settles in the money
+or expires.
+
+** Why a customer would want it
+
+A customer who expects the rate to stay inside a range buys a
+double knock-out at a lower premium than a single barrier. A customer
+who expects a breakout buys a double knock-in. In ORE Studio a
+customer books FX double barrier options to value them and run
+sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European call inside two knock-out
+levels:
+
+#+begin_example
+<FxDoubleBarrierOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <OptionType>Call</OptionType>
+    <Style>European</Style>
+    <ExerciseDates>
+      <ExerciseDate>2021-12-14</ExerciseDate>
+    </ExerciseDates>
+    ...
+  </OptionData>
+  <BarrierData>
+    <Type>KnockOut</Type>
+    <Levels>
+      <Level>1.1</Level>
+      <Level>1.2</Level>
+    </Levels>
+    <Rebate>0.0</Rebate>
+  </BarrierData>
+  <StartDate>2019-01-25</StartDate>
+  <Calendar>TARGET</Calendar>
+  <FXIndex>FX-ECB-EUR-USD</FXIndex>
+  <BoughtCurrency>EUR</BoughtCurrency>
+  <BoughtAmount>1000000</BoughtAmount>
+  <SoldCurrency>USD</SoldCurrency>
+  <SoldAmount>1100000</SoldAmount>
+</FxDoubleBarrierOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doublebarrieroption.tex][fx_doublebarrieroption.tex]],
+listing =FX Double Barrier Option data= (optional elements omitted).
+
+The single-level form is the [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]]. The
+[[id:B6A26725-EC1A-482D-A920-3CAB8834ED6D][FX KIKO Barrier Option]] pairs one knock-in with one knock-out.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Barrier_option][Wikipedia: Barrier option]]. This note follows its general definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_doublebarrieroption.tex][fx_doublebarrieroption.tex]].
+  The upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

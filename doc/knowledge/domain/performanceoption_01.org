@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: AEB7149D-EE91-4912-A663-D7A0261B87A0
+:END:
+#+title: Performance Option Type 01
+#+description: An option paying a performance return against a strike; ORE's Performance Option Type 01 product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:performanceoption_01:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+A performance option of type 01 pays the average performance of an
+underlying basket against an option strike, scaled by a notional and
+a participation rate. ORE prices it on equity, FX and commodity
+underlyings. This note records the domain grounding, as ORE documents
+it in its product catalogue.
+
+* Summary
+
+The product is characterised by a notional, a participation rate, one
+valuation date with a settlement date, a basket of underlyings with
+weights, an initial strike price per underlying, and an option
+strike. On the valuation date the average performance of the basket
+is computed and floored at zero. The option holder receives the
+notional times the participation rate times that performance on the
+settlement date. The option strike can sit inside the performance
+calculation of each underlying, or outside it.
+
+* Detail
+
+** What it is
+
+The performance option of type 01 is characterised by its data: a
+notional amount, a participation rate, one valuation date and one
+settlement date, a number of underlyings with weights, initial strike
+prices for the underlyings, and an option strike. On the valuation
+date the average performance of the underlying basket is computed.
+The option holder receives the notional times the participation rate
+times the computed performance on the settlement date. The
+underlyings can be equity, FX or commodity underlyings.
+
+ORE distinguishes the two strike treatments as follows:
+
+#+begin_quote
+The above payoff includes the strike in the performance calculation.
+There is another variant with excluded strike and payoff:
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
+
+** In plain terms
+
+A performance option is a call on the average performance of a
+basket. Each asset in the basket is measured from its own initial
+strike price. The weighted average of these performances is compared
+with an option strike. The buyer receives a share of the positive
+part of the result, scaled by a participation rate. The structure
+pays only when the basket as a whole beats the option strike. The
+choice of strike treatment changes where the option strike enters the
+calculation.
+
+** How it works in ORE
+
+The catalogue shows the trade data container =PerformanceOption01Data=
+for the =PerformanceOption_01= trade type. =NotionalAmount= is the
+notional amount of the option. =ParticipationRate= is the
+participation rate:
+
+#+begin_quote
+The participation rate. Allowable values are non-negative numbers.
+Usually the value will be between 0 and 1.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
+
+=ValuationDate= is the valuation date and =SettlementDate= the
+settlement date. =Underlyings= holds the underlyings of the option,
+each with its =Weight=. =StrikePrices= holds the initial strike price
+of each underlying. For an FX underlying it is the number of units of
+=CCY2= per unit of =CCY1=; for an equity underlying it is the equity
+price in the equity currency; for a commodity underlying it is the
+commodity price as quoted for the commodity.
+
+=Strike= is the option strike, expressed in terms of the performance
+of the underlying basket. ORE describes it as follows:
+
+#+begin_quote
+The option strike. This is expressed in terms of the performance of
+the underlying basket (see the product description for more details).
+Allowable values are numbers.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
+
+=StrikeIncluded= is optional. When true, the strike is included in
+the performance calculation of each underlying; this is also the
+default when the flag is not given. When false, the strike is
+excluded and applies to the basket performance as a whole.
+=Position= takes =Long= or =Short=. =PayCcy= is the payment currency
+of the option.
+
+** Mathematical notes
+
+ORE computes the performance P on the valuation date from the
+weighted sum of the underlying performances. In the included form the
+option strike enters each underlying's term:
+
+P = max( sum over i of w-i x (U-i(V) / s-i - K), 0 ).
+
+In the excluded form the option strike applies once, after the
+weighted sum:
+
+P = max( [ sum over i of w-i x U-i(V) / s-i ] - K, 0 ).
+
+The performance is floored at zero in both forms. The option holder
+receives the notional N times the participation rate q times P on the
+settlement date S.
+
+** What moves its value (static sensitivities)
+
+- The levels of the basket underlyings on the valuation date. They
+  drive the basket performance.
+- The initial strike prices, which anchor each underlying's return.
+- The weights of the underlyings.
+- The option strike, and the choice of strike treatment.
+- The participation rate.
+- The volatility of each underlying and the correlation between
+  them. They set the dispersion of the basket performance.
+- The interest rates that discount the payout from the settlement
+  date.
+
+** How the profile ages (dynamic sensitivities)
+
+The trade has one valuation date. Until then the basket underlyings
+diffuse and the option value tracks the expected floored basket
+performance. On the valuation date the underlyings fix and the
+performance is computed under the selected strike treatment. The
+payout settles shortly after on the settlement date.
+
+** Why a customer would want it
+
+A performance option buys participation in the average performance of
+a basket, with a floor at zero. The buyer keeps the upside of a
+collection of assets while the option strike sets the performance
+hurdle. Banks use it to give clients diversified participation in a
+basket of currencies or markets. In ORE Studio a customer books
+performance options of type 01 to value them and run sensitivities on
+the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long performance option on a basket of
+Scandinavian and Swiss currencies against the euro. The basket lists
+CHF-EUR at 34%, NOK-EUR at 32%, and SEK-EUR twice, at 24% and 10%.
+The option strike of 1.15 is included in the performance
+calculation:
+
+#+begin_example
+<PerformanceOption01Data>
+  <NotionalAmount>12500000</NotionalAmount>
+  <ParticipationRate>0.9</ParticipationRate>
+  <ValuationDate>2022-05-03</ValuationDate>
+  <SettlementDate>2022-05-05</SettlementDate>
+  <Underlyings>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-CHF-EUR</Name>
+      <Weight>0.34</Weight>
+    </Underlying>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-NOK-EUR</Name>
+      <Weight>0.32</Weight>
+    </Underlying>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-SEK-EUR</Name>
+      <Weight>0.24</Weight>
+    </Underlying>
+    <Underlying>
+      <Type>FX</Type>
+      <Name>ECB-SEK-EUR</Name>
+      <Weight>0.10</Weight>
+    </Underlying>
+  </Underlyings>
+  <StrikePrices>
+    <StrikePrice>0.910002</StrikePrice>
+    <StrikePrice>0.097192</StrikePrice>
+    <StrikePrice>0.096085</StrikePrice>
+    <StrikePrice>0.035032</StrikePrice>
+  </StrikePrices>
+  <Strike>1.15</Strike>
+  <StrikeIncluded>true</StrikeIncluded>
+  <Position>Long</Position>
+  <PayCcy>EUR</PayCcy>
+</PerformanceOption01Data>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]],
+listing =Performance Option Type 01 data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]].
+  The upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

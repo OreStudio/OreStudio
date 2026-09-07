@@ -173,20 +173,94 @@ Tags that describe the business or technical domain of the content.
 | Tag | Description |
 |-----+-------------|
 | =accounts= | User accounts and authentication. |
+| =accumulator= | Accumulators, decumulators and forward-accumulation structures. |
 | =agile= | Agile process, sprint planning, retrospectives. |
 | =architecture= | Software architecture documentation. |
+| =ascot= | Ascot options and convertible bond buyback structures. |
 | =authentication= | Authentication flows and session management. |
 | =authorization= | Authorisation, roles, permissions. |
+| =autocallable_01= | Autocallables and autocallable structured products. |
+| =balanceguaranteedswap= | Balance guaranteed swaps and prepayment-linked amortising structures. |
+| =basketoption= | Basket options and multi-asset option structures. |
+| =bestentryoption= | Best entry options and best-entry participation structures. |
 | =build= | Build system, CI, packaging. |
+| =bond= | Bond instruments and fixed-income cash products. |
+| =bondforward_refdata= | Bond forwards settled against reference-data bonds. |
+| =bondfuture= | Bond futures and the delivery-basket contract market. |
+| =bondoption= | Bond options and government bond options markets. |
+| =bondoption_refdata= | Bond options settled against reference-data bonds. |
+| =bondposition= | Bond positions and weighted bond baskets. |
+| =bondrepo= | Bond repos and secured money market funding. |
+| =bondtotalreturnswap= | Bond total return swaps and secured financing markets. |
+| =callablebond= | Callable bonds and embedded-option bond structures. |
 | =calendars= | Business calendars and day-count conventions. |
+| =callableswap= | Callable swaps and cancellable interest rate swaps. |
+| =capfloor= | Interest rate caps, floors, collars, and caplet markets. |
+| =cashposition= | Cash positions and cash funding components. |
+| =cbodata= | Collateral bond obligations and cashflow securitisation. |
 | =ci= | Continuous integration. |
+| =commodityapo= | Commodity average price options and Asian commodity options. |
+| =commodityforward= | Commodity forward contracts and commodity derivatives markets. |
+| =commodityoption= | Commodity options and commodity derivatives markets. |
+| =commodityoptionstrip= | Commodity option strips and commodity derivatives markets. |
+| =commodityposition= | Commodity positions and weighted commodity baskets. |
+| =commodityswap= | Commodity swaps and commodity derivatives markets. |
+| =commodityswaption= | Commodity swaptions and commodity derivatives markets. |
+| =commodityvarianceswap= | Commodity variance swaps and commodity volatility markets. |
+| =compositetrade= | Composite trades and multi-component trade structures. |
+| =convertiblebond= | Convertible bonds and hybrid equity-debt instruments. |
 | =currencies= | Currency reference data. |
 | =counterparty= | Counterparty entity and management. |
+| =cpiswap= | CPI inflation swaps and inflation-linked markets. |
+| =creditdefaultswap= | Single-name credit default swaps and credit markets. |
+| =creditlinkedswap= | Credit linked swaps and structured credit. |
 | =deployment= | Deployment and environment provisioning. |
 | =documentation= | Documentation tooling and conventions. |
 | =domain= | Business domain modelling. |
+| =doubledigitaloption= | Double digital options and simultaneous two-underlying binary payouts. |
 | =entity= | Domain entity (also used as type tag). |
+| =eq_asianoption= | Equity Asian options and averaged-price equity derivatives. |
+| =eq_barrieroption= | Equity barrier options and path-dependent equity derivatives. |
+| =eq_digitaloption= | Equity digital options and binary equity derivatives. |
+| =eq_doublebarrieroption= | Equity double barrier options and path-dependent equity derivatives. |
+| =eq_doubletouchoption= | Equity double touch options and binary equity derivatives. |
+| =eq_europeanbarrieroption= | Equity European barrier options and path-dependent equity derivatives. |
+| =eq_outperformance= | Equity outperformance options and relative-performance equity derivatives. |
+| =eq_touchoption= | Equity touch options and binary equity derivatives. |
+| =equityautodeltahedgedoption= | Equity auto delta hedged options and discretely hedged structures. |
+| =equitycliquetoption= | Equity cliquet options and ratchet structures. |
+| =equityforward= | Equity forward contracts and equity derivatives markets. |
+| =equityfuturesoption= | Options on equity futures and equity derivatives markets. |
+| =equityoption= | Equity options and equity derivatives markets. |
+| =equityoptionposition= | Equity option positions and weighted option baskets. |
+| =equityposition= | Equity positions and weighted equity baskets. |
+| =equityswap= | Equity swaps and equity derivatives markets. |
+| =equityvarianceswap= | Equity variance swaps and equity volatility markets. |
+| =europeanoptioncontingentonabarrier= | European options contingent on a barrier on another underlying. |
+| =extendedaccumulator= | Extended accumulators and barrier-extended forward accumulations. |
+| =finance= | Finance domain, products, and markets. |
+| =flexiswap= | Flexi swaps and flexible amortisation structures. |
+| =forwardbond= | Forward bonds, T-Locks and J-Locks. |
+| =forwardrateagreement= | Forward rate agreements and the money market forward curve. |
+| =fx_forward= | FX forward contracts and the FX derivatives market. |
+| =fx_asianoption= | FX Asian options and averaged-rate FX derivatives. |
+| =fx_barrieroption= | FX barrier options and path-dependent FX derivatives. |
+| =fx_digitalbarrieroption= | FX digital barrier options and binary FX derivatives. |
+| =fx_digitaloption= | FX digital options and binary FX derivatives. |
+| =fx_doublebarrieroption= | FX double barrier options and path-dependent FX derivatives. |
+| =fx_doubletouchoption= | FX double touch options and binary FX derivatives. |
+| =fx_europeanbarrieroption= | FX European barrier options and path-dependent FX derivatives. |
+| =fx_kikobarrieroption= | FX KIKO barrier options and path-dependent FX derivatives. |
+| =fx_touchoption= | FX touch options and binary FX derivatives. |
+| =fxoption= | FX options and the FX derivatives market. |
+| =fxswap= | FX swaps and the FX derivatives market. |
+| =fxvarianceswap= | FX variance swaps and FX volatility markets. |
+| =generic_barrieroption= | Generic barrier options and multi-barrier structured payoffs. |
+| =genericscriptedproducts= | Generic scripted products and flexible payoff script structures. |
+| =indexcds= | Index credit default swaps and credit indices. |
+| =indexcdsoption= | Options on index credit default swaps. |
 | =knowledge_graph= | org-roam knowledge graph management. |
+| =knockoutswap= | Knock-out swaps and barrier-terminated interest rate swaps. |
 | =lifecycle= | Entity or component lifecycle management. |
 | =llm_code_review= | LLM-assisted code review tooling. |
 | =logging= | Logging and observability. |
@@ -194,16 +268,32 @@ Tags that describe the business or technical domain of the content.
 | =model= | Codegen data model. |
 | =modelling= | Domain or system modelling. |
 | =performance= | Performance measurement and optimisation. |
+| =performanceoption_01= | Performance options and basket performance participation structures. |
+| =products_by_asset_class= | Entry page grouping the ORE product knowledge notes by asset class. |
 | =provisioning= | System provisioning workflows and wizards. |
+| =rainbow_option= | Rainbow options and best-or-worst multi-asset structures. |
+| =ratedigitaloption= | Rate digital options and binary interest rate derivatives. |
 | =rbac= | Role-Based Access Control. |
 | =refdata= | Reference data (currencies, countries, calendars, etc.). |
 | =release= | Release management and release notes. |
+| =rpa= | Risk participation agreements and counterparty credit risk. |
 | =security= | Security features and hardening (also component tag). |
 | =sprint= | Sprint-level document (also type tag). |
+| =strikeresettableoption= | Strike resettable options and trigger-reset option structures. |
+| =swap= | Swap products and interest-rate derivatives. |
+| =swaption= | Swaptions and the interest rate option market. |
+| =syntheticcdo= | Synthetic collateralised debt obligations and tranches. |
+| =tarf= | Target redemption forwards and forward-accumulation structures. |
 | =testing= | Test infrastructure, test coverage. |
+| =totalreturnswap= | Total return swaps and funded asset exposure structures. |
 | =trading= | Trading domain (also component tag). |
 | =ui= | User interface design and implementation. |
 | =ux= | User experience. |
+| =var_and_vol_derivatives= | Exotic variance and volatility swaps and options with barriers and corridors. |
+| =window_barrieroption= | Window barrier options and time-windowed barrier structures. |
+| =worstofbasketswap= | Worst of basket swaps and basket trigger structures. |
+| =yyswap= | Year-on-year inflation swaps and inflation-linked markets. |
+| =zerocouponswap= | Zero coupon swaps and zero-coupon interest rate structures. |
 
 * Story and ancestry slug tags
 

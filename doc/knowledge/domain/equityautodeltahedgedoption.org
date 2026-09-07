@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: E9DCA7FE-1680-435D-BAD3-956E809BD71C
+:END:
+#+title: Equity Auto Delta Hedged Option
+#+description: Batches of European equity options with an embedded delta-hedging strategy; ORE's EquityAutoDeltaHedgedOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:equityautodeltahedgedoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+An equity auto delta hedged option packages European equity options
+with their delta-hedging strategy in one trade. The hedge parameters
+are contractual. ORE models it with the trade type
+=EquityAutoDeltaHedgedOption=. This note records the domain grounding,
+as ORE documents it in its product catalogue.
+
+* Summary
+
+The trade type represents a structured product with one or more
+batches of European equity options and an embedded discrete
+delta-hedging strategy. Each batch sits in an =Underlying= node. The
+=Volatility= element sets the hedging volatility used in the
+Black-Scholes delta. The =DriftRate= element sets the rate of the
+contractual forward. The =ObservationStartDate= starts the discrete
+hedging observations. Historical fixings between that date and the
+valuation date feed the realised hedge P&L. The container node is
+=EquityAutoDeltaHedgedOptionData=.
+
+* Detail
+
+** What it is
+
+ORE introduces the product as follows:
+
+#+begin_quote
+This trade type represents a structured product consisting of one or
+more batches of European equity options with an embedded discrete
+delta-hedging strategy.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex][equityautodeltahedgedoption.tex]].
+
+** In plain terms
+
+The trade is an option and its hedge sold as one contract. The option
+pays out in the usual way. The hedge leg replays a fixed hedging
+recipe: a stated volatility for the deltas, a stated drift for the
+forward, and daily rebalancing. The customer knows the hedge rules in
+advance.
+
+** How it works in ORE
+
+The =EquityAutoDeltaHedgedOptionData= node is the trade data container
+for the =EquityAutoDeltaHedgedOption= trade type. =Volatility= is
+mandatory. It is the hedging volatility sigma_h used in the
+Black-Scholes delta computation for the daily delta-hedge
+rebalancing, expressed as a decimal. =DriftRate= is mandatory. It is
+the continuously compounded rate r used in the contractual forward
+formula F = S_t x e^(r x tau), where tau is the Actual/365 (Fixed)
+year fraction from the observation date to expiry. =Underlyings= is a
+container holding one or more =Underlying= child nodes. Each defines a
+single batch of options. The =OptionData= sub-node holds the option
+terms: =LongShort=, =OptionType=, =Style=, =Settlement=, exactly one
+=ExerciseDate= and one premium per underlying. The style must be
+=European= and the settlement must be =Cash=. The premium is included
+in the equity amount calculation at expiry. Each underlying also
+carries =Name=, =Currency=, =Strike=, =StrikeCurrency= and =Quantity=.
+=ObservationStartDate= is mandatory. It is the date from which the
+discrete delta-hedging observation begins. Historical fixings between
+this date and the valuation date are used to compute the realised
+hedge P&L.
+
+** Mathematical notes
+
+The product combines the option payoffs of its batches with the P&L of
+a discrete delta-hedging strategy. Each day the hedge holds the
+Black-Scholes delta of the options, computed with the contractual
+hedging volatility. The contractual forward F = S_t x e^(r x tau)
+gives the drift of the hedge. The realised hedge P&L accumulates from
+the observation start date. At expiry the equity amount includes the
+premiums.
+
+** What moves its value (static sensitivities)
+
+- The spot price of each underlying equity, through the option delta
+  and the hedge.
+- The implied volatility of each underlying.
+- The contractual hedging volatility and drift rate.
+- The strikes, quantities and exercise dates of the batches.
+- The interest rates and dividends that drive the forward.
+
+The hedge dampens the spot sensitivity of the raw option position. The
+choice of hedging volatility sets how the hedge behaves.
+
+** How the profile ages (dynamic sensitivities)
+
+The hedge rebalances daily from the observation start date. Realised
+hedge P&L accumulates as the underlying moves. Near expiry the hedge
+tends toward the option deltas at expiry, and the batches settle in
+cash. After the last exercise date the product is settled and the
+exposure ends.
+
+** Why a customer would want it
+
+A customer who sells structured equity products wants the hedge
+economics inside the trade. The auto delta hedged option fixes the
+hedge parameters contractually, so the payoff and the hedge P&L are
+valued as one. In ORE Studio a customer books auto delta hedged
+options to value them and run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a batch of long European calls on HSBC, with the
+hedging volatility at 5 percent and no drift:
+
+#+begin_example
+<EquityAutoDeltaHedgedOptionData>
+  <Volatility>0.05</Volatility>
+  <DriftRate>0.00</DriftRate>
+  <Underlyings>
+    <Underlying>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>European</Style>
+        <Settlement>Cash</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2021-01-29</ExerciseDate>
+        </ExerciseDates>
+        <PremiumAmount>9.36</PremiumAmount>
+        <PremiumCurrency>USD</PremiumCurrency>
+        <PremiumPayDate>2019-03-01</PremiumPayDate>
+      </OptionData>
+      <Name>RIC:HSBA.L</Name>
+      <Currency>USD</Currency>
+      <Strike>3.5</Strike>
+      <StrikeCurrency>USD</StrikeCurrency>
+      <Quantity>51400</Quantity>
+    </Underlying>
+    <Underlying>
+      ...
+    </Underlying>
+  </Underlyings>
+  <ObservationStartDate>2020-11-11</ObservationStartDate>
+</EquityAutoDeltaHedgedOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex][equityautodeltahedgedoption.tex]],
+listing =Equity Auto Delta Hedged Option data=, further batches
+elided.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Delta_neutral][Wikipedia: Delta neutral]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs
+  [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityautodeltahedgedoption.tex][equityautodeltahedgedoption.tex]]. The
+  upstream project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

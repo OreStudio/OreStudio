@@ -1,0 +1,185 @@
+:PROPERTIES:
+:ID: C5C95B29-2EF9-4DFC-9E04-428C41C1925D
+:END:
+#+title: ORE Products by Asset Class
+#+description: Entry page for the ORE product knowledge notes, grouped by asset class.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:products_by_asset_class:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+This page is the entry point to the ORE product knowledge notes. The notes
+document the ORE product set as ORE's User Guide describes it, one note per
+product section of the products catalogue. Each note pairs the official ORE
+description with domain grounding, light mathematics and an ORE example. This
+page groups the notes by asset class. The alphabetical run of all product
+notes lives in the Knowledge hub, in the Products section.
+
+* Interest rate derivatives
+
+ORE's rates catalogue covers the swap family, caps and floors, digitals, and
+the amortising and barrier structures.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/balanceguaranteedswap.html][Balance Guaranteed Swap]] | An amortising swap that follows the prepayments of a reference security; ORE's BalanceGuaranteedSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/callableswap.html][Callable Swap]] | A swap one party can cancel on set dates; ORE's CallableSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/capfloor.html][Cap/Floor]] | A strip of interest rate caplets or floorlets bounding a floating leg; ORE's CapFloor product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/flexiswap.html][Flexi Swap]] | A swap with an option to cut the notional toward a lower bound; ORE's FlexiSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/forwardrateagreement.html][Forward Rate Agreement]] | A single-period lock on a future interest rate; ORE's ForwardRateAgreement product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/knockoutswap.html][Knock Out Swap]] | A swap that terminates when a rate fixing breaches a barrier; ORE's KnockOutSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/ratedigitaloption.html][Rate Digital Option]] | A fixed-payout option on an interest rate fixing; ORE's RateDigitalOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/swap.html][Swap]] | An interest rate swap exchanges streams of interest payments between two parties on a notional; ORE's swap family. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/swaption.html][Swaption]] | An option to enter an interest rate swap; ORE's Swaption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/zerocouponswap.html][Zero Coupon Swap]] | An interest rate swap whose zero-coupon leg pays one final amount at maturity; ORE's ZeroCouponSwap product. |
+
+* FX derivatives
+
+ORE's FX catalogue covers forwards, swaps and options, the barrier and touch
+exotics, and the variance swap.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_asianoption.html][FX Asian Option]] | An FX option on an averaged exchange rate; ORE's FxAsianOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_barrieroption.html][FX Barrier Option]] | An FX option with a single barrier; ORE's FxBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_digitalbarrieroption.html][FX Digital Barrier Option]] | An FX digital option combined with a barrier; ORE's FxDigitalBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_digitaloption.html][FX Digital Option]] | An FX option paying a fixed amount when the rate settles; ORE's FxDigitalOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_doublebarrieroption.html][FX Double Barrier Option]] | An FX option with two barriers around the strike; ORE's FxDoubleBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_doubletouchoption.html][FX Double Touch Option]] | An FX option paying on one or two spot touches before expiry; ORE's FxDoubleTouchOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_europeanbarrieroption.html][FX European Barrier Option]] | An FX European barrier option; ORE's FxEuropeanBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_forward.html][FX Forward]] | An FX forward locks an exchange rate for a future currency exchange; ORE's FxForward product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_kikobarrieroption.html][FX KIKO Barrier Option]] | A knock-in knock-out FX barrier option; ORE's FxKIKOBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fxoption.html][FX Option]] | Vanilla FX optionality: the right to exchange currencies at a set rate; ORE's FxOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fxswap.html][FX Swap]] | An exchange of two currencies at spot and at a forward date; ORE's FxSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fx_touchoption.html][FX Touch Option]] | An FX option paying when spot touches a level before expiry; ORE's FxTouchOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/fxvarianceswap.html][FX Variance Swap]] | An FX derivative on realised variance or volatility; ORE's FxVarianceSwap product. |
+
+* Inflation derivatives
+
+ORE prices inflation swaps in the CPI-linked and year-on-year forms.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/cpiswap.html][CPI Swap]] | An inflation swap whose CPI-linked leg pays a real rate scaled by index changes. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/yyswap.html][Year-on-Year Inflation Swap]] | An inflation swap whose leg pays the annual change of an inflation index; ORE's YY leg. |
+
+* Equity derivatives
+
+ORE's equity catalogue covers the cash products, swaps and variance, the
+option exotics from Asian to cliquet, and outperformance.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_asianoption.html][Equity Asian Option]] | An Asian option on the average equity price; ORE's EquityAsianOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityautodeltahedgedoption.html][Equity Auto Delta Hedged Option]] | Batches of European equity options with an embedded delta-hedging strategy; ORE's EquityAutoDeltaHedgedOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_barrieroption.html][Equity Barrier Option]] | A barrier option on an equity price; ORE's EquityBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equitycliquetoption.html][Equity Cliquet Option]] | A series of forward-start equity options with local and global caps; ORE's EquityCliquetOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_digitaloption.html][Equity Digital Option]] | A cash-or-nothing digital option on an equity; ORE's EquityDigitalOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_doublebarrieroption.html][Equity Double Barrier Option]] | A double barrier option on an equity price; ORE's EquityDoubleBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_doubletouchoption.html][Equity Double Touch Option]] | A cash-or-nothing double touch option on an equity; ORE's EquityDoubleTouchOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_europeanbarrieroption.html][Equity European Barrier Option]] | A barrier option monitored once at expiry; ORE's EquityEuropeanBarrierOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityforward.html][Equity Forward]] | An agreement to buy or sell shares at a future price; ORE's EquityForward product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityfuturesoption.html][Equity Futures Option]] | An option on an equity future contract; ORE's EquityFutureOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityoption.html][Equity Option]] | An option to buy or sell shares at a strike price; ORE's EquityOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityoptionposition.html][Equity Option Position]] | A position in a single equity option or a weighted option basket; ORE's EquityOptionPosition product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_outperformance.html][Equity Outperformance Option]] | An option paying the outperformance of one asset over another; ORE's Equity Outperformance Option product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityposition.html][Equity Position]] | A position in a single equity or a weighted equity basket; ORE's EquityPosition product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityswap.html][Equity Swap]] | A swap of an equity return against a fixed or floating leg; ORE's EquitySwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/eq_touchoption.html][Equity Touch Option]] | A cash-or-nothing one-touch option on an equity; ORE's EquityTouchOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/equityvarianceswap.html][Equity Variance Swap]] | A swap of realised equity variance against a volatility strike; ORE's EquityVarianceSwap product. |
+
+* Credit derivatives
+
+ORE prices single-name and index protection, options on index protection, and
+the structured and linked credit forms.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/creditdefaultswap.html][Credit Default Swap]] | A CDS trades protection on a reference entity's default; ORE's CreditDefaultSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/creditlinkedswap.html][Credit Linked Swap]] | A swap with payments contingent on credit events of a reference; ORE's CreditLinkedSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/indexcds.html][Index Credit Default Swap]] | A credit default swap on an index of reference entities; ORE's IndexCreditDefaultSwap product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/indexcdsoption.html][Index Credit Default Swap Option]] | An option to enter an index CDS at a strike; ORE's IndexCreditDefaultSwapOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/rpa.html][Risk Participation Agreement]] | Credit protection on a counterparty's default on an underlying swap; ORE's RPA product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/syntheticcdo.html][Synthetic CDO]] | A tranched basket credit derivative; ORE's SyntheticCDO product. |
+
+* Commodity derivatives
+
+ORE covers commodity forwards, swaps and options, with Asian, strip, swaption,
+variance and position forms.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityapo.html][Commodity Average Price Option]] | An Asian option on daily commodity price fixings; ORE's CommodityAveragePriceOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityforward.html][Commodity Forward]] | An agreement to buy or sell a commodity at a set price later; ORE's CommodityForward product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityoption.html][Commodity Option]] | A European or American option on a commodity; ORE's CommodityOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityoptionstrip.html][Commodity Option Strip]] | A strip of commodity APOs or European options over periods; ORE's CommodityOptionStrip product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityposition.html][Commodity Position]] | A position in a commodity or weighted commodity basket; ORE's CommodityPosition product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityswap.html][Commodity Swap]] | Floating commodity prices against a fixed price; ORE's CommoditySwap and basis swap forms. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityswaption.html][Commodity Swaption]] | A European option on a forward-starting commodity swap; ORE's CommoditySwaption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/commodityvarianceswap.html][Commodity Variance Swap]] | A swap on commodity volatility or variance; ORE's CommodityVarianceSwap product. |
+
+* Bonds and cash
+
+The bond catalogue runs from the cash bond to its position, forward, future,
+repo, option and total-return forms, with cash positions.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bond.html][Bond]] | A bond is a tradable debt instrument paying scheduled interest and principal; ORE's Bond product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bondforward_refdata.html][Bond Forward (Reference Data)]] | A forward contract on a bond with the underlying set by reference data; ORE's ForwardBond product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bondfuture.html][Bond Future]] | A contract to buy or sell an underlying bond at expiry at an agreed price; ORE's BondFuture product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bondoption.html][Bond Option]] | A right to buy or sell a given bond at a fixed price; ORE's BondOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bondoption_refdata.html][Bond Option (Reference Data)]] | A bond option with the underlying bond set by reference data; ORE's BondOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bondposition.html][Bond Position]] | A position in a weighted basket of underlying bonds; ORE's BondPosition product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bondrepo.html][Bond Repo]] | A cash borrowing with a bond posted as collateral; ORE's BondRepo product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bondtotalreturnswap.html][Bond Total Return Swap]] | A swap paying the total return of a bond against a funding leg; ORE's BondTRS product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/cashposition.html][Cash Position]] | An amount of cash in a currency; ORE's CashPosition product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/forwardbond.html][Forward Bond]] | A forward contract to buy or sell an underlying bond at a future date; ORE's ForwardBond product. |
+
+* Multi-asset derivatives and scripted products
+
+ORE catalogues payoffs that accept FX, equity or commodity underlyings,
+several of them in any combination, and prices the compiled forms through its
+scripted trade module.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/accumulator.html][Accumulator]] | A forward purchase of an asset in daily instalments within a price range; ORE's accumulator products. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/autocallable_01.html][Autocallable Type 01]] | A structured option that pays accumulated amounts and redeems early below a trigger level; ORE's Autocallable Type 01 product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/basketoption.html][Basket Option]] | An option on a basket of underlying assets; ORE's BasketOption product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/bestentryoption.html][Best Entry Option]] | An option whose payoff uses the best observed entry level of the underlying; ORE's Best Entry Option product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/doubledigitaloption.html][Double Digital Option]] | A binary option paying a fixed amount when two underlyings are simultaneously in the money; ORE's Double Digital Option product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/europeanoptioncontingentonabarrier.html][European Option Contingent on a Barrier]] | A plain vanilla European option whose payoff depends on a barrier on another underlying; ORE's EuropeanOptionBarrier product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/var_and_vol_derivatives.html][Exotic Variance and Volatility Derivatives]] | Variance and volatility swaps and options with barriers, corridors, baskets and optionality; ORE's exotic variance product family. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/extendedaccumulator.html][Extended Accumulator]] | An accumulator that can extend past a barrier decision date; ORE's ExtendedAccumulator product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/generic_barrieroption.html][Generic Barrier Option]] | A vanilla, asset-or-nothing or cash-or-nothing option with American and expiry barriers; ORE's Generic Barrier Option product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/genericscriptedproducts.html][Generic Scripted Products]] | The scripted trade module and its flexible payoff scripts; ORE's Generic Scripted Products section. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/performanceoption_01.html][Performance Option Type 01]] | An option paying a performance return against a strike; ORE's Performance Option Type 01 product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/rainbow_option.html][Rainbow Options]] | European options on the best or worst of a range of assets; ORE's Rainbow Options product family. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/strikeresettableoption.html][Strike Resettable Option]] | An option whose strike resets when the underlying reaches a level; ORE's Strike Resettable Option product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/tarf.html][Target Redemption Forward]] | A forward series that redeems early at a target profit; ORE's TaRF product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/totalreturnswap.html][Total Return Swap]] | A swap paying the total return of an asset against a funding leg; ORE's generic TRS product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/window_barrieroption.html][Window Barrier Option]] | An option with a barrier active only inside a time window; ORE's Window Barrier Option product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/worstofbasketswap.html][Worst Of Basket Swap]] | A swap whose coupon references the worst performing asset in a basket; ORE's WorstOfBasketSwap product. |
+
+* Hybrid and composite trades
+
+ORE prices bond structures with embedded equity and credit features, and
+bundles component trades into one composite trade.
+
+| Product | Description |
+|---------+-------------|
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/ascot.html][Ascot]] | An American-style option to buy back a convertible bond; ORE's Ascot product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/callablebond.html][Callable Bond]] | A bond with issuer call and investor put rights; ORE's CallableBond product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/cbodata.html][Collateral Bond Obligation]] | A tranched securitisation of a portfolio of corporate bonds or loans; ORE's CBO product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/compositetrade.html][Composite Trade]] | A hybrid position bundling multiple component trades; ORE's CompositeTrade product. |
+| [[http://192.168.1.172:21404/OreStudio/doc/knowledge/domain/convertiblebond.html][Convertible Bond]] | A bond that converts into a prespecified number of shares; ORE's ConvertibleBond product. |
+
+* See also
+
+- [[http://192.168.1.172:21404/OreStudio/doc/knowledge/knowledge.html][Knowledge]] — the hub of all knowledge notes, with the
+  alphabetical product run.
+- ORE User Guide, Products catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]], which
+  inputs the product sections. The upstream project is
+  [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

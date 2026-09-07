@@ -1,0 +1,158 @@
+:PROPERTIES:
+:ID: 95005252-270D-44DE-8A26-C61CE5D860E0
+:END:
+#+title: Risk Participation Agreement
+#+description: Credit protection on a counterparty's default on an underlying swap; ORE's RPA product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:rpa:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+A risk participation agreement protects the credit of a swap
+counterparty. ORE models it with the trade type
+=RiskParticipationAgreement=. This note records the domain grounding,
+as ORE documents it in its product catalogue.
+
+* Summary
+
+A risk participation agreement (RPA) is a credit derivative between
+two counterparties. The protection buyer pays a premium. In return,
+the seller covers a share of the liabilities of an underlying swap
+when its payer defaults. The share is the participation rate. The
+protection runs for a defined period, often the life of the underlying
+swap. The premium can be one upfront payment or a series. The product
+transfers the credit risk of a derivative exposure.
+
+* Detail
+
+** What it is
+
+ORE defines the product as follows:
+
+#+begin_quote
+A RPA is a credit derivative between two counterparties. The
+protection buyer pays a premium to the protection seller.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/rpa.tex][rpa.tex]].
+
+In return, the seller agrees to pay a percentage share of the
+liabilities of a referenced underlying swap transaction. The share is
+the participation rate. The liabilities fall on one counterparty of
+that transaction, the reference entity, in case of its default. The
+protection is granted for a defined period, which often coincides with
+the lifetime of the underlying swap. In case of a credit event,
+premiums due after the event are cancelled.
+
+** In plain terms
+
+An RPA is insurance on a swap counterparty. One bank enters a swap
+with a client and wants protection if the client defaults. Another
+party takes a share of that credit risk for a fee. The client's swap
+itself stays untouched.
+
+** How it works in ORE
+
+The trade uses a =RiskParticipationAgreementData= block. It holds a
+=ParticipationRate= and the protection window, from =ProtectionStart=
+to =ProtectionEnd=. The =CreditCurveId= names the reference entity.
+A =FixedRecoveryRate= makes the trade a fixed recovery RPA. A
+=ProtectionFee= block holds one or more legs for the fees paid by the
+protection buyer. An =Underlying= block carries the legs of the
+underlying swap, or the Treasury-Lock data that the contract
+references.
+
+The direction follows the premium leg. Payer true means protection is
+bought and the fee is paid. Payer false means protection is sold and
+the fee is received. If the reference entity defaults, the protection
+buyer receives the present value of the underlying if this value is
+positive. The underlying value is computed with the payer and receiver
+flags of its own legs.
+
+** Mathematical notes
+
+The protection is a credit product on the value of a swap. At default,
+the seller pays the positive present value of the underlying times
+the participation rate. The fee pays on the premium leg until the
+credit event or the end of the window. After a credit event, the
+remaining fee payments are cancelled.
+
+** What moves its value (static sensitivities)
+
+- The credit curve of the reference entity. It prices the default
+  risk.
+- The underlying swap. Its present value sets the protection amount,
+  so rates and other underlying risk factors move the trade.
+- The participation rate. It scales the exposure.
+- The fee structure, upfront or running.
+- The recovery assumption.
+
+A protection buyer gains when the reference entity's credit worsens.
+A seller gains when it improves. The trade carries a hybrid exposure,
+credit risk on a rates position.
+
+** How the profile ages (dynamic sensitivities)
+
+The protection window runs to its end date, often the maturity of the
+underlying swap. The underlying ages like the swap it covers, so its
+present value drifts with the market. A credit event settles the
+protection and cancels the remaining premiums. Without one, the trade
+runs to the end of the window and stops.
+
+** Why a customer would want it
+
+A bank shares the credit risk of its swap book without novating the
+trades. An insurer or another bank earns a fee for taking the risk.
+The product is a building block of counterparty credit management. In
+ORE Studio a customer books RPA to value them and run sensitivities on
+the ORE engine.
+
+** Example
+
+ORE's catalogue shows a trade with an 80 percent participation rate:
+
+#+begin_example
+<RiskParticipationAgreementData>
+  <ParticipationRate>0.8</ParticipationRate>
+  <ProtectionStart>2018-10-01</ProtectionStart>
+  <ProtectionEnd>2038-10-01</ProtectionEnd>
+  <CreditCurveId>RED:008CA0|SNRFOR|USD|MR14</CreditCurveId>
+  <IssuerId>CompanyXZY</IssuerId>
+  <SettlesAccrual>true</SettlesAccrual>
+  <FixedRecoveryRate>0.6</FixedRecoveryRate>
+  <ProtectionFee>
+    <LegData>
+      <LegType>Cashflow</LegType>
+      <Payer>true</Payer>
+      <Currency>EUR</Currency>
+      <CashflowData>
+        <Cashflow>
+          <Amount date="2018-10-03">91171.72</Amount>
+        </Cashflow>
+      </CashflowData>
+    </LegData>
+  </ProtectionFee>
+  <Underlying>
+    ...
+  </Underlying>
+</RiskParticipationAgreementData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/rpa.tex][rpa.tex]],
+listing =RiskParticipationAgreement Data= (underlying abbreviated).
+
+The example pays a one-off fee of 91171.72 EUR for protection on a
+20-year window. The credit mechanics follow the
+[[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]] family.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Credit_derivative][Wikipedia: Credit derivative]]. This places the product in the
+  credit derivative family.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/rpa.tex][rpa.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

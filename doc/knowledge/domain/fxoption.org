@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 199AB340-A254-40A9-8CBE-FBABB17FF51F
+:END:
+#+title: FX Option
+#+description: Vanilla FX optionality: the right to exchange currencies at a set rate; ORE's FxOption product.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:fxoption:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+A European or American FX option is the vanilla option of the FX
+family. It is the underlying of the FX barrier and exotic products.
+ORE models it with the trade type =FxOption=. This note records the
+domain grounding, as ORE documents it in its product catalogue.
+
+* Summary
+
+An FX option gives the buyer the right, not the obligation, to
+exchange a set amount of one currency for another at a predetermined
+exchange rate. A European option can be exercised at one time in the
+future. An American option can be exercised any time up to expiry, but
+once only. The buyer pays a premium. Settlement is cash or physical.
+The trade data carries one =OptionData= node plus the currency pair.
+
+* Detail
+
+** What it is
+
+ORE defines the European form as follows:
+
+#+begin_quote
+A European FX option gives the buyer the right, but not the
+obligation, to exchange a set amount of one currency for another, at a
+predetermined exchange rate, at one predetermined time in the future.
+For this right the buyer pays a premium to the seller. Settlement can
+be either cash or physical delivery.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxoption.tex][fxoption.tex]].
+
+ORE defines the American form as follows:
+
+#+begin_quote
+An American FX option gives the buyer the right, but not the
+obligation, to exchange a set amount of one currency for another, at a
+predetermined exchange rate, at any time during the life of the option
+up until the expiration date. The right to exchange of one currency
+for another can only be exercised once. For this right the buyer pays
+a premium to the seller.
+#+end_quote
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxoption.tex][fxoption.tex]].
+
+** In plain terms
+
+An FX option is a ticket to a future exchange rate. The buyer pays a
+premium today. If the rate moves in the buyer's favour, the option is
+used. If not, it expires and only the premium is lost.
+
+** How it works in ORE
+
+The =FxOptionData= node includes exactly one =OptionData= node plus
+elements specific to the option. For a put, the bought and sold
+currencies and amounts are switched compared to the trade data. A
+holder of a EUR-bought USD-sold call has the right to buy EUR using
+USD. The put counterpart has the right to buy USD using EUR.
+=Settlement= selects cash or physical delivery. =PayOffAtExpiry=
+selects payoff at expiry or at exercise, which matters for American
+options. =AutomaticExercise= handles an option whose expiry date has
+passed while its payment date still lies ahead.
+
+** Mathematical notes
+
+A call on CCY1 per CCY2 pays the difference between the rate at
+exercise and the strike, times the quantity, when positive. A put pays
+the reverse. The value prices off the FX spot, the interest rates in
+both currencies, and the volatility surface. An American option adds
+the value of early exercise.
+
+** What moves its value (static sensitivities)
+
+- The FX spot rate. It sets the moneyness.
+- The volatility of the currency pair. It drives the time value.
+- The interest rates in both currencies.
+- The strike, the amounts, and the exercise style.
+- The settlement mode and the premium terms.
+
+A call gains when the rate rises. A put gains when it falls.
+Volatility raises the value of both.
+
+** How the profile ages (dynamic sensitivities)
+
+The option loses time value as expiry approaches. The moneyness
+decides its fate at the end. An American option can be exercised early
+when that pays. After exercise the payoff settles, at exercise or at
+expiry. After settlement the trade stops.
+
+** Why a customer would want it
+
+An importer buys a call on the currency it pays. An exporter buys a
+put on the currency it earns. Both keep the upside of a favourable
+rate. The vanilla option is also the underlying of the FX exotic
+family. In ORE Studio a customer books FX options to value them and
+run sensitivities on the ORE engine.
+
+** Example
+
+ORE's catalogue shows a long European call:
+
+#+begin_example
+<FxOptionData>
+  <OptionData>
+    <LongShort>Long</LongShort>
+    <OptionType>Call</OptionType>
+    <Style>European</Style>
+    <Settlement>Cash</Settlement>
+    <PayOffAtExpiry>false</PayOffAtExpiry>
+    <ExerciseDates>
+      <ExerciseDate>2026-03-01</ExerciseDate>
+    </ExerciseDates>
+    <Premiums>
+      <Premium>
+        <Amount>10900</Amount>
+        <Currency>EUR</Currency>
+        <PayDate>2020-03-01</PayDate>
+      </Premium>
+    </Premiums>
+  </OptionData>
+  <BoughtCurrency>EUR</BoughtCurrency>
+  <BoughtAmount>1000000</BoughtAmount>
+  <SoldCurrency>USD</SoldCurrency>
+  <SoldAmount>1700000</SoldAmount>
+</FxOptionData>
+#+end_example
+
+Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxoption.tex][fxoption.tex]],
+listing =FX Option data=.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes,
+  with the alphabetical product run.
+
+- [[https://en.wikipedia.org/wiki/Foreign_exchange_option][Wikipedia: Foreign exchange option]]. This note follows its general
+  definition.
+- ORE User Guide, Product catalogue: [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/products.tex][products.tex]],
+  which inputs [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxoption.tex][fxoption.tex]]. The upstream
+  project is [[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

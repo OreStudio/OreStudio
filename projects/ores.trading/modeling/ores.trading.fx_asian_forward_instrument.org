@@ -298,6 +298,19 @@ repository profiles regenerate correctly.
 :iterator_var: fafi
 :END:
 
+** Table display
+
+| column                   | header              |
+|--------------------------+---------------------|
+| identity.instrument_id   | ID                  |
+| identity.trade_type_code | Type                |
+| fx_index                 | FX Index            |
+| reference_currency       | Reference Ccy       |
+| reference_notional       | Reference Notional  |
+| settlement_currency      | Settlement Ccy      |
+| settlement_notional      | Settlement Notional |
+| payment_date             | Payment Date        |
+| audit.recorded_at        | Recorded At         |
 ** Custom repository methods
 
 * See also

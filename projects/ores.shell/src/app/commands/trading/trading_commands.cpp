@@ -18,6 +18,13 @@
  *
  */
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_accumulator_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_asian_forward_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_barrier_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_digital_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_forward_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_vanilla_option_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/fx_variance_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/party_role_type_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_id_type_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_type_commands.hpp"
@@ -30,6 +37,13 @@ void trading_commands::register_commands(cli::Menu& root_menu,
                                          ores::nats::service::nats_client& session,
                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
+    fx_accumulator_instrument_commands::register_commands(root_menu, session, pagination);
+    fx_asian_forward_instrument_commands::register_commands(root_menu, session, pagination);
+    fx_barrier_option_instrument_commands::register_commands(root_menu, session, pagination);
+    fx_digital_option_instrument_commands::register_commands(root_menu, session, pagination);
+    fx_forward_instrument_commands::register_commands(root_menu, session, pagination);
+    fx_vanilla_option_instrument_commands::register_commands(root_menu, session, pagination);
+    fx_variance_swap_instrument_commands::register_commands(root_menu, session, pagination);
     party_role_type_commands::register_commands(root_menu, session, pagination);
     trade_id_type_commands::register_commands(root_menu, session, pagination);
     trade_type_commands::register_commands(root_menu, session, pagination);

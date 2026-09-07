@@ -20,18 +20,34 @@
 #include "ores.trading.api/domain/fx_accumulator_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<fx_accumulator_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Currency" << "Fixing Amount" << "Strike"
+          << "Start Date" << "Knock-Out Barrier" << "Recorded At" << fort::endr;
 
     for (const auto& fxai : v) {
-        table << fort::endr;
+        table << fxai.identity.instrument_id << fxai.identity.trade_type_code << fxai.currency
+              << fxai.fixing_amount << fxai.strike << fxai.start_date
+              << opt_str(fxai.knock_out_barrier) << fxai.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

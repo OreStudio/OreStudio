@@ -28,10 +28,15 @@ std::string convert_to_table(const std::vector<fx_vanilla_option_instrument>& v)
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Option Type" << "Expiry Date" << "Bought Ccy"
+          << "Bought Amount" << "Sold Ccy" << "Sold Amount" << "Exercise Style" << "Recorded At"
+          << fort::endr;
 
     for (const auto& fxvoi : v) {
-        table << fort::endr;
+        table << fxvoi.identity.instrument_id << fxvoi.identity.trade_type_code << fxvoi.option_type
+              << fxvoi.expiry_date << fxvoi.bought_currency << fxvoi.bought_amount
+              << fxvoi.sold_currency << fxvoi.sold_amount << fxvoi.exercise_style
+              << fxvoi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

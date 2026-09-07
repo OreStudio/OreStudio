@@ -258,6 +258,18 @@ repository profiles regenerate correctly.
 :iterator_var: fxai
 :END:
 
+** Table display
+
+| column                   | header            |
+|--------------------------+-------------------|
+| identity.instrument_id   | ID                |
+| identity.trade_type_code | Type              |
+| currency                 | Currency          |
+| fixing_amount            | Fixing Amount     |
+| strike                   | Strike            |
+| start_date               | Start Date        |
+| knock_out_barrier        | Knock-Out Barrier |
+| audit.recorded_at        | Recorded At       |
 ** Custom repository methods
 
 * See also

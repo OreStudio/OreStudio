@@ -20,18 +20,36 @@
 #include "ores.trading.api/domain/fx_digital_option_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<fx_digital_option_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Option Type" << "Expiry Date" << "Payoff Ccy"
+          << "Payoff Amount" << "Foreign Ccy" << "Domestic Ccy" << "Strike" << "Recorded At"
+          << fort::endr;
 
     for (const auto& fdoi : v) {
-        table << fort::endr;
+        table << fdoi.identity.instrument_id << fdoi.identity.trade_type_code << fdoi.option_type
+              << fdoi.expiry_date << fdoi.payoff_currency << fdoi.payoff_amount
+              << fdoi.foreign_currency << fdoi.domestic_currency << opt_str(fdoi.strike)
+              << fdoi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

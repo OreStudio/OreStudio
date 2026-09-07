@@ -246,6 +246,19 @@ repository profiles regenerate correctly.
 :iterator_var: fxfi
 :END:
 
+** Table display
+
+| column                   | header        |
+|--------------------------+---------------|
+| identity.instrument_id   | ID            |
+| identity.trade_type_code | Type          |
+| bought_currency          | Bought Ccy    |
+| bought_amount            | Bought Amount |
+| sold_currency            | Sold Ccy      |
+| sold_amount              | Sold Amount   |
+| value_date               | Value Date    |
+| audit.recorded_at        | Recorded At   |
+
 ** Custom repository methods
 
 * See also

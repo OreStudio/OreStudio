@@ -305,6 +305,20 @@ repository profiles regenerate correctly.
 :iterator_var: fboi
 :END:
 
+** Table display
+
+| column                   | header        |
+|--------------------------+---------------|
+| identity.instrument_id   | ID            |
+| identity.trade_type_code | Type          |
+| option_type              | Option Type   |
+| expiry_date              | Expiry Date   |
+| barrier_type             | Barrier Type  |
+| lower_barrier            | Lower Barrier |
+| upper_barrier            | Upper Barrier |
+| bought_currency          | Bought Ccy    |
+| bought_amount            | Bought Amount |
+| audit.recorded_at        | Recorded At   |
 ** Custom repository methods
 
 * See also

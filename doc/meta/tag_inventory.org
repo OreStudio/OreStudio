@@ -269,6 +269,7 @@ Tags that describe the business or technical domain of the content.
 | =modelling= | Domain or system modelling. |
 | =performance= | Performance measurement and optimisation. |
 | =performanceoption_01= | Performance options and basket performance participation structures. |
+| =products_by_asset_class= | Entry page grouping the ORE product knowledge notes by asset class. |
 | =provisioning= | System provisioning workflows and wizards. |
 | =rainbow_option= | Rainbow options and best-or-worst multi-asset structures. |
 | =ratedigitaloption= | Rate digital options and binary interest rate derivatives. |

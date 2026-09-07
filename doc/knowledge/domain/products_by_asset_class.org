@@ -1,0 +1,304 @@
+:PROPERTIES:
+:ID: C5C95B29-2EF9-4DFC-9E04-428C41C1925D
+:END:
+#+title: ORE Products by Asset Class
+#+description: Entry page for the ORE product knowledge notes, grouped by asset class.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:products_by_asset_class:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+
+This page is the entry point to the ORE product knowledge notes. The notes
+document the ORE product set as ORE's User Guide describes it, one note per
+product section of the products catalogue. Each note pairs the official ORE
+description with domain grounding, light mathematics and an ORE example. This
+page groups the notes by asset class. The alphabetical run of all product
+notes lives in the Knowledge hub, in the Products section.
+
+* Interest rate derivatives
+
+ORE's rates catalogue covers the swap family, caps and floors, digitals, and
+the amortising and barrier structures.
+
+- [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]] — An
+amortising swap that follows the prepayments of a reference security; ORE's
+BalanceGuaranteedSwap product.
+- [[id:0EE613F9-9A1F-4B03-A1B2-FB4791D6C2EE][Callable Swap]] — A swap one
+party can cancel on set dates; ORE's CallableSwap product.
+- [[id:3DCC5F43-9728-4E67-8720-AE307E780CBF][Cap/Floor]] — A strip of interest
+rate caplets or floorlets bounding a floating leg; ORE's CapFloor product.
+- [[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]] — A swap with an
+option to cut the notional toward a lower bound; ORE's FlexiSwap product.
+- [[id:11714B3F-A790-4797-BE01-41426289E7C7][Forward Rate Agreement]] — A
+single-period lock on a future interest rate; ORE's ForwardRateAgreement
+product.
+- [[id:37689AC9-DBA5-41AA-866E-19522F733D2E][Knock Out Swap]] — A swap that
+terminates when a rate fixing breaches a barrier; ORE's KnockOutSwap product.
+- [[id:94B1DBE3-33AB-44F5-B9F1-B71E34A58123][Rate Digital Option]] — A fixed-
+payout option on an interest rate fixing; ORE's RateDigitalOption product.
+- [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]] — An interest rate swap
+exchanges streams of interest payments between two parties on a notional;
+ORE's swap family.
+- [[id:FCC37EB3-D654-4333-B110-3BF4AFA3A237][Swaption]] — An option to enter
+an interest rate swap; ORE's Swaption product.
+- [[id:D0F2BDFE-AA84-4472-86E5-AB273E1A8EEC][Zero Coupon Swap]] — An interest
+rate swap whose zero-coupon leg pays one final amount at maturity; ORE's
+ZeroCouponSwap product.
+
+* FX derivatives
+
+ORE's FX catalogue covers forwards, swaps and options, the barrier and touch
+exotics, and the variance swap.
+
+- [[id:9C395333-73C7-401D-9E71-5333E1645E1A][FX Asian Option]] — An FX option
+on an averaged exchange rate; ORE's FxAsianOption product.
+- [[id:6CAED5F9-21CB-4300-B1B0-89599CFBFC7C][FX Barrier Option]] — An FX
+option with a single barrier; ORE's FxBarrierOption product.
+- [[id:8668F997-2609-47C6-BF5C-EE35F21405EE][FX Digital Barrier Option]] — An
+FX digital option combined with a barrier; ORE's FxDigitalBarrierOption
+product.
+- [[id:C880CEB4-4FB7-41AA-8A4A-A650B6FC388C][FX Digital Option]] — An FX
+option paying a fixed amount when the rate settles; ORE's FxDigitalOption
+product.
+- [[id:0AA6F04D-C049-43D5-8307-82A9562E2883][FX Double Barrier Option]] — An
+FX option with two barriers around the strike; ORE's FxDoubleBarrierOption
+product.
+- [[id:7BA83993-32A7-4090-A6A9-A07AA3AF2B1D][FX Double Touch Option]] — An FX
+option paying on one or two spot touches before expiry; ORE's
+FxDoubleTouchOption product.
+- [[id:4BAF88FA-7FDF-4B01-9A52-7AAE733A02B5][FX European Barrier Option]] — An
+FX European barrier option; ORE's FxEuropeanBarrierOption product.
+- [[id:47598B8D-0121-4989-9661-79A8E6D1A070][FX Forward]] — An FX forward
+locks an exchange rate for a future currency exchange; ORE's FxForward
+product.
+- [[id:B6A26725-EC1A-482D-A920-3CAB8834ED6D][FX KIKO Barrier Option]] — A
+knock-in knock-out FX barrier option; ORE's FxKIKOBarrierOption product.
+- [[id:199AB340-A254-40A9-8CBE-FBABB17FF51F][FX Option]] — Vanilla FX
+optionality: the right to exchange currencies at a set rate; ORE's FxOption
+product.
+- [[id:E9A214DE-AD39-4128-9EDB-106C4A606B90][FX Swap]] — An exchange of two
+currencies at spot and at a forward date; ORE's FxSwap product.
+- [[id:EA6E4A7A-6229-4F8C-93C5-426D1E4CB496][FX Touch Option]] — An FX option
+paying when spot touches a level before expiry; ORE's FxTouchOption product.
+- [[id:7A2186FB-33C3-4916-B62C-A14468EE713F][FX Variance Swap]] — An FX
+derivative on realised variance or volatility; ORE's FxVarianceSwap product.
+
+* Inflation derivatives
+
+ORE prices inflation swaps in the CPI-linked and year-on-year forms.
+
+- [[id:13D3230A-D5C2-46DA-92E6-1DB128B8392A][CPI Swap]] — An inflation swap
+whose CPI-linked leg pays a real rate scaled by index changes.
+- [[id:2FC69DD5-D685-452B-8BCE-85CBCDD624E5][Year-on-Year Inflation Swap]] —
+An inflation swap whose leg pays the annual change of an inflation index;
+ORE's YY leg.
+
+* Equity derivatives
+
+ORE's equity catalogue covers the cash products, swaps and variance, the
+option exotics from Asian to cliquet, and outperformance.
+
+- [[id:90BB6829-31EC-4C86-BE17-FDABF670DDB6][Equity Asian Option]] — An Asian
+option on the average equity price; ORE's EquityAsianOption product.
+- [[id:E9DCA7FE-1680-435D-BAD3-956E809BD71C][Equity Auto Delta Hedged Option]]
+— Batches of European equity options with an embedded delta-hedging strategy;
+ORE's EquityAutoDeltaHedgedOption product.
+- [[id:80C9B215-EBBA-4367-902B-C0687C0E43E8][Equity Barrier Option]] — A
+barrier option on an equity price; ORE's EquityBarrierOption product.
+- [[id:F3398C7E-E978-45C4-94AA-6EBB6DA98EC9][Equity Cliquet Option]] — A
+series of forward-start equity options with local and global caps; ORE's
+EquityCliquetOption product.
+- [[id:FCD38489-372D-4CD4-9A8A-DB0A332DE26E][Equity Digital Option]] — A cash-
+or-nothing digital option on an equity; ORE's EquityDigitalOption product.
+- [[id:06615BB7-3A1C-407D-8745-010DB52BD053][Equity Double Barrier Option]] —
+A double barrier option on an equity price; ORE's EquityDoubleBarrierOption
+product.
+- [[id:44BB5D47-C9CF-4E77-A4A9-50F14044A535][Equity Double Touch Option]] — A
+cash-or-nothing double touch option on an equity; ORE's
+EquityDoubleTouchOption product.
+- [[id:0415E392-7423-411F-A83B-C791E6BE3078][Equity European Barrier Option]]
+— A barrier option monitored once at expiry; ORE's EquityEuropeanBarrierOption
+product.
+- [[id:D60CBEE4-AE5C-421B-AAEF-5E56DC75A662][Equity Forward]] — An agreement
+to buy or sell shares at a future price; ORE's EquityForward product.
+- [[id:67ECE260-9D52-4183-882D-06F795AF9BA1][Equity Futures Option]] — An
+option on an equity future contract; ORE's EquityFutureOption product.
+- [[id:803F50A7-7DB5-4F6B-81F4-BE48C6EEFAB1][Equity Option]] — An option to
+buy or sell shares at a strike price; ORE's EquityOption product.
+- [[id:643843A9-B265-49B3-85BA-0E2F261DE7A9][Equity Option Position]] — A
+position in a single equity option or a weighted option basket; ORE's
+EquityOptionPosition product.
+- [[id:9033DF60-3AD6-45FB-9DF7-1094D9B489FF][Equity Outperformance Option]] —
+An option paying the outperformance of one asset over another; ORE's Equity
+Outperformance Option product.
+- [[id:0AE749B3-E51A-4036-8561-622F5EE69C02][Equity Position]] — A position in
+a single equity or a weighted equity basket; ORE's EquityPosition product.
+- [[id:D45F8289-3F31-462F-9C98-460CE820F75F][Equity Swap]] — A swap of an
+equity return against a fixed or floating leg; ORE's EquitySwap product.
+- [[id:45585B0A-31A1-49D9-9CF3-A5C240F9607D][Equity Touch Option]] — A cash-
+or-nothing one-touch option on an equity; ORE's EquityTouchOption product.
+- [[id:D69C0964-9F15-43BC-8A13-66ECED718BED][Equity Variance Swap]] — A swap
+of realised equity variance against a volatility strike; ORE's
+EquityVarianceSwap product.
+
+* Credit derivatives
+
+ORE prices single-name and index protection, options on index protection, and
+the structured and linked credit forms.
+
+- [[id:1A201C57-AC68-4D0F-94A8-E33490D65EA3][Credit Default Swap]] — A CDS
+trades protection on a reference entity's default; ORE's CreditDefaultSwap
+product.
+- [[id:B74A3D5C-1001-490D-9840-976C4E85E12F][Credit Linked Swap]] — A swap
+with payments contingent on credit events of a reference; ORE's
+CreditLinkedSwap product.
+- [[id:FB662CB6-F6E7-4BD5-8616-CC767D60E8C6][Index Credit Default Swap]] — A
+credit default swap on an index of reference entities; ORE's
+IndexCreditDefaultSwap product.
+- [[id:6DDAEC85-6DE9-436F-83D1-BB3D8F4A6F58][Index Credit Default Swap
+Option]] — An option to enter an index CDS at a strike; ORE's
+IndexCreditDefaultSwapOption product.
+- [[id:95005252-270D-44DE-8A26-C61CE5D860E0][Risk Participation Agreement]] —
+Credit protection on a counterparty's default on an underlying swap; ORE's RPA
+product.
+- [[id:8F0391AC-D748-459C-8DD8-5ABC8945E438][Synthetic CDO]] — A tranched
+basket credit derivative; ORE's SyntheticCDO product.
+
+* Commodity derivatives
+
+ORE covers commodity forwards, swaps and options, with Asian, strip, swaption,
+variance and position forms.
+
+- [[id:D16393FC-784B-4BCB-90B9-7010894CD2D2][Commodity Average Price Option]]
+— An Asian option on daily commodity price fixings; ORE's
+CommodityAveragePriceOption product.
+- [[id:992F5349-6D73-4780-855C-532B63073191][Commodity Forward]] — An
+agreement to buy or sell a commodity at a set price later; ORE's
+CommodityForward product.
+- [[id:EC6DB3A0-4B34-4CD2-A3B7-ED004F3FA1B8][Commodity Option]] — A European
+or American option on a commodity; ORE's CommodityOption product.
+- [[id:48305B53-26C5-474D-8AA2-0DC425F96E3B][Commodity Option Strip]] — A
+strip of commodity APOs or European options over periods; ORE's
+CommodityOptionStrip product.
+- [[id:8B992141-85D3-4480-ABAF-9E2BD1BEB01B][Commodity Position]] — A position
+in a commodity or weighted commodity basket; ORE's CommodityPosition product.
+- [[id:0C0FDF39-B4D4-4794-83AD-076B4681830B][Commodity Swap]] — Floating
+commodity prices against a fixed price; ORE's CommoditySwap and basis swap
+forms.
+- [[id:8FAE9780-9737-49DB-87E7-D678F3AEBD69][Commodity Swaption]] — A European
+option on a forward-starting commodity swap; ORE's CommoditySwaption product.
+- [[id:1989F85A-42F8-4894-8982-AC34D19B0351][Commodity Variance Swap]] — A
+swap on commodity volatility or variance; ORE's CommodityVarianceSwap product.
+
+* Bonds and cash
+
+The bond catalogue runs from the cash bond to its position, forward, future,
+repo, option and total-return forms, with cash positions.
+
+- [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]] — A bond is a tradable
+debt instrument paying scheduled interest and principal; ORE's Bond product.
+- [[id:C00D82F7-942F-4270-AB9F-D0C31F0881A9][Bond Forward (Reference Data)]] —
+A forward contract on a bond with the underlying set by reference data; ORE's
+ForwardBond product.
+- [[id:B50027E5-44CD-49FA-B4DF-1177E321F156][Bond Future]] — A contract to buy
+or sell an underlying bond at expiry at an agreed price; ORE's BondFuture
+product.
+- [[id:52C1431E-517D-40EC-AE9F-838F040A4103][Bond Option]] — A right to buy or
+sell a given bond at a fixed price; ORE's BondOption product.
+- [[id:0E145E20-C296-4D0F-B26C-2CC5EAA22F3B][Bond Option (Reference Data)]] —
+A bond option with the underlying bond set by reference data; ORE's BondOption
+product.
+- [[id:531499CE-C843-4178-8F89-CA901B1BA9AE][Bond Position]] — A position in a
+weighted basket of underlying bonds; ORE's BondPosition product.
+- [[id:C96BBC70-71C1-442A-97FF-CCD596C193DB][Bond Repo]] — A cash borrowing
+with a bond posted as collateral; ORE's BondRepo product.
+- [[id:0727A454-AB7F-4202-A3A8-A4A183683566][Bond Total Return Swap]] — A swap
+paying the total return of a bond against a funding leg; ORE's BondTRS
+product.
+- [[id:940CB31A-BD50-45D6-98AC-4B0D53973825][Cash Position]] — An amount of
+cash in a currency; ORE's CashPosition product.
+- [[id:8CCD37D5-1D16-4972-8582-13595E62381C][Forward Bond]] — A forward
+contract to buy or sell an underlying bond at a future date; ORE's ForwardBond
+product.
+
+* Multi-asset derivatives and scripted products
+
+ORE catalogues payoffs that accept FX, equity or commodity underlyings,
+several of them in any combination, and prices the compiled forms through its
+scripted trade module.
+
+- [[id:6B186A8F-B261-40A4-B950-932AB735AE95][Accumulator]] — A forward
+purchase of an asset in daily instalments within a price range; ORE's
+accumulator products.
+- [[id:6B1D0C78-0CAF-4A1C-BA34-56FB07C4F107][Autocallable Type 01]] — A
+structured option that pays accumulated amounts and redeems early below a
+trigger level; ORE's Autocallable Type 01 product.
+- [[id:00DE9B53-9E4F-4FD4-A5E9-BE00B0956710][Basket Option]] — An option on a
+basket of underlying assets; ORE's BasketOption product.
+- [[id:18891481-BBFE-4731-A677-DB66400A724C][Best Entry Option]] — An option
+whose payoff uses the best observed entry level of the underlying; ORE's Best
+Entry Option product.
+- [[id:E63E99AD-6C5E-446B-BE14-57A8D9042AFD][Double Digital Option]] — A
+binary option paying a fixed amount when two underlyings are simultaneously in
+the money; ORE's Double Digital Option product.
+- [[id:F0727CDB-4696-4C25-BFF5-AF0D302B5A71][European Option Contingent on a
+Barrier]] — A plain vanilla European option whose payoff depends on a barrier
+on another underlying; ORE's EuropeanOptionBarrier product.
+- [[id:D3DF8CDD-2BD9-44BC-B805-D06C8A6C2074][Exotic Variance and Volatility
+Derivatives]] — Variance and volatility swaps and options with barriers,
+corridors, baskets and optionality; ORE's exotic variance product family.
+- [[id:90DDE9BB-770F-4337-AF0E-69698AF2A2A1][Extended Accumulator]] — An
+accumulator that can extend past a barrier decision date; ORE's
+ExtendedAccumulator product.
+- [[id:2C172183-1513-45EC-9A42-F0F3AB0E1F56][Generic Barrier Option]] — A
+vanilla, asset-or-nothing or cash-or-nothing option with American and expiry
+barriers; ORE's Generic Barrier Option product.
+- [[id:2F5B28D9-9AB7-401E-8EF3-612712F626C1][Generic Scripted Products]] — The
+scripted trade module and its flexible payoff scripts; ORE's Generic Scripted
+Products section.
+- [[id:AEB7149D-EE91-4912-A663-D7A0261B87A0][Performance Option Type 01]] — An
+option paying a performance return against a strike; ORE's Performance Option
+Type 01 product.
+- [[id:E5C8CE52-C382-4523-8BB9-1A3698ABB0BF][Rainbow Options]] — European
+options on the best or worst of a range of assets; ORE's Rainbow Options
+product family.
+- [[id:18E6A88B-6F6E-488F-91B2-B6106C43AF73][Strike Resettable Option]] — An
+option whose strike resets when the underlying reaches a level; ORE's Strike
+Resettable Option product.
+- [[id:808C159F-5852-45AD-AE49-B7A4488513CC][Target Redemption Forward]] — A
+forward series that redeems early at a target profit; ORE's TaRF product.
+- [[id:5368EC07-71E8-4906-B897-AA41A57CE0FA][Total Return Swap]] — A swap
+paying the total return of an asset against a funding leg; ORE's generic TRS
+product.
+- [[id:59A56773-6E82-421A-8E64-AA54D46489D4][Window Barrier Option]] — An
+option with a barrier active only inside a time window; ORE's Window Barrier
+Option product.
+- [[id:428BA744-B3D3-486C-A3BF-39E59C6EC11F][Worst Of Basket Swap]] — A swap
+whose coupon references the worst performing asset in a basket; ORE's
+WorstOfBasketSwap product.
+
+* Hybrid and composite trades
+
+ORE prices bond structures with embedded equity and credit features, and
+bundles component trades into one composite trade.
+
+- [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]] — An American-style
+option to buy back a convertible bond; ORE's Ascot product.
+- [[id:4E78B88B-432F-445D-9FEA-9DBE80718DBF][Callable Bond]] — A bond with
+issuer call and investor put rights; ORE's CallableBond product.
+- [[id:F8341BB7-33FE-4441-8C2D-56B8DDDCA91C][Collateral Bond Obligation]] — A
+tranched securitisation of a portfolio of corporate bonds or loans; ORE's CBO
+product.
+- [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — A hybrid
+position bundling multiple component trades; ORE's CompositeTrade product.
+- [[id:F5D8E0C4-EC67-4210-AF1C-B664246810C9][Convertible Bond]] — A bond that
+converts into a prespecified number of shares; ORE's ConvertibleBond product.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all
+knowledge notes, with the alphabetical product run.
+- ORE User Guide, Product catalogue: =Docs/UserGuide/products.tex=, which
+inputs the product sections. The upstream project is
+[[https://github.com/OpenSourceRisk/Engine][OpenSourceRisk/Engine]].

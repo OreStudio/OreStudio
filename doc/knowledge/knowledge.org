@@ -29,7 +29,8 @@ Finance concepts the codebase relies on, grouped by topic.
 Knowledge notes for the ORE product set, the trade types the ORE
 engine prices. ORE documents each product in its User Guide products
 catalogue, =Docs/UserGuide/tradedata/=. The notes pair that official
-description with domain grounding and ORE examples.
+description with domain grounding and ORE examples. The set is
+organised by asset class on the [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] page.
 
 - [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]] — the interest-rate swap family: vanilla IRS, basis, OIS, BMA,
   and CMS; definition, variants, sensitivities, and ORE examples.

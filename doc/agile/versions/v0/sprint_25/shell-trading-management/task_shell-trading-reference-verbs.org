@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: A2F00C5D-FD7B-42EF-B7A6-61BE7C0D18C9
+:END:
+#+title: Task: Add the trading command folder, reference-entity verb units, and shell wiring
+#+description: Create projects/ores.shell/src/app/commands/trading/ holding trade_type_commands, party_role_type_commands and trade_id_type_commands units cloned from the currencies archetype, plus the hand-written trading_commands aggregator that registers them. Wire repl.cpp with one aggregator call, add ores.trading.api.lib to the shell link libraries, regenerate the shell cmake component files.
+#+type: task
+#+level: s1
+#+filetags: :shell-trading-management:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+This task establishes the per-entity trading command pattern in the shell. The three reference entities (trade_type, party_role_type, trade_id_type) mirror the currencies unit shape exactly: a submenu per entity with get, add, delete and history, pagination state and callbacks, change-reason arguments on add, and rendering through the generated table_io headers. Each unit declares its entity-specific data - trading.v1 subject names, request and response classes from the generated protocols, key field - so the skeleton stays uniform and a future codegen facet can emit it from the org model. The trading_commands aggregator and the single repl.cpp call pre-figure the generated per-component wiring.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- The three reference-entity units exist under projects/ores.shell/src/app/commands/trading/ and compile; the trading_commands aggregator registers them and repl.cpp calls it once.
+- Live against the fleet where the trading service runs: list, add, delete and history each round-trip a trade_type, a party_role_type and a trade_id_type through the trading.v1 subjects.
+- Full preset build and ctest green; shell cmake-sources drift clean; ores.trading.api.lib linked into ores.shell.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

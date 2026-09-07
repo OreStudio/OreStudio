@@ -1,0 +1,63 @@
+:PROPERTIES:
+:ID: 18BC9395-DE6B-4F95-A9DD-2834DEECF7C1
+:END:
+#+title: Story: Component architecture audit: first run on the drift-free components
+#+description: First run of the recurring component architecture audit on the four drift-free components (ores.refdata, ores.dq, ores.iam, ores.compute). Produces the 15-item checklist document, the tooling extensions behind it, the per-component gap records, and the compute job lifecycle documentation.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Run the recurring component architecture audit on the four drift-free
+components: =ores.refdata=, =ores.dq=, =ores.iam=, and =ores.compute=.
+Each run applies the checklist, records the gaps, and fixes the
+mechanical ones. The method itself becomes a reusable checklist
+document with tooling behind it, so every later component runs the
+same checks.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | All four audits are done. The branch carries the records for review. |
+| Waiting on    | Nothing.                               |
+| Next          | Review and merge the branch.           |
+| Last touched  | 2026-09-07                               |
+
+* Acceptance
+
+- The checklist document exists with 15 items and the triage rules.
+- All four components ran the full checklist, one at a time.
+- Mechanical gaps are fixed and committed on the branch.
+- The lizard complexity measure ran per component with one canonical
+  invocation, and its output is recorded.
+- The audit record of the last component sits in the component
+  overview of =ores.compute=.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:3E21836E-E374-4FBD-BC9A-EB84D5AE8FB2][Run the audit on the four drift-free components]] | DONE | 2026-09-06 | 2026-09-07 | First run of the component architecture audit: checklist document, tooling extensions, per-component gap records, and the compute job lifecycle documentation. Branch: feature/component-architecture-checklist. |
+
+* Decisions
+
+- No compass command for lizard. The checklist document fixes the
+  canonical invocation. A subcommand waits until the audit is a
+  standing program with a second caller.
+
+* Out of scope
+
+- Non-mechanical refactors and comment overhauls at template level.
+  The audit records them as findings for a later pass.
+- The =ores.marketdata= client-part registration gap, recorded for a
+  later audit.

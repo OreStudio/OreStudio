@@ -1,24 +1,35 @@
 # ORE Studio documentation validation exceptions.
 #
-# Format: CHECK_CODE component_name
+# Format: CHECK_CODE component_name (one per line).
 #
 # CHECK_CODE values:
 #   MISSING_OVERVIEW    - modeling/component_overview.org not found
 #   MISSING_ID          - no :ID: UUID in :PROPERTIES: block
-#   MISSING_TYPE        - #+type: component not found
+#   MISSING_TYPE        - #+type: component (or ores.codegen.component) not found
 #   MISSING_DESCRIPTION - #+description: missing or empty
 #   MISSING_SECTION     - one or more required sections absent
 #   MISSING_PUML        - no .puml diagram in modeling/
+#   NAME_COLLISION      - top-level name extends another component's name
 #
 # Entries below represent known gaps to be addressed in follow-up work.
 # Remove an entry once the corresponding issue is resolved.
-
-# Workspace components: component_overview.org not yet created.
-MISSING_OVERVIEW ores.workspace.api
-MISSING_OVERVIEW ores.workspace.core
-MISSING_OVERVIEW ores.workspace.service
 
 # ores.lisp is an Emacs-Lisp project, not a standard C++/Python component:
 # it has no PlantUML diagram and "Entry points" does not fit its module shape.
 MISSING_SECTION ores.lisp
 MISSING_PUML ores.lisp
+
+# Component diagrams never generated when these parts were scaffolded.
+# Draw the diagrams per the PlantUML conventions and remove the entries.
+MISSING_PUML ores.eventing.api
+MISSING_PUML ores.eventing.core
+MISSING_PUML ores.marketdata.client
+MISSING_PUML ores.seeder
+MISSING_PUML ores.qt.dq
+MISSING_PUML ores.qt.marketdata
+MISSING_PUML ores.qt.synthetic
+
+# ores.analytics.quant is a simple component named as a dotted sibling of
+# the ores.analytics composite. Resolve the shape (absorb it as a
+# sub-component of ores.analytics, or rename it) and remove the entry.
+NAME_COLLISION ores.analytics.quant

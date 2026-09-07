@@ -100,12 +100,12 @@ Current composite components and their active sub-components:
 |-------|----------------|
 | =ores.analytics= | =api=, =core=, =service=, =modeling= |
 | =ores.assets= | =api=, =core=, =service= |
-| =ores.compute= | =api=, =core=, =service=, =wrapper=, =modeling= |
+| =ores.compute= | =api=, =client=, =core=, =service=, =wrapper=, =modeling= |
 | =ores.controller= | =api=, =core=, =service=, =modeling= |
 | =ores.dq= | =api=, =core=, =service=, =modeling= |
 | =ores.eventing= | =api=, =core=, =modeling= |
 | =ores.http= | =api=, =core=, =server= |
-| =ores.iam= | =api=, =core=, =service=, =client=, =modeling= |
+| =ores.iam= | =api=, =client=, =core=, =service=, =modeling= |
 | =ores.marketdata= | =api=, =core=, =service= |
 | =ores.ore= | =api=, =core=, =service= |
 | =ores.qt= | =application=, =api=, =refdata=, =analytics=, =compute=, =data_management=, =mktdata=, =party=, =scheduler=, =trading=, =workflow=, =workspace=, =admin= |

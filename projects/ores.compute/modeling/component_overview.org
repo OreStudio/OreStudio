@@ -2,24 +2,23 @@
 :ID: A8B7F2C9-D416-4E83-B527-9F814E62C1A5
 :END:
 #+title: ores.compute
-#+description: Provides domain types and repository layer for the ORE Studio distributed compute grid. Models the BOINC lexicon: hosts (compute nodes), apps (engine registry), app_versions (wrapper+engine bundles), batches, workunits (job templates), and results (execution instances). Supports PostgreSQL-backed orchestration via the standard temporal entity pattern with full audit trail.
+#+description: Distributed compute grid for ORE Studio — hosts, apps, app_versions, batches, workunits, and results, with the cluster-manager core, the NATS orchestrator service, the worker wrapper, and the client package publisher.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :compute:component:
 #+created: 2026-06-02
-#+updated: 2026-06-02
+#+updated: 2026-09-06
 #+name: compute
 #+full_name: ores.compute
-#+brief: BOINC-inspired distributed compute grid domain types.
+#+brief: Distributed compute grid component
 #+component_kind: composite
 
 * Summary
 
-Provides domain types and repository layer for the ORE Studio distributed
-compute grid. Models the BOINC lexicon: hosts (compute nodes), apps (engine
-registry), app_versions (wrapper+engine bundles), batches, workunits (job
-templates), and results (execution instances). Supports PostgreSQL-backed
-orchestration via the standard temporal entity pattern with full audit trail.
+=ores.compute= runs ORE Studio's distributed compute grid — hosts register
+with the cluster manager, receive batches assigned to them, and execute each
+run as a worker process. Structured as a composite component with five
+sub-components.
 
 
 * Sub-components
@@ -27,7 +26,8 @@ orchestration via the standard temporal entity pattern with full audit trail.
 | Sub-component | Brief |
 |---------------+-------|
 | [[id:A59E121A-B8FB-43F0-A5CD-1FA5F426E66A][ores.compute.api]] | Domain types and NATS protocol schemas for the compute component. |
-| [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] | Compute cluster management — app registration, batch dispatch, and result collection fo… |
+| [[id:65b074fd-b20b-4fec-ba1c-a04367fb9150][ores.compute.client]] | Engine package publisher — uploads packages with hash verification for shell and Qt callers. |
+| [[id:3BFFDF5C-86F5-4D57-9D9F-676D0D62B344][ores.compute.core]] | Compute cluster management — app registration, batch dispatch, and result collection. |
 | [[id:152C4A5E-9947-4EE1-A5D4-893305D235B5][ores.compute.service]] | NATS service entrypoint for the compute domain. |
 | [[id:F1B19D84-A5C9-4478-BB46-EE6EA62DAFCA][ores.compute.wrapper]] | Compute worker wrapper — executes ORE risk runs and reports results to ores.compute.core. |
 
@@ -36,3 +36,24 @@ orchestration via the standard temporal entity pattern with full audit trail.
 | Module | Brief |
 |--------+-------|
 | [[id:F944550D-BE82-4CDF-89EF-06334B5ED78E][ores.compute]] | Logical entities for the compute namespace. |
+
+* Audit record
+
+The recurring [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][component architecture audit]] ran on 2026-09-06. The
+triage of each finding is below.
+
+- *Fixed.* The client part had no modelling directory, overview, or
+  diagram, and no row in the component registries. All are in place
+  now. The group overview omitted the client row and truncated the
+  core brief. Stale summaries in the System Model application page,
+  the group overview, and the api overview now match the parts.
+- *Recorded.* The client part has no tests for its package publishing;
+  a test needs shell or Qt scaffolding, so it is not a mechanical fix.
+  The wrapper function =process_assignment= is the complexity hotspot;
+  a refactor pass starts from it. Both wait for a later pass.
+- *Comments.* Pass. Hand-written comments are rare and explain why.
+  Generated files carry only template comments.
+- *Complexity measure.* 9607 NLOC over 466 functions at an average CCN
+  of 2.0. One warning: =process_assignment= at CCN 17. Generated
+  sources dominate the raw total. Read them as a template signal, not
+  a component signal.

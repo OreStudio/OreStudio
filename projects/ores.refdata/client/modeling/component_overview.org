@@ -2,12 +2,12 @@
 :ID: C32C4A3B-1B34-4A4A-A71D-62F25AA874E7
 :END:
 #+title: ores.refdata.client
-#+description: Client-side NATS wrapper for the refdata service used by non-Qt consumers.
+#+description: Consumer-side reference-data helpers: convention-aware FX rate formatting and the currency-pair-convention tenant cache.
 #+type: ores.codegen.component
 #+level: cross
-#+filetags: 
+#+filetags: :refdata:client:component:
 #+created: 2026-07-29
-#+updated: 2026-07-29
+#+updated: 2026-09-06
 #+name: refdata.client
 #+full_name: ores.refdata.client
 #+brief: Reference data client
@@ -20,24 +20,53 @@
 
 * Summary
 
-(Three to five sentences: what this component does and why it exists.)
+=ores.refdata.client= is a header-only library of consumer-side helpers
+for reference data. It hosts the convention-aware FX rate formatter used
+by every rate-display surface, and the =currency_pair_convention_cache=:
+an in-process, per-tenant cache of currency-pair conventions loaded over
+NATS and reloaded on changed events. Its registrar wires the warm-up and
+the changed-event subscription at service startup. Consumers are the
+market-data client and the Qt market-data plugins. A load carries a
+Bearer token when the producer checks authorisation; pass an
+=ores.iam.client=-style token provider in that case.
 
 * Inputs
 
--
+- Domain types from =ores.refdata.api=: =currency_pair_convention=.
+- NATS protocol messages from =ores.refdata.api=: the
+  =read_currency_pair_conventions_for_cache= request/response pair and
+  the =currency_pair_convention_changed_event=.
 
 * Outputs
 
--
+- C++ headers with the rate formatter, the tenant cache, and the
+  cache registrar.
 
 * Entry points
 
--
+- =service/cache/currency_pair_convention_cache.hpp= — =load()= and
+  =lookup()= per tenant.
+- =service/cache/currency_pair_convention_cache_registrar.hpp= —
+  =warm_and_subscribe_currency_pair_convention_cache()=.
+- =presentation/currency_pair_rate_formatter.hpp= — =format_rate()=.
 
 * Dependencies
 
--
+- =ores.refdata.api= — the domain and protocol types.
+- =ores.eventing= — the changed-event types and the =partitioned_cache=
+  primitive.
+- =ores.nats= — the service client and subscription type.
+- =ores.logging= — logger setup.
+- Optionally, an =ores.iam.client= token provider for authenticated
+  loads.
 
 * See also
 
--
+- [[id:D774690E-B214-42B0-94FC-B636C49F6F37][ores.refdata]] — component group overview.
+
+- [[id:654BE6CD-D212-4EE5-A7B4-8AF125787522][ores.refdata.api]] — domain types and NATS protocol messages.
+- [[id:E75568D2-588A-4FE2-9ED1-6826B60C0E10][ores.refdata.service]] — the NATS service the client helpers talk to.
+- [[id:C2B3D4E5-F6A7-8901-BCDE-F12345678901][ores.refdata Messaging Reference]] — full NATS subject and message
+  catalogue.
+- [[id:723B0112-4DDC-4C03-924E-2C90C2F19B5C][Where should an entity-mirror cache live?]] — the placement rules for
+  this cache and its registrar.

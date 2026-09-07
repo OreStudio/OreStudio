@@ -1,0 +1,82 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Compute job lifecycle: submission to results
+
+actor Operator
+participant "ores.shell" as shell
+participant "compute service" as svc
+database PostgreSQL as db
+participant "NATS\nJetStream" as js
+participant "wrapper node\n(x64-linux)" as node
+participant "ORE engine" as engine
+participant "ores.storage" as store
+
+Operator -> shell : connect; login
+Operator -> shell : compute publish-package ORE 1.8.16.0-4-g3b62ba248\nx64-linux --file ore-...-x64-linux.tar.gz
+shell -> store : PUT packages/ORE/1.8.16.0-4-g3b62ba248/\nORE-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
+store --> shell : sha256 verified
+shell -> svc : save app / app version / platform rows
+svc -> db : register ORE app version + package
+
+Operator -> shell : compute add-batch ir-swap 15
+shell -> svc : save batch (external_ref, 15 jobs)
+svc -> db : insert batch (open)
+
+Operator -> shell : compute dispatch-batch ir-swap 15\n<app_version_id> TA002_IR_Swap.tar.gz
+shell -> store : PUT input/{batch_id}.tar.gz (verbatim)
+loop for each job (15)
+    shell -> svc : save workunit (shared input bundle)
+    svc -> db : insert workunit (no canonical result)
+    svc -> db : insert result (Unsent)
+    svc -> js : publish assignment\ncompute.v1.work.assignments.{tenant}.{platform}\n(result, workunit, package_uri, sha256,\ninput_uri, output_uri)
+end
+svc -> db : batch status dispatched
+
+js -> node : deliver assignment (queue group\nores.compute.wrapper.{platform})
+alt package not cached
+    node -> store : GET package_uri
+    store --> node : archive
+    note over node : verify SHA256; extract; read manifest.json
+end
+node -> store : GET input_uri
+store --> node : input archive
+note over node : extract into work_dir/jobs/{result_id}/;\nspawn engine with the job directory as\nworking directory
+node -> engine : spawn (args: Input/ore.xml)
+engine -> engine : run; write Output/log.txt
+engine --> node : exit code 0
+node -> store : PUT output/{result_id}.tar.gz\n(archive of Output/)
+node -> svc : submit (result_id, host_id, output_uri,\noutcome 1, error_message)
+svc -> db : result Done, host bound,\nreceived_at recorded
+alt outcome 1 and done count >= target_redundancy
+    svc -> db : workunit canonical_result_id = result
+    alt every workunit canonical
+        svc -> db : batch status closed
+    end
+end
+
+Operator -> shell : compute grid-stats --watch ir-swap
+shell -> svc : grid stats request
+svc --> shell : hosts, workunits, results
+Operator -> shell : compute download-output <result_id> <dest_dir>
+shell -> store : GET output/{result_id}.tar.gz
+store --> shell : result archive (curves.csv, flows.csv, npv.csv)
+shell --> Operator : outputs on disk
+
+@enduml

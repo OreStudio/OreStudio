@@ -183,6 +183,9 @@ How the codebase is put together.
 
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — api/core/service split, facet
   placement, CMake dependency chain, and scaffold profiles.
+- [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — how a compute job travels through the
+  ores.compute grid: engine registration, batch dispatch, worker
+  execution, validation, and output collection.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — every layer of a NATS service (registry, IAM,
   certs, controller, runner, authentication) with a stand-up checklist.
 - [[id:1D02DB5B-1E50-4AA0-9780-A3F1CF237349][Service Bootstrap Phases]] — Phase 1 (wire and subscribe every subject)
@@ -269,6 +272,9 @@ How the codebase is put together.
   PR-delta and full-component reviews apply.
 - [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — how to write a
   =component_overview.org= that passes audit.
+- [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][Component architecture audit]] — the recurring per-component
+  cleanliness check: shape, signed-off folders, naming, tests,
+  documentation, diagrams, and the complexity measure.
 - [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]] — styling for component
   and system class diagrams.
 - [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — styling for the SQL schema

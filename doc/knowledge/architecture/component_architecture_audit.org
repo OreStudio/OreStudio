@@ -1,0 +1,407 @@
+:PROPERTIES:
+:ID: 45CAC01F-BC56-4600-B206-EEE7545AE3AB
+:END:
+#+title: Component Architecture Audit
+#+description: Recurring per-component architecture cleanliness check: component shape, signed-off folders, naming, comments, tests, documentation, and diagrams.
+#+type: knowledge
+#+level: cross
+#+filetags: :audit:component:architecture:
+#+created: 2026-09-06
+#+updated: 2026-09-06
+
+* Summary
+
+The Component Architecture Audit is the recurring cleanliness check we
+run on one component at a time. It verifies the component still matches
+the ground-truth architecture: its shape (simple or composite), its
+folder morphology, its naming, its tests, its documentation, and its
+diagrams. One pass covers one component and runs every so often.
+
+The audit does not do large refactorings. A pass fixes only what is
+mechanical and trivial: folder structure, names, leftover artefacts,
+stale or missing documentation, and stale ground-truth documents.
+Everything deeper becomes a recorded finding, so a separate pass can
+prioritise and refactor it later. The complexity measure feeds that
+prioritisation.
+
+The audit is one of three checks a component carries. The drift check
+([[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][Codegen Fix Drift]]) proves regeneration identity. The code review
+([[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]]) proves code quality. This audit proves
+architecture cleanliness against [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] and the
+applied-MASD documents.
+
+Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Detail
+
+** When to run it
+
+A component audit runs every so often, and always on these triggers:
+
+- A component reaches zero codegen drift. Audit it right after its
+  drift-baseline story closes, while the component is fresh.
+- The component's folder layout or codegen templates change.
+- A new sub-component is added to a composite.
+- Any doubt appears about a component's shape or structure.
+
+A sprint row for the work reads: "Component architecture audit:
+=ores.<name>=".
+
+** Readiness
+
+A component is auditable at any time. The audit is most valuable when
+the drift gate is already live for the component, because the generated
+output is then stable and the audit reads the real tree.
+
+The drift gate is live for these components as of 2026-09-06:
+=ores.refdata=, =ores.dq=, =ores.iam=, =ores.compute=. Audit these
+first. The remaining components follow their drift-baseline stories;
+the rollout order is in [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline
+across all components]]. Use the complexity measure (see below) to order
+the rest of the audit backlog when more than one component is ready.
+
+** How to run one pass
+
+1. Run the automated checks (next section). Fix nothing yet; collect
+   the findings.
+2. Walk the manual checklist in order. Classify every finding.
+3. Triage: fix mechanical and trivial findings in this pass. Record
+   structural findings as tasks or stories, each with a one-line
+   justification. Do not start a large refactoring.
+4. When the ground-truth documents disagree with the tree
+   (=component_architecture.org=, the System Model layer pages, the
+   codegen component catalogue), fix the document here. The documents
+   lead; a discrepancy in them is a documentation bug.
+5. Re-run the automated checks. A clean component has no entry left for
+   it in =docs_exceptions.txt=.
+
+** Automated checks
+
+One tool covers the mechanical checks repo-wide:
+=projects/ores.codegen/validate_docs.py=, run through its wrapper:
+
+#+begin_src sh :results verbatim
+projects/ores.codegen/validate_docs.sh
+#+end_src
+
+The tool walks every =projects/ores.*= directory and its composite
+parts, and checks:
+
+- =modeling/component_overview.org= presence, frontmatter, and the six
+  required sections on every component overview.
+- A =.puml= diagram beside every component overview.
+- Top-level name collisions: no =ores.<a>.<b>= directory next to an
+  =ores.<a>= component (=NAME_COLLISION=).
+
+The root =modeling/= of a composite is a group-level index
+(=Summary=, =Sub-components=, =Entity modules=). It is exempt; the
+parts carry the component docs. Known gaps are recorded in
+=projects/ores.codegen/docs_exceptions.txt= with the reason, and the
+file must stay green on the tree. Deleting an exception line is part of
+the fix.
+
+** The signed-off folder catalogue
+
+A component tree uses only signed-off folder names. The catalogue is
+the complete list, with the technical space each folder belongs to.
+Any folder name outside it is a finding.
+
+| Folder | Applies to | Technical space | Meaning |
+|--------+------------+-----------------+---------|
+| =CMakeLists.txt= | Simple root; every part root | CMake | Build definition. The root of a composite parent holds none (decision D5). |
+| =include/= | Simple; every part | C++ | Public headers, nested one level as =include/ores.<full-name>/= |
+| =src/= | Simple; every part | C++ | Implementation; mirrors the facet dirs of =include/= |
+| =tests/= | Simple; every part | C++ | Catch2 tests; the file name ends in =_tests.cpp= |
+| =modeling/= | Simple; parts; composite root | Codegen org models | Entity org models, =component_overview.org=, PlantUML sources. Not a CMake target. |
+| =api=, =core=, =service= | Composite children | C++ | Standard part roles |
+| =server=, =client=, =wrapper=, =database= | Composite children | C++ | Specialist part roles |
+| Domain-area names | =ores.qt= children | C++ / Qt | One Qt plugin per domain area |
+| =venv/= | Python tools only | Python | Local interpreter. Never committed; it is gitignored. |
+
+The role of every part name is defined once in the [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component
+architecture]] sub-component catalogue; this table does not repeat it.
+Facet dirs inside =include/= and =src/= (e.g. =domain=, =repository=,
+=messaging=) follow the per-facet catalogues of
+[[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] and the generated =ores.cpp= inventory.
+
+Tool components (=ores.codegen=, =ores.compass=, =ores.sql=) keep their
+own documented trees and their component overviews. The rules above
+cover the C++ domain components and their parts.
+
+Never tracked, in any component: =__pycache__/=, =*.pyc=, =.DS_Store=,
+=*.orig=, =*.rej=, backup files, build output. A name like =stub=,
+=crap=, or =test= (singular) at a tree level that has no signed-off
+meaning is a leftover: delete it, or move its content to the right
+home. Empty directories serve no purpose once their content is gone;
+remove them.
+
+** Manual checklist
+
+The automated tool covers the mechanical parts. Walk the rest by hand,
+in order.
+
+*** 1. Component shape
+
+The component is exactly one meta-model. A *simple component* owns its
+code directly (=CMakeLists.txt= at the root, =include/=, =src/=,
+=tests/=, =modeling/= inside). A *composite component* is a parent
+directory of sub-component dirs, each an independent CMake target. The
+two shapes are defined in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]]. No component is
+both at once.
+
+The collision check automates the failure mode: a top-level
+=ores.<a>.<b>= next to an =ores.<a>= composite claims a parentage the
+tree does not have. The current example is =ores.analytics.quant= next
+to the =ores.analytics= composite. Resolve it by absorbing the simple
+component into the composite as a proper sub-component, or by renaming
+it. Use the sub-component catalogue names.
+
+*** 2. Sub-component structure
+
+Each part of a composite is one of the catalogue roles
+(=api=, =core=, =service=, and the specialist roles), with the
+dependency order =api= to =core= to =service=. The parent root holds no
+=CMakeLists.txt=. Each part carries the full simple layout: its own
+=CMakeLists.txt=, =include/ores.<group>.<part>/=, =src/=, =tests/=,
+=modeling/=. Parts register in =projects/CMakeLists.txt= in dependency
+order. Facets sit in the part the facet placement table assigns, and
+facet dirs appear in the same part in =include/= and =src/=. The
+[[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] facet table and the component-only checks of
+[[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] are the reference.
+
+*** 3. Folder morphology
+
+List the tree and compare against the signed-off catalogue above. A
+folder that is not in it is a finding. Decide one of three outcomes:
+delete it, move its content into a signed-off folder, or sign it off
+(agree the meaning, add the row with its technical space). Facet dirs
+are signed off through the facet catalogues, not through this table.
+Tool components keep their own trees as documented in their overviews.
+
+*** 4. Technical space of folders
+
+Every folder belongs to a technical space, and folders from the wrong
+space are findings. =include/=, =src/=, =tests/= belong to C++;
+=modeling/= belongs to codegen org models; =venv/= exists only in
+Python tool components and never in the repository. SQL schema and
+populate content belongs to the SQL technical space, centralised under
+=ores.sql= (see [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]]): a C++ component that grows a
+=create/= or =populate/= tree has drifted, as does any component with a
+Python =venv/=.
+
+*** 5. Temporary and leftover artefacts
+
+Scaffolding leaves placeholder artefacts behind (the scaffold's stub
+header and implementation, =*.puml= stubs, test stubs). None of them
+survive in a finished component. A pass looks for them and for the
+never-tracked names above, and removes them. A container folder that
+existed only for a removed artefact goes too.
+
+#+begin_src sh :results verbatim
+find projects/ores.<name> -name '*stub*' -o -name '*.orig' \
+  -o -name '*.rej' -o -name '.DS_Store' -o -name '__pycache__'
+#+end_src
+
+*** 6. Standard tests
+
+Every part exposes its tests through a CMake test target, and the tests
+run green under =ctest=. The file and case conventions are in
+[[id:FB797194-EB03-4837-B12D-E651DD5F16F2][Unit test conventions]]. A component with no tests at all is a finding:
+either it is a pure-header library that says so in its overview, or it
+needs tests. When codegen entities exist, per-entity integration tests
+are part of the standard output; a component that loses them in the
+generated tree is a codegen finding, not a component finding.
+
+*** 7. Comments
+
+Hand-written code follows the =code-review-comments= skill
+([[proj:.claude/skills/code-review-comments/SKILL.md][=code-review-comments=]]): comments are rare, they explain why, and
+they never narrate. Generated code never gets hand-edited comments.
+Comments in generated files are a template concern: the template is the
+only place to fix them, and a comment survives only when it documents
+the domain. Review the templates that generate the component's files
+the same way, as step 6 of [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][Codegen Fix Drift]] does for the code
+itself.
+
+*** 8. File naming
+
+File names are snake_case everywhere except the Qt client, whose files
+are CamelCase. A file name matches the type it holds, and the
+implementation file mirrors the header. Tests end in =_tests.cpp=,
+headers are =.hpp=, and an aggregate header =ores.<comp>.hpp= exists
+where the component's entry points list says so. The naming rules of
+[[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] are the reference.
+
+*** 9. Type naming
+
+Type names are snake_case in all C++ code except the Qt client, where
+they are CamelCase. Namespaces follow =ores::<group>[.<part>]::<facet>=.
+Types generated for an entity match the entity slug in its org model;
+a mismatch means the model, the type, or the regeneration drifted.
+Look for types whose name contradicts their home folder or their
+namespace: a misnamed type is a finding, and renaming it is trivial in
+a component at zero drift (regenerate, do not hand-edit).
+
+*** 10. Misplaced files and misnamed classes
+
+Walk the tree with the shape in mind. A file lives where its concern
+lives: domain types in =api=, repositories in =core=, handlers in
+=service=. A class whose name, namespace, or folder disagree is a
+finding.
+
+*** 11. Component registries
+
+The system indexes components in three registries. Each one must show
+the component and its parts:
+
+- The System Model layer pages ([[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]]) list every part of a
+  composite, with its dependency column. A part that exists in the tree
+  but not on its layer page is a finding: the refdata audit found
+  =ores.refdata.client= missing while its siblings were listed.
+- =component_catalogue.org=
+  ([[proj:projects/ores.codegen/library/component_catalogue.org][=component_catalogue.org=]]) maps each codegen component name to its
+  modeling directory. Entities live at the group level of a composite;
+  parts need no row here.
+- The component's messaging reference (linked from the part overviews'
+  =See also=) lists the NATS subjects and handlers. A handler without a
+  subject row, or a subject row without a handler, is a finding.
+
+A stale registry entry is a finding; fix it in the same pass.
+
+*** 12. Platform-specific code placement
+
+Platform concerns have one home: =ores.platform=
+([[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]]). It owns the cross-platform OS abstractions:
+compiler and architecture =attributes.hpp=, environment variables, the
+=filesystem= and =net= facets, process identity and signals, and time
+conversions. A component must not inline the platform itself. Look for
+preprocessor conditionals on =_WIN32=, =__linux__=, =__APPLE__=,
+compiler or architecture macros (=__GNUC__=, =_MSC_VER=,
+=__x86_64__=), and for direct OS headers (=unistd.h=, =windows.h=,
+=sys/*.h=) outside =ores.platform=:
+
+#+begin_src sh :results verbatim
+grep -rnE '#\s*(ifdef|ifndef|if)\s+(__|_WIN32)|<unistd\.h>|<windows\.h>|<sys/' \
+  projects/ores.<name>/include projects/ores.<name>/src
+#+end_src
+
+An inline conditional is a finding. When the concern has no home in
+=ores.platform= yet, extend that component (add the abstraction, then
+the callers use it); when it has a home, route the caller through it.
+Both directions are mechanical; porting an existing abstraction's
+callers is a record-only finding when it spans many files.
+
+*** 13. Component documentation
+
+Every simple component and every composite part carries a
+=modeling/component_overview.org= with the six required sections,
+adequately filled in for the component's content. Use the good-versus-
+skeleton table of [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] as the bar. The
+=See also= section links with org-roam id-links, never file paths; it
+links sibling components, and it links the knowledge documents that
+give the component's content its depth. A component whose overview
+cannot link anywhere is a sign the knowledge does not exist yet. A
+composite's root overview is the index shape (=Summary=,
+=Sub-components=, =Entity modules=) and is optional when the parts are
+documented.
+
+Every summary of the component must describe what the parts actually
+do: the group overview's =Summary= and description, the System Model
+layer page's narrative under the component heading, and any brief in a
+registry table. A summary that contradicts a part overview is a
+finding; the compute audit found the layer page crediting the core
+with the domain model while the core overview describes cluster
+management. Fix the stale prose in the same pass.
+
+*** 14. Diagrams
+
+Every component overview has its =.puml= source and a rendered image
+committed next to it, and the overview's =Diagram= section points at
+the image. The diagram is up to date: it shows the current parts,
+facets, and classes, with no stale nodes. A component draws supporting
+diagrams when its content warrants them, such as ER diagrams for a
+schema-owning component or sequence diagrams for its flows.
+
+Authoring a diagram runs two passes. The automated pass captures most
+entities and some relationships: =build/scripts/generate_component_puml.py=
+parses the C++ headers and emits the type skeleton (namespaces, classes
+and structs with their members, base relationships) into the section
+above the sentinel line. The manual pass cleans up that output and
+makes the diagram more complete: layout, notes, the relationships the
+automated pass cannot infer, and any supporting shapes. The sentinel
+line is the contract between the two passes:
+
+#+begin_src plantuml
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+#+end_src
+
+A refresh rewrites only the section above the sentinel and preserves
+everything below it verbatim, so hand-authored content that must
+survive regeneration lives below it. The script resolves
+simple-component layouts today; parts of a composite keep the same
+file shape so automated support can slot in.
+
+Follow the [[id:271F40DA-D0EA-4D08-A4F8-3D2B835DF5E7][PlantUML class diagram conventions]], the
+[[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]], and render with the
+[[id:F51360FC-24DB-4276-B137-C59D118922AC][How do I generate PlantUML diagrams?]] recipe. A missing or stale
+diagram is a finding. The trivial fix refreshes it through the two
+passes in order: re-run the automated capture, then redo the manual
+cleanup and verify the sentinel section survived.
+
+*** 15. Complexity measure
+
+The audit measures complexity; it does not fix it. The measure ranks
+components for the audit backlog and for later refactoring passes.
+lizard (https://github.com/terryyin/lizard) runs from the compass
+venv (see =ores.compass= requirements.txt), with the same command
+every time so numbers stay comparable across components and runs.
+Point it at the C++ sources: the part dirs of a composite, the
+=include/= and =src/= of a simple component:
+
+#+begin_src sh :results verbatim
+projects/ores.compass/venv/bin/lizard \
+  projects/ores.<name>/*/include projects/ores.<name>/*/src
+projects/ores.compass/venv/bin/lizard \
+  projects/ores.<name>/include projects/ores.<name>/src
+#+end_src
+
+Record per component: total NLOC, total function count, average
+cyclomatic complexity, and the top file by cyclomatic complexity. Keep
+the output in the audit record. Generated sources dominate raw totals;
+read them as a template signal, not a component signal, and say so in
+the record. No threshold gates anything in this audit. When two
+components are candidates for the next audit, audit the more complex
+one first. When a refactoring pass starts later, its backlog starts
+from these records.
+
+** Triage rules
+
+Every check ends in one of three states:
+
+- *Pass.* Nothing to do.
+- *Trivial, fix here.* Folder or file or type renames, leftover
+  artefacts, missing documentation and diagrams, stale registry
+  entries, stale ground-truth documents. Fix them in this pass.
+- *Finding, record only.* Restructures, codegen or tooling changes,
+  comment overhauls at template level, and every hotspot the complexity
+  measure surfaces. Record each as a task or story with a one-line
+  justification and the measure that motivated it. A later pass does
+  the refactoring; this pass does not start it.
+
+* See also
+
+- [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — ground truth for component shape, the
+  sub-component catalogue, facet placement, and scaffold profiles.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] — the naming rules and the component-only
+  checks this audit leans on.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component Documentation Guide]] — what fills a
+  =component_overview.org= well.
+- [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][Codegen Fix Drift]] — the per-component drift method this audit
+  assumes has run.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — the cross-component index by architectural layer.
+- [[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the facet catalogues that sign off facet folder
+  names.
+- [[id:2E4DC627-64F4-4CD8-9B26-BD974C648F07][SQL Technical Space]] — the central home of all SQL artefacts.
+- [[id:7F3A2E81-B5C9-4D6A-8E12-9C4B3F5A7D0E][ores.platform]] — the central home of all platform-specific code.
+- [[id:B8F8A7B5-30E3-47EF-959F-7EB006C007D3][Entity classification and drift baseline across all components]] —
+  the program this audit runs behind.

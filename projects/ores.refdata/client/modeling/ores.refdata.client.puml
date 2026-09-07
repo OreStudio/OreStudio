@@ -1,0 +1,66 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title ores.refdata.client Component
+
+set namespaceSeparator ::
+
+namespace ores #F2F2F2 {
+    namespace refdata #F2F2F2 {
+        namespace client #F2F2F2 {
+            namespace presentation #F2F2F2 {
+                class currency_pair_rate_formatter {
+                    {static} +format_rate(rate : double, convention : optional<ores::refdata::domain::currency_pair_convention>, convention_reversed : bool) : std::string
+                }
+                note top of currency_pair_rate_formatter
+                Convention-aware FX rate formatting for every rate-display surface.
+                end note
+            }
+        }
+        namespace service #F2F2F2 {
+            namespace cache #F2F2F2 {
+                class currency_pair_convention_cache {
+                    -nats_ : ores::nats::service::client&
+                    -token_provider_ : std::function<std::string(bool)>
+                    -cache_ : partitioned_cache<std::string, std::string, ores::refdata::domain::currency_pair_convention>
+                    +set_token_provider(token_provider : std::function<std::string(bool)>)
+                    +load(tenant_id : std::string) : std::string
+                    +lookup(tenant_id : std::string, key : std::string) : std::optional<ores::refdata::domain::currency_pair_convention>
+                }
+                note top of currency_pair_convention_cache
+                In-process per-tenant cache of currency-pair conventions, loaded over NATS and reloaded on changed events.
+                end note
+                class currency_pair_convention_cache_registrar {
+                    +warm_and_subscribe_currency_pair_convention_cache(nats : ores::nats::service::client&, cache : std::shared_ptr<currency_pair_convention_cache>, tenant_ids : std::vector<std::string>) : ores::nats::service::subscription
+                }
+                note top of currency_pair_convention_cache_registrar
+                Header-only free function: warms the cache per tenant, then subscribes to the changed-event subject.
+                end note
+                currency_pair_convention_cache_registrar ..> currency_pair_convention_cache : warms
+            }
+        }
+    }
+}
+
+' --- manual: everything below this line is hand-authored; the script preserves it ---
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar ores.refdata.client.puml"
+' End:
+@enduml

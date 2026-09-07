@@ -35,7 +35,7 @@ namespace ores::synthetic::domain {
  * referencing its yield_curve_process_parameter_definition. This is the
  * "value" half of the row-based parameter architecture: an IR curve
  * generation config stores its process parameters as one row per
- * parameter (kappa0.1, rho-0.5, ...), the parameter
+ * parameter (kappa=0.1, rho=-0.5, ...), the parameter
  * definition supplies the vocabulary (name, description, bounds), and
  * the mapping layer materialises these rows into the strongly-typed
  * process-parameter structs of ores.analytics.quant

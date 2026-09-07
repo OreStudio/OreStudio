@@ -8,7 +8,7 @@
 #+filetags: :component-architecture-audit:sprint_25:v0:
 #+owner: marco
 #+branch: feature/component-architecture-checklist
-#+pr:
+#+pr: 2025
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-07
@@ -73,7 +73,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2025][#2025]] | [doc,ores.refdata,ores.iam,ores.compute] Component architecture audit, records, and compute lifecycle doc |
 
 * Review
 

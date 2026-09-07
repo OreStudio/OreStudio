@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 894B369A-CE00-4E6A-B71B-C7BAC8B158BE
+:END:
+#+title: Story: Sized, realistic trade populations for provisioned systems
+#+description: Provisioning a system gains an option to populate its entities with trades, at four sizes from tiny to extra large, each realistic at its own scale rather than a truncation of the next one up. Delivered as datasets and loaded as bulk SQL. ORE's TradeGenerator is read as a reference for how a valid trade is constructed, not necessarily adopted as a dependency.
+#+type: story
+#+level: s2
+#+filetags: :ore:acme:synthetic:trading:seeder:sprint_25:v0:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Provisioning a system offers to populate its entities with trades, at a chosen
+size. Four sizes, each serving a purpose the others cannot.
+
+Tiny exists so an integration test can assert against a book small enough to
+read. Extra large exists so volume and query performance can be measured against
+something the size of a real institution's book. Medium and large sit between,
+for demonstrations and for work that needs breadth without the cost.
+
+Every size is realistic *at its own scale*. A tiny population is a small firm's
+book, not a large firm's book with most of the rows deleted. That distinction is
+the substance of this story: the sizes differ in what a plausible entity of that
+size would actually trade, not only in row count.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-07                               |
+
+* Acceptance
+
+- Provisioning takes a size and populates trades without a manual step. No
+  hand-written XML, no separately run generator, no hand-imported file.
+- Four sizes exist, each with its purpose stated and its row order recorded.
+  Tiny is small enough for an integration test to assert against; extra large is
+  of the order of 400,000 trades.
+- Realism is defined per size and is checkable. A tiny population is realistic
+  as a small book rather than as a sample of a large one, and the analysis
+  states what differs beyond count: how many asset classes, how many
+  counterparties, what maturity spread a firm of that size plausibly has.
+- The sizes are datasets, following the pattern already established under
+  =projects/ores.seeder/datasets/=.
+- The load path is bulk SQL, generated as the rest of a dataset already is, and
+  its cost is measured at the largest size rather than estimated.
+- Coverage is measured against the =ores.trading= instruments: which the
+  generator can populate, which it cannot, and which asset classes a realistic
+  book needs that neither side carries.
+- Trades land in portfolios by a rule reflecting each portfolio's owner unit and
+  aggregation currency, not by round-robin.
+- What ORE's TradeGenerator knows is extracted and written down: which fields a
+  valid trade needs, which come from the convention, which from the curve
+  config, and which the caller must supply. Whether we depend on it or
+  reimplement it is a conclusion of the analysis, not its premise.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BC57336F-9823-428F-8060-15DB3AEB47B3][Scaffold story: Generate realistic trade populations for Acme using ORE's TradeGenerator]] | STARTED | 2026-09-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A1405F36-C32F-46CE-A550-40015616B986][Analyse the trade population pipeline end to end]] | BACKLOG | | | Survey the ways a sized population could be produced, evaluate each on speed, reproducibility, realism and cost, and present the options for a decision. |
+
+* Decisions
+
+* Out of scope
+
+-

@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 3E21836E-E374-4FBD-BC9A-EB84D5AE8FB2
+:END:
+#+title: Task: Run the audit on the four drift-free components
+#+description: First run of the component architecture audit: checklist document, tooling extensions, per-component gap records, and the compute job lifecycle documentation. Branch: feature/component-architecture-checklist.
+#+type: task
+#+level: s1
+#+filetags: :component-architecture-audit:sprint_25:v0:
+#+owner: marco
+#+branch: feature/component-architecture-checklist
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:18BC9395-DE6B-4F95-A9DD-2834DEECF7C1][Component architecture audit: first run on the drift-free components]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Run the 15-item component architecture audit on =ores.refdata=,
+=ores.dq=, =ores.iam=, and =ores.compute=, one at a time. Produce the
+checklist document with its tooling. Record the gaps and the
+complexity measure per component. Fix every mechanical gap.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:18BC9395-DE6B-4F95-A9DD-2834DEECF7C1][Component architecture audit: first run on the drift-free components]] |
+| Now          | All four audits are done and committed on the branch. |
+| Waiting on   | Nothing.                               |
+| Next         | Review and merge the branch.           |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- The checklist document =component_architecture_audit.org= exists
+  with 15 items, the canonical lizard invocation, and the triage
+  rules.
+- The four components each ran the full checklist.
+- Mechanical gaps are fixed on the branch, with =validate_docs.py=
+  green on all 44 components.
+- The =ores.compute= audit record, with the complexity numbers, sits
+  in its component overview.
+
+* Plan
+
+Audit order: refdata first, then dq, iam, compute. Per component:
+survey the tree and the documentation against the checklist, record
+the gaps, fix the mechanical ones, measure complexity with lizard,
+and report. The checklist doc and its tooling were built before the
+first run. The record of what each audit found is in the branch's
+commits and in =* Result= below.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+All four audits completed on 2026-09-06 and 2026-09-07.
+
+- =ores.refdata=. Fixed: the client part gained a full overview, a
+  diagram, the modeling glue, and its System Model registry row; the
+  stale docs exception is gone. Recorded: cache classes in the client
+  part declare =ores::refdata::service::cache=; the 763-line
+  =generate_fictional_currencies= hotspot. Measure: 68875 NLOC at an
+  average CCN of 1.8, one warning.
+- =ores.dq=. Clean. No mechanical gaps. Measure: 22272 NLOC over 1142
+  functions at CCN 1.8. Four warnings, all record-only, led by
+  =resolve_publication_order= at CCN 18 and the FSM row-to-state
+  mappers in =fsm_service.cpp= at CCN 19 to 21.
+- =ores.iam=. Fixed: the group overview omitted the client part and
+  claimed three sub-components; the table and the count now include
+  it. Recorded: no tests for =make_service_token_provider=; six lizard
+  warnings, worst =provision_acme= at CCN 30 over 339 lines, then
+  =auth_handler::login= at CCN 25. Measure: 15225 NLOC over 676
+  functions at CCN 2.2.
+- =ores.compute=. Fixed: the client part had no modeling dir, no
+  overview, no diagram, and no registry row; all are in place now, and
+  stale summaries across the System Model and the part overviews are
+  aligned. Recorded: no client package-publisher tests;
+  =process_assignment= at CCN 17. Measure: 9607 NLOC over 466
+  functions at CCN 2.0, one warning. The audit record sits in the
+  component overview.
+
+Method notes: lizard is pinned in the =ores.compass= venv; no compass
+command was added. =validate_docs.py= is now composite-aware with a
+=NAME_COLLISION= check, and the exceptions file records
+=ores.analytics.quant= and the diagram-less parts. The marketdata
+client-part registration gap is out of scope and recorded in the
+audit story.

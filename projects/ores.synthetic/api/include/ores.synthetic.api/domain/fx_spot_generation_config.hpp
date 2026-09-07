@@ -119,7 +119,7 @@ struct fx_spot_generation_config final {
 
     /**
      * @brief Whether this config starts automatically when the service comes up, as opposed to
-     * manual-start-only. Orthogonal to enabled: a config can be enabledtrue, auto_startfalse
+     * manual-start-only. Orthogonal to enabled: a config can be =enabled=true, auto_start=false=
      * (valid, manually startable, but never auto-started -- e.g. a legacy/alternate-index variant
      * living alongside a currency's primary config so the two never silently fight over the same
      * published qualifier at boot). Starting a feed -- whether auto-start-at-boot or a manual Start

@@ -156,7 +156,6 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
         -- clock_timestamp(), not current_timestamp: current_timestamp is
         -- frozen for the whole transaction, so a same-transaction
         -- multi-write to this row (e.g. a composite entity's parent
@@ -239,64 +238,3 @@ begin
     return p_value;
 end;
 $$ language plpgsql security definer set search_path = public, pg_temp;
-
--- =============================================================================
--- Hierarchy traversal for folders.
--- Returns a flat set of {id, parent_id, name} nodes for the subtree rooted
--- at p_root_id. When p_from_root is true, first walks up parent_id to the
--- ultimate ancestor (parent_id is null) and recurses down from there instead,
--- returning the whole tenant tree the given node belongs to.
--- =============================================================================
-create or replace function ores_synthetic_folders_hierarchy_fn(
-    p_tenant_id uuid,
-    p_root_id uuid,
-    p_from_root boolean default false
-) returns table(id uuid, parent_id uuid, name text) as $$
-declare
-    v_root_id uuid;
-begin
-    v_root_id := p_root_id;
-
-    if p_from_root then
-        with recursive ancestors as (
-            select t.id, t.parent_id as parent_id
-            from "ores_synthetic_folders_tbl" t
-            where t.tenant_id = p_tenant_id
-              and t.id = p_root_id
-              and t.valid_to = ores_utility_infinity_timestamp_fn()
-            union all
-            select t.id, t.parent_id as parent_id
-            from "ores_synthetic_folders_tbl" t
-            join ancestors a on t.id = a.parent_id
-            where t.tenant_id = p_tenant_id
-              and t.valid_to = ores_utility_infinity_timestamp_fn()
-        )
-        select a.id into v_root_id
-        from ancestors a
-        where a.parent_id is null
-        limit 1;
-
-        if v_root_id is null then
-            v_root_id := p_root_id;
-        end if;
-    end if;
-
-    return query
-    with recursive descendants as (
-        select t.id, t.parent_id as parent_id,
-               t.name::text as name
-        from "ores_synthetic_folders_tbl" t
-        where t.tenant_id = p_tenant_id
-          and t.id = v_root_id
-          and t.valid_to = ores_utility_infinity_timestamp_fn()
-        union all
-        select t.id, t.parent_id as parent_id,
-               t.name::text as name
-        from "ores_synthetic_folders_tbl" t
-        join descendants d on t.parent_id = d.id
-        where t.tenant_id = p_tenant_id
-          and t.valid_to = ores_utility_infinity_timestamp_fn()
-    )
-    select d.id, d.parent_id, d.name from descendants d;
-end;
-$$ language plpgsql stable security definer set search_path = public, pg_temp;

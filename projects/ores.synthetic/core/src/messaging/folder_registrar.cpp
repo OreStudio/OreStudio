@@ -48,10 +48,6 @@ register_folder_handlers(ores::nats::service::client& nats,
         get_folder_history_request::nats_subject, queue_group, [h](ores::nats::message msg) {
             h->history(std::move(msg));
         }));
-    subs.push_back(nats.queue_subscribe(
-        get_folder_hierarchy_request::nats_subject, queue_group, [h](ores::nats::message msg) {
-            h->hierarchy(std::move(msg));
-        }));
     return subs;
 }
 

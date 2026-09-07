@@ -18,6 +18,7 @@
 #
 set(files
     "catalog_generator_service_tests.cpp"
+    "folder_eventing_integration_tests.cpp"
     "generation_context_tests.cpp"
     "generators_tests.cpp"
     "main.cpp"

@@ -23,8 +23,6 @@
 #include "ores.synthetic.api/domain/folder_json_io.hpp" // IWYU pragma: keep.
 #include "ores.synthetic.core/repository/folder_entity.hpp"
 #include "ores.synthetic.core/repository/folder_mapper.hpp"
-#include <boost/lexical_cast.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <sqlgen/postgres.hpp>
 
 namespace ores::synthetic::repository {
@@ -171,37 +169,6 @@ void folder_repository::remove(context ctx, const std::vector<std::string>& ids)
     const auto query = sqlgen::delete_from<folder_entity> |
                        where("tenant_id"_c == tid && "id"_c.in(ids) && "valid_to"_c == max.value());
     execute_delete_query(ctx, query, lg(), "Batch removing folders.");
-}
-
-std::vector<ores::utility::domain::hierarchy_flat_row>
-folder_repository::get_hierarchy(context ctx, const boost::uuids::uuid& root_id, bool from_root) {
-    BOOST_LOG_SEV(lg(), debug) << "Reading folder hierarchy. Root: " << root_id
-                               << " from_root: " << from_root;
-
-    const auto tenant_str = boost::uuids::to_string(ctx.tenant_id().to_uuid());
-    const auto root_str = boost::uuids::to_string(root_id);
-    const std::string sql = "SELECT * FROM ores_synthetic_folders_hierarchy_fn('" + tenant_str +
-                            "'::uuid, '" + root_str + "'::uuid, " + (from_root ? "true" : "false") +
-                            ")";
-
-    const auto rows = execute_raw_multi_column_query(ctx, sql, lg(), "Reading folder hierarchy");
-
-    std::vector<ores::utility::domain::hierarchy_flat_row> result;
-    result.reserve(rows.size());
-    for (const auto& row : rows) {
-        if (row.size() >= 3 && row[0]) {
-            ores::utility::domain::hierarchy_flat_row r;
-            r.id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
-            if (row[1])
-                r.parent_id = boost::lexical_cast<boost::uuids::uuid>(*row[1]);
-            if (row[2])
-                r.name = *row[2];
-            result.push_back(std::move(r));
-        }
-    }
-
-    BOOST_LOG_SEV(lg(), debug) << "Read " << result.size() << " folder hierarchy rows.";
-    return result;
 }
 
 

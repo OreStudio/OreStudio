@@ -21,7 +21,6 @@
 #define ORES_SYNTHETIC_API_MESSAGING_FOLDER_PROTOCOL_HPP
 
 #include "ores.synthetic.api/domain/folder.hpp"
-#include "ores.utility/domain/hierarchy.hpp"
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -78,23 +77,6 @@ struct get_folder_history_response {
     std::vector<ores::synthetic::domain::folder> history;
     bool success = false;
     std::string message;
-};
-
-/**
- * @brief Reads the folder hierarchy rooted at, or containing,
- * a given folder.
- */
-struct get_folder_hierarchy_request {
-    using response_type = struct get_folder_hierarchy_response;
-    static constexpr std::string_view nats_subject = "synthetic.v1.folders.hierarchy";
-    std::string root_id;
-    bool from_root = false;
-};
-
-struct get_folder_hierarchy_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::utility::domain::hierarchy_node> roots;
 };
 
 }

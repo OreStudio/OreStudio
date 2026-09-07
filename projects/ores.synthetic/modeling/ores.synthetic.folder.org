@@ -36,8 +36,7 @@ of each reimplementing the tree-walk itself.
 :schema:        public
 :product:       ores
 :component:     synthetic
-:has_tenant_id: true
-:has_parent_id: true
+:profile:       self-referencing-hierarchy
 :parent_id_column: parent_id
 :hierarchy_name_field: name
 :END:

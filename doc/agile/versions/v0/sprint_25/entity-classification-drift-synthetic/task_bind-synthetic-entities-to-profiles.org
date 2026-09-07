@@ -66,6 +66,51 @@ throughout.
 
 * Notes
 
+** Binds (2026-09-07, phases 2-3 close)
+
+Eight binds, one commit per entity, each verified by the
+asserted-replacement edits, the diff-subset check against the baseline
+(=zero additional diff=), and an idempotent second regen:
+
+- =yield_curve_process_type= = simple-lookup (a79f8da03f): output-neutral
+  bind; the Qt =changed_event= declaration follows the sibling lookups
+  and is output-neutral. Controller lands the =wireDetailDialogCommon=
+  era-sync.
+- =folder= = self-referencing-hierarchy (8cf9600273): the bind
+  materializes the hierarchy machinery the committed tree never had
+  generated (recursive =ores_synthetic_folders_hierarchy_fn=, the
+  =get_hierarchy= chain, eventing test). The committed old-shape
+  hierarchy stack is superseded-era and unwired: a repo-wide sweep
+  found no consumer of the old subject, and the current-template shape
+  is the canonical one refdata's counterparty/party/business_unit use.
+  Verified, not assumed.
+- =yield_curve_process_parameter_definition= =
+  uuid-surrogate-lookup (e4d9237570): the profile's
+  =has_change_reason_cache= flips the feature on; the controller gains
+  the =ChangeReasonCache= plumbing, the survey's predicted phase-3
+  arbitration.
+- =fx_spot_generation_config=, =gmm_component=,
+  =ir_curve_generation_config=, =ir_curve_template_entry=,
+  =market_data_generation_config= = uuid-identified-lookup
+  (db42f8f766, 26c00d607d, 161bbb0794, 47fcf71e22, 87394fe434): clean
+  binds; each eventing integration test materializes;
+  =market_data_generation_config= keeps =nullable_tenant_id=, nullable
+  =party_id=, and the enum columns explicit/out-of-drawer per the
+  recorded notes.
+- =ir_curve_generation_config_process_parameter_value=: NO-MATCH stands;
+  era-sync signed off (b7add05b35, the doc-comment equals-sign
+  restoration, the compute-unit regex fix class).
+
+The history-provider registrar families landed as one commit
+(be36783d17) with all nine providers composed into the registrar
+fan-out's history.v1.get block on the refdata shape (skill step 7) and
+the cmake component lists regenerated — the drift gate cannot see an
+unwired function, so the wiring and the family land together.
+
+Zero drift reached 2026-09-07: =check_component_drift.py --component
+synthetic= exits 0 with a clean tree (no tracked diff, no untracked
+materialization).
+
 ** Baseline probe (2026-09-07, phase 1 start)
 
 Probe: =check_component_drift.py --component synthetic= (two-mode

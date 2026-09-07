@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-synthetic:
 #+owner: marco
 #+branch: feature/bind-synthetic-entities-to-profiles
-#+pr:
+#+pr: 2031
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
@@ -275,7 +275,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2031][#2031]] | [synthetic,codegen] Bind synthetic entities to profiles, zero-diff regen |
 
 * Review
 

@@ -89,6 +89,7 @@ std::string("USD")
 :type:     text
 :cpp_type: std::string
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 Floating-rate index family this curve represents (oresmd's
@@ -114,6 +115,7 @@ std::string("sofr")
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 Tenor of this curve's floating-rate index (references =tenor.code=,
@@ -148,6 +150,7 @@ std::string("")
 :nullable:      false
 :default_value: "self_discounting"
 :natural_key:   true
+:no_generator_suffix: true
 :END:
 
 Whether this curve discounts cashflows, projects a floating index's

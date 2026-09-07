@@ -45,7 +45,7 @@ generate_synthetic_ir_curve_template_entry(utility::generation::generation_conte
     r.sequence_index = faker::number::integer(0, 20);
     r.start_tenor_code = std::string("SPOT");
     r.end_tenor_code = std::string("1Y");
-    r.instrument_code = std::string("Swap");
+    r.instrument_code = std::string("IRS");
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

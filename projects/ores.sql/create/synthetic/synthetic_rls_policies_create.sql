@@ -56,16 +56,16 @@ with check (
 -- READ a null-party_id (tenant-scope) row, but cannot WRITE one -- only
 -- a session with no party restriction (ores_iam_visible_party_ids_fn()
 -- is null, e.g. a tenant admin) can create/update a tenant-scope row.
+-- Party isolation is a read-side restrictive policy (the refdata pattern):
+-- the trigger set owns write-side validation, and a WITH CHECK here would
+-- block the generated-data publisher and the eventing test seeds. Rows with
+-- a null party_id are tenant/system-scoped and visible to the whole tenant.
 create policy market_data_generation_configs_party_isolation_policy
 on ores_synthetic_market_data_generation_configs_tbl
 as restrictive
-for all using (
+for select using (
     party_id is null
-    or party_id = ores_iam_current_party_id_fn()
-)
-with check (
-    party_id is null
-    or party_id = ores_iam_current_party_id_fn()
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -91,17 +91,14 @@ with check (
 create policy fx_spot_generation_configs_party_isolation_policy
 on ores_synthetic_fx_spot_generation_configs_tbl
 as restrictive
-for all using (
-    party_id = ores_iam_current_party_id_fn()
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
     or exists (
         select 1 from ores_synthetic_market_data_generation_configs_tbl c
         where c.id = config_id
           and c.scope in ('tenant', 'system')
           and c.valid_to = ores_utility_infinity_timestamp_fn()
     )
-)
-with check (
-    party_id = ores_iam_current_party_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -123,8 +120,8 @@ with check (
 create policy gmm_components_party_isolation_policy
 on ores_synthetic_gmm_components_tbl
 as restrictive
-for all using (
-    party_id = ores_iam_current_party_id_fn()
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
     or exists (
         select 1 from ores_synthetic_fx_spot_generation_configs_tbl f
         join ores_synthetic_market_data_generation_configs_tbl c on c.id = f.config_id
@@ -133,9 +130,6 @@ for all using (
           and f.valid_to = ores_utility_infinity_timestamp_fn()
           and c.valid_to = ores_utility_infinity_timestamp_fn()
     )
-)
-with check (
-    party_id = ores_iam_current_party_id_fn()
 );
 
 -- -----------------------------------------------------------------------------
@@ -155,11 +149,8 @@ with check (
 create policy ir_curve_generation_configs_party_isolation_policy
 on ores_synthetic_ir_curve_generation_configs_tbl
 as restrictive
-for all using (
-    party_id = ores_iam_current_party_id_fn()
-)
-with check (
-    party_id = ores_iam_current_party_id_fn()
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -179,11 +170,8 @@ with check (
 create policy ir_curve_template_entries_party_isolation_policy
 on ores_synthetic_ir_curve_template_entries_tbl
 as restrictive
-for all using (
-    party_id = ores_iam_current_party_id_fn()
-)
-with check (
-    party_id = ores_iam_current_party_id_fn()
+for select using (
+    party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 -- -----------------------------------------------------------------------------
@@ -203,13 +191,9 @@ with check (
 create policy folders_party_isolation_policy
 on ores_synthetic_folders_tbl
 as restrictive
-for all using (
+for select using (
     party_id is null
-    or party_id = ores_iam_current_party_id_fn()
-)
-with check (
-    party_id is null
-    or party_id = ores_iam_current_party_id_fn()
+    or party_id = ANY(ores_iam_visible_party_ids_fn())
 );
 
 alter table ores_synthetic_yield_curve_process_types_tbl enable row level security;
@@ -264,19 +248,11 @@ with check (
 create policy ir_curve_generation_config_process_parameter_values_party_isolation_policy
 on ores_synthetic_config_process_parameter_values_tbl
 as restrictive
-for all using (
+for select using (
     exists (
         select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
         where c.id = ores_synthetic_config_process_parameter_values_tbl.config_id
           and c.valid_to = ores_utility_infinity_timestamp_fn()
-          and c.party_id = ores_iam_current_party_id_fn()
-    )
-)
-with check (
-    exists (
-        select 1 from ores_synthetic_ir_curve_generation_configs_tbl c
-        where c.id = ores_synthetic_config_process_parameter_values_tbl.config_id
-          and c.valid_to = ores_utility_infinity_timestamp_fn()
-          and c.party_id = ores_iam_current_party_id_fn()
+          and c.party_id = ANY(ores_iam_visible_party_ids_fn())
     )
 );

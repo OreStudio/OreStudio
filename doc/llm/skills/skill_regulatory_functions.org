@@ -88,24 +88,6 @@ classification by what an artefact contains is not.
 
 *** Methodological Precedent
 
-  ## 2. Methodological Precedent and Theoretical Transfer
-
-The Model-Driven Architecture and Synthesis Methodology (MASD) provides a
-formal framing for structural redundancy within textual artifacts.
-Fundamentally, MASD addresses two core questions given an arbitrary corpus of
-human-authored material:
-
-1. Which structural components exhibit mechanical reproducibility?
-2. What programmatic abstraction should replace those components once identified?
-
-Although originally formulated within the domain of automated code generation,
-the structural diagnostics of MASD are domain-agnostic and extend to
-alternative artifact populations, specifically the skill catalogs of autonomous
-agents. Consequently, the proposed framework inherits the *analytical method*
-of MASD while intentionally diverging from its *generative prescription*.
-
-
-
 [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] asks two questions of any
 corpus of hand-written material: which of its structure is mechanically
 reproducible, and what should replace that structure once it has been found.
@@ -132,21 +114,21 @@ Three findings follow, each a MASD construct instantiated in the new population.
 
 - *Regulatory Functions and facets.* MASD defines a facet as "an arbitrary
   partitioning/taxonomy of the logical space", classifying entities "by the role
-each artefact plays". A regulatory function is a construct of the same kind on
-a different axis: it classifies by the agent's relation to an artefact rather
-than by the artefact's place in the physical model. MASD's description of the
-facet as arbitrary applies to it unchanged, so a taxonomy of this kind is
-stipulative rather than descriptive, justified by what it makes possible rather
-than by correspondence to a natural kind in the material. The two differ in
-exclusivity: a facet partitions, while regulatory functions are not mutually
-exclusive and one type may carry several.
+  each artefact plays". A regulatory function is a construct of the same kind on
+  a different axis: it classifies by the agent's relation to an artefact rather
+  than by the artefact's place in the physical model. MASD's description of the
+  facet as arbitrary applies to it unchanged, so a taxonomy of this kind is
+  stipulative rather than descriptive, justified by what it makes possible rather
+  than by correspondence to a natural kind in the material. The two differ in
+  exclusivity: a facet partitions, while regulatory functions are not mutually
+  exclusive and one type may carry several.
 
 - *Addressing.* MASD addresses an artefact by a four-segment path,
   =[technical space].[part].[facet].[archetype]=, so that its location follows
   from its classification rather than from memory. The framework addresses an
   operation by the pair of target type and verb for the same reason, and
-[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats the
-consequence.
+  [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] treats the
+  consequence.
 
 - *Schematic and repetitive patterns.* MASD's central construct is the
   /Schematic and Repetitive Pattern in Physical Space/: content that "varies

@@ -34,9 +34,9 @@ skill's action.
 #+end_example
 
 - kebab-case throughout; the name is the directory under
-[[proj:doc/llm/skills][=doc/llm/skills/=]], the deployed directory under
-[[proj:.claude/skills][=.claude/skills/=]], and the =name:= frontmatter field —
-keep all three identical.
+  [[proj:doc/llm/skills][=doc/llm/skills/=]], the deployed directory under
+  [[proj:.claude/skills][=.claude/skills/=]], and the =name:= frontmatter field —
+  keep all three identical.
 - Named after the intent, not the mechanism: the user thinks "I want
   to merge this PR", so the skill is =pr-merge= — regardless of
   whether =compass pr merge=, =gh=, or anything else implements it.
@@ -94,9 +94,9 @@ for backlog refinement must not create a branch; picking one up must.
 - /One skill per runbook./ Runbooks are skills' procedural twins;
   a generic runbook dispatcher hides the actions from discovery.
 - /Check before adding./ A new skill name must parse against the two
-registers, and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills
-inventory]] must be checked for an existing skill covering the same action.
-Extending a register is a deliberate act recorded in the decision log below.
+  registers, and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills
+  inventory]] must be checked for an existing skill covering the same action.
+  Extending a register is a deliberate act recorded in the decision log below.
 
 ** Decision log
 

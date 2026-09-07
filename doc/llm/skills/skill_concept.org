@@ -301,9 +301,9 @@ Each clause corresponds to one limitation identified above.
 - *At a stated level* declares the audience. The skill states the [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][cybernetic
   level]] it serves, which determines the sessions that see it by default.
 - *Offering exactly one regulatory function* admits non-executable material. The skill
-states the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] it
-offers, which fixes the relation an agent bears to it, and one of the six is
-citation, which is borne by material that is not run at all.
+  states the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] it
+  offers, which fixes the relation an agent bears to it, and one of the six is
+  citation, which is borne by material that is not run at all.
 
 The correspondence is one to one, which is a property of the construction rather
 than a coincidence: the clauses were derived from the limitations and no clause
@@ -374,24 +374,24 @@ comparison rather than by reading.
 * References
 
 - Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents with
-Skill Programs/. arXiv:2605.17734.
-[[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
+  Skill Programs/. arXiv:2605.17734.
+  [[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
 - Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K. and Yao, S.
   (2023). /Reflexion: language agents with verbal reinforcement learning/.
-[[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Cited as characterised
-in Liu et al. (2026).
+  [[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Cited as characterised
+  in Liu et al. (2026).
 - Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L. and
   Anandkumar, A. (2023). /Voyager: an open-ended embodied agent with large
-language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Cited
-as characterised in Liu et al. (2026).
+  language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Cited
+  as characterised in Liu et al. (2026).
 - Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K. and Cao, Y.
   (2023). /ReAct: synergizing reasoning and acting in language models/.
-[[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Cited as characterised
-in Liu et al. (2026).
+  [[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Cited as characterised
+  in Liu et al. (2026).
 - Zhao, A., Huang, D., Xu, Q., Lin, M., Liu, Y. and Huang, G. (2024). /ExpeL:
-llm agents are experiential learners/.
-[[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Cited as characterised
-in Liu et al. (2026).
+  llm agents are experiential learners/.
+  [[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Cited as characterised
+  in Liu et al. (2026).
 
 * See also
 

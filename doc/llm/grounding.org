@@ -223,8 +223,8 @@ condition it exists to serve.
 * References
 
 - Chandu, K. R., Bisk, Y. and Black, A. W. (2021). /Grounding 'Grounding' in
-NLP/. Findings of ACL 2021, 4283–4305.
-[[https://arxiv.org/abs/2106.02192][arXiv:2106.02192]]
+  NLP/. Findings of ACL 2021, 4283–4305.
+  [[https://arxiv.org/abs/2106.02192][arXiv:2106.02192]]
 - Clark, H. H. and Brennan, S. E. (1991). /Grounding in Communication/. In
   Resnick, L. B., Levine, J. M. and Teasley, S. D. (eds.), /Perspectives on
   Socially Shared Cognition/, 127–149. American Psychological Association.

@@ -23,9 +23,9 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Fx instrument batch committed (3997afdcbb) and live-verified.  |
+| Now           | Fx (3997afdcbb) and equity (fb897f374b) instrument batches committed and live-verified. |
 | Waiting on    | Nothing.                               |
-| Next          | Equity instrument verbs (task 94A5EA1A). |
+| Next          | Rates instrument verbs (task 360B5207). |
 | Last touched  | 2026-09-07                               |
 
 * Acceptance
@@ -42,7 +42,7 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 | [[id:A2F00C5D-FD7B-42EF-B7A6-61BE7C0D18C9][Add the trading command folder, reference-entity verb units, and shell wiring]] | DONE | 2026-09-07 | 2026-09-07 | Create projects/ores.shell/src/app/commands/trading/ holding trade_type_commands, party_role_type_commands and trade_id_type_commands units cloned from the currencies archetype, plus the hand-written trading_commands aggregator that registers them. Wire repl.cpp with one aggregator call, add ores.trading.api.lib to the shell link libraries, regenerate the shell cmake component files. |
 | [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the trade-side verb units (lifecycle_event, trade, trade_identifier, trade_party_role)]] | BACKLOG | | | Add lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands to the trading command folder, completing the trade-side surface (the reference trio shipped in the sibling reference task). The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
 | [[id:E2E3689F-B43E-4879-9F9D-54DB3ED91110][Add the fx instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add fx_accumulator_commands, fx_asian_forward_commands, fx_barrier_option_commands, fx_digital_option_commands, fx_forward_commands, fx_vanilla_option_commands and fx_variance_swap_commands to the trading command folder, cloned from the reference-entity skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live fx-batch system test: add/list/history/delete round trips per unit through the trading.v1 subjects with DB-row and changed-event verification. |
-| [[id:94A5EA1A-BA18-49C6-B010-A6A860AA19BA][Add the equity instrument verb units]] | BACKLOG | | | Add equity_accumulator_commands, equity_asian_option_commands, equity_barrier_option_commands, equity_digital_option_commands, equity_forward_commands, equity_option_commands, equity_position_commands, equity_swap_commands and equity_variance_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live equity-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
+| [[id:94A5EA1A-BA18-49C6-B010-A6A860AA19BA][Add the equity instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add equity_accumulator_commands, equity_asian_option_commands, equity_barrier_option_commands, equity_digital_option_commands, equity_forward_commands, equity_option_commands, equity_position_commands, equity_swap_commands and equity_variance_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live equity-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
 | [[id:360B5207-7ECE-4423-8E0E-E091A6CD2A55][Add the rates instrument verb units]] | BACKLOG | | | Add balance_guaranteed_swap_commands, callable_swap_commands, cap_floor_commands, fra_commands, inflation_swap_commands, knock_out_swap_commands, rpa_commands, swaption_commands and vanilla_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live rates-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
 | [[id:C36A4ECA-5D15-4558-B7D8-EFC3B6250194][Add the generic instrument-family verb units]] | BACKLOG | | | Add bond_commands, commodity_commands, composite_commands, credit_commands and scripted_commands plus the activity_type commands, serving the single-handler families registered by registrar_bond.cpp, registrar_commodity.cpp, registrar_composite.cpp, registrar_credit.cpp and registrar_scripted.cpp. Establish whether the service serves every family subject (list/save/delete/history) and whether the DB layer holds them; fix or record any gap, then run the live generic-batch system test per family. |
 
@@ -88,6 +88,23 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
   test (3997afdcbb) hit the empty-name rejection and fixed it in the
   add path of every unit. Every later instrument batch keeps the
   stamp.
+- The cli cannot carry an empty positional token (its splitter runs
+  =RemoveEmptyEntries= over the argument vector), so the shell's
+  not-set literal is a single =-=, never a legal value in the gated
+  columns. =parse_optional_double= maps =-= to nullopt and the estr
+  save columns map =-= to the empty string; the persistence mappers
+  already convert the empty string to repository nullopt, so =-=
+  lands as DB NULL. The equity live test (fb897f374b) proved it
+  against the per-family CHECKs, which gate a column pair per code —
+  digital option, accumulator, option, position and swap demand NULL
+  where the fx-shaped all-real add could never satisfy them. Every
+  later instrument batch keeps the =-= spelling.
+- Changed-event subscribers must use the prefixed wire subject
+  =ores.{tier}.{instance}.= (the client prepends its configured
+  =subject_prefix= to every relative subject), not the bare relative
+  event name. The equity event capture missed the probe adds and
+  deletes until the subscriber landed on the full prefixed subject
+  ores.dev.brave_hopper.ores.trading.>.
 
 * Out of scope
 

@@ -169,15 +169,12 @@ void IrCurveTemplateEntryController::onShowHistory(
     showHistoryWindow(ir_curve_template_entry);
 }
 
-void IrCurveTemplateEntryController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IR curve template entry";
-
-    auto* detailDialog = new IrCurveTemplateEntryDetailDialog(mainWindow_);
+void IrCurveTemplateEntryController::wireDetailDialogCommon(
+    IrCurveTemplateEntryDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &IrCurveTemplateEntryDetailDialog::statusMessage,
@@ -187,6 +184,15 @@ void IrCurveTemplateEntryController::showAddWindow() {
             &IrCurveTemplateEntryDetailDialog::errorMessage,
             this,
             &IrCurveTemplateEntryController::errorMessage);
+}
+
+void IrCurveTemplateEntryController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new IR curve template entry";
+
+    auto* detailDialog = new IrCurveTemplateEntryDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &IrCurveTemplateEntryDetailDialog::ir_curve_template_entrySaved,
             this,
@@ -227,21 +233,10 @@ void IrCurveTemplateEntryController::showDetailWindow(
                                << boost::uuids::to_string(ir_curve_template_entry.id);
 
     auto* detailDialog = new IrCurveTemplateEntryDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setEntry(ir_curve_template_entry);
 
-    connect(detailDialog,
-            &IrCurveTemplateEntryDetailDialog::statusMessage,
-            this,
-            &IrCurveTemplateEntryController::statusMessage);
-    connect(detailDialog,
-            &IrCurveTemplateEntryDetailDialog::errorMessage,
-            this,
-            &IrCurveTemplateEntryController::errorMessage);
     connect(detailDialog,
             &IrCurveTemplateEntryDetailDialog::ir_curve_template_entrySaved,
             this,
@@ -392,29 +387,9 @@ void IrCurveTemplateEntryController::onOpenVersion(
     }
 
     auto* detailDialog = new IrCurveTemplateEntryDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setEntry(ir_curve_template_entry);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &IrCurveTemplateEntryDetailDialog::statusMessage,
-            this,
-            [self = QPointer<IrCurveTemplateEntryController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &IrCurveTemplateEntryDetailDialog::errorMessage,
-            this,
-            [self = QPointer<IrCurveTemplateEntryController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -540,24 +515,13 @@ void IrCurveTemplateEntryController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new IrCurveTemplateEntryDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_ir_curve_template_entry = ir_curve_template_entry;
     reverted_ir_curve_template_entry.version = 0;
     detailDialog->setEntry(reverted_ir_curve_template_entry);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &IrCurveTemplateEntryDetailDialog::statusMessage,
-            this,
-            &IrCurveTemplateEntryController::statusMessage);
-    connect(detailDialog,
-            &IrCurveTemplateEntryDetailDialog::errorMessage,
-            this,
-            &IrCurveTemplateEntryController::errorMessage);
     connect(detailDialog,
             &IrCurveTemplateEntryDetailDialog::ir_curve_template_entrySaved,
             this,

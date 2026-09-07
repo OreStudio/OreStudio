@@ -71,7 +71,6 @@ public:
     std::vector<domain::ir_curve_template_entry> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all IR curve template entries, possibly filtered by primary key.
      */

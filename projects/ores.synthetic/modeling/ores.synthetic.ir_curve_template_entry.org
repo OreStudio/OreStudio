@@ -44,7 +44,7 @@ tenant-scoped.
 :schema:        public
 :product:       ores
 :component:     synthetic
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns
@@ -225,9 +225,6 @@ std::string("Swap")
 :collection_name:         ir_curve_template_entries
 :item_var:                ir_curve_template_entry
 :key_field:               id
-:has_uuid_primary_key:    true
-:has_pagination:          true
-:has_change_reason_cache: true
 :get_request_class:       synthetic::messaging::get_ir_curve_template_entries_request
 :get_response_class:      synthetic::messaging::get_ir_curve_template_entries_response
 :get_message_type:        get_ir_curve_template_entries_request

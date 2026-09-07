@@ -42,8 +42,7 @@ edit definitions, only the values of their own configs.
 :schema:    public
 :product:   ores
 :component: synthetic
-:has_tenant_id:    true
-:has_workspace_id: false
+:profile:   uuid-surrogate-lookup
 :system_tenant_validation: true
 :END:
 
@@ -308,8 +307,6 @@ codegen-side rule.
 :collection_name:         parameter_definitions
 :item_var:                parameter_definition
 :key_field:                parameter_name
-:has_uuid_primary_key:   true
-:has_pagination:          true
 :has_readonly_paginated_list: true
 :get_request_class:       synthetic::messaging::get_yield_curve_process_parameter_definitions_request
 :get_response_class:      synthetic::messaging::get_yield_curve_process_parameter_definitions_response

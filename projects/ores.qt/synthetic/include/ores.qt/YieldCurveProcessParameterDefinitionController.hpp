@@ -35,6 +35,7 @@ namespace ores::qt {
 
 class YieldCurveProcessParameterDefinitionMdiWindow;
 class DetachableMdiSubWindow;
+class ChangeReasonCache;
 
 /**
  * @brief Controller for managing yield curve process parameter definition windows and operations.
@@ -59,6 +60,7 @@ public:
     YieldCurveProcessParameterDefinitionController(QMainWindow* mainWindow,
                                                    QMdiArea* mdiArea,
                                                    ClientManager* clientManager,
+                                                   ChangeReasonCache* changeReasonCache,
                                                    const QString& username,
                                                    QObject* parent = nullptr);
 
@@ -76,6 +78,7 @@ protected:
     void notifyOpenDialogs(const QStringList& entityIds) override;
 
 private:
+    ChangeReasonCache* changeReasonCache_;
     YieldCurveProcessParameterDefinitionMdiWindow* listWindow_;
     DetachableMdiSubWindow* listMdiSubWindow_;
 };

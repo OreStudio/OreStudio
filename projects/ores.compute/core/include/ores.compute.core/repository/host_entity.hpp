@@ -45,11 +45,11 @@ struct host_entity {
 
     std::optional<std::string> location;
     int cpu_count = 0;
-    std::int64_t ram_mb;
+    std::int64_t ram_mb = 0;
     std::optional<std::string> gpu_type;
     std::optional<std::string> display_name;
     std::optional<sqlgen::Timestamp<"%Y-%m-%d %H:%M:%S">> last_rpc_time;
-    double credit_total;
+    double credit_total = 0.0;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

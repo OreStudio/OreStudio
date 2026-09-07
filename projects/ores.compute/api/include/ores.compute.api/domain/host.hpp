@@ -68,7 +68,7 @@ struct host final {
     /**
      * @brief Total system memory in megabytes.
      */
-    std::int64_t ram_mb;
+    std::int64_t ram_mb = 0;
 
     /**
      * @brief GPU model identifier, e.g. 'A100' or NULL if no GPU.
@@ -89,7 +89,7 @@ struct host final {
     /**
      * @brief Accumulated work units successfully processed by this host.
      */
-    double credit_total;
+    double credit_total = 0.0;
 
     /**
      * @brief Username of the person who last modified this compute host.

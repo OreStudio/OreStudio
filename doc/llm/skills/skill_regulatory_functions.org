@@ -24,6 +24,8 @@ It states the criterion behind that classification and defends it, sets out the
 seven functions and which document types implement each, and closes with the
 procedure that assigns a new artefact among them.
 
+* Detail
+
 ** Artefacts, Documents and Targets
 
 Before we proceed, it is important to clarify the terminology.
@@ -48,15 +50,13 @@ the operations registered against them.
 A *document type* classifies a document by its contract: the frontmatter it
 carries, the sections it must contain, its lifecycle and its location. This is
 orthogonal to the regulatory function, which classifies by the agent's
-relation, and the two stand in a many-to-many relation. The loading regulatory
-function spans several document types — knowledge, recipe and memory among them
-— while the skill document type spans three regulatory functions, since a skill
-may be a principle, a method or an action. The regulatory function cannot
+relation, and the two stand in a many-to-many relation. Loading spans several
+document types, knowledge, recipe and memory among them, while the skill
+document type spans three functions, since a skill may be a principle, a method
+or an action. The regulatory function cannot
 therefore be inferred from the document type, which is why the definition
 requires it to be declared. [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document
 Types]] carries the type ontology.
-
-* Detail
 
 #+caption: The regulatory functions a type may implement.
 [[proj:doc/llm/skills/skill_regulatory_functions.png]]
@@ -96,7 +96,8 @@ their content, and they survive being asked of another population of artefacts.
 
 The skills catalogue is such a population. MASD therefore supplies a method
 rather than a conclusion, and that distinction governs what follows: the
-analysis transfers whole, the remedy does not transfer at all.
+analysis transfers whole, and /Divergence in the Remedy/ sets out where the
+remedy does not.
 
 MASD's physical modelling process runs in five stages. It samples representative
 hand-written artefacts, decomposes each into its parts, classifies those into
@@ -145,7 +146,7 @@ physical pattern is schematic and repetitive by reproducing it by automated
 means"; the framework holds that a verb table which cannot be generated is a
 table that should not be built.
 
-**** Divergence in the Remedy
+*** Divergence in the Remedy
 
 The two diverge over what to do once the pattern has been identified. MASD
 resolves an SRPP by generating the instances, which thereafter exist as files.
@@ -204,7 +205,7 @@ the reader rather than of the generator.
 
 Both are true of the same file and neither follows from the other. A knowledge
 document is an artefact of the =ores.doc.knowledge= facet and implements the
-loading regulatory function; the first fact concerns how it was produced, the
+loading function; the first fact concerns how it was produced, the
 second how it is used.
 
 **** Absence of a Mapping
@@ -332,7 +333,7 @@ when a command is needed, and a memory unconditionally.
 The first division the criterion makes is between loading and everything else,
 and it is the one that carries the most consequence.
 
-An artefact engaged under the loading regulatory function contributes to what
+An artefact engaged under the loading function contributes to what
 an agent knows before it decides anything, and it carries no procedure of its
 own. An artefact engaged under any of the other five contributes to what the
 agent does, and it always carries one. Loading is therefore the only regulatory
@@ -444,7 +445,7 @@ differs from a recipe in that a recipe is executed and leaves the system
 changed, whereas a stance leaves no trace except in the reasoning that produced
 a decision.
 
-The stance regulatory function is the one place where an artefact that cannot
+Citation is the one place where an artefact that cannot
 be run is nevertheless a skill. That exemption is deliberate and narrow: a
 principle which cannot be loaded by name cannot be cited by a method, and a
 rule that cannot be cited cannot be shown to have been applied.
@@ -482,8 +483,6 @@ correctness is a property of the judgement it encodes rather than of the system
 it runs against. This is the principal difference between a method and a
 recipe. The two are treated together below, since the distinction between them
 accounts for most misclassification in practice.
-
-**** Methods and Recipes
 
 A recipe answers /how is this operation performed here?/ A method answers /how
 is this class of work approached?/ From that difference the rest follows.
@@ -585,8 +584,6 @@ action; recording is the action's relation to the task.
 
 The general shape is that an agent *executes* an action, and the action *engages
 a regulatory function of its target*.
-
-*** Targets and Outputs
 
 Creation is the case that separates two things the framework has otherwise been
 able to treat as one.

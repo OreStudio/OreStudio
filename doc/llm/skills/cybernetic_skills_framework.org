@@ -402,7 +402,7 @@ The second loop has three steps, and each is a regulatory function rather than
 an administrative one.
 
 *Detection.* A departure is observed. This is measurement, and it uses the
-recording regulatory function: the state reached is registered against the
+recording function: the state reached is registered against the
 state intended.
 
 *Classification.* The departure is assigned to one of the classes above, or
@@ -502,6 +502,6 @@ establish that the seven are exhaustive, and no such claim is made.
 - [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the five systems and this project's departures from them.
 - [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] — the literature on agent skills.
 - [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the regulatory functions in detail and the document types implementing each.
-- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation the loading regulatory function places upon an agent.
-- [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — the mechanism selecting the applicable regulatory function for a target.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation the loading function places upon an agent.
+- [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — the mechanism selecting the applicable function for a target.
 - [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the properties of the regulated agent.

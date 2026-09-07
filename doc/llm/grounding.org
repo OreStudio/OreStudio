@@ -95,8 +95,7 @@ construct for measuring the framework, not a construct within it.
 
 ** The Static Sense: What an Agent Loads
 
-The static component of grounding is discharged by the /loading/ regulatory
-function, which classifies those documents an agent reads to inform work rather
+The static component of grounding is discharged by /loading/, which classifies those documents an agent reads to inform work rather
 than acts upon ([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory
 Functions]]). Three types carry the weight of it, and they differ in the
 condition under which each is read.
@@ -238,7 +237,7 @@ condition it exists to serve.
 
 * See also
 
-- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the loading regulatory function and the classification it belongs to.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the loading function and the classification it belongs to.
 - [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Skill Methods]] — the grounding phase and its place in a session.
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill Architecture]] — the dispatch model the regulatory functions serve.
 - [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Skill Verification]] — where ground truth, in the strict sense, applies.

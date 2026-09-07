@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 8A58E339-A244-49EA-9504-D2AC61EE54F9
+:END:
+#+title: Task: Declare C++ default values for the compute host ram_mb and credit_total members
+#+description: Add :default_value: 0 to the ram_mb and credit_total member property blocks in the compute host entity org, regenerate compute-cpp so both domain headers emit member initializers, and prove the valgrind DA defect is gone.
+#+type: task
+#+level: s1
+#+filetags: :fix-compute-host-uninitialized-numerics:sprint_25:v0:
+#+owner: marco
+#+branch: feature/fix-compute-host-uninitialized-numerics
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:55EF2B1E-C304-4621-AC4D-21F7302B8FBB][Hotfix: Valgrind flags compute host ram_mb/credit_total read uninitialized]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The generated compute host domain classes (=host.hpp= and
+=host_entity.hpp=) must default-construct every non-nullable numeric
+member to a defined value, so the sqlgen dynamic INSERT path never
+stringifies an indeterminate member under valgrind.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:55EF2B1E-C304-4621-AC4D-21F7302B8FBB][Hotfix: Valgrind flags compute host ram_mb/credit_total read uninitialized]] |
+| Now          | Verifying: full build clean, valgrind 0 errors; ctest suite running. |
+| Waiting on   | Nothing.                               |
+| Next         | Close out and raise the PR.             |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- The host entity org declares =:default_value: 0= for =ram_mb= and
+  =credit_total=, alongside their existing =:default: 0=.
+- Regenerating compute-cpp emits = 0= member initializers for both
+  members in =host.hpp= and =host_entity.hpp=, and changes no other
+  file.
+- The compute-cpp drift check is clean.
+- The generated host eventing integration test runs under valgrind
+  with zero errors; the full preset build and the ctest suite are
+  green.
+
+* Plan
+
+** Phase 1 — model. Add =:default_value: 0= to the =ram_mb= (bigint,
+cpp_type std::int64_t) and =credit_total= (numeric, cpp_type double)
+member blocks in =ores.compute.host.org=. =:default_value:= is the key
+the class-header template emits into the member-initializer list;
+=:default:= is SQL-side only and the codegen synthesizes a C++
+initializer for bool/int members alone, so int64_t/double members
+without an explicit =:default_value:= stay indeterminate.
+
+** Phase 2 — regenerate. Regenerate compute-cpp in place via the
+component drift check script; the diff must be exactly the org plus
+the two domain headers.
+
+** Phase 3 — prove. Full preset rebuild; valgrind memcheck on the
+generated =write_host_publishes_nats_changed_event= integration test
+(before: 299 uninitialised-value errors / 137 contexts on CDash
+dynamic analysis; after: zero); full ctest suite with a CDash
+Experimental submit; compute-cpp drift check clean; site build.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

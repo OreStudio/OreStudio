@@ -1,0 +1,60 @@
+:PROPERTIES:
+:ID: 55EF2B1E-C304-4621-AC4D-21F7302B8FBB
+:END:
+#+title: Story: Hotfix: Valgrind flags compute host ram_mb/credit_total read uninitialized
+#+description: CDash dynamic analysis flags the compute host eventing integration test on the nightly: the sqlgen dynamic INSERT path stringifies every entity member, and host's non-nullable ram_mb (bigint) and credit_total (numeric) members carry no C++ member initializer, so a default-constructed host holds indeterminate values that valgrind flags when std::to_string reads them. The org declares :default: 0 (SQL-side semantics) but not :default_value:, the key the class-header template emits into the member initializer list; codegen synthesizes a C++ initializer only for bool/int members, so int64_t/double members without an explicit :default_value: stay indeterminate. cpu_count is safe only by accident of the int synthesis. Fix: declare :default_value: 0 on ram_mb and credit_total in the host entity org and regenerate compute-cpp.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:valgrind:compute:codegen:sprint_25:v0:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Default-constructed compute host domain objects must not hold indeterminate values in their non-nullable numeric members.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Single task in flight; verification running. |
+| Waiting on    | Nothing.                               |
+| Next          | Close out and raise the PR.            |
+| Last touched  | 2026-09-07                               |
+
+* Acceptance
+
+- The host entity org declares :default_value: 0 for ram_mb and credit_total, alongside their :default: 0.
+- Regenerated host.hpp and host_entity.hpp emit = 0 initializers for both members; no other file changes.
+- The compute-cpp drift check is clean.
+- The host eventing integration test runs under valgrind with zero errors; the full preset build and ctest suite are green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:8A58E339-A244-49EA-9504-D2AC61EE54F9][Declare C++ default values for the compute host ram_mb and credit_total members]] | STARTED | 2026-09-07 | | Add :default_value: 0 to the ram_mb and credit_total member property blocks in the compute host entity org, regenerate compute-cpp so both domain headers emit member initializers, and prove the valgrind DA defect is gone. |
+
+* Decisions
+
+- =:default_value:= is the codegen member-initializer key; =:default:=
+  is SQL-side semantics. Non-bool/int members with a SQL default need
+  an explicit =:default_value:= or the generated C++ member stays
+  indeterminate.
+
+* Out of scope
+
+- The systemic codegen gap: =core.py= synthesizes a C++ member
+  initializer only for =bool= and =int= cpp_types, so any
+  int64_t/double non-nullable member without an explicit
+  =:default_value:= silently stays indeterminate — the very
+  configuration this hotfix fixes by hand for two members. Closing the
+  gap (synthesizing = 0= for all arithmetic types, or failing codegen
+  on a non-nullable arithmetic member without =:default_value:=) is a
+  separate codegen task, deliberately not part of this hotfix.

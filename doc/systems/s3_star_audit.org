@@ -2,10 +2,10 @@
 :ID: 049B086E-F131-4D7A-8244-C1B2FF297AB6
 :END:
 #+title: S3* Auditor
-#+description: The function of System 3* — the independent audit channel that observes the operational layer from outside and reports drift.
-#+type: function
+#+description: System 3* — the independent audit channel that observes the operational layer from outside and reports drift.
+#+type: system
 #+level: cross
-#+filetags: :function:s3star:audit:integrity:
+#+filetags: :system:s3star:audit:integrity:
 #+created: 2026-05-21
 #+updated: 2026-05-21
 

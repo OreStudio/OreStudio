@@ -49,6 +49,41 @@ measures the current state, and a feedback loop that closes the gap.
   variables within tolerable bounds in the face of environmental
   perturbation.
 
+- *Ultrastability* — Ashby's term for a system with two feedback loops
+  rather than one. The first regulates within a fixed configuration.
+  The second changes the configuration itself, and acts only when the
+  first fails to hold an essential variable within its bounds.
+  Homeostasis maintains; ultrastability reorganises when maintenance
+  fails. Ashby's homeostat demonstrated the arrangement with a fast
+  continuous loop that adjusted its outputs and a slow discrete loop
+  that stepped to new parameters once limits were breached. The
+  practical import is that a regulator built only for the disturbances
+  its designer foresaw is defeated by any other, and that adaptation
+  requires the failure itself to act as a signal.
+
+- *Regulatory function* — one of the functions a regulator must
+  discharge in order to regulate at all. Wiener's decomposition names
+  three: a goal against which the state is compared, a sensor by which
+  the state is known, and a path by which action is taken. Ashby's law
+  adds a fourth requirement, that the regulator command sufficient
+  variety, and the good regulator theorem a fifth, that it hold a model
+  of what it regulates. A regulator lacking any of them fails in a
+  specific way: with no goal there is nothing to compare against, with
+  no sensor no error can be detected, with no effector no correction can
+  be made, with insufficient variety the disturbance is not absorbed,
+  and with no model the response cannot be chosen. The phrase is not one
+  author's term of art; it names the composition of these requirements,
+  and it is used in this project to classify the documents that supply
+  each.
+
+- *The good regulator theorem* — Conant and Ashby proved that a
+  regulator which is both maximally successful and maximally simple
+  must be isomorphic to the system it regulates: every good regulator
+  of a system must be a model of that system. The theorem is usually
+  cited for the first half, that effective regulation requires a model.
+  The simplicity clause matters equally, since it excludes modelling
+  anything the regulator does not regulate.
+
 - *Black box* — the practice of characterising a system purely by its
   inputs and outputs, without needing to know its internal structure.
   Useful when the internals are inaccessible or irrelevant to the

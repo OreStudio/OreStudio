@@ -1,0 +1,507 @@
+:PROPERTIES:
+:ID: 4228EE16-D5FD-499D-992B-6FFED05C95ED
+:END:
+#+title: The Cybernetic Skills Framework
+#+description: Specifies the skills framework as a regulator over an agent. Derives the scope of regulation from the good regulator theorem, requisite variety and the black box, and derives the regulatory functions from the primitive structure of a control loop.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:cybernetics:architecture:framework:
+#+created: 2026-08-28
+#+updated: 2026-08-28
+
+* Summary
+
+This document specifies the compass skills framework as a *regulator* over a
+large language model agent engaged in software development. It argues that the
+framework's structure is determined by results in cybernetics rather than by
+convention borrowed from software engineering, and that three of those results
+settle questions that would otherwise rest on stipulation.
+
+Three claims are advanced. First, the failures the framework addresses are
+failures of regulation rather than of capability, and the distinction determines
+what a remedy may look like. Second, the scope of the framework, meaning which
+things it models and which it leaves unspecified, follows from the good
+regulator theorem, the law of requisite variety and the black box, and requires
+no further justification. Third, the classes into which the framework sorts its
+documents are not a taxonomy chosen for convenience. Each corresponds to a
+function any regulator must discharge, and the classes can be derived from the
+primitive structure of a control loop.
+
+Two consequences follow. The document type system and the skills catalogue have
+different stability properties, the first being a model and the second being
+regulation. And a skill becomes removable when the agent no longer requires
+regulation at that point, which is the criterion by which a skill is retired.
+
+* Detail
+
+** The Regulatory Problem
+
+*** Observed Failures
+
+An agent directed at work in this project fails in a number of recurring ways.
+It asserts facts about the domain that are plausible and unverified. It applies
+a procedure that is correct in general and wrong here, because the project's
+procedure differs from the one its training establishes. It cannot apply
+conventions it has no way of knowing, the document type system among them. And
+presented with a large undifferentiated catalogue of available operations, it
+selects poorly among them.
+
+*** Classification of the Failures
+
+The four descriptions above are of surface behaviour, and a classification by
+surface would yield four unrelated problems. The failures identified so far are
+classified here instead by *regulatory deficiency*, meaning what the regulator
+lacks in the terms of the results reviewed above. The principle is adopted
+because the remedy follows from the deficiency rather than from the appearance,
+and because failures that appear unalike may require the same remedy.
+
+On this criterion the failures fall into three classes.
+
+#+ATTR_HTML: :class hug-leading
+| Class                | Regulatory deficiency                                              | Observed as                                                        | Remedy required            |
+|----------------------+--------------------------------------------------------------------+--------------------------------------------------------------------+----------------------------|
+| Absent domain model  | A fact the agent must hold in order to act is not held             | Unverified domain assertion; a convention not applied              | Supply the missing fact    |
+| Misapplied default   | The agent holds variety, but the general case rather than this one | A generally correct procedure applied where local practice differs | Constrain choice and order |
+| Unattenuated variety | Variety presented exceeds what the regulator can use               | Poor selection from a large undifferentiated catalogue             | Reduce the variety shown   |
+
+Two of those four descriptions are the same failure. An agent that asserts an
+unverified domain fact and an agent that cannot apply a convention we invented
+have both acted without a fact they needed.
+
+They differ in why the fact was missing. The domain fact exists in a knowledge
+document and was not loaded. The convention could not have been known at all,
+because this project invented it.
+
+That difference changes the form of the remedy and not its kind. Both require
+the fact to be supplied. The first requires an obligation to load what already
+exists. The second requires the convention to be written down before there is
+anything to load.
+
+The three classes organise what follows. The first two are answered by classes
+of document, derived under /Deriving the Functions/ below and set out in detail
+in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]; the
+obligation the first imposes is treated in
+[[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]. The third is answered
+by no document, since supplying further documents is what produced it, and is
+treated under /Variety Attenuation/.
+
+The classification is drawn from observation of practice in this project. It is
+not the product of a systematic study, and the three classes are not claimed to
+be exhaustive. That it is provisional is not a defect to be repaired before the
+framework can proceed. Identifying failures is itself a regulatory function, and
+/Ultrastability/ specifies it as one.
+
+*** Regulation Rather Than Capability
+
+What the four have in common is that none is a deficit of competence. The agent
+can execute the correct procedure once it is stated. It can hold a domain fact
+once the fact is supplied. It can select correctly from a smaller set. The
+capability is present and its application is unreliable.
+
+The distinction is not merely descriptive. A capability deficit admits only one
+remedy, a more capable agent, and that remedy is unavailable to the framework. A
+regulation deficit admits a second: an apparatus that constrains the agent's
+conduct without altering its competence. The framework is an apparatus of the
+second kind, and this document specifies it as such.
+
+** Prior Work
+
+*** Cybernetic Foundations
+
+Cybernetics supplies the results this document relies upon, and
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states them in general
+form. Three are used here.
+
+Wiener (1948) characterises regulation by a structure common to every substrate
+in which it occurs: a goal, a sensor that measures the present state, and a
+feedback path that acts to reduce the difference. The derivation in /Deriving the
+Functions/ rests on this decomposition.
+
+Ashby (1956) establishes the law of requisite variety, that only variety can
+absorb variety: a regulator must command at least the variety of the
+disturbances it is required to counter. The law bounds what a regulator must
+supply, and its converse bounds what it need not.
+
+Conant and Ashby (1970) prove that a regulator which is both maximally
+successful and maximally simple must be isomorphic to the system it regulates.
+The theorem is stated in their title: every good regulator of a system must be a
+model of that system. The simplicity clause carries as much weight here as the
+success clause, since it is what excludes modelling anything not regulated.
+
+The theorem applies at every level of recursion, which is why /model/ appears in
+this document with two referents. The framework regulates the agent's conduct,
+and its model is the document type system. The agent regulates the work, and its
+model is the domain knowledge it holds. Both follow from the same theorem
+applied one level apart, and each use below names which is meant.
+
+Beer applied this apparatus to organisations in the
+[[id:B730ECAB-A0BF-4894-9275-C0F4199272E3][Viable System Model]], whose
+recursive five-system architecture this project adopts as a lens rather than as
+a blueprint ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]).
+
+*** Agent Skill Systems
+
+The literature on agent skills divides on what a skill is made of. One lineage
+stores executable routines; the other stores verbal lessons, and the =SKILL.md=
+format belongs to the second. [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills
+in the Compass Skill Framework]] reviews both and treats the specification the
+format follows.
+
+One result from that literature bears directly on the argument here. Liu et al.
+(2026) describe their apparatus not as an abstraction over the agent but as
+control upon it: a harness that wraps the base policy and intervenes on its
+proposed actions. Their vocabulary is worth noting, since a paper concerning
+programs that govern other programs employs no metalevel language at all. They
+characterise the purpose of such an apparatus in terms this document adopts. It
+exists to "surface and stabilize useful strategies that the model can often
+execute but does not apply reliably".
+
+That is the distinction drawn in /Regulation Rather Than Capability/, reached
+independently and stated in the same terms. It is offered as corroboration that
+the framing is not idiosyncratic to this project.
+
+** The Regulated System and the Regulator
+
+A regulator is defined relative to what it regulates, so that system must be
+identified before anything further can be said of it.
+
+The project is the viable system, in Beer's sense of a system that maintains
+itself. The agent is its operational element, System 1
+in Beer's numbering ([[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]]),
+and the remaining systems regulate it at progressively longer horizons. The
+skills framework is not itself one of those systems. It is the means by which
+their constraints reach the agent, and through which the agent's own conduct is
+constrained.
+
+From this it follows the following: the framework does not regulate the
+codebase, the build, or the domain; instead, it regulates /conduct/. A document
+that constrains what an agent does is within scope; a document describing how a
+system behaves is within scope only insofar as an agent must hold it in order to
+act correctly.
+
+** Scope of Regulation
+
+This section settles which things the framework specifies and which it does not.
+The three results answer the question in sequence, and no further criterion is
+required.
+
+*** Modelling Follows Regulation
+
+By Conant and Ashby, a regulator must model what it regulates. By the simplicity
+clause of the same theorem, a regulator modelling what it does not regulate is
+not maximally simple, and is therefore not a good regulator in their sense.
+
+The framework must model exactly what it regulates. The constraint runs in both
+directions, and it is the second that bounds the framework's scope.
+
+*** Regulation Follows Insufficient Variety
+
+By Ashby's law the framework must supply variety sufficient to absorb the
+disturbances it counters. It is not required to supply variety the agent already
+commands.
+
+An agent trained on general software engineering commands most of the variety
+that software development presents. It knows what a compiler does, what a
+version control system does, and what the standard tools of the trade do. That
+variety is absorbed already, and supplying it again adds nothing.
+
+The residue is what the agent does not absorb: conventions invented here, and
+procedures where this project departs from general practice. That residue is
+what the framework regulates.
+
+*** What Is Not Regulated Is a Black Box
+
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] defines the black box
+as the practice of characterising a system by its inputs and outputs alone,
+without knowledge of its internal structure, and states the condition under
+which the practice is appropriate: when the internals are inaccessible, or
+irrelevant to the regulatory task.
+
+The second condition applies to every tool the framework invokes and does not
+regulate. A compiler is characterised by what it is given and what it returns.
+The framework does not model it. This is not an omission awaiting repair but the
+correct treatment of a system lying outside the regulatory task.
+
+*** The Boundary Rule
+
+The three results combine into a single rule.
+
+#+begin_quote
+The framework models exactly what it regulates. It regulates where the unaided
+agent would not act correctly on for this project. Everything else is a black
+box, invoked but not modelled.
+#+end_quote
+
+The rule settles cases that an appeal to the kind of thing under consideration
+does not.
+
+#+ATTR_HTML: :class hug-leading
+| Subject                       | Unaided agent            | Treatment |
+|-------------------------------+--------------------------+-----------|
+| A compiler, a file lister     | acts correctly           | black box |
+| Version control in general    | acts correctly           | black box |
+| This project's branch process | acts by generic default  | modelled  |
+| The document type system      | cannot know it           | modelled  |
+| A fact about the trading domain | asserts without evidence | modelled  |
+
+The rule makes no appeal to whether a subject is a file, a directory, or a thing
+of some other kind. This is why a branch is modelled although it is not a file,
+and a compiler is not modelled although an agent uses one constantly. The
+criterion is regulatory relevance and nothing besides.
+
+** Deriving the Functions
+
+*** Derivation
+
+A regulator discharges a finite set of functions, and Wiener's decomposition
+names the primitives: a goal against which the state is compared, a sensor by
+which the state is known, and a path by which action is taken. Ashby's law adds
+a fourth requirement, that the regulator command sufficient variety, and Conant
+and Ashby a fifth, that it hold a model of what it regulates.
+
+The classes into which this framework sorts its documents correspond to these
+primitives. Each class discharges one regulatory function, so the classification
+states a function rather than a subject matter or a form.
+
+#+ATTR_HTML: :class hug-leading
+| Regulatory function       | Regulatory function                                     |
+|-------------+---------------------------------------------------------|
+| Declaration | states the target state the outcome is compared against |
+| Recording   | the sensor; registers the state actually reached        |
+| Loading     | supplies the model the agent must hold in order to act  |
+| Citation    | constrains choice where the evidence does not settle it |
+| Sequencing  | constrains the order in which action is taken           |
+| Execution   | the effector; acts upon the system                      |
+| Convening   | amplifies variety by adding judgements the agent lacks  |
+
+Declaration and recording are the two terms of a single comparison. A
+declaration states what ought to be true; a recording states what was in fact
+reached. The difference between them is the error, and reducing it is what the
+remaining functions exist to do.
+
+That pairing accounts for a property the catalogue asserts without deriving it.
+A declaration must be checkable, because a goal an outcome cannot be compared
+against yields no error, and a regulator with no error signal does not
+regulate.
+
+These classes are the *regulatory functions*
+([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). A
+regulatory function denotes a regulatory function and is answerable to that
+account.
+
+*** Consequences of the Derivation
+
+Three properties follow that a chosen taxonomy could not supply.
+
+The classes are motivated. Loading exists because a regulator must hold a model
+of what it regulates, which is the theorem, and
+[[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] treats the obligation
+this places on an agent before it acts. Convening exists because a regulator
+whose variety is insufficient must acquire more, and an independent judgement
+is variety the agent does not itself command.
+
+The classes are bounded. A candidate class must name a regulatory function, so
+the question whether some further class exists admits an answer rather than
+remaining a matter of preference.
+
+And one case is settled that a classification by relation leaves open. Acting
+upon a thing, whether by editing, moving or deleting it, is not a distinct
+function. It is what an effector does, and execution is already the effector.
+The universal ability to operate upon an artefact is therefore absent from the
+list for a reason, rather than by the observation that a universal property
+fails to discriminate.
+
+The strongest evidence that these are functions rather than categories of
+document is that one set of them serves every level of recursion. A declaration
+fixes a goal whether that goal is a task's acceptance criterion or a version's
+objective. A recording registers state whether the state is a task's status or a
+sprint's outcome. A taxonomy of documents would need one set per level, because
+a task and a version are different kinds of document. A set of functions does
+not, because a regulator at any horizon must still set a goal and sense the
+state it reached.
+
+** Variety Attenuation
+
+Ashby's law is commonly read as a requirement to supply variety. Its converse
+constrains this framework more sharply. A regulator presented with variety it
+cannot use does not thereby regulate better, and beyond some volume it ceases to
+regulate at all.
+
+An agent shown the entire catalogue at every moment is in that condition. Its
+selection degrades not because its competence is low but because the variety
+presented to it has not been attenuated.
+
+Attenuation is therefore a structural obligation rather than an ergonomic
+preference. The framework attenuates by level: a session declares the system it
+acts as, and that declaration selects the portion of the catalogue in scope by
+default ([[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]]).
+Nothing is forbidden, and an agent may reach beyond its level by saying so.
+What changes is what it is shown first.
+
+** Recursion
+
+The defining property of Beer's model is recursion: every viable system contains
+smaller viable systems, each holding the same five Systems at a shorter horizon.
+
+Recursion is why this framework needs one set of regulatory functions rather
+than one per level, and /Consequences of the Derivation/ treats that as evidence
+for the derivation. What follows here is the consequence for scope. A framework
+whose regulatory functions hold at every horizon can be specified once and
+applied at any of them, so nothing below is stated per level.
+
+** Binding Constraint and Ergonomics
+
+A constraint regulates only if it binds. An arrangement that recommends,
+suggests, or renders a preferred course more convenient does not regulate,
+whatever vocabulary describes it. Ashby's requirement is not satisfied by a
+filter an agent may disregard without consequence.
+
+Where the framework claims regulation, the constraint binds. Elsewhere it claims
+convenience, and it should say convenience rather than presenting ergonomics in
+cybernetic dress. Most of the catalogue is of the second kind. The distinction
+is not a weakness but a condition of the argument retaining force where it is
+made.
+
+** Ultrastability
+
+*** The Limit of a Fixed Regulator
+
+Everything specified so far regulates against disturbances already identified.
+Such a regulator is fixed. It answers the failures its regulatory functions
+were built for and is defeated by any other, since a disturbance outside its
+repertoire meets no response at all.
+
+The framework cannot be fixed in this sense. The agents it regulates change with
+each model release, the project's practice changes as the system grows, and
+neither the failures nor their distribution are stable.
+
+*** The Second Loop
+
+Ashby (1952) treats this case directly. An adaptive system requires a second and
+slower loop around the first: one that does not adjust the regulated variables
+but alters the structure of the regulator, and that acts only when the first
+loop fails to hold an essential variable within its bounds. He named the
+property *ultrastability*, and
+[[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] states it in general
+form.
+
+The distinction from homeostasis is what makes the property necessary here.
+Homeostasis maintains a variable against disturbances the regulator was built
+for. Ultrastability reorganises the regulator when maintenance fails, which is
+the only response available to a disturbance it was not built for.
+
+The essential variable here is whether the agent's conduct remains within
+acceptable bounds for the work. A failure is the signal that it has not. The
+second loop converts that signal into a change of structure, and the framework's
+structure is its regulatory functions, its document type system and its
+catalogue.
+
+*** The Loop Specified
+
+The second loop has three steps, and each is a regulatory function rather than
+an administrative one.
+
+*Detection.* A departure is observed. This is measurement, and it uses the
+recording function: the state reached is registered against the
+state intended.
+
+*Classification.* The departure is assigned to one of the classes above, or
+shown to fit none of them. The classification is therefore a live instrument and
+not a preamble, and a departure fitting no class is the more informative
+outcome, since it indicates the regulator's model is incomplete.
+
+*Conversion.* The classification determines the form of the remedy, because each
+class names the remedy required. An absent model yields a knowledge
+document or a memory. A misapplied default yields a principle or a method. An
+excess of variety yields attenuation rather than a further document.
+
+The loop runs in both directions. The same mechanism that adds regulation on a
+new failure removes it when a failure ceases to occur, which is the criterion
+treated under /Retirement/ below.
+
+*** The Loop as Implemented
+
+The framework states the condition of this loop rather than its intended
+condition.
+
+The loop is largely manual. Detection depends on a person noticing a
+departure during a session. Classification is informal. Conversion happens when
+that person directs it, and the routing of what generalises into a memory, a
+principle or a change of skill is performed at a session's close by request
+rather than by mechanism.
+
+A loop of this kind is weak in a specific and predictable way: it registers
+departures a person happens to observe and is blind to those they do not. It
+therefore satisfies the form of ultrastability without supplying its
+reliability, and no claim is made here that it does. Strengthening it requires
+the measurement absent under /Limitations/, since a loop that cannot detect
+cannot reorganise.
+
+** Consequences
+
+*** A Stable Model and a Variable Catalogue
+
+The framework has two parts with different stability properties, and conflating
+them has obscured both.
+
+The document type system is the *model*, in the sense the theorem gives the
+word. It states what the framework regulates. It is stable, because what
+requires regulation does not change when the agent changes.
+
+The catalogue is the *regulation*. It is the variety the framework supplies
+against the disturbances presently observed. It is not stable, and it should not
+be.
+
+*** Retirement
+
+A regulator is defined relative to its disturbances. Should the regulated system
+improve, the variety the regulator must supply falls.
+
+A skill therefore becomes removable when the agent ceases to act incorrectly at
+that point without it. Without such a criterion the pressure runs in one
+direction only: skills accumulate, and nothing prompts their removal. The
+framework should expect to contract as the agents it
+regulates improve, and should treat that contraction as the apparatus working
+rather than as capability lost.
+
+** Limitations
+
+Three limitations are stated here rather than left for a reader to infer.
+
+No baseline has been measured. The failures reported in /Observed Failures/ are
+drawn from practice and are not quantified, so no claim is made concerning the
+magnitude of any improvement the framework produces. Establishing such a
+baseline is prerequisite to any such claim
+([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]).
+
+The correspondence with Beer's model is a lens and not an implementation. This
+project's five systems are named after his and do not discharge the obligations
+his model places upon them.
+
+The derivation in /Deriving the Functions/ establishes that each
+regulatory function corresponds to a regulatory primitive. It does not
+establish that the seven are exhaustive, and no such claim is made.
+
+* References
+
+- Ashby, W. R. (1952). /Design for a Brain: The Origin of Adaptive Behaviour/.
+  Chapman and Hall.
+- Ashby, W. R. (1956). /An Introduction to Cybernetics/. Chapman and Hall.
+- Beer, S. (1972). /Brain of the Firm/. Allen Lane.
+- Conant, R. C. and Ashby, W. R. (1970). /Every good regulator of a system must
+  be a model of that system/. International Journal of Systems Science 1(2),
+  89–97.
+- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents with
+  Skill Programs/. [[https://arxiv.org/abs/2605.17734][arXiv:2605.17734]]
+- Wiener, N. (1948). /Cybernetics: or Control and Communication in the Animal
+  and the Machine/. MIT Press.
+
+* See also
+
+- [[id:74C5D8A2-F781-4E23-A6FC-2921AD5879AD][Cybernetics]] — the general statement of variety, feedback and the black box.
+- [[id:926B916E-A57E-498E-99AB-720B583C0362][Cybernetic Levels]] — the five systems and this project's departures from them.
+- [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the Compass Skill Framework]] — the literature on agent skills.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the regulatory functions in detail and the document types implementing each.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation the loading function places upon an agent.
+- [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] — the mechanism selecting the applicable function for a target.
+- [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] — the properties of the regulated agent.

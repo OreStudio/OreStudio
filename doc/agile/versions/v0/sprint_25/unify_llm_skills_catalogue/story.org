@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: 2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC
+:END:
+#+title: Story: Unify the LLM skills catalogue
+#+description: Give the skills catalogue one coherent mental model: a compass- namespace, a layered taxonomy of principles, methods and process actions, standardised terminology, and attributed imports from the pstack and Matt Pocock skill sets.
+#+type: story
+#+level: s2
+#+filetags: :llm:skills:claude_code:refactor:naming:sprint_25:v0:
+#+created: 2026-08-25
+#+updated: 2026-08-25
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Our 79 skills describe our process well but never tell an agent how to think or how to pick an approach. Two external skill sets fill that gap: pstack brings a rigor spine of principles, playbooks and verification harnesses; the Matt Pocock skills bring alignment depth through interviewing, wayfinding and prototyping. Both carry mental models that clash with ours and with each other. This story integrates the parts that earn their place into one catalogue with one vocabulary, namespaced under a compass- prefix, with every imported skill attributed to its upstream source so we can track it as it changes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-08-25                               |
+
+* Acceptance
+
+- Every skill in the catalogue carries the compass- prefix, and the naming conventions document records the amended prefix and verb registers.
+- The catalogue is layered into principles, methods and process actions, and the layering is documented with the reasoning behind it.
+- Every imported skill records its upstream repository, path, commit and divergence, and a manifest lists them all.
+- Terminology is consistent across all skills: one word per concept, recorded in the naming conventions document.
+- No imported skill duplicates an existing one; overlaps are folded into a single skill and the loser is retired through skill-delete.
+- The deployed bundle builds and every skill loads.
+
+* Documents
+
+Everything this story produces or reasons from. The story is the hub:
+the durable documents do not link back here, so this table is the way
+in when history is genuinely needed.
+
+#+ATTR_HTML: :class hug-leading
+| Document | Kind | Purpose |
+|----------+------+---------|
+| [[id:C7473361-9825-43DF-8610-EBB028A250BE][Design: Unify the LLM skills catalogue]] | design, transitional | The argument: current state, the three mental models integrated, the council review, and the route to the target |
+| [[id:4228EE16-D5FD-499D-992B-6FFED05C95ED][The Cybernetic Skills Framework]] | knowledge, durable | The specification: the framework as a regulator, and what it models |
+| [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] | knowledge, durable | The working index into the framework, and the dispatch mechanism |
+| [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent skills]] | knowledge, durable, external | The received notion of a skill, with the academic and practitioner prior art |
+| [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][The skill in the compass framework]] | knowledge, durable | Why the received notion is too weak, and the tightened definition |
+| [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] | knowledge, durable | The function each document type supplies to the regulator |
+| [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] | knowledge, durable | Given a thing in hand, what may be done to it |
+| [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] | knowledge, durable | Who is acting, and what they may see and change |
+| [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]] | knowledge, durable | How an agent is configured, isolated and left to run |
+| [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] | knowledge, durable | How work is driven from start to finish |
+| [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] | knowledge, durable | How we know it worked |
+| [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]] | knowledge, durable | How generated structure is kept correct |
+| [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] | knowledge, durable | What an agent must hold before it acts, and why |
+| [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] | knowledge, durable | How the framework relates to the upstream collection, skill by skill |
+| [[id:0D919421-2B73-4322-9F79-9FDA38A67EA1][Large language models]] | knowledge, durable, external | The properties of the agent the framework regulates |
+
+The design goes =LANDED= when this story closes. Its =#+outcome:= names
+the specification, and the durable documents lose their target-state
+banners only once they describe the catalogue as it runs.
+
+* Tasks
+
+Tasks are listed in intended execution order.
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:FE910755-16F8-4854-BA3D-D780BE5AFB64][Fix the invisible knowledge cluster and audit graph integrity]] | BACKLOG | | | The whole doc/knowledge/external cluster does not resolve in the graph; diagnose, fix, and add a continuous S3-star check so it cannot recur. Unblocks domain grounding. |
+| [[id:37BC3547-4FE9-4D13-B3E7-5C071C5155B9][Instrument skill selection so the baseline accrues forward]] | BACKLOG | | | Record selection events as they happen rather than scoring past tasks, so skill-choice quality becomes measurable and reportable from now on. |
+| [[id:9388A184-1EFA-4855-8C0B-7FDFE93C3647][Decide the disposition of every external skill]] | DONE | 2026-08-26 | 2026-08-26 | Read every pstack and Matt Pocock skill in full and record a per-skill disposition against the skill architecture: adopt, adapt, harvest or reject, with the reason. |
+| [[id:F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF][Land the skill architecture into policy]] | BACKLOG | | | Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword. |
+| [[id:1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE][Define the upstream attribution contract for imported skills]] | ABANDONED | | 2026-09-04 | Superseded by the reference approach. Upstream skills are referenced rather than copied, so no fork exists to attribute or drift-check; the classification table in The pstack Collection replaces it. 
+| [[id:629B48C7-BC7E-44A8-8979-3E05D6DA5BFE][Collapse the uniform verbs into polymorphic actions]] | BACKLOG | | | Shrink the execution function before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table. |
+| [[id:7DFA4343-E553-4D3A-B71F-057329821EE5][Rename every skill into the compass- namespace]] | BACKLOG | | | Mechanical rename of every skill, with every incoming link, catalogue row, runbook, memory and settings entry updated. |
+| [[id:3969C185-48DE-47F0-A00D-FD28CD58C1B0][Tag every skill with its cybernetic level]] | BACKLOG | | | Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees. |
+| [[id:F4EF0C2D-B32E-4705-AE0F-AAC3E027FF59][Separate skill judgement from recipe commands]] | BACKLOG | | | Make every action delegate its commands to a recipe and keep only the judgement, so each has one source of truth. |
+| [[id:6766A23C-0357-4873-B5BF-B5A71BF0B1D5][Add structure notes to the knowledge Zettelkasten]] | BACKLOG | | | Give each domain cluster an entry-point note listing its pages in an argued reading order, so grounding loads a model rather than a search result. |
+| [[id:894E9BD8-6808-403A-9878-ABFA51710A74][Add a knowledge gap check for domain work]] | BACKLOG | | | A compass check that extracts the domain concepts a work item names and reports which have no resolving knowledge document. |
+| [[id:A7BCF024-9222-40C3-9151-AFE9C9B4BDBE][Cite the principles under the citation function]] | BACKLOG | | | Cite the eleven adopted pstack principles from our catalogue and write the thin local bindings; they are referenced upstream, not copied. |
+| [[id:08F7F925-49B2-40E0-A298-E300353CAE2E][Port the sequencing function and bind it to recipes and actions]] | BACKLOG | | | Import the adopted methods and interview skills as compass-method skills, with every step bound to one of our actions or recipes. |
+| [[id:60C7573C-763F-466D-A174-61C3A78616AF][Build compass-helm, the sticky mode]] | BACKLOG | | | One sticky entry point that declares the session System, matches work to a method, copies its phases in verbatim, and routes to actions, recipes and deliberation. |
+| [[id:BC52784C-64A6-47D2-AE13-BA8530C34507][Bind the Council to the convening function]] | BACKLOG | | | Wire the Council of High Intelligence in as the convening function, and route error detection to the checkers that are genuinely independent. |
+| [[id:26921590-0B75-401F-80C6-52CDF76104CD][Reconcile duplicate skills and standardise terminology]] | BACKLOG | | | Fold every overlapping import into a single skill, retire the losers through skill-delete, and sweep the catalogue onto the agreed vocabulary. |
+| [[id:C4ADAD7A-949E-48D3-941D-706E7B71D30D][Verify the rebuilt skill catalogue end to end]] | BACKLOG | | | Regenerate, rebuild, deploy and prove the whole catalogue loads and dispatches, with no stale directories left behind. |
+| [[id:2DF7DE1E-77CA-419E-90E6-E70DF5223314][Wire the codegen drift checks into CI and close the false claim]] | BACKLOG | | | check_component_drift.py exists but no workflow runs it, while a nightly PR body tells readers it does; model drift has no checker at all. |
+| [[id:628EA44F-1136-426F-AFD1-F28844AB048B][Make generated-ness a target property the dispatcher enforces]] | BACKLOG | | | Teach the dispatcher that an artefact is generated, so hand-editing is never an offered verb, and fold profile selection into the register-matching discipline. |
+| [[id:92D846C1-253F-47EA-A7F6-9A737FF1145B][Define the agent operating model for unattended runs]] | BACKLOG | | | How agents are configured, isolated, bounded and recovered when compass-helm is started on them and left running. |
+| [[id:B0768518-B564-407A-87CD-9C0D9168126E][Decide and build the Qt verification mechanism]] | BACKLOG | | | Settle how Qt work is verified: widget tests under the offscreen platform, a scripted in-app control surface, and external screen automation only for pixel work. |
+| [[id:D03D90DB-BDEB-4E98-A44A-384CCA790903][Implement the verification ladder and its stack discipline]] | BACKLOG | | | Codegen first, then drift, then tests, then a scripted shell scenario, then Qt; with generator gaps and drift handled as blocking discovered tasks. |
+| [[id:0829C5A8-A104-44CA-ADC5-819EFC5F31A1][Add a skill eval harness driven by mechanical verdicts]] | BACKLOG | | | Re-run closed tasks in a throwaway worktree under a changed skill and grade against what actually landed, using the independent checkers rather than a judge model. |
+| [[id:96FCA6C1-7E9C-4D25-BFE1-ADB308E58172][Establish the writing standards and the genres they govern]] | BACKLOG | | | Three writing authorities now apply: ASD-STE100 for instructions, thesis prose for knowledge documents, and writing-for-agents for skills. Settle which governs what and port the two imports. |
+| [[id:9F694794-A0A0-4625-A6C9-38B8743EC2FF][Add the missing document type templates to codegen]] | BACKLOG | | | The design type has a contract and no mustache template, so compass add design does not exist; audit every type contract against the template library. |
+| [[id:39264768-EE92-4DB1-B048-3C960415B358][Specify the skills framework as a regulator]] | DONE | 2026-09-07 | 2026-09-07 | Respecify the framework as a regulator over an agent, deriving its scope and its seven classes of document from cybernetics rather than stipulating them, and classify the upstream pstack collection against that derivation. |
+
+* Decisions
+
+* Out of scope
+
+-

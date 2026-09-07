@@ -1,0 +1,404 @@
+:PROPERTIES:
+:ID: 87D41A08-0B37-41CE-8483-B59B36BA87FA
+:END:
+#+title: Skills in the Compass Skill Framework
+#+description: A review of the academic and industrial literature on agent skills, four properties the specification does not require and the framework needs, and the definition adopted in response: one action, one typed target, one level, one regulatory function.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:claude_code:architecture:definition:
+#+created: 2026-08-26
+#+updated: 2026-08-26
+
+* Summary
+
+This document establishes what the term *skill* denotes within the compass
+framework.
+
+It proceeds in three parts. The first reviews the academic and industrial
+literature, establishing what is known about skills and how existing collections
+organise them. The second measures the specification against that literature and
+identifies four things it does not require, each of which this framework needs.
+The third states the definition adopted here and defends it on three grounds:
+that it answers each limitation, that it discriminates, and that mechanisms
+follow from it.
+
+* Detail
+
+** Background
+
+The format is specified by Anthropic and described in
+[[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]]. In summary, a skill
+is a directory containing a =SKILL.md= file, whose frontmatter carries a =name=
+and a =description= and whose body holds the instructions the assistant
+follows. The specification fixes no length, imposes no internal structure, and
+requires no relationship between one skill and another.
+
+ORE Studio held a position on the term before this framework. The project
+[[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][glossary]] records that a skill is
+/task-shaped/, being invoked in one session to perform a unit of work, and
+contrasts it with a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], which
+is /role-shaped/ and describes what an actor does across many sessions. That
+distinction survives into the definition proposed below, but it does not by
+itself resolve the questions the following sections raise.
+
+** Literature Review
+
+*** Academic Literature
+
+We conducted a cursory review of the academic treatment of agent skills. It
+divides into two lineages that differ on what a skill is made of.
+
+The first stores skills as *executable routines*. Voyager builds an open-ended
+embodied agent that accumulates a library of programs it has written, and
+retrieves and composes them in later episodes. A skill in this lineage is code.
+
+The second stores skills as *verbal lessons*. Reflexion has an agent record what
+it learned from a failure and carry that text into later episodes; ExpeL
+generalises across episodes into experiential rules. A skill in this lineage is
+prose.
+
+Liu et al. group both together as systems that "store verbal lessons, memories,
+or routines", and observe that "most prior methods reuse experience as prompt
+text or task-specific routines". The =SKILL.md= format belongs to the second
+lineage: it is prose that an assistant reads.
+
+**** The Critique of the Textual Form
+
+Liu et al. state the deficiency of the second lineage precisely:
+
+#+begin_quote
+A textual skill can express what the agent should do in principle, but not
+precisely when it should activate inside the policy loop, how it should alter
+the next decision, and it is often ignored by the model in practice.
+#+end_quote
+
+They locate the gap as one "between reusable experience expressed in language
+and reusable experience that can reliably and explicitly control agent
+behavior". Their illustration is directly relevant to the framework proposed
+below, since it names the form a cited rule takes: "instead of merely stating a
+principle such as 'avoid repeated searches,' a PF specifies both when that
+principle applies and how the next decision should change".
+
+**** Program Functions
+
+Their proposal is the *program function*, a "reusable state–action intervention
+function" that, "given the current agent state and a candidate next action,
+decides whether intervention is needed and, if so, explicitly modifies or
+augments the policy".
+
+A program function exposes two methods. =should_activate= "decides whether the
+skill should fire"; =intervene= "returns the repair". The object returned
+carries one of three types: =MODIFY_ACTION= rewrites the next action,
+=INJECT_CONTEXT= appends text the policy sees in its next observation, and
+=NOOP= abstains while still emitting an audit record.
+
+The design "separates choosing the next action from correcting it: the policy
+proposes what to do next, while PFs determine whether the proposed action should
+be executed as is, revised into a better action, or augmented with additional
+context". Program functions extend =SKILL.md= rather than replacing it: phase
+instructions are "declared in the YAML frontmatter of =SKILL.md=".
+
+**** Prompt Equivalence
+
+Liu et al. define a term for the boundary between the two lineages. A program
+function is *prompt-equivalent* when its =intervene= method emits only
+=INJECT_CONTEXT= and the injected text "is a fixed literal string with no
+runtime substitution". Such a function "does nothing beyond pasting a constant
+reminder into the next observation".
+
+The criterion is narrower than it appears. A skill that composes its injected
+text from runtime state is not prompt-equivalent, because it adds capability
+"that no prompt-only declaration can match"; neither is one that rewrites the
+action. The measured result attached to the term is modest: adding
+prompt-equivalent skills on top of an executable library has an effect that is
+"small and mixed across datasets".
+
+*** Practitioner Collections
+
+The academic literature establishes that a textual skill lacks an activation
+condition. Practitioner collections face the same problem without the option of
+changing the runtime, and their responses show what can be done within the
+specification. [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]]
+describes what the collections contain; this section analyses the choices they
+make.
+
+**** Indexing Axes
+
+Each collection selects an axis along which to index its skills, and the axis
+determines how activation is decided.
+
+[[https://github.com/cursor/plugins/tree/main/pstack][pstack]] indexes by the
+*shape of the work*. Twenty-two playbooks each address one shape: a defect to
+reproduce, a feature to build, a structure to change, a metric to improve.
+Twenty-one principles each state one rule of judgement, and the remaining
+skills are workflow tools. A router matches a request to a playbook.
+
+The [[https://github.com/mattpocock/skills][Matt Pocock collection]] indexes by
+*invocation*. User-invoked skills are thin and orchestrate; model-invoked
+skills hold the reusable discipline. A user-invoked skill may call a
+model-invoked one and never another user-invoked one, which yields a two-layer
+composition.
+
+The [[https://github.com/0xnyk/council-of-high-intelligence][Council of High
+Intelligence]] indexes by *analytical lens*. One coordinating skill convenes a
+panel drawn from eighteen sub-agents, each supplying a distinct perspective on
+a decision.
+
+**** Activation Without a Runtime Predicate
+
+pstack's router deserves particular attention, because it addresses the
+activation problem the academic literature identifies while remaining entirely
+within the specification.
+
+Its mode skill opens with an explicit table of triggers in condition-to-skill
+form: a nontrivial change routes to the tracing skill, code crossing a function
+boundary routes to the design skill, a contested design routes to the
+adversarial review skill. The table is hand-written rather than evaluated, but
+it is an activation condition nonetheless.
+
+The mode then matches the request to a playbook and copies that playbook's steps
+into a working list *verbatim*, before any task-specific reasoning. The failure
+this guards against is stated plainly: an agent reads a playbook and then writes
+a bespoke plan that drops its named steps. A step deliberately omitted remains
+in the list carrying a recorded reason, so silent omission is refused.
+
+The mechanism makes advisory text behave as a checked procedure by supplying a
+checking surface the specification does not provide. It is a different answer to
+the same problem, situated at the orchestration layer rather than the runtime.
+
+**** Verification as the Organising Principle
+
+pstack's second response is to relocate the rigour from the skill to the work.
+Where the academic proposal makes the skill executable, pstack makes the output
+checkable: a harness is built before the change and frozen, a claim is verified
+against the real artefact rather than a proxy, a green build is held
+insufficient, and a change is verified by an agent that did not write it.
+
+This is a coherent alternative. If advisory text is unreliable, one may either
+strengthen the instrument or strengthen the check applied to its product. The
+two are complementary, and this framework adopts both.
+
+**** Structural Correspondence
+
+The organising choices above correspond closely to the structure proposed later
+in this document. A playbook corresponds to a method, a principle to a stance, a
+workflow skill to an action, and the router to a mode. The substantive
+difference is the indexing axis, and it is a design choice rather than a
+deficiency: a shape of work selects a method, and a method's steps select
+actions by target type, so the two axes compose rather than compete.
+
+*** Synthesis
+
+Three findings carry into the analysis that follows.
+
+The specification defines a container and leaves its contents to the author, so
+it cannot state when a skill applies. Every collection surveyed supplies that
+condition by some means outside the specification, whether a hand-written
+routing table, an invocation flag, or a coordinator. And the axis on which a
+collection indexes determines what its activation mechanism can be, so the
+choice of axis is prior to the choice of mechanism.
+
+** Limitations of the Specification
+
+The specification requires a name, a description and a body. Measured against
+the literature above, four omissions prove material. Each denies the framework a
+mechanism it requires.
+
+*** Undeclared Object
+
+The specification does not require a skill to declare the artefact it operates
+on.
+
+An agent holding an artefact therefore cannot enumerate what may be done with
+it, and must instead know the name of the skill it wants. Selection proceeds by
+recall rather than by lookup, and recall degrades as a collection grows.
+
+The omission also determines how a collection scales. Where skills are not
+registered against an artefact type, one skill must be written for each pairing
+of operation and type. The collection then grows as the product of the two, and
+every pairing left unwritten is a capability that cannot be found.
+
+This is the deficiency the academic literature names as advisory: absent a
+declared object, there is no condition that decides when the skill applies.
+
+*** Assumed Execution
+
+The specification describes a body of instructions, which presumes that a skill
+is executed. Two kinds of material a working collection requires are excluded by
+that presumption.
+
+The first is a rule an agent cites when making a choice rather than executes. It
+has no steps and produces no artefact, yet every collection surveyed carries
+such rules.
+
+The second is an approach to a class of work rather than to an artefact. It
+sequences other skills and issues no command of its own.
+
+A construct admitting only executable instructions accommodates neither. In
+practice each is written as a procedure it is not, or is not written at all.
+
+*** Unbounded Scope
+
+The specification fixes no size, and published skills range from a few lines to
+several hundred.
+
+Two skills may consequently overlap without either being ill-formed. No
+comparison detects the overlap, because nothing states what a single skill is
+supposed to cover.
+
+*** Undeclared Audience
+
+The specification does not require a skill to state whom it is for.
+
+A collection therefore cannot be filtered by actor: every session sees the whole
+of it, whatever role that session has adopted. As a collection grows this
+becomes the dominant cost, since the agent's attention is finite and every
+irrelevant entry competes with the relevant ones.
+
+The gap matters more than the preceding three for autonomous operation, where
+the catalogue must be attenuated without a person present to narrow it.
+
+** The Definition
+
+Two conclusions carry forward from the preceding sections. The literature review
+established that a specification defining a container cannot state when its
+contents apply, and that every collection surveyed supplies that condition by
+some mechanism of its own devising. The analysis of the specification then
+identified four properties it does not require: a declared object, a declared
+audience, a bounded scope, and the admission of material that is cited rather
+than executed.
+
+Taking the two together, a definition adequate to this framework must supply all
+four properties, and must supply them as declarations rather than as prose. The
+second requirement follows from the first conclusion: a condition stated in
+prose can only be judged by a reader, whereas a condition declared in a field
+can be computed.
+
+This section states the definition and then defends it on three grounds. It is
+/adequate/ if it answers each limitation identified above. It is /discriminating/
+if it rules material out as well as in. It is /productive/ if mechanisms follow
+from it that were unavailable before. A definition failing any of the three
+would be worth abandoning: an inadequate one leaves the problem, an
+indiscriminate one admits everything, and an unproductive one imposes a
+constraint that buys nothing.
+
+*** Statement
+
+Within this framework a skill is *one action, applied to one typed target, at a
+stated level, offering exactly one regulatory function*.
+
+Each clause is a declaration carried in the skill's own frontmatter, and each is
+therefore available to a mechanism without a reader's interpretation.
+
+*** Adequacy
+
+Each clause corresponds to one limitation identified above.
+
+- *One action* bounds scope. The skill performs a single operation; two
+  operations are two skills.
+- *On one typed target* declares the object. The skill states the artefact type
+  it applies to.
+- *At a stated level* declares the audience. The skill states the [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][cybernetic
+  level]] it serves, which determines the sessions that see it by default.
+- *Offering exactly one regulatory function* admits non-executable material. The skill
+  states the [[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]] it
+  offers, which fixes the relation an agent bears to it, and one of the six is
+  citation, which is borne by material that is not run at all.
+
+The correspondence is one to one, which is a property of the construction rather
+than a coincidence: the clauses were derived from the limitations and no clause
+was added for any other reason.
+
+*** Exclusions
+
+Each requirement in the definition excludes a class of material, so what falls
+outside follows from the definition rather than being stipulated alongside it.
+Three such classes arise.
+
+A document stating a durable fact is excluded, because it names no action; such
+material is knowledge. A procedure composing several operations is excluded,
+because it names more than one action; such material is a method. An instruction
+applying to no particular artefact type is excluded, because it declares no
+target; such material is either a stance, if it constrains judgement, or a
+memory, if it records a correction.
+
+No exclusion is a rejection. Each names the document type that receives the
+material instead, and [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory
+Functions]] carries the procedure that assigns it. The definition is therefore
+narrow without being lossy: it excludes by redirecting rather than by
+discarding.
+
+*** Derived Properties
+
+Four mechanisms follow from the definition, each depending on one of its
+clauses. Together they are the framework's account of why the constraint is
+worth accepting.
+
+**** Dispatch Computability
+
+Because the target type is declared, the operations applying to a target are
+computed from its type rather than recalled. A collection no longer grows as the
+product of operations and types, since an operation is registered once against a
+type and inherited by every target of that type.
+[[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]] sets out the
+mechanism.
+
+**** Admissibility of Judgement
+
+Because the regulatory function is declared, and because one regulatory
+function holds material that is cited rather than executed, a rule of judgement
+may be written as a skill without being cast as a procedure. This is the single
+respect in which the framework relaxes the specification rather than
+constraining it, and the relaxation is confined to that regulatory function.
+
+The academic literature counsels caution here, since a rule that is merely cited
+is the form it finds unreliable. The framework's response is the requirement
+that a rule expressible as a check be written as one, leaving the regulatory
+function to hold only what cannot be checked.
+
+**** Catalogue Attenuation
+
+Because the level is declared, a session that has declared its System sees a
+subset of the collection rather than the whole. At most levels the filter is a
+default that may be overridden on request; at the audit level it is a
+constraint, since an auditor that can be persuaded to modify what it observes is
+not an auditor. [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]
+treats the mechanism.
+
+**** Overlap Detection
+
+Because a skill covers one action on one type, two skills covering the same
+pairing are redundant by construction, and the redundancy is detectable by
+comparison rather than by reading.
+
+* References
+
+- Liu, Y., Ming, Y., Joty, S. and Zhao, W. (2026). /Harnessing LLM Agents with
+  Skill Programs/. arXiv:2605.17734.
+  [[https://arxiv.org/html/2605.17734v1][arxiv.org/html/2605.17734v1]]
+- Shinn, N., Cassano, F., Berman, E., Gopinath, A., Narasimhan, K. and Yao, S.
+  (2023). /Reflexion: language agents with verbal reinforcement learning/.
+  [[https://arxiv.org/abs/2303.11366][arXiv:2303.11366]]. Cited as characterised
+  in Liu et al. (2026).
+- Wang, G., Xie, Y., Jiang, Y., Mandlekar, A., Xiao, C., Zhu, Y., Fan, L. and
+  Anandkumar, A. (2023). /Voyager: an open-ended embodied agent with large
+  language models/. [[https://arxiv.org/abs/2305.16291][arXiv:2305.16291]]. Cited
+  as characterised in Liu et al. (2026).
+- Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K. and Cao, Y.
+  (2023). /ReAct: synergizing reasoning and acting in language models/.
+  [[https://arxiv.org/abs/2210.03629][arXiv:2210.03629]]. Cited as characterised
+  in Liu et al. (2026).
+- Zhao, A., Huang, D., Xu, Q., Lin, M., Liu, Y. and Huang, G. (2024). /ExpeL:
+  llm agents are experiential learners/.
+  [[https://arxiv.org/abs/2308.10144][arXiv:2308.10144]]. Cited as characterised
+  in Liu et al. (2026).
+
+* See also
+
+- [[id:4ACD003D-5CEB-4D2E-BE10-BA77D1043FB8][Agent Skills]] — the specification this document analyses.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the overview this document sits under.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — the taxonomy the regulatory function clause refers to.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] — the axis the level clause refers to.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — the register of record for the framework's terms.
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory of what exists.
+- [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — how a skill is named and attributed.

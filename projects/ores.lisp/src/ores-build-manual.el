@@ -226,14 +226,27 @@
         "pdflatex -interaction nonstopmode -output-directory %o %f"
         "pdflatex -interaction nonstopmode -output-directory %o %f"))
 
-;; Refresh org-id locations over the whole doc tree before exporting, as
-;; the site build does. Without this, id links resolve against a stale
-;; known-file list and links to newly added chapters abort the export.
+;; Refresh org-id locations over the whole doc tree before exporting.
+;; Without this, id links resolve against a stale known-file list and
+;; links to newly added chapters abort the export.
+;;
+;; This scan covers doc/ only, so it writes its own map rather than the
+;; repository-wide .org-id-locations-file every other build shares.
+;; Writing a doc-only map to the shared path would drop every id under
+;; projects/ from it, and the next build to load that map without
+;; rescanning -- compass site page --no-index, say -- would fail to
+;; resolve links the manual build never had any reason to touch.
 (setq org-id-locations-file
-      (expand-file-name ".org-id-locations-file" ores/repo-root))
-(org-id-update-id-locations
- (directory-files-recursively
-  (expand-file-name "doc" ores/repo-root) "\\.org$"))
+      (expand-file-name "build/output/.org-id-locations-manual"
+                        ores/repo-root))
+(make-directory (expand-file-name "build/output" ores/repo-root) t)
+;; setq, not let: the flag is read by `bound-and-true-p' inside the
+;; file being loaded, and a let on an undeclared symbol binds lexically
+;; under lexical-binding, which that would not see.
+(setq ores/org-ids-library-only t)
+(load-file (expand-file-name "projects/ores.lisp/src/ores-org-ids.el"
+                             ores/repo-root))
+(ores/org-id-ensure (expand-file-name "doc" ores/repo-root))
 
 ;; In the PDF, id links to documents OUTSIDE the manual resolve to the
 ;; published website rather than to local file paths (which would be

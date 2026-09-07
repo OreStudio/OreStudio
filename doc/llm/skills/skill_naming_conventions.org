@@ -11,13 +11,18 @@
 
 * Summary
 
-Every Claude Code skill is named =<domain>-<verb>[-<object>]=, in
-kebab-case, after /the thing we want to do/ — never after a role
-(=sprint-planner=), an artefact (=pr-manager=), or the compass command
-the skill happens to run. The domain prefix and the verb each come from a closed
-register defined below. Before
-adding a skill, check this document and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]]: the name
-must parse against both registers and must not duplicate an existing
+A name is what makes a catalogue selectable. An agent choosing among skills reads
+names before it reads anything else, so a predictable name is part of the
+attenuation the framework depends on rather than a matter of tidiness
+([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]).
+
+Every Claude Code skill this project authors is named
+=<domain>-<verb>[-<object>]=, in kebab-case, after /the thing we want to do/ —
+never after a role (=sprint-planner=), an artefact (=pr-manager=), or the
+compass command the skill happens to run. The domain prefix and the verb each
+come from a closed register defined below. Before adding a skill, check this
+document and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]]:
+the name must parse against both registers and must not duplicate an existing
 skill's action.
 
 * Detail
@@ -29,8 +34,9 @@ skill's action.
 #+end_example
 
 - kebab-case throughout; the name is the directory under
-  [[proj:doc/llm/skills][=doc/llm/skills/=]], the deployed directory under [[proj:.claude/skills][=.claude/skills/=]],
-  and the =name:= frontmatter field — keep all three identical.
+  [[proj:doc/llm/skills][=doc/llm/skills/=]], the deployed directory under
+  [[proj:.claude/skills][=.claude/skills/=]], and the =name:= frontmatter field —
+  keep all three identical.
 - Named after the intent, not the mechanism: the user thinks "I want
   to merge this PR", so the skill is =pr-merge= — regardless of
   whether =compass pr merge=, =gh=, or anything else implements it.
@@ -74,9 +80,8 @@ is =codegen-add-qt-entity=.
 | =fix-=    | repair a defect to a defined end state: drift elimination, template bugs, failing behaviour |
 | (bare)   | rare domain verbs with no object, e.g. =pr-merge=              |
 
-=add= versus =start= is the create-vs-pick-up distinction: creating a
-story for backlog refinement must not create a branch; picking one up
-must. See the /Clean up the compass work lifecycle/ story.
+=add= versus =start= is the create-versus-pick-up distinction. Creating a story
+for backlog refinement must not create a branch; picking one up must.
 
 ** Structural rules
 
@@ -89,9 +94,9 @@ must. See the /Clean up the compass work lifecycle/ story.
 - /One skill per runbook./ Runbooks are skills' procedural twins;
   a generic runbook dispatcher hides the actions from discovery.
 - /Check before adding./ A new skill name must parse against the two
-  registers, and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]] must be checked for an
-  existing skill covering the same action. Extending a register is a
-  deliberate act recorded in the decision log below.
+  registers, and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills
+  inventory]] must be checked for an existing skill covering the same action.
+  Extending a register is a deliberate act recorded in the decision log below.
 
 ** Decision log
 
@@ -106,17 +111,30 @@ must. See the /Clean up the compass work lifecycle/ story.
 | =close-= cascades task→story | A story only ever closes via its last task; a third close-work skill would overlap both |
 | Roles dissolved, reference skills demoted | Keep the action namespace pure — that is what makes discovery work |
 | =run-runbook= deleted | The new action skills map ~1:1 onto the runbook catalogue; a dispatcher adds a layer without adding capability |
-| =review-=, =update-=, =open-=, =investigate-=, =brainstorm-= added | Surfaced by the audit of all 40 existing skills: review is load-bearing across four skills; the others each name an action no existing verb covers without distortion |
+| =review-=, =update-=, =open-=, =investigate-=, =brainstorm-= added | Surfaced by the audit of all 40 existing skills: review recurs across four skills; the others each name an action no existing verb covers without distortion |
 | =write= rejected | =code-add-tests=, not =code-write-tests= — =add= already means "create the artefact" |
 | =deploy-= added | The build pillar's deploy_manual/skills/settings/site targets are publish actions, not plain runs |
 | =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=skill-delete=) |
 | =fix-= added | The drift-elimination method needs the plain repair verb: =add-= (create), =run-= (execute), and =update-= (align with a change elsewhere) each name a different action, and remediation is the load-bearing action of the 12 per-component stories (=codegen-fix-drift=) |
 
+* Upstream skills
+
+The registers govern the skills this project authors. They do not govern skills
+it consumes from elsewhere.
+
+An upstream skill keeps the name its authors gave it. It is referenced rather
+than copied ([[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack
+Collection]]), so there is no local artefact to rename, and renaming a
+referenced skill would break the reference for no gain. A reader meeting
+=unslop= or =arena= is meeting the upstream name deliberately.
+
+Where an upstream skill is right in shape and wrong in local detail, the binding
+written for it *is* a skill this project authors, and it takes a name from the
+registers like any other.
+
 * See also
 
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this policy governs.
 - [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] — enforces this policy when adding skills.
-- [[id:C1813B64-1647-4B49-B856-A8345850001C][Story: Clean up the compass work lifecycle]] — the create vs
-  pick-up distinction and the PR close-out workflow.
-- [[id:58A77C0F-0AF0-428F-854C-049B731844CA][Story: Action-oriented skill cleanup]] — the story that
-  introduced this policy.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — the upstream skills these registers do not govern.

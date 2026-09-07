@@ -144,9 +144,13 @@ Same convention as ores-build-manual.el's ores/site-base-url.")
     ;; GitHub release body -- until this repo-wide scan runs first, same
     ;; as every other exporter (ores-build-site.el et al).
     (setq org-id-locations-file (expand-file-name "./.org-id-locations-file"))
-    (org-id-update-id-locations
-     (seq-remove (lambda (f) (string-match-p "/\\.claude/worktrees/" f))
-                 (directory-files-recursively ores/release-notes-repo-root "\\.org$")))
+    ;; setq, not let: the flag is read by `bound-and-true-p' inside the
+    ;; file being loaded, and a let on an undeclared symbol binds lexically
+    ;; under lexical-binding, which that would not see.
+    (setq ores/org-ids-library-only t)
+    (load-file (expand-file-name "projects/ores.lisp/src/ores-org-ids.el"
+                                 ores/release-notes-repo-root))
+    (ores/org-id-ensure ores/release-notes-repo-root)
     (condition-case err
         (with-current-buffer (find-file-noselect org-file)
           (let ((org-export-with-toc nil)

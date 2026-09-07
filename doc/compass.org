@@ -48,7 +48,7 @@ doc/
 ├── knowledge/            ← cross-cutting reference material
 │   └── external/         ← reference docs for systems we don't own
 ├── identity/             ← product vision, out-of-scope
-├── functions/            ← named roles across levels (one per system)
+├── systems/              ← named roles across levels (one per System)
 ├── llm/                  ← LLM config: instructions, settings, skills, memories
 │   ├── skills/           ← Claude Code skills, one per slug
 │   └── memory/           ← Claude Code session-feedback memory
@@ -65,7 +65,7 @@ doc/
 See [[id:82F08C3E-D00F-4888-8C11-CC4358AA9FB7][Meta]] for the full index. The five contract documents, read in order on
 first contact; refer back to individual ones as needed.
 
-1. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — what we mean by [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]], [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]], [[id:58D491A6-E4BD-4B0D-86BD-BB8465DFD4C7][plan]],
+1. [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — what we mean by [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]], [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]], [[id:0820B7FD-147C-4832-AC25-C043D38D5B61][sprint]], [[id:CA4D4BDE-2EAB-4F0A-BC8B-7C0BCB17BC82][version]], [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], [[id:58D491A6-E4BD-4B0D-86BD-BB8465DFD4C7][plan]],
    [[id:117A95F9-B03D-490B-BB74-DA9FE74537E2][recipe]] and many other such terms. This is not a ORE Studio glossary --- for
    example, it will not contain Computational Finance terms such as volatility
    (vol). Instead, it is focused on terms around our information architecture.
@@ -148,13 +148,13 @@ Cross-cutting knowledge that outlives any sprint. Lives under
 analysis tied to one component's code) lives co-located with the code at
 =projects/<comp>/docs/=, not here.
 
-** Identity, functions
+** Identity, Systems
 
 - [[proj:doc/identity][=identity/=]] — system-5 docs: [[id:2F71292F-CDB0-4E2E-B50F-4F02E10597C4][product identity]]; what's out of scope. Holds the
   durable identity statements that filter candidate versions and far captures.
-- [[proj:doc/functions][=functions/=]] — system-spanning named roles. One [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][function]] per cybernetic level
+- [[proj:doc/systems][=systems/=]] — named roles spanning the model. One [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]] per cybernetic level
   (S1 Agent, S2 Orchestrator, S3 Sprint Planner, S3* Auditor, S4 Version
-  Planner, S5 Identity Steward), plus the [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][index page]]. A function doc is the
+  Planner, S5 Identity Steward), plus the [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][index page]]. A system document is the
   priming context an LLM session loads when it takes on that role.
 
 ** [[proj:doc/llm][=llm/=]] — LLM configuration and artefacts

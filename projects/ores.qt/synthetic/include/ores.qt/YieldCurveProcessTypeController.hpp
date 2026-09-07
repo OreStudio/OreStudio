@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class YieldCurveProcessTypeMdiWindow;
+class YieldCurveProcessTypeDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -89,6 +90,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const synthetic::domain::yield_curve_process_type& process_type);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * YieldCurveProcessTypeDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(YieldCurveProcessTypeDetailDialog* detailDialog);
     void showHistoryWindow(const QString& code);
 
     /**

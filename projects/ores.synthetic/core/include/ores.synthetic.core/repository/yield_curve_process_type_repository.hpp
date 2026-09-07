@@ -71,7 +71,6 @@ public:
     std::vector<domain::yield_curve_process_type> read_latest(context ctx, const std::string& code);
     /**@}*/
 
-
     /**
      * @brief Reads all yield curve process types, possibly filtered by primary key.
      */

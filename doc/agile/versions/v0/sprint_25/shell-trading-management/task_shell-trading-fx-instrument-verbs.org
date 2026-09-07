@@ -41,11 +41,11 @@ is verified at the DB layer and on the changed-event stream.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                  |
 | Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
-| Now          | Not yet started.                       |
+| Now          | Batch committed (3997afdcbb); full preset build and ctest 71/71 green. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Equity batch (task_shell-trading-equity-instrument-verbs). |
 | Last touched | 2026-09-07                               |
 
 * Acceptance
@@ -56,9 +56,50 @@ is verified at the DB layer and on the changed-event stream.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Each fx unit clones the reference-entity skeleton — plural submenu on
+the trading menu, paginated get, change-reason arguments on add,
+history over the history subject — and declares only its
+entity-specific data: =trading.v1.= subject family, request and
+response classes from the per-product protocol, save columns from the
+org model, instrument_id key. Because the seven units differ only in
+that declared data, one throwaway generator (=/tmp/fxgen/gen_fx_units.py=,
+a python =string.Template= over a PRODUCTS table) emitted all seven;
+the emitted files land checked-in as the hand-written surface until
+codegen grows an instrument facet. The generator is the convention the
+equity, rates and generic batches clone.
+
+Two conventions were fixed here for every instrument batch. First,
+=add= mints the instrument_id client-side (random generator) where the
+protocol does not default it, and reads the party from the session
+principal's default_party_id. Second, every =add= stamps
+=v.audit.modified_by = session.auth().username=: the instrument insert
+triggers call =ores_iam_validate_account_username_fn= on
+=NEW.modified_by=, which rejects empty names and requires a match in
+=ores_iam_accounts_tbl= once the tenant has non-service accounts, and
+the trading service passes the client's domain object through
+unstamped.
+
+Display went in alongside the verbs: each of the seven modeling orgs
+gained a Table display section and its renderer in the per-product
+=*_table.cpp= prints the fixed column set. Org and table cpp changes
+ride in the same commit as the units so the batch stays one coherent
+surface.
+
+The live test is the point of the batch: scripted shell runs per
+family round-trip add, get, history and delete against the fleet, with
+each save verified twice — a DB row under the acme tenant
+(12baaab3-55f1-47fb-a409-2afde4ac42b9) via psql as the ddl user (the
+shell cli role is RLS-scoped and reads nothing), and a changed event
+captured by a wildcard nats subscriber on
+=ores.dev.brave_hopper.ores.trading.>=. Delete is a bitemporal soft
+close (=valid_to= stamped), and emits a second changed event. Login
+uses =tenant_admin@acme=: the .env principal
+(=tenant_admin@acme_corporation=) predates the 2026-09-05
+re-provision and its hostname resolves to no tenant.
+
+Close: cmake component-file drift check, full preset build + ctest,
+then the batch lands as one =[ores.shell]= commit on
+feature/shell-trading-instrument-verbs.
 
 * Notes
 
@@ -86,3 +127,49 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped the seven fx instrument verb units under
+=projects/ores.shell/src/app/commands/trading/=
+(=fx_accumulator_instrument_commands.{hpp,cpp}= through
+=fx_variance_swap_instrument_commands.{hpp,cpp}=), each cloning the
+reference-entity skeleton with its own trading.v1 subject family and
+positional add arguments from the org columns. =trading_commands.cpp=
+registers the seven plural menus; =component_files.cmake= lists the
+units. Each modeling org gained a Table display section and its
+=*_table.cpp= prints the fixed column set. The batch is one
+=[ores.shell]= commit, 3997afdcbb, on
+feature/shell-trading-instrument-verbs.
+
+Live acceptance met on brave_hopper against the fleet. A scripted run
+per family logged in as =tenant_admin@acme= (the .env principal
+=tenant_admin@acme_corporation= is stale: the 2026-09-05
+re-provision gave Acme Corp the hostname =acme=, and the login
+principal's hostname must resolve to a provisioned tenant) and
+round-tripped add, get, history and delete for all seven families.
+Every add landed a DB row under the acme tenant
+(12baaab3-55f1-47fb-a409-2afde4ac42b9) with =modified_by= =
+=tenant_admin=, version 1, and emitted the product changed event
+(=ores.dev.brave_hopper.ores.trading.fx_*_instrument_changed=);
+delete soft-closed the row (bitemporal =valid_to= stamp) and emitted a
+second changed event. 16 changed events captured across the two
+subscriber sessions cover every family's add and delete. A closing
+ddl-user psql sweep found all seven tables at zero live rows, with
+only the soft-deleted history rows remaining (fx_digital_option 2,
+one per other family).
+
+The live test found one real unit defect, which is the point of the
+system test: the instrument insert triggers call
+=ores_iam_validate_account_username_fn= on =NEW.modified_by=, which
+rejects empty names and requires a match in =ores_iam_accounts_tbl=
+once the tenant has non-service accounts, and the trading service
+passes the client's domain object through unstamped. Fixed by stamping
+=v.audit.modified_by = session.auth().username= in every add path
+(3997afdcbb). A second, environment-side finding: the variance-swap
+=add= test initially used =moment_type= =variance=, which the table
+check constraint rejects (only =Variance=/=Volatility=, case
+sensitive). Cosmetic: doubles render in scientific notation in the
+tables (e.g. =1e+06=); the instrument uuid renders raw.
+
+Verification: cmake-sources drift clean
+(=regenerate_cmake_component_files.py --all --check=); full preset
+build green; ctest 71/71 passed.

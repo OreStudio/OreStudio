@@ -43,11 +43,71 @@ Survey every ores.synthetic entity against the profile catalogue, rebind matches
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Unit plan, written at start on 2026-09-07. The canonical method is the
+codegen-fix-drift skill (steps 1-8); the byproduct-sweep and two-mode
+drift rules of the regen-byproduct-hygiene memory are in force
+throughout.
+
+- *Phase 1 — baseline and survey (skill steps 1-2).* Probe done (see
+  Notes); survey every model file, classify by metatype, compute
+  resolved features per entity.
+- *Phase 2 — resolved features and binding (skill steps 3-4).* Bind
+  matches with =:profile:=, record every no-match with its actual
+  feature values.
+- *Phase 3 — per-entity regeneration (skill step 5).* One entity at a
+  time through the scripted pipeline: baseline regen, bind, regen,
+  require the new diff to be an exact subset of the baseline.
+  Regenerate a second time and require byte-identical output.
+- *Phase 4 — generated-code review, build, tests (skill step 6).*
+- *Phase 5 — registrar wiring check, gate extension, PR (skill steps
+  7-8).* The history-provider families materialized by the baseline
+  probe must be composed into the registrar fan-out (or recorded as
+  deliberately unwired); then the registry entry and the =--all= run.
 
 * Notes
+
+** Baseline probe (2026-09-07, phase 1 start)
+
+Probe: =check_component_drift.py --component synthetic= (two-mode
+rule, mode B) on the untouched tree; rc 1 as designed. Full diff
+preserved at =/tmp/drift_synthetic_baseline_20260907.log=.
+
+- 9 models regenerate at address =ores=: =folder=,
+  =fx_spot_generation_config=, =gmm_component=,
+  =ir_curve_generation_config=,
+  =ir_curve_generation_config_process_parameter_value=,
+  =ir_curve_template_entry=, =market_data_generation_config=,
+  =yield_curve_process_parameter_definition=,
+  =yield_curve_process_type=.
+- 22 tracked files drifted, all template-era sync, no hand-edits
+  suspected: the three Qt controllers (=YieldCurveProcessType=,
+  =IrCurveTemplateEntry=, =GmmComponent=) and their headers predate
+  the =wireDetailDialogCommon= template refactor (~59 lines each);
+  three api domain headers carry small include/doc deltas; five
+  =ores.sql/create/synthetic= files carry 2-line era deltas; five
+  repository headers lose one blank line; the
+  =market_data_generation_config= mapper gains =rfl/enums.hpp= and
+  =folder_service= gains =boost/uuid/uuid_io.hpp= (include-set sync).
+- 18 untracked files materialized: the
+  =*_history_provider_registrar= family ({hpp,cpp} x 9 entities) under
+  core messaging — the family postdates the component's committed
+  tree, the marketdata-class known starting point. The registrar
+  fan-out itself is wired (hand-wired blocks for =gmm_component= and
+  the other two config entities, generated sub-registrars for the six
+  remaining entities, and the custom =publish_from_dq= handler), so
+  step 7's composition check for the new history providers lands on
+  =registrar.cpp= (refdata shape).
+- Disposal per regen-byproduct-hygiene: the 22 tracked files were
+  reverted with =git checkout --=; the 18 untracked byproducts were
+  disposed with a tagged stash push and immediate drop: tag
+  =byproducts-synthetic-baseline-20260907=, entry SHA
+  8e6ba3b69a9172af4e9c3d39dbdad034ea7f97d5, recoverable via the stash
+  reflog until garbage collection. The tree is clean.
+- Survey consequence: the per-entity zero-additional-diff rule runs
+  against this baseline; each entity's survey classifies whether its
+  committed output is feature-restorable (bind to byte-identity) or
+  template-era (the current-template shape lands as the deliberate
+  delta).
 
 * Test Scenarios
 

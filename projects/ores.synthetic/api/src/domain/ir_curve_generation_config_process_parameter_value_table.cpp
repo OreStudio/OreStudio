@@ -29,10 +29,13 @@ convert_to_table(const std::vector<ir_curve_generation_config_process_parameter_
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "Config" << "Parameter" << "Value" << "Modified By" << "Version"
+          << fort::endr;
 
     for (const auto& pv : v) {
-        table << fort::endr;
+        table << boost::uuids::to_string(pv.config_id)
+              << boost::uuids::to_string(pv.parameter_definition_id) << pv.parameter_value
+              << pv.modified_by << pv.version << fort::endr;
     }
     return table.to_string();
 }

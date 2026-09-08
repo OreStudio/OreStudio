@@ -217,6 +217,17 @@ std::string("IRS")
 :iterator_var: e
 :END:
 
+** Table display
+
+| column           | header        |
+|------------------+---------------|
+| sequence_index   | Sequence      |
+| start_tenor_code | Start Tenor   |
+| end_tenor_code   | End Tenor     |
+| instrument_code  | Instrument    |
+| modified_by      | Modified By   |
+| version          | Version       |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/ir_curve_template_entry.hpp

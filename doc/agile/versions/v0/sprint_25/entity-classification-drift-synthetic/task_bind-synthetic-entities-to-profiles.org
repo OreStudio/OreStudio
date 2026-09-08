@@ -8,11 +8,11 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-synthetic:
 #+owner: marco
 #+branch: feature/bind-synthetic-entities-to-profiles
-#+pr: 2031
+#+pr: 2036
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
-#+updated: 2026-09-07
+#+updated: 2026-09-08
 #+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -237,6 +237,50 @@ merge (the post-merge confirmation rerun closes the story):
   it. Pre-existing flow precondition, unrelated to the bind; noted as
   a follow-up question for the generation command's intended sequencing.
 
+** Post-merge confirmation rerun and close (2026-09-08)
+
+The post-merge rerun exercised the nine-entity CRUD sweep through
+=ores.shell= against merged main (4118c5ce88), this environment's
+fleet and the seeded database.
+
+- *CREATE/UPDATE:* shell add on every entity wrote its row through the
+  generated repositories: the folder seed and its child under the
+  restored hierarchy; the process parameter definition under =PMERGE=
+  and =PmergeConfig= (market_data_generation_config); the ir/fx/gmm/
+  tpl/ppv FK chain (each insert passed the insert-trigger existence
+  checks and the check constraints); the =PMERGE= process type re-add
+  bumped the version to 2 -- the update path still renders versions 1
+  and 2 on history.
+- *READ:* paginated get renders live tables with values on all nine
+  entities; per-entity history reads render with their own keys (gmm
+  fa22e023-9ac8, tpl 19b706a5-77cd, ppv 87efc4fc-a317 and siblings).
+- *DELETE:* the full pass, leaf-first, through the shell delete verbs
+  (ten rows, including the =UPDTEST= and =ShellTestConfig= residue
+  rows from the pre-merge passes); follow-up gets confirm zero rows per
+  entity. The acme synthetic scope is back to the seed state (the 23
+  seeded parameter definitions under the ddl role remain).
+
+The rerun caught one genuine post-merge defect, the same class the
+pre-merge pass fixed five times over: the =ir_curve_template_entry=
+and =ir_curve_generation_config_process_parameter_value= list
+converters still rendered empty shells. Their get/history footers
+reported the correct totals, but no column headers and no rows
+appeared. Root cause: the JSON-to-org migration dropped the ** Table
+display section from these two orgs -- the pre-merge fix covered
+=folder=, =fx_spot_generation_config=, =gmm_component=,
+=ir_curve_generation_config= and =market_data_generation_config= --
+and with no section, codegen emits a zero-column fort converter. The
+read path, service, RLS policies and data were healthy throughout: a
+psql replication of the service queries under the service role with
+the same GUCs returned the rows. Fixed at source: both orgs gained
+their Table display sections (columns follow the Qt model labels for
+the template entry; the config/parameter/value identity for the
+parameter value row), the two models regenerated at
+=ores.cpp.domain= (only the two converters change on disk), and the
+rerun renders rows on both entities.
+
+Closes the story per the 2026-09-07 done-shape decision.
+
 ** Baseline probe (2026-09-07, phase 1 start)
 
 Probe: =check_component_drift.py --component synthetic= (two-mode
@@ -341,6 +385,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2036][#2036]] | [ores.synthetic] Restore the tpl/ppv table display converters |
 | [[https://github.com/OreStudio/OreStudio/pull/2031][#2031]] | [synthetic,codegen] Bind synthetic entities to profiles, zero-diff regen |
 
 * Review

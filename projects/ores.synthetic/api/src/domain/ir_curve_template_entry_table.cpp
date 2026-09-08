@@ -28,10 +28,12 @@ std::string convert_to_table(const std::vector<ir_curve_template_entry>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "Sequence" << "Start Tenor" << "End Tenor" << "Instrument"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& e : v) {
-        table << fort::endr;
+        table << e.sequence_index << e.start_tenor_code << e.end_tenor_code << e.instrument_code
+              << e.modified_by << e.version << fort::endr;
     }
     return table.to_string();
 }

@@ -1,0 +1,283 @@
+:PROPERTIES:
+:ID: 9F706D25-7C2F-4988-83F0-A7B5E92BD5CD
+:END:
+#+title: Investigation: Trade model defects
+#+description: Modelling defects in the trading domain entities, why each is wrong, and the shape that replaces it.
+#+type: investigation
+#+level: cross
+#+filetags: :ore:trading:modelling:investigation:sprint_25:v0:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+This page documents an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the trading domain model. It records six defects found in the entities, why each is wrong, and the shape that replaces it.
+
+* Context
+
+Benchmarking trade population exposed a defect the benchmark was not looking for.
+A callable swap loads four times slower than a vanilla swap on the fastest write
+path, although the two are identical in tables, rows and fan-out. The cause is
+=call_dates_json=, a text column holding the exercise schedule.
+
+That column is not an isolated choice. It is one instance of a pattern, and
+looking for the pattern found five more. This page records what the trading
+entities model badly, why each choice is wrong, and the shape that replaces it.
+
+The performance finding is what prompted the review. It is not the main result.
+Most of the defects below cost correctness or integrity rather than time, and
+those are the more expensive kind.
+
+* Methodology
+
+The 41 entity headers under
+=projects/ores.trading/core/include/ores.trading.core/repository= were parsed for
+field name and declared type, and the fields grouped by pattern. Counts below are
+from that scan and are reproducible against the headers.
+
+Two of the defects were also measured. =scripts/bench_trade_shapes.py= loads
+populations of each instrument shape and times them, which is how the cost of the
+JSON column was separated from the cost of the instrument's complexity.
+
+The scan reads declared C++ types, not the deployed SQL schema. Where a mapper
+converts a type on the way to the database, the defect may be narrower than the
+count suggests. That is stated per defect where it applies.
+
+* Defects
+
+** Defect 1: schedules and collections held as JSON text
+
+*Current shape.* Eight columns across six instruments hold a collection as a JSON
+string: =call_dates_json=, =knock_out_dates_json=, =basket_json= in two
+instruments, =option_data_json=, and =events_json=, =underlyings_json= and
+=parameters_json= in =scripted_instrument=. The declared type is
+=std::optional<std::string>=.
+
+*Why it is wrong.* Four reasons, in ascending order of cost.
+
+It is slow, and this one is measured. A callable swap population loads in 4.67
+seconds against a vanilla swap's 1.14 at a hundred thousand trades, on the path
+the design intends to adopt. Row width is the whole difference.
+
+It is opaque to the database. A query for every trade with a call date in the
+next quarter cannot use an index, because the dates are inside a string. The
+schedule is data the system holds and cannot ask about.
+
+It cannot be constrained. Nothing stops a malformed date, a duplicate entry or an
+unsorted schedule, because the column's type is text and its content is a
+convention.
+
+It hides a shared concept. A call schedule, a knock-out schedule and a fixing
+schedule are the same structure carrying different meanings. Modelling each as a
+private string in its own instrument means the system has no notion of a schedule
+at all, and every consumer parses its own.
+
+*Replacement shape.* One schedule table shared by every instrument that needs
+one, and a second table for its dates.
+
+#+begin_src sql
+ores_trading_schedules_tbl
+  schedule_id          text primary key
+  tenant_id            text not null
+  instrument_id        text not null
+  schedule_type_code   text not null   -- call, knock_out, fixing, payment
+  business_day_convention_code  text
+  calendar_code        text
+
+ores_trading_schedule_dates_tbl
+  schedule_id          text not null
+  sequence_number      int  not null
+  schedule_date        date not null
+  primary key (schedule_id, sequence_number)
+#+end_src
+
+The discriminator is =schedule_type_code=, so one structure serves the call
+schedule, the knock-out schedule and any later one, and a new schedule kind is a
+reference row rather than a new column.
+
+This trades row count for width, which the measurement says is the right
+direction: the fan-out cost of extra rows is 1.4x between the widest and
+narrowest shapes measured, and the width cost of one JSON column is 4x.
+
+*The exception.* =scripted_instrument= is not the same case. Its =events_json=,
+=underlyings_json= and =parameters_json= hold a user-supplied script whose shape
+is not fixed by the domain, so no table can be drawn for it. The correct repair
+there is narrower: hold it as =jsonb= rather than =text=, so the database can at
+least validate and index it. A genuinely dynamic payload is the one place a
+document column is right.
+
+** Defect 2: dates held as text
+
+*Current shape.* 58 date-valued fields across the instruments are declared
+=std::string=, including =start_date=, =maturity_date=, =expiry_date=,
+=issue_date= and =call_date=.
+
+*Why it is wrong.* A text column admits =2026-13-45= and =next Tuesday=. It sorts
+lexically, which is correct for ISO-8601 and silently wrong for any other format,
+so correctness rests on every writer agreeing on a convention that nothing
+enforces. Date arithmetic, the operation a trading system performs most, must
+happen outside the database or through a cast on every query, and a cast defeats
+the index.
+
+The maturity-bucket queries a realistic population needs are exactly the queries
+this shape makes expensive.
+
+*Replacement shape.* The =date= type, with =timestamptz= where a time of day is
+genuinely carried. Postgres stores a =date= in four bytes against ten or more for
+the text, so the change also narrows every instrument row.
+
+*Caveat.* The scan reads the C++ declaration. The generated SQL may already
+declare =date= for some of these, in which case the defect is the C++ type losing
+information rather than the storage. The repair differs in size but not in
+direction, and the deployed schema should be checked before the count is quoted.
+
+** Defect 3: monetary amounts held as double
+
+*Current shape.* 18 fields carrying a price, strike, premium, payout or notional
+are declared =double=, among them =option_strike=, =forward_price=,
+=payout_amount=, =settlement_notional= and =accumulation_amount=.
+
+*Why it is wrong.* Binary floating point cannot represent most decimal amounts
+exactly. Summing a portfolio's notionals accumulates error, and two systems
+summing in different orders disagree. For a book that must reconcile, this is a
+correctness defect rather than a precision preference.
+
+*Replacement shape.* =numeric= in the database and a decimal type in the domain,
+for any field denominated in a currency.
+
+*Where double stays.* Rates, volatilities and correlations are not monetary
+amounts. They are inputs to analytics that are themselves floating point, and
+=numeric= would cost performance to buy a precision the mathematics does not
+have. The rule is the denomination, not the field's apparent numeric nature: if
+it has a currency, it is =numeric=.
+
+** Defect 4: enumerations held as free text with no reference table
+
+*Current shape.* Fields whose values are a closed set are declared =std::string=
+with no backing table and no =_code= suffix. =long_short= appears in 14 entities,
+=option_type= in 10, =exercise_type= in 5, =barrier_type= in 5 and
+=settlement_type= in 3, with a further fifteen appearing once or twice.
+
+*Why it is wrong.* Nothing constrains the value, so =Long=, =long=, =L= and =BUY=
+can all be present, and every consumer must defend against all of them. The valid
+set is not written down anywhere a person or a query can read it, so answering
+"what exercise types do we support" means grepping the source.
+
+The schema already establishes the remedy. =trade_type=, =party_role_type=,
+=activity_type=, =trade_id_type= and =fpml_event_type= are reference tables with
+foreign keys. These fields are the same kind of thing and did not get the same
+treatment, so *the inconsistency is internal to the model rather than a matter of
+taste*.
+
+*Replacement shape.* A reference table per enumeration, following the tables that
+already exist, and the field renamed to =_code= with a foreign key.
+
+#+begin_src sql
+ores_trading_long_short_types_tbl
+  code          text primary key   -- long, short
+  display_name  text not null
+  description   text
+#+end_src
+
+Where an enumeration is genuinely two-valued and will not grow, a check
+constraint is the cheaper answer and is still an improvement on nothing. The test
+is whether the set can grow: =long_short= cannot, =option_type= and
+=exercise_type= can.
+
+** Defect 5: code fields whose reference table does not exist
+
+*Current shape.* The =_code= suffix denotes a foreign key into a reference table.
+For several fields that table was never created. =change_reason_code= carries the
+convention in all 41 entities, =day_count_code= in three,
+=payment_frequency_code= in three, and =currency= throughout. Reference tables
+exist for only five of the codes in use.
+
+*Why it is wrong.* This defect is worse than defect 4, because the convention
+promises the constraint. A reader who sees =_code= is entitled to conclude the
+value is constrained by a table, and for most of these it is not. A naming
+convention that holds four times in five teaches the wrong thing.
+
+Currency is the sharpest case. It appears throughout the model, it has an
+international standard defining the valid set, and it has no table.
+
+*Replacement shape.* The missing reference tables, populated from the standard
+where one exists, and the foreign keys declared.
+
+| Field                  | Reference table                        | Source of values |
+|------------------------+----------------------------------------+------------------|
+| =currency=               | =ores_trading_currencies_tbl=            | ISO 4217         |
+| =day_count_code=         | =ores_trading_day_count_conventions_tbl= | ISDA definitions |
+| =payment_frequency_code= | =ores_trading_payment_frequencies_tbl=   | ISDA definitions |
+| =change_reason_code=     | =ores_trading_change_reasons_tbl=        | This project     |
+
+Until a table exists, the honest repair is to drop the =_code= suffix, so the
+name stops claiming a constraint the model does not enforce.
+
+** Defect 6: one concept under two names
+
+*Current shape.* The day count convention is =day_count_code= in three entities
+and =day_count_fraction_code= in =swap_leg=. Payment frequency is
+=payment_frequency_code= in three entities and =payment_frequency= in one.
+
+*Why it is wrong.* Two names for one concept defeat the search that would find
+every use, so a change to the concept misses a site. It also blocks the repair in
+defect 5, because a foreign key needs one column name to point at one table.
+
+This is the cheapest defect to fix and the one that compounds fastest, since every
+new instrument copies whichever name it happened to see.
+
+*Replacement shape.* One name per concept, chosen once and applied everywhere.
+=day_count_fraction_code= is the term the ISDA definitions use, so it should be
+the survivor, and =payment_frequency_code= keeps the suffix the convention
+requires.
+
+* Conclusions
+
+The six defects fall into two kinds, and confusing them would misdirect the
+repair.
+
+Defects 1 to 3 are *type defects*. A value is held in a type too wide for its
+meaning, so the database cannot constrain it, index it, or store it compactly.
+These cost performance and correctness together, and defect 1 is the only one of
+the six whose cost is measured rather than argued.
+
+Defects 4 to 6 are *integrity defects*. A relationship the model relies on is not
+declared, so nothing enforces it. These cost nothing at load time and are the
+more expensive kind, because a wrong value enters the system silently and is
+found later by whoever consumes it.
+
+The single largest finding is that the model already knows the right answers.
+Reference tables exist, the =_code= convention is established, and both are
+applied to a minority of the fields that need them. *The repair is mostly the
+consistent application of decisions this model has already made*, which makes it
+a smaller undertaking than the field counts suggest.
+
+Defect 1 is the exception, and it is the one with a measurement behind it.
+
+* Recommendations
+
+Repair in the order the dependencies require, not in the order of the counts.
+
+1. Defect 6 first. It is a rename, it is cheap, and defect 5 cannot be done
+   without it.
+2. Defect 5 next, since it makes the =_code= convention true, and defect 4 then
+   follows the same pattern for the remaining enumerations.
+3. Defect 1 for the schedules, which is the change that carries the measured
+   benefit and unblocks the fast population path.
+4. Defects 2 and 3 last. They are the widest by field count and the most
+   mechanical, and they touch the mappers rather than the shape of the model.
+
+Two things should be settled before any of this is scheduled.
+
+Check the deployed SQL schema against the C++ declarations. Every count here is
+from the headers, and where the generated schema already declares a stronger
+type, the defect is narrower than stated.
+
+Decide whether these repairs belong to trade population at all. They were found
+by this story and they are not its subject. The measured part of defect 1 blocks
+the fast population path and belongs here; the rest is a change to the trading
+domain model that deserves its own story, so that a population story does not
+quietly become a schema migration.
+
+* See also
+
+- [[id:37E54766-CE97-4981-A3C8-B2A232ED9A04][Design: Trade population generation]] — the measurements that exposed defect 1.
+- [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Story: ORE trade generator trade populations]] — the parent story.

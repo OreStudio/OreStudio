@@ -1,0 +1,536 @@
+:PROPERTIES:
+:ID: 37E54766-CE97-4981-A3C8-B2A232ED9A04
+:END:
+#+title: Design: Trade population generation
+#+description: The argument from today's hand-seeded datasets to trade generation as a composable block: what a valid trade needs, the four candidate approaches with their costs, how sizes become named presets, and where the service boundary falls.
+#+type: design
+#+level: s2
+#+filetags: :ore:acme:synthetic:trading:seeder:design:sprint_25:v0:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+todo: DRAFT STARTED | LANDED SUPERSEDED ABANDONED
+#+outcome:
+
+#+begin_note
+*This document describes a transition, not the current state.* It argues from
+what exists today to a design, and it expires when the work lands. It is scoped
+to the [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Sized, realistic trade populations]] story and lives with it.
+
+Do not link to it from durable documentation. The link runs one way, from here
+to the architecture document this produces, never back.
+#+end_note
+
+* Summary
+
+A system provisioned today has entities, books and portfolios but no trades.
+This document argues that trade generation should be built as a *block* the
+domain exposes, rather than as a seeding script, and sets out the candidate
+approaches with what is known and unknown about each.
+
+Three claims are advanced. Generation belongs behind a request carrying a
+configuration, because the same block then serves provisioning, a periodic feed
+and amendment without becoming three mechanisms. Sizes are presets of that
+configuration rather than constants, because a load test at arbitrary volume
+must be a configuration change and not a code change. And realism is a property
+of the configuration rather than of the row count, because a small book differs
+from a large one in what it trades and not only in how much.
+
+The measurements have since been taken, against the deployed schema rather than
+a model of it, and they moved the design. The cost of writing a trade is
+dominated by a per-row validation trigger and not by the notify trigger, the
+instrument's complexity or the row width, so a bulk population path is needed and
+suppressing notifications is not worth doing. Populating the trading tables also
+turned out to depend on reference data that provisioning never published, which
+is now fixed.
+
+The choice between the remaining candidates is still open, and the questions that
+would settle it are listed at the end with those already answered marked.
+
+* Detail
+
+** The Problem
+
+Provisioning produces a plausible institution with no positions. Acme has 36
+portfolios with owner units, aggregation currencies and a parent hierarchy, and
+nothing in them.
+
+That absence blocks work of three different shapes. An integration test
+asserting on aggregation has nothing to aggregate. A demonstration of risk or
+profit and loss has nothing to price. And query performance cannot be measured,
+because performance questions appear only at volumes nobody produces by hand.
+
+Those three wants differ in what they need, which is the first finding of this
+document. They are not one need at three magnifications.
+
+** What Already Exists
+
+The scoping that preceded this document found more built than expected, and it
+narrows the problem substantially.
+
+*** Generation is already a service capability
+
+=ores.synthetic= is a full service, and it already answers generation requests.
+=generate_organisation_request= is handled on subject
+=synthetic.v1.organisation.generate=, carrying a typed configuration.
+
+Beside it sit persisted configuration entities: =feed_config=,
+=market_data_generation_config=, =fx_spot_generation_config= and
+=ir_curve_generation_config=. Feeds are configured, not coded.
+
+A trade generation configuration is the missing sibling. This is the strongest
+argument in the document, and it argues from precedent rather than from
+principle: the mechanism the story needs is one this project already operates
+for market data, and building trades any other way would create a second pattern
+for the same job.
+
+*** ORE import already exists
+
+=ores.ore= carries =trade_mapper= with per-asset-class mappers for swap, equity,
+FX, commodity, bond and credit, plus an XML importer and exporter.
+
+The consequence is that how ORE trades get in is largely answered, and the open
+question is generation and volume rather than import. It also means the importer
+is available as a *check* on generated output, independently of whether it is
+used to load it.
+
+*** Seeding is Python and file-based
+
+=projects/ores.seeder/= is Python: =src/seeder.py= with datasets beside it, each
+carrying JSON and a =generate_sql.py=. The Acme dataset holds companies, books,
+portfolios and LEI relationships this way.
+
+The pattern works at the scale it currently runs. Whether it extends to trade
+volumes is one of the open questions below.
+
+** What a Valid Trade Requires
+
+ORE's Python =TradeGenerator= is worth reading whether or not it is adopted,
+because it encodes what a trade needs and where each part comes from. Its lesson
+is the lookup.
+
+A trade is built from an index such as =GBP-SONIA=. That index selects a
+convention and a curve config, and those between them supply payment frequency,
+payment calendars, business day conventions and spot lags. The caller supplies
+only notional, maturity, fixed rate and direction.
+
+The distinction that matters is therefore between *market structure*, which is
+looked up and must be right, and *trade particulars*, which are chosen and can
+be varied freely. A generator that gets the second right and the first wrong
+produces trades that look plausible and do not price.
+
+That distinction survives whichever approach is chosen, which is why it is
+recorded here rather than inside one option.
+
+** The Candidates
+
+Four approaches, with what is known. One has since been measured: algorithmic
+generation, in the narrow form of a script that introspects the schema and writes
+directly to it, populates all 41 trading tables. That is evidence about the
+approach's reach rather than a decision, since the script writes to the database
+and not through the trade service, and the service boundary is the design's
+position. The measurements separating the remaining three are named under /Open
+Questions/.
+
+#+ATTR_HTML: :class hug-leading
+| Approach | Mechanism | Known strength | Known risk |
+|----------+-----------+----------------+------------|
+| Committed dataset | Generate once, commit the SQL, seeder loads it | Reviewable; identical for everyone; no generation cost at provision | A large artefact in git, growing with the largest preset |
+| Algorithmic generation | A generator writes through the trade service at provision time, sized by parameters and seeded | No large artefact; volume is a parameter; presets are data | New code, and correctness rests on it rather than on ORE |
+| ORE-Python | Build trades through ORE's own API, emit XML, load through =ores.ore= | Market structure is ORE's own, so conventions are right by construction | A SWIG dependency in the seeding path; per-trade cost unmeasured |
+| Archetypes multiplied | ORE fixes conventions for a small set of archetypes; multiplying across particulars is ours | ORE correctness where it matters, our speed where it does not | Two mechanisms to maintain; archetype coverage bounds instrument coverage |
+
+They are not exclusive. A committed dataset for the small presets and
+algorithmic generation for the large ones is a fifth option, and it matches the
+three wants in /The Problem/ most directly, since the small presets are the ones
+that benefit from being reviewable and identical for everyone.
+
+** Sizes as Presets
+
+A size is a named bundle of configuration parameters, not a constant.
+
+The parameters a preset sets are the same ones a caller may supply. That single
+property is what lets =t0= serve an integration test and a load test at ten
+million trades be a configuration rather than a code change, and it is why the
+sizes are described here as presets rather than as tiers.
+
+#+ATTR_HTML: :class hug-leading
+| Preset | Purpose | Shape |
+|--------+---------+-------|
+| t0 tiny | An integration test asserts against it | Few enough trades to read; one or two asset classes; a handful of counterparties |
+| t1 medium | Demonstrations, and work needing breadth | Every asset class represented; realistic counterparty spread |
+| t2 large | A realistic institutional book | Full breadth, and volume enough to make aggregation non-trivial |
+| t3 extra large | Load and query performance | Volume chosen for the test rather than for realism of size |
+
+The row counts are deliberately absent. They belong in the presets, where they
+can be changed, rather than in a design document, where they would harden.
+
+** Realism
+
+Realism is the requirement most easily lost, because the obvious implementation
+of smaller is to generate fewer rows of the same thing.
+
+A small firm's book is not a large firm's book sampled. It trades fewer asset
+classes, faces fewer counterparties, and has a narrower maturity spread. A tiny
+population produced by uniform sampling from a large one would hold one trade in
+each of a dozen asset classes, which no small firm's book looks like.
+
+Realism is therefore a property of the *configuration*, and the criteria are per
+preset. Each preset asserts a distribution across asset class, currency,
+maturity, notional and counterparty, and states what would count as wrong. Those
+assertions are checkable, which keeps the requirement from becoming a matter of
+taste.
+
+Portfolio assignment is the same argument applied to placement. Acme's
+portfolios carry an owner unit and an aggregation currency, and a realistic
+population respects both: a treasury portfolio aggregating in GBP does not
+plausibly hold what an equity desk's book holds. Round-robin assignment would
+satisfy the row count and fail the requirement.
+
+*** What the public data supports, and what it does not
+
+The preset distributions want a real-world reference. The public sources give one
+for notional and not for trade count, and the difference matters, because these
+presets are sized in trades.
+
+The Bank for International Settlements reports notional outstanding by asset
+class. At end-June 2025 the total was USD 846 trillion, of which interest rate
+derivatives were 79%, foreign exchange USD 155 trillion, equity USD 8.9 trillion
+and commodity USD 2.4 trillion; credit was the fastest growing at 23%
+year-on-year. Within interest rate derivatives, ISDA reports interest rate swaps
+at 81.1% of notional outstanding at mid-2024.
+
+Notional is a poor proxy for trade count. A single interest rate swap carries a
+notional that hundreds of FX forwards would not reach, so a population built to
+match the notional shares above would hold far too few FX trades and far too many
+interest rate trades. The BIS figure that a book's shape actually depends on is
+that USD 100 trillion of the FX total is forwards and swaps maturing within a
+year, which is a statement about turnover and short tenors rather than about a
+standing book.
+
+Trade counts by asset class are not published at this granularity. The CFTC
+Weekly Swaps Report publishes weekly transaction ticket volume, which is a count,
+but it covers interest rate, credit and FX only and reports flow rather than an
+outstanding book.
+
+The distribution each preset asserts is therefore *a modelling assumption, not a
+citation*. The honest form is to write it into the preset as data, name it as an
+assumption, and record what it was informed by. A distribution reviewers can see
+and argue with is worth more than one derived from notional shares that do not
+answer the question asked.
+
+The design does not fix those numbers here. It requires that each preset carry
+its distribution explicitly, and that the source or assumption behind each be
+stated alongside it.
+
+[[id:A1310399-0ACD-4FA1-9645-AB24B3C8BEB8][Trade Population Weights]] holds the starting distribution, a weight for each of
+the 86 products in ORE's catalogue, stated as an assumption on the terms above.
+
+** What Measurement Found
+
+Six of the open questions are now answered, one by reading the code and five by
+measuring against the deployed schema. The measurements settle which path bulk population takes, and they
+show that the choice of path matters more than the choice of instrument.
+
+*** The trade interface batches
+
+Every instrument repository exposes both a single and a vector write. The vector
+form is not a loop: it maps the whole vector to entities and hands them to
+=execute_write_query=, which opens one session, begins one transaction, issues
+one =sqlgen::insert=, and commits. A signature is a proxy for this, so the
+implementation was read rather than assumed.
+
+The consequence is that the service boundary costs less than feared. Generation
+in =ores.synthetic= calling =ores.trading= downstream does not imply a call per
+trade.
+
+*** A trade is not a row
+
+The unit the presets are sized in is a trade. The unit the database charges for
+is a row, and the two differ by the shape of the instrument. Every trade writes a
+trade row, an instrument row, and identifier and party-role rows; the swap-family
+instruments write two leg rows on top. Field counts and fan-out follow the
+entities under =ores.trading.core/repository=.
+
+| Shape         | Tables | Rows per trade | Wide column      |
+|---------------+--------+----------------+------------------|
+| FX forward    |      4 |              6 | none             |
+| Vanilla swap  |      5 |              8 | none             |
+| Swaption      |      5 |              8 | none             |
+| Callable swap |      5 |              8 | =call_dates_json= |
+
+There is no schedule or cashflow table, so a leg does not expand into a row per
+payment. Neither does an exercise schedule: =callable_swap_instrument= holds its
+call dates in =call_dates_json=, a text column. The fan-out is therefore flat
+across the swap family, and the shapes differ by a third at most.
+
+*** What the shapes cost
+
+=scripts/bench_trade_shapes.py= measures each shape across all its tables. It
+builds the tables with the real field counts and fan-out, loads a population,
+checks every table's row count, and drops what it made.
+=scripts/bench_trade_insert.py= measures a single flat table, which isolates the
+trigger and the load method from the shape.
+
+One hundred thousand trades, one run each:
+
+| Shape         | Rows | COPY, no trigger | COPY, trigger | INSERT, trigger |
+|---------------+------+------------------+---------------+-----------------|
+| Forward       | 600k |            0.80s |         3.53s |           8.04s |
+| Vanilla swap  | 800k |            1.14s |         5.05s |          11.71s |
+| Swaption      | 800k |            1.15s |         5.08s |          12.70s |
+| Callable swap | 800k |            4.67s |         5.79s |          13.31s |
+
+At one million trades, for the two shapes measured at that volume:
+
+| Shape        | Rows | Method | Trigger | Seconds |
+|--------------+------+--------+---------+---------|
+| Forward      |   6M | COPY   | off     |     8.8 |
+| Forward      |   6M | INSERT | on      |    97.4 |
+| Vanilla swap |   8M | COPY   | off     |    14.8 |
+| Vanilla swap |   8M | INSERT | on      |   133.6 |
+
+*** Instrument complexity is not what costs
+
+A swaption costs the same as a vanilla swap, to within run-to-run variance, on
+every path. The two carry the same fan-out and differ by two columns, and the
+option's analytical complexity is invisible to the database. *Complexity in the
+pricing sense does not predict cost in the population sense.*
+
+Three things do predict it, and the largest is not the instrument.
+
+The load method costs about 6x and the notify trigger about 2.4x, and they
+compound. Those two are properties of the write path and are identical for every
+shape.
+
+The third is a wide column, and it appears in exactly one shape. A callable swap
+loads in 4.67s where a vanilla swap loads in 1.14s on the fastest path, a
+factor of four, and the two are otherwise identical in tables, rows and fan-out.
+The difference is =call_dates_json=, modelled here as forty quarterly call dates.
+Storing a schedule in a column rather than a child table keeps the row count flat
+and moves the cost into row width instead.
+
+The effect is visible only when the write path is fast. With the trigger on,
+callable and vanilla swaps are within 15% of each other, because the trigger
+already dominates. A wide column therefore matters most on the path the design
+should prefer, which is the one place a benchmark of the current slow path would
+never have shown it.
+
+*** The consequence for the design
+
+The path that exists today is the slowest row in the table. The trade
+repositories issue multi-row =INSERT= through =sqlgen=, and the generated schema
+leaves the trigger on. That path loads a million swaps in *two minutes and
+fourteen seconds*.
+
+The fastest path loads the same population in *fifteen seconds*, a factor of
+nine. Neither the shape nor the row count moves that much. The load method and
+the trigger do.
+
+Bulk population therefore *is* a different operation from ordinary writing, and
+the design must say which path it takes. At the smaller presets the difference is
+seconds and does not matter. At a million trades it is the difference between a
+provisioning step someone waits through and one they do not.
+
+*** What the real schema costs
+
+The measurements above use tables built to match the entities' shape. The real
+schema is deployed, so it can be loaded directly, and it behaves differently
+enough that the synthetic figures do not carry over.
+
+=scripts/load_trade_population.py= fills every column of all 41 deployed
+=ores_trading= tables, including the nullable ones and the JSON schedules, and
+times each. It introspects the schema rather than carrying a copy, so it stays
+correct as the model changes.
+
+| Configuration                                    | Rows/sec |
+|--------------------------------------------------+----------|
+| Real table, as deployed                          |     2200 |
+| Real table, notify trigger disabled              |     2234 |
+| Clone with the exclusion constraint, no triggers |    56032 |
+| Clone with neither                               |   121218 |
+
+Three results, and the first two are the ones that matter.
+
+*The notify trigger is not the cost.* Disabling it moves throughput by 1.5%. The
+synthetic benchmark put it at 4.2x, and on the real schema that is wrong, because
+there the trigger was the only thing happening and here it competes with work
+that dwarfs it.
+
+*The insert trigger is the cost.* It cannot be disabled, because it maintains the
+bitemporal validity range that an exclusion constraint enforces, so a row will
+not insert without it. Its cost is what separates 56032 rows/sec on a clone
+carrying the same constraint from 2200 on the real table, a factor of about 25.
+
+The bitemporal exclusion constraint costs 2.2x on its own. That is real, and it
+is an order of magnitude smaller than the trigger it works with.
+
+*** What this changes
+
+A million vanilla swaps at 2200 rows/sec is about 7.6 minutes, against the 15
+seconds the synthetic =COPY= path suggested. The population design must be sized
+against the first number.
+
+It also redirects the optimisation. Suppressing the notify trigger for bulk loads
+buys 1.5% and is not worth doing. The question worth asking is whether a bulk
+population path can bypass the per-row insert trigger and establish the
+bitemporal versioning in a set operation instead, which is a change to how the
+row is written rather than to what is published.
+
+*** What can be populated
+
+A second question the measurements answer is coverage, which matters as much as
+speed: a fast mechanism that cannot express half a book is not a population.
+
+=scripts/load_trade_population.py= fills every column of all 41 deployed
+=ores_trading= tables and loads all 41. That establishes the floor. Every table
+the schema has can be written by a generator that knows the schema, with no C++
+and no ORE dependency.
+
+The ceiling is lower, and it is set by the schema rather than by the generator.
+ORE defines 112 trade types and 30 instrument tables hold them, in two
+incompatible ways.
+
+| Coverage     | Tables | Asset classes                        | Trade types       |
+|--------------+--------+--------------------------------------+-------------------|
+| Declared     |     18 | equity, fx, scripted, composite      | 37 of 61 storable |
+| Not declared |     12 | bond, commodity, credit, swap family | 51, unknown       |
+
+Where a table declares which products it holds, the declaration is incomplete:
+equity stores 16 of 30, fx 16 of 25. Where it does not declare, coverage cannot
+be computed at all, and 51 of the 112 trade types are in that position.
+
+Two structural gaps account for 28 of the 112, a quarter of the catalogue, and
+they recur identically in equity, fx and commodity. Sixteen products are
+multi-underlying and no table can hold a basket; twelve need an observation
+schedule and the schema holds only a frequency and two dates.
+
+The consequence for this story is bounded but real. The presets can be realistic
+within what the schema holds, and a distribution asserting a weight for
+=EquityBasketOption= or =CommodityRainbowOption= would assert something the
+database cannot store. See [[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]] for the analysis
+and the proposed repair; it is not this story's work.
+
+*** What populating a trade requires
+
+Loading the trading tables is not self-contained, and the dependency was
+invisible until a load was attempted.
+
+=ores_trading_trades_tbl= validates six references before accepting a row, three
+of which live outside =ores.trading=: a book, a portfolio and a counterparty. A
+seventh rule requires the portfolio to be the book's parent, so the two
+references must agree rather than merely resolve.
+
+None of that data was present. Acme's books and portfolios were staged in the DQ
+artefact tables and never published into refdata, because nothing in provisioning
+called the publish functions. A freshly provisioned database therefore could not
+hold a single trade.
+
+That is fixed. =populate/acme/acme_publish_populate.sql= runs during provisioning
+and a rebuild from scratch now yields 31 books, 36 portfolios, 28 business units
+and 4 counterparties, after which trades load.
+
+The design consequence is a requirement rather than a note: *a population
+mechanism must state its reference data prerequisites*, because the failure
+without them is a rejected trade naming a book id, which says nothing about the
+cause.
+
+*** What was not measured
+
+The tables carry the entities' field counts and fan-out, not their types,
+constraints or indices, so these numbers bound the shape effect rather than
+predict a real population's absolute time. Real indices and foreign keys would
+make every row above slower.
+
+The measurement also ran with nothing listening on the notify channels.
+=pg_notify= has a queue limit and eight million notifications in one transaction
+did not reach it, but a consumer draining that volume is a separate question from
+postgres queuing it.
+
+Four shapes were measured, of thirty instrument types. They cover the fan-out the
+schema allows, from the simplest to the swap family, and one wide-column case.
+The callable swap's blob was modelled at forty quarterly call dates; a longer
+schedule would cost proportionally more, and that column is the parameter to vary
+before trusting the figure for a particular book.
+
+The blob figure includes transfer of the payload to =psql= over standard input,
+which a generator writing in process would not pay in the same form. It shows
+that row width costs, and it overstates how much.
+
+** The Service Boundary
+
+=ores.synthetic= owns generation: the configurations, the algorithms, the seed.
+=ores.trading= owns trades.
+
+The generator therefore calls downstream rather than writing to the trade
+tables. Generation gains no second path into them, and the rules governing a
+trade stay in one place.
+
+Both halves of the question are now settled, and they answer differently.
+
+The interface admits batching. The vector write issues one =sqlgen::insert= in
+one transaction, so the boundary costs no call per trade. That was the risk and
+it is not there.
+
+The path behind the interface is the slow one. Multi-row =INSERT= with the
+trigger on loads a million swaps in two minutes and fourteen seconds, and the
+same population loads in fifteen seconds by =COPY= with the trigger suppressed.
+The boundary is not what costs; what the boundary writes through is.
+
+The design therefore keeps the service boundary and *needs a bulk path behind
+it*. The generator calls =ores.trading= as any other caller does, and
+=ores.trading= owns a population entry point that writes by =COPY= and suppresses
+the trigger for the load. The rules governing a trade stay in one place, and the
+volume the largest preset asks for stays reachable.
+
+** Compositions
+
+Three uses of one block, of which only the first is needed now.
+
+*Provisioning* sends the request once, with a preset naming the size.
+
+*A periodic feed* sends the same request on a schedule. =ores.synthetic= already
+carries =feed_config= for market data, so this composition needs a configuration
+rather than a mechanism.
+
+*Amendment* sends the request in an update mode, so an existing population
+evolves rather than being replaced. Nothing here builds it; the design is
+required to admit it without change to the block.
+
+* Open Questions
+
+** Answered
+
+- *How does cost scale, and where does each approach break?* Measured at 1000,
+  10000, 100000 and 1000000 trades. Throughput is close to 2000 rows per second
+  on the deployed schema whatever the table, because a per-row trigger dominates.
+- *What does bulk insert cost with and without the per-row notify trigger?* The
+  notify trigger costs 1.5% on the real schema, not the 4.2x a synthetic table
+  suggested. The insert trigger costs about 25x and cannot be disabled. The
+  notification queue did not become a binding constraint at eight million
+  notifications in one transaction, measured with nothing listening.
+- *Which =ores.trading= instruments can be populated?* All 41 tables. The limit
+  is the schema rather than the mechanism: 28 of ORE's 112 trade types have no
+  table, across equity, fx and commodity.
+
+** Still open
+
+- What does ORE-Python cost per trade, and what does it drag into the seeding
+  path? The dependency footprint matters as much as the speed.
+- Can each approach produce a realistic small book, or only a truncated large
+  one?
+- Do the small presets benefit enough from being committed to justify
+  maintaining two mechanisms?
+- Can a bulk path establish the bitemporal versioning in a set operation, rather
+  than through the per-row trigger that costs the 25x? This is the question the
+  measurements raised and it did not exist when this document was written.
+- What can the twelve unconstrained instrument tables actually hold? They cover
+  51 of the 112 trade types and declare nothing, so the coverage figure above is
+  a lower bound rather than a measurement.
+
+* See also
+
+- [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Sized, realistic trade populations for provisioned systems]] — the story this design serves.
+- [[id:A1405F36-C32F-46CE-A550-40015616B986][Evaluate the approaches to generating trade populations]] — the task that answers the open questions.
+- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — the service the block joins.
+- [[id:8771702C-0BC4-4955-8D7E-DDBE2497D5B3][Market data generation config]] — the exemplar a trade generation config follows.
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — the instruments a population must populate.

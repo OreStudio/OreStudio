@@ -1,0 +1,155 @@
+:PROPERTIES:
+:ID: 894B369A-CE00-4E6A-B71B-C7BAC8B158BE
+:END:
+#+title: Story: Sized, realistic trade populations for provisioned systems
+#+description: Build trade generation as a composable block rather than a seeding script: a generation request the trade service handles, driven by a persisted configuration carrying book, seed, instrument mix and counts, mirroring the generate_organisation and market data generation configs ores.synthetic already carries. Sized populations, Acme provisioning and a periodic synthetic trade feed then become configurations of one block rather than three mechanisms.
+#+type: story
+#+level: s2
+#+filetags: :ore:acme:synthetic:trading:seeder:sprint_25:v0:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Trade generation is a *building block*, not a seeding script. The service
+receives a request carrying a configuration, generates against it, and persists
+the result. Everything else is a composition of that block.
+
+Three compositions are in view, and only the first is needed now.
+
+Populating a provisioned system sends the request once, with a configuration
+naming the size. A periodic synthetic trade feed sends the same request on a
+schedule. Amending an existing population sends it in an update mode. None of
+these is a separate mechanism; they differ in who sends the request and what the
+configuration says.
+
+The four sizes follow from this rather than sitting beside it. Tiny, medium,
+large and extra large are named configurations of the same block, so a tiny
+population is realistic because its configuration describes a small firm's book
+and not because a large one was truncated.
+
+The pattern is already established. [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic]] handles
+=generate_organisation= on =synthetic.v1.organisation.generate=, and carries
+feed configurations alongside per-asset-class generation configurations such as
+[[id:8771702C-0BC4-4955-8D7E-DDBE2497D5B3][market data generation config]]. A trade generation configuration is the missing
+sibling, and the work is to add one rather than to invent a mechanism.
+
+The service boundary follows the same shape. =ores.synthetic= owns what to
+generate and how: the configurations, the algorithms, the seed. It does not own
+trades. Persisting them is =ores.trading='s work, reached downstream, so
+generation gains no second path into the trade tables and the rules that govern
+a trade stay in one place.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BLOCKED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Paused after analysis; nothing in flight. |
+| Waiting on    | The trading model cleanup, by choice rather than by necessity. |
+| Next          | Resume once the model defects that bound coverage are repaired. |
+| Last touched  | 2026-09-08                               |
+
+* Acceptance
+
+- Trade generation is reachable as a request =ores.synthetic= handles, carrying
+  a configuration rather than hard-coded parameters. The configuration names at
+  least the book, the seed, the instrument mix and the counts.
+- The configuration is a persisted entity, following the generation
+  configurations =ores.synthetic= already carries, so a population can be
+  reproduced from what is recorded rather than from how it was invoked.
+- Trades are persisted by =ores.trading=, called downstream, not written by the
+  generator. Generation introduces no second path into the trade tables.
+- The seed makes a population reproducible. The same configuration yields the
+  same book, which is what lets a large population be generated rather than
+  committed.
+- Sizes are *named presets* of the configuration, not fixed constants. The
+  parameters a preset sets are the same ones a caller may supply directly, so a
+  load test at an arbitrary volume is a configuration and not a code change.
+- Four presets ship, named and purposed: t0 tiny, small enough for an
+  integration test to assert against, through to the largest, which exists to be
+  loaded at volume. Their parameters are recorded, and adding a fifth requires
+  no code.
+- Volume has no ceiling in the design. Whatever the presets happen to set, the
+  analysis states how cost scales with the number of trades and where each
+  approach breaks, rather than certifying one target figure.
+- Realism is defined per size and is checkable. A tiny population is realistic
+  as a small book rather than as a sample of a large one, and the analysis
+  states what differs beyond count: how many asset classes, how many
+  counterparties, what maturity spread a firm of that size plausibly has.
+- Populating a provisioned system composes the block without a manual step: no
+  hand-written XML, no separately run generator, no hand-imported file.
+- The design admits the compositions not built now. A scheduled feed sending the
+  same request, and an update mode that amends an existing population, are shown
+  to need no change to the block. Neither is implemented here.
+- The cost is measured rather than estimated, at more than one volume, so the
+  shape of the curve is known and not just one point: how long generation takes
+  and how long persistence takes.
+- Coverage is measured against the =ores.trading= instruments: which the
+  generator can populate, which it cannot, and which asset classes a realistic
+  book needs that neither side carries.
+- Trades land in portfolios by a rule reflecting each portfolio's owner unit and
+  aggregation currency, not by round-robin.
+- What ORE's TradeGenerator knows is extracted and written down: which fields a
+  valid trade needs, which come from the convention, which from the curve
+  config, and which the caller must supply. Whether we depend on it or
+  reimplement it is a conclusion of the analysis, not its premise.
+
+* Documents
+
+Everything this story produces or reasons from. The story is the hub:
+the durable documents do not link back here, so this table is the way
+in when history is genuinely needed.
+
+#+ATTR_HTML: :class hug-leading
+| Document | Kind | Purpose |
+|----------|------|---------|
+| [[id:37E54766-CE97-4981-A3C8-B2A232ED9A04][Design: Trade population generation]] | design, transitional | The argument: what exists, what a valid trade needs, the four candidates, what was measured, and what remains open |
+| [[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]] | investigation, transitional | Sixteen defects in the trading model found by building the population, each with a proposed repair |
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:BC57336F-9823-428F-8060-15DB3AEB47B3][Scaffold story: Generate realistic trade populations for Acme using ORE's TradeGenerator]] | DONE | 2026-09-07 | 2026-09-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:A1405F36-C32F-46CE-A550-40015616B986][Analyse the trade population pipeline end to end]] | BACKLOG | | | Survey the ways a sized population could be produced, evaluate each on speed, reproducibility, realism and cost, and present the options for a decision. |
+
+* Decisions
+
+*Generation is a block behind a request, not a seeding script.* The same block
+then serves provisioning, a periodic feed and amendment, which differ in who
+sends the request and what the configuration says rather than in mechanism.
+
+*Sizes are presets of the configuration, not constants.* A load test at an
+arbitrary volume must be a configuration change and not a code change.
+
+*The service boundary stands, and a bulk path is needed behind it.* The vector
+write batches, so the boundary costs no call per trade. What the boundary writes
+through is the cost: multi-row =INSERT= with the per-row trigger loads a million
+swaps in 133 seconds against 14.8 by =COPY= without it.
+
+*Suppressing the notify trigger is not worth doing.* It costs 1.5% on the
+deployed schema. The synthetic benchmark's 4.2x was an artefact of measuring a
+table where nothing else happened.
+
+*Preset distributions are a labelled assumption, not a citation.* Public sources
+publish notional by asset class and not trade counts, and a population is sized
+in trades.
+
+*The story pauses here.* Two defects in the trading model bound what any
+population can contain, so repairing the model first is cheaper than generating
+against one that is about to change. This is a sequencing choice: the story could
+proceed against what the schema stores today.
+
+* Out of scope
+
+- Repairing the trading model. Sixteen defects were found and recorded, and one
+  was fixed because it blocked the story outright. The rest belong to their own
+  story.
+- Extending instrument coverage. 28 of ORE's 112 trade types cannot be stored,
+  and adding them is a model change rather than a generation change.

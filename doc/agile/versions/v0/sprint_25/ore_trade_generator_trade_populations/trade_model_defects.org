@@ -1,0 +1,806 @@
+:PROPERTIES:
+:ID: 9F706D25-7C2F-4988-83F0-A7B5E92BD5CD
+:END:
+#+title: Investigation: Trade model defects
+#+description: Modelling defects in the trading domain entities, why each is wrong, and the shape that replaces it.
+#+type: investigation
+#+level: cross
+#+filetags: :ore:trading:modelling:investigation:sprint_25:v0:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+This page documents an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the trading domain model. It records sixteen defects found in the model, why each is wrong, and the shape that replaces it.
+
+* Context
+
+Benchmarking trade population exposed a defect the benchmark was not looking for.
+A callable swap loads four times slower than a vanilla swap on the fastest write
+path, although the two are identical in tables, rows and fan-out. The cause is
+=call_dates_json=, a text column holding the exercise schedule.
+
+That column is not an isolated choice. It is one instance of a pattern, and
+looking for the pattern found five more. This page records what the trading
+entities model badly, why each choice is wrong, and the shape that replaces it.
+
+The performance finding is what prompted the review. It is not the main result.
+Most of the defects below cost correctness or integrity rather than time, and
+those are the more expensive kind.
+
+* Methodology
+
+The 41 entity headers under
+=projects/ores.trading/core/include/ores.trading.core/repository= were parsed for
+field name and declared type, and the fields grouped by pattern. Counts below are
+from that scan and are reproducible against the headers.
+
+Three of the defects were also measured. =scripts/bench_trade_shapes.py= loads
+populations of each instrument shape, which separated the cost of the JSON column
+from the cost of the instrument's complexity.
+=scripts/load_trade_population.py= fills every column of all 41 deployed tables
+and times each, which attributed the insert cost between the triggers and the
+bitemporal exclusion constraint.
+
+The loader also found defects by failing. Where the schema rejected a fully
+populated row, the rejection named the rule that no declaration carries, and
+defects 8 and 9 are those rejections read as findings.
+
+Defects 2 and 3 were raised from the C++ headers and then checked against the
+deployed SQL, which corrected them. Both are recorded with what the check
+found.
+
+* Defects
+
+** Defect 1: schedules and collections held as JSON text
+
+*Current shape.* Eight columns across six instruments hold a collection as a JSON
+string: =call_dates_json=, =knock_out_dates_json=, =basket_json= in two
+instruments, =option_data_json=, and =events_json=, =underlyings_json= and
+=parameters_json= in =scripted_instrument=. The declared type is
+=std::optional<std::string>=.
+
+*Why it is wrong.* Four reasons, in ascending order of cost.
+
+It is slow, and this one is measured. A callable swap population loads in 4.67
+seconds against a vanilla swap's 1.14 at a hundred thousand trades, on the path
+the design intends to adopt. Row width is the whole difference.
+
+It is opaque to the database. A query for every trade with a call date in the
+next quarter cannot use an index, because the dates are inside a string. The
+schedule is data the system holds and cannot ask about.
+
+It cannot be constrained. Nothing stops a malformed date, a duplicate entry or an
+unsorted schedule, because the column's type is text and its content is a
+convention.
+
+It hides a shared concept. A call schedule, a knock-out schedule and a fixing
+schedule are the same structure carrying different meanings. Modelling each as a
+private string in its own instrument means the system has no notion of a schedule
+at all, and every consumer parses its own.
+
+*Replacement shape.* One schedule table shared by every instrument that needs
+one, and a second table for its dates.
+
+#+begin_src sql
+ores_trading_schedules_tbl
+  schedule_id          text primary key
+  tenant_id            text not null
+  instrument_id        text not null
+  schedule_type_code   text not null   -- call, knock_out, fixing, payment
+  business_day_convention_code  text
+  calendar_code        text
+
+ores_trading_schedule_dates_tbl
+  schedule_id          text not null
+  sequence_number      int  not null
+  schedule_date        date not null
+  primary key (schedule_id, sequence_number)
+#+end_src
+
+The discriminator is =schedule_type_code=, so one structure serves the call
+schedule, the knock-out schedule and any later one, and a new schedule kind is a
+reference row rather than a new column.
+
+This trades row count for width, which the measurement says is the right
+direction: the fan-out cost of extra rows is 1.4x between the widest and
+narrowest shapes measured, and the width cost of one JSON column is 4x.
+
+*The exception.* =scripted_instrument= is not the same case. Its =events_json=,
+=underlyings_json= and =parameters_json= hold a user-supplied script whose shape
+is not fixed by the domain, so no table can be drawn for it. The correct repair
+there is narrower: hold it as =jsonb= rather than =text=, so the database can at
+least validate and index it. A genuinely dynamic payload is the one place a
+document column is right.
+
+** Defect 2: dates held as text
+
+*Current shape.* 58 date-valued fields across the instruments are declared
+=std::string=, including =start_date=, =maturity_date=, =expiry_date=,
+=issue_date= and =call_date=.
+
+*Why it is wrong.* A text column admits =2026-13-45= and =next Tuesday=. It sorts
+lexically, which is correct for ISO-8601 and silently wrong for any other format,
+so correctness rests on every writer agreeing on a convention that nothing
+enforces. Date arithmetic, the operation a trading system performs most, must
+happen outside the database or through a cast on every query, and a cast defeats
+the index.
+
+The maturity-bucket queries a realistic population needs are exactly the queries
+this shape makes expensive.
+
+*Replacement shape.* The =date= type, with =timestamptz= where a time of day is
+genuinely carried. Postgres stores a =date= in four bytes against ten or more for
+the text, so the change also narrows every instrument row.
+
+*Resolved against the deployed schema.* The SQL is correct. The deployed columns
+are =date=, and 56 of them are. The defect is therefore narrower than the scan
+suggested: the C++ declaration widens a =date= to a string on the way out of the
+database, so the type information is lost at the boundary rather than in storage.
+
+That makes this a mapper defect, not a schema defect, and it is cheaper than the
+count implies.
+
+** Defect 3: monetary amounts held as double
+
+*Current shape.* 18 fields carrying a price, strike, premium, payout or notional
+are declared =double=, among them =option_strike=, =forward_price=,
+=payout_amount=, =settlement_notional= and =accumulation_amount=.
+
+*Why it is wrong.* Binary floating point cannot represent most decimal amounts
+exactly. Summing a portfolio's notionals accumulates error, and two systems
+summing in different orders disagree. For a book that must reconcile, this is a
+correctness defect rather than a precision preference.
+
+*Replacement shape.* =numeric= in the database and a decimal type in the domain,
+for any field denominated in a currency.
+
+*Where double stays.* Rates, volatilities and correlations are not monetary
+amounts. They are inputs to analytics that are themselves floating point, and
+=numeric= would cost performance to buy a precision the mathematics does not
+have. The rule is the denomination, not the field's apparent numeric nature: if
+it has a currency, it is =numeric=.
+
+*Resolved against the deployed schema.* The SQL is again correct: 72 columns are
+=numeric= and only two are =double precision=. As with defect 2, the loss happens
+in the C++ declaration rather than in the database, so this is a mapper defect.
+
+** Defect 4: enumerations held as free text with no reference table
+
+*Current shape.* Fields whose values are a closed set are declared =std::string=
+with no backing table and no =_code= suffix. =long_short= appears in 14 entities,
+=option_type= in 10, =exercise_type= in 5, =barrier_type= in 5 and
+=settlement_type= in 3, with a further fifteen appearing once or twice.
+
+*Why it is wrong.* Nothing constrains the value, so =Long=, =long=, =L= and =BUY=
+can all be present, and every consumer must defend against all of them. The valid
+set is not written down anywhere a person or a query can read it, so answering
+"what exercise types do we support" means grepping the source.
+
+The schema already establishes the remedy. =trade_type=, =party_role_type=,
+=activity_type=, =trade_id_type= and =fpml_event_type= are reference tables with
+foreign keys. These fields are the same kind of thing and did not get the same
+treatment, so *the inconsistency is internal to the model rather than a matter of
+taste*.
+
+*Replacement shape.* A reference table per enumeration, following the tables that
+already exist, and the field renamed to =_code= with a foreign key.
+
+#+begin_src sql
+ores_trading_long_short_types_tbl
+  code          text primary key   -- long, short
+  display_name  text not null
+  description   text
+#+end_src
+
+Where an enumeration is genuinely two-valued and will not grow, a check
+constraint is the cheaper answer and is still an improvement on nothing. The test
+is whether the set can grow: =long_short= cannot, =option_type= and
+=exercise_type= can.
+
+** Defect 5: code fields whose reference table does not exist
+
+*Current shape.* The =_code= suffix denotes a foreign key into a reference table.
+For several fields that table was never created. =change_reason_code= carries the
+convention in all 41 entities, =day_count_code= in three,
+=payment_frequency_code= in three, and =currency= throughout. Reference tables
+exist for only five of the codes in use.
+
+*Why it is wrong.* This defect is worse than defect 4, because the convention
+promises the constraint. A reader who sees =_code= is entitled to conclude the
+value is constrained by a table, and for most of these it is not. A naming
+convention that holds four times in five teaches the wrong thing.
+
+Currency is the sharpest case. It appears throughout the model, it has an
+international standard defining the valid set, and it has no table.
+
+*Replacement shape.* The missing reference tables, populated from the standard
+where one exists, and the foreign keys declared.
+
+| Field                  | Reference table                        | Source of values |
+|------------------------+----------------------------------------+------------------|
+| =currency=               | =ores_trading_currencies_tbl=            | ISO 4217         |
+| =day_count_code=         | =ores_trading_day_count_conventions_tbl= | ISDA definitions |
+| =payment_frequency_code= | =ores_trading_payment_frequencies_tbl=   | ISDA definitions |
+| =change_reason_code=     | =ores_trading_change_reasons_tbl=        | This project     |
+
+Until a table exists, the honest repair is to drop the =_code= suffix, so the
+name stops claiming a constraint the model does not enforce.
+
+** Defect 6: one concept under two names
+
+*Current shape.* The day count convention is =day_count_code= in three entities
+and =day_count_fraction_code= in =swap_leg=. Payment frequency is
+=payment_frequency_code= in three entities and =payment_frequency= in one.
+
+*Why it is wrong.* Two names for one concept defeat the search that would find
+every use, so a change to the concept misses a site. It also blocks the repair in
+defect 5, because a foreign key needs one column name to point at one table.
+
+This is the cheapest defect to fix and the one that compounds fastest, since every
+new instrument copies whichever name it happened to see.
+
+*Replacement shape.* One name per concept, chosen once and applied everywhere.
+=day_count_fraction_code= is the term the ISDA definitions use, so it should be
+the survivor, and =payment_frequency_code= keeps the suffix the convention
+requires.
+
+** Defect 7: referential integrity implemented in PL/pgSQL
+
+*Current shape.* The 41 trading tables carry 866 check constraints, 41 primary
+keys and *no foreign keys at all*. Referential integrity is instead enforced by
+=insert= triggers that query the parent table and raise. The trigger source calls
+these soft foreign keys in its own comments.
+
+*Why it is wrong.* This is the population loader's largest finding, and it is a
+performance defect rather than a correctness one.
+
+A foreign key is enforced by an index probe the planner controls. A trigger is a
+PL/pgSQL function invoked per row, which runs a query per reference and raises on
+failure.
+
+Measured on =ores_trading_vanilla_swap_instruments_tbl=:
+
+| Configuration                                    | Rows/sec |
+|--------------------------------------------------+----------|
+| Deployed table                                   |     2200 |
+| Deployed table, notify trigger disabled          |     2234 |
+| Clone with the exclusion constraint, no triggers |    56032 |
+| Clone with neither                               |   121218 |
+
+The insert trigger accounts for a factor of about 25. The bitemporal exclusion
+constraint costs 2.2x, and the notify trigger costs 1.5%, which is within the
+noise of the measurement.
+
+A second observation supports the attribution. Across the 36 tables the loader
+populates, throughput is close to 2000 rows per second whatever the table, and
+column counts range from 10 to 40. *Row width does not predict cost here, because
+a per-row procedure dominates whatever the row contains.* This is the opposite of
+what the synthetic benchmark found, where width was the largest factor, and the
+difference is that the synthetic tables carried no triggers.
+
+The database also cannot reason about a relationship it is not told about. No
+cascade, no deferral, and no plan that exploits the reference.
+
+*Replacement shape.* Declared foreign keys wherever the reference is to a table
+that exists, leaving triggers only for the checks a foreign key cannot express,
+such as tenancy scoping. The bulk population path is the immediate beneficiary,
+since a set-based load can defer or drop constraints in a way it cannot defer a
+per-row trigger.
+
+*What must not be lost.* These triggers do more than check references. They
+denormalise fields and maintain the bitemporal validity range that the exclusion
+constraint enforces, so they cannot simply be removed. Separating the validation
+from the versioning is the first step, and only the validation half is replaceable
+by a foreign key.
+
+** Defect 8: enumerations enforced in PL/pgSQL
+
+*Current shape.* Loading every table surfaced 27 enumerations that no check
+constraint and no foreign key declares. They live inside trigger functions, which
+raise with the valid set in the message, for example =trade_type= against 112
+values, =leg_type= against ten and =payment_frequency= against nine.
+
+*Why it is wrong.* This is defects 4 and 5 in a third form, and the worst of the
+three. The valid set exists, and it is written in a procedure rather than in the
+schema. Nothing can query it, no tool can generate from it, and a reader
+discovers it by triggering a failure.
+
+=ores_trading_trade_types_tbl= holds 112 rows and =trades.trade_type= is =text=
+with no foreign key to it. The reference table and the enforcement both exist,
+and they are not connected.
+
+*Replacement shape.* Declare the foreign key to the reference table that already
+holds the values, and delete the validation from the trigger. Where no reference
+table exists, defect 5's remedy applies first.
+
+*Evidence.* =scripts/load_trade_population.py= discovers these by loading a row,
+reading the rejection, and retrying with what the message named. Its output lists
+the 27 it learned, which is the current inventory.
+
+** Defect 9: one table holding two products
+
+*Current shape.* Five equity instrument tables carry a check constraint that
+splits the table into two products. The discriminator is =trade_type_code=, and
+each branch names the columns that product uses and the columns belonging to the
+other product, which must be null.
+
+| Table                 | Product A            | A requires present         | A requires null            |
+|-----------------------+----------------------+----------------------------+----------------------------|
+| =equity_option=         | EquityCliquetOption  | =cliquet_frequency=          | nothing                    |
+| =equity_accumulator=    | EquityTaRF           | =target_amount=, =target_type= | nothing                    |
+| =equity_position=       | EquityOptionPosition | =option_data_json=           | nothing                    |
+| =equity_digital_option= | EquityDigitalOption  | =option_type=, =strike=        | =barrier_level=, =barrier_type= |
+| =equity_swap=           | EquityWorstOfBasketSwap | =basket_json=             | =underlying_name=            |
+
+The first three are asymmetric: one product adds columns the other omits. The
+last two are a true exclusive or, where each product forbids the other's columns.
+
+*Why it is wrong.* The table's columns are not all meaningful for all its rows,
+so a reader must know the discriminator before it can interpret a row, and a
+query over =strike= silently means different things depending on a value in
+another column.
+
+The constraint expresses in SQL what a type would express in structure. The
+schema already models 25 other instruments as a table each, so these five are
+modelled differently from the rest with no stated reason. That inconsistency is
+the defect more than the technique is.
+
+*How to address it.* Three options, in ascending cost.
+
+1. *A table per product*, matching what the schema does for every other
+   instrument. This is the option consistent with the rest of the model and it
+   removes the constraint entirely. It costs a migration and a repository per new
+   table.
+2. *Keep the table and make the grouping explicit*, by naming the optional
+   column groups in the entity model so the generator emits both the constraint
+   and a typed accessor that cannot read =strike= on a touch option. This keeps
+   the storage and moves the discipline into the generated code.
+3. *Leave it and document it*, which is the current position by default rather
+   than by decision.
+
+The first is preferable for the two true exclusive-or tables, where the columns
+are genuinely disjoint and the row shapes have nothing in common. The asymmetric
+three are a weaker case: an optional column that only one product uses is
+ordinary, and only the constraint's phrasing makes it look like two products.
+
+*Consequence for population.* No row in the two exclusive-or tables can carry
+every column, whichever product is chosen. A loader must pick a product and honour
+that product's nulls. This is not a limitation to work around; it is the model
+saying the table holds two disjoint row shapes.
+
+** Defect 10: product type names an asset class
+
+*Current shape.* =product_type_t= is an enum on =ores_trading_trades_tbl= with
+eight values: =swap=, =fx=, =bond=, =credit=, =equity=, =commodity=, =composite=
+and =scripted=.
+
+*Why it is wrong.* Those are asset classes, and the column is called product
+type. The name is taken by a coarser concept than the one a desk means by
+product, which blocks the term for the classification that actually needs it.
+
+*Replacement shape.* Rename the column and the type to =asset_class=, which is
+what it holds, and leave =product_type= free.
+
+** Defect 11: staged reference data is never published
+
+*Current shape.* The cause of the above was not missing data. Acme's parties,
+business units, portfolios and books are all staged in the DQ artefact tables,
+and =ores.sql= carries 30 =ores_refdata_publish_*_from_dq_fn= functions that
+promote them into the refdata tables the rest of the system reads.
+
+*Nothing called them.* Every mention of a publish function in =populate/= was a
+comment. A freshly provisioned database therefore held 53 staged books and zero
+published ones, which is why no trade could be booked.
+
+*Why it is wrong.* The gap is silent and it fails far from its cause. The
+provisioning reports success, and the failure appears later as a rejected trade
+naming a book id, which says nothing about an unpublished dataset.
+
+The mechanism was designed to be driven at runtime by =ores.iam.core='s Acme
+provisioner over =dq.v1.bundles.publish=. That is a reasonable design, and it
+leaves a database unusable until a service has run, which the SQL provisioning
+does not say.
+
+*Repair applied.* =populate/acme/acme_publish_populate.sql= calls the same
+publish functions in dependency order, wired into =populate.sql= before the
+trading layer. It is a second trigger of one implementation rather than a second
+implementation, and it is idempotent. =fpml/fpml_populate.sql= is wired in ahead
+of it, since it stages the business centres. After both run the tenant holds 250
+countries, 217 business centres, 16 parties, 4 counterparties, 28 business units,
+36 portfolios and 31 books, and =trades= populates.
+
+*The order is not a preference.* It was derived by reading what each publish
+function selects from, and what the target table's insert trigger validates. The
+two give different edges and both matter.
+
+| Step             | Depends on       | Established by                                  |
+|------------------+------------------+-------------------------------------------------|
+| Countries        | nothing          |                                                 |
+| Business centres | Countries        | The publish function reads countries            |
+| Parties          | Business centres | The parties insert trigger validates the centre |
+| Business units   | Parties          | The publish function reads parties              |
+| Portfolios       | Business units   | The publish function reads business units       |
+| Books            | Portfolios       | The publish function reads portfolios           |
+| Counterparties   | nothing          |                                                 |
+
+The parties edge is the one a reader would miss. No publish function mentions a
+business centre, so the dependency is invisible on the read side. It appears only
+when the row is written, as a rejected party naming an unknown centre. *A
+dependency enforced by a trigger does not show up in the code that appears to do
+the work.*
+
+Business unit types, book statuses and regulatory book types are prerequisites
+too. They have no publish function and are loaded by direct populate scripts, so
+they carry no ordering constraint here.
+
+** Defect 12: the publish guard collapses every office onto one party
+
+*Current shape.* Each publish function resolves a root party and skips when that
+party already owns rows of the kind being published. The root party is the same
+for all four Acme offices, so publishing the group's datasets first causes the
+UK, US and Hong Kong datasets to skip.
+
+*Why it is wrong.* The result is silent and wrong rather than an error. Calling
+the four datasets in the obvious way publishes *2 books instead of 31*, reports
+=skipped= for the other three, and leaves a database that looks provisioned.
+
+The function does accept a =party_id= parameter, and passing each office's own
+party makes all four publish. So the mechanism is correct and its default is
+misleading: an omitted parameter silently narrows the result.
+
+*Replacement shape.* The guard should key on the dataset being published rather
+than on the party owning any row of that kind. A dataset already published is a
+sound reason to skip; another dataset belonging to a sibling office is not.
+
+*Worked around, not fixed.* The new populate script passes an explicit
+=party_id= per office. That produces the right data and leaves the misleading
+default in place for every other caller.
+
+** Defect 13: two names for an instrument's identity
+
+*Current shape.* Twenty-five instrument tables are keyed on =instrument_id=. Five
+are keyed on =id=, together with =trades=, =swap_legs=, =composite_legs=,
+=trade_identifiers= and =party_roles=.
+
+| Keyed on      | Count | Examples                                           |
+|---------------+-------+----------------------------------------------------|
+| =instrument_id= |    25 | =callable_swap=, =swaption=, =fx_forward=                |
+| =id=            |     5 | =bond=, =commodity=, =credit=, =composite=, =scripted=     |
+
+*Why it is wrong.* This is defect 6 in a load-bearing position. Two names for one
+concept mean a reader who learns the convention from one table is wrong about
+another, and a consumer that resolves a reference by name resolves it wrongly.
+
+*It has a demonstrated cost.* The population loader failed on
+=ores_trading_composite_legs_tbl= for two sessions. Its author, having seen 25
+tables keyed on =instrument_id=, mapped the child's =instrument_id= to a parent
+column of the same name. The parent is keyed on =id=, so the reference resolved
+to a value that did not exist, and the failure was recorded as a finding about
+reference data before it was traced to the naming. *An inconsistency that costs a
+consumer two sessions is not cosmetic.*
+
+*How to address it.* Rename to one convention and apply it everywhere. The
+majority is =instrument_id= and it is the more specific name, so the five
+outliers should follow the twenty-five. The rename is mechanical in the entity
+models and regenerates through the schema and repositories.
+
+The child tables are the priority regardless of which name wins, because they are
+where the mismatch causes a wrong reference rather than merely a surprise.
+
+** Coverage Across the Asset Classes
+
+Every defect-9 table is an equity table, which prompted a survey of that asset
+class. The survey then had to be repeated for the others, and the result is that
+equity is not special: it is the class where the schema states its coverage, so
+it is the class where the gap is visible.
+
+*** Two modelling strategies, not one
+
+ORE defines 112 trade types across eight asset classes. The schema has 30
+instrument tables, and they follow two incompatible approaches.
+
+| Approach                 | Tables | Asset classes            | Coverage declared |
+|--------------------------+--------+--------------------------+-------------------|
+| A table per product family |     18 | equity, fx, scripted, composite | Yes, by a check constraint on =trade_type_code= |
+| One table per asset class  |     12 | bond, commodity, credit, and the swap family | No |
+
+The first group constrains =trade_type_code= to the products the table holds, so
+the table says what it is for and a product it cannot hold is refused. The second
+group has no such constraint. =ores_trading_commodity_instruments_tbl= has 26
+domain columns, 24 of them nullable, and accepts any of the 23 commodity trade
+types with nothing recording which columns belong to which product.
+
+*This is defect 9 without the constraint.* The equity tables hold two products
+each and say so. The commodity table holds twenty-three and does not.
+
+*** Defect 14: declared coverage is incomplete, and elsewhere undeclared
+
+*Where coverage is declared*, it is incomplete:
+
+| Asset class | Trade types | Storable | Missing |
+|-------------+-------------+----------+---------|
+| equity      |          30 |       16 |      14 |
+| fx          |          25 |       16 |       9 |
+| scripted    |           5 |        4 |       1 |
+| composite   |           1 |        1 |       0 |
+
+*Where it is not declared*, coverage cannot be computed at all. Bond, commodity,
+credit and the swap family account for 51 of the 112 trade types, and no
+statement in the schema says which of them their tables can hold. The answer may
+be all of them or may not; the model does not say, and a generator cannot ask.
+
+The trade type reference table names all 112, and =trades.trade_type= accepts any
+of them, so a trade can be booked in every asset class that no instrument table
+is known to describe.
+
+*How to address it.* Declare the coverage everywhere first, before adding any
+table. A =trade_type_code= constraint on the twelve unconstrained tables turns an
+unknown into a list, and the list is what says whether a table is missing. Doing
+this is cheap and it is the prerequisite for knowing how large the rest of the
+work is.
+
+*** Defect 15: an underlying is an unqualified name
+
+*Current shape.* Equity's nine tables carry =underlying_name text=, unvalidated
+and carrying no scheme. Commodity carries =commodity_code= and =basket_json=. FX
+identifies its pair by currency columns.
+
+*Why it is wrong.* The value is unconstrained, so one instrument can be written
+as =VOD.L=, =VOD LN= and =Vodafone= in three rows with nothing relating them, and
+any question about exposure to an issuer becomes a string-matching exercise. The
+name also omits what pricing needs: an equity is identified by a ticker *and* a
+currency, and the currency lives in a separate column that nothing ties to it.
+
+More importantly, *a single column cannot hold a basket*. Sixteen trade types
+across equity, fx and commodity are multi-underlying, and none can be stored:
+
+| Family                 | Present in            |
+|------------------------+-----------------------|
+| =BasketOption=           | commodity, equity, fx |
+| =BasketVarianceSwap=     | commodity, equity, fx |
+| =RainbowOption=          | commodity, equity, fx |
+| =PairwiseVarianceSwap=   | commodity, equity, fx |
+| =WorstOfBasketSwap=      | commodity, equity, fx |
+| =OutperformanceOption=   | equity                |
+
+The two products that do carry a basket, =EquityWorstOfBasketSwap= and the
+commodity basket, escape through =basket_json=, a text column holding an
+unqueryable list.
+
+*Replacement shape.* This project already has the identifier this column should
+carry. [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]] is a canonical, structured market data URI, implemented in
+=ores.marketdata.api= as =oresmd_uri=, and an underlying is what it addresses:
+
+: oresmd://equity/aapl?ccy=usd
+
+The authority is the asset class, the path is the ticker, and the currency is a
+query parameter, so the identifier carries what the name and the =currency=
+column carry today and says which scheme it is in. It projects deterministically
+into ORE's own quote key, =EQUITY/PRICE/AAPL/USD=. Because the authority is the
+asset class, the same column serves commodity and fx underlyings.
+
+An underlying is then a row rather than a column, so a basket is n rows:
+
+#+begin_src sql
+ores_trading_instrument_underlyings_tbl
+  instrument_id     uuid not null
+  tenant_id         uuid not null
+  sequence_number   int  not null   -- basket order, or the leg of a pairwise product
+  underlying_uri    text not null   -- an oresmd URI
+  weight            numeric         -- null for a single underlying
+  primary key (tenant_id, instrument_id, sequence_number)
+#+end_src
+
+A single-underlying option is one row, a basket is n, and an outperformance
+option is two. =basket_json= is deleted and =underlying_name= comes out of the
+nine equity tables.
+
+*What this depends on.* =oresmd= is implemented as a domain type and no database
+column uses it yet, so this would be its first persisted use. Two questions
+follow that this page does not settle: whether the URI is stored as text with
+validation in the trigger, or parsed into columns, and whether a resolved
+identifier should be registered in a table so that two trades naming the same
+underlying share a row rather than a string.
+
+*** Defect 16: no observation schedule
+
+*Current shape.* Products that observe an underlying over time hold that schedule
+as scalars. =equity_asian_option= has =averaging_start_date= and
+=averaging_end_date=, =equity_accumulator= has =fixing_frequency=,
+=equity_option= has =cliquet_frequency=, and =commodity= has
+=averaging_start_date=, =averaging_end_date= and =strip_frequency_code=.
+
+*Why it is wrong.* A frequency plus two dates describes a regular schedule and
+nothing else. It cannot express an irregular fixing list, a schedule with
+holidays removed, or an observation window that opens and closes. Twelve trade
+types across three asset classes need one and have no home:
+
+| Family                     | Present in            |
+|----------------------------+-----------------------|
+| =BestEntryOption=            | commodity, equity, fx |
+| =StrikeResettableOption=     | commodity, equity, fx |
+| =WindowBarrierOption=        | commodity, equity, fx |
+| =GenericBarrierOption=       | commodity, equity, fx |
+
+*Replacement shape.* This is defect 1's schedule table. The same
+=ores_trading_schedules_tbl=, with a =schedule_type_code= of =fixing=,
+=averaging= or =observation=, serves all twelve, and the scalar frequency columns
+become a generated schedule rather than a special case.
+
+*** What the repair looks like
+
+Two structural gaps account for 28 of the 112 trade types, a quarter of the
+catalogue, and they are the same two gaps in every asset class that has them.
+That is the argument for fixing the mechanisms rather than adding tables.
+
+1. *Declare coverage on the twelve unconstrained tables.* Cheap, and it converts
+   an unknown into a list. Nothing else can be sized until this is done.
+2. *The underlyings table, carrying an oresmd URI.* Sixteen trade types stop
+   being blocked, across three asset classes. It needs no new master.
+3. *The schedule table*, shared with defect 1. Twelve more stop being blocked.
+4. *Split the exclusive-or tables*, per defect 9, and decide what to do about the
+   generic commodity, bond and credit tables, which are the same problem at
+   greater scale.
+5. *Add tables for what is then left*, which is a much shorter list than it looks
+   today.
+
+*What this is not.* None of this changes how a product is priced, and none of it
+blocks the trade population story, since what the schema stores is enough to
+generate a realistic population. It is recorded because the population work
+surfaced it, and because a population that silently omits a quarter of the
+catalogue is not the population anyone asked for.
+
+** The Equity Family in detail
+
+Equity is the worked example, because it is the class with the most declared
+coverage and therefore the clearest gap.
+
+Nine tables model equity. ORE defines 30 equity trade types and the nine can
+store 16.
+
+| Table                 | Types | Which                                   |
+|-----------------------+-------+-----------------------------------------|
+| =equity_barrier_option= |     3 | Barrier, DoubleBarrier, EuropeanBarrier |
+| =equity_accumulator=    |     2 | Accumulator, TaRF                       |
+| =equity_digital_option= |     2 | Digital, Touch                          |
+| =equity_option=         |     2 | Option, CliquetOption                   |
+| =equity_position=       |     2 | Position, OptionPosition                |
+| =equity_swap=           |     2 | Swap, WorstOfBasketSwap                 |
+| =equity_asian_option=   |     1 | AsianOption                             |
+| =equity_forward=        |     1 | Forward                                 |
+| =equity_variance_swap=  |     1 | VarianceSwap                            |
+
+The fourteen it cannot store divide as the defects above predict. Eleven are the
+multi-underlying and observation-schedule families. The remaining three,
+=CashPosition=, =ContractForDifference= and =TotalReturnSwap=, are classified as
+equity products and have no table of any kind, which is the ordinary kind of gap:
+a table nobody has written yet.
+
+** What the loader could not populate
+
+When the loader was first run, five of the 41 tables rejected a fully populated
+row. All 41 now load. The reasons divide into three, and only two were findings
+about the model.
+
+*** Three tables needed reference data that was never published
+
+=trades=, =party_roles= and =composite_legs= failed because
+=ores_refdata_books_tbl= was empty. That is defect 11, and it is fixed: the
+publish step now runs during provisioning.
+
+=ores_trading_trades_tbl= validates six references before it accepts a row, and
+names each as a soft foreign key in its own comments.
+
+| Reference          | Validated against               |
+|--------------------+---------------------------------|
+| =book_id=            | =ores_refdata_books_tbl=          |
+| =portfolio_id=       | =ores_refdata_portfolios_tbl=     |
+| =counterparty_id=    | =ores_refdata_counterparties_tbl= |
+| =status_id=          | =ores_dq_fsm_states_tbl=          |
+| =successor_trade_id= | =ores_trading_trades_tbl=         |
+| =trade_type=         | Enumeration inside the trigger  |
+
+A seventh rule is stricter than a foreign key could express: =portfolio_id= must
+equal the parent portfolio of the book named by =book_id=. The two references are
+not independent, so supplying a valid book and a valid portfolio is not
+sufficient. They must agree.
+
+*** One was not a defect at all
+
+=ores_trading_composite_legs_tbl= continued to fail after the reference data was
+published, and the cause was the loader rather than the model: it resolved the
+parent's key by the wrong column name. That is defect 13, and the entry is kept
+because the model's inconsistency is what made the mistake available.
+
+*** Two hold two products and cannot carry every column
+
+=equity_digital_option= and =equity_swap= are the exclusive-or cases of defect 9.
+The loader now selects a product and writes nulls where that product requires
+them, and both load. The defect stands: no row can carry every column.
+
+*** A related finding: rows cannot be deleted
+
+The tables are bitemporal, and an =ON DELETE= rule rewrites every =DELETE= into
+an =UPDATE= that sets =valid_to= to the current timestamp. A delete closes a
+row's validity and never removes it.
+
+This is correct for the domain and it matters for population. A generator that
+loads a population, and a test that clears one, cannot use =DELETE= to undo their
+work. Removing rows requires suspending the rule, which is a privileged operation
+and not something a test should do casually.
+
+Any preset described as replaceable needs to say what replacement means here,
+because the obvious implementation does not remove anything.
+
+* Conclusions
+
+The sixteen defects fall into four kinds, and confusing them would misdirect the
+repair.
+
+Defects 1 to 3 are *type defects*. A value is held in a type too wide for its
+meaning, so the database cannot constrain it, index it, or store it compactly.
+These cost performance and correctness together, and defect 1 is one of the two
+whose cost is measured rather than argued.
+
+Defects 4 to 6 and 13 are *integrity defects*. A relationship or a name the model
+relies on is not declared consistently, so nothing the database controls enforces
+it and no consumer can rely on it.
+
+Defects 7 to 10 are *placement defects*, and they are the ones the loader found.
+The rule exists and it is written in the wrong place. Referential integrity lives
+in PL/pgSQL rather than in a foreign key, enumerations live in trigger bodies
+rather than in the reference tables that already hold their values, a product
+distinction lives in a check constraint rather than in a table, and a concept
+sits under a name that means something else.
+
+Placement is why these are expensive. A rule in a procedure cannot be queried,
+planned against, deferred or generated from, and defect 7 shows the price: the
+triggers cost a factor of about 25 on the insert path.
+
+The single largest finding is that the model already knows the right answers.
+Reference tables exist, the =_code= convention is established, the SQL types are
+correct where the C++ ones are not, and the valid value sets are written down.
+Each is applied to a minority of the places that need it, or is written somewhere
+the database cannot use it. *The repair is mostly the consistent application of
+decisions this model has already made*, which makes it a smaller undertaking than
+the counts suggest.
+
+Defects 14 to 16 are *expressiveness defects*, and they are the only kind that
+loses information rather than discipline. A shape the domain has cannot be
+written down at all: 28 of ORE's 112 trade types have no table, across equity, fx
+and commodity, because an underlying is a scalar and an observation schedule is a
+frequency. The others make the model
+harder to trust; these make it unable to hold what a desk trades.
+
+Two defects carry a measurement rather than an argument. Defect 1 costs 4x on the
+load path and defect 7 costs about 25x. Defect 14 carries a count: 37 of 112
+trade types are known to be storable, and for 51 the schema says nothing.
+
+* Recommendations
+
+Repair in the order the dependencies require, not in the order of the counts.
+
+1. Defect 6 first. It is a rename, it is cheap, and defect 5 cannot be done
+   without it.
+2. Defect 5 next, since it makes the =_code= convention true, and defect 4 then
+   follows the same pattern for the remaining enumerations.
+3. Defect 1 for the schedules, which is the change that carries the measured
+   benefit and unblocks the fast population path.
+4. Defects 2 and 3 last. They are the widest by field count and the most
+   mechanical, and they touch the mappers rather than the shape of the model.
+
+Two things should be settled before any of this is scheduled.
+
+Check the deployed SQL schema against the C++ declarations. Every count here is
+from the headers, and where the generated schema already declares a stronger
+type, the defect is narrower than stated.
+
+Decide whether these repairs belong to trade population at all. They were found
+by this story and they are not its subject. The measured part of defect 1 blocks
+the fast population path and belongs here; the rest is a change to the trading
+domain model that deserves its own story, so that a population story does not
+quietly become a schema migration.
+
+* See also
+
+- [[id:37E54766-CE97-4981-A3C8-B2A232ED9A04][Design: Trade population generation]] — the measurements that exposed defect 1.
+- [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Story: ORE trade generator trade populations]] — the parent story.

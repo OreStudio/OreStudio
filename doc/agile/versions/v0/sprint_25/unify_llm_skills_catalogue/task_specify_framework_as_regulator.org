@@ -31,9 +31,9 @@ and is checkable.
 |--------------+----------------------------------------|
 | State        | DONE                                 |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Done; PR pending.                      |
+| Now          | Merged.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the pull request.                |
+| Next         | Nothing.                               |
 | Last touched | 2026-09-07                               |
 
 * Acceptance

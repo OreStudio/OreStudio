@@ -1,0 +1,111 @@
+:PROPERTIES:
+:ID: 4704B1FE-19C5-4EB8-B4DE-3B8F7E255772
+:END:
+#+title: Desk-facing product type
+#+description: ORE Studio models products at ORE's trade-type granularity, which is a pricing-level abstraction; a desk treats several configurations of one trade type as distinct products.
+#+type: capture
+#+level: cross
+#+filetags: :domain:trading:modelling:product:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+ORE Studio has no concept of a product as a trading desk uses the word. It models
+instruments at the granularity of ORE's =<TradeType>=, which is a pricing-level
+abstraction, and that granularity does not match the desk's.
+
+A desk treats a Bermudan swaption, a cross-currency swap, a tenor basis swap and
+a vanilla fixed-float swap as four distinct products. It quotes them separately,
+books them to different desks, and reports them on separate lines. ORE represents
+all four as =Swap= or =Swaption= carrying different legs and exercise data,
+because from a pricing perspective they are the same builder with different
+inputs.
+
+Both views are correct for their purpose. ORE Studio currently holds only the
+pricing view, so the desk view cannot be expressed at all.
+
+The capture is for a *product type*: a desk-facing classification that maps
+many-to-one onto ORE trade types, and that carries the name the desk actually
+uses.
+
+* Why
+
+The immediate need is trade population generation. The distribution in
+[[id:A1310399-0ACD-4FA1-9645-AB24B3C8BEB8][Trade Population Weights]] assigns 19% of a population to =Swap=, which is not a
+usable instruction. A generator given that number cannot know what proportion
+should be OIS, cross-currency or tenor basis, and those choices decide which
+curves, discounting paths and leg structures the population exercises. The
+weights need desk-facing granularity to be actionable.
+
+The need is not confined to generation. Any surface where a person chooses,
+filters or reports on what was traded wants the desk's vocabulary rather than
+ORE's. A blotter listing nineteen thousand rows all labelled "Swap" is not
+useful, and neither is a risk report aggregated at that level.
+
+There is also a modelling argument. The product a desk trades and the builder
+that prices it are different concepts that happen to coincide for simple
+instruments. Holding one and calling it the other is why the distinction is not
+expressible today.
+
+* Shape of the work
+
+Not designed here. The pieces that appear necessary:
+
+- A reference table of product types, desk-facing, with the names desks use.
+- A mapping from product type to ORE trade type, many-to-one, plus whatever
+  discriminates one product type from another within a trade type. Exercise
+  style separates a Bermudan swaption from a European one; leg currencies
+  separate a cross-currency swap from a single-currency one; leg index tenors
+  separate a basis swap.
+- A rule for deriving the product type of an existing trade, so the
+  classification applies to trades already booked rather than only to new ones.
+- The trade population weights restated at product-type granularity.
+
+The discriminators are the hard part. Some are a single field and some are a
+predicate over the legs, so the mapping is not a lookup table alone.
+
+* What done looks like
+
+The test is the distribution. Every weight must name a product a desk would
+recognise, and no weight may sit on a trade type that covers several of them.
+
+Concretely, the 19% currently held against =Swap= becomes a set of weights that
+sum to 19%, one per desk-facing product. Illustrative only, since arriving at the
+split is the work rather than its premise:
+
+| Desk-facing product     | Weight | ORE trade type | Discriminator                                           |
+|-------------------------+--------+----------------+---------------------------------------------------------|
+| Vanilla fixed-float IRS |  7.00% | =Swap=           | One currency, fixed against Ibor                        |
+| OIS                     |  5.00% | =Swap=           | Floating index is an overnight rate                     |
+| Cross-currency swap     |  3.50% | =Swap=           | Legs in two currencies                                  |
+| Tenor basis swap        |  2.50% | =Swap=           | Two floating legs, one currency, different index tenors |
+| Cross-currency basis    |  1.00% | =Swap=           | Two floating legs, two currencies                       |
+
+The same treatment applies to =Swaption=, where European and Bermudan exercise
+are separate products selecting different pricing models, and to =CapFloor= and
+=Bond=.
+
+Two properties the result must hold. The weights are stated per desk-facing
+product, so a generator never has to invent a split. And they roll up to the
+trade type totals, so the population's shape at ORE's granularity is unchanged by
+the finer statement.
+
+* Status
+
+Deferred. It was found while writing the trade population weights, and it is not
+that story's subject. Recorded so the distribution's coarseness at =Swap= and
+=Swaption= is a known limitation rather than an oversight.
+
+* References
+
+- ORE user guide, =Docs/UserGuide/products.tex= — the trade type catalogue this
+  would sit above.
+
+* See also
+
+- [[id:A1310399-0ACD-4FA1-9645-AB24B3C8BEB8][Trade Population Weights]] — the distribution that needs this granularity.
+- [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]] — the trade type covering the largest number of desk-facing products.
+- [[id:FCC37EB3-D654-4333-B110-3BF4AFA3A237][Swaption]] — where exercise style separates two desk-facing products.

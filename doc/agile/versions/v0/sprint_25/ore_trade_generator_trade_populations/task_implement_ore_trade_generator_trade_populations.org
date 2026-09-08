@@ -1,0 +1,143 @@
+:PROPERTIES:
+:ID: A1405F36-C32F-46CE-A550-40015616B986
+:END:
+#+title: Task: Evaluate the approaches to generating trade populations
+#+description: Survey the ways a sized, realistic trade population could be produced, evaluate each against speed, reproducibility, realism and cost, and present the options for a decision. Produces a recommendation, not a built pipeline.
+#+type: task
+#+level: s1
+#+filetags: :ore_trade_generator_trade_populations:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Generate realistic trade populations for Acme using ORE's TradeGenerator]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Put the choice in front of a decision-maker with the evidence attached.
+
+There are several ways to produce a sized trade population and they differ on
+things that matter: how long generation takes, how long loading takes, what ends
+up committed to the repository, whether the same size always yields the same
+book, and how much of =ores.trading= each can populate.
+
+This task surveys those approaches, measures them where measurement is cheap,
+and presents them as options. It does not choose. The deliverable is a
+recommendation with its reasoning exposed, so the decision can be made and
+disagreed with.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Generate realistic trade populations for Acme using ORE's TradeGenerator]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- The candidate approaches are named and described, at minimum the four in
+  Notes below, with any further candidate the survey turns up.
+- Each is evaluated against stated criteria rather than impressions. Generation
+  time, load time, what lands in git, reproducibility, achievable realism,
+  coverage of the =ores.trading= instruments, dependency footprint, and
+  maintenance cost.
+- Speed is measured, not argued. Whatever is cheap to time is timed, at a size
+  that extrapolates to the largest tier; where a measurement is too expensive to
+  take, the task says so rather than guessing.
+- A tradeoffs table compares the approaches on those criteria, and a
+  recommendation is made with its reasoning stated so it can be contested.
+- The question of realism at small sizes is answered for each approach: whether
+  it can produce a tiny book that is a small firm's book rather than a large
+  one's truncated.
+- Approaches ruled out are recorded with the reason, so a later reader does not
+  reopen them.
+
+* Notes
+
+Scoping findings, recorded so the analysis starts from them.
+
+*** The candidates
+
+#+ATTR_HTML: :class hug-leading
+| Approach | Shape |
+|----------|-------|
+| Committed SQL dataset | Generate once, commit the SQL, seeder loads it as the rest of a dataset already is |
+| Algorithmic generation in C++ | A generator writes to the database at provision time, sized by a parameter and reproducible from a fixed seed |
+| ORE-Python TradeGenerator | Build trades through ORE's own API, emit XML, import through the existing =ores.ore= mappers |
+| Archetypes multiplied | ORE fixes conventions for a modest set of archetypes; multiplying them across notionals, maturities and counterparties is our own work |
+
+They are not mutually exclusive. A committed dataset for the small sizes and
+algorithmic generation for the large ones is a fifth option, and the survey
+should consider it rather than treating the four as a forced choice.
+
+*** The block already has siblings
+
+=ores.synthetic= is a full service, api/core/service, and already handles
+=generate_organisation_request= on subject =synthetic.v1.organisation.generate=
+with a typed configuration. Beside it sit =feed_config=,
+=market_data_generation_config=, =fx_spot_generation_config= and
+=ir_curve_generation_config=, all persisted entities under
+=projects/ores.synthetic/modeling/=.
+
+A trade generation configuration is the missing sibling. The analysis should
+read those protocols and configs first, because the shape of the answer is
+probably already written down; the question is what a trade configuration
+carries that a market data one does not.
+
+The service boundary is the one design point that is not simply copied.
+=ores.synthetic= owns generation; =ores.trading= owns trades. The generator
+calls downstream rather than writing to the trade tables, so the analysis needs
+to say which call, whether it is per trade or batched, and what that costs at
+the largest size. Batching is likely to be the difference between viable and
+not.
+
+*** What exists already
+
+=projects/ores.ore/core/domain/= carries =trade_mapper= and per-asset-class
+mappers for swap, equity, FX, commodity, bond and credit, with =xml/importer=
+and =xml/exporter=. The XML import half is largely built, which is why the open
+question is generation and volume rather than import.
+
+=projects/ores.seeder/= is Python only, =src/seeder.py= with datasets beside it.
+An algorithmic C++ generator would be new work and needs a home;
+=projects/ores.synthetic= is the obvious candidate and already carries the
+synthetic market data generation.
+
+=portfolios.json= in the Acme dataset carries 36 portfolios, each with an owner
+unit code, an aggregation currency, a parent portfolio and a virtual flag. Those
+fields are what a realistic assignment rule has to use.
+
+*** Why volume decides much of this
+
+At the order of 400,000 trades, committing generated SQL puts a large artefact
+in git and building each trade through ORE-Python is unlikely to be viable on
+time. Neither is disqualifying on its own, and both are cheap to test. A fixed
+seed makes algorithmic generation reproducible, which removes the usual argument
+for committing the data.
+
+*** The reference
+
+=/home/marco/Development/ORE/Engine/Examples/ORE-Python/TradeGenerator/= holds
+=Readme.md= and =trade_generator_test.py=. Its lesson is the lookup: a trade is
+built from an index such as =GBP-SONIA=, which selects a convention and a curve
+config, and those supply payment frequency, calendars, business day conventions
+and spot lags. The caller supplies only notional, maturity, rate and direction.
+That knowledge is worth extracting whether or not the tool is adopted.
+
+*** Prior capture
+
+[[id:2521B2BD-3956-4F4C-AC4D-1B621721268D][ORE's Python TradeGenerator could programmatically build Acme's synthetic trade
+portfolios]] raised this and framed the live-dependency question. This task
+supersedes it and should close it.
+
+* Result

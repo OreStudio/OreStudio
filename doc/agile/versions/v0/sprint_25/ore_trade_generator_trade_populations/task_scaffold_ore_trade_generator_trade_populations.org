@@ -1,0 +1,126 @@
+:PROPERTIES:
+:ID: BC57336F-9823-428F-8060-15DB3AEB47B3
+:END:
+#+title: Task: Scaffold story: Generate realistic trade populations for Acme using ORE's TradeGenerator
+#+description: Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR.
+#+type: task
+#+level: s1
+#+filetags: :ore_trade_generator_trade_populations:sprint_25:v0:
+#+owner: marco
+#+branch: feature/ore-trade-generator-trade-populations
+#+pr: 2034
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Generate realistic trade populations for Acme using ORE's TradeGenerator]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The story has its documents, its sprint wiring, and an analysis solid enough that
+the next person can act on it without rebuilding the reasoning.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                 |
+| Parent story | [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Generate realistic trade populations for Acme using ORE's TradeGenerator]] |
+| Now          | Merged.                                |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-07                               |
+
+* Acceptance
+
+- The story, its design and its tasks exist and are wired into the sprint.
+- The design states what is known, what was measured, and what remains open,
+  with the open questions separated from the answered ones.
+- Anything found that is not this story's work is recorded where it can be
+  picked up, rather than left in a commit message.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2034][#2034]] | [doc] Analyse trade population generation and publish Acme reference data |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Stale "six defects" in the lead sentence | trade_model_defects.org | Fixed | Correct. The document grew from 6 to 16 defects and the lead was never updated. |
+| 2 | Stale "the only one of the six whose cost is measured" | trade_model_defects.org | Fixed | Correct, and it contradicted the Conclusions two paragraphs later, which name two measured defects. Now says one of the two. |
+| 3 | SQL provisioning verified sound; no issues | populate.sql, acme_publish_populate.sql | Noted | No change requested. |
+| 4 | Scripts are dev tooling; f-string interpolation not an injection risk since names come from introspection | scripts/*.py | Noted | Agreed with the reasoning. No change requested. |
+| 5 | Cross-checked the coverage arithmetic; no errors | design.org, trade_model_defects.org | Noted | No change requested. |
+
+A third stale count the review did not name was found while checking for others.
+=design.org= still answered the coverage question with "eleven of ORE's 27 equity
+trade types", the figure superseded when the survey was extended to every asset
+class. It now reads 28 of 112 across equity, fx and commodity.
+
+* Result
+
+The story is scaffolded and its analysis is substantially further than
+scaffolding required, because measuring the population path turned out to be
+cheap once the lever existed.
+
+Three scripts were written and all three are reusable.
+=scripts/bench_trade_insert.py= times a single table, isolating the load method
+and the notify trigger from the shape. =scripts/bench_trade_shapes.py= times a
+population by instrument shape across all its tables.
+=scripts/load_trade_population.py= fills every column of all 41 deployed
+=ores_trading= tables against the real schema, and reports what it cannot
+populate as findings rather than failing silently.
+
+The measurements corrected the design twice. A synthetic table put the notify
+trigger at 4.2x; on the deployed schema it is 1.5%, and the per-row insert
+trigger costs about 25x. A million vanilla swaps is 7.6 minutes rather than the
+15 seconds the synthetic path suggested. Both corrections are recorded in the
+design with the numbers behind them.
+
+One defect was fixed rather than recorded, because it blocked the story
+outright. Acme's books and portfolios were staged in the DQ artefact tables and
+never published into refdata, so a freshly provisioned database could not hold a
+single trade. =populate/acme/acme_publish_populate.sql= now runs during
+provisioning, =fpml/fpml_populate.sql= is wired in ahead of it, and a rebuild
+from scratch was verified end to end: zero errors, 31 books, 36 portfolios, and
+trades loading.
+
+What was found and not fixed is recorded in
+[[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]], which carries sixteen defects in the
+trading model with a proposed repair for each. That is the reason the story
+pauses here rather than continuing: two of those defects bound what any
+population can contain, and repairing them first is cheaper than generating
+against a model that is about to change.
+
+Two things this task got wrong and corrected. A benchmark reported nonsense
+numbers for a full session because its table copied a literal string into a
+timestamp column, and the numbers were retracted rather than explained. The
+loader left 588,000 rows in the development database because its cleanup used
+=DELETE=, which an =ON DELETE= rule rewrites into a validity close on these
+bitemporal tables; the rows were removed and the cleanup now suspends the rules
+and verifies both the rows and the rules afterwards.

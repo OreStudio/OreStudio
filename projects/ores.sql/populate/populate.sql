@@ -203,6 +203,24 @@
 \ir dq/dq_fsm_populate.sql
 
 -- =============================================================================
+-- FpML Layer (must precede Reference Data Publication -- business centres are
+-- published from fpml.business_center, and a party is rejected without them)
+-- =============================================================================
+
+\echo ''
+\echo '--- FpML Layer ---'
+\ir fpml/fpml_populate.sql
+
+-- =============================================================================
+-- Reference Data Publication (must precede Trading -- a trade's book_id is
+-- validated against ores_refdata_books_tbl, which is empty until this runs)
+-- =============================================================================
+
+\echo ''
+\echo '--- Reference Data Publication ---'
+\ir acme/acme_publish_populate.sql
+
+-- =============================================================================
 -- Trading Layer
 -- =============================================================================
 

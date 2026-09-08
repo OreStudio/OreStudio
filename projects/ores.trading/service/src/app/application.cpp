@@ -31,8 +31,12 @@
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
 #include "ores.trading.service/messaging/balance_guaranteed_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/bond_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/callable_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/cap_floor_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/commodity_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/composite_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/credit_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_barrier_option_instrument_event_registrar.hpp"
@@ -54,6 +58,7 @@
 #include "ores.trading.service/messaging/knock_out_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/rpa_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/scripted_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_id_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_type_event_registrar.hpp"
@@ -208,6 +213,21 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto vanilla_swap_instrument_sub =
         ores::trading::service::messaging::register_vanilla_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto bond_instrument_sub =
+        ores::trading::service::messaging::register_bond_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto commodity_instrument_sub =
+        ores::trading::service::messaging::register_commodity_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto composite_instrument_sub =
+        ores::trading::service::messaging::register_composite_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto credit_instrument_sub =
+        ores::trading::service::messaging::register_credit_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto scripted_instrument_sub =
+        ores::trading::service::messaging::register_scripted_instrument_event_mapping(
             event_source, event_bus, nats);
 
     event_source.start();

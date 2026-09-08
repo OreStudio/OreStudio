@@ -23,10 +23,10 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Fx (3997afdcbb) and equity (fb897f374b) instrument batches committed and live-verified. |
+| Now           | Fx (3997afdcbb), equity (fb897f374b) and rates (3a4a0e4bd3, 0dd2515fe4, 0ea3563012) instrument batches committed and live-verified. |
 | Waiting on    | Nothing.                               |
-| Next          | Rates instrument verbs (task 360B5207). |
-| Last touched  | 2026-09-07                               |
+| Next          | Generic instrument-family verbs (task C36A4ECA). |
+| Last touched  | 2026-09-08                               |
 
 * Acceptance
 
@@ -43,7 +43,7 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 | [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the trade-side verb units (lifecycle_event, trade, trade_identifier, trade_party_role)]] | BACKLOG | | | Add lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands to the trading command folder, completing the trade-side surface (the reference trio shipped in the sibling reference task). The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
 | [[id:E2E3689F-B43E-4879-9F9D-54DB3ED91110][Add the fx instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add fx_accumulator_commands, fx_asian_forward_commands, fx_barrier_option_commands, fx_digital_option_commands, fx_forward_commands, fx_vanilla_option_commands and fx_variance_swap_commands to the trading command folder, cloned from the reference-entity skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live fx-batch system test: add/list/history/delete round trips per unit through the trading.v1 subjects with DB-row and changed-event verification. |
 | [[id:94A5EA1A-BA18-49C6-B010-A6A860AA19BA][Add the equity instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add equity_accumulator_commands, equity_asian_option_commands, equity_barrier_option_commands, equity_digital_option_commands, equity_forward_commands, equity_option_commands, equity_position_commands, equity_swap_commands and equity_variance_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live equity-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
-| [[id:360B5207-7ECE-4423-8E0E-E091A6CD2A55][Add the rates instrument verb units]] | BACKLOG | | | Add balance_guaranteed_swap_commands, callable_swap_commands, cap_floor_commands, fra_commands, inflation_swap_commands, knock_out_swap_commands, rpa_commands, swaption_commands and vanilla_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live rates-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
+| [[id:360B5207-7ECE-4423-8E0E-E091A6CD2A55][Add the rates instrument verb units]] | DONE | 2026-09-08 | 2026-09-08 | Add balance_guaranteed_swap_commands, callable_swap_commands, cap_floor_commands, fra_commands, inflation_swap_commands, knock_out_swap_commands, rpa_commands, swaption_commands and vanilla_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live rates-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
 | [[id:C36A4ECA-5D15-4558-B7D8-EFC3B6250194][Add the generic instrument-family verb units]] | BACKLOG | | | Add bond_commands, commodity_commands, composite_commands, credit_commands and scripted_commands plus the activity_type commands, serving the single-handler families registered by registrar_bond.cpp, registrar_commodity.cpp, registrar_composite.cpp, registrar_credit.cpp and registrar_scripted.cpp. Establish whether the service serves every family subject (list/save/delete/history) and whether the DB layer holds them; fix or record any gap, then run the live generic-batch system test per family. |
 
 * Decisions
@@ -105,6 +105,28 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
   event name. The equity event capture missed the probe adds and
   deletes until the subscriber landed on the full prefixed subject
   ores.dev.brave_hopper.ores.trading.>.
+- Instrument families with codegen protocols serve one consolidated
+  wire contract. The rates families' per-family protocols, handlers
+  and registrars predated the consolidation, duplicated it and had no
+  callers, so the rates batch deleted all 36 (0ea3563012) and
+  regenerated the cmake lists; a full deletion build proved nothing
+  pulled them in. Every later batch audits the subjects its families
+  actually serve and removes per-family messaging files the
+  consolidated registrars supersede.
+- The event-side twin of the fan-out rule: per-family event
+  registrars sat in the component but the service application never
+  called =register_*_instrument_event_mapping=, so changes to the
+  rates instruments reached no event bus until 0dd2515fe4 wired them,
+  mirroring the fx and equity families. Every later batch checks the
+  application.cpp registration per family before live testing.
+- After any rebuild that relinks the trading service, restart the
+  service before probing: a running process keeps executing the
+  library image it linked at start, so the wire it answers on can lag
+  the sources on disk by hours. The rates legacy-wire anomaly was
+  exactly that — a pre-consolidation process serving per-family reply
+  members the current lib no longer emits (=/proc/PID/map_files=
+  marks the replaced file (deleted)); a restart onto the rebuilt lib
+  resolved it and the nine-family matrix went 45/45.
 
 * Out of scope
 

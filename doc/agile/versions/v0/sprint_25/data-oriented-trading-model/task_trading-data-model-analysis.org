@@ -1,0 +1,118 @@
+:PROPERTIES:
+:ID: 40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7
+:END:
+#+title: Task: Analyse the ores.trading data model against the data-oriented criteria
+#+description: Run the code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/trading-data-model-analysis
+#+pr: 2038
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A single in-depth analysis document that reviews the whole ores.trading data model with the code-review-data-model skill and the data_oriented_design criteria, accounts for all prior analysis (the codegen gap investigation 2548EE95, the C1202 complexity doc, the Sep-8 drift inventory, the temporal/versioning and composite architecture docs), and proposes the correct data-oriented target model: a normalised relational model in the DOP reading — atomised entities with keys and foreign keys, no object graph — with every persisted family modeled in the org grammar, the wire and the domain as codegen projections, composite and versioning semantics preserved as per-table facts and temporal joins, and the service-layer changes to deliver it, sequenced across PRs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-08                               |
+
+* Acceptance
+
+- The analysis classifies ores.trading into the data-oriented design regimes and scores each regime against the anchored scale of the data-oriented criteria.
+- The analysis inventories the full decision surface (modeling orgs), invariant surface (generated and hand-written domain C++), SQL schema, repository, service, messaging and eventing artefacts of ores.trading.
+- Every known divergence between the model and the tree is traced to a cause (codegen grammar gap, hand-evolved tree, orphaned stack, doc staleness), citing the prior investigations.
+- The analysis proposes the target data-oriented model: the relational principle (no object graph), the normalised entity shape with keys and foreign keys, the identity and audit spine, nested group decomposition, composite and versioning semantics, the wire as parts or container messages, and the service-layer shape.
+- The analysis lists the service-layer shape changes the target model requires, and sequences the work across the follow-up PRs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2038][#2038]] | [doc] Analyse ores.trading data model against data-oriented criteria |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Delivered the analysis as the knowledge doc
+=doc/knowledge/architecture/trading_data_oriented_model.org= (ID
+dfe15809-ab5a-4eb7-8afb-251bf5d0b911), using the
+[[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] skill against the data-oriented criteria of
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][BBD43BF2]].
+
+What the analysis contains:
+
+- The regime classification: ores.trading is Regime 2 (persisted
+  domain data) and Regime 3 (wire); no Regime 1 kernel. Document-shaped
+  payloads enter at the boundary only.
+- A full inventory of the surfaces: 38 modeling orgs (25 instrument
+  orgs in the fx/equity/rates groups, 6 field groups, the trade
+  family, 4 lookups), 176 domain headers, 40 services, 123 repository
+  headers, 24 wire protocols, 59 handler/registrar files, the SQL
+  surface under =ores.sql=, and the eventing surface.
+- Thirteen findings (4 Critical, 7 Important, 2 Minor), each traced
+  to a cause: the four known codegen grammar gaps (a)-(d) from task
+  [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]], the tree that evolved past its models (trade, legacy
+  five), the tree-side wire consolidation, and the phantom stacks;
+  the sparse-table finding (F11) traces to a pre-relational
+  org-authoring style that normalisation fixes.
+- The anchored scores: Regime 2 = 2, Regime 3 = 2, overall verdict
+  2/5, debt High.
+- The proposed target data-oriented model: a normalised relational
+  model in the DOP reading — no object graph; atomised entities with
+  keys and foreign keys; sparse tables normalised into keyed child
+  rows (the new F11 finding). Complete org coverage; grammar growth
+  to close gaps (a)-(d) (mid-groups with domain-only members under
+  the C1202 ceiling, column-name mapping, paste-block custom methods,
+  wire emission control, profile-level eventing); semantics preserved
+  as per-table facts (SCD2 spine, optimistic versioning, audit
+  attribution, composite as-of reads as temporal joins — a recorded
+  divergence from the refdata option A of
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]] — trade lifecycle and successor chain); the wire as parts
+  or container messages (containers handcrafted first over the
+  generated part types, code-generated when the grammar can express
+  them); the service-layer shape; and the sequencing across nine PRs.
+
+All five acceptance bullets are met. The deliverable is the analysis
+only; the implementation PRs follow separately. The story stays
+STARTED until the follow-up PRs are broken into tasks and delivered.

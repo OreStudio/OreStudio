@@ -1,0 +1,825 @@
+:PROPERTIES:
+:ID: dfe15809-ab5a-4eb7-8afb-251bf5d0b911
+:END:
+#+title: A data-oriented data model for ores.trading
+#+description: The code-review-data-model review of the whole ores.trading data model: regime classification, per-family decision and invariant checks, the findings with causes, anchored scores, and the proposed data-oriented target model — a normalised relational model of atomised entities with keys and foreign keys and no object graph, the domain and the wire as projections, composite and versioning semantics preserved as per-table facts and temporal joins, container messages at the boundary, with the service-layer changes and PR sequencing.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:trading:data_model:data_oriented_design:codegen:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+* Summary
+
+ores.trading is a Regime 2 (persisted domain data) and Regime 3 (wire)
+component; it has no Regime 1 kernel of its own. Its data model is
+half codegen-driven. The modeling orgs fully express 25 of the
+instrument families, but the families that carry the most domain
+structure — bond, commodity, composite, credit, scripted, the two legs
+tables, and the whole =trade= domain — live in the tree by hand, as do
+the wire consolidation for fourteen families and a set of orphan
+generated-looking stacks that have no org and never had one. The Sep-8
+regeneration oracle produced 47 modified and 65 untracked files, and
+ores.trading is absent from the drift registry, so nothing in CI
+catches the divergence. Regeneration today would silently flatten
+nested domain groups, drop domain-only members, rename primary keys,
+re-optionalize members, and re-emit superseded messaging files.
+
+The review scores the component 2 out of 5 (Regime 2 and Regime 3),
+with High debt. The findings trace to three root causes: codegen
+grammar gaps (four known, from task [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]]), a tree that
+evolved past its models (the trade domain and the legacy instrument
+families), and a wire consolidation that happened tree-side instead of
+model-side.
+
+The proposed target is a proper data-oriented model in the
+relational reading of the DOD book, not an incremental completion of
+the current shape. No object graph is modelled: an entity is its
+rows; relationships are primary and foreign keys; composition,
+ownership and aggregate versioning do not exist as model concepts.
+All trading data is normalised: tables are not sparse, no repeating
+groups hide in columns, and optional or repeating structure is
+declared as keyed child rows. Every persisted family gets an org; the
+grammar grows (mid-groups for the C1202 layout, column mapping,
+custom methods, wire emission control); and semantics survive as
+per-table facts — the SCD2 temporal spine, optimistic versioning, soft
+delete, keys and foreign keys, composite as-of reads as temporal
+joins, trade lifecycle rows and the successor chain. Object-shaped
+documents (a trade with its parts, a composite with its legs) exist
+only at the boundary: the service assembles them from rows, and the
+wire carries them as parts messages or as container messages composed
+from the generated part types.
+
+* Detail
+
+** Scope, method, and evidence
+
+This analysis applies the [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] skill to the
+whole ores.trading data model, against the criteria of
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]. It classifies the component
+into regimes, walks the decision checks per entity family, spot-checks
+the invariant checks, and reports findings, anchored scores, verdict
+and debt. It then proposes the target data-oriented model and the
+service-layer changes the model requires.
+
+The review reads every modelling org under
+=projects/ores.trading/modeling/=, the domain C++ under
+=projects/ores.trading/api/include/ores.trading.api/domain/=, the
+repository, service, and messaging headers under
+=ores.trading.core=, and the SQL under
+=projects/ores.sql/create/trading/=. It builds on prior analysis:
+the codegen gap investigation (task [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]]), the bond probe
+org [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]], the C1202 complexity investigation
+(file:doc/investigations/msvc_c1202_rfl_complexity.org), the Sep-8
+drift oracle it produced, the temporal and composite versioning design
+[[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]], and the Sep-6 entity classification and drift baseline
+work (sprint 25 story =entity-classification-drift-rollout=). The
+current task and story that drive this work are
+[[id:40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7][the analysis task]] in [[id:688959F0-A1AB-4021-A57E-1103AD92773A][the redesign story]].
+
+No hot-path or performance claims are made anywhere in this review:
+ores.trading is not a numerical kernel. Access-pattern statements cite
+service and repository signatures (batch reads, at-version reads,
+history) and SQL index definitions.
+
+** Regime classification
+
+| Regime | Part of the component | Applies |
+|--------+-----------------------+---------|
+| 1 — numerical kernels | None. Pricing, simulation and analytics live in marketdata, analytics and compute; trading consumes results. | No — unscored |
+| 2 — persisted domain data | Every entity: instruments, legs, trades, identifiers, lookups, and their C++ domain types and SQL. | Yes |
+| 3 — wire and messaging | NATS protocol/handler/registrar surface for instruments, trades and lookups. | Yes |
+
+The regimes cover table-shaped data and its projections. Document
+shaped payloads (FpML documents, ORE XML inputs) map to =trade= and
+its instrument entities at the boundary; no entity model persists
+document trees in trading, so the boundary note of the criteria page
+does not change anything here.
+
+** The surfaces: survey inventory
+
+*** Decision surface — the modeling orgs (38 files)
+
+=projects/ores.trading/modeling/= holds 38 orgs (plus
+=component_overview.org= and =ores.trading.module.org=).
+
+Entity orgs, by family group:
+
+| Group | Family | Econ | Id | Evt |
+|-------+--------+------+----+-----|
+| FX (7) | fx_forward | 7 | 4 | yes |
+| FX | fx_variance_swap | 9 | 4 | yes |
+| FX | fx_vanilla_option | 9 | 4 | yes |
+| FX | fx_accumulator | 8 | 4 | yes |
+| FX | fx_asian_forward | 12 | 4 | yes |
+| FX | fx_barrier_option | 12 | 4 | yes |
+| FX | fx_digital_option | 12 | 4 | yes |
+| Equity (9) | equity_forward | 8 | 4 | yes |
+| Equity | equity_position | 6 | 4 | yes |
+| Equity | equity_swap | 10 | 4 | yes |
+| Equity | equity_variance_swap | 8 | 4 | yes |
+| Equity | equity_accumulator | 13 | 4 | yes |
+| Equity | equity_asian_option | 12 | 4 | yes |
+| Equity | equity_barrier_option | 14 | 4 | yes |
+| Equity | equity_digital_option | 11 | 4 | yes |
+| Equity | equity_option | 11 | 4 | yes |
+| Rates (9) | vanilla_swap | 5 | 4 | no |
+| Rates | cap_floor | 3 | 4 | no |
+| Rates | fra | 8 | 4 | no |
+| Rates | balance_guaranteed_swap | 4 | 4 | no |
+| Rates | callable_swap | 5 | 4 | no |
+| Rates | knock_out_swap | 6 | 4 | no |
+| Rates | inflation_swap | 6 | 4 | no |
+| Rates | swaption | 7 | 4 | no |
+| Rates | rpa | 6 | 3 | no |
+
+"Econ" is the count of ungrouped economics fields; "Id" is the count
+of identity-group columns the org repeats; "Evt" marks orgs that carry
+the inline =eventing-integration-test= flag.
+
+Supporting orgs:
+
+- Six field-group orgs: =instrument_identity_field_group= and the
+  trade quintet =trade_identity=, =trade_parties=,
+  =trade_classification=, =trade_lifecycle=, =trade_audit=.
+- =trade= (18 flat columns, unprofiled), =trade_identifier= (6
+  columns, generator facet), =trade_party_role= (4 columns).
+- Four lookups: =party_role_type= (2), =trade_id_type= (2),
+  =trade_type= (5), =lifecycle_event= (3). The lookups carry
+  =simple-lookup= or =workspace-scoped-lookup= profiles.
+
+The identity field group [[id:F9B9C91D-427F-420A-A3BC-D5725AC04674][F9B9C91D]] declares seven members:
+=version= (int, default 0), =tenant_id=, =workspace_id=,
+=instrument_id=, =trade_type_code= (soft FK to trade types),
+=party_id=, =trade_id= (optional). The domain-identity convention in
+the org grammar makes each entity org repeat the group's columns; 24
+instrument orgs repeat four (no =version=), and =rpa= repeats three —
+it omits =trade_type_code= while the group and its SQL still carry
+the column.
+
+All 25 instrument orgs share: profile =trading-instrument=,
+=domain_identity_group= =instrument_identity=, =domain_audit_group=
+=ores.dq.audit_record=, =has_batch_read= true, generator facet
+=generators=. The audited temporal spine, the identity group, and the
+economics columns are the modelled unit; the tree shows that the
+richer families did not fit that unit.
+
+*** Invariant surface — domain C++ (176 files)
+
+Domain types live under
+=ores.trading.api/domain/= as a quartet per entity: the domain header,
+a JSON codec header, a table codec header, and a table-I/O header.
+
+- Generated quartets exist for all 25 org-bound families.
+- Hand-written quartets exist for the five legacy families (bond,
+  commodity, composite, credit, scripted) and for =composite_leg=.
+  They follow the generated shape closely: value semantics, group
+  layout, no pointers. The composite quartets include the legs
+  accessors and the read-only =composite_instruments.legs.list=
+  subject support.
+- Orphan stacks exist for =swap_leg= (domain, table codecs, SQL,
+  repository/mapper — but no service and no org), for
+  =activity_type= and =fpml_event_type= (full generated-style service,
+  repository, domain and SQL stacks), and for =product_type= (domain
+  header and the SQL type =product_type_t=). Git history shows no org
+  ever existed, or was ever deleted, for these names. =swap_leg= is
+  the shared legs table of all nine rates families; =activity_type=
+  and =fpml_event_type= have no wire or UI surface today;
+  =product_type= is bound as the C++ type of a =trade_type= lookup
+  member and as the SQL type of the =trade.product_type= column.
+
+Invariant spot checks: the generated types carry plain value
+semantics with no owning-pointer members; the hand-written quartets
+mimic them. The =instrument.hpp= concept layer glues the families.
+The failure is not in the types that exist; it is in which types the
+generator owns, and in the absence of any drift check to prove the
+hand-written remainder stays aligned.
+
+*** Persistence surface — SQL (90 files under =ores.sql=)
+
+=projects/ores.sql/create/trading/= holds one =CREATE= and one
+=NOTIFY TRIGGER= file per table, plus the aggregate =trading_create.sql=,
+the trade-family function files, and the bond and credit extension
+files.
+
+- The bound 25 instrument tables, generated from the orgs.
+- Hand-maintained tables for bond, commodity, composite instruments,
+  composite legs, credit, scripted — and =swap_legs=, the shared legs
+  table of the nine rates families.
+- The trade domain: =trades= (a generated-style SCD2 table carrying
+  hand-maintained trigger SQL, ten index statements and a delete rule
+  on top of its template), =trade_identifiers=, =trade_party_roles=,
+  plus the =_bu_= and =_functions= files.
+- The four lookup tables and the phantom =activity_types=,
+  =fpml_event_types= and =product_type= families.
+
+Generated tables (the 25 and, where modelled, the lookups) carry the
+standard SCD2 temporal spine: primary key =(tenant_id, id,
+valid_from, valid_to)=, a =tstzrange= exclusion constraint, current
+row partial unique indexes, an insert trigger that performs the
+select-for-update version dance and raises =Version conflict:
+expected version %, but current version %=, and soft delete that
+closes the row. The hand-written tables replicate the pattern by
+hand. The two legs tables add their own rules: =composite_legs=
+requires =leg_sequence >= 1= and validates that =instrument_id=
+exists among current =composite_instruments= rows; =swap_legs= is
+written by the nine rates families' code with no owning table.
+
+*** Wire surface — messaging (24 protocols, 59 handler/registrar files)
+
+The wire organisation is not a projection of the orgs; it is a
+patchwork of three shapes that grew in sequence.
+
+1. Per-family generated protocols, handlers and registrars for the 16
+   FX and equity families:
+   =ores.trading.api/messaging/<family>_protocol.hpp= (16 files) and
+   =ores.trading.core/messaging/<family>_instrument_handler.hpp= +
+   =<family>_registrar.hpp= (32 files).
+2. A hand-written consolidated =instrument_protocol.hpp= covering
+   fourteen families — the five legacy families plus the nine rates
+   families — with per-family =list/save/delete= subjects, =history=
+   for most families, and the read-only
+   =composite_instruments.legs.list= subject. Its
+   includes span every instrument domain header, FX and equity
+   included, which shows the consolidation intent; it was written by
+   hand, tree-side. On the core side the consolidated
+   =rates_instrument_handler.hpp= serves the same fourteen families
+   for handler dispatch, and the five legacy families have their own
+   standalone handler headers with no registrar at all.
+3. Trade and lookup protocols (=trade_protocol.hpp=,
+   =trade_identifier_protocol.hpp=, =party_role_type_protocol.hpp=,
+   and the rest) with per-entity handlers and history-provider
+   registrars. The trade registrar and trade event files were never
+   committed; the trade handler is wired through a hand-composed
+   service chain.
+
+The org grammar has no way to suppress or steer the per-family
+emission (gap (d) below). Regenerating the nine rates orgs re-emits
+36 per-family messaging files that the tree deliberately superseded
+with the consolidated protocol and handler.
+
+*** Service surface (40 services under =ores.trading.core/service=)
+
+The generated service convention is batch- and version-shaped:
+=list(offset, limit)=, =count=, =get_<N>=, =get_<N>_at_version(id,
+version)=, =get_<N>_batch(ids)=, =save(v)=, =save_batch(vs)=,
+=delete_<N>(id)=, =delete_<N>_batch(ids)=, =history(id)=. The
+at-version and history members cite the temporal composite
+versioning design [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]] in their comments.
+
+Beside that generated surface sit hand-added members that the model
+cannot express. =fra_instrument_service= carries
+=get_swap_legs(instrument_id)= and =get_swap_legs_batch(...)=, with a
+comment that all rates families share the swap_legs table and that
+this is the shared access point for any type. Its repository member is
+the shared =swap_leg_repository=. The composite save path, the legs
+aggregation, and the history reads that join parent and legs are
+hand-composed. Sep-6 binding clobbered the fra legs accessors;
+commit 2e75d95704 restored them by hand.
+
+The repository layer holds 123 headers: per-entity
+entity/mapper/repository triples, the shared =swap_leg_repository=
+and =composite_leg_repository=, plus the orphan activity_type and
+fpml_event_type triples.
+
+*** Eventing surface
+
+The 16 FX and equity orgs carry the inline =eventing-integration-test=
+flag; their generated integration tests live under
+=ores.trading.core/tests/= as
+=<family>_eventing_integration_tests.cpp=. The nine rates orgs do not
+carry the flag and generate no eventing tests. Trade eventing exists
+only as hand-written tests under =ores.trading.api/tests/
+eventing_trade_events_tests.cpp=.
+
+** Decision checks (Regime 2), walked per entity family
+
+Where the orgs run, the decision surface is sound:
+
+| Check | Verdict | Evidence |
+|-------+---------+----------|
+| Identity by key | Pass on modelled families | Every family: instrument_id PK under tenant/workspace; trade FKs to books, portfolios, party, instruments by key, not by pointer or owning link. |
+| Table-shaped children | Pass at entity level | Children are rows in their own tables: =trade_identifiers=, =trade_party_roles=, the legs tables. No nested object trees in SQL. |
+| Core/cold split | Pass for the generated shape | Identity and audit group columns ride the SCD2 spine; economics stay in the row. History and versioning are table- and trigger-level, not in the row. |
+| Batched collection access | Pass where generated | =get_<N>_batch(ids)=, =save_batch=, =delete_<N>_batch=, =list= on every generated service; the Sep-8 brace-style drift shows the 16 FX/equity services carry this surface. |
+| Explicit variation | Pass by construction | A family of 30 instrument tables, one per type, plus hand groups for the richer ones — closed per-type variation, no inheritance web. |
+| Normalised tables | Fail | Wide rows of optional economics members across the 25 orgs (=fx_asian_forward=: 12 of 12 economics optional). Under the relational rule, feature presence is row presence, so these split into keyed child rows (F11). |
+
+Most failures below are failures of the decision surface as a whole:
+the orgs cover 25 of roughly 40 persisted tables; the richest domain
+structures are outside the model; and the model cannot express
+several shapes the tree legitimately chose. Three of the four known
+codegen gaps from task [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]] are decision-surface gaps. One
+failure sits inside the modelled set: the sparse wide rows (F11), a
+normalisation failure the relational target fixes.
+
+(a) Nested mid-groups are inexpressible. The tree decomposes bond,
+commodity, composite, credit, scripted and trade domain headers into
+nested group layers (for example, a bond's =terms= and =details= under
+its economic core). The org grammar models only flat members plus the
+identity/audit pair, so these families could not be bound. The C1202
+investigation (file:doc/investigations/msvc_c1202_rfl_complexity.org)
+shows why the tree shape is not cosmetic: MSVC limits
+=rfl::Literal= to nine fields, so plain nested sub-structs of at most
+nine members are the mandated decomposition. The bond probe
+[[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]] regenerated a bond org in the current grammar and diffed it
+against the tree: regeneration flattens the three mid-groups into one
+fat row, drops =security_id= (a domain-only member that does not
+persist), re-optionalizes =int= and =double= members that the tree
+keeps as mandatory values with =value_or(0)= defaults, and renames
+the primary key =id= to =instrument_id=. Every one of those changes
+loses or relocates semantics, and the org grammar cannot express any
+of it today. =rfl::Flatten= does not reduce the parent's field count,
+so there is no codegen-side workaround.
+
+(b) The column-name mapping key does not exist. The tree's legacy
+tables use =id= as the primary key column while the identity group
+names the member =instrument_id=; the mapper layer bridges this by
+hand (for example, =scripted_instrument_mapper.cpp:35=). A
+regeneration that follows the org strictly renames the column and
+breaks every legacy reference.
+
+(c) Custom service methods are inexpressible. The fra legs accessors
+and the composite legs aggregation exist only in hand-written service
+headers. The paste-block machinery that would let an org declare such
+methods exists in the generator (=core.py=, line ~995) but is unused.
+
+(d) Per-family messaging emission cannot be suppressed. The orgs
+unconditionally emit the per-family protocol/handler/registrar
+triple. That is correct for FX/equity, where the per-family wire is
+the tree reality, and wrong for the nine rates families, where the
+tree consolidated into =instrument_protocol.hpp= and
+=rates_instrument_handler.hpp=. Regeneration of the nine rates orgs
+re-emits 36 superseded files.
+
+** Invariant checks (Regime 2), spot-checked
+
+| Check | Verdict | Evidence |
+|-------+---------+----------|
+| Value semantics | Pass | Generated domain types are plain values with a key; the hand-written quartets for the legacy families and legs follow the same shape. |
+| No shared-ownership webs | Pass | No =shared_ptr= in any domain type; ownership sits at service boundaries. |
+| Codec drift | Fail, component-wide | The Sep-8 oracle run modified 47 files and created 65 untracked files, and ores.trading is absent from the drift registry, so no gate proves regeneration identity. The invariant that codegen owns the codecs holds only for the 25 bound families, and even there the run diverged (see findings). |
+
+** Findings
+
+The table lists every finding with severity, effort, and the mapped
+criterion from the data-oriented criteria page. The four Critical
+findings each get a short analysis below the table.
+
+| # | Severity | Effort | Criterion | Finding |
+|---+----------+--------+-----------+---------|
+| F1 | Critical | Large | Decision-surface completeness | The five legacy instrument families, =composite_legs= and =swap_legs= have no orgs. Their stacks are hand-written and drift-invisible; regeneration would rewrite or create ~30 files wrongly. |
+| F2 | Critical | Large | Decision-surface expressiveness (variation, decomposition) | The grammar cannot express nested mid-groups, domain-only members, or the C1202 decomposition; the bond probe proves flatten, drop, re-optionalize, PK rename. |
+| F3 | Critical | Large | Identity by key, time-variant semantics | =trade= is unbound and hand-evolved past its org on every facet: five-group domain, hand trigger SQL (soft-FK validation, party derivation), ten index statements, a delete rule, Qt features, hand-composed service chain. Regeneration emits an 18-flat domain and never-tracked messaging files. |
+| F4 | Critical | Medium | Wire as codegen projection (Regime 3) | Three wire shapes coexist: per-family (16), consolidated by hand (14), lookup/trade. Emission is unconditional (gap (d)); consolidation cannot be a model decision. |
+| F5 | Important | Medium | Batched collection access | Bespoke cross-entity methods (fra legs access, composite legs reads) are inexpressible (gap (c)); Sep-6 binding clobbered them and 2e75d95704 restored them by hand. |
+| F6 | Important | Medium | Codec drift, table codec | Column-name mapping is missing (gap (b)); legacy =id= versus group =instrument_id= is bridged by hand in mappers. |
+| F7 | Important | Large | Time-variant semantics, per-table versioning | Versioning and key semantics of the tree are not model-expressible: each table's SCD2 spine, the composite as-of read (a temporal join over keys), the trade lifecycle rows, and the trade trigger rules and access indexes are hand SQL. |
+| F8 | Important | Small | Identity by key | Identity columns are duplicated into 25 orgs; =rpa= omits =trade_type_code= while the group and SQL keep it. A shared-group single source would make such variance impossible. |
+| F9 | Important | Small | Explicit variation | Eventing scope lives in per-org inline flags on 16 orgs; the =trading-instrument= profile has no eventing key, so the nine rates families generate no eventing tests. |
+| F10 | Important | Medium | Decision-surface completeness | Phantom stacks (=swap_leg=, =activity_type=, =fpml_event_type=, =product_type=) look generated, have SQL and services, and never had orgs; =swap_leg= backs a live shared table. |
+| F11 | Important | Large | Normalisation (relational form) | The 25 orgs model wide rows of optional economics members: =fx_asian_forward= declares 12 economics members, all optional; =fx_digital_option= 7 of 12; =equity_accumulator= 5 of 13. Under the relational rule, feature presence is row presence, so these are keyed child rows, not nullable feature columns. |
+| F12 | Minor | Small | Documentation | =ores.trading.module.org= is stale: it lists =leg_type= and =floating_index_type= as trading families after their move to refdata, and shows pre-consolidation include paths. |
+| F13 | Minor | Small | Codec drift | Hand-restored files carry cosmetic drift markers (for example, the fra service header guard =ORES_TRADING_SERVICE_FRA_INSTRUMENT_SERVICE_HPP= against the generated =ORES_TRADING_CORE_SERVICE_= pattern) — signatures of exclusion-by-hand. |
+
+*** F1 — the unmodelled families carry the most structure
+
+Bond, commodity, composite, credit, scripted, and both legs tables
+exist only in the tree. Their domain quartets, mappers,
+repositories, services, handlers and SQL are hand-maintained. Nothing
+in CI compares them to a model; the component is not in the drift
+registry. The bond probe ([[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]]) proves what a regeneration
+would do today: emit ~30 files that flatten and drop the tree's
+semantics. The probe org is parked in the agile tree; it returns to
+the modeling directory once the grammar can express the shape.
+
+*** F2 — the grammar cannot express the tree's chosen domain shapes
+
+The tree decomposed the rich families into nested mid-groups of at
+most nine fields (the C1202 ceiling) precisely so the C++ would
+compile on MSVC. That decomposition is the correct DOD shape: it
+keeps the economics groups small and plain. The grammar cannot
+receive it. Domain-only members like =security_id=, which live in the
+domain header but not in the row, have no representation at all. The
+probe's three divergences — flatten, drop, re-optionalize — are each
+a silent semantic change that a drift gate would have to special-case
+forever. The fix is grammar growth, not tree shrinkage.
+
+*** F3 — the trade domain diverged from its org on every facet
+
+The tree's =trade= is the five-group decomposition (=trade_identity=,
+=trade_parties=, =trade_classification=, =trade_lifecycle=,
+=trade_audit= — the field-group orgs exist and the domain headers use
+them). The =trade= org is an 18-column flat list with no profile,
+never bound, and no identity/audit groups. The deployed
+=ores_trading_trades_tbl= is template-generated — its header names the
+=sql_schema_domain_entity_create.mustache= template and its columns
+match the org plus the spine — but the tree layers hand-maintained
+semantics on top: an insert trigger that validates the book, the
+portfolio (including the parent match), the successor self-FK, the
+counterparty, the status, the asset class, the trade type, the
+activity type and the change reason, and derives =party_id= from the
+book; ten index statements (two current-row uniqueness indexes plus
+eight access paths on tenant, book, portfolio, netting set, trade
+type, instrument, asset class and workspace); and a soft-delete rule.
+The Qt controllers carry hand-evolved features (openEdit, import, the
+change-reason cache); the service chain is hand-composed; the trade
+registrar and trade event files were never committed. A regeneration
+from the org today would emit a flat 18-column domain and clobber the
+trigger logic, the access indexes and the delete rule. Yet the
+=trade_identifier=, =trade_party_role=, =lifecycle_event= and the four
+lookup orgs are drift-clean — so the trade binding problem is
+contained to =trade= itself, and the fix is a faithful org, not a new
+architecture.
+
+*** F4 — the wire is a second artefact, not a projection
+
+The criteria page states the rule: the wire shape is a codegen
+projection of the Regime 2 entity, not a second artefact. Trading
+violates it twice. The consolidation (one protocol, one handler for
+fourteen families) is exactly what a model should express — but it
+was done by hand in the tree, so the orgs still emit their per-family
+files and the consolidated files drift outside the model. And the
+three shapes coexist without a statement of why: FX/equity per
+family, fourteen families consolidated, the trade/lookup set
+per-entity. The correct fix makes the wire organisation a model
+decision: an org or profile key that selects the consolidated
+projection for the families that ship it.
+
+** Scores, verdict, debt
+
+| Regime | Score | What it resembles |
+|--------+-------+--------------------|
+| 1 — numerical kernels | — | Not applicable; unscored. |
+| 2 — persisted domain data | 2 | Several Important findings and one Critical (F1) in the main flow; the modelled subset is sound except its normalisation (F11). |
+| 3 — wire and messaging | 2 | The wire is not a projection (F4) and the Regime 3 flat-value checks pass only on the 16 per-family projections. |
+
+Verdict: the component's data model is a transition artifact. The
+modelled subset (25 families) passes its checks except normalisation
+(F11); the unmodelled subset (the legacy five, the legs tables,
+trade) is where the domain lives, and it is invisible to every gate.
+The score is 2, not 1,
+because the divergence is latent: the deployed tree works, nothing in
+the component regenerates in CI, and the failures would only manifest
+when a regeneration ran. The moment the drift gate extends to
+trading, the score drops to 1 unless the grammar gaps close first.
+
+Debt: High (score band 1-2).
+
+Two reviews of this component should land within one point. The
+scores rest on countable artefacts: 38 orgs, 176 domain headers, 40
+services, 24 protocols, the 47+65 Sep-8 oracle result, the probe
+diff. If a second review disagreed, the disagreement would be in the
+classification (whether the hand-written legacy stacks count as the
+"core facet domain headers" the invariant walk covers), not in the
+evidence.
+
+** Root causes
+
+1. The org grammar grew profile-first, not shape-first. Binding
+   (FX/equity, then rates) proved the identity/audit spine, batch
+   surface, and per-type tables. The rich families predate the
+   profiles and could not be bound, so they stayed hand-written and
+   the bind stories closed with vacuous zero-diff acceptances:
+   trading was never in the drift registry that would have measured
+   them.
+2. The tree evolved past its models where the model stopped. The
+   trade org (18 flat columns) dates from before the five-group
+   decomposition; the decomposition, the indexes, the Qt features
+   and the registration chain all happened tree-side afterward.
+3. Consolidation happened by deletion, not by expression. The rates
+   wire consolidation and the instrument_protocol merge removed
+   per-family artefacts from the tree instead of switching them off
+   in the model, so every regeneration resurrects them.
+
+** Prior analysis and how it bears
+
+- [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]] enumerated gaps (a)-(d) and produced the Sep-8 oracle:
+  47 modified, 65 untracked files across five groups — 16 FX/equity
+  service headers (brace-style only), the fra service (hand-restored
+  legs methods), 36 rates messaging files the orgs re-emit, and the
+  trade family (Qt features, hand-maintained trigger and index SQL,
+  event files, hand-composed chain). Clean groups: =trade_identifier=,
+  =trade_party_role=, =lifecycle_event=, the four lookups.
+- The bond probe [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]] is the concrete proof of F2; its
+  verdict drives the grammar work in the sequencing below.
+- The C1202 investigation sets the layout ceiling the mid-group
+  grammar must honour: nested sub-structs of at most nine members,
+  plain values, nested JSON on the wire.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]] designs temporal composite entity versioning: the
+  versioned child + parent version bump via a touch function, plus
+  =find_as_of= and =list_by_as_of= reads. It was applied to refdata.
+  The trading target follows the relational reading instead: each
+  entity versions on its own spine, and the composite as-of read is a
+  temporal join over keys. Option A's aggregate versioning is
+  deliberately not adopted for trading; the semantics section below
+  states the divergence.
+
+** The target data-oriented model
+
+The target follows the relational reading of DOP, taken from the DOD
+book: section 5.4, =There is no entity=
+(https://www.dataorienteddesign.com/dodmain/node5.html), and the
+relational-model chapter
+(https://www.dataorienteddesign.com/dodmain/node11.html). Its
+principle, stated once: no object graph is modelled. =trade=,
+=instrument=, =leg=, =identifier= and =lookup= are sets of atomised
+rows. Each row has a primary key; relationships are foreign keys and
+joins. There is no parent that owns children, and no aggregate that
+versions as a whole. A composite instrument is =composite_instruments=
+rows and =composite_legs= rows joined by keys; a trade document is
+=trades=, =trade_identifiers= and =trade_party_roles= rows. The
+document exists only when a read or a message needs it: the service
+assembles it from rows, and the wire carries it. Data is normalised:
+tables are not sparse, and optional or repeating structure is keyed
+child rows, not nullable feature columns. Versioning is a per-table
+property of the SCD2 spine. Semantics survive because the facts and
+their keys survive — identity, temporal validity, referential
+integrity, ordering as keyed data. Nothing survives because a trigger
+or a hand-written aggregate keeps it consistent; invariants that need
+write-time maintenance are keys, constraints and generated rules, or
+they are gone. This reading corrects the first draft of this
+analysis, which had adopted refdata's aggregate versioning (option A
+of [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]]) for the composite; that is object-graph thinking,
+and this model does not adopt it.
+
+*** Entity shape: atomised entities, keys, one spine
+
+- Every persisted family gets an entity org: the five legacy
+  families, =composite_leg= and =swap_leg= first, then =trade=.
+  Coverage is the acceptance test: no domain class, SQL table, or
+  wire artefact lives only in the tree.
+- All instrument orgs share the =trading-instrument= profile, the
+  =instrument_identity= domain-identity group, the =ores.dq=
+  audit-record group, and =has_batch_read=. The identity group's
+  columns are declared once, in the group org, and inherited — the
+  per-org repetition of F8 disappears. The =rpa= three-column variance
+  is resolved in the group's favour.
+- An entity declares its mandatory single-valued facts as members.
+  Optional or repeating structure is declared as child entities with
+  keys and foreign keys, never as nullable columns (the Normalisation
+  section states the rule).
+- Every table's keys and foreign keys are declared in the org and
+  emitted as constraints: =composite_legs= references
+  =composite_instruments= by key, the trade children reference the
+  =trade= row, and =successor_trade_id= is a self foreign key. Index
+  keys and validation rules are declared in the org, not recreated by
+  hand in SQL.
+- The audit group, version columns and the SCD2 spine are generated
+  from the profile, not repeated in every create file.
+
+*** Normalisation
+
+The relational chapter of the DOD book sets the storage rules this
+target adopts (https://www.dataorienteddesign.com/dodmain/node11.html):
+
+- Tables are not sparse. Optional members and repeating groups are
+  not columns in the entity's row; they are child rows keyed by the
+  entity's key. Stored this way, every present fact is a row and no
+  column waits NULL for a feature the type may not have.
+- Every table has a key, and relationships embed the referenced row's
+  key. Compound keys express ordered membership: a leg is keyed by
+  its instrument and its =leg_sequence=.
+- Facts that derive from other stored facts are not stored; a derived
+  member is a query or a join, decided when a read needs one.
+
+Current trading data violates the rule on both surfaces. The orgs
+declare wide rows of optional economics: =fx_asian_forward= has 12
+economics members, all optional; =fx_digital_option= has 7 of 12;
+=equity_accumulator= has 5 of 13 (F11). The =trade= org is one wide
+18-column row over five domain groups (F3). The one deliberate
+exception is a foreign key that references an optional relationship —
+an unlinked instrument, a trade with no successor: absence of a
+relationship is not absence of a feature, and that FK stays nullable.
+
+The target normalises family by family in the conversion PRs (the 25
+bound families in PR 4, the hand-written families and legs in PR 5):
+optional economics move to keyed child tables, and regeneration
+migrates the trading SQL in the same pass. Mid-groups are not
+affected: the C1202 groups structure the columns that travel together
+inside one entity's C++ type and JSON; they become tables only when
+the group is optional or repeating.
+
+*** Grammar growth (closes gaps (a), (b), (c), (d))
+
+1. Mid-groups with domain-only members (gap (a)). The org grammar
+   gains a nested group key: a member may declare =group= with a
+   nested entity group that has its own =* Fields= (including
+   =domain_only= members that never persist), its own =table_column=
+   prefix or absence, and its own flattening contract — emit the group
+   as a plain nested sub-struct of at most nine fields (the C1202
+   ceiling), never flatten into the parent, never re-optionalize a
+   member whose tree shape is mandatory, and keep domain-only members
+   out of the JSON/table projections. The bond probe org
+   [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]] becomes the regression test: the grammar work is done
+   when the probe regenerates drift-clean against the tree.
+2. Column-name mapping (gap (b)). An org key overrides the emitted
+   SQL column name for a member (=id= where the tree legacy tables
+   say =id=, the group default =instrument_id= elsewhere). The mapper
+   bridge becomes generated, not hand-patched.
+3. Custom methods (gap (c)). The paste-block machinery is wired to
+   the orgs: a service section in the org declares the multi-table
+   operations the family needs (fra legs accessors, transactional
+   composite or trade saves, legs batch reads). Binding no longer
+   clobbers them, and the hand-restore commits (2e75d95704 and
+   successors) become unnecessary.
+4. Wire emission control (gap (d)). A per-entity key (or a profile
+   attribute, see F9) selects the wire organisation: per-family
+   projection for the 16 FX/equity families; consolidated projection
+   for the fourteen families that ship =instrument_protocol= and
+   =rates_instrument_handler=; suppressed where a family's legs have
+   no standalone subjects beyond the read-only legs list. The
+   consolidated protocol and handler become
+   generated projections of the families that select them, so the
+   tree-side merge stops being a deletion that regenerations undo.
+5. Eventing (F9). The =trading-instrument= profile gains the
+   eventing-integration-test switch; the per-org flags retire and all
+   25 families — nine rates included — generate eventing tests.
+
+*** Semantics preservation under atomisation
+
+Atomising the domain raises the question the redesign must answer:
+what semantics must survive the split into rows, and where does the
+model state them? The list below is the contract; every item becomes
+an explicit model or generated-SQL element, never hand SQL in the
+tree.
+
+1. Versioned temporal spine. Each persisted table carries the SCD2
+   spine: primary key =(tenant_id, id, valid_from, valid_to)=, the
+   =tstzrange= exclusion constraint, current-row partial indexes, and
+   soft delete by closing the row. Optimistic versioning: the insert
+   trigger selects the current row for update, bumps =version=, and
+   raises =Version conflict= on a mismatch. The trade tables, the
+   legs tables and the legacy five follow the same generated spine.
+2. Audit attribution. Every row change records the =ores.dq=
+   audit-record columns (who, when, which workspace, and the change
+   reason where the UI supplies one). The change-reason cache that
+   the trade Qt controllers hand-evolve is a cold annex of the audit
+   group, not a controller feature.
+3. Composite relation, no composition invariant. =composite_instruments=
+   and =composite_legs= are two entities. A leg row carries the
+   =composite_instruments= key it belongs to as a foreign key, and
+   =leg_sequence>=1 is keyed data: the ordered set of legs is rows and
+   keys, not a container. Each entity versions independently on the
+   SCD2 spine; optimistic concurrency is per table. The composite as
+   of a date is a temporal join: the instrument rows whose validity
+   window contains the date, joined to the leg rows whose windows
+   contain it. There is no parent version bump and no aggregate
+   version. This is a deliberate divergence from refdata, where
+   option A of [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]] models aggregate versioning with a touch
+   function; trading follows the relational reading. If a
+   whole-composite version becomes a business need, it is a query or
+   a reporting snapshot, decided when the need appears.
+4. Trade lifecycle and the successor chain. =trade= keeps one row per
+   lifecycle event, with =status_id= into the =dq= FSM states,
+   =successor_trade_id= a self foreign key that chains an amendment
+   or exercise to its successor, and =activity_type_code= into the
+   activity types. The current trade is the open row; history is the
+   closed rows. The tree SQL's hand-maintained insert trigger
+   (soft-FK validations, party derivation from the book), its ten
+   index statements and its delete rule are declared in the org and
+   generated: foreign keys as keys, access paths as index keys,
+   validations as org rules.
+5. The swap_legs question. The nine rates families write one shared
+   legs table today. The relational default is one legs entity per
+   family with a real foreign key to its instrument; PR 5 settles
+   whether the shared table survives as a discriminator-carrying
+   entity with per-family validation keys, and the fra accessor is
+   replaced by per-family generated legs access.
+
+*** The wire: projections, and parts or container messages
+
+The wire stays a projection of atomised rows (Regime 3): flat value
+messages per entity, per-family or consolidated per the families'
+choice:
+
+- Per-family: the 16 FX/equity families keep their per-family
+  protocol/handler/registrar, generated as today.
+- Consolidated: the fourteen families that ship
+  =instrument_protocol.hpp= and =rates_instrument_handler.hpp= select
+  the consolidated projection; those two files become generated.
+- Trade and lookup messaging stays per-entity, generated from the
+  trade and lookup orgs, with the registrar and event files committed
+  from the first regeneration — no never-tracked files.
+
+Saving or reading a multi-entity shape — a trade with its identifiers
+and party roles, a composite with its legs — travels one of two ways,
+chosen per operation:
+
+- Parts messages. The client sends one message per constituent row
+  and the service applies them in one transaction. This path needs no
+  message type beyond the entity projections.
+- Container messages. The client sends one message that contains the
+  parts, and the service splits it into rows. The container is a
+  boundary type: it is not an entity, it is not persisted, and it
+  models no ownership or composition. It composes the generated value
+  types of the parts.
+
+Containers are handcrafted first. rfl cannot be assumed to express an
+arbitrary container of variant-bearing parts, so the first container
+for an operation is written by hand over the generated rfl types of
+its parts; when the grammar can declare it, codegen emits it. Either
+way, the parts inside a container are the generated rfl types: one
+implementation of a part, two ways to carry it.
+
+The acceptance test: regenerate trading and diff; the wire surface
+must be identical to the tree's by construction, because the tree's
+organisation is now the model's organisation.
+
+*** Service-layer shape
+
+The generated service surface (list, count, get, at-version, batch,
+save, delete, history) already is the batch shape the atomised model
+needs; it extends to the new families. Beside it, the orgs declare
+the multi-table operations (gap (c) closes):
+
+- Legs batch access per family: =get_<family>_legs= and the batch
+  variant, generated from the legs entity keys. The shared fra
+  accessor disappears with the shared-table decision (PR 5).
+- Transactional saves across tables: save a trade or a composite from
+  parts messages or from one container message; the service writes
+  the rows of all tables in one transaction. The method is declared
+  in the org; the rows stay normalised.
+- Temporal as-of reads: an as-of read joins the rows of a family
+  across its versioned tables and returns the assembled document.
+  The join is a read; nothing stores the assembly.
+- History reads that join parent and children are generated per table
+  and joined at the service, not hand-composed chains.
+
+*** Lookups and orphans
+
+- The four lookups stay lookup entities under their profiles.
+- =product_type= becomes a real org (it is the type of the
+  =trade.product_type= column and of a =trade_type= member) or is
+  folded into the trade_type lookup cleanly; =activity_type= and
+  =fpml_event_type= are either given orgs and a stated purpose or
+  deleted. Phantom stacks with no org and no wire surface have no
+  place in the target.
+- =ores.trading.module.org= and the knowledge index are refreshed in
+  the same pass (F12).
+
+** Sequencing across PRs
+
+| PR | Content | Verifies |
+|----+---------+----------|
+| 1 | This analysis document. | Review decision. |
+| 2 | Codegen grammar: mid-groups with domain-only members, column-name mapping, paste-block custom methods, wire emission control, profile-level eventing. | Bond probe org regenerates drift-clean; codegen test suite. |
+| 3 | Drift gate: register trading (+ the trading SQL unit) in the drift registry; adopt the Sep-8 oracle as the baseline inventory; reconcile the 16 FX/equity brace-style services and the fra service. | check_component_drift clean for trading. |
+| 4 | Normalise the 25 bound families: optional economics members move to keyed child entities; regenerate and migrate the trading SQL. | Zero-diff regeneration per family plus the schema migration, committed. |
+| 5 | Convert the five legacy families + =swap_leg= and =composite_leg= to orgs (bond first, probe as regression test); settle the swap_legs shared-versus-per-family decision; handcraft the composite legs container over the generated part types. | Zero-diff regeneration per family, committed. |
+| 6 | Rewrite the =trade= org to the five-group shape with keys, foreign keys, index keys and lifecycle; declare the trade container save and read; commit the registrar and event files. | Zero-diff regeneration of the trade family; trade Qt features recorded, not regressed. |
+| 7 | Wire consolidation as a model decision: generate =instrument_protocol= and =rates_instrument_handler= from the orgs; delete the hand-written copies; absorb containers into codegen where the grammar can express them. | Zero-diff; 36 re-emitted files gone from the oracle. |
+| 8 | Service-layer alignment: legs batch reads and transactional saves generated per family; temporal as-of joins; eventing tests on all 25 families. | Full build + ctest; eventing suites green. |
+| 9 | Housekeeping: product_type/activity_type/fpml_event_type decision, module.org and knowledge index refresh, F12/F13 cleanup. | Doc checks. |
+
+The order matters: grammar (PR 2) before the conversions and the
+normalisation pass (PRs 4-6), and the drift gate (PR 3) before any
+conversion proves identity with it. Each conversion PR is a
+family-sized unit that ends in a committed zero-diff regeneration, so
+the sequence proves itself as it goes. Container messages start
+handcrafted (PRs 5-6) and move to codegen as the grammar absorbs them
+(PR 7).
+
+** Out of scope and open questions
+
+- The numerical-kernel regimes of marketdata, analytics and compute
+  are out of scope; trading only consumes their results.
+- Qt presentation features are recorded as drift evidence but not
+  re-implemented here; the openEdit, import and change-reason-cache
+  features keep working through the converted model.
+- The =ores.dq= audit group and =ores.refdata= soft-FK parents (book,
+  portfolio) are other components' models; trading only gains the org
+  keys needed to express them.
+- Resolved: the composite as-of question. Trading does not adopt the
+  refdata aggregate versioning of option A of
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]]; each entity versions on its own spine, and the composite
+  as-of read is a temporal join (see Semantics preservation). The
+  divergence is recorded so the refdata work is not re-litigated per
+  PR.
+- Open question: swap legs — one legs entity per rates family with
+  real foreign keys (the relational default), or the shared table
+  kept as a discriminator-carrying entity. PR 5 settles it on the
+  probe.
+- Open question: which optional members of the 25 families are
+  feature absences (child rows) and which are relationship absences
+  (nullable foreign key). PR 4 resolves them family by family against
+  the wire and UI uses.
+- Open question: parts or container messages per operation, and which
+  containers rfl can express. PRs 5-7 settle each operation as its
+  container is handcrafted.
+- Open question: the fate of =activity_type= and =fpml_event_type=
+  (model with purpose, or delete). Decide in PR 9.
+
+* See also
+
+- https://www.dataorienteddesign.com/dodmain/node5.html — the DOD book, section 5.4 =There is no entity=: the entity is its components, not an object graph.
+- https://www.dataorienteddesign.com/dodmain/node11.html — the DOD book relational-model chapter: keys, normalisation, no sparse tables.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the criteria this review applies.
+- [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] — the review skill.
+- [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]] — the codegen-gap investigation and Sep-8 drift oracle.
+- [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][Bond probe org]] — the regeneration probe against the bond tree stack.
+- file:doc/investigations/msvc_c1202_rfl_complexity.org — the C1202 field-count ceiling and layout rationale.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal composite entity versioning]] — the refdata versioning design this target diverges from for trading (per-table spines, temporal joins).
+- [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] — the program story this analysis feeds.
+- [[id:40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7][Analyse the ores.trading data model]] — the task that produced this page.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this page belongs to.

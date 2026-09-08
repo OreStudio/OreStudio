@@ -33,10 +33,29 @@ NS = uuid.UUID("00000000-0000-0000-0000-00000000ffff")
 TENANT_SQL = ("select id from ores_iam_tenants_tbl t "
               "join ores_iam_tenant_statuses_tbl s on s.code = t.status "
               "where t.status = 'active' order by t.id limit 1;")
-TENANT_FALLBACK_SQL = ("select id from ores_iam_tenants_tbl "
-                       "where status::text = 'active' order by id limit 1;")
+# Trades need a book, and a book belongs to a tenant, so the tenant to load
+# into is whichever active one has reference data. Any other choice loads the
+# instrument tables and then fails on trades.
+TENANT_FALLBACK_SQL = (
+    "select t.id from ores_iam_tenants_tbl t "
+    "where t.status::text = 'active' "
+    "order by (select count(*) from ores_refdata_books_tbl b "
+    "          where b.tenant_id = t.id) desc, t.id limit 1;")
 WORKSPACE_SQL = "select ores_utility_live_workspace_id_fn();"
 PARTY_SQL = "select id from ores_iam_parties_tbl order by id limit 1;"
+COUNTERPARTY_SQL = ("select id from ores_refdata_counterparties_tbl "
+                    "where tenant_id = '{tenant}' "
+                    "and valid_to = ores_utility_infinity_timestamp_fn() "
+                    "order by id limit 1;")
+
+# Optional self-references cannot be satisfied on a first insert, because the
+# row they would point at does not exist yet. They are left empty rather than
+# filled with an id the validation will reject.
+NULLABLE_SELF_REFS = {"successor_trade_id"}
+
+STATUS_SQL = ("select s.id from ores_dq_fsm_states_tbl s "
+              "where s.valid_to = ores_utility_infinity_timestamp_fn() "
+              "order by s.is_initial desc, s.id limit 1;")
 REASON_SQL = ("select code from ores_dq_change_reasons_tbl "
               "where code = 'system.test' union all "
               "select code from ores_dq_change_reasons_tbl limit 1;")
@@ -45,8 +64,12 @@ REASON_SQL = ("select code from ores_dq_change_reasons_tbl "
 # row must carry it. COPY runs in the same session as the SET that precedes it.
 SESSION_PREAMBLE = "set app.current_party_id = '{party}';\n"
 
-BOOK_SQL = ("select id, portfolio_id from ores_refdata_books_tbl "
-            "order by id limit 1;")
+# A trade's portfolio_id must equal its book's parent_portfolio_id; the trigger
+# checks the two agree, so both come from the same row.
+BOOK_SQL = ("select id, parent_portfolio_id from ores_refdata_books_tbl "
+            "where tenant_id = '{tenant}' "
+            "and valid_to = ores_utility_infinity_timestamp_fn() "
+            "and parent_portfolio_id is not null order by id limit 1;")
 
 # Soft foreign keys, enforced in PL/pgSQL. A referencing column must carry an id
 # the referenced table already holds, so the referenced table loads first.
@@ -137,7 +160,9 @@ class Generator:
     """Produces a value for one column, given its type and any check constraint."""
 
     def __init__(self, allowed, bounds, enums, tenant, workspace, party, reason,
-                 book, portfolio):
+                 book, portfolio, counterparty=None, status=None):
+        self.counterparty = counterparty
+        self.status = status
         self.book = book
         self.portfolio = portfolio
         self.allowed = allowed
@@ -155,7 +180,13 @@ class Generator:
             return self.workspace
         if col == "change_reason_code":
             return self.reason
-        if col in ("party_id", "counterparty_id"):
+        if col in NULLABLE_SELF_REFS:
+            return "\\N"
+        if col == "counterparty_id" and self.counterparty:
+            return self.counterparty
+        if col == "status_id" and self.status:
+            return self.status
+        if col == "party_id":
             return self.party
         if col == "book_id" and self.book:
             return self.book
@@ -394,13 +425,19 @@ def main():
     party = r.stdout.strip().splitlines()[-1] if r.returncode == 0 and \
         r.stdout.strip() else tenant
     reason = sql(REASON_SQL).stdout.strip().splitlines()[-1]
-    r = sql(BOOK_SQL, check=False)
+    r = sql(BOOK_SQL.format(tenant=tenant), check=False)
     book_row = r.stdout.strip().splitlines()[-1].split("\x1f") \
         if r.returncode == 0 and r.stdout.strip() else []
     book = book_row[0] if book_row else None
     portfolio = book_row[1] if len(book_row) > 1 else None
+    r = sql(COUNTERPARTY_SQL.format(tenant=tenant), check=False)
+    counterparty = r.stdout.strip().splitlines()[-1] if r.returncode == 0 and \
+        r.stdout.strip() else None
+    r = sql(STATUS_SQL, check=False)
+    status = r.stdout.strip().splitlines()[-1] if r.returncode == 0 and \
+        r.stdout.strip() else None
     gen = Generator(allowed, bounds, enums, tenant, workspace, party, reason,
-                    book, portfolio)
+                    book, portfolio, counterparty, status)
     preamble = SESSION_PREAMBLE.format(party=party)
     print(f"tenant {tenant}\nworkspace {workspace}\nparty {party}\n"
           f"change reason {reason}\nbook {book}  portfolio {portfolio}")

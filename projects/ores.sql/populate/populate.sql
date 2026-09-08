@@ -203,6 +203,15 @@
 \ir dq/dq_fsm_populate.sql
 
 -- =============================================================================
+-- Reference Data Publication (must precede Trading -- a trade's book_id is
+-- validated against ores_refdata_books_tbl, which is empty until this runs)
+-- =============================================================================
+
+\echo ''
+\echo '--- Reference Data Publication ---'
+\ir acme/acme_publish_populate.sql
+
+-- =============================================================================
 -- Trading Layer
 -- =============================================================================
 

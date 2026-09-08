@@ -351,43 +351,79 @@ what it holds, and leave =product_type= free.
 
 ** What the loader could not populate
 
-Five of the 41 tables reject a fully populated row. Each rejection is a finding
-about the model rather than a limitation of the loader. They divide into two
-causes.
+Five of the 41 tables rejected a fully populated row when the loader was first
+run. Each rejection is a finding about the model rather than a limitation of the
+loader. Three had one cause, since resolved, and two remain.
 
-*** Three tables need data that lives outside ores.trading
+*** Three tables needed data that lives outside ores.trading
 
 =ores_trading_trades_tbl= is the root of this group. Its insert trigger validates
 six references before it will accept a row, and it names each as a soft foreign
 key in its own comments.
 
-| Reference          | Validated against               | Present in this database |
-|--------------------+---------------------------------+--------------------------|
-| =book_id=            | =ores_refdata_books_tbl=          | No, the table is empty   |
-| =portfolio_id=       | =ores_refdata_portfolios_tbl=     | No, the table is empty   |
-| =counterparty_id=    | =ores_refdata_counterparties_tbl= | No, the table is empty   |
-| =status_id=          | =ores_dq_fsm_states_tbl=          | Yes, 27 rows             |
-| =successor_trade_id= | =ores_trading_trades_tbl=         | Optional                 |
-| =trade_type=         | Enumeration inside the trigger  | Yes, 112 values          |
+| Reference          | Validated against               | Was present |
+|--------------------+---------------------------------+-------------|
+| =book_id=            | =ores_refdata_books_tbl=          | No          |
+| =portfolio_id=       | =ores_refdata_portfolios_tbl=     | No          |
+| =counterparty_id=    | =ores_refdata_counterparties_tbl= | No          |
+| =status_id=          | =ores_dq_fsm_states_tbl=          | Yes         |
+| =successor_trade_id= | =ores_trading_trades_tbl=         | Optional    |
+| =trade_type=         | Enumeration inside the trigger  | Yes         |
 
 A seventh rule is stricter than a foreign key could express: =portfolio_id= must
 equal the parent portfolio of the book named by =book_id=. The two references are
 not independent, so supplying a valid book and a valid portfolio is not
 sufficient. They must agree.
 
-The other two follow from the first. =ores_trading_party_roles_tbl= requires a
-trade, which cannot exist until a book does. =ores_trading_composite_legs_tbl=
-requires a composite instrument for the same tenant, which the loader does
-create, but the leg must reference the identifier the parent actually received.
+*** Defect 11: staged reference data is never published
 
-The finding is that *a trade population is not self-contained*. The trading
-tables sit on reference data that a different component owns: a trade needs a
-book, a book needs a portfolio, and a realistic trade needs a counterparty. A
-population design must seed all three first, and the ordering between them is
-fixed by the book and portfolio agreement rule above.
+*Current shape.* The cause of the above was not missing data. Acme's parties,
+business units, portfolios and books are all staged in the DQ artefact tables,
+and =ores.sql= carries 30 =ores_refdata_publish_*_from_dq_fn= functions that
+promote them into the refdata tables the rest of the system reads.
 
-This dependency exists in code, since the trade repository tests must satisfy it
-to run, and it is written down nowhere the population design could have read it.
+*Nothing called them.* Every mention of a publish function in =populate/= was a
+comment. A freshly provisioned database therefore held 53 staged books and zero
+published ones, which is why no trade could be booked.
+
+*Why it is wrong.* The gap is silent and it fails far from its cause. The
+provisioning reports success, and the failure appears later as a rejected trade
+naming a book id, which says nothing about an unpublished dataset.
+
+The mechanism was designed to be driven at runtime by =ores.iam.core='s Acme
+provisioner over =dq.v1.bundles.publish=. That is a reasonable design, and it
+leaves a database unusable until a service has run, which the SQL provisioning
+does not say.
+
+*Repair applied.* =populate/acme/acme_publish_populate.sql= calls the same
+publish functions in dependency order, wired into =populate.sql= before the
+trading layer. It is a second trigger of one implementation rather than a second
+implementation, and it is idempotent. After it runs the tenant holds 16 parties,
+4 counterparties, 28 business units, 36 portfolios and 31 books, and =trades=
+populates.
+
+*** Defect 12: the publish guard collapses every office onto one party
+
+*Current shape.* Each publish function resolves a root party and skips when that
+party already owns rows of the kind being published. The root party is the same
+for all four Acme offices, so publishing the group's datasets first causes the
+UK, US and Hong Kong datasets to skip.
+
+*Why it is wrong.* The result is silent and wrong rather than an error. Calling
+the four datasets in the obvious way publishes *2 books instead of 31*, reports
+=skipped= for the other three, and leaves a database that looks provisioned.
+
+The function does accept a =party_id= parameter, and passing each office's own
+party makes all four publish. So the mechanism is correct and its default is
+misleading: an omitted parameter silently narrows the result.
+
+*Replacement shape.* The guard should key on the dataset being published rather
+than on the party owning any row of that kind. A dataset already published is a
+sound reason to skip; another dataset belonging to a sibling office is not.
+
+*Worked around, not fixed.* The new populate script passes an explicit
+=party_id= per office. That produces the right data and leaves the misleading
+default in place for every other caller.
 
 *** Two tables model two products with mutually exclusive columns
 
@@ -429,7 +465,7 @@ because the obvious implementation does not remove anything.
 
 * Conclusions
 
-The ten defects fall into three kinds, and confusing them would misdirect the
+The twelve defects fall into three kinds, and confusing them would misdirect the
 repair.
 
 Defects 1 to 3 are *type defects*. A value is held in a type too wide for its

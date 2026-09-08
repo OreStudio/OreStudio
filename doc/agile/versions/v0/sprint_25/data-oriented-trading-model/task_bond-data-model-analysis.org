@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/bond-data-model-analysis
-#+pr:
+#+pr: 2039
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-08
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2039][#2039]] | [doc] Propose the relational data model for the bond family |
 
 * Review
 

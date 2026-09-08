@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7
+:END:
+#+title: Task: Analyse the ores.trading data model against the data-oriented criteria
+#+description: Run the code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A single in-depth analysis document that reviews the whole ores.trading data model with the code-review-data-model skill and the data_oriented_design criteria, accounts for all prior analysis (the codegen gap investigation 2548EE95, the C1202 complexity doc, the Sep-8 drift inventory, the temporal/versioning and composite architecture docs), and proposes the correct data-oriented target model: every persisted family modeled in the org grammar, the wire and the domain as codegen projections, composite and versioning semantics preserved, and the service-layer changes to deliver it, sequenced across PRs.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-08                               |
+
+* Acceptance
+
+- The analysis classifies ores.trading into the data-oriented design regimes and scores each regime against the anchored scale of the data-oriented criteria.
+- The analysis inventories the full decision surface (modeling orgs), invariant surface (generated and hand-written domain C++), SQL schema, repository, service, messaging and eventing artefacts of ores.trading.
+- Every known divergence between the model and the tree is traced to a cause (codegen grammar gap, hand-evolved tree, orphaned stack, doc staleness), citing the prior investigations.
+- The analysis proposes the target data-oriented model: entity shape, identity and audit spine, nested group decomposition, composite and versioning semantics, and the wire organisation.
+- The analysis lists the service-layer shape changes the target model requires, and sequences the work across the follow-up PRs.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

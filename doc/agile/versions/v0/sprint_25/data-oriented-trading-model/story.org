@@ -1,0 +1,90 @@
+:PROPERTIES:
+:ID: 688959F0-A1AB-4021-A57E-1103AD92773A
+:END:
+#+title: Story: Redesign ores.trading on data-oriented principles
+#+description: Program: review the whole ores.trading data model against the data-oriented criteria of the code-review-data-model skill and move it to the correct data-oriented shape across several PRs: model every persisted family in the modeling orgs, grow the org grammar to express nested domain groups, column mapping, custom service methods and wire consolidation, then align the service layer and the wire to the atomised model. First PR: the in-depth analysis of current state and the proposed target model.
+#+type: story
+#+level: s2
+#+filetags: :trading:data-model:codegen:data-oriented:sprint_25:v0:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+ORES Studio trades by hand-evolved C++ stacks that the modeling orgs
+do not express. Five instrument families (bond, commodity, composite
+with its composite_legs child table, credit, scripted), the shared
+legs table (=ores_trading_swap_legs_tbl=), the five-group =trade=
+domain, and a wire regime that was consolidated by hand for fourteen
+families all live only in the tree. The consequence is that
+ores.trading is the one component that still cannot join the drift
+gate, and any regeneration the org grammar does drive silently
+flattens or drops tree semantics (nested domain groups, non-persisted
+members, bespoke service methods, hand-picked column names, the trade
+schema's hand-added indexes).
+
+The story moves ores.trading to a fully modeled, data-oriented shape:
+every persisted family expressed in the modeling orgs, the org grammar
+grown to carry nested domain groups, column-name mapping, custom
+service methods and wire consolidation, composite and versioning
+semantics explicit, and the service layer aligned to the atomised
+model. A drift gate then proves regeneration identity for the whole
+component.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | BACKLOG                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Start the analysis task.               |
+| Last touched  | 2026-09-08                               |
+
+* Acceptance
+
+- Every persisted ores.trading family has an org model: the 25 bound
+  instruments, bond/commodity/composite/composite_leg/credit/scripted,
+  the swap_legs table, trade with its identifiers. No domain class, SQL
+  table, or wire artefact lives only in the tree.
+- The org grammar expresses nested domain groups with domain-only
+  members, column-name mapping, org-declared custom service methods,
+  and per-entity wire emission control. Wire consolidation is a model
+  decision, not a tree-side deletion.
+- Regenerating trading (C++ and the trading SQL under =ores.sql=) is
+  drift-clean. Trading joins the drift-check registry, and the Sep-8
+  drift inventory is reconciled.
+- Composite and versioning semantics survive atomisation: versioned
+  temporal tables with the audit spine, composite as-of composition,
+  trade lifecycle rows and the successor chain are first-class in the
+  model, not hand-written SQL.
+- The service layer exposes the batched, aggregate-shaped surface
+  (legs batch access, transactional composite saves, as-of reads) as
+  generated code with no hand-restored exclusions.
+- Eventing integration tests are enabled for every instrument family
+  through the =trading-instrument= profile, not per-org flags.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7][Analyse the ores.trading data model against the data-oriented criteria]] | BACKLOG | | | Run the code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow. |
+
+* Decisions
+
+* Out of scope
+
+- Numerical-kernel (regime 1) work: valuation and pricing logic lives
+  in the marketdata/analytics/compute units; trading only consumes
+  their results.
+- The models of other components (the shared =ores.dq= audit group,
+  =ores.refdata= soft-FK parents such as book and portfolio), except
+  for the new org keys the trading models need to express them.
+- Qt presentation features beyond what the domain and wire changes
+  force. The trade Qt controllers' hand-evolved features are recorded
+  in the analysis as drift evidence, not re-implemented here.

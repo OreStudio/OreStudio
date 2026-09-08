@@ -272,6 +272,8 @@ entirely.
 | column         | header        |
 |----------------+---------------|
 | name           | Name          |
+| scope          | Scope         |
+| binding_mode   | Binding       |
 | enabled        | Enabled       |
 | description    | Description   |
 | modified_by    | Modified By   |

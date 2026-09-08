@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 0EFF1D57-4463-4BA4-ACE5-1B8FFCA33515
+:END:
+#+title: Story: Clean up the ores.trading data model
+#+description: Repair the modelling defects found while building trade populations: types too wide for their meaning, integrity rules the schema does not declare, rules placed in procedures rather than in the schema, and shapes the model cannot express at all.
+#+type: story
+#+level: s2
+#+filetags: :trading:modelling:schema:sprint_25:v0:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+#+environment: bright_faraday
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The trading schema says what it holds, enforces what it relies on, and can
+express the products a desk trades. Today it does none of those three
+consistently.
+
+Sixteen defects were found while building trade populations, and they were found
+by loading every table rather than by reading the model. They fall into four
+kinds, and the kinds matter more than the count because each wants a different
+repair.
+
+*Type defects* hold a value in a type too wide for its meaning, so the database
+cannot constrain, index or store it compactly. Schedules and baskets live in
+=text= columns holding JSON; the C++ declarations widen =date= and =numeric= back
+to strings and doubles on the way out.
+
+*Integrity defects* leave a relationship undeclared. There are no foreign keys at
+all across the 41 tables, enumerations are free text with no reference table, the
+=_code= suffix promises a constraint that mostly does not exist, and one concept
+carries two names.
+
+*Placement defects* put a rule in the wrong place. Referential integrity lives in
+PL/pgSQL rather than in a foreign key, and it is the largest single cost on the
+insert path. Enumerations live in trigger bodies rather than in the reference
+tables that already hold their values.
+
+*Expressiveness defects* lose information rather than discipline, and they are
+the ones that bound what the system can hold. An underlying is a scalar, so no
+table can carry a basket. An observation schedule is a frequency and two dates,
+so no table can carry an irregular one. Together these account for 28 of ORE's
+112 trade types, across equity, fx and commodity.
+
+The goal is not to repair all sixteen. It is to repair the mechanisms the rest
+depend on, in an order where each step makes the next one smaller.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-08                               |
+
+* Acceptance
+
+Ordered by dependency, not by size. Each step makes the next smaller, and the
+first is a prerequisite for sizing the rest.
+
+1. *Every instrument table declares which products it holds.* Twelve of the 30
+   carry no =trade_type_code= constraint today, covering 51 of the 112 trade
+   types, so coverage cannot be computed at all. Declaring it converts an unknown
+   into a list, and the list is what says whether a table is missing.
+2. *One name per concept.* =instrument_id= against =id= for an instrument's
+   identity, and =day_count_fraction_code= against =day_count_code=. This is
+   cheap, and the foreign keys in the next step need one column name per
+   referenced table.
+3. *The reference tables that the =_code= convention promises exist, and foreign
+   keys point at them.* Currency, day count, payment frequency and change reason
+   have no table; the enumerations enforced inside triggers move to the tables
+   that already hold their values.
+4. *An underlying is a row carrying an oresmd URI, not a name in a column.*
+   Sixteen trade types across three asset classes stop being unstorable, and
+   =basket_json= is deleted.
+5. *A schedule is a table, shared across the instruments that need one.* Twelve
+   more trade types stop being unstorable, and the JSON schedule columns are
+   deleted.
+6. *Bulk population does not pay the per-row insert trigger.* Whether by
+   separating validation from bitemporal versioning, or by a set-based path, the
+   25x is the largest measured cost in the schema.
+
+Two things are explicitly not required for this story to close: every missing
+product having a table, and the generic bond, commodity and credit tables being
+split. Both are follow-on work that these steps make tractable.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:CBB9CA8D-3579-4116-A7F7-80F54ECEFF5C][Scaffold story: Clean up the ores.trading data model]] | STARTED | 2026-09-08 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:76CF818A-36D5-4AEB-B20A-F795DB36A0CC][Declare instrument coverage on the unconstrained tables]] | BACKLOG | | | Initial task for: Clean up the ores.trading data model |
+
+* Decisions
+
+* Out of scope
+
+- Changing how any product is priced. This is a storage and integrity change.
+- Trade population generation, which is paused pending this work and resumes
+  against the repaired model.
+- Adding the remaining unstorable products. The mechanisms come first; the
+  products that then need a table are a much shorter list than the count
+  suggests today.
+
+* Notes
+
+The defects, their evidence and a proposed repair for each are recorded in the
+trade population story's =Investigation: Trade model defects=. That document is
+on the =feature/ore-trade-generator-trade-populations= branch and merges with
+PR #2034; link it from here once it lands, since a link to an unmerged document
+would break the site build.
+
+Two defects carry a measurement rather than an argument. The JSON schedule column
+costs 4x on the load path, and referential integrity in PL/pgSQL costs about 25x.

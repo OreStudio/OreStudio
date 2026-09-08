@@ -349,33 +349,7 @@ product, which blocks the term for the classification that actually needs it.
 *Replacement shape.* Rename the column and the type to =asset_class=, which is
 what it holds, and leave =product_type= free.
 
-** What the loader could not populate
-
-Five of the 41 tables rejected a fully populated row when the loader was first
-run. Each rejection is a finding about the model rather than a limitation of the
-loader. Three had one cause, since resolved, and two remain.
-
-*** Three tables needed data that lives outside ores.trading
-
-=ores_trading_trades_tbl= is the root of this group. Its insert trigger validates
-six references before it will accept a row, and it names each as a soft foreign
-key in its own comments.
-
-| Reference          | Validated against               | Was present |
-|--------------------+---------------------------------+-------------|
-| =book_id=            | =ores_refdata_books_tbl=          | No          |
-| =portfolio_id=       | =ores_refdata_portfolios_tbl=     | No          |
-| =counterparty_id=    | =ores_refdata_counterparties_tbl= | No          |
-| =status_id=          | =ores_dq_fsm_states_tbl=          | Yes         |
-| =successor_trade_id= | =ores_trading_trades_tbl=         | Optional    |
-| =trade_type=         | Enumeration inside the trigger  | Yes         |
-
-A seventh rule is stricter than a foreign key could express: =portfolio_id= must
-equal the parent portfolio of the book named by =book_id=. The two references are
-not independent, so supplying a valid book and a valid portfolio is not
-sufficient. They must agree.
-
-*** Defect 11: staged reference data is never published
+** Defect 11: staged reference data is never published
 
 *Current shape.* The cause of the above was not missing data. Acme's parties,
 business units, portfolios and books are all staged in the DQ artefact tables,
@@ -402,7 +376,7 @@ implementation, and it is idempotent. After it runs the tenant holds 16 parties,
 4 counterparties, 28 business units, 36 portfolios and 31 books, and =trades=
 populates.
 
-*** Defect 12: the publish guard collapses every office onto one party
+** Defect 12: the publish guard collapses every office onto one party
 
 *Current shape.* Each publish function resolves a root party and skips when that
 party already owns rows of the kind being published. The root party is the same
@@ -424,6 +398,32 @@ sound reason to skip; another dataset belonging to a sibling office is not.
 *Worked around, not fixed.* The new populate script passes an explicit
 =party_id= per office. That produces the right data and leaves the misleading
 default in place for every other caller.
+
+** What the loader could not populate
+
+Five of the 41 tables rejected a fully populated row when the loader was first
+run. Each rejection is a finding about the model rather than a limitation of the
+loader. Three had one cause, since resolved, and two remain.
+
+*** Three tables needed data that lives outside ores.trading
+
+=ores_trading_trades_tbl= is the root of this group. Its insert trigger validates
+six references before it will accept a row, and it names each as a soft foreign
+key in its own comments.
+
+| Reference          | Validated against               | Was present |
+|--------------------+---------------------------------+-------------|
+| =book_id=            | =ores_refdata_books_tbl=          | No          |
+| =portfolio_id=       | =ores_refdata_portfolios_tbl=     | No          |
+| =counterparty_id=    | =ores_refdata_counterparties_tbl= | No          |
+| =status_id=          | =ores_dq_fsm_states_tbl=          | Yes         |
+| =successor_trade_id= | =ores_trading_trades_tbl=         | Optional    |
+| =trade_type=         | Enumeration inside the trigger  | Yes         |
+
+A seventh rule is stricter than a foreign key could express: =portfolio_id= must
+equal the parent portfolio of the book named by =book_id=. The two references are
+not independent, so supplying a valid book and a valid portfolio is not
+sufficient. They must agree.
 
 *** Two tables model two products with mutually exclusive columns
 

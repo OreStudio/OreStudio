@@ -177,11 +177,7 @@ void SyntheticPlugin::on_login(const plugin_context& ctx) {
 
     yieldCurveProcessParameterDefinitionController_ =
         std::make_unique<YieldCurveProcessParameterDefinitionController>(
-            ctx_.main_window,
-            ctx_.mdi_area,
-            ctx_.client_manager,
-            ctx_.change_reason_cache,
-            ctx_.username);
+            ctx_.main_window, ctx_.mdi_area, ctx_.client_manager, ctx_.username);
     connect(yieldCurveProcessParameterDefinitionController_.get(),
             &YieldCurveProcessParameterDefinitionController::statusMessage,
             this,

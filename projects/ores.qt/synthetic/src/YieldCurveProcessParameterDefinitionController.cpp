@@ -47,12 +47,10 @@ YieldCurveProcessParameterDefinitionController::YieldCurveProcessParameterDefini
     QMainWindow* mainWindow,
     QMdiArea* mdiArea,
     ClientManager* clientManager,
-    ChangeReasonCache* changeReasonCache,
     const QString& username,
     QObject* parent)
     : EntityController(
           mainWindow, mdiArea, clientManager, username, parameter_definition_event_name, parent)
-    , changeReasonCache_(changeReasonCache)
     , listWindow_(nullptr)
     , listMdiSubWindow_(nullptr) {
 

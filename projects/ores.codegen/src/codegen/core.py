@@ -3411,6 +3411,13 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             qt['has_pagination'] = qt.get('has_pagination', False)
             # Default has_readonly_paginated_list to False if not set
             qt['has_readonly_paginated_list'] = qt.get('has_readonly_paginated_list', False)
+            # A read-only list controller never opens a detail dialog, so it
+            # cannot use the change-reason cache: wire the cache only when the
+            # controller is not read-only (the cache plumbing exists for the
+            # detail dialogs the read-only profile omits).
+            qt['wires_change_reason_cache'] = (
+                qt.get('has_change_reason_cache', False)
+                and not qt['has_readonly_paginated_list'])
             # Default has_parent_scoped_list to False if not set. Paired
             # with parent_key_field (the protocol request field, e.g.
             # calendar_code) and parent_key_param (the C++ member/

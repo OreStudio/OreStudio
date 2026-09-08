@@ -20,22 +20,27 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The story has its documents, its sprint wiring, and an analysis solid enough that
+the next person can act on it without rebuilding the reasoning.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                                 |
 | Parent story | [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][Generate realistic trade populations for Acme using ORE's TradeGenerator]] |
-| Now          | Not yet started.                       |
+| Now          | Merged.                                |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing.                               |
 | Last touched | 2026-09-07                               |
 
 * Acceptance
 
--
+- The story, its design and its tasks exist and are wired into the sprint.
+- The design states what is known, what was measured, and what remains open,
+  with the open questions separated from the answered ones.
+- Anything found that is not this story's work is recorded where it can be
+  picked up, rather than left in a commit message.
 
 * Plan
 
@@ -69,3 +74,44 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story is scaffolded and its analysis is substantially further than
+scaffolding required, because measuring the population path turned out to be
+cheap once the lever existed.
+
+Three scripts were written and all three are reusable.
+=scripts/bench_trade_insert.py= times a single table, isolating the load method
+and the notify trigger from the shape. =scripts/bench_trade_shapes.py= times a
+population by instrument shape across all its tables.
+=scripts/load_trade_population.py= fills every column of all 41 deployed
+=ores_trading= tables against the real schema, and reports what it cannot
+populate as findings rather than failing silently.
+
+The measurements corrected the design twice. A synthetic table put the notify
+trigger at 4.2x; on the deployed schema it is 1.5%, and the per-row insert
+trigger costs about 25x. A million vanilla swaps is 7.6 minutes rather than the
+15 seconds the synthetic path suggested. Both corrections are recorded in the
+design with the numbers behind them.
+
+One defect was fixed rather than recorded, because it blocked the story
+outright. Acme's books and portfolios were staged in the DQ artefact tables and
+never published into refdata, so a freshly provisioned database could not hold a
+single trade. =populate/acme/acme_publish_populate.sql= now runs during
+provisioning, =fpml/fpml_populate.sql= is wired in ahead of it, and a rebuild
+from scratch was verified end to end: zero errors, 31 books, 36 portfolios, and
+trades loading.
+
+What was found and not fixed is recorded in
+[[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]], which carries sixteen defects in the
+trading model with a proposed repair for each. That is the reason the story
+pauses here rather than continuing: two of those defects bound what any
+population can contain, and repairing them first is cheaper than generating
+against a model that is about to change.
+
+Two things this task got wrong and corrected. A benchmark reported nonsense
+numbers for a full session because its table copied a literal string into a
+timestamp column, and the numbers were retracted rather than explained. The
+loader left 588,000 rows in the development database because its cleanup used
+=DELETE=, which an =ON DELETE= rule rewrites into a validity close on these
+bitemporal tables; the rows were removed and the cleanup now suspends the rules
+and verifies both the rows and the rules afterwards.

@@ -48,12 +48,12 @@ a trade stay in one place.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | BLOCKED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-09-07                               |
+| Now           | Paused after analysis; nothing in flight. |
+| Waiting on    | The trading model cleanup, by choice rather than by necessity. |
+| Next          | Resume once the model defects that bound coverage are repaired. |
+| Last touched  | 2026-09-08                               |
 
 * Acceptance
 
@@ -109,17 +109,47 @@ in when history is genuinely needed.
 #+ATTR_HTML: :class hug-leading
 | Document | Kind | Purpose |
 |----------|------|---------|
-| [[id:37E54766-CE97-4981-A3C8-B2A232ED9A04][Design: Trade population generation]] | design, transitional | The argument: what exists, what a valid trade needs, the four candidates, and the questions that decide between them |
+| [[id:37E54766-CE97-4981-A3C8-B2A232ED9A04][Design: Trade population generation]] | design, transitional | The argument: what exists, what a valid trade needs, the four candidates, what was measured, and what remains open |
+| [[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]] | investigation, transitional | Sixteen defects in the trading model found by building the population, each with a proposed repair |
 
 * Tasks
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:BC57336F-9823-428F-8060-15DB3AEB47B3][Scaffold story: Generate realistic trade populations for Acme using ORE's TradeGenerator]] | STARTED | 2026-09-07 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:BC57336F-9823-428F-8060-15DB3AEB47B3][Scaffold story: Generate realistic trade populations for Acme using ORE's TradeGenerator]] | DONE | 2026-09-07 | 2026-09-08 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
 | [[id:A1405F36-C32F-46CE-A550-40015616B986][Analyse the trade population pipeline end to end]] | BACKLOG | | | Survey the ways a sized population could be produced, evaluate each on speed, reproducibility, realism and cost, and present the options for a decision. |
 
 * Decisions
 
+*Generation is a block behind a request, not a seeding script.* The same block
+then serves provisioning, a periodic feed and amendment, which differ in who
+sends the request and what the configuration says rather than in mechanism.
+
+*Sizes are presets of the configuration, not constants.* A load test at an
+arbitrary volume must be a configuration change and not a code change.
+
+*The service boundary stands, and a bulk path is needed behind it.* The vector
+write batches, so the boundary costs no call per trade. What the boundary writes
+through is the cost: multi-row =INSERT= with the per-row trigger loads a million
+swaps in 133 seconds against 14.8 by =COPY= without it.
+
+*Suppressing the notify trigger is not worth doing.* It costs 1.5% on the
+deployed schema. The synthetic benchmark's 4.2x was an artefact of measuring a
+table where nothing else happened.
+
+*Preset distributions are a labelled assumption, not a citation.* Public sources
+publish notional by asset class and not trade counts, and a population is sized
+in trades.
+
+*The story pauses here.* Two defects in the trading model bound what any
+population can contain, so repairing the model first is cheaper than generating
+against one that is about to change. This is a sequencing choice: the story could
+proceed against what the schema stores today.
+
 * Out of scope
 
--
+- Repairing the trading model. Sixteen defects were found and recorded, and one
+  was fixed because it blocked the story outright. The rest belong to their own
+  story.
+- Extending instrument coverage. 28 of ORE's 112 trade types cannot be stored,
+  and adding them is a model change rather than a generation change.

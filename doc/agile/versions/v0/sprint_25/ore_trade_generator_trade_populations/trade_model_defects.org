@@ -525,45 +525,62 @@ of them, so a trade can be booked that no instrument table can describe.
 eleven are blocked by a structural decision rather than by absent work, and
 adding a table per product would not fix them.
 
-*** Defect 15: an equity underlying is a scalar
+*** Defect 15: an equity underlying is an unqualified name
 
 *Current shape.* All nine tables carry =underlying_name text=. It is not a
-foreign key, no trigger validates it, and there is no security master anywhere in
-=refdata= or =marketdata= for it to reference.
+foreign key, no trigger validates it, and it carries no scheme, so the string
+alone does not say what it identifies.
 
 *Why it is wrong.* Two consequences, and the second is the larger.
 
 The value is unconstrained, so one instrument can be written as =VOD.L=, =VOD LN=
 and =Vodafone= in three rows with nothing relating them. Any question about
-exposure to an issuer becomes a string-matching exercise.
+exposure to an issuer becomes a string-matching exercise. The name also omits
+what pricing needs: an equity is identified by a ticker *and* a currency, and the
+currency here lives in a separate column that nothing ties to the name.
 
-More importantly, *a scalar cannot hold a basket*. Five of the eleven missing
-products are multi-underlying: basket options, basket variance swaps, rainbow
-options, outperformance options and pairwise variance swaps. They are absent
-because the column shape cannot express them. The one product that does have a
-basket, =EquityWorstOfBasketSwap=, escapes through =basket_json=, a text column
-holding an unqueryable list.
+More importantly, *a single column cannot hold a basket*. Five of the eleven
+missing products are multi-underlying: basket options, basket variance swaps,
+rainbow options, outperformance options and pairwise variance swaps. They are
+absent because the column shape cannot express them. The one product that does
+have a basket, =EquityWorstOfBasketSwap=, escapes through =basket_json=, a text
+column holding an unqueryable list.
 
-*Replacement shape.* An underlying is a row, and a product references one or many.
+*Replacement shape.* This project already has the identifier this column should
+carry. [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]] is a canonical, structured market data URI, implemented in
+=ores.marketdata.api= as =oresmd_uri=, and an equity underlying is exactly what
+it addresses:
+
+: oresmd://equity/aapl?ccy=usd
+
+The authority is the asset class, the path is the ticker, and the currency is a
+query parameter, so the identifier carries what the name and the =currency=
+column carry today and says which scheme it is in. It projects deterministically
+into ORE's own quote key, =EQUITY/PRICE/AAPL/USD=, which is what the pricing
+side needs.
+
+An underlying is then a row rather than a column, so a basket is n rows:
 
 #+begin_src sql
 ores_trading_instrument_underlyings_tbl
   instrument_id     uuid not null
   tenant_id         uuid not null
   sequence_number   int  not null   -- basket order, or the leg of a pairwise product
-  security_id       uuid not null   -- a reference, not a name
+  underlying_uri    text not null   -- an oresmd URI
   weight            numeric         -- null for a single underlying
   primary key (tenant_id, instrument_id, sequence_number)
 #+end_src
 
-With that table a single-underlying option is one row, a basket is n rows, and an
-outperformance option is two. The five multi-underlying products stop being
-blocked, =basket_json= is deleted, and =underlying_name= comes out of all nine
-tables.
+A single-underlying option is one row, a basket is n, and an outperformance
+option is two. =basket_json= is deleted and =underlying_name= comes out of all
+nine tables.
 
-The =security_id= reference needs a security master that does not yet exist. That
-is the dependency this repair carries, and it should be sized before the work
-starts.
+*What this depends on.* =oresmd= is implemented as a domain type and no database
+column uses it yet, so this would be its first persisted use. Two questions
+follow that this page does not settle: whether the URI is stored as text with
+validation in the trigger, or parsed into columns, and whether a resolved
+identifier should be registered in a table so that two trades naming the same
+underlying share a row rather than a string.
 
 *** Defect 16: no observation schedule for equity
 
@@ -587,8 +604,10 @@ become a generated schedule rather than a special case.
 
 Ordered by dependency rather than by size.
 
-1. *The underlyings table, and the security master it references.* Everything
-   else is easier afterwards, and five missing products stop being blocked.
+1. *The underlyings table, carrying an oresmd URI.* Everything else is easier
+   afterwards, and five missing products stop being blocked. It needs no new
+   master, since oresmd already identifies an equity by ticker and currency; it
+   does need a decision on how a URI is stored and validated.
 2. *The schedule table*, shared with defect 1 rather than built for equity. Four
    more missing products stop being blocked.
 3. *Split the two exclusive-or tables*, per defect 9. Independent of the other

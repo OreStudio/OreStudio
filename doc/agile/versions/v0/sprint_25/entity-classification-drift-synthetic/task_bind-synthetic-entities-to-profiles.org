@@ -173,6 +173,34 @@ environment's concurrent null-tenant widening, merged in place.
 
 ** Live system test (2026-09-08, ores.shell)
 
+The first pass exposed a real coverage gap: the shell had no per-entity
+CRUD commands for the synthetic entities, so the CRUD workflow could
+not be exercised. Nine command units were added (one per entity:
+get/add/delete/history over the generated protocol subjects, following
+the trading reference-entity pattern; an aggregator wires them), and
+the core registrar's three remaining hand-wired entity blocks (mdc,
+fx_spot, gmm) were swapped to their generated sub-registrars so the
+history subjects are actually subscribed. Five orgs also gained the
+Table display sections the JSON-to-org migration had dropped (their
+list converters rendered empty shells) - the trade_party_role defect
+class from the trading unit.
+
+Full CRUD verified live against the recreated database:
+
+- CREATE: yield_curve_process_type, market_data_generation_config,
+  fx_spot_generation_config, ir_curve_generation_config,
+  yield_curve_process_parameter_definition, gmm_component,
+  ir_curve_template_entry (FK chain into the shell-created ir config),
+  and process_parameter_value (FK chain into the ir config and the
+  seeded parameter definitions) all insert; the insert triggers'
+  existence checks and check constraints validated each row.
+- READ: paginated get on every entity renders live tables.
+- UPDATE/history: version history renders per entity.
+- DELETE: by code (text key) and by uuid; the follow-up gets confirm
+  removal.
+- The feed control plane (start/stop cascade over the folder
+  hierarchy) was exercised earlier in the same session.
+
 Ran on this environment's fleet against the recreated database, before
 merge (the post-merge confirmation rerun closes the story):
 

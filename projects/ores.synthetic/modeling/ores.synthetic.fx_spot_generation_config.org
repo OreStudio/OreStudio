@@ -350,6 +350,20 @@ std::nullopt
 :iterator_var: c
 :END:
 
+** Table display
+
+| column              | header       |
+|---------------------+--------------|
+| base_currency_code  | Base         |
+| quote_currency_code | Quote        |
+| source_name         | Source       |
+| ore_key             | ORE Key      |
+| price_source        | Price Source |
+| ticks_per_hour      | Ticks/Hour   |
+| enabled             | Enabled      |
+| modified_by         | Modified By  |
+| version             | Version      |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/fx_spot_generation_config.hpp

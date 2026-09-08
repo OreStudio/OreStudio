@@ -195,6 +195,18 @@ faker::number::decimal(0.0, 1.0)
 :iterator_var: c
 :END:
 
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| component_index | Component   |
+| description     | Description |
+| mean            | Mean        |
+| stdev           | Stdev       |
+| weight          | Weight      |
+| modified_by     | Modified By |
+| version         | Version     |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/gmm_component.hpp

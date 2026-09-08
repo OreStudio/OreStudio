@@ -267,6 +267,16 @@ entirely.
 :iterator_var: c
 :END:
 
+** Table display
+
+| column         | header        |
+|----------------+---------------|
+| name           | Name          |
+| enabled        | Enabled       |
+| description    | Description   |
+| modified_by    | Modified By   |
+| version        | Version       |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/market_data_generation_config.hpp

@@ -191,6 +191,15 @@ std::nullopt
 #include <string>
 #+end_src
 
+** Table display
+
+| column      | header      |
+|-------------+-------------|
+| name        | Name        |
+| kind        | Kind        |
+| modified_by | Modified By |
+| version     | Version     |
+
 ** Conventions
 :PROPERTIES:
 :iterator_var: f

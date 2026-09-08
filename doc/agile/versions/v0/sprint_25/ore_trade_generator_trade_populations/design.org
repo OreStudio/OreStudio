@@ -509,8 +509,8 @@ required to admit it without change to the block.
   notification queue did not become a binding constraint at eight million
   notifications in one transaction, measured with nothing listening.
 - *Which =ores.trading= instruments can be populated?* All 41 tables. The limit
-  is the schema rather than the mechanism: eleven of ORE's 27 equity trade types
-  have no table.
+  is the schema rather than the mechanism: 28 of ORE's 112 trade types have no
+  table, across equity, fx and commodity.
 
 ** Still open
 

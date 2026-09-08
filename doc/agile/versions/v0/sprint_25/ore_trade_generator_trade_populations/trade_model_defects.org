@@ -9,7 +9,7 @@
 #+created: 2026-09-08
 #+updated: 2026-09-08
 
-This page documents an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the trading domain model. It records six defects found in the entities, why each is wrong, and the shape that replaces it.
+This page documents an [[id:A7F8D9E2-3C4B-4A5D-B67C-8E9F0A1B2C3D][investigation]] into the trading domain model. It records sixteen defects found in the model, why each is wrong, and the shape that replaces it.
 
 * Context
 
@@ -738,8 +738,8 @@ repair.
 
 Defects 1 to 3 are *type defects*. A value is held in a type too wide for its
 meaning, so the database cannot constrain it, index it, or store it compactly.
-These cost performance and correctness together, and defect 1 is the only one of
-the six whose cost is measured rather than argued.
+These cost performance and correctness together, and defect 1 is one of the two
+whose cost is measured rather than argued.
 
 Defects 4 to 6 and 13 are *integrity defects*. A relationship or a name the model
 relies on is not declared consistently, so nothing the database controls enforces

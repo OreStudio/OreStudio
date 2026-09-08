@@ -176,8 +176,9 @@ satisfy the row count and fail the requirement.
 
 ** What Measurement Found
 
-Three of the open questions are now answered, two by reading the code and one by
-measuring.
+Four of the open questions are now answered, one by reading the code and three by
+measuring. The measurements settle which path bulk population takes, and they
+show that the choice of path matters more than the choice of instrument.
 
 *** The trade interface batches
 
@@ -191,61 +192,81 @@ The consequence is that the service boundary costs less than feared. Generation
 in =ores.synthetic= calling =ores.trading= downstream does not imply a call per
 trade.
 
-*** A per-row trigger costs a factor of four
+*** A trade is not a row
 
-The generated schema attaches a notify trigger to each entity table, declared
-=for each row=, whose function calls =pg_notify= with a JSON payload. Per row.
+The unit the presets are sized in is a trade. The unit the database charges for
+is a row, and the two differ by the shape of the instrument. Every trade writes a
+trade row, an instrument row, and identifier and party-role rows; a swap writes
+two leg rows on top of those. Field counts and fan-out follow the entities under
+=ores.trading.core/repository=.
 
-=scripts/bench_trade_insert.py= measures what that costs. It builds its own
-table, with and without an equivalent trigger, times =COPY= against multi-row
-=INSERT= at several volumes, checks the row count after every load, and drops
-what it made. It reaches postgres through =psql=, the way the rest of the
-project does, so it adds no dependency.
+| Shape       | Tables | Rows per trade |
+|-------------+--------+----------------|
+| FX forward  |      4 |              6 |
+| Vanilla swap |     5 |              8 |
 
-Medians over three runs, one run at a million, against the development database:
+There is no schedule or cashflow table, so a leg does not expand into a row per
+payment. That bounds the fan-out: the shapes differ by a third, not by an order
+of magnitude. The cost of a shape is not only its rows, though, because each
+table carries its own notify trigger and takes its own statement.
 
-| Trades  | Method | Trigger | Seconds | Trades/sec |
-|---------+--------+---------+---------+------------|
-|    1000 | COPY   | on      |   0.046 |      21584 |
-|    1000 | COPY   | off     |   0.043 |      23503 |
-|   10000 | COPY   | on      |   0.098 |     102432 |
-|   10000 | COPY   | off     |   0.055 |     180591 |
-|  100000 | COPY   | on      |   0.602 |     166179 |
-|  100000 | COPY   | off     |   0.162 |     617993 |
-|  100000 | INSERT | off     |   0.756 |     132209 |
-| 1000000 | COPY   | on      |   6.615 |     151161 |
-| 1000000 | COPY   | off     |   1.575 |     634833 |
-| 1000000 | INSERT | on      |  14.868 |      67259 |
-| 1000000 | INSERT | off     |   7.467 |     133918 |
+*** What the shapes cost
 
-Two factors of about four fall out, and they are independent. The trigger costs
-4.2x on the =COPY= path at a million rows. =COPY= beats multi-row =INSERT= by
-4.7x with the trigger off.
+=scripts/bench_trade_shapes.py= measures both shapes across all their tables. It
+builds the tables with the real field counts and fan-out, loads a population,
+checks every table's row count, and drops what it made.
+=scripts/bench_trade_insert.py= measures a single flat table, which isolates the
+trigger and the load method from the shape.
 
-The measurement corrects the concern that prompted it. A million trades load in
-1.6 seconds without the trigger and 6.6 seconds with it. At the volumes this
-story targets the trigger is affordable, so *suppressing it is an optimisation
-and not a precondition*. The design does not need to route bulk population
-around the trigger to be viable.
+One million trades, one run each:
 
-*** The notify queue does not exhaust at these volumes
+| Shape   | Rows | Method | Trigger | Seconds | Trades/sec |
+|---------+------+--------+---------+---------+------------|
+| Forward |   6M | COPY   | off     |     8.8 |     113750 |
+| Forward |   6M | COPY   | on      |    41.2 |      24282 |
+| Forward |   6M | INSERT | off     |    53.4 |      18726 |
+| Forward |   6M | INSERT | on      |    97.4 |      10270 |
+| Swap    |   8M | COPY   | off     |    14.8 |      67714 |
+| Swap    |   8M | COPY   | on      |    67.9 |      14718 |
+| Swap    |   8M | INSERT | off     |    77.4 |      12914 |
+| Swap    |   8M | INSERT | on      |   133.6 |       7486 |
 
-=pg_notify= has a queue limit, which makes exhaustion under bulk load a
-reasonable thing to fear. A million trades inserted in one transaction with the
-trigger on did not reach it. The limit is real and does not bite here.
+The shape itself is the smallest of the three factors. A swap costs about 1.4x a
+forward, close to its extra rows and one extra table. The load method costs about
+6x and the trigger about 2.4x, and they compound.
 
-One caveat the measurement does not cover: it ran with nothing listening.
-Notifications are delivered at commit, and a real listener consuming a million
-payloads is a different question from postgres queuing them. That is a question
-about the consumer, not about the insert path this section measures.
+*** The consequence for the design
+
+The path that exists today is the slowest row in the table. The trade
+repositories issue multi-row =INSERT= through =sqlgen=, and the generated schema
+leaves the trigger on. That path loads a million swaps in *two minutes and
+fourteen seconds*.
+
+The fastest path loads the same population in *fifteen seconds*, a factor of
+nine. Neither the shape nor the row count moves that much. The load method and
+the trigger do.
+
+Bulk population therefore *is* a different operation from ordinary writing, and
+the design must say which path it takes. At the smaller presets the difference is
+seconds and does not matter. At a million trades it is the difference between a
+provisioning step someone waits through and one they do not.
 
 *** What was not measured
 
-The benchmark uses a representative flat table rather than the real bitemporal
-trade schema, so it bounds the trigger and the load method rather than
-predicting absolute times for a real population. The service boundary cost is
-also unmeasured; the code read above shows the vector write batches, which is
-what the boundary needed.
+The tables carry the entities' field counts and fan-out, not their types,
+constraints or indices, so these numbers bound the shape effect rather than
+predict a real population's absolute time. Real indices and foreign keys would
+make every row above slower.
+
+The measurement also ran with nothing listening on the notify channels.
+=pg_notify= has a queue limit and eight million notifications in one transaction
+did not reach it, but a consumer draining that volume is a separate question from
+postgres queuing it.
+
+Only two shapes were measured, of thirty instrument types. They were chosen as
+the extremes that exist: the simplest, and the most fanned-out that the schema
+allows. An instrument with more legs would sit above the swap, and the absence of
+a schedule table caps how far above.
 
 ** The Service Boundary
 
@@ -256,16 +277,22 @@ The generator therefore calls downstream rather than writing to the trade
 tables. Generation gains no second path into them, and the rules governing a
 trade stay in one place.
 
-That boundary is affordable, and both halves of the question are now settled.
-The downstream interface admits batching, because the vector write issues one
-=sqlgen::insert= in one transaction. The multi-row =INSERT= path it uses loads a
-million trades in 7.5 seconds with the trigger off and 14.9 seconds with it on.
+Both halves of the question are now settled, and they answer differently.
 
-The consequence is that *the design needs no bulk path of its own*. Generation in
-=ores.synthetic= calling =ores.trading= downstream, over the interface that
-already exists and through the trigger that already fires, reaches a million
-trades in about fifteen seconds. =COPY= is 4.7x faster and remains available if a
-preset ever outgrows that, but nothing in the target volumes requires it.
+The interface admits batching. The vector write issues one =sqlgen::insert= in
+one transaction, so the boundary costs no call per trade. That was the risk and
+it is not there.
+
+The path behind the interface is the slow one. Multi-row =INSERT= with the
+trigger on loads a million swaps in two minutes and fourteen seconds, and the
+same population loads in fifteen seconds by =COPY= with the trigger suppressed.
+The boundary is not what costs; what the boundary writes through is.
+
+The design therefore keeps the service boundary and *needs a bulk path behind
+it*. The generator calls =ores.trading= as any other caller does, and
+=ores.trading= owns a population entry point that writes by =COPY= and suppresses
+the trigger for the load. The rules governing a trade stay in one place, and the
+volume the largest preset asks for stays reachable.
 
 ** Compositions
 

@@ -1,0 +1,374 @@
+:PROPERTIES:
+:ID:       be4698b1-56b1-4686-ad68-c16d4611a1fd
+:END:
+#+title: ores.trading.bond_instrument
+#+description: Codegen entity model for the trading =bond_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Bond instrument economics for Bond, ForwardBond, CallableBond, ConvertibleBond, and BondRepo trades.
+#+entity_singular: bond_instrument
+#+entity_plural: bond_instruments
+#+entity_title: Bond Instrument
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+Bond instrument economics for Bond, ForwardBond, CallableBond,
+ConvertibleBond, and BondRepo trades. Discriminated by trade_type_code.
+Optional fields (call_date, conversion_ratio) are empty/zero for
+non-applicable product types.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:       identity
+:primary_key: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+UUID uniquely identifying this bond instrument.
+
+Surrogate key for the instrument record.
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+#+begin_src cpp :name generator
+std::string("Bond")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links instrument to a trade if applicable.
+
+** issuer
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name of the bond issuer.
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 currency code (e.g. USD).
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** face_value
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Face (notional) value of the bond.
+
+Must be positive.
+
+#+begin_src cpp :name generator
+1000.0
+#+end_src
+
+** coupon_rate
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Annual coupon rate as a decimal (e.g. 0.05 for 5%).
+
+Must be non-negative.
+
+#+begin_src cpp :name generator
+0.05
+#+end_src
+
+** coupon_frequency_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Payment frequency code (e.g. Annual, SemiAnnual, Quarterly).
+
+** day_count_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Day count convention code (e.g. Actual365Fixed, Thirty360).
+
+** issue_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Issue date (ISO 8601 date string, e.g. 2026-01-15).
+
+#+begin_src cpp :name generator
+std::string("2026-01-15")
+#+end_src
+
+** maturity_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Maturity date (ISO 8601 date string, e.g. 2036-01-15).
+
+Must be after issue_date.
+
+#+begin_src cpp :name generator
+std::string("2036-01-15")
+#+end_src
+
+** settlement_days
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<int>
+:nullable: true
+:END:
+
+Optional number of settlement days. Zero means not specified.
+
+** call_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional call date for callable bonds (ISO 8601). Empty for
+non-callable products.
+
+** conversion_ratio
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      std::optional<double>
+:nullable:      true
+:default_value: 0.0
+:END:
+
+Optional conversion ratio for convertible bonds. Zero for
+non-convertible products.
+
+** future_expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Delivery date for BondFuture. Empty for other types.
+
+** trs_return_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Return type for BondTRS: "TotalReturn" or "PriceReturn". Empty
+otherwise.
+
+** trs_funding_leg_code
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Funding leg floating index code for BondTRS. Empty otherwise.
+
+** option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Option type for BondOption: "Call" or "Put". Empty otherwise.
+
+** option_expiry_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Option expiry date for BondOption (ISO 8601). Empty otherwise.
+
+** option_strike
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Option strike as clean price for BondOption. Null when not set.
+
+** ascot_option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+ASCOT option type. Empty for non-Ascot products.
+
+** description
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Optional free-text description.
+
+Human-readable notes about this instrument.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_instruments_tbl
+:END:
+
+** Checks
+
+| expression                     |
+|--------------------------------|
+| "face_value" > 0               |
+| "coupon_rate" >= 0             |
+| "issuer" <> ''                 |
+| "currency" <> ''               |
+| "maturity_date" > "issue_date" |
+
+** Indexes
+
+| name     | columns              | unique | current_only | where_extra          |
+|----------+----------------------+--------+--------------+----------------------|
+| party    | tenant_id, party_id  | false  | true         |                      |
+| trade_id | tenant_id, trade_id  | true   | true         | trade_id is not null |
+
+* Insert trigger
+
+** Validations
+
+| column          | validation_function                |
+|-----------------+-------------------------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn |
+
+* C++
+
+The tree domain nests three further sub-structs (=bond_terms=,
+=bond_features= and =bond_option=) between the identity and audit
+members, and carries one non-persisted member (=terms.security_id=,
+present in the domain, absent from the SQL schema). No org key binds
+entity columns to a mid-group beyond the fixed identity/audit pair, and
+no key marks a column domain-only. This model therefore flattens every
+terms/features/option field into the entity and drops =security_id=.
+The emitted domain shows the divergence; the probe verdict lives in
+task 2548EE95, gap (a).
+
+** Flags
+:PROPERTIES:
+:subcomponent:          api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:        true
+:generator_facet_name:  generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_instrument
+:entity_plural_short:   bond_instruments
+:entity_singular_words: bond instrument
+:entity_plural_words:   bond instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: vs
+:END:
+
+** Table display
+
+| column                  | header        |
+|-------------------------+---------------|
+| identity.instrument_id  | ID            |
+| issuer                  | Issuer        |
+| currency                | Currency      |
+| coupon_rate             | Coupon Rate   |
+| issue_date              | Issue Date    |
+| maturity_date           | Maturity Date |
+| description             | Description   |
+| audit.recorded_at       | Recorded At   |
+
+** Custom repository methods

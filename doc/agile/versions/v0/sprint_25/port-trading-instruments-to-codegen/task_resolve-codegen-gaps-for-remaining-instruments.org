@@ -43,11 +43,15 @@ multi-sub-struct domain is expressible as separate field-group orgs
 org. What remains unexpressible is the =bond_instrument= shape:
 several nested sub-structs (=bond_terms=, =bond_features= and
 =bond_option=) with non-persisted members inside one entity org. The
-open question is whether the trade-style shape covers
-bond/commodity/credit without new codegen work; a draft org in that
-shape, regenerated, is the test. The C1202 decomposition of the tree
-domain must survive zero-diff (persistence, ores.ore XML round-trip
-mappers, Qt forms consume the nested sub-structs).
+2026-09-08 probe settled the open question: the trade-style shape does
+not cover it. The draft org regenerated a flat domain (identity member,
+19 flat fields, audit member); the three mid-groups vanished, the
+non-persisted =security_id= member was dropped, and the C1202
+decomposition of the tree domain is unreachable. The domain template
+must grow arbitrary mid-group support (a composition key on the entity
+org naming field-group orgs to embed between the identity and audit
+members) before bond, commodity and credit can convert. The evidence is
+in the Notes.
 
 (b) *Column-name-to-group-field mapping*: open, unchanged. No
 =:column:= or =:db_column:= override key exists in codegen, so
@@ -90,9 +94,9 @@ and the first trading drift run re-emitted all 36.
 |--------------+----------------------------------------|
 | State        | BACKLOG                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | Gaps re-verified 2026-09-08 with the first-ever trading drift run (trading-cpp absent from the drift registry until now); fra/swap legs since converted Sep 6. See Notes. |
-| Waiting on   | Trading drift reconciliation before any conversion can verify zero-diff: 36 re-emitted rates messaging files, 16 brace-stale fx/equity services, the fra service exclusion mechanism, and the trade-family model catch-up. |
-| Next         | Draft bond.org in the trade-style multi-group shape and regenerate, to test whether gap (a) needs codegen work at all. |
+| Now          | Gap (a) probed and decided 2026-09-08: the trade-style shape does not cover the bond domain; codegen must grow mid-group support. Probe org and evidence in Notes. |
+| Waiting on   | The gap-(a) codegen change (group-composition key in the domain template) before bond/commodity/credit conversion; trading drift reconciliation before any conversion can verify zero-diff. |
+| Next         | Probe gap (b) with scripted's column-name mapping and gap (c) with composite's service methods; then scope the (a) and (d) codegen changes. |
 | Last touched | 2026-09-08                               |
 
 * Acceptance
@@ -159,6 +163,44 @@ modified and 65 untracked files, in five groups:
   invisibly.
 - trade_identifier/trade_party_role/lifecycle_event and the four
   simple lookups regenerate clean; they are not part of the drift.
+
+The 2026-09-08 bond.org probe ran the gap-(a) test. The draft
+(=ores.trading.bond_instrument.org= in the modeling tree) cloned the
+rates archetype
+(=vanilla_swap_instrument.org=): identity-grouped columns,
+=:domain_identity_group: ores.trading.instrument_identity=,
+=:domain_audit_group: ores.dq.audit_record=, tablename and checks
+mirroring the hand-written SQL. Regenerating trading-cpp emitted 30
+bond files: 21 tracked hand-written files were rewritten and 7 new
+files materialized. Every file diverged structurally, not cosmetically.
+
+The emitted domain =bond_instrument= holds the identity member, 19 flat
+fields and the audit member. =bond_terms=, =bond_features= and
+=bond_option= do not exist; =terms.security_id= (domain-only, no SQL
+column) disappears because no org key marks a column domain-only; and
+the nullable coupling rewrites members the tree made non-optional
+(=int settlement_days= becomes =std::optional<int>=, =double
+conversion_ratio= becomes =std::optional<double>=), deleting the
+mapper's =value_or(0)= coercion. The mapper diff rewrites every access
+path (=r.terms.issuer= to =r.issuer=). The emitted SQL create renames
+the PK column =id= to =instrument_id= (column, PK, gist exclusion,
+nil-uuid check, indexes and trigger body), merges the seven extension
+columns into the main create (the hand-written
+=*_extensions_create.sql= becomes an orphan) and drops two hand-added
+indexes. Only =bond_instrument_json_io.cpp= emitted byte-identical.
+The regen also confirmed the grammar boundary: core.py parses exactly
+two group keys (=domain_identity_group=, =domain_audit_group=), the
+=* Custom repository methods= org section feeds no template, and no key
+gates per-family messaging emission.
+
+The probe verdict: gap (a) is open. The trade-style shape does not
+cover bond. The =trade= org itself emits a fully flat domain today (no
+identity member), so the tree's five-group =struct trade= is not
+regenerable from its org either; that divergence is part of drift group
+(iv). The fix is a domain-template change: a group-composition key on
+the entity org naming field-group orgs, embedded between the identity
+and audit members, with column-less group fields (security_id) mapped
+domain-only.
 
 The eventing-test coverage question that opened this investigation is
 also settled at org level: the =:ores.cpp.eventing-integration-test.

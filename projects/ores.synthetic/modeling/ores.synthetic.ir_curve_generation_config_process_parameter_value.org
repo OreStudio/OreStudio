@@ -200,6 +200,16 @@ keeps the default resolution: the config row is a genuine tenant row.
 :iterator_var: pv
 :END:
 
+** Table display
+
+| column                  | header      |
+|-------------------------+-------------|
+| config_id               | Config      |
+| parameter_definition_id | Parameter   |
+| parameter_value         | Value       |
+| modified_by             | Modified By |
+| version                 | Version     |
+
 * See also
 
 - [[id:8B840E8D-2763-4A1F-8BC2-6C9E354DB673][IR Curve Generation Config]] -- the config whose parameters these values are.

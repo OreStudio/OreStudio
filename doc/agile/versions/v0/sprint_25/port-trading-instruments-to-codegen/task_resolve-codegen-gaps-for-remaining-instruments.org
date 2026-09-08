@@ -165,8 +165,9 @@ modified and 65 untracked files, in five groups:
   simple lookups regenerate clean; they are not part of the drift.
 
 The 2026-09-08 bond.org probe ran the gap-(a) test. The draft
-(=ores.trading.bond_instrument.org= in the modeling tree) cloned the
-rates archetype
+(=ores.trading.bond_instrument.org=, parked beside this task in
+=doc/agile/versions/v0/sprint_25/port-trading-instruments-to-codegen/=)
+cloned the rates archetype
 (=vanilla_swap_instrument.org=): identity-grouped columns,
 =:domain_identity_group: ores.trading.instrument_identity=,
 =:domain_audit_group: ores.dq.audit_record=, tablename and checks
@@ -253,5 +254,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | The probe org is not inert: discover_models picks up any entity org in the trading modeling tree, so the next trading regeneration rewrites the 21 hand-written bond files; the PR's "not a bound model" claim is false as filed | projects/ores.trading/modeling/ores.trading.bond_instrument.org | Fixed | Real gap, confirmed against manifest.py: codegen discovery is path plus type only, and exclude_org_types is type-scoped (excluding "entity" would stop the 36 bound families too). The org moved beside this task in the agile tree, out of discovery, with the parking rule in its prose and the Notes location phrase corrected. |
+| 2 | :ID: is lowercase and space-padded, unlike every sibling org | doc/agile/versions/v0/sprint_25/port-trading-instruments-to-codegen/ores.trading.bond_instrument.org | Fixed | Uppercased and single-spaced. |
+| 3 | No trailing =* See also= section | doc/agile/versions/v0/sprint_25/port-trading-instruments-to-codegen/ores.trading.bond_instrument.org | Fixed | Added, linking the task and the vanilla_swap archetype. |
 
 * Result

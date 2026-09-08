@@ -1,5 +1,5 @@
 :PROPERTIES:
-:ID:       be4698b1-56b1-4686-ad68-c16d4611a1fd
+:ID: BE4698B1-56B1-4686-AD68-C16D4611A1FD
 :END:
 #+title: ores.trading.bond_instrument
 #+description: Codegen entity model for the trading =bond_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
@@ -330,6 +330,13 @@ terms/features/option field into the entity and drops =security_id=.
 The emitted domain shows the divergence; the probe verdict lives in
 task 2548EE95, gap (a).
 
+This file is parked beside the task as probe evidence. Codegen model
+discovery scans the trading modeling tree and regenerates every entity
+org it finds, so this org must not sit there while gap (a) is open:
+regeneration would rewrite the 21 hand-written bond files again. Return
+it to =projects/ores.trading/modeling/= when gap (a) closes and the
+model grows the mid-group keys.
+
 ** Flags
 :PROPERTIES:
 :subcomponent:          api
@@ -372,3 +379,8 @@ task 2548EE95, gap (a).
 | audit.recorded_at       | Recorded At   |
 
 ** Custom repository methods
+
+* See also
+
+- [[id:2548EE95-7C62-4C48-BA11-2146604B2082][Resolve codegen feature gaps]] — the task this probe belongs to; the verdict is gap (a).
+- [[id:44ABB804-7286-43DF-8ACB-1520BE5737DE][ores.trading.vanilla_swap_instrument]] — the rates archetype this probe cloned.

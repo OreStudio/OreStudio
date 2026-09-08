@@ -118,8 +118,8 @@ void party_role_type_commands::process_get_party_role_types(std::ostream& out,
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->role_types.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->role_types.size() << " of "
+        << state.total_count << " total)" << std::endl;
 }
 
 void party_role_type_commands::process_add_party_role_type(std::ostream& out,

@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:shell:cli:tooling:sprint_25:v0:
 #+created: 2026-09-07
-#+updated: 2026-09-07
+#+updated: 2026-09-08
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,11 +21,11 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Fx (3997afdcbb), equity (fb897f374b), rates (3a4a0e4bd3, 0dd2515fe4, 0ea3563012) and the generic families (af564bfda9, 7175414576) instrument batches committed and live-verified. |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Trade-side verb units (task 1D07E7C3). |
+| Next          | Nothing.                               |
 | Last touched  | 2026-09-08                               |
 
 * Acceptance
@@ -40,7 +40,7 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A2F00C5D-FD7B-42EF-B7A6-61BE7C0D18C9][Add the trading command folder, reference-entity verb units, and shell wiring]] | DONE | 2026-09-07 | 2026-09-07 | Create projects/ores.shell/src/app/commands/trading/ holding trade_type_commands, party_role_type_commands and trade_id_type_commands units cloned from the currencies archetype, plus the hand-written trading_commands aggregator that registers them. Wire repl.cpp with one aggregator call, add ores.trading.api.lib to the shell link libraries, regenerate the shell cmake component files. |
-| [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the trade-side verb units (lifecycle_event, trade, trade_identifier, trade_party_role)]] | BACKLOG | | | Add lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands to the trading command folder, completing the trade-side surface (the reference trio shipped in the sibling reference task). The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
+| [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the trade-side verb units (lifecycle_event, trade, trade_identifier, trade_party_role)]] | DONE | 2026-09-08 | 2026-09-08 | Add lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands to the trading command folder, completing the trade-side surface (the reference trio shipped in the sibling reference task). The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
 | [[id:E2E3689F-B43E-4879-9F9D-54DB3ED91110][Add the fx instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add fx_accumulator_commands, fx_asian_forward_commands, fx_barrier_option_commands, fx_digital_option_commands, fx_forward_commands, fx_vanilla_option_commands and fx_variance_swap_commands to the trading command folder, cloned from the reference-entity skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live fx-batch system test: add/list/history/delete round trips per unit through the trading.v1 subjects with DB-row and changed-event verification. |
 | [[id:94A5EA1A-BA18-49C6-B010-A6A860AA19BA][Add the equity instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add equity_accumulator_commands, equity_asian_option_commands, equity_barrier_option_commands, equity_digital_option_commands, equity_forward_commands, equity_option_commands, equity_position_commands, equity_swap_commands and equity_variance_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live equity-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
 | [[id:360B5207-7ECE-4423-8E0E-E091A6CD2A55][Add the rates instrument verb units]] | DONE | 2026-09-08 | 2026-09-08 | Add balance_guaranteed_swap_commands, callable_swap_commands, cap_floor_commands, fra_commands, inflation_swap_commands, knock_out_swap_commands, rpa_commands, swaption_commands and vanilla_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live rates-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
@@ -130,16 +130,27 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 - Not every trading entity with a generated protocol gets a verb
   unit: the generic batch audit found =activity_types= served
   list-only — no save, delete or history subjects and no event chain —
-  so no CRUD unit was possible and none shipped. The gap is recorded
-  on the trade-side task (1D07E7C3), which owns extending the lookup
-  surface (trade_protocol growth, handler, registrar, event chain)
-  before an activity_types unit can exist.
+  so no CRUD unit was possible and none shipped. The trade-side close
+  (1D07E7C3) settled the gap by design: activity_types remains
+  list-only, and no unit ships for it. Extending the lookup surface
+  (trade_protocol growth, handler, registrar, event chain) to give a
+  CRUD vocabulary a full CRUD surface is not worth the protocol cost;
+  the earlier owner assignment on this line is superseded.
 - A verb unit expresses the payload its positional signature can
   build. The composite add carries header arguments only, so
   shell-added composites land with no legs even though the save
   request carries a legs member; the legs subject is read-only. The
   gap is recorded with the composite modeling owner rather than
   papered over with a partial surface.
+- The generic =trading.v1.history.get= diff subject serves only the
+  entities with registered history providers. Six =*_history_provider_
+  registrar= files answer it (lifecycle_event, party_role_type,
+  trade_id_type, trade_identifier, trade_party_role, trade_type); the
+  flagship =trades= entity has no history field mapper or provider
+  among them, so =history --diff= on a trade replies with the clean
+  =No history provider registered= message. The 31 instrument
+  presentation =history_field_mapper= files are the same shape — dead
+  code with no providers — and were recorded, not extended.
 
 * Out of scope
 

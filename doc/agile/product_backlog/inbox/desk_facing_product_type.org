@@ -67,6 +67,32 @@ Not designed here. The pieces that appear necessary:
 The discriminators are the hard part. Some are a single field and some are a
 predicate over the legs, so the mapping is not a lookup table alone.
 
+* What done looks like
+
+The test is the distribution. Every weight must name a product a desk would
+recognise, and no weight may sit on a trade type that covers several of them.
+
+Concretely, the 19% currently held against =Swap= becomes a set of weights that
+sum to 19%, one per desk-facing product. Illustrative only, since arriving at the
+split is the work rather than its premise:
+
+| Desk-facing product     | Weight | ORE trade type | Discriminator                                           |
+|-------------------------+--------+----------------+---------------------------------------------------------|
+| Vanilla fixed-float IRS |  7.00% | =Swap=           | One currency, fixed against Ibor                        |
+| OIS                     |  5.00% | =Swap=           | Floating index is an overnight rate                     |
+| Cross-currency swap     |  3.50% | =Swap=           | Legs in two currencies                                  |
+| Tenor basis swap        |  2.50% | =Swap=           | Two floating legs, one currency, different index tenors |
+| Cross-currency basis    |  1.00% | =Swap=           | Two floating legs, two currencies                       |
+
+The same treatment applies to =Swaption=, where European and Bermudan exercise
+are separate products selecting different pricing models, and to =CapFloor= and
+=Bond=.
+
+Two properties the result must hold. The weights are stated per desk-facing
+product, so a generator never has to invent a split. And they roll up to the
+trade type totals, so the population's shape at ORE's granularity is unchanged by
+the finer statement.
+
 * Status
 
 Deferred. It was found while writing the trade population weights, and it is not

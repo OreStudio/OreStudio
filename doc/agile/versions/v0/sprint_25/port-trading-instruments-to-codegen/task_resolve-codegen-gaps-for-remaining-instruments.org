@@ -202,6 +202,26 @@ the entity org naming field-group orgs, embedded between the identity
 and audit members, with column-less group fields (security_id) mapped
 domain-only.
 
+The other three gaps closed at grammar level on the same run, without
+further probes. (b) The bond probe's SQL diff proves the mechanism: an
+org PK column named =instrument_id= emits SQL =instrument_id=, while
+the hand-written legacy tables (bond, scripted, and the composite,
+commodity and credit siblings) name the PK =id=. No =:column:= or
+=:db_column:= override exists, so the hand-written mappers' bridge
+(=r.identity.instrument_id = ... v.id=, scripted_instrument_mapper.
+cpp:33 and its four siblings) has no org expression. (c) No template
+consumes the =* Custom repository methods= org section (only
+migrate_json_to_org.py and org_loader.py mention it), and the
+=<<paste:UUID>>= markers in the domain, generator and registrar
+templates have no org-side supplier. Fra's leg accessors and
+composite's legs-save stay outside the model, exactly as the Sep-6
+fiasco and the Sep-8 oracle run showed. (d) core.py has no messaging
+gate; per-family protocol, handler and registrar emission is
+unconditional, so the rates consolidation (0ea3563012) stays
+inexpressible until the model gains a per-entity opt-out key. Gaps (a)
+and (d) need codegen changes; (b) and (c) need either small codegen
+keys or a recorded exclusion per family.
+
 The eventing-test coverage question that opened this investigation is
 also settled at org level: the =:ores.cpp.eventing-integration-test.
 enabled:= variability flag sits inline in exactly the 16 converted

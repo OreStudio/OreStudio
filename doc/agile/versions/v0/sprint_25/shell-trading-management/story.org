@@ -23,9 +23,9 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Fx (3997afdcbb), equity (fb897f374b) and rates (3a4a0e4bd3, 0dd2515fe4, 0ea3563012) instrument batches committed and live-verified. |
+| Now           | Fx (3997afdcbb), equity (fb897f374b), rates (3a4a0e4bd3, 0dd2515fe4, 0ea3563012) and the generic families (af564bfda9, 7175414576) instrument batches committed and live-verified. |
 | Waiting on    | Nothing.                               |
-| Next          | Generic instrument-family verbs (task C36A4ECA). |
+| Next          | Trade-side verb units (task 1D07E7C3). |
 | Last touched  | 2026-09-08                               |
 
 * Acceptance
@@ -44,7 +44,7 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 | [[id:E2E3689F-B43E-4879-9F9D-54DB3ED91110][Add the fx instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add fx_accumulator_commands, fx_asian_forward_commands, fx_barrier_option_commands, fx_digital_option_commands, fx_forward_commands, fx_vanilla_option_commands and fx_variance_swap_commands to the trading command folder, cloned from the reference-entity skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live fx-batch system test: add/list/history/delete round trips per unit through the trading.v1 subjects with DB-row and changed-event verification. |
 | [[id:94A5EA1A-BA18-49C6-B010-A6A860AA19BA][Add the equity instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add equity_accumulator_commands, equity_asian_option_commands, equity_barrier_option_commands, equity_digital_option_commands, equity_forward_commands, equity_option_commands, equity_position_commands, equity_swap_commands and equity_variance_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live equity-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
 | [[id:360B5207-7ECE-4423-8E0E-E091A6CD2A55][Add the rates instrument verb units]] | DONE | 2026-09-08 | 2026-09-08 | Add balance_guaranteed_swap_commands, callable_swap_commands, cap_floor_commands, fra_commands, inflation_swap_commands, knock_out_swap_commands, rpa_commands, swaption_commands and vanilla_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live rates-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
-| [[id:C36A4ECA-5D15-4558-B7D8-EFC3B6250194][Add the generic instrument-family verb units]] | BACKLOG | | | Add bond_commands, commodity_commands, composite_commands, credit_commands and scripted_commands plus the activity_type commands, serving the single-handler families registered by registrar_bond.cpp, registrar_commodity.cpp, registrar_composite.cpp, registrar_credit.cpp and registrar_scripted.cpp. Establish whether the service serves every family subject (list/save/delete/history) and whether the DB layer holds them; fix or record any gap, then run the live generic-batch system test per family. |
+| [[id:C36A4ECA-5D15-4558-B7D8-EFC3B6250194][Add the generic instrument-family verb units]] | DONE | 2026-09-08 | 2026-09-08 | Add bond_commands, commodity_commands, composite_commands, credit_commands and scripted_commands plus the activity_type commands, serving the single-handler families registered by registrar_bond.cpp, registrar_commodity.cpp, registrar_composite.cpp, registrar_credit.cpp and registrar_scripted.cpp. Establish whether the service serves every family subject (list/save/delete/history) and whether the DB layer holds them; fix or record any gap, then run the live generic-batch system test per family. |
 
 * Decisions
 
@@ -127,6 +127,19 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
   members the current lib no longer emits (=/proc/PID/map_files=
   marks the replaced file (deleted)); a restart onto the rebuilt lib
   resolved it and the nine-family matrix went 45/45.
+- Not every trading entity with a generated protocol gets a verb
+  unit: the generic batch audit found =activity_types= served
+  list-only — no save, delete or history subjects and no event chain —
+  so no CRUD unit was possible and none shipped. The gap is recorded
+  on the trade-side task (1D07E7C3), which owns extending the lookup
+  surface (trade_protocol growth, handler, registrar, event chain)
+  before an activity_types unit can exist.
+- A verb unit expresses the payload its positional signature can
+  build. The composite add carries header arguments only, so
+  shell-added composites land with no legs even though the save
+  request carries a legs member; the legs subject is read-only. The
+  gap is recorded with the composite modeling owner rather than
+  papered over with a partial surface.
 
 * Out of scope
 

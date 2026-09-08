@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/resolve-codegen-gaps-for-remaining-instruments
 #+pr:
 #+blocked_on:
 #+blocked_since:
@@ -92,7 +92,7 @@ and the first trading drift run re-emitted all 36.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
 | Now          | Gap (a) probed and decided 2026-09-08: the trade-style shape does not cover the bond domain; codegen must grow mid-group support. Probe org and evidence in Notes. |
 | Waiting on   | The gap-(a) codegen change (group-composition key in the domain template) before bond/commodity/credit conversion; trading drift reconciliation before any conversion can verify zero-diff. |

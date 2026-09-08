@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/trading-data-model-analysis
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-08
 #+updated: 2026-09-08
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ A single in-depth analysis document that reviews the whole ores.trading data mod
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-08                               |
 
 * Acceptance
@@ -73,3 +73,38 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Delivered the analysis as the knowledge doc
+=doc/knowledge/architecture/trading_data_oriented_model.org= (ID
+dfe15809-ab5a-4eb7-8afb-251bf5d0b911), using the
+[[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] skill against the data-oriented criteria of
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][BBD43BF2]].
+
+What the analysis contains:
+
+- The regime classification: ores.trading is Regime 2 (persisted
+  domain data) and Regime 3 (wire); no Regime 1 kernel. Document-shaped
+  payloads enter at the boundary only.
+- A full inventory of the surfaces: 38 modeling orgs (25 instrument
+  orgs in the fx/equity/rates groups, 6 field groups, the trade
+  family, 4 lookups), 176 domain headers, 40 services, 123 repository
+  headers, 24 wire protocols, 59 handler/registrar files, the SQL
+  surface under =ores.sql=, and the eventing surface.
+- Twelve findings (4 Critical, 6 Important, 2 Minor), each traced to
+  a cause: the four known codegen grammar gaps (a)-(d) from task
+  [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]], the tree that evolved past its models (trade, legacy
+  five), the tree-side wire consolidation, and the phantom stacks.
+- The anchored scores: Regime 2 = 2, Regime 3 = 2, overall verdict
+  2/5, debt High.
+- The proposed target data-oriented model: complete org coverage,
+  grammar growth to close gaps (a)-(d) (mid-groups with domain-only
+  members under the C1202 ceiling, column-name mapping, paste-block
+  custom methods, wire emission control, profile-level eventing),
+  semantics preservation (SCD2 spine, optimistic versioning, audit
+  attribution, composite as-of composition per option A of
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][BA159E88]], trade lifecycle and successor chain, shared swap_legs),
+  the service-layer shape, and the sequencing across eight PRs.
+
+All five acceptance bullets are met. The deliverable is the analysis
+only; the implementation PRs follow separately. The story stays
+STARTED until the follow-up PRs are broken into tasks and delivered.

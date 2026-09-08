@@ -8,7 +8,7 @@
 #+filetags: :trading:data-model:codegen:data-oriented:sprint_25:v0:
 #+created: 2026-09-08
 #+updated: 2026-09-08
-#+environment:
+#+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -39,11 +39,11 @@ component.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Analysis delivered as doc/knowledge/architecture/trading_data_oriented_model.org: full review (regime classification, 12 findings, scores 2/5, High debt), the target data-oriented model with semantics preservation, and the sequencing across eight PRs. Analysis PR raised for review. |
 | Waiting on    | Nothing.                               |
-| Next          | Start the analysis task.               |
+| Next          | Review the analysis; break the follow-up PRs into tasks. |
 | Last touched  | 2026-09-08                               |
 
 * Acceptance
@@ -73,7 +73,7 @@ component.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7][Analyse the ores.trading data model against the data-oriented criteria]] | BACKLOG | | | Run the code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow. |
+| [[id:40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7][Analyse the ores.trading data model against the data-oriented criteria]] | DONE | 2026-09-08 | 2026-09-08 | Run the code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow. |
 
 * Decisions
 

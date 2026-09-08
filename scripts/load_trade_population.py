@@ -263,6 +263,48 @@ def parse_allowed(check_rows):
     return allowed, bounds
 
 
+def _cleanup(sql, cols, keep):
+    """Remove every row this script has ever written, in this run or an earlier one.
+
+    Sweeps all tables rather than only the ones this run loaded, because an
+    interrupted or early-returning run leaves rows the run's own result list
+    does not name.
+    """
+    if keep:
+        print("\nrows retained (--keep)")
+        return
+
+    # These tables are bitemporal. A DELETE is rewritten by an ON DELETE rule
+    # into an UPDATE that closes the row's validity, so it never removes
+    # anything. Removing what this script wrote means suspending that rule,
+    # which is why the rules are restored in a finally.
+    disabled = []
+    try:
+        for t in cols:
+            r = sql(f"select rulename from pg_rules where tablename = '{t}' "
+                    f"and rulename like '%delete%';", check=False)
+            for rule in r.stdout.split():
+                if sql(f"alter table {t} disable rule {rule};",
+                       check=False).returncode == 0:
+                    disabled.append((t, rule))
+            sql(f"delete from {t} where change_commentary = '{MARKER}';",
+                check=False)
+    finally:
+        for t, rule in disabled:
+            sql(f"alter table {t} enable rule {rule};", check=False)
+
+    left = sql("select coalesce(sum(n), 0) from (" + " union all ".join(
+        f"select count(*) as n from {t} where change_commentary = '{MARKER}'"
+        for t in cols) + ") s;", check=False)
+    n = left.stdout.strip().splitlines()[-1] if left.returncode == 0 else "?"
+    off = sql("select count(*) from pg_class c join pg_rewrite w on "
+              "w.ev_class = c.oid where c.relname like 'ores_trading%' "
+              "and w.ev_enabled = 'D';", check=False)
+    d = off.stdout.strip().splitlines()[-1] if off.returncode == 0 else "?"
+    print(f"\ncleanup: {n} marked row(s) remain, {d} rule(s) left disabled "
+          f"(both must be 0)")
+
+
 def _attribute(sql, table, cols, gen, preamble, rows):
     """Time one table with its triggers progressively disabled.
 
@@ -367,6 +409,13 @@ def main():
           f"{args.rows} rows each\n")
 
     results, findings, discovered = [], [], []
+    if args.attribute:
+        try:
+            _attribute(sql, args.attribute, cols, gen, preamble, args.rows)
+        finally:
+            _cleanup(sql, cols, args.keep)
+        return
+
     referenced = [t for t, _ in REFERENCES.values()]
     order = sorted(cols, key=lambda t: (t not in referenced, t))
     for table in order:
@@ -407,10 +456,6 @@ def main():
         else:
             findings.append((table, "still rejected after learning 6 sets"))
 
-    if args.attribute:
-        _attribute(sql, args.attribute, cols, gen, preamble, args.rows)
-        return
-
     results.sort(key=lambda r: -r[2])
     total = sum(e for _, _, e in results)
     print(f"{'table':<52} {'cols':>5} {'seconds':>9} {'rows/sec':>10} {'%':>6}")
@@ -431,11 +476,7 @@ def main():
         for t, why in findings:
             print(f"  {t}\n     {why}")
 
-    if not args.keep:
-        for t, _, _ in results:
-            sql(f"delete from {t} where change_commentary = '{MARKER}';",
-                check=False)
-        print("\nloaded rows deleted (pass --keep to retain)")
+    _cleanup(sql, cols, args.keep)
 
 
 if __name__ == "__main__":

@@ -255,10 +255,27 @@ performance defect rather than a correctness one.
 
 A foreign key is enforced by an index probe the planner controls. A trigger is a
 PL/pgSQL function invoked per row, which runs a query per reference and raises on
-failure. Measured on =ores_trading_vanilla_swap_instruments_tbl=, the deployed
-table loads at 2200 rows/sec, against 56032 for a clone carrying the same
-bitemporal exclusion constraint but no triggers. The triggers account for a
-factor of about 25.
+failure.
+
+Measured on =ores_trading_vanilla_swap_instruments_tbl=:
+
+| Configuration                                    | Rows/sec |
+|--------------------------------------------------+----------|
+| Deployed table                                   |     2200 |
+| Deployed table, notify trigger disabled          |     2234 |
+| Clone with the exclusion constraint, no triggers |    56032 |
+| Clone with neither                               |   121218 |
+
+The insert trigger accounts for a factor of about 25. The bitemporal exclusion
+constraint costs 2.2x, and the notify trigger costs 1.5%, which is within the
+noise of the measurement.
+
+A second observation supports the attribution. Across the 36 tables the loader
+populates, throughput is close to 2000 rows per second whatever the table, and
+column counts range from 10 to 40. *Row width does not predict cost here, because
+a per-row procedure dominates whatever the row contains.* This is the opposite of
+what the synthetic benchmark found, where width was the largest factor, and the
+difference is that the synthetic tables carried no triggers.
 
 The database also cannot reason about a relationship it is not told about. No
 cascade, no deferral, and no plan that exploits the reference.
@@ -331,6 +348,84 @@ product, which blocks the term for the classification that actually needs it.
 
 *Replacement shape.* Rename the column and the type to =asset_class=, which is
 what it holds, and leave =product_type= free.
+
+** What the loader could not populate
+
+Five of the 41 tables reject a fully populated row. Each rejection is a finding
+about the model rather than a limitation of the loader. They divide into two
+causes.
+
+*** Three tables need data that lives outside ores.trading
+
+=ores_trading_trades_tbl= is the root of this group. Its insert trigger validates
+six references before it will accept a row, and it names each as a soft foreign
+key in its own comments.
+
+| Reference          | Validated against               | Present in this database |
+|--------------------+---------------------------------+--------------------------|
+| =book_id=            | =ores_refdata_books_tbl=          | No, the table is empty   |
+| =portfolio_id=       | =ores_refdata_portfolios_tbl=     | No, the table is empty   |
+| =counterparty_id=    | =ores_refdata_counterparties_tbl= | No, the table is empty   |
+| =status_id=          | =ores_dq_fsm_states_tbl=          | Yes, 27 rows             |
+| =successor_trade_id= | =ores_trading_trades_tbl=         | Optional                 |
+| =trade_type=         | Enumeration inside the trigger  | Yes, 112 values          |
+
+A seventh rule is stricter than a foreign key could express: =portfolio_id= must
+equal the parent portfolio of the book named by =book_id=. The two references are
+not independent, so supplying a valid book and a valid portfolio is not
+sufficient. They must agree.
+
+The other two follow from the first. =ores_trading_party_roles_tbl= requires a
+trade, which cannot exist until a book does. =ores_trading_composite_legs_tbl=
+requires a composite instrument for the same tenant, which the loader does
+create, but the leg must reference the identifier the parent actually received.
+
+The finding is that *a trade population is not self-contained*. The trading
+tables sit on reference data that a different component owns: a trade needs a
+book, a book needs a portfolio, and a realistic trade needs a counterparty. A
+population design must seed all three first, and the ordering between them is
+fixed by the book and portfolio agreement rule above.
+
+This dependency exists in code, since the trade repository tests must satisfy it
+to run, and it is written down nowhere the population design could have read it.
+
+*** Two tables model two products with mutually exclusive columns
+
+These are defect 9, and the constraint text shows why a full row is impossible.
+
+=ores_trading_equity_digital_option_instruments_tbl= holds two products:
+
+- =EquityDigitalOption= requires =option_type= and =strike= to be present, and
+  requires =barrier_level= and =barrier_type= to be *null*.
+- =EquityTouchOption= is the exact mirror: =barrier_level= and =barrier_type=
+  present, =option_type= and =strike= null.
+
+=ores_trading_equity_swap_instruments_tbl= has the same shape with one column on
+each side. =EquityWorstOfBasketSwap= requires =basket_json= and a null
+=underlying_name=; =EquitySwap= requires the reverse.
+
+Neither table can hold a row with every column filled, whichever product is
+chosen, because each product requires the other's columns to be absent. This is
+not a defect the loader worked around. It is the model stating that the table
+holds two disjoint row shapes.
+
+Two other equity tables, =equity_option= and =equity_accumulator=, carry the same
+pattern in a weaker form where only one side demands a null, and the loader
+satisfies those by selecting the branch that requires none.
+
+*** A related finding: rows cannot be deleted
+
+The tables are bitemporal, and an =ON DELETE= rule rewrites every =DELETE= into
+an =UPDATE= that sets =valid_to= to the current timestamp. A delete closes a
+row's validity and never removes it.
+
+This is correct for the domain and it matters for population. A generator that
+loads a population, and a test that clears one, cannot use =DELETE= to undo their
+work. Removing rows requires suspending the rule, which is a privileged operation
+and not something a test should do casually.
+
+Any preset described as replaceable needs to say what replacement means here,
+because the obvious implementation does not remove anything.
 
 * Conclusions
 

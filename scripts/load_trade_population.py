@@ -75,7 +75,7 @@ BOOK_SQL = ("select id, parent_portfolio_id from ores_refdata_books_tbl "
 # the referenced table already holds, so the referenced table loads first.
 REFERENCES = {
     ("ores_trading_composite_legs_tbl", "instrument_id"):
-        ("ores_trading_composite_instruments_tbl", "instrument_id"),
+        ("ores_trading_composite_instruments_tbl", "id"),
     ("ores_trading_party_roles_tbl", "trade_id"):
         ("ores_trading_trades_tbl", "id"),
     ("ores_trading_trade_identifiers_tbl", "trade_id"):
@@ -160,7 +160,9 @@ class Generator:
     """Produces a value for one column, given its type and any check constraint."""
 
     def __init__(self, allowed, bounds, enums, tenant, workspace, party, reason,
-                 book, portfolio, counterparty=None, status=None):
+                 book, portfolio, counterparty=None, status=None,
+                 required_null=None):
+        self.required_null = required_null or {}
         self.counterparty = counterparty
         self.status = status
         self.book = book
@@ -181,6 +183,8 @@ class Generator:
         if col == "change_reason_code":
             return self.reason
         if col in NULLABLE_SELF_REFS:
+            return "\\N"
+        if col in self.required_null.get(table, ()):
             return "\\N"
         if col == "counterparty_id" and self.counterparty:
             return self.counterparty
@@ -265,25 +269,29 @@ def _is_late(col):
 
 RANGE_RE = re.compile(r"\((\w+)\s*(<=|<)\s*\(?([0-9.]+)")
 EQ_RE = re.compile(r"\((\w+)\s*=\s*'([^']+)'::text\)")
+NULL_RE = re.compile(r"\((\w+) IS NULL\)")
 
 
 def parse_allowed(check_rows):
-    """Value sets and upper bounds the check constraints impose."""
-    allowed, bounds = {}, {}
+    """Value sets, upper bounds and required nulls the check constraints impose."""
+    allowed, bounds, required_null = {}, {}, {}
     for table, defn in check_rows:
         for m in ALLOWED_RE.finditer(defn):
             col, body = m.group(1), m.group(2)
             vals = LITERAL_RE.findall(body)
             if vals:
                 allowed.setdefault((table, col), vals)
-        # A table holding two products discriminates them with an equality and
-        # requires the other product's columns to be NULL. Filling every column
-        # is only valid in the branch whose columns are IS NOT NULL, so prefer
-        # that branch's value over the branch demanding NULLs.
+        # A table holding two products discriminates them with an equality, and
+        # each branch names both the columns that product uses and the columns
+        # belonging to the other product, which must be null. Pick one branch
+        # and honour both halves: no row can carry every column.
         branches = [b for b in defn.split(" OR ") if "IS NOT NULL" in b]
-        for b in branches:
-            for m in EQ_RE.finditer(b):
+        if branches:
+            chosen = branches[0]
+            for m in EQ_RE.finditer(chosen):
                 allowed[(table, m.group(1))] = [m.group(2)]
+            for m in NULL_RE.finditer(chosen):
+                required_null.setdefault(table, set()).add(m.group(1))
         for m in EQ_RE.finditer(defn):
             col, val = m.group(1), m.group(2)
             allowed.setdefault((table, col), [val])
@@ -291,7 +299,7 @@ def parse_allowed(check_rows):
             col, cap = m.group(1), float(m.group(3))
             key = (table, col)
             bounds[key] = min(bounds.get(key, cap), cap)
-    return allowed, bounds
+    return allowed, bounds, required_null
 
 
 def _cleanup(sql, cols, keep):
@@ -411,7 +419,7 @@ def main():
     cols = {}
     for t, c, dtype, nullable, udt in rows_of(sql(INTROSPECT_COLUMNS)):
         cols.setdefault(t, []).append((c, dtype, nullable, udt))
-    allowed, bounds = parse_allowed(rows_of(sql(INTROSPECT_CHECKS)))
+    allowed, bounds, required_null = parse_allowed(rows_of(sql(INTROSPECT_CHECKS)))
     enums = {}
     for name, label in rows_of(sql(INTROSPECT_ENUMS)):
         enums.setdefault(name, []).append(label)
@@ -437,7 +445,7 @@ def main():
     status = r.stdout.strip().splitlines()[-1] if r.returncode == 0 and \
         r.stdout.strip() else None
     gen = Generator(allowed, bounds, enums, tenant, workspace, party, reason,
-                    book, portfolio, counterparty, status)
+                    book, portfolio, counterparty, status, required_null)
     preamble = SESSION_PREAMBLE.format(party=party)
     print(f"tenant {tenant}\nworkspace {workspace}\nparty {party}\n"
           f"change reason {reason}\nbook {book}  portfolio {portfolio}")

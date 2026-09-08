@@ -318,23 +318,54 @@ the 27 it learned, which is the current inventory.
 
 ** Defect 9: one table holding two products
 
-*Current shape.* Four equity instrument tables carry a check constraint of the
-form "either this =trade_type_code= and this column is not null, or that
-=trade_type_code= and that column is null". =ores_trading_equity_option_instruments_tbl=
-holds both =EquityOption= and =EquityCliquetOption=, discriminated by
-=trade_type_code=, with =cliquet_frequency= required to be null for the former.
+*Current shape.* Five equity instrument tables carry a check constraint that
+splits the table into two products. The discriminator is =trade_type_code=, and
+each branch names the columns that product uses and the columns belonging to the
+other product, which must be null.
+
+| Table                 | Product A            | A requires present         | A requires null            |
+|-----------------------+----------------------+----------------------------+----------------------------|
+| =equity_option=         | EquityCliquetOption  | =cliquet_frequency=          | nothing                    |
+| =equity_accumulator=    | EquityTaRF           | =target_amount=, =target_type= | nothing                    |
+| =equity_position=       | EquityOptionPosition | =option_data_json=           | nothing                    |
+| =equity_digital_option= | EquityDigitalOption  | =option_type=, =strike=        | =barrier_level=, =barrier_type= |
+| =equity_swap=           | EquityWorstOfBasketSwap | =basket_json=             | =underlying_name=            |
+
+The first three are asymmetric: one product adds columns the other omits. The
+last two are a true exclusive or, where each product forbids the other's columns.
 
 *Why it is wrong.* The table's columns are not all meaningful for all its rows,
-so every reader must know the discriminator before it can interpret a row. The
-constraint expresses in SQL what a type system would express in structure.
+so a reader must know the discriminator before it can interpret a row, and a
+query over =strike= silently means different things depending on a value in
+another column.
 
-It also has a practical cost that the loader found first: a population cannot
-fill every column, because filling them is invalid for one of the two products.
+The constraint expresses in SQL what a type would express in structure. The
+schema already models 25 other instruments as a table each, so these five are
+modelled differently from the rest with no stated reason. That inconsistency is
+the defect more than the technique is.
 
-*Replacement shape.* Either a table per product, which the schema already does
-for 30 other instruments, or an explicit optional-group construct if the pattern
-is common enough to be worth naming. The inconsistency is the defect: these four
-are modelled differently from the rest for no stated reason.
+*How to address it.* Three options, in ascending cost.
+
+1. *A table per product*, matching what the schema does for every other
+   instrument. This is the option consistent with the rest of the model and it
+   removes the constraint entirely. It costs a migration and a repository per new
+   table.
+2. *Keep the table and make the grouping explicit*, by naming the optional
+   column groups in the entity model so the generator emits both the constraint
+   and a typed accessor that cannot read =strike= on a touch option. This keeps
+   the storage and moves the discipline into the generated code.
+3. *Leave it and document it*, which is the current position by default rather
+   than by decision.
+
+The first is preferable for the two true exclusive-or tables, where the columns
+are genuinely disjoint and the row shapes have nothing in common. The asymmetric
+three are a weaker case: an optional column that only one product uses is
+ordinary, and only the constraint's phrasing makes it look like two products.
+
+*Consequence for population.* No row in the two exclusive-or tables can carry
+every column, whichever product is chosen. A loader must pick a product and honour
+that product's nulls. This is not a limitation to work around; it is the model
+saying the table holds two disjoint row shapes.
 
 ** Defect 10: product type names an asset class
 
@@ -424,55 +455,78 @@ sound reason to skip; another dataset belonging to a sibling office is not.
 =party_id= per office. That produces the right data and leaves the misleading
 default in place for every other caller.
 
+** Defect 13: two names for an instrument's identity
+
+*Current shape.* Twenty-five instrument tables are keyed on =instrument_id=. Five
+are keyed on =id=, together with =trades=, =swap_legs=, =composite_legs=,
+=trade_identifiers= and =party_roles=.
+
+| Keyed on      | Count | Examples                                           |
+|---------------+-------+----------------------------------------------------|
+| =instrument_id= |    25 | =callable_swap=, =swaption=, =fx_forward=                |
+| =id=            |     5 | =bond=, =commodity=, =credit=, =composite=, =scripted=     |
+
+*Why it is wrong.* This is defect 6 in a load-bearing position. Two names for one
+concept mean a reader who learns the convention from one table is wrong about
+another, and a consumer that resolves a reference by name resolves it wrongly.
+
+*It has a demonstrated cost.* The population loader failed on
+=ores_trading_composite_legs_tbl= for two sessions. Its author, having seen 25
+tables keyed on =instrument_id=, mapped the child's =instrument_id= to a parent
+column of the same name. The parent is keyed on =id=, so the reference resolved
+to a value that did not exist, and the failure was recorded as a finding about
+reference data before it was traced to the naming. *An inconsistency that costs a
+consumer two sessions is not cosmetic.*
+
+*How to address it.* Rename to one convention and apply it everywhere. The
+majority is =instrument_id= and it is the more specific name, so the five
+outliers should follow the twenty-five. The rename is mechanical in the entity
+models and regenerates through the schema and repositories.
+
+The child tables are the priority regardless of which name wins, because they are
+where the mismatch causes a wrong reference rather than merely a surprise.
+
 ** What the loader could not populate
 
-Five of the 41 tables rejected a fully populated row when the loader was first
-run. Each rejection is a finding about the model rather than a limitation of the
-loader. Three had one cause, since resolved, and two remain.
+When the loader was first run, five of the 41 tables rejected a fully populated
+row. All 41 now load. The reasons divide into three, and only two were findings
+about the model.
 
-*** Three tables needed data that lives outside ores.trading
+*** Three tables needed reference data that was never published
 
-=ores_trading_trades_tbl= is the root of this group. Its insert trigger validates
-six references before it will accept a row, and it names each as a soft foreign
-key in its own comments.
+=trades=, =party_roles= and =composite_legs= failed because
+=ores_refdata_books_tbl= was empty. That is defect 11, and it is fixed: the
+publish step now runs during provisioning.
 
-| Reference          | Validated against               | Was present |
-|--------------------+---------------------------------+-------------|
-| =book_id=            | =ores_refdata_books_tbl=          | No          |
-| =portfolio_id=       | =ores_refdata_portfolios_tbl=     | No          |
-| =counterparty_id=    | =ores_refdata_counterparties_tbl= | No          |
-| =status_id=          | =ores_dq_fsm_states_tbl=          | Yes         |
-| =successor_trade_id= | =ores_trading_trades_tbl=         | Optional    |
-| =trade_type=         | Enumeration inside the trigger  | Yes         |
+=ores_trading_trades_tbl= validates six references before it accepts a row, and
+names each as a soft foreign key in its own comments.
+
+| Reference          | Validated against               |
+|--------------------+---------------------------------|
+| =book_id=            | =ores_refdata_books_tbl=          |
+| =portfolio_id=       | =ores_refdata_portfolios_tbl=     |
+| =counterparty_id=    | =ores_refdata_counterparties_tbl= |
+| =status_id=          | =ores_dq_fsm_states_tbl=          |
+| =successor_trade_id= | =ores_trading_trades_tbl=         |
+| =trade_type=         | Enumeration inside the trigger  |
 
 A seventh rule is stricter than a foreign key could express: =portfolio_id= must
 equal the parent portfolio of the book named by =book_id=. The two references are
 not independent, so supplying a valid book and a valid portfolio is not
 sufficient. They must agree.
 
-*** Two tables model two products with mutually exclusive columns
+*** One was not a defect at all
 
-These are defect 9, and the constraint text shows why a full row is impossible.
+=ores_trading_composite_legs_tbl= continued to fail after the reference data was
+published, and the cause was the loader rather than the model: it resolved the
+parent's key by the wrong column name. That is defect 13, and the entry is kept
+because the model's inconsistency is what made the mistake available.
 
-=ores_trading_equity_digital_option_instruments_tbl= holds two products:
+*** Two hold two products and cannot carry every column
 
-- =EquityDigitalOption= requires =option_type= and =strike= to be present, and
-  requires =barrier_level= and =barrier_type= to be *null*.
-- =EquityTouchOption= is the exact mirror: =barrier_level= and =barrier_type=
-  present, =option_type= and =strike= null.
-
-=ores_trading_equity_swap_instruments_tbl= has the same shape with one column on
-each side. =EquityWorstOfBasketSwap= requires =basket_json= and a null
-=underlying_name=; =EquitySwap= requires the reverse.
-
-Neither table can hold a row with every column filled, whichever product is
-chosen, because each product requires the other's columns to be absent. This is
-not a defect the loader worked around. It is the model stating that the table
-holds two disjoint row shapes.
-
-Two other equity tables, =equity_option= and =equity_accumulator=, carry the same
-pattern in a weaker form where only one side demands a null, and the loader
-satisfies those by selecting the branch that requires none.
+=equity_digital_option= and =equity_swap= are the exclusive-or cases of defect 9.
+The loader now selects a product and writes nulls where that product requires
+them, and both load. The defect stands: no row can carry every column.
 
 *** A related finding: rows cannot be deleted
 
@@ -490,7 +544,7 @@ because the obvious implementation does not remove anything.
 
 * Conclusions
 
-The twelve defects fall into three kinds, and confusing them would misdirect the
+The thirteen defects fall into three kinds, and confusing them would misdirect the
 repair.
 
 Defects 1 to 3 are *type defects*. A value is held in a type too wide for its
@@ -498,8 +552,9 @@ meaning, so the database cannot constrain it, index it, or store it compactly.
 These cost performance and correctness together, and defect 1 is the only one of
 the six whose cost is measured rather than argued.
 
-Defects 4 to 6 are *integrity defects*. A relationship the model relies on is not
-declared in the schema, so nothing the database controls enforces it.
+Defects 4 to 6 and 13 are *integrity defects*. A relationship or a name the model
+relies on is not declared consistently, so nothing the database controls enforces
+it and no consumer can rely on it.
 
 Defects 7 to 10 are *placement defects*, and they are the ones the loader found.
 The rule exists and it is written in the wrong place. Referential integrity lives

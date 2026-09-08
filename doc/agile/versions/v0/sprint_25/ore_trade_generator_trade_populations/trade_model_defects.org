@@ -486,6 +486,122 @@ models and regenerates through the schema and repositories.
 The child tables are the priority regardless of which name wins, because they are
 where the mismatch causes a wrong reference rather than merely a surprise.
 
+** The Equity Family
+
+Every defect-9 table is an equity table, which is reason enough to look at the
+asset class as a whole rather than at the five constraints. Doing so found a
+larger problem than the constraints are.
+
+*** Scope
+
+Nine tables model equity. ORE defines 27 equity trade types. The nine tables can
+store 16 of them.
+
+| Table                 | Types | Which                                   |
+|-----------------------+-------+-----------------------------------------|
+| =equity_barrier_option= |     3 | Barrier, DoubleBarrier, EuropeanBarrier |
+| =equity_accumulator=    |     2 | Accumulator, TaRF                       |
+| =equity_digital_option= |     2 | Digital, Touch                          |
+| =equity_option=         |     2 | Option, CliquetOption                   |
+| =equity_position=       |     2 | Position, OptionPosition                |
+| =equity_swap=           |     2 | Swap, WorstOfBasketSwap                 |
+| =equity_asian_option=   |     1 | AsianOption                             |
+| =equity_forward=        |     1 | Forward                                 |
+| =equity_variance_swap=  |     1 | VarianceSwap                            |
+
+*** Defect 14: eleven equity products cannot be stored
+
+*Current shape.* Eleven of ORE's 27 equity trade types have no table that will
+accept them: =EquityBasketOption=, =EquityBasketVarianceSwap=,
+=EquityBestEntryOption=, =EquityDoubleTouchOption=, =EquityFutureOption=,
+=EquityGenericBarrierOption=, =EquityOutperformanceOption=,
+=EquityPairwiseVarianceSwap=, =EquityRainbowOption=,
+=EquityStrikeResettableOption= and =EquityWindowBarrierOption=.
+
+The trade type reference table names all 27, and =trades.trade_type= accepts any
+of them, so a trade can be booked that no instrument table can describe.
+
+*Why it is wrong.* This is not a backlog of tables not yet written. Nine of the
+eleven are blocked by a structural decision rather than by absent work, and
+adding a table per product would not fix them.
+
+*** Defect 15: an equity underlying is a scalar
+
+*Current shape.* All nine tables carry =underlying_name text=. It is not a
+foreign key, no trigger validates it, and there is no security master anywhere in
+=refdata= or =marketdata= for it to reference.
+
+*Why it is wrong.* Two consequences, and the second is the larger.
+
+The value is unconstrained, so one instrument can be written as =VOD.L=, =VOD LN=
+and =Vodafone= in three rows with nothing relating them. Any question about
+exposure to an issuer becomes a string-matching exercise.
+
+More importantly, *a scalar cannot hold a basket*. Five of the eleven missing
+products are multi-underlying: basket options, basket variance swaps, rainbow
+options, outperformance options and pairwise variance swaps. They are absent
+because the column shape cannot express them. The one product that does have a
+basket, =EquityWorstOfBasketSwap=, escapes through =basket_json=, a text column
+holding an unqueryable list.
+
+*Replacement shape.* An underlying is a row, and a product references one or many.
+
+#+begin_src sql
+ores_trading_instrument_underlyings_tbl
+  instrument_id     uuid not null
+  tenant_id         uuid not null
+  sequence_number   int  not null   -- basket order, or the leg of a pairwise product
+  security_id       uuid not null   -- a reference, not a name
+  weight            numeric         -- null for a single underlying
+  primary key (tenant_id, instrument_id, sequence_number)
+#+end_src
+
+With that table a single-underlying option is one row, a basket is n rows, and an
+outperformance option is two. The five multi-underlying products stop being
+blocked, =basket_json= is deleted, and =underlying_name= comes out of all nine
+tables.
+
+The =security_id= reference needs a security master that does not yet exist. That
+is the dependency this repair carries, and it should be sized before the work
+starts.
+
+*** Defect 16: no observation schedule for equity
+
+*Current shape.* Products that observe the underlying over time hold that
+schedule as scalars. =equity_asian_option= has =averaging_start_date= and
+=averaging_end_date=, =equity_accumulator= has =fixing_frequency=, and
+=equity_option= has =cliquet_frequency=.
+
+*Why it is wrong.* A frequency plus two dates describes a regular schedule and
+nothing else. It cannot express an irregular fixing list, a schedule with
+holidays removed, or an observation window that opens and closes. That is why
+=EquityWindowBarrierOption=, =EquityGenericBarrierOption=,
+=EquityBestEntryOption= and =EquityStrikeResettableOption= have no home.
+
+*Replacement shape.* This is defect 1's schedule table applied to equity. The
+same =ores_trading_schedules_tbl=, with a =schedule_type_code= of =fixing=,
+=averaging= or =observation=, serves all four, and the scalar frequency columns
+become a generated schedule rather than a special case.
+
+*** What the repair looks like
+
+Ordered by dependency rather than by size.
+
+1. *The underlyings table, and the security master it references.* Everything
+   else is easier afterwards, and five missing products stop being blocked.
+2. *The schedule table*, shared with defect 1 rather than built for equity. Four
+   more missing products stop being blocked.
+3. *Split the two exclusive-or tables*, per defect 9. Independent of the other
+   two and can be done at any point.
+4. *Add tables for what is then left*: the double touch and future option
+   variants, which have no structural obstacle once the first two are done.
+
+*What this is not.* None of this changes how a product is priced, and none of it
+blocks the trade population story, since the 16 storable types are enough to
+generate a realistic population. It is recorded because the population work
+surfaced it, and because a population that silently omits eleven of a desk's
+products is not the population anyone asked for.
+
 ** What the loader could not populate
 
 When the loader was first run, five of the 41 tables rejected a fully populated
@@ -544,7 +660,7 @@ because the obvious implementation does not remove anything.
 
 * Conclusions
 
-The thirteen defects fall into three kinds, and confusing them would misdirect the
+The sixteen defects fall into four kinds, and confusing them would misdirect the
 repair.
 
 Defects 1 to 3 are *type defects*. A value is held in a type too wide for its
@@ -575,8 +691,14 @@ the database cannot use it. *The repair is mostly the consistent application of
 decisions this model has already made*, which makes it a smaller undertaking than
 the counts suggest.
 
+Defects 14 to 16 are *expressiveness defects*, and they are the only kind that
+loses information rather than discipline. A shape the domain has cannot be
+written down at all: eleven equity products have no table, because an underlying
+is a scalar and an observation schedule is a frequency. The others make the model
+harder to trust; these make it unable to hold what a desk trades.
+
 Two defects carry a measurement rather than an argument. Defect 1 costs 4x on the
-load path and defect 7 costs about 25x.
+load path and defect 7 costs about 25x. Defect 14 carries a count: 11 of 27.
 
 * Recommendations
 

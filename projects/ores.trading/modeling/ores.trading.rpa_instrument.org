@@ -201,6 +201,18 @@ repository profiles regenerate correctly.
 :iterator_var: rp
 :END:
 
+** Table display
+
+|  column                |  header            |
+|----------------------|------------------|
+|  identity.instrument_id |  ID              |
+|  start_date            |  Start Date       |
+|  maturity_date         |  Maturity Date    |
+|  reference_counterparty |  Counterparty    |
+|  participation_rate    |  Participation Rate |
+|  protection_fee        |  Protection Fee   |
+|  audit.recorded_at     |  Recorded At      |
+
 ** Custom repository methods
 
 * See also

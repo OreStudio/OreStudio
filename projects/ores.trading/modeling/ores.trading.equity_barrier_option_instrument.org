@@ -335,6 +335,22 @@ repository profiles regenerate correctly.
 :iterator_var: eboi
 :END:
 
+** Table display
+
+|  column                    |  header         |
+|--------------------------|---------------|
+|  identity.instrument_id    |  ID             |
+|  identity.trade_type_code  |  Type           |
+|  underlying_name           |  Underlying     |
+|  currency                  |  Ccy            |
+|  notional                  |  Notional       |
+|  option_type               |  Option Type    |
+|  strike                    |  Strike         |
+|  lower_barrier             |  Lower Barrier  |
+|  expiry_date               |  Expiry Date    |
+|  long_short                |  Long/Short     |
+|  audit.recorded_at         |  Recorded At    |
+
 ** Custom repository methods
 
 * See also

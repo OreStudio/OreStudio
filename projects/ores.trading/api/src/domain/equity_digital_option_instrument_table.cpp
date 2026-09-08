@@ -28,10 +28,14 @@ std::string convert_to_table(const std::vector<equity_digital_option_instrument>
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Notional" << "Option Type"
+          << "Barrier Type" << "Expiry Date" << "Long/Short" << "Recorded At" << fort::endr;
 
     for (const auto& edoi : v) {
-        table << fort::endr;
+        table << edoi.identity.instrument_id << edoi.identity.trade_type_code
+              << edoi.underlying_name << edoi.currency << edoi.notional << edoi.option_type
+              << edoi.barrier_type << edoi.expiry_date << edoi.long_short << edoi.audit.recorded_at
+              << fort::endr;
     }
     return table.to_string();
 }

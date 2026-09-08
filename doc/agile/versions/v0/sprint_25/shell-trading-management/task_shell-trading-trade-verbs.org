@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 1D07E7C3-96F7-4760-9ED0-D96888E20EF0
 :END:
-#+title: Task: Add the lifecycle_event and trade verb units
-#+description: Add lifecycle_event_commands and trade_commands to the trading command folder, completing the five-entity surface. The lifecycle_event unit follows the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated.
+#+title: Task: Add the trade-side verb units (lifecycle_event, trade, trade_identifier, trade_party_role)
+#+description: Add lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands to the trading command folder, completing the trade-side surface (the reference trio shipped in the sibling reference task). The lifecycle_event, trade_identifier and trade_party_role units follow the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated.
 #+type: task
 #+level: s1
 #+filetags: :shell-trading-management:sprint_25:v0:
@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-07
-#+updated: 2026-09-07
+#+updated: 2026-09-08
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -20,30 +20,68 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The flagship trade entity is where the codegen-ready skeleton must absorb the hardest payload: the trade domain is five nested sub-structs (identity, parties, classification, lifecycle, audit) and save_trade_request carries a vector of trades, not one object. The unit keeps the currencies skeleton - submenu, pagination, change-reason arguments, table_io rendering - while the add verb builds a single trade from positional arguments mapped to the org field tables. lifecycle_event sits between: it follows the reference pattern but keys on the trade identifier, so an add must reference an existing trade.
+The flagship trade entity is where the codegen-ready skeleton must absorb the hardest payload: the trade domain is five nested sub-structs (identity, parties, classification, lifecycle, audit) and save_trade_request carries a vector of trades, not one object. The unit keeps the currencies skeleton - submenu, pagination, change-reason arguments, table_io rendering - while the add verb builds a single trade from positional arguments mapped to the org field tables. lifecycle_event sits between: it follows the reference pattern but keys on the trade identifier, so an add must reference an existing trade. trade_identifier and trade_party_role round out the trade-side surface: the per-trade identity and party-role rows behind the flagship entity, each with its own subjects and history. This batch runs last in the story: the instrument batches land first under the 2026-09-07 scope decision, and the trade system test needs live instruments and reference rows to attach.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
-| Now          | Not yet started.                       |
+| Now          | Batch committed (59c1b3bf46, b34edbea50); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. Live matrix green for all four families.                       |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-07                               |
+| Next         | Nothing.                  |
+| Last touched | 2026-09-08                               |
 
 * Acceptance
 
-- lifecycle_event_commands and trade_commands compile under the trading folder; the aggregator now registers all five entity units.
-- Live against the fleet: add a trade, list and page trades, read its history, add a lifecycle event against it, then delete both; change reasons flow through add.
+- lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands compile under the trading folder; the aggregator registers the full entity surface.
+- Live against the fleet: add a trade, list and page trades, read its history, list and history the trade_identifier and trade_party_role rows behind it, add a lifecycle event against it, then delete; change reasons flow through add.
 - Full preset build and ctest green; shell cmake-sources drift clean.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The batch opens with the trade-side surface audit the sibling tasks
+deferred: the four families' wire contracts (lifecycle_events
+code-keyed with the list member =events=, delete =codes= and history
+=code=; trade_identifiers and trade_party_roles uuid-keyed; trades the
+flagship — paginated list carrying =total_available_count=, save
+carrying a vector of nested-struct trades), the family handlers
+composed per subject, and the changed-event chain per family.
+
+Three wiring gaps came out of it. G4: the lifecycle_event,
+trade_identifier and trade_party_role event registrars existed but the
+service application never composed them, so no changed event left the
+service for these families. G5: the same three families' handler sets
+existed but the core registrar never appended them — their
+list/save/delete/history subjects had no subscriber at all. G6,
+discovered live on the first =history --diff=: the diff path requests
+the generic =trading.v1.history.get= subject, which the service never
+subscribed; =ores.history= =register_history_handlers= was never
+composed, leaving six =*_history_provider_registrar= files dormant
+behind presentation mappers. Fixed behind a process-static
+=dispatch_registry= — the history handler references the registry by
+pointer, so the registry must outlive the returned subscription. The
+live pass then found one more gap, environmental rather than code: the
+deployed =ores_trading_party_roles= notify trigger still emitted the
+pre-migration entity =ores.trading.party_role= (36e1980cbf renamed it
+to =ores.trading.trade_party_role=), so the party-role changed event
+was dropped as unmapped. A live-vs-repo comparison of all 41 trading
+notify triggers found only this one stale; re-deploying the trigger
+from the repo SQL completed the chain.
+
+The four units clone the reference skeleton with their own data:
+=lifecycle_event_commands= keys on the event code;
+=trade_commands= is the flagship — its add builds one trade from
+positional arguments across the five nested structs (identity,
+parties, classification, lifecycle, audit), the service stamps the
+audit fields from the request context, resolves the status from the
+activity type and the database denormalises the party from the book;
+=trade_identifier_commands= and =trade_party_role_commands= key on
+the row id. History =--diff= renders for the three non-flagship
+families; the flagship trade has no history field mapper or provider
+among the six registered, so its =--diff= replies with the clean
+no-provider message (recorded limitation).
 
 * Notes
 
@@ -71,3 +109,55 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Shipped four trade-side verb units under
+=projects/ores.shell/src/app/commands/trading/=
+(=lifecycle_event_commands.{hpp,cpp}=, =trade_commands=,
+=trade_identifier_commands= and =trade_party_role_commands=),
+registered from =trading_commands.cpp= with
+=component_files.cmake= regenerated. The batch is two commits on
+feature/shell-trading-instrument-verbs: 59c1b3bf46 =[ores.shell]= (the
+units, 10 files) and b34edbea50 =[ores.trading]= (the wiring). The
+flagship =trade_commands= add builds one trade from positional
+arguments across the five nested domain structs; lifecycle_event,
+trade_identifier and trade_party_role clone the reference skeleton
+keyed on their row identity. Every add carries change reasons through
+the audit fields.
+
+Three wiring gaps closed with b34edbea50. G4: application.cpp now
+composes the lifecycle_event, trade_identifier and trade_party_role
+event registrars, so changed events leave the service for all three
+families. G5: registrar.cpp appends the three handler sets behind
+their list/save/delete/history subjects. G6: the service composes
+=ores.history= =register_history_handlers= on =trading.v1.history.get=
+behind a process-static =dispatch_registry=, activating the six
+trading =*_history_provider_registrar= files so =history --diff=
+renders for the three non-flagship families. The flagship trade has no
+history field mapper or provider among the six registered; its
+=--diff= replies with the clean no-provider message (recorded
+limitation, unchanged from the presentation side).
+
+Live acceptance met on brave_hopper against the fleet. The matrix as
+=tenant_admin@acme= added a Swap trade (2116be74-676f-4857-8c3c-
+34fd57fb39c8) under the live book, an execution-time identifier
+(9eadf5bb-3a6c-411d-9af2-6d3da0d251db), two party roles (Counterparty
+bc1ad1e9-9248-4ecd-a7c7-99a3b720e0cf, ExecutingBroker
+6683f59d-d83a-4ed5-a803-8d6d7b4e1a63) and lifecycle events ts_lce_1
+v1+v2; each family listed, read its history (plain and =--diff= across
+versions) and soft-deleted clean, verified by psql (valid_to closed,
+zero open residue per table). Changed events were captured on the
+prefixed subject ores.dev.brave_hopper.ores.trading.> for every save
+and delete across all four families. The party-role chain exposed the
+one environmental gap: the deployed =ores_trading_party_roles= notify
+trigger still emitted the pre-migration entity
+=ores.trading.party_role=, so the role changed event was dropped as
+unmapped; a live-vs-repo comparison of all 41 trading notify
+functions found only this one stale, and re-deploying the trigger from
+the repo SQL completed the chain. Delete of a non-existent code
+returned success (soft-delete no-op), and the negative pass rejected a
+bad role id and a bad counterparty.
+
+Closing battery green: full preset build exit 0; ctest 71/71 passed
+(908 s); roundtrip check exit 0 (pre-existing partial-fidelity
+baseline, no outputs touched); shell cmake-sources drift clean; codegen
+drift clean (=--all=); working tree clean after drift regeneration.

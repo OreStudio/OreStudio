@@ -20,18 +20,36 @@
 #include "ores.trading.api/domain/fx_asian_forward_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<fx_asian_forward_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "FX Index" << "Reference Ccy" << "Reference Notional"
+          << "Settlement Ccy" << "Settlement Notional" << "Payment Date" << "Recorded At"
+          << fort::endr;
 
     for (const auto& fafi : v) {
-        table << fort::endr;
+        table << fafi.identity.instrument_id << fafi.identity.trade_type_code << fafi.fx_index
+              << fafi.reference_currency << opt_str(fafi.reference_notional)
+              << fafi.settlement_currency << opt_str(fafi.settlement_notional) << fafi.payment_date
+              << fafi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

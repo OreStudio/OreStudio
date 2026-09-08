@@ -28,10 +28,13 @@ std::string convert_to_table(const std::vector<equity_forward_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Quantity" << "Expiry Date"
+          << "Long/Short" << "Recorded At" << fort::endr;
 
     for (const auto& efi : v) {
-        table << fort::endr;
+        table << efi.identity.instrument_id << efi.identity.trade_type_code << efi.underlying_name
+              << efi.currency << efi.quantity << efi.expiry_date << efi.long_short
+              << efi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

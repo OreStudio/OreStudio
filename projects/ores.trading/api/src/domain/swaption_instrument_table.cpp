@@ -28,10 +28,13 @@ std::string convert_to_table(const std::vector<swaption_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Expiry Date" << "Exercise" << "Settlement"
+          << "Long/Short" << "Start Date" << "Maturity Date" << "Recorded At" << fort::endr;
 
     for (const auto& sw : v) {
-        table << fort::endr;
+        table << sw.identity.instrument_id << sw.identity.trade_type_code << sw.expiry_date
+              << sw.exercise_type << sw.settlement_type << sw.long_short << sw.start_date
+              << sw.maturity_date << sw.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

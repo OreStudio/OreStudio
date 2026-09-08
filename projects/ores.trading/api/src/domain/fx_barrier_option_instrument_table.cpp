@@ -20,18 +20,36 @@
 #include "ores.trading.api/domain/fx_barrier_option_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<fx_barrier_option_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Option Type" << "Expiry Date" << "Barrier Type"
+          << "Lower Barrier" << "Upper Barrier" << "Bought Ccy" << "Bought Amount" << "Recorded At"
+          << fort::endr;
 
     for (const auto& fboi : v) {
-        table << fort::endr;
+        table << fboi.identity.instrument_id << fboi.identity.trade_type_code << fboi.option_type
+              << fboi.expiry_date << fboi.barrier_type << fboi.lower_barrier
+              << opt_str(fboi.upper_barrier) << fboi.bought_currency << fboi.bought_amount
+              << fboi.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

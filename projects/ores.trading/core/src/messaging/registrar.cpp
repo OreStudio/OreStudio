@@ -17,12 +17,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.core/messaging/registrar.hpp"
+#include "ores.history.core/messaging/registrar.hpp"
+#include "ores.history.core/service/dispatch_registry.hpp"
+#include "ores.trading.core/messaging/lifecycle_event_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/lifecycle_event_registrar.hpp"
+#include "ores.trading.core/messaging/party_role_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/party_role_type_registrar.hpp"
+#include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
+#include "ores.trading.core/messaging/trade_id_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_id_type_registrar.hpp"
+#include "ores.trading.core/messaging/trade_identifier_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/trade_identifier_registrar.hpp"
+#include "ores.trading.core/messaging/trade_party_role_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/trade_party_role_registrar.hpp"
+#include "ores.trading.core/messaging/trade_type_history_provider_registrar.hpp"
 
 namespace ores::trading::messaging {
+
+namespace {
+
+constexpr std::string_view queue_group = "ores.trading.service";
+
+// The dispatch registry is process-static: the history handler's
+// subscription outlives this function, so the registry it references
+// must outlive the subscription too.
+ores::history::service::dispatch_registry& history_registry() {
+    static ores::history::service::dispatch_registry instance;
+    return instance;
+}
+
+}
 
 std::vector<ores::nats::service::subscription>
 registrar::register_handlers(ores::nats::service::client& nats,
@@ -30,10 +55,12 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url) {
 
-    // trades=32, rates=36, fx=7, bond=4, credit=4, equity=9,
-    // commodity=4, composite=5, scripted=4 → 105 total
+    // trades + activity_types + trade_types=12, rates=36, fx=7, bond=4,
+    // credit=4, equity=9, commodity=4, composite=5, scripted=4,
+    // party_role_types=4, trade_id_types=4, lifecycle_events=4,
+    // trade_identifiers=4, trade_party_roles=4, history=1 → 106 total
     auto subs = detail::register_trade_handlers(nats, ctx, verifier, http_base_url);
-    subs.reserve(105);
+    subs.reserve(106);
 
     const auto append = [&subs](auto vec) {
         subs.insert(
@@ -50,6 +77,19 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(detail::register_scripted_handlers(nats, ctx, verifier));
     append(register_party_role_type_handlers(nats, ctx, verifier));
     append(register_trade_id_type_handlers(nats, ctx, verifier));
+    append(register_lifecycle_event_handlers(nats, ctx, verifier));
+    append(register_trade_identifier_handlers(nats, ctx, verifier));
+    append(register_trade_party_role_handlers(nats, ctx, verifier));
+
+    auto& hist_registry = history_registry();
+    register_party_role_type_history_provider(hist_registry);
+    register_trade_id_type_history_provider(hist_registry);
+    register_lifecycle_event_history_provider(hist_registry);
+    register_trade_identifier_history_provider(hist_registry);
+    register_trade_party_role_history_provider(hist_registry);
+    register_trade_type_history_provider(hist_registry);
+    subs.push_back(ores::history::messaging::register_history_handlers(
+        nats, hist_registry, "trading", queue_group, ctx, verifier));
 
     return subs;
 }

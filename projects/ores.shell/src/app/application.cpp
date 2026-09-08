@@ -22,6 +22,7 @@
 #include "ores.iam.api/messaging/login_protocol.hpp"
 #include "ores.nats/service/nats_client.hpp"
 #include "ores.nats/service/request_helpers.hpp"
+#include "ores.shell/app/login_helpers.hpp"
 #include "ores.shell/app/repl.hpp"
 #include "ores.utility/version/version.hpp"
 #include <iostream>
@@ -97,16 +98,13 @@ bool auto_login(ores::nats::service::nats_client& session,
                 << std::endl;
             return false;
         }
-        ores::nats::service::nats_client::login_info info;
-        info.jwt = result->token;
-        info.username = result->username;
-        info.account_id = result->account_id;
-        info.tenant_id = result->tenant_id;
-        info.tenant_name = result->tenant_name;
-        info.default_party_id = result->default_party_id;
-        session.set_auth(std::move(info));
+        auto selected = commands::complete_login(out, session, *result);
+        if (!selected)
+            return false;
         out << "✓ Logged in as: " << result->username << std::endl;
         out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
+        if (!selected->empty())
+            out << "  Party: " << *selected << std::endl;
         return true;
     } catch (const std::exception& e) {
         out << "✗ Auto-login failed: " << e.what() << std::endl;

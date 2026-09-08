@@ -1,0 +1,172 @@
+:PROPERTIES:
+:ID: C36A4ECA-5D15-4558-B7D8-EFC3B6250194
+:END:
+#+title: Task: Add the generic instrument-family verb units
+#+description: Add bond_commands, commodity_commands, composite_commands, credit_commands and scripted_commands plus the activity_type commands, serving the single-handler families registered by registrar_bond.cpp, registrar_commodity.cpp, registrar_composite.cpp, registrar_credit.cpp and registrar_scripted.cpp. Establish whether the service serves every family subject (list/save/delete/history) and whether the DB layer holds them; fix or record any gap, then run the live generic-batch system test per family.
+#+type: task
+#+level: s1
+#+filetags: :shell-trading-management:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.shell extends the trading command folder to the six generic
+families: activity_types, bond, commodity, composite, credit and
+scripted. Each family is one entity served by a single-handler
+registrar (registrar_bond.cpp and siblings), keyed by string id, so
+each gets one unit cloned from the fx-batch skeleton. The batch first
+establishes the service surface: whether every family subject (list,
+save, delete, history) is composed into the registrar fan-out and
+backed by the DB layer. Any family the service does not serve, or
+whose tables are missing, is either fixed or recorded as a finding
+with its owner. It then runs the live generic-batch system test per
+family, with the composite legs exercised where the family carries
+them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
+| Now          | Batch committed (af564bfda9, 7175414576); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. Live matrix green for all five served families.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Trade-side surface (task 1D07E7C3).                  |
+| Last touched | 2026-09-08                               |
+
+* Acceptance
+
+- The unit exists per served family under projects/ores.shell/src/app/commands/trading/ and compiles; trading_commands registers them; the shell cmake component files regenerate with no drift.
+- The per-family service-surface audit is recorded: subjects served, DB tables present, gaps fixed or findings recorded with owners.
+- Live against the fleet: add, list and page, history and delete round-trip every served family; each save lands a DB row (verified via psql) and emits the changed event.
+- Full preset build and ctest green; shell cmake-sources drift clean. The batch lands on feature/shell-trading-instrument-verbs as one [ores.shell] commit.
+
+* Plan
+
+The five units clone the fx-batch skeleton with their own declared
+data: =trading.v1.= subject family (bond_instruments and siblings),
+save columns from the per-family org, and the shared
+=instrument_id= string key. The generator's first pass emitted the
+per-family =*_instrument_protocol.hpp= include the fx units use, but
+the five generic families have no per-family protocol headers — their
+messaging classes live in the consolidated
+=instrument_protocol.hpp=, and the shell build caught the missing
+header. The units include the consolidated protocol, and the
+aggregator registers five plural menus.
+
+The batch opens with the service-surface audit this task requires,
+covering the wire contract, the DB layer and the display layer. The
+audit confirmed the consolidated registrar serves every family
+subject (list/save/delete/history, plus get-legs for composite), all
+five family tables exist under the acme tenant with per-family CHECK
+constraints and insert-plus-notify triggers, and the table renders
+already exist per family. Two recorded gaps came out of it. G2:
+=activity_types= is served list-only — no save/delete/history
+protocol or event chain — so no CRUD unit is possible; recorded with
+the trade-side task (1D07E7C3) as owner. G3: the composite add
+signature expresses the header only, so shell-added composites carry
+no legs; the save request's legs member has no shell producer and the
+legs subject is read-only; recorded with the composite modeling
+owner. G1 — the five families had no changed-event registrar or
+eventing header at all (the service application registered nothing),
+so the batch clones the fra per-family changed-event pattern into the
+api and service components and wires the five
+=register_*_instrument_event_mapping= calls in application.cpp.
+
+Live-test protocol per family: scripted shell run as
+=tenant_admin@acme= adds two probes and a get, histories and deletes
+both probes, then adds an event probe, deletes it and exercises the
+family's CHECK gate with a negative add. Every add is verified at the
+DB layer (psql open row) and on the changed-event stream with the
+subscriber on the prefixed subject
+ores.dev.brave_hopper.ores.trading.>; every delete soft-closes the
+row out of the live view. The =-= spellings for the estr and odbl
+optional columns are exercised where the family has them (commodity
+option type and strike), and the refdata vocabularies for the credit
+payment frequency are exercised with the registry spellings.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped five instrument-family verb units under
+=projects/ores.shell/src/app/commands/trading/=:
+=bond_instrument_commands.{hpp,cpp}=, =commodity_instrument_commands=,
+=composite_instrument_commands=, =credit_instrument_commands= and
+=scripted_instrument_commands=, each cloning the fx-batch skeleton
+with its own trading.v1 subject family and positional add arguments
+from the org columns. =trading_commands.cpp= registers the five
+plural menus; =component_files.cmake= lists the units. The batch is
+two commits on feature/shell-trading-instrument-verbs: af564bfda9
+=[ores.shell]= (the units) and 7175414576 =[ores.trading]= (the event
+chain for the five families). =activity_types= shipped no unit: the
+audit found its surface list-only (G2), recorded with the trade-side
+task 1D07E7C3 as owner.
+
+The service-surface audit is recorded: the consolidated
+=instrument_protocol.hpp= serves every family subject through the
+registrar fan-out and the per-family request and response classes all
+carry the =instruments= response member — nothing legacy to delete,
+unlike the rates families. The DB layer holds all five family tables
+under the acme tenant, each with CHECK constraints and
+insert-plus-notify temporal triggers. G1 (no changed-event chain) was
+fixed in this batch: the five eventing headers, five registrar pairs
+and the application.cpp wiring landed with 7175414576. G2 and G3 are
+recorded with their owners in the Plan.
+
+Live acceptance met on brave_hopper against the fleet. A scripted
+matrix per family as =tenant_admin@acme= round-tripped add x2, get,
+history and delete for all five families. Every add landed an open DB
+row (psql, =valid_to= = 9999-12-31) and every delete soft-closed it;
+per-family psql checks confirmed open rows went 2 to 0 with no
+residue. Changed events were captured on the prefixed subject
+ores.dev.brave_hopper.ores.trading.> — two per family (probe add and
+probe delete), proving the wired mappings emit add-to-NATs and
+delete-to-NATs on the family subject. Per-family CHECK enforcement was
+seen live: the composite and scripted negatives were rejected at the
+application registry gate (Invalid trade_type with the full
+instrument-kind list) and the bond, commodity and credit negatives by
+DB CHECKs (coupon_rate, option_type and recovery_rate), with zero
+negative rows in every family table. The =-= spellings persisted as
+DB NULL where the family carries the optional columns (commodity
+probe with Call/85.5 option data and NULL fixed price and start
+date), and the credit refdata vocabulary round-tripped with the
+registry spelling Semiannual.
+
+Closing battery green: full preset build exit 0; ctest 71/71 passed
+(904 s); roundtrip check exit 0 (pre-existing partial-fidelity
+baseline, no outputs touched); shell cmake-sources drift clean; codegen
+drift clean (=--all=); working tree clean after drift regeneration.

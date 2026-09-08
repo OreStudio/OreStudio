@@ -20,18 +20,34 @@
 #include "ores.trading.api/domain/rpa_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<rpa_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Start Date" << "Maturity Date" << "Counterparty"
+          << "Participation Rate" << "Protection Fee" << "Recorded At" << fort::endr;
 
     for (const auto& rp : v) {
-        table << fort::endr;
+        table << rp.identity.instrument_id << rp.start_date << rp.maturity_date
+              << rp.reference_counterparty << rp.participation_rate << opt_str(rp.protection_fee)
+              << rp.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

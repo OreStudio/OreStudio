@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :trading:shell:cli:tooling:sprint_25:v0:
 #+created: 2026-09-07
-#+updated: 2026-09-07
+#+updated: 2026-09-08
 #+environment: brave_hopper
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -15,23 +15,23 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 
 * Goal
 
-ores.shell gains a minimal trading command surface so trading-system tests run without a UI, mirroring how the compute grid is driven from the shell. Each trading entity gets one command unit in a new per-component folder projects/ores.shell/src/app/commands/trading/, structurally identical to the currencies archetype: register_commands over cli::Menu, nats_client and pagination_context, plus process_get, process_add, process_delete and process_history statics, change-reason arguments on add, and paginated lists. The units keep every entity-specific detail - subject names, request and response classes, key field, column set - as declared data inside one uniform skeleton, because this folder is the proving ground for the future codegen shell facet (backlog capture 8BCD0D1C): a template must emit any unit from the org model keys alone. A hand-written trading_commands aggregator registers the entity units and repl.cpp calls it once, pre-figuring the generated per-component wiring. Scope is the five entities with generated messaging protocols: trade_type, party_role_type, trade_id_type, lifecycle_event and trade. After this story merges, the trading bind post-merge system test (harness task 89) drives the verbs against a fresh fleet.
+ores.shell gains a minimal trading command surface so trading-system tests run without a UI, mirroring how the compute grid is driven from the shell. Each trading entity gets one command unit in a new per-component folder projects/ores.shell/src/app/commands/trading/, structurally identical to the currencies archetype: register_commands over cli::Menu, nats_client and pagination_context, plus process_get, process_add, process_delete and process_history statics, change-reason arguments on add, and paginated lists. The units keep every entity-specific detail - subject names, request and response classes, key field, column set - as declared data inside one uniform skeleton, because this folder is the proving ground for the future codegen shell facet (backlog capture 8BCD0D1C): a template must emit any unit from the org model keys alone. A hand-written trading_commands aggregator registers the entity units and repl.cpp calls it once, pre-figuring the generated per-component wiring. The 2026-09-07 scope decision opens the initial five-entity scope (trade_type, party_role_type, trade_id_type, lifecycle_event and trade) to every trading entity with generated messaging protocols: the trade-side sub-entities and the instrument families by asset class. Each asset-class batch of units is live-tested through the shell against the fleet — messaging, DB layer, changed events — before its commit, so the story carries the trading system test itself.
 
 * Status
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                                |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
+| Now           | Nothing.                               |
 | Waiting on    | Nothing.                               |
-| Next          | Break the story into tasks.            |
-| Last touched  | 2026-09-07                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-08                               |
 
 * Acceptance
 
 - The trading surface registers from repl.cpp with one call to a trading_commands aggregator; each entity unit lives in projects/ores.shell/src/app/commands/trading/ and follows the currencies archetype: submenu get, add, delete and history, pagination callbacks, change-reason arguments on add, history via the history request subject.
-- Verb units cover trade_type, party_role_type, trade_id_type, lifecycle_event and trade, calling the generated ores.trading.api protocols over the trading.v1 NATS subjects; ores.trading.api.lib links into ores.shell and the cmake component files regenerate cleanly.
+- Verb units cover every trading entity with generated protocols — trade_type, party_role_type, trade_id_type, lifecycle_event, trade and the trade sub-entities, plus the instrument families by asset class — calling the generated ores.trading.api protocols over the trading.v1 NATS subjects; ores.trading.api.lib links into ores.shell and the cmake component files regenerate cleanly.
 - Each task ends with a full preset build and the ctest suite green; the shell cmake-sources drift check stays clean; codegen drift checks stay clean for the components touched.
 - Trade and lifecycle_event units exercise the real payload shapes: trade save is a batch of nested-struct trades, lifecycle_event carries the trade identifier reference.
 
@@ -40,7 +40,11 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:A2F00C5D-FD7B-42EF-B7A6-61BE7C0D18C9][Add the trading command folder, reference-entity verb units, and shell wiring]] | DONE | 2026-09-07 | 2026-09-07 | Create projects/ores.shell/src/app/commands/trading/ holding trade_type_commands, party_role_type_commands and trade_id_type_commands units cloned from the currencies archetype, plus the hand-written trading_commands aggregator that registers them. Wire repl.cpp with one aggregator call, add ores.trading.api.lib to the shell link libraries, regenerate the shell cmake component files. |
-| [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the lifecycle_event and trade verb units]] | BACKLOG | | | Add lifecycle_event_commands and trade_commands to the trading command folder, completing the five-entity surface. The lifecycle_event unit follows the reference pattern. The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
+| [[id:1D07E7C3-96F7-4760-9ED0-D96888E20EF0][Add the trade-side verb units (lifecycle_event, trade, trade_identifier, trade_party_role)]] | DONE | 2026-09-08 | 2026-09-08 | Add lifecycle_event_commands, trade_commands, trade_identifier_commands and trade_party_role_commands to the trading command folder, completing the trade-side surface (the reference trio shipped in the sibling reference task). The trade unit handles the real payload shapes: save is a batch of nested-struct trades built from positional arguments, delete and history key on the trade identifier, list is paginated. |
+| [[id:E2E3689F-B43E-4879-9F9D-54DB3ED91110][Add the fx instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add fx_accumulator_commands, fx_asian_forward_commands, fx_barrier_option_commands, fx_digital_option_commands, fx_forward_commands, fx_vanilla_option_commands and fx_variance_swap_commands to the trading command folder, cloned from the reference-entity skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live fx-batch system test: add/list/history/delete round trips per unit through the trading.v1 subjects with DB-row and changed-event verification. |
+| [[id:94A5EA1A-BA18-49C6-B010-A6A860AA19BA][Add the equity instrument verb units]] | DONE | 2026-09-07 | 2026-09-07 | Add equity_accumulator_commands, equity_asian_option_commands, equity_barrier_option_commands, equity_digital_option_commands, equity_forward_commands, equity_option_commands, equity_position_commands, equity_swap_commands and equity_variance_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live equity-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
+| [[id:360B5207-7ECE-4423-8E0E-E091A6CD2A55][Add the rates instrument verb units]] | DONE | 2026-09-08 | 2026-09-08 | Add balance_guaranteed_swap_commands, callable_swap_commands, cap_floor_commands, fra_commands, inflation_swap_commands, knock_out_swap_commands, rpa_commands, swaption_commands and vanilla_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live rates-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification. |
+| [[id:C36A4ECA-5D15-4558-B7D8-EFC3B6250194][Add the generic instrument-family verb units]] | DONE | 2026-09-08 | 2026-09-08 | Add bond_commands, commodity_commands, composite_commands, credit_commands and scripted_commands plus the activity_type commands, serving the single-handler families registered by registrar_bond.cpp, registrar_commodity.cpp, registrar_composite.cpp, registrar_credit.cpp and registrar_scripted.cpp. Establish whether the service serves every family subject (list/save/delete/history) and whether the DB layer holds them; fix or record any gap, then run the live generic-batch system test per family. |
 
 * Decisions
 
@@ -63,17 +67,99 @@ ores.shell gains a minimal trading command surface so trading-system tests run w
   simple-lookup binding regenerated the request and event registrars
   but never wired them, leaving the trading.v1.trade_id_types subjects
   unserved until the shell live acceptance (ab49e552f7) caught it.
+- 2026-09-07 scope decision: instrument verb units move into scope,
+  hand-written per asset class. One feature branch
+  (feature/shell-trading-instrument-verbs) carries the batches — fx,
+  equity, rates and the generic single-handler families, then the
+  trade-side surface — in one large PR, with one commit per
+  asset-class batch and each batch live-tested through the shell
+  (messaging, DB layer, changed events) before its commit. Rationale:
+  the shell needs the full CRUD surface to run the trading system
+  test end to end, and every hand-written unit keeps setting the shape
+  the codegen shell facet (8BCD0D1C) must emit. The codegen facet
+  remains the long-term home for unit generation; the hand-written
+  units are the interim surface.
+- Instrument add verbs stamp =v.audit.modified_by= from the session
+  principal and mint the instrument_id client-side. The instrument
+  insert triggers validate =NEW.modified_by= against
+  =ores_iam_accounts_tbl= (=ores_iam_validate_account_username_fn=)
+  once the tenant has non-service accounts, and the trading service
+  passes the client's domain object through unstamped — the fx live
+  test (3997afdcbb) hit the empty-name rejection and fixed it in the
+  add path of every unit. Every later instrument batch keeps the
+  stamp.
+- The cli cannot carry an empty positional token (its splitter runs
+  =RemoveEmptyEntries= over the argument vector), so the shell's
+  not-set literal is a single =-=, never a legal value in the gated
+  columns. =parse_optional_double= maps =-= to nullopt and the estr
+  save columns map =-= to the empty string; the persistence mappers
+  already convert the empty string to repository nullopt, so =-=
+  lands as DB NULL. The equity live test (fb897f374b) proved it
+  against the per-family CHECKs, which gate a column pair per code —
+  digital option, accumulator, option, position and swap demand NULL
+  where the fx-shaped all-real add could never satisfy them. Every
+  later instrument batch keeps the =-= spelling.
+- Changed-event subscribers must use the prefixed wire subject
+  =ores.{tier}.{instance}.= (the client prepends its configured
+  =subject_prefix= to every relative subject), not the bare relative
+  event name. The equity event capture missed the probe adds and
+  deletes until the subscriber landed on the full prefixed subject
+  ores.dev.brave_hopper.ores.trading.>.
+- Instrument families with codegen protocols serve one consolidated
+  wire contract. The rates families' per-family protocols, handlers
+  and registrars predated the consolidation, duplicated it and had no
+  callers, so the rates batch deleted all 36 (0ea3563012) and
+  regenerated the cmake lists; a full deletion build proved nothing
+  pulled them in. Every later batch audits the subjects its families
+  actually serve and removes per-family messaging files the
+  consolidated registrars supersede.
+- The event-side twin of the fan-out rule: per-family event
+  registrars sat in the component but the service application never
+  called =register_*_instrument_event_mapping=, so changes to the
+  rates instruments reached no event bus until 0dd2515fe4 wired them,
+  mirroring the fx and equity families. Every later batch checks the
+  application.cpp registration per family before live testing.
+- After any rebuild that relinks the trading service, restart the
+  service before probing: a running process keeps executing the
+  library image it linked at start, so the wire it answers on can lag
+  the sources on disk by hours. The rates legacy-wire anomaly was
+  exactly that — a pre-consolidation process serving per-family reply
+  members the current lib no longer emits (=/proc/PID/map_files=
+  marks the replaced file (deleted)); a restart onto the rebuilt lib
+  resolved it and the nine-family matrix went 45/45.
+- Not every trading entity with a generated protocol gets a verb
+  unit: the generic batch audit found =activity_types= served
+  list-only — no save, delete or history subjects and no event chain —
+  so no CRUD unit was possible and none shipped. The trade-side close
+  (1D07E7C3) settled the gap by design: activity_types remains
+  list-only, and no unit ships for it. Extending the lookup surface
+  (trade_protocol growth, handler, registrar, event chain) to give a
+  CRUD vocabulary a full CRUD surface is not worth the protocol cost;
+  the earlier owner assignment on this line is superseded.
+- A verb unit expresses the payload its positional signature can
+  build. The composite add carries header arguments only, so
+  shell-added composites land with no legs even though the save
+  request carries a legs member; the legs subject is read-only. The
+  gap is recorded with the composite modeling owner rather than
+  papered over with a partial surface.
+- The generic =trading.v1.history.get= diff subject serves only the
+  entities with registered history providers. Six =*_history_provider_
+  registrar= files answer it (lifecycle_event, party_role_type,
+  trade_id_type, trade_identifier, trade_party_role, trade_type); the
+  flagship =trades= entity has no history field mapper or provider
+  among them, so =history --diff= on a trade replies with the clean
+  =No history provider registered= message. The 31 instrument
+  presentation =history_field_mapper= files are the same shape — dead
+  code with no providers — and were recorded, not extended.
 
 * Out of scope
 
-- Instrument verb units. The instrument registrars serve CRUD and
-  changed events, but no instrument unit is needed for the bind smoke
-  and the unit pattern targets the reference-plus-flagship surface;
-  instruments are the natural first rollout for the codegen facet.
-- The post-merge trading bind system test (driving these verbs against
-  a fresh fleet, observing the reference entities' changed-event
-  streams) runs after this story merges, as its own report task under
-  this story — mirroring the compute post-merge test report.
-- A trading area in projects/ores.shell/scripts/library/. The smoke
-  scripts land with the post-merge report task.
+- Unit generation by the codegen shell facet (8BCD0D1C): the
+  long-term home for instrument-unit generation. Until that facet
+  lands, the units are hand-written under this story (2026-09-07
+  scope decision).
+- The consolidated trading system-test report and a trading area in
+  projects/ores.shell/scripts/library/. The report closes the story,
+  mirroring the compute post-merge report; its smoke scripts land
+  with it.
 

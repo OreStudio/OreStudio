@@ -28,10 +28,13 @@ std::string convert_to_table(const std::vector<equity_accumulator_instrument>& v
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Underlying" << "Ccy" << "Strike" << "Fixing Amt"
+          << "Expiry Date" << "Long/Short" << "Recorded At" << fort::endr;
 
     for (const auto& eaci : v) {
-        table << fort::endr;
+        table << eaci.identity.instrument_id << eaci.identity.trade_type_code
+              << eaci.underlying_name << eaci.currency << eaci.strike << eaci.fixing_amount
+              << eaci.expiry_date << eaci.long_short << eaci.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

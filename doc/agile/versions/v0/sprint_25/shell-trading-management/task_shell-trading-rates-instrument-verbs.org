@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: 360B5207-7ECE-4423-8E0E-E091A6CD2A55
+:END:
+#+title: Task: Add the rates instrument verb units
+#+description: Add balance_guaranteed_swap_commands, callable_swap_commands, cap_floor_commands, fra_commands, inflation_swap_commands, knock_out_swap_commands, rpa_commands, swaption_commands and vanilla_swap_commands, cloned from the fx-batch skeleton. Register them in the trading_commands aggregator, regenerate the shell cmake component files, then run the live rates-batch system test: add/list/history/delete round trips per unit with DB-row and changed-event verification.
+#+type: task
+#+level: s1
+#+filetags: :shell-trading-management:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-07
+#+updated: 2026-09-07
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.shell extends the trading command folder to the nine rates
+instrument families, cloned from the fx-batch skeleton. Each unit
+(balance_guaranteed_swap, callable_swap, cap_floor, fra,
+inflation_swap, knock_out_swap, rpa, swaption, vanilla_swap) declares
+the entity-specific data: trading.v1 subject family, request and
+response classes from the per-product protocol, save columns from the
+org model, instrument_id key. The batch runs the live rates system
+test: every unit round-trips add, list, history and delete through the
+shell against the fleet, with each save verified at the DB layer and
+on the changed-event stream. Any quirk a family exposes (swap legs,
+product columns the fx convention does not cover) is resolved here
+and distilled back into the shared skeleton.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:87C25143-65CC-4568-95D9-11127B160DAA][Manage trading entities from the shell]] |
+| Now          | Batch committed (3a4a0e4bd3, 0dd2515fe4, 0ea3563012); full preset build, ctest 71/71 and the roundtrip, cmake-sources and codegen drift checks green. The six-family legacy-wire anomaly was a stale service process mapping a pre-consolidation lib image; a restart onto the rebuilt lib resolved it.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Generic instrument-family batch (task_shell-trading-generic-instrument-verbs).                  |
+| Last touched | 2026-09-08                               |
+
+* Acceptance
+
+- The nine rates units exist under projects/ores.shell/src/app/commands/trading/ and compile; trading_commands registers them; the shell cmake component files regenerate with no drift.
+- Live against the fleet: add, list and page, history and delete round-trip every rates family through its trading.v1.*_instruments subjects; each save lands a DB row (verified via psql) and emits the changed event.
+- Full preset build and ctest green; shell cmake-sources drift clean. The batch lands on feature/shell-trading-instrument-verbs as one [ores.shell] commit.
+
+* Plan
+
+The nine rates units clone the fx-batch skeleton and differ only in
+declared data: =trading.v1.= subject family, request and response
+classes from the instrument protocol, save columns from the org model,
+instrument_id key. The batch adds the service-surface audit the fx and
+equity families did not need: the rates families predate the codegen
+consolidation and still carried per-family messaging files, so the
+plan is to establish which wire contract the service serves after a
+full relink and restart, then delete the superseded per-family files —
+a deletion build tells us if anything still pulls them in.
+
+Two service-side gaps the audit must close. The per-family event
+registrars exist in the component but the service application never
+calls them, so changes to these instruments reach no event bus: the
+plan registers each family's entity-to-event mapping in
+application.cpp, matching the fx and equity families. And the wire a
+probe sees is the wire of the library image the process linked at
+start, so the plan re-probes only after the service restarts onto the
+rebuilt lib.
+
+The units also give the nine rates orgs Table display sections and
+their =*_table.cpp= column renders, and the shell a shared multi-party
+login helper: =complete_login= exchanges a single-use login token for
+the scoped token of the account's default party via =iam
+select-party=, mirroring the Qt client — the live runs log in as
+=tenant_admin@acme=, whose account spans parties.
+
+Live-test protocol per family: scripted shell run as =tenant_admin@acme=
+adds, gets and pages, histories, deletes; each add verified at the DB
+layer (psql row under the acme tenant with =modified_by= =
+=tenant_admin=) and on the changed-event stream, with the subscriber on
+the prefixed subject ores.dev.brave_hopper.ores.trading.> and the
+per-family CHECK constraints exercised live (the callable swap
+=call_type= accepts Bermudan and rejects European).
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Shipped the nine rates instrument verb units under
+=projects/ores.shell/src/app/commands/trading/=:
+=balance_guaranteed_swap_instrument_commands.{hpp,cpp}=,
+=callable_swap_instrument_commands=, =cap_floor_instrument_commands=,
+=fra_instrument_commands=, =inflation_swap_instrument_commands=,
+=knock_out_swap_instrument_commands=, =rpa_instrument_commands=,
+=swaption_instrument_commands= and =vanilla_swap_instrument_commands=,
+each cloning the fx-batch skeleton with its own trading.v1 subject
+family and positional add arguments from the org columns.
+=trading_commands.cpp= registers the nine plural menus;
+=component_files.cmake= lists the units. Each modeling org gained a
+Table display section and its =*_table.cpp= prints the fixed column
+set; the shell gained the multi-party login helper in
+=login_helpers.hpp= (=complete_login= party selection). The batch is
+three commits on feature/shell-trading-instrument-verbs: 3a4a0e4bd3
+=[ores.shell]= (the units), 0dd2515fe4 =[ores.trading]= (event mapping
+registration in the service application) and 0ea3563012
+=[ores.trading]= (legacy removal).
+
+Live acceptance met on brave_hopper against the fleet. A scripted
+matrix per family as =tenant_admin@acme= round-tripped add, get,
+history and delete for all nine families — 45/45 operations OK. Every
+add landed a DB row under the acme tenant with =modified_by= =
+=tenant_admin= and emitted the family changed event; delete soft-closed
+the row at the bitemporal =valid_to= stamp and emitted a second
+changed event. Changed events were captured on the prefixed subject
+ores.dev.brave_hopper.ores.trading.> for probe adds and probe deletes
+(fra and callable_swap probes), proving add-to-NATs and
+delete-to-NATs. Per-family CHECK enforcement was seen live: the
+callable swap add with =call_type= European was rejected by the
+repository, and Bermudan passed. Probe rows were cleaned through the
+shell's own delete; per-family psql checks confirmed every row open
+after add and soft-closed out of the live view after delete.
+
+The first matrix run failed get/history/delete on six families (fra,
+cap_floor, balance_guaranteed_swap, callable_swap, knock_out_swap,
+inflation_swap): those replies carried the legacy per-family wire
+member, not the consolidated =instruments= member. The root cause was
+not the in-flight deletion: the running service process had linked
+before the consolidated registrar wiring and kept executing the
+replaced lib's old inode — =/proc/PID/map_files= marks the file
+(deleted) — so it answered on the wire contract of the lib image it
+started with. A restart onto the rebuilt lib produced consolidated
+replies immediately and the matrix went 45/45. The story Decisions
+record the restart rule for later batches.
+
+Closing battery green: full preset build exit 0; ctest 71/71 passed
+(919 s); roundtrip check exit 0 (pre-existing partial-fidelity
+baseline, no outputs touched); shell cmake-sources drift clean;
+codegen drift clean (=--all=); working tree clean after drift
+regeneration.

@@ -306,6 +306,20 @@ repository profiles regenerate correctly.
 :iterator_var: fdoi
 :END:
 
+** Table display
+
+| column                   | header        |
+|--------------------------+---------------|
+| identity.instrument_id   | ID            |
+| identity.trade_type_code | Type          |
+| option_type              | Option Type   |
+| expiry_date              | Expiry Date   |
+| payoff_currency          | Payoff Ccy    |
+| payoff_amount            | Payoff Amount |
+| foreign_currency         | Foreign Ccy   |
+| domestic_currency        | Domestic Ccy  |
+| strike                   | Strike        |
+| audit.recorded_at        | Recorded At   |
 ** Custom repository methods
 
 * See also

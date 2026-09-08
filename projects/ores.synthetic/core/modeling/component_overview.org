@@ -4,12 +4,12 @@
 #+title: ores.synthetic.core
 #+name: synthetic.core
 #+full_name: ores.synthetic.core
-#+description: Synthetic DQ catalog generation — produces realistic test data structures compatible with ores.dq.
+#+description: Server-side implementation of the synthetic entities: repositories, services, NATS handlers, and the original catalog generators.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :synthetic:core:component:
 #+created: 2026-05-19
-#+updated: 2026-05-19
+#+updated: 2026-09-08
 
 * Diagram
 
@@ -19,36 +19,40 @@
 
 * Summary
 
-=ores.synthetic.core= generates synthetic data-quality catalog structures for
-development and testing in ORE Studio. It produces realistic =Organisation=
-hierarchies, generation-options configurations, and =SyntheticCatalog= trees
-compatible with =ores.dq= catalog formats, enabling the full DQ pipeline to
-be exercised without exposing real client data. A NATS handler layer exposes
-generation operations to remote callers.
+=ores.synthetic.core= implements the server side of the synthetic data
+component. Each of the nine bound entities has a generated repository,
+mapper, entity, service, NATS handler with sub-registrar, history provider
+registrar, and history field mapper. =messaging/registrar.cpp= composes all
+handlers and history providers into the service host. The facet also keeps
+the component's original catalog and organisation generation services, which
+produce synthetic test data for the DQ pipeline.
 
 * Inputs
 
-- NATS request messages triggering catalog generation (organisation count,
-  depth parameters, seed options).
-- Configuration injected by the host (=ores.synthetic.service=).
+- NATS request messages for entity CRUD, history, feed configuration, and
+  feed control, decoded with the =ores.synthetic.api= protocol headers.
+- Database context supplied by the host (=ores.synthetic.service=), carrying
+  the tenant and party scope the RLS policies enforce.
 
 * Outputs
 
-- Generated =Organisation= and =SyntheticCatalog= structures returned via NATS
-  response messages.
-- Test data importable directly into the =ores_dq= schema via the DQ pipeline.
+- Entity rows written to the =ores_synthetic_= tables, with version history.
+- NATS responses for every registered subject.
+- Synthetic organisation hierarchies and catalogs returned to callers.
 
 * Entry points
 
-- =include/ores.synthetic.core/ores.synthetic.hpp= — aggregate include.
 - =include/ores.synthetic.core/messaging/registrar.hpp= — registers all NATS
-  handlers with the service host.
-- =include/ores.synthetic.core/generators/= — synthetic data factory classes.
+  handlers and history providers with the service host.
+- =include/ores.synthetic.core/service/= — one service class per entity.
+- =include/ores.synthetic.core/repository/= — one repository class per entity.
+- =src/generators/= and =src/data/= — the catalog and organisation generators.
 
 * Dependencies
 
-- =ores.synthetic.api= — shared domain types and NATS protocol schemas.
-- =ores.dq= — target catalog formats consumed by the generated data.
+- =ores.synthetic.api= — domain types, protocol schemas, and feeds.
+- =ores.eventing= — change event publication.
+- =ores.database= — execution context and party scope.
 - =nats.c= — NATS messaging client.
 
 * See also

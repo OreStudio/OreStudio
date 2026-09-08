@@ -4,12 +4,12 @@
 #+title: ores.synthetic.api
 #+name: synthetic.api
 #+full_name: ores.synthetic.api
-#+description: Domain types and NATS protocol schemas for the synthetic data component.
+#+description: Domain types, feeds, generators, and NATS protocol schemas for the synthetic data component.
 #+type: ores.codegen.component
 #+level: cross
 #+filetags: :synthetic:api:component:
 #+created: 2026-05-19
-#+updated: 2026-05-19
+#+updated: 2026-09-08
 
 * Diagram
 
@@ -19,32 +19,50 @@
 
 * Summary
 
-=ores.synthetic.api= is a header-only library defining the domain types and
-NATS protocol schemas for the synthetic data component. It provides types for
-generated organisations, generation options, and synthetic catalogs, consumed
-by =ores.synthetic.core= (server) and any client requesting catalog generation.
+=ores.synthetic.api= defines the types and the NATS protocol of the
+synthetic data component. All nine entities (folder, fx_spot_generation_config,
+gmm_component, ir_curve_generation_config,
+ir_curve_generation_config_process_parameter_value, ir_curve_template_entry,
+market_data_generation_config, yield_curve_process_parameter_definition,
+yield_curve_process_type) are code-generated from the entity models in
+=modeling/=. The facet also carries the feed classes that generate synthetic
+market data (fx_spot_feed, ir_curve_feed), the feed factory, and the IR curve
+template resolver.
 
 * Inputs
 
-- Domain entity type definitions: =generated_organisation.hpp=,
-  =generation_options.hpp=, =organisation_generation_options.hpp=,
-  =synthetic_catalog.hpp=.
+- Entity models: =modeling/ores.synthetic.{entity}.org=, each bound to a
+  variability profile. Codegen generates the domain types, table and JSON I/O,
+  the per-entity test data generators, the changed-event types, and the NATS
+  protocol headers from them.
+- Hand-written code: the feed classes, the template resolver, and the
+  organisation and catalog generation types from the component's original
+  purpose (=generated_organisation.hpp=, =synthetic_catalog.hpp= and kin).
 
 * Outputs
 
-- C++ headers for all synthetic-data domain types.
-- NATS protocol headers for catalog generation requests and responses.
+- Domain headers for the nine entities, plus the =scope= and =binding_mode=
+  enums, with JSON and table I/O.
+- Per-entity data generators used by tests and seeds.
+- NATS protocol headers for entity CRUD and history, feed configuration and
+  control, simulation, and preview requests.
+- Feed classes that produce synthetic FX spot rates and IR curves.
 
 * Entry points
 
-- =include/ores.synthetic.api/domain/= — all domain entity headers.
+- =include/ores.synthetic.api/domain/= — entity, enum, and validation headers.
 - =include/ores.synthetic.api/messaging/= — NATS protocol message headers.
+- =include/ores.synthetic.api/eventing/= — per-entity changed-event types.
+- =include/ores.synthetic.api/feeds/= — feed classes and the template resolver.
+- =include/ores.synthetic.api/generators/= — per-entity data generators.
 
 * Dependencies
 
 - =rfl= — JSON serialisation via reflection.
+- =ores.eventing.api= — entity change event types.
+- =ores.utility= — UUID and timestamp helpers.
 
 * See also
 
-- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — business logic and NATS handlers.
+- [[id:DC252F72-1BB0-4CC8-B558-C191FFA5E826][ores.synthetic.core]] — repositories, services, and NATS handlers.
 - [[id:7AF2DCAB-BC62-43A9-885A-E557FCD4254F][ores.synthetic Messaging Reference]] — full NATS subject and message catalogue.

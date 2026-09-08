@@ -327,7 +327,7 @@ The entities:
 | Entity | Table | Key | Holds |
 |--------+-------+-----+-------|
 | Bond issue | =ores_trading_bond_issues_tbl= | (tenant_id, issue_id) + SCD2 | security_id (ISIN, unique current per tenant), issuer, currency, face_value, coupon_rate, coupon_frequency_code, day_count_code, issue_date, maturity_date, settlement_days, description, workspace, audit spine |
-| Bond instrument | =ores_trading_bond_instruments_tbl= (reshaped) | (tenant_id, instrument_id) + SCD2 | version, party_id, trade_id (nullable soft FK to trades), trade_type_code (coverage check over the ten codes), issue_id (FK to the issue) |
+| Bond instrument | =ores_trading_bond_instruments_tbl= (reshaped) | (tenant_id, instrument_id) + SCD2 | version, party_id, trade_id (nullable soft FK to trades), trade_type_code (coverage check over the ten codes), issue_id (FK to the issue), workspace_id |
 | Bond option facts | =ores_trading_bond_options_tbl= | (tenant_id, instrument_id) + SCD2 | option_type (Call/Put), option_strike; exercise dates as schedule rows |
 | Bond future facts | =ores_trading_bond_futures_tbl= | (tenant_id, instrument_id) + SCD2 | delivery date and the facts the XSD =bondFutureData= carries |
 | Bond TRS facts | =ores_trading_bond_trs_tbl= | (tenant_id, instrument_id) + SCD2 | return type, funding index or rate; funding payment dates as schedule rows |
@@ -362,6 +362,14 @@ coverage check lists all ten codes. Whether the issue's features and
 the instrument's code agree (a Bond line on a callable issue) is an
 invariant the service enforces on save; the schema cannot span the
 two tables.
+
+The issue's reference columns close finding B10: =currency=,
+=day_count_code= and =coupon_frequency_code= become declared foreign
+keys into the trading reference tables the trade-model investigation
+names (=ores_trading_currencies_tbl=, =ores_trading_day_count_conventions_tbl=
+and =ores_trading_payment_frequencies_tbl=). The reference tables and
+their populate sources are shared work of the parent story, not of
+this family; until they land, the repair defect 4 records applies.
 
 Why the terms move to the issue rather than staying copied per trade:
 finding B11 is a genuine 3NF violation, and the derivative products

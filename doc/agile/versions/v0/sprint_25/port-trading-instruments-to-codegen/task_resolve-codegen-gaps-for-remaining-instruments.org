@@ -208,8 +208,9 @@ org PK column named =instrument_id= emits SQL =instrument_id=, while
 the hand-written legacy tables (bond, scripted, and the composite,
 commodity and credit siblings) name the PK =id=. No =:column:= or
 =:db_column:= override exists, so the hand-written mappers' bridge
-(=r.identity.instrument_id = ... v.id=, scripted_instrument_mapper.
-cpp:33 and its four siblings) has no org expression. (c) No template
+(=r.identity.instrument_id = ... v.id=,
+scripted_instrument_mapper.cpp:33 and its four siblings) has no org
+expression. (c) No template
 consumes the =* Custom repository methods= org section (only
 migrate_json_to_org.py and org_loader.py mention it), and the
 =<<paste:UUID>>= markers in the domain, generator and registrar

@@ -113,7 +113,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The Bond instrument entity row omits =workspace_id=, which the migration mapping states is unchanged on both tables. | =trading_bond_relational_model.org= | Accepted | =workspace_id= added to the entity row's Holds list. |
+| 2 | Finding B10 (code columns without foreign keys) is not closed by the ER proposal. | =trading_bond_relational_model.org= | Accepted | The key-relationships section now states that =currency=, =day_count_code= and =coupon_frequency_code= become declared FKs into the trading reference tables, with the parent story owning the tables. |
 
 * Result
 

@@ -95,9 +95,9 @@ constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
 {{#domain_entity.qt.needs_image_cache}}
     ImageCache* imageCache,
 {{/domain_entity.qt.needs_image_cache}}
-{{#domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.wires_change_reason_cache}}
     ChangeReasonCache* changeReasonCache,
-{{/domain_entity.qt.has_change_reason_cache}}
+{{/domain_entity.qt.wires_change_reason_cache}}
     const QString& username,
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache,
@@ -111,9 +111,9 @@ constexpr std::string_view {{domain_entity.qt.item_var}}_event_name =
           std::string_view{},
 {{/domain_entity.qt.changed_event_class}}
           parent),
-{{#domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.wires_change_reason_cache}}
       changeReasonCache_(changeReasonCache),
-{{/domain_entity.qt.has_change_reason_cache}}
+{{/domain_entity.qt.wires_change_reason_cache}}
 {{#domain_entity.qt.has_badge_columns}}
       badgeCache_(badgeCache),
 {{/domain_entity.qt.has_badge_columns}}
@@ -309,10 +309,10 @@ void {{domain_entity.entity_pascal}}Controller::onShowHistory(
 
 void {{domain_entity.entity_pascal}}Controller::wireDetailDialogCommon(
     {{domain_entity.entity_pascal}}DetailDialog* detailDialog) {
-{{#domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.wires_change_reason_cache}}
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
-{{/domain_entity.qt.has_change_reason_cache}}
+{{/domain_entity.qt.wires_change_reason_cache}}
 {{#domain_entity.qt.needs_image_cache}}
     detailDialog->setImageCache(imageCache_);
 {{/domain_entity.qt.needs_image_cache}}

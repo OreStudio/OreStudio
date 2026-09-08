@@ -8,7 +8,7 @@
 #+filetags: :ore_trade_generator_trade_populations:sprint_25:v0:
 #+owner: marco
 #+branch: feature/ore-trade-generator-trade-populations
-#+pr:
+#+pr: 2034
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-07
@@ -65,7 +65,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2034][#2034]] | [doc] Analyse trade population generation and publish Acme reference data |
 
 * Review
 

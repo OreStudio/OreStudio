@@ -174,6 +174,42 @@ population respects both: a treasury portfolio aggregating in GBP does not
 plausibly hold what an equity desk's book holds. Round-robin assignment would
 satisfy the row count and fail the requirement.
 
+*** What the public data supports, and what it does not
+
+The preset distributions want a real-world reference. The public sources give one
+for notional and not for trade count, and the difference matters, because these
+presets are sized in trades.
+
+The Bank for International Settlements reports notional outstanding by asset
+class. At end-June 2025 the total was USD 846 trillion, of which interest rate
+derivatives were 79%, foreign exchange USD 155 trillion, equity USD 8.9 trillion
+and commodity USD 2.4 trillion; credit was the fastest growing at 23%
+year-on-year. Within interest rate derivatives, ISDA reports interest rate swaps
+at 81.1% of notional outstanding at mid-2024.
+
+Notional is a poor proxy for trade count. A single interest rate swap carries a
+notional that hundreds of FX forwards would not reach, so a population built to
+match the notional shares above would hold far too few FX trades and far too many
+interest rate trades. The BIS figure that a book's shape actually depends on is
+that USD 100 trillion of the FX total is forwards and swaps maturing within a
+year, which is a statement about turnover and short tenors rather than about a
+standing book.
+
+Trade counts by asset class are not published at this granularity. The CFTC
+Weekly Swaps Report publishes weekly transaction ticket volume, which is a count,
+but it covers interest rate, credit and FX only and reports flow rather than an
+outstanding book.
+
+The distribution each preset asserts is therefore *a modelling assumption, not a
+citation*. The honest form is to write it into the preset as data, name it as an
+assumption, and record what it was informed by. A distribution reviewers can see
+and argue with is worth more than one derived from notional shares that do not
+answer the question asked.
+
+The design does not fix those numbers here. It requires that each preset carry
+its distribution explicitly, and that the source or assumption behind each be
+stated alongside it.
+
 ** What Measurement Found
 
 Four of the open questions are now answered, one by reading the code and three by
@@ -196,44 +232,73 @@ trade.
 
 The unit the presets are sized in is a trade. The unit the database charges for
 is a row, and the two differ by the shape of the instrument. Every trade writes a
-trade row, an instrument row, and identifier and party-role rows; a swap writes
-two leg rows on top of those. Field counts and fan-out follow the entities under
-=ores.trading.core/repository=.
+trade row, an instrument row, and identifier and party-role rows; the swap-family
+instruments write two leg rows on top. Field counts and fan-out follow the
+entities under =ores.trading.core/repository=.
 
-| Shape       | Tables | Rows per trade |
-|-------------+--------+----------------|
-| FX forward  |      4 |              6 |
-| Vanilla swap |     5 |              8 |
+| Shape         | Tables | Rows per trade | Wide column      |
+|---------------+--------+----------------+------------------|
+| FX forward    |      4 |              6 | none             |
+| Vanilla swap  |      5 |              8 | none             |
+| Swaption      |      5 |              8 | none             |
+| Callable swap |      5 |              8 | =call_dates_json= |
 
 There is no schedule or cashflow table, so a leg does not expand into a row per
-payment. That bounds the fan-out: the shapes differ by a third, not by an order
-of magnitude. The cost of a shape is not only its rows, though, because each
-table carries its own notify trigger and takes its own statement.
+payment. Neither does an exercise schedule: =callable_swap_instrument= holds its
+call dates in =call_dates_json=, a text column. The fan-out is therefore flat
+across the swap family, and the shapes differ by a third at most.
 
 *** What the shapes cost
 
-=scripts/bench_trade_shapes.py= measures both shapes across all their tables. It
+=scripts/bench_trade_shapes.py= measures each shape across all its tables. It
 builds the tables with the real field counts and fan-out, loads a population,
 checks every table's row count, and drops what it made.
 =scripts/bench_trade_insert.py= measures a single flat table, which isolates the
 trigger and the load method from the shape.
 
-One million trades, one run each:
+One hundred thousand trades, one run each:
 
-| Shape   | Rows | Method | Trigger | Seconds | Trades/sec |
-|---------+------+--------+---------+---------+------------|
-| Forward |   6M | COPY   | off     |     8.8 |     113750 |
-| Forward |   6M | COPY   | on      |    41.2 |      24282 |
-| Forward |   6M | INSERT | off     |    53.4 |      18726 |
-| Forward |   6M | INSERT | on      |    97.4 |      10270 |
-| Swap    |   8M | COPY   | off     |    14.8 |      67714 |
-| Swap    |   8M | COPY   | on      |    67.9 |      14718 |
-| Swap    |   8M | INSERT | off     |    77.4 |      12914 |
-| Swap    |   8M | INSERT | on      |   133.6 |       7486 |
+| Shape         | Rows | COPY, no trigger | COPY, trigger | INSERT, trigger |
+|---------------+------+------------------+---------------+-----------------|
+| Forward       | 600k |            0.80s |         3.53s |           8.04s |
+| Vanilla swap  | 800k |            1.14s |         5.05s |          11.71s |
+| Swaption      | 800k |            1.15s |         5.08s |          12.70s |
+| Callable swap | 800k |            4.67s |         5.79s |          13.31s |
 
-The shape itself is the smallest of the three factors. A swap costs about 1.4x a
-forward, close to its extra rows and one extra table. The load method costs about
-6x and the trigger about 2.4x, and they compound.
+At one million trades, for the two shapes measured at that volume:
+
+| Shape        | Rows | Method | Trigger | Seconds |
+|--------------+------+--------+---------+---------|
+| Forward      |   6M | COPY   | off     |     8.8 |
+| Forward      |   6M | INSERT | on      |    97.4 |
+| Vanilla swap |   8M | COPY   | off     |    14.8 |
+| Vanilla swap |   8M | INSERT | on      |   133.6 |
+
+*** Instrument complexity is not what costs
+
+A swaption costs the same as a vanilla swap, to within run-to-run variance, on
+every path. The two carry the same fan-out and differ by two columns, and the
+option's analytical complexity is invisible to the database. *Complexity in the
+pricing sense does not predict cost in the population sense.*
+
+Three things do predict it, and the largest is not the instrument.
+
+The load method costs about 6x and the notify trigger about 2.4x, and they
+compound. Those two are properties of the write path and are identical for every
+shape.
+
+The third is a wide column, and it appears in exactly one shape. A callable swap
+loads in 4.67s where a vanilla swap loads in 1.14s on the fastest path, a
+factor of four, and the two are otherwise identical in tables, rows and fan-out.
+The difference is =call_dates_json=, modelled here as forty quarterly call dates.
+Storing a schedule in a column rather than a child table keeps the row count flat
+and moves the cost into row width instead.
+
+The effect is visible only when the write path is fast. With the trigger on,
+callable and vanilla swaps are within 15% of each other, because the trigger
+already dominates. A wide column therefore matters most on the path the design
+should prefer, which is the one place a benchmark of the current slow path would
+never have shown it.
 
 *** The consequence for the design
 
@@ -263,10 +328,15 @@ The measurement also ran with nothing listening on the notify channels.
 did not reach it, but a consumer draining that volume is a separate question from
 postgres queuing it.
 
-Only two shapes were measured, of thirty instrument types. They were chosen as
-the extremes that exist: the simplest, and the most fanned-out that the schema
-allows. An instrument with more legs would sit above the swap, and the absence of
-a schedule table caps how far above.
+Four shapes were measured, of thirty instrument types. They cover the fan-out the
+schema allows, from the simplest to the swap family, and one wide-column case.
+The callable swap's blob was modelled at forty quarterly call dates; a longer
+schedule would cost proportionally more, and that column is the parameter to vary
+before trusting the figure for a particular book.
+
+The blob figure includes transfer of the payload to =psql= over standard input,
+which a generator writing in process would not pay in the same form. It shows
+that row width costs, and it overstates how much.
 
 ** The Service Boundary
 

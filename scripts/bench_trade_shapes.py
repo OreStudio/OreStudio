@@ -31,13 +31,24 @@ def table(name, fields):
             f"trade_id text not null, {cols});")
 
 
-# name, fields per row, rows written per trade
-FORWARD = [("trade", 24, 1), ("fx_forward_instrument", 15, 1),
-           ("trade_identifier", 12, 2), ("trade_party_role", 9, 2)]
-SWAP = [("trade", 24, 1), ("vanilla_swap_instrument", 15, 1),
-        ("swap_leg", 19, 2),
-        ("trade_identifier", 12, 2), ("trade_party_role", 9, 2)]
-SHAPES = {"forward": FORWARD, "swap": SWAP}
+# name, fields per row, rows per trade, bytes in a json blob column
+TRADE = ("trade", 24, 1, 0)
+IDENT = ("trade_identifier", 12, 2, 0)
+PARTY = ("trade_party_role", 9, 2, 0)
+LEGS = ("swap_leg", 19, 2, 0)
+
+# A callable swap stores its exercise schedule in call_dates_json rather than in
+# a child table. Forty quarterly call dates as ISO dates in a JSON array.
+CALL_DATES_BYTES = 40 * 14
+
+SHAPES = {
+    "forward": [TRADE, ("fx_forward_instrument", 15, 1, 0), IDENT, PARTY],
+    "swap": [TRADE, ("vanilla_swap_instrument", 15, 1, 0), LEGS, IDENT, PARTY],
+    "swaption": [TRADE, ("swaption_instrument", 17, 1, 0), LEGS, IDENT, PARTY],
+    "callable_swap": [TRADE,
+                      ("callable_swap_instrument", 15, 1, CALL_DATES_BYTES),
+                      LEGS, IDENT, PARTY],
+}
 
 
 def read_env(path=".env"):
@@ -75,12 +86,13 @@ def make_sql(env):
 
 
 def create(sql, shape, trigger):
-    for name, fields, _ in shape:
+    for name, fields, _, blob in shape:
         t = f"{PREFIX}_{name}"
         sql(f"drop table if exists {t} cascade;")
         cols = ", ".join(f"f{i} text" for i in range(fields - 2))
+        blob_col = ", blob text" if blob else ""
         sql(f"create table {t} (id text not null, trade_id text not null, "
-            f"{cols});")
+            f"{cols}{blob_col});")
         sql(f"create or replace function {t}_fn() returns trigger as $$ begin "
             f"perform pg_notify('{t}', row_to_json(NEW)::text); return NEW; "
             f"end; $$ language plpgsql;")
@@ -90,36 +102,43 @@ def create(sql, shape, trigger):
 
 
 def drop(sql, shape):
-    for name, _, _ in shape:
+    for name, _, _, _ in shape:
         sql(f"drop table if exists {PREFIX}_{name} cascade;")
         sql(f"drop function if exists {PREFIX}_{name}_fn cascade;")
 
 
-def payload(name, fields, per_trade, n):
+def payload(name, fields, per_trade, n, blob):
+    filler = ("2027-03-15," * (blob // 11))[:blob] if blob else None
     out = []
     for i in range(n):
         for k in range(per_trade):
             cells = [f"{name}-{i}-{k}", f"T-{i}"]
             cells += [f"v{j}" for j in range(fields - 2)]
+            if blob:
+                cells.append(filler)
             out.append("\t".join(cells))
     return "\n".join(out) + "\n"
 
 
 def run(sql, shape, n, method):
     loads = []
-    for name, fields, per_trade in shape:
+    for name, fields, per_trade, blob in shape:
         t = f"{PREFIX}_{name}"
         cols = ", ".join(["id", "trade_id"] +
-                         [f"f{j}" for j in range(fields - 2)])
+                         [f"f{j}" for j in range(fields - 2)] +
+                         (["blob"] if blob else []))
+        filler = ("2027-03-15," * (blob // 11))[:blob] if blob else None
         if method == "copy":
             body = f"copy {t} ({cols}) from stdin;\n" + \
-                payload(name, fields, per_trade, n) + "\\.\n"
+                payload(name, fields, per_trade, n, blob) + "\\.\n"
         else:
             rows = []
             for i in range(n):
                 for k in range(per_trade):
                     vals = [f"'{name}-{i}-{k}'", f"'T-{i}'"]
                     vals += [f"'v{j}'" for j in range(fields - 2)]
+                    if blob:
+                        vals.append(f"'{filler}'")
                     rows.append("(" + ",".join(vals) + ")")
             body = f"insert into {t} ({cols}) values " + ",".join(rows) + ";"
         loads.append((t, body, n * per_trade))
@@ -138,7 +157,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--volumes", default="10000,100000")
     ap.add_argument("--repeats", type=int, default=3)
-    ap.add_argument("--shapes", default="forward,swap")
+    ap.add_argument("--shapes", default="forward,swap,swaption,callable_swap")
     args = ap.parse_args()
     volumes = [int(v) for v in args.volumes.split(",")]
     sql = make_sql(read_env())
@@ -156,7 +175,7 @@ def main():
                     for method in ("copy", "insert"):
                         times, rows = [], 0
                         for _ in range(args.repeats):
-                            for name, _, _ in shape:
+                            for name, _, _, _ in shape:
                                 sql(f"truncate {PREFIX}_{name};")
                             t, rows = run(sql, shape, n, method)
                             times.append(t)

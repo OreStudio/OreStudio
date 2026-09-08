@@ -30,6 +30,9 @@
 #include "ores.trading.api/eventing/trade_changed_event.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.service/app/application_exception.hpp"
+#include "ores.trading.service/messaging/balance_guaranteed_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/callable_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/cap_floor_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_asian_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_barrier_option_instrument_event_registrar.hpp"
@@ -39,6 +42,7 @@
 #include "ores.trading.service/messaging/equity_position_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/equity_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/fra_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_accumulator_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_asian_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_barrier_option_instrument_event_registrar.hpp"
@@ -46,9 +50,14 @@
 #include "ores.trading.service/messaging/fx_forward_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_vanilla_option_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/knock_out_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
+#include "ores.trading.service/messaging/rpa_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_id_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_type_event_registrar.hpp"
+#include "ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/version/version.hpp"
 #include <boost/asio/co_spawn.hpp>
@@ -173,6 +182,33 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto trade_type_sub = ores::trading::service::messaging::register_trade_type_event_mapping(
         event_source, event_bus, nats);
+    auto balance_guaranteed_swap_instrument_sub =
+        ores::trading::service::messaging::register_balance_guaranteed_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto callable_swap_instrument_sub =
+        ores::trading::service::messaging::register_callable_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto cap_floor_instrument_sub =
+        ores::trading::service::messaging::register_cap_floor_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto fra_instrument_sub =
+        ores::trading::service::messaging::register_fra_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto inflation_swap_instrument_sub =
+        ores::trading::service::messaging::register_inflation_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto knock_out_swap_instrument_sub =
+        ores::trading::service::messaging::register_knock_out_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto rpa_instrument_sub =
+        ores::trading::service::messaging::register_rpa_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto swaption_instrument_sub =
+        ores::trading::service::messaging::register_swaption_instrument_event_mapping(
+            event_source, event_bus, nats);
+    auto vanilla_swap_instrument_sub =
+        ores::trading::service::messaging::register_vanilla_swap_instrument_event_mapping(
+            event_source, event_bus, nats);
 
     event_source.start();
     BOOST_LOG_SEV(lg(), info) << "Entity change event pipeline started.";

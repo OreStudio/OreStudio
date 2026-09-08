@@ -31,6 +31,7 @@
 #include "ores.refdata.api/eventing/counterparty_identifier_changed_event.hpp"
 #include "ores.refdata.api/generators/counterparty_identifier_generator.hpp"
 #include "ores.refdata.core/repository/counterparty_identifier_repository.hpp"
+#include "ores.refdata.core/service/counterparty_identifier_service.hpp"
 // Soft-FK parent seeding (ores_refdata_counterparties_tbl): the parent's own generator and
 // repository live in the same component as the child.
 #include "ores.refdata.api/generators/counterparty_generator.hpp"
@@ -178,4 +179,30 @@ TEST_CASE("write_counterparty_identifier_publishes_nats_changed_event", tags) {
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for counterparty_identifier "
                             << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        const auto& crud_ctx = party_ctx;
+        ores::refdata::service::counterparty_identifier_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_counterparty_identifier_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_counterparty_identifier(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.get_counterparty_identifier(id_str).has_value());
+        REQUIRE(svc.get_counterparty_identifier_history(id_str).size() == versions.size());
+    }
 }

@@ -26,11 +26,14 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
+#include "ores.refdata.api/generators/party_generator.hpp"
+#include "ores.refdata.core/repository/party_repository.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config.hpp"
 #include "ores.synthetic.api/domain/ir_curve_generation_config_json_io.hpp" // IWYU pragma: keep.
 #include "ores.synthetic.api/eventing/ir_curve_generation_config_changed_event.hpp"
 #include "ores.synthetic.api/generators/ir_curve_generation_config_generator.hpp"
 #include "ores.synthetic.core/repository/ir_curve_generation_config_repository.hpp"
+#include "ores.synthetic.core/service/ir_curve_generation_config_service.hpp"
 // Soft-FK parent seeding (ores_synthetic_market_data_generation_configs_tbl): the parent's own
 // generator and repository live in the same component as the child.
 #include "ores.synthetic.api/generators/market_data_generation_config_generator.hpp"
@@ -54,6 +57,25 @@ namespace {
 const std::string_view test_suite("synthetic.tests");
 const std::string tags("[eventing][integration]");
 
+// IR Curve Generation Config writes are party-scoped: the session-level
+// app.current_party_id GUC must be set before writing.
+ores::database::context
+write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
+                                   ores::utility::generation::generation_context& ctx) {
+    using ores::refdata::repository::party_repository;
+    party_repository party_repo;
+    auto party = ores::refdata::generators::generate_synthetic_party(ctx);
+    party.change_reason_code = "system.test";
+    auto existing = party_repo.read_latest(h.context());
+    for (const auto& e : existing) {
+        if (e.tenant_id == party.tenant_id) {
+            party.parent_party_id = e.id;
+            break;
+        }
+    }
+    party_repo.write(h.context(), party);
+    return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
+}
 
 }
 
@@ -68,7 +90,7 @@ TEST_CASE("write_ir_curve_generation_config_publishes_nats_changed_event", tags)
 
     scoped_database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    auto& party_ctx = h.context();
+    auto party_ctx = write_test_party_and_scope_context(h, ctx);
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
     // production event-registrar wires in the live service, assembled
@@ -118,6 +140,7 @@ TEST_CASE("write_ir_curve_generation_config_publishes_nats_changed_event", tags)
     // the chain wired above -> NATS.
     auto v = generate_synthetic_ir_curve_generation_config(ctx);
     v.change_reason_code = "system.test";
+    v.party_id = *party_ctx.party_id();
     // Seed the active market_data_generation_config row
     // ores_synthetic_market_data_generation_configs_tbl references: the insert trigger's existence
     // check rejects a synthetic key that matches no active row, so the parent must be written
@@ -184,4 +207,32 @@ TEST_CASE("write_ir_curve_generation_config_publishes_nats_changed_event", tags)
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for ir_curve_generation_config "
                             << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        // party_ctx already carries the visible-party set: v's own
+        // party is the session party the RLS policies filter by.
+        const auto& crud_ctx = party_ctx;
+        ores::synthetic::service::ir_curve_generation_config_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_ir_curve_generation_config_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_ir_curve_generation_config(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.get_ir_curve_generation_config(id_str).has_value());
+        REQUIRE(svc.get_ir_curve_generation_config_history(id_str).size() == versions.size());
+    }
 }

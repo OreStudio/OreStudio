@@ -31,6 +31,7 @@
 #include "ores.refdata.api/eventing/diary_entry_type_changed_event.hpp"
 #include "ores.refdata.api/generators/diary_entry_type_generator.hpp"
 #include "ores.refdata.core/repository/diary_entry_type_repository.hpp"
+#include "ores.refdata.core/service/diary_entry_type_service.hpp"
 #include "ores.testing/make_generation_context.hpp"
 #include "ores.testing/nats_options_helper.hpp"
 #include "ores.testing/scoped_database_helper.hpp"
@@ -165,4 +166,30 @@ TEST_CASE("write_diary_entry_type_publishes_nats_changed_event", tags) {
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for diary_entry_type " << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        const auto& crud_ctx = party_ctx;
+        ores::refdata::service::diary_entry_type_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_entry_type_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_entry_type(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.get_entry_type(id_str).has_value());
+        REQUIRE(svc.get_entry_type_history(id_str).size() == versions.size());
+    }
 }

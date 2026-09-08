@@ -2691,6 +2691,29 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
         validate_rls_isolation(domain_entity)
         domain_entity['index_name_prefix'] = sql_section.get(
             'index_prefix', domain_entity.get('entity_plural', 'unknown'))
+        # Whether the entity carries a party_id column at all (and
+        # whether it is optional): the integration tests use it to point
+        # the session's visible-party set at the generated row before any
+        # party-filtered read. A party_id column may sit in the plain
+        # columns or in the natural keys (party-scoped config entities
+        # key on it).
+        party_cols = [c for c in domain_entity.get('columns', []) or []
+                      if c.get('name') == 'party_id']
+        party_nks = [k for k in domain_entity.get('natural_keys', []) or []
+                     if k.get('column') == 'party_id']
+        domain_entity['has_party_column'] = bool(party_cols or party_nks)
+        domain_entity['party_column_optional'] = bool(
+            party_cols and party_cols[0].get('cpp_type', '').startswith('std::optional'))
+        # The integration test writes and reads the row under one
+        # party-scoped session when the entity carries a party_id column
+        # that is not already parent-seeded as a party FK: the
+        # party-isolation policies filter every read by the session's
+        # visible-party set.
+        domain_entity['party_scoped_writes'] = (
+            (domain_entity.get('sql', {}).get('party_id_from_session', False)
+             or domain_entity['has_party_column'])
+            and not any(fk.get('parent_is_party', False)
+                        for fk in domain_entity.get('foreign_keys', []) or []))
         # Compute has_tenant_in_pk: tenant_id is in the primary key when has_tenant_id
         # is set but neither system_scope nor nullable_tenant_id overrides the PK.
         has_tenant_id = domain_entity.get('has_tenant_id', False)

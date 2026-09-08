@@ -22,6 +22,7 @@
 #include "ores.compute.api/eventing/app_version_changed_event.hpp"
 #include "ores.compute.api/generators/app_version_generator.hpp"
 #include "ores.compute.core/repository/app_version_repository.hpp"
+#include "ores.compute.core/service/app_version_service.hpp"
 #include "ores.database/domain/context.hpp"
 #include "ores.eventing.api/domain/entity_change_event.hpp"
 #include "ores.eventing.api/domain/event_traits.hpp"
@@ -177,4 +178,30 @@ TEST_CASE("write_app_version_publishes_nats_changed_event", tags) {
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for app_version " << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        const auto& crud_ctx = party_ctx;
+        ores::compute::service::app_version_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_app_version_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_app_version(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.get_app_version(id_str).has_value());
+        REQUIRE(svc.get_app_version_history(id_str).size() == versions.size());
+    }
 }

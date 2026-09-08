@@ -56,11 +56,14 @@
 #include "ores.trading.service/messaging/fx_variance_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/inflation_swap_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/knock_out_swap_instrument_event_registrar.hpp"
+#include "ores.trading.service/messaging/lifecycle_event_event_registrar.hpp"
 #include "ores.trading.service/messaging/party_role_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/rpa_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/scripted_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/swaption_instrument_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_id_type_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_identifier_event_registrar.hpp"
+#include "ores.trading.service/messaging/trade_party_role_event_registrar.hpp"
 #include "ores.trading.service/messaging/trade_type_event_registrar.hpp"
 #include "ores.trading.service/messaging/vanilla_swap_instrument_event_registrar.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
@@ -187,6 +190,15 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
             event_source, event_bus, nats);
     auto trade_type_sub = ores::trading::service::messaging::register_trade_type_event_mapping(
         event_source, event_bus, nats);
+    auto lifecycle_event_sub =
+        ores::trading::service::messaging::register_lifecycle_event_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_identifier_sub =
+        ores::trading::service::messaging::register_trade_identifier_event_mapping(
+            event_source, event_bus, nats);
+    auto trade_party_role_sub =
+        ores::trading::service::messaging::register_trade_party_role_event_mapping(
+            event_source, event_bus, nats);
     auto balance_guaranteed_swap_instrument_sub =
         ores::trading::service::messaging::register_balance_guaranteed_swap_instrument_event_mapping(
             event_source, event_bus, nats);

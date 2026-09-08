@@ -24,7 +24,7 @@ separately as =gmm_component= rows. Scoped to a tenant and a party.
 :schema:        public
 :product:       ores
 :component:     synthetic
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns
@@ -350,6 +350,20 @@ std::nullopt
 :iterator_var: c
 :END:
 
+** Table display
+
+| column              | header       |
+|---------------------+--------------|
+| base_currency_code  | Base         |
+| quote_currency_code | Quote        |
+| source_name         | Source       |
+| ore_key             | ORE Key      |
+| price_source        | Price Source |
+| ticks_per_hour      | Ticks/Hour   |
+| enabled             | Enabled      |
+| modified_by         | Modified By  |
+| version             | Version      |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/fx_spot_generation_config.hpp
@@ -358,9 +372,6 @@ std::nullopt
 :collection_name:         fx_spot_generation_configs
 :item_var:                fx_spot_generation_config
 :key_field:               id
-:has_uuid_primary_key:    true
-:has_pagination:          true
-:has_change_reason_cache: true
 :get_request_class:       synthetic::messaging::get_fx_spot_generation_configs_request
 :get_response_class:      synthetic::messaging::get_fx_spot_generation_configs_response
 :get_message_type:        get_fx_spot_generation_configs_request

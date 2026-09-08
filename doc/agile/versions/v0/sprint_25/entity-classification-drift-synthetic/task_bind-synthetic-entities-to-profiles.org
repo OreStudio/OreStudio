@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-synthetic:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/bind-synthetic-entities-to-profiles
+#+pr: 2031
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-04
 #+updated: 2026-09-07
-#+environment:
+#+environment: festive_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:10E43A2D-3388-4F4F-A949-736B2A291B76][Entity classification and drift baseline: ores.synthetic]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Survey every ores.synthetic entity against the profile catalogue, rebind matches
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:10E43A2D-3388-4F4F-A949-736B2A291B76][Entity classification and drift baseline: ores.synthetic]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-07                               |
 
 * Acceptance
@@ -43,11 +43,288 @@ Survey every ores.synthetic entity against the profile catalogue, rebind matches
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Unit plan, written at start on 2026-09-07. The canonical method is the
+codegen-fix-drift skill (steps 1-8); the byproduct-sweep and two-mode
+drift rules of the regen-byproduct-hygiene memory are in force
+throughout.
+
+- *Phase 1 — baseline and survey (skill steps 1-2).* Probe done (see
+  Notes); survey every model file, classify by metatype, compute
+  resolved features per entity.
+- *Phase 2 — resolved features and binding (skill steps 3-4).* Bind
+  matches with =:profile:=, record every no-match with its actual
+  feature values.
+- *Phase 3 — per-entity regeneration (skill step 5).* One entity at a
+  time through the scripted pipeline: baseline regen, bind, regen,
+  require the new diff to be an exact subset of the baseline.
+  Regenerate a second time and require byte-identical output.
+- *Phase 4 — generated-code review, build, tests (skill step 6).*
+- *Phase 5 — registrar wiring check, gate extension, PR (skill steps
+  7-8).* The history-provider families materialized by the baseline
+  probe must be composed into the registrar fan-out (or recorded as
+  deliberately unwired); then the registry entry and the =--all= run.
 
 * Notes
+
+** Binds (2026-09-07, phases 2-3 close)
+
+Eight binds, one commit per entity, each verified by the
+asserted-replacement edits, the diff-subset check against the baseline
+(=zero additional diff=), and an idempotent second regen:
+
+- =yield_curve_process_type= = simple-lookup (a79f8da03f): output-neutral
+  bind; the Qt =changed_event= declaration follows the sibling lookups
+  and is output-neutral. Controller lands the =wireDetailDialogCommon=
+  era-sync.
+- =folder= = self-referencing-hierarchy (8cf9600273, corrected by
+  35a7558c74): the bind materializes the canonical hierarchy machinery
+  (recursive =ores_synthetic_folders_hierarchy_fn=, the =get_hierarchy=
+  chain, eventing test). Correction: the first bind dropped the
+  explicit =:has_parent_id:= the template keys on, which deleted the
+  machinery and broke the feed-control flow's =resolve_subtree=
+  consumer; the refdata counterparty org - the profile's reference
+  entity - declares =has_parent_id= explicitly alongside the profile,
+  and folder now does the same. The hand-written stack it replaces was
+  already canonical-shaped (the consumer compiles unchanged), not
+  superseded-era.
+- =yield_curve_process_parameter_definition= =
+  uuid-surrogate-lookup (e4d9237570): the profile's
+  =has_change_reason_cache= flips the feature on; the controller gains
+  the =ChangeReasonCache= plumbing, the survey's predicted phase-3
+  arbitration.
+- =fx_spot_generation_config=, =gmm_component=,
+  =ir_curve_generation_config=, =ir_curve_template_entry=,
+  =market_data_generation_config= = uuid-identified-lookup
+  (db42f8f766, 26c00d607d, 161bbb0794, 47fcf71e22, 87394fe434): clean
+  binds; each eventing integration test materializes;
+  =market_data_generation_config= keeps =nullable_tenant_id=, nullable
+  =party_id=, and the enum columns explicit/out-of-drawer per the
+  recorded notes.
+- =ir_curve_generation_config_process_parameter_value=: NO-MATCH stands;
+  era-sync signed off (b7add05b35, the doc-comment equals-sign
+  restoration, the compute-unit regex fix class).
+
+The history-provider registrar families landed as one commit
+(be36783d17) with all nine providers composed into the registrar
+fan-out's history.v1.get block on the refdata shape (skill step 7) and
+the cmake component lists regenerated — the drift gate cannot see an
+unwired function, so the wiring and the family land together.
+
+Zero drift reached 2026-09-07: =check_component_drift.py --component
+synthetic= exits 0 with a clean tree (no tracked diff, no untracked
+materialization).
+
+** Acceptance runs (2026-09-07, phase 4, in progress)
+
+Full build exit 0 through ores.qt.exe after two fixes at source: the
+core tests target lacked the eventing libs the generated tests include
+(CMakeLists, the refdata/compute/trading pattern), and the plugin's
+parameter-definition controller construction gained the change reason
+cache the uuid-surrogate-lookup bind turns on.
+
+First ctest run (NATS down): 64/71, every failure = NATS connect
+refused - environmental. Second run (NATS up): 67/71.
+
+- =ores.trading.core=, =ores.reporting.core=, =ores.compute.core= now
+  pass.
+- =ores.synthetic.core.tests=: 6 eventing tests fail - the generated
+  seeding's INSERT violates the =party_isolation= RLS on
+  =ores_synthetic_market_data_generation_configs_tbl= (and folders).
+  Root cause: the mdc org's party_id generator snippet always stamps a
+  fixed uuid, so the seeded ancestor row's party does not match the
+  test session context the RLS checks. The text-key
+  =yield_curve_process_type= eventing test passes. Fix belongs in the
+  generated seeding / the org generator snippet, not the RLS.
+- =ores.synthetic.service.tests=: 1 failure,
+  =folder_cascade_starts_and_stops_both_kinds_with_per_kind_counts=,
+  NATS request timed out - needs the full fleet up (7 units were still
+  not ready: 5 compute wrappers, iam.service, refdata.service).
+- =ores.iam.core.tests= / =ores.refdata.core.tests=: failed with no
+  detail captured in the run excerpt; their publish tests ran very
+  slowly (10-30s each) - investigate with the
+  code-investigate-test-failure loop.
+
+Next: investigate the four suites (enable logging, per-test logs),
+fix at source, rerun to 71/71, then skill step 8 (KNOWN_DRIFT_FREE
+registry entry + =--all=) and the PR.
+
+** Investigation outcome and close (2026-09-08)
+
+Three defects under the RLS failures, each fixed at source
+(fce56925b4):
+
+- The seven hand-era party-isolation policies moved to the house
+  read-side shape (visible_party_ids membership); each policy's
+  container-widening logic is preserved.
+- The ir_curve_generation_config check-constrained natural keys
+  (index_family, tenor, role) now declare =:no_generator_suffix:=;
+  the generator's uniqueness suffix was producing check-invalid
+  values (=sofr-1=).
+- The ir_curve_template_entry instrument_code generator now emits the
+  catalogue code (IRS), not a display name.
+
+iam.core and refdata.core failures did not reproduce on a steady
+fleet (environmental); the folder-cascade NATS timeout was the
+not-yet-started fleet. Final evidence: full build exit 0, ctest
+71/71 (908s), roundtrip clean, cmake component lists clean,
+check_component_drift --all exit 0 with synthetic in the registry on
+a clean tree. The RLS policy file also carries the coordinating
+environment's concurrent null-tenant widening, merged in place.
+
+** Live system test (2026-09-08, ores.shell)
+
+The first pass exposed a real coverage gap: the shell had no per-entity
+CRUD commands for the synthetic entities, so the CRUD workflow could
+not be exercised. Nine command units were added (one per entity:
+get/add/delete/history over the generated protocol subjects, following
+the trading reference-entity pattern; an aggregator wires them), and
+the core registrar's three remaining hand-wired entity blocks (mdc,
+fx_spot, gmm) were swapped to their generated sub-registrars so the
+history subjects are actually subscribed. Five orgs also gained the
+Table display sections the JSON-to-org migration had dropped (their
+list converters rendered empty shells) - the trade_party_role defect
+class from the trading unit.
+
+Full CRUD verified live against the recreated database:
+
+- CREATE: yield_curve_process_type, market_data_generation_config,
+  fx_spot_generation_config, ir_curve_generation_config,
+  yield_curve_process_parameter_definition, gmm_component,
+  ir_curve_template_entry (FK chain into the shell-created ir config),
+  and process_parameter_value (FK chain into the ir config and the
+  seeded parameter definitions) all insert; the insert triggers'
+  existence checks and check constraints validated each row.
+- READ: paginated get on every entity renders live tables.
+- UPDATE/history: version history renders per entity.
+- DELETE: by code (text key) and by uuid; the follow-up gets confirm
+  removal.
+- The feed control plane (start/stop cascade over the folder
+  hierarchy) was exercised earlier in the same session.
+- The gap-closing pass added: folder create via shell, the update path
+  (add with the same natural key bumps the version - UPDTEST history
+  shows versions 1 and 2), and per-entity history reads on all nine
+  entities with their own keys.
+- Finding recorded as a capture (party GUCs leaking across pooled
+  connections): rows written by a session without a party context are
+  stamped with the nil party uuid and are invisible to subsequent
+  party-filtered reads through the service pool - the same session saw
+  26 party-scoped rows, then 0, with identical credentials, while the
+  same read as the service role with explicit GUCs returned all rows.
+  The RLS policies and the bind's data are correct; the defect is the
+  per-connection GUC hygiene in the service layer, outside this task.
+
+Ran on this environment's fleet against the recreated database, before
+merge (the post-merge confirmation rerun closes the story):
+
+- =provision system= / =provision tenant --source acme= completed end
+  to end; the synthetic data steps (=synthetic.themes.realistic_2026=,
+  =synthetic_ore_samples_2016=, =system_market_data.bindings=,
+  =synthetic_feeds=) wrote through the regenerated repositories and the
+  aligned RLS policies.
+- =synthetic list folders= renders the 11-node hierarchy (the restored
+  =ores_synthetic_folders_hierarchy_fn= chain reads live data).
+- =synthetic list configs= lists the two bound configs with scope,
+  binding mode and party.
+- =synthetic start folder synthetic/2026realistic/fx/fxrates= started
+  the cascade (34 feeds running) through the feed-control flow's
+  =resolve_subtree= over the regenerated repository.
+- =synthetic stop folder= stopped exactly the 13 FX feeds, leaving the
+  21 IR curve feeds running; =synthetic list feeds= confirms.
+- =synthetic validate-vintage= responds correctly (the tested FX feed
+  has no vintage entries - informational, not a failure).
+- =synthetic generate= is not usable post-provisioning: it tries to
+  create a second root party per tenant and the unique index rejects
+  it. Pre-existing flow precondition, unrelated to the bind; noted as
+  a follow-up question for the generation command's intended sequencing.
+
+** Baseline probe (2026-09-07, phase 1 start)
+
+Probe: =check_component_drift.py --component synthetic= (two-mode
+rule, mode B) on the untouched tree; rc 1 as designed. Full diff
+preserved at =/tmp/drift_synthetic_baseline_20260907.log=.
+
+- 9 models regenerate at address =ores=: =folder=,
+  =fx_spot_generation_config=, =gmm_component=,
+  =ir_curve_generation_config=,
+  =ir_curve_generation_config_process_parameter_value=,
+  =ir_curve_template_entry=, =market_data_generation_config=,
+  =yield_curve_process_parameter_definition=,
+  =yield_curve_process_type=.
+- 22 tracked files drifted, all template-era sync, no hand-edits
+  suspected: the three Qt controllers (=YieldCurveProcessType=,
+  =IrCurveTemplateEntry=, =GmmComponent=) and their headers predate
+  the =wireDetailDialogCommon= template refactor (~59 lines each);
+  three api domain headers carry small include/doc deltas; five
+  =ores.sql/create/synthetic= files carry 2-line era deltas; five
+  repository headers lose one blank line; the
+  =market_data_generation_config= mapper gains =rfl/enums.hpp= and
+  =folder_service= gains =boost/uuid/uuid_io.hpp= (include-set sync).
+- 18 untracked files materialized: the
+  =*_history_provider_registrar= family ({hpp,cpp} x 9 entities) under
+  core messaging — the family postdates the component's committed
+  tree, the marketdata-class known starting point. The registrar
+  fan-out itself is wired (hand-wired blocks for =gmm_component= and
+  the other two config entities, generated sub-registrars for the six
+  remaining entities, and the custom =publish_from_dq= handler), so
+  step 7's composition check for the new history providers lands on
+  =registrar.cpp= (refdata shape).
+- Disposal per regen-byproduct-hygiene: the 22 tracked files were
+  reverted with =git checkout --=; the 18 untracked byproducts were
+  disposed with a tagged stash push and immediate drop: tag
+  =byproducts-synthetic-baseline-20260907=, entry SHA
+  8e6ba3b69a9172af4e9c3d39dbdad034ea7f97d5, recoverable via the stash
+  reflog until garbage collection. The tree is clean.
+- Survey consequence: the per-entity zero-additional-diff rule runs
+  against this baseline; each entity's survey classifies whether its
+  committed output is feature-restorable (bind to byte-identity) or
+  template-era (the current-template shape lands as the deliberate
+  delta).
+
+** Survey classification (2026-09-07, phase 1 close)
+
+All 9 files under =projects/ores.synthetic/modeling= are
+=ores.codegen.entity=: no field groups, modules, or components to
+exclude. Two survey facts ground the matching: the SQL
+=change_reason_code= column and validation are unconditional
+provenance machinery on versioned tenant tables (=process_parameter_value=
+declares no change-reason feature and its committed SQL still carries
+it), so =has_change_reason_cache= gates only the client-side cache;
+and synthetic has no eventing integration tests on main today, so the
+uuid-identified-lookup Physical-space enablement materializes them as
+a deliberate addition (the compute/iam precedent).
+
+| Entity | Profile candidate | Verdict |
+|--------------------------------------------+---------------------------+---------|
+| =yield_curve_process_type= | =simple-lookup= | MATCH: all 7 assignments agree (text =code= PK, tenant-only, =has_uuid_primary_key: false= declared, change reason and pagination true). Extras stay per-entity: =has_batch_remove=, =display_order=, the =tenant_scope: system= validation, generator facet. |
+| =yield_curve_process_parameter_definition= | =uuid-surrogate-lookup= | MATCH: tenant-only, explicit =has_workspace_id: false=, uuid PK, pagination; no relationships and no changed event, so the surrogate profile (no Physical-space eventing enablement) fits over uuid-identified-lookup. Phase-3 check: the profile's =has_change_reason_cache: true= may add cache plumbing to its committed Qt controller if absent. =system_tenant_validation: true= stays per-entity. |
+| =fx_spot_generation_config= | =uuid-identified-lookup= | MATCH: all 5 assignments agree; changed event and notify trigger are live. The Physical-space enablement materializes its eventing integration test. The =tenant_scope: both= validation and SQL checks stay explicit; capture D583B57B is verified resolved (see below). |
+| =gmm_component= | =uuid-identified-lookup= | MATCH: same shape. |
+| =ir_curve_generation_config= | =uuid-identified-lookup= | MATCH: same shape; the 5-part natural key stays per-entity. |
+| =ir_curve_template_entry= | =uuid-identified-lookup= | MATCH: same shape. |
+| =market_data_generation_config= | =uuid-identified-lookup= | MATCH with records: =nullable_tenant_id: true= and the nullable =party_id= stay explicit (system-scope configs; not profile-covered), and the =scope= / =binding_mode= domain-enum columns stay out of the Qt drawer per the =feed_binding= / =trade_type= enum-gap precedent. |
+| =ir_curve_generation_config_process_parameter_value= | NO-MATCH | =fk-scoped-child= conflicts: it fixes =has_workspace_id: true= against the org's explicit =false=, and fixes =has_explorer_api: true= with none declared. Actual features recorded: uuid PK, tenant-only, =has_workspace_id: false=, parent FKs to =ir_curve_generation_config= and =yield_curve_process_parameter_definition= (the latter =:use_system_tenant: true=), no Qt, no change-reason cache feature, no changed event. Org stays unbound with explicit properties, per the =business_unit= precedent. |
+| =folder= | =self-referencing-hierarchy= | MATCH: tenant, =has_parent_id= (with =prevent_cycle=), uuid PK, workspace false. The Qt half is inert (no drawer; the iam =account_contact_information= precedent). =parent_id_column= and =hierarchy_name_field= stay per-entity, as does the =collection_id= soft FK. |
+
+Deliberate deltas expected at phase 3, each reviewed when it lands:
+
+- The eventing integration tests for the five uuid-identified-lookup
+  entities materialize (new files; compute/iam precedent).
+- The =*_history_provider_registrar= family (18 files) commits with
+  the bind; skill step 7 composes them into =registrar.cpp=.
+- The three Qt controllers land the =wireDetailDialogCommon=
+  template-era shape as their deliberate delta.
+- The =:profile:= declarations replace the covered explicit feature
+  properties; uncovered declarations (=has_batch_remove=,
+  =nullable_tenant_id=, =system_tenant_validation=, =tenant_scope=,
+  hierarchy fields, generator snippets, Qt drawer keys) stay.
+
+Capture disposition: =codegen_sql_validation_fn_drift_synthetic=
+(D583B57B) is verified resolved by this baseline — the model's
+=:tenant_scope: both= now generates the system-tenant canonical-set
+fallback, and the probe reproduced
+=synthetic_fx_spot_generation_configs_create.sql= byte-identically,
+fallback included. The capture can close as superseded with this
+evidence.
 
 * Test Scenarios
 
@@ -64,12 +341,112 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2031][#2031]] | [synthetic,codegen] Bind synthetic entities to profiles, zero-diff regen |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 5576511572 (1) | Unused changeReasonCache_ member on the read-only parameter-definition controller | ores.qt controller templates | Accepted, fixed at source | The controller templates now gate the cache wiring on wires_change_reason_cache (has_change_reason_cache and not has_readonly_paginated_list, computed in core.py); the cascade is contained (no other readonly org declares the cache) and non-readonly controllers render byte-identically. 8f60adbae7. |
+| 5576511572 (2) | party_id preset dropped from the Qt mdc create path | MarketDataGenerationConfigDetailDialog.cpp | Confirmed intentional | stamp() derives tenant_id and party_id from the validated JWT context server-side (security boundary); the client-side preset was never authoritative - new configs are stamped with the creating session's party. |
+| 5576511572 (3) | RLS party-isolation narrowed to for select | synthetic_rls_policies_create.sql | Confirmed intentional | The refdata pattern (multi_party.org, the rls_party_isolation feature): writes are the trigger set's job; recorded in the RLS commit and the task doc. |
+| 5576511572 (4) | Eventing tests cover 7 of 9 entities | core/tests | Confirmed deliberate | parameter_definition is uuid-surrogate-lookup (no Physical-space eventing enablement, no changed event); process_parameter_value is the recorded NO-MATCH. The seven tested are exactly the entities whose profiles enable the eventing integration test address. |
+
+Legacy sweep (2026-09-08, requested alongside the review): every
+entity-shaped layer in ores.synthetic (protocol, handler, mapper,
+entity, repository, service, registrar, history provider, history
+field mapper, generator, table/json io, table display) is generated
+and drift-checked; no orphan files exist (all cpp files are in the
+component file lists, all headers referenced); the remaining
+hand-written files are genuinely custom flows with no codegen
+equivalent (organisation generation/publishing, publish-from-dq, the
+feeds/simulator/vintage/preview handlers, financial_names.hpp seed
+data, app/host/config). The manual wiring that superseded codegen
+carried (the hand-wired registrar blocks, the hand-era RLS policies,
+the old folder hierarchy stack) was removed earlier in this task.
+
+** Component audit fixes (2026-09-08)
+
+The component audit's five recommendations, applied on this branch:
+
+1. *Stale component overviews.* The three =component_overview.org=
+   files (api, core, service) still described the pre-codegen
+   component (organisation/catalog generation only). All three were
+   rewritten to describe the nine bound entities, the generated
+   facets, the feeds and template resolver, the feed control plane,
+   and the catalog/organisation generators that remain hand-written.
+2. *CRUD and history coverage in the integration tests.* The shared
+   eventing integration test template now emits a CRUD round trip
+   after the eventing assertions: update through the repository, read
+   the version history through the service, delete, then assert the
+   row is gone from latest reads while the history keeps every
+   version. Three template bugs were fixed at source while landing
+   it: the section now reuses the test's party-scoped context (the
+   first cut called =set_party= with the SQL-resolving overload,
+   which cannot resolve a generator-stamped party); entities whose
+   party is a parties FK (=parent_is_party=) build the session's
+   visible-party set from the row's own seeded party; and the
+   read-by-id call honours =service_find_prefix= (=find_= vs
+   =get_=). The change propagates to every registry component's
+   eventing tests (84 files: refdata, iam, compute, reporting) —
+   the drift gate is global, so the regeneration is checked in with
+   this PR, and every affected suite runs green locally.
+3. *Domain enum converters.* =scope= and =binding_mode= gained
+   =to_string=, =operator<<=, and =*_from_string= (std::optional)
+   converters, replacing the shell's hand-rolled parsers.
+4. *Table template enum streaming.* The market data generation
+   config's Table display declares the =scope= and =binding_mode=
+   enum columns; the generated table converter streams them through
+   the new =operator<<=. The list shells render the enums.
+5. *std::expected migration.* Assessed, recorded as a capture, not
+   applied: the ~60 throw sites split into the generated
+   throw/catch-at-handler chain (the codegen pattern across all
+   components — migrating synthetic alone would fork the pattern)
+   and a small set of hand-written feed/resolver throws. A
+   house-wide error-handling convention decision covers both and
+   belongs in its own story.
 
 * Result
+
+Live-test residue cleanup: the =shell_param= VASICEK parameter
+definition row left in the shared database by the ores.shell session
+was soft-deleted; it broke the =definitions.size() == 4= catalogue
+counts in the feed config handler tests (the test and dev
+environments share one database).
+
+Acceptance for this round: full build exit 0; the five affected core
+suites (refdata, iam, compute, reporting, synthetic) 100% pass with
+the CRUD round trips in place; roundtrip check exit 0; misspell
+clean over changed files; cmake component lists regenerated.
+
+
+
+Closed 2026-09-08. All nine ores.synthetic entities were surveyed
+against the profile catalogue; eight bound (yield_curve_process_type to
+simple-lookup, folder to self-referencing-hierarchy,
+yield_curve_process_parameter_definition to uuid-surrogate-lookup, and
+fx_spot_generation_config, gmm_component, ir_curve_generation_config,
+ir_curve_template_entry and market_data_generation_config to
+uuid-identified-lookup), one recorded NO-MATCH
+(ir_curve_generation_config_process_parameter_value: fk-scoped-child
+conflicts on workspace scope and explorer API). Every bind was
+verified per entity: zero additional diff against the baseline, and an
+idempotent second regen. The known starting point (the
+fx_spot_generation_config validation-fn capture, D583B57B) is verified
+resolved: the baseline regen reproduced the system-tenant fallback
+byte-identically; the capture can close as superseded.
+
+The eventing-era history-provider registrar families landed composed
+into the registrar fan-out (step 7); the drift gate now covers
+synthetic (step 8): KNOWN_DRIFT_FREE gained the entry and
+check_component_drift.py --all exits 0 on a clean tree.
+
+Acceptance: every entity surveyed and every match bound; zero
+additional diff per entity with idempotent regen; the no-match
+recorded with actual feature values; pre-existing drift fixed at
+source (the era-sync sign-offs, the hierarchy-machinery restoration,
+the RLS policy shape, the generator validity fixes); full build exit 0
+and ctest 71/71 (908s); schema current per the recreated 0.0.25
+database. The story closes after the post-merge live system test per
+the 2026-09-07 done-shape decision; the ores.shell system test is the
+closing step.

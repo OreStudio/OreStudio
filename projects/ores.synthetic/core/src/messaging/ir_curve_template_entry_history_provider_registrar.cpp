@@ -1,0 +1,39 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.synthetic.core/messaging/ir_curve_template_entry_history_provider_registrar.hpp"
+#include "ores.history.api/service/version_builder.hpp"
+#include "ores.synthetic.core/presentation/ir_curve_template_entry_history_field_mapper.hpp"
+#include "ores.synthetic.core/service/ir_curve_template_entry_service.hpp"
+
+namespace ores::synthetic::messaging {
+
+void register_ir_curve_template_entry_history_provider(
+    ores::history::service::dispatch_registry& registry) {
+    registry.register_history_provider(
+        "ores.synthetic.ir_curve_template_entry",
+        [](const ores::database::context& scoped_ctx, const std::string& entity_id) {
+            service::ir_curve_template_entry_service svc(scoped_ctx);
+            auto versions = svc.get_ir_curve_template_entry_history(entity_id);
+            return ores::history::service::build_entity_history_versions(
+                versions, presentation::render_ir_curve_template_entry_fields);
+        });
+}
+
+} // namespace ores::synthetic::messaging

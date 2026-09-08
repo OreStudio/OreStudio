@@ -72,7 +72,6 @@ public:
     std::vector<domain::folder> read_latest(context ctx, const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all folders, possibly filtered by primary key.
      */

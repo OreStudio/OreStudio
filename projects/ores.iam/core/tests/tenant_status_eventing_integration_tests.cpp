@@ -28,6 +28,7 @@
 #include "ores.iam.api/eventing/tenant_status_changed_event.hpp"
 #include "ores.iam.api/generators/tenant_status_generator.hpp"
 #include "ores.iam.core/repository/tenant_status_repository.hpp"
+#include "ores.iam.core/service/tenant_status_service.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/client.hpp"
@@ -165,4 +166,30 @@ TEST_CASE("write_tenant_status_publishes_nats_changed_event", tags) {
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for tenant_status " << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        const auto& crud_ctx = party_ctx;
+        ores::iam::service::tenant_status_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_status_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_status(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.find_status(id_str).has_value());
+        REQUIRE(svc.get_status_history(id_str).size() == versions.size());
+    }
 }

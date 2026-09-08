@@ -31,7 +31,7 @@ until it is genuinely shared by something else, per this story's own
 :schema:    public
 :product:   ores
 :component: synthetic
-:has_tenant_id: true
+:profile:   simple-lookup
 :END:
 
 * Columns
@@ -171,9 +171,8 @@ drop function if exists ores_synthetic_validate_yield_curve_process_type_fn;
 :collection_name:        process_types
 :item_var:               process_type
 :key_field:              code
-:has_uuid_primary_key:   false
-:has_pagination:         true
-:has_change_reason_cache: true
+:changed_event_class:     synthetic::eventing::yield_curve_process_type_changed_event
+:changed_event_include:   ores.synthetic.api/eventing/yield_curve_process_type_changed_event.hpp
 :get_request_class:      synthetic::messaging::get_yield_curve_process_types_request
 :get_response_class:     synthetic::messaging::get_yield_curve_process_types_response
 :get_message_type:       get_yield_curve_process_types_request

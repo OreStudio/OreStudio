@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
 #+updated: 2026-09-07
-#+environment:
+#+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,12 +21,12 @@ Bring ores.synthetic to the state the codegen-fix-drift skill defines: every cod
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | DONE (bind closed; story closes after the post-merge live system test) |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Not yet started.                       |
-| Waiting on    | Nothing.                               |
-| Next          | Claim the bind task.                   |
-| Last touched  | 2026-09-07                               |
+| Now           | Post-merge live system test via ores.shell (the done shape). |
+| Waiting on    | Bind PR merge.                               |
+| Next          | Run the ores.shell system test, close the story.                   |
+| Last touched  | 2026-09-08                               |
 
 * Acceptance
 
@@ -40,7 +40,7 @@ Bring ores.synthetic to the state the codegen-fix-drift skill defines: every cod
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:EF070701-8ABF-43AE-B235-C77B9C4473A4][Bind ores.synthetic entities to profiles; verify zero-diff regen]] | BACKLOG | | | Implement profile binding for the synthetic catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. |
+| [[id:EF070701-8ABF-43AE-B235-C77B9C4473A4][Bind ores.synthetic entities to profiles; verify zero-diff regen]] | DONE | 2026-09-07 | 2026-09-08 | Implement profile binding for the synthetic catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. |
 
 * Decisions
 

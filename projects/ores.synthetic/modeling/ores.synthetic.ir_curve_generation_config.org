@@ -31,7 +31,7 @@ tenant and a party.
 :schema:        public
 :product:       ores
 :component:     synthetic
-:has_tenant_id: true
+:profile:       uuid-identified-lookup
 :END:
 
 * Columns
@@ -89,6 +89,7 @@ std::string("USD")
 :type:     text
 :cpp_type: std::string
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 Floating-rate index family this curve represents (oresmd's
@@ -114,6 +115,7 @@ std::string("sofr")
 :type:        text
 :cpp_type:    std::string
 :natural_key: true
+:no_generator_suffix: true
 :END:
 
 Tenor of this curve's floating-rate index (references =tenor.code=,
@@ -148,6 +150,7 @@ std::string("")
 :nullable:      false
 :default_value: "self_discounting"
 :natural_key:   true
+:no_generator_suffix: true
 :END:
 
 Whether this curve discounts cashflows, projects a floating index's
@@ -470,6 +473,20 @@ std::nullopt
 :iterator_var: c
 :END:
 
+** Table display
+
+| column            | header       |
+|-------------------+--------------|
+| currency_code     | Currency     |
+| index_family      | Index Family |
+| tenor             | Tenor        |
+| role              | Role         |
+| process_type      | Process      |
+| ticks_per_hour    | Ticks/Hour   |
+| enabled           | Enabled      |
+| modified_by       | Modified By  |
+| version           | Version      |
+
 ** Qt
 :PROPERTIES:
 :domain_include:          ores.synthetic.api/domain/ir_curve_generation_config.hpp
@@ -478,9 +495,6 @@ std::nullopt
 :collection_name:         ir_curve_generation_configs
 :item_var:                ir_curve_generation_config
 :key_field:               id
-:has_uuid_primary_key:    true
-:has_pagination:          true
-:has_change_reason_cache: true
 :get_request_class:       synthetic::messaging::get_ir_curve_generation_configs_request
 :get_response_class:      synthetic::messaging::get_ir_curve_generation_configs_response
 :get_message_type:        get_ir_curve_generation_configs_request

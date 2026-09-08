@@ -1,0 +1,51 @@
+:PROPERTIES:
+:ID: D6301CAC-0C88-4952-B23D-6B3E2AFC676A
+:END:
+#+title: House-wide error handling convention: std::expected vs exceptions
+#+description: Decide and document one error-signalling convention across components; synthetic's audit flagged ~60 throw sites with no house standard.
+#+type: capture
+#+level: cross
+#+filetags: :codegen:modernisation:cpp:error-handling:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide one error-signalling convention for the C++ codebase and document it
+in the architecture knowledge: either C++23 =std::expected= for recoverable
+failures plus exceptions for invariant breaches, or the current
+exceptions-everywhere shape, made explicit. The decision must cover the two
+families of throw sites the ores.synthetic component audit counted (~60):
+the generated service/handler chain (services throw, NATS handlers catch at
+the boundary and map to error responses — the codegen template pattern shared
+by every component) and the hand-written flows (feeds, the IR curve template
+resolver, domain enum =to_string=, mapping helpers) that throw
+=std::runtime_error= / =std::invalid_argument= at their own discretion.
+
+* Why
+
+The synthetic audit flagged the throw sites as a modernisation finding, but
+migrating one component would fork the error-handling style: the generated
+chain is a template pattern across all components, so a convention change is
+a template-plus-codemod change house-wide, not a per-component cleanup. The
+codebase already mixes styles one level down (sqlgen-style result chaining in
+the repository layer, exceptions above), so an explicit rule — which layer
+signals errors which way — would settle it. Recording the decision before
+any migration also keeps the generated code and the hand-written code
+consistent once the templates change.
+
+* References
+
+- ores.synthetic component audit (2026-09-08), modernisation finding:
+  ~60 throw sites, no house standard.
+- [[id:EF070701-8ABF-43AE-B235-C77B9C4473A4][Task: Bind ores.synthetic entities to profiles]] — the audit round.
+- =projects/ores.codegen/library/templates/ores.cpp.service.service_impl.org=
+  and the NATS handler templates — the generated throw/catch shape.
+- =projects/ores.synthetic/api/src/feeds/= and
+  =ir_curve_template_resolver.cpp= — the hand-written throw sites.
+
+* See also
+
+-

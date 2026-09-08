@@ -18,9 +18,16 @@
 #
 set(files
     "catalog_generator_service_tests.cpp"
+    "folder_eventing_integration_tests.cpp"
+    "fx_spot_generation_config_eventing_integration_tests.cpp"
     "generation_context_tests.cpp"
     "generators_tests.cpp"
+    "gmm_component_eventing_integration_tests.cpp"
+    "ir_curve_generation_config_eventing_integration_tests.cpp"
+    "ir_curve_template_entry_eventing_integration_tests.cpp"
     "main.cpp"
+    "market_data_generation_config_eventing_integration_tests.cpp"
     "organisation_generator_service_tests.cpp"
     "organisation_publisher_integration_tests.cpp"
+    "yield_curve_process_type_eventing_integration_tests.cpp"
 )

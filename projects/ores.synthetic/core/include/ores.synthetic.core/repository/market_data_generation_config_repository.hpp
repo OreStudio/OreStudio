@@ -72,7 +72,6 @@ public:
                                                                    const std::string& id);
     /**@}*/
 
-
     /**
      * @brief Reads all market data generation configs, possibly filtered by primary key.
      */

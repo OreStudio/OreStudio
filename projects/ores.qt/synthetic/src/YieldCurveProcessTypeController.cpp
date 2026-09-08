@@ -167,15 +167,12 @@ void YieldCurveProcessTypeController::onShowHistory(
     showHistoryWindow(QString::fromStdString(process_type.code));
 }
 
-void YieldCurveProcessTypeController::showAddWindow() {
-    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new yield curve process type";
-
-    auto* detailDialog = new YieldCurveProcessTypeDetailDialog(mainWindow_);
+void YieldCurveProcessTypeController::wireDetailDialogCommon(
+    YieldCurveProcessTypeDetailDialog* detailDialog) {
     if (changeReasonCache_)
         detailDialog->setChangeReasonCache(changeReasonCache_);
     detailDialog->setClientManager(clientManager_);
     detailDialog->setUsername(username_.toStdString());
-    detailDialog->setCreateMode(true);
 
     connect(detailDialog,
             &YieldCurveProcessTypeDetailDialog::statusMessage,
@@ -185,6 +182,15 @@ void YieldCurveProcessTypeController::showAddWindow() {
             &YieldCurveProcessTypeDetailDialog::errorMessage,
             this,
             &YieldCurveProcessTypeController::errorMessage);
+}
+
+void YieldCurveProcessTypeController::showAddWindow() {
+    BOOST_LOG_SEV(lg(), debug) << "Creating add window for new yield curve process type";
+
+    auto* detailDialog = new YieldCurveProcessTypeDetailDialog(mainWindow_);
+    wireDetailDialogCommon(detailDialog);
+    detailDialog->setCreateMode(true);
+
     connect(detailDialog,
             &YieldCurveProcessTypeDetailDialog::process_typeSaved,
             this,
@@ -223,21 +229,10 @@ void YieldCurveProcessTypeController::showDetailWindow(
     BOOST_LOG_SEV(lg(), debug) << "Creating detail window for: " << process_type.code;
 
     auto* detailDialog = new YieldCurveProcessTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setCreateMode(false);
     detailDialog->setType(process_type);
 
-    connect(detailDialog,
-            &YieldCurveProcessTypeDetailDialog::statusMessage,
-            this,
-            &YieldCurveProcessTypeController::statusMessage);
-    connect(detailDialog,
-            &YieldCurveProcessTypeDetailDialog::errorMessage,
-            this,
-            &YieldCurveProcessTypeController::errorMessage);
     connect(detailDialog,
             &YieldCurveProcessTypeDetailDialog::process_typeSaved,
             this,
@@ -379,29 +374,9 @@ void YieldCurveProcessTypeController::onOpenVersion(
     }
 
     auto* detailDialog = new YieldCurveProcessTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     detailDialog->setType(process_type);
     detailDialog->setReadOnly(true);
-
-    connect(detailDialog,
-            &YieldCurveProcessTypeDetailDialog::statusMessage,
-            this,
-            [self = QPointer<YieldCurveProcessTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->statusMessage(message);
-            });
-    connect(detailDialog,
-            &YieldCurveProcessTypeDetailDialog::errorMessage,
-            this,
-            [self = QPointer<YieldCurveProcessTypeController>(this)](const QString& message) {
-                if (!self)
-                    return;
-                emit self->errorMessage(message);
-            });
 
     auto* detailWindow = new DetachableMdiSubWindow(mainWindow_);
     detailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -527,24 +502,13 @@ void YieldCurveProcessTypeController::onRevertVersion(
 
     // Open detail dialog with the old version data for editing
     auto* detailDialog = new YieldCurveProcessTypeDetailDialog(mainWindow_);
-    if (changeReasonCache_)
-        detailDialog->setChangeReasonCache(changeReasonCache_);
-    detailDialog->setClientManager(clientManager_);
-    detailDialog->setUsername(username_.toStdString());
+    wireDetailDialogCommon(detailDialog);
     auto reverted_process_type = process_type;
     reverted_process_type.version = 0;
     detailDialog->setType(reverted_process_type);
     detailDialog->setCreateMode(false);
     detailDialog->markDirty();
 
-    connect(detailDialog,
-            &YieldCurveProcessTypeDetailDialog::statusMessage,
-            this,
-            &YieldCurveProcessTypeController::statusMessage);
-    connect(detailDialog,
-            &YieldCurveProcessTypeDetailDialog::errorMessage,
-            this,
-            &YieldCurveProcessTypeController::errorMessage);
     connect(detailDialog,
             &YieldCurveProcessTypeDetailDialog::process_typeSaved,
             this,

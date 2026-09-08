@@ -28,10 +28,13 @@ std::string convert_to_table(const std::vector<ir_curve_generation_config>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "Currency" << "Index Family" << "Tenor" << "Role" << "Process"
+          << "Ticks/Hour" << "Enabled" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
-        table << fort::endr;
+        table << c.currency_code << c.index_family << c.tenor << c.role << c.process_type
+              << c.ticks_per_hour << (c.enabled ? "true" : "false") << c.modified_by << c.version
+              << fort::endr;
     }
     return table.to_string();
 }

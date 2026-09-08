@@ -19,6 +19,7 @@
  */
 #include "ores.synthetic.core/service/folder_service.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
+#include <boost/uuid/uuid_io.hpp>
 #include <cstdint>
 #include <stdexcept>
 

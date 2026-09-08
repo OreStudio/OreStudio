@@ -48,10 +48,11 @@ The full template source. Edit here and re-tangle with
 #include "ores.{{component_include}}/eventing/{{entity_singular}}_changed_event.hpp"
 #include "ores.{{component_include}}/{{generator_facet_name}}/{{entity_singular}}_generator.hpp"
 #include "ores.{{component_core}}/repository/{{entity_singular}}_repository.hpp"
-{{#sql.party_id_from_session}}
+#include "ores.{{component_core}}/service/{{entity_singular}}_service.hpp"
+{{#party_scoped_writes}}
 #include "ores.refdata.api/generators/party_generator.hpp"
 #include "ores.refdata.core/repository/party_repository.hpp"
-{{/sql.party_id_from_session}}
+{{/party_scoped_writes}}
 {{#seed_party}}
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
@@ -136,7 +137,7 @@ namespace {
 const std::string_view test_suite("{{component}}.tests");
 const std::string tags("[eventing][integration]");
 
-{{#sql.party_id_from_session}}
+{{#party_scoped_writes}}
 // {{entity_title}} writes are party-scoped: the session-level
 // app.current_party_id GUC must be set before writing.
 ores::database::context
@@ -156,7 +157,7 @@ write_test_party_and_scope_context(ores::testing::scoped_database_helper& h,
     party_repo.write(h.context(), party);
     return h.context().with_party(h.tenant_id(), party.id, {party.id}, h.db_user());
 }
-{{/sql.party_id_from_session}}
+{{/party_scoped_writes}}
 
 }
 
@@ -189,12 +190,12 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
         ores::utility::uuid::tenant_id::system(), h.db_user());
 {{/sql.system_scope}}
 {{^sql.system_scope}}
-{{#sql.party_id_from_session}}
+{{#party_scoped_writes}}
     auto party_ctx = write_test_party_and_scope_context(h, ctx);
-{{/sql.party_id_from_session}}
-{{^sql.party_id_from_session}}
+{{/party_scoped_writes}}
+{{^party_scoped_writes}}
     auto& party_ctx = h.context();
-{{/sql.party_id_from_session}}
+{{/party_scoped_writes}}
 {{/sql.system_scope}}
 
     // 1. Wire the same DB-notify -> event_bus -> NATS-publish chain the
@@ -251,14 +252,14 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
 {{^has_audit_group}}
     v.change_reason_code = "system.test";
 {{/has_audit_group}}
-{{#sql.party_id_from_session}}
+{{#party_scoped_writes}}
 {{#has_identity_group}}
     v.identity.party_id = *party_ctx.party_id();
 {{/has_identity_group}}
 {{^has_identity_group}}
     v.party_id = *party_ctx.party_id();
 {{/has_identity_group}}
-{{/sql.party_id_from_session}}
+{{/party_scoped_writes}}
 {{#foreign_keys}}
 {{^nullable}}
 {{#parent_entity_singular}}
@@ -431,6 +432,60 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for {{entity_singular}} " << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+{{#party_scoped_writes}}
+        // party_ctx already carries the visible-party set: v's own
+        // party is the session party the RLS policies filter by.
+        const auto& crud_ctx = party_ctx;
+{{/party_scoped_writes}}
+{{^party_scoped_writes}}
+{{#has_party_column}}
+        // The row's party (seeded above for the mandatory party FK)
+        // scopes the service reads: point the session's visible-party
+        // set at it directly, the way write_test_party_and_scope_context
+        // does for party-scoped entities.
+        const auto crud_party = {{#party_column_optional}}*{{/party_column_optional}}v.party_id;
+        const auto crud_ctx =
+            party_ctx.with_party(party_ctx.tenant_id(), crud_party, {crud_party}, h.db_user());
+{{/has_party_column}}
+{{^has_party_column}}
+        const auto& crud_ctx = party_ctx;
+{{/has_party_column}}
+{{/party_scoped_writes}}
+        ores::{{component}}::service::{{entity_singular}}_service svc(crud_ctx);
+{{#has_audit_group}}
+        v.audit.change_commentary = "updated-by-crud-round-trip";
+{{/has_audit_group}}
+{{^has_audit_group}}
+        v.change_commentary = "updated-by-crud-round-trip";
+{{/has_audit_group}}
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_{{entity_singular_short}}_history(id_str);
+        REQUIRE(versions.size() >= 2);
+{{#has_audit_group}}
+        REQUIRE(versions.front().audit.change_commentary == "updated-by-crud-round-trip");
+{{/has_audit_group}}
+{{^has_audit_group}}
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+{{/has_audit_group}}
+
+        svc.delete_{{entity_singular_short}}(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.{{#service_find_prefix}}find_{{/service_find_prefix}}{{^service_find_prefix}}get_{{/service_find_prefix}}{{entity_singular_short}}(id_str).has_value());
+        REQUIRE(svc.get_{{entity_singular_short}}_history(id_str).size() == versions.size());
+    }
 }
 {{/domain_entity}}
 #+end_src

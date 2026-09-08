@@ -31,6 +31,7 @@
 #include "ores.refdata.api/eventing/book_changed_event.hpp"
 #include "ores.refdata.api/generators/book_generator.hpp"
 #include "ores.refdata.core/repository/book_repository.hpp"
+#include "ores.refdata.core/service/book_service.hpp"
 // Party seeds (mandatory party_id soft FKs, direct or via a parent's own
 // mandatory party_id FK): the party generator and repository are used
 // regardless of the child's generator facet, hence the fully-qualified
@@ -227,4 +228,36 @@ TEST_CASE("write_book_publishes_nats_changed_event", tags) {
     REQUIRE_FALSE(received.empty());
     BOOST_LOG_SEV(lg, info) << "Received " << received.size()
                             << " matching NATS notification(s) for book " << id_str;
+
+    // 5. CRUD round trip on the same row: update through the
+    // repository, read the version history through the service, and
+    // delete. Reads and writes go through party_ctx: for party-scoped
+    // entities it already carries the visible-party GUC the RLS
+    // policies filter every service read by; otherwise it is the
+    // plain test context. The version history grows by one per write
+    // (the notify re-drive above may have written more than once), so
+    // only growth is asserted, not an exact count.
+    {
+        // The row's party (seeded above for the mandatory party FK)
+        // scopes the service reads: point the session's visible-party
+        // set at it directly, the way write_test_party_and_scope_context
+        // does for party-scoped entities.
+        const auto crud_party = v.party_id;
+        const auto crud_ctx =
+            party_ctx.with_party(party_ctx.tenant_id(), crud_party, {crud_party}, h.db_user());
+        ores::refdata::service::book_service svc(crud_ctx);
+        v.change_commentary = "updated-by-crud-round-trip";
+        repo.write(crud_ctx, v);
+
+        auto versions = svc.get_book_history(id_str);
+        REQUIRE(versions.size() >= 2);
+        REQUIRE(versions.front().change_commentary == "updated-by-crud-round-trip");
+
+        svc.delete_book(id_str);
+        // Delete soft-closes the active row (the instead-of delete
+        // rule sets valid_to): the row disappears from latest reads,
+        // and the version history keeps every version.
+        REQUIRE_FALSE(svc.get_book(id_str).has_value());
+        REQUIRE(svc.get_book_history(id_str).size() == versions.size());
+    }
 }

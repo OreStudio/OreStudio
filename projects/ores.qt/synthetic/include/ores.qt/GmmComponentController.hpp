@@ -34,6 +34,7 @@
 namespace ores::qt {
 
 class GmmComponentMdiWindow;
+class GmmComponentDetailDialog;
 class DetachableMdiSubWindow;
 class ChangeReasonCache;
 
@@ -88,6 +89,14 @@ private slots:
 private:
     void showAddWindow();
     void showDetailWindow(const synthetic::domain::gmm_component& gmm_component);
+
+    /**
+     * @brief Wires the caches/status/error plumbing every
+     * GmmComponentDetailDialog needs regardless of which
+     * window opened it (add/edit/history-version/revert) -- kept in one
+     * place so those four call sites can't drift from each other.
+     */
+    void wireDetailDialogCommon(GmmComponentDetailDialog* detailDialog);
     void showHistoryWindow(const synthetic::domain::gmm_component& gmm_component);
 
     /**

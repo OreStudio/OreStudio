@@ -1,0 +1,57 @@
+:PROPERTIES:
+:ID: 68CC32EF-1660-48EF-BF96-49845E87211B
+:END:
+#+title: Party GUCs leak across pooled database connections in the service layer
+#+description: The service sets app.visible_party_ids/app.current_party_id/app.current_tenant_id per request on pooled connections; a request whose context carries no party does not clear the GUCs an earlier party-context request left, so read visibility under the party-isolation RLS policies depends on which pooled connection serves the request (same session saw 26 party-scoped rows, then 0, with identical credentials).
+#+type: capture
+#+level: cross
+#+filetags: :ores_service:ores_database:rls:party_isolation:pool:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+The service layer sets the RLS session GUCs (=app.current_tenant_id=,
+=app.visible_party_ids=, =app.current_party_id=) per request on its
+pooled database connections. A request whose authenticated context
+carries no party does not reset the GUCs an earlier party-context
+request left on the pooled connection it lands on, so a
+party-scoped-row read (list, history, count) returns different results
+depending on which pooled connection serves it - pool roulette.
+
+Observed 2026-09-08 during the synthetic bind's live CRUD system test:
+the same ores.shell session (same JWT) listed 26 party-scoped
+fx_spot_generation_config rows through one pooled connection and 0
+through another minutes later; the RLS policies and data were verified
+correct by running the same read as the service role with the
+explicit GUCs (11 folders / 26 fx spot rows returned).
+
+* Why
+
+Read visibility under the party-isolation RLS policies becomes
+non-deterministic for any caller whose requests mix party and
+non-party contexts on the service pool: the qt client switching
+parties, the shell (which has no party context at all), and the
+services themselves. Rows written without a party context (stamped
+with the nil uuid) are also permanently invisible to every
+party-restricted session. The fix belongs in the per-request context
+application (ores.service =make_request_context= / the
+=ores.database= connection layer): reset or locally scope all three
+GUCs on every checkout (e.g. =set_config(..., true)= inside the
+request transaction) instead of leaving them stuck to the pooled
+connection.
+
+* References
+
+- =projects/ores.service/src/service/request_context.cpp= (party
+  context from JWT claims)
+- =projects/ores.sql/create/synthetic/synthetic_rls_policies_create.sql=
+  (the policies whose select visibility flapped)
+- The synthetic bind task's live system test record
+  (=entity-classification-drift-synthetic/task_bind-synthetic-entities-to-profiles.org=)
+
+* See also
+
+-

@@ -1,24 +1,10 @@
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
- *
- * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 3 of the License, or (at your option) any later
- * version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- */
 #ifndef ORES_SYNTHETIC_API_DOMAIN_SCOPE_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_SCOPE_HPP
+
+#include <ostream>
+#include <optional>
+#include <stdexcept>
+#include <string_view>
 
 namespace ores::synthetic::domain {
 
@@ -35,6 +21,50 @@ enum class scope {
     tenant, ///< Shared across every party under one tenant.
     party   ///< Owned by, and visible only to, a single party.
 };
+
+/**
+ * @brief Convert a scope to its lowercase string representation.
+ *
+ * The three values match the SQL @c check constraint values and the JSON
+ * wire format. Throws @c std::invalid_argument on an out-of-range value.
+ */
+[[nodiscard]] inline std::string_view to_string(scope s) {
+    switch (s) {
+        case scope::system:
+            return "system";
+        case scope::tenant:
+            return "tenant";
+        case scope::party:
+            return "party";
+    }
+    throw std::invalid_argument("Out-of-range scope");
+}
+
+/**
+ * @brief Stream a scope using its string representation.
+ *
+ * Generated table code streams entity members directly; without this
+ * operator a domain-enum member in a table display does not compile.
+ */
+inline std::ostream& operator<<(std::ostream& s, scope s2) {
+    return s << to_string(s2);
+}
+
+/**
+ * @brief Parse a scope from its lowercase string representation.
+ *
+ * Returns @c std::nullopt for an unrecognised value so the caller has to
+ * decide whether the input is genuinely a parsing error or just absent.
+ */
+[[nodiscard]] inline std::optional<scope> scope_from_string(std::string_view sv) {
+    if (sv == "system")
+        return scope::system;
+    if (sv == "tenant")
+        return scope::tenant;
+    if (sv == "party")
+        return scope::party;
+    return std::nullopt;
+}
 
 }
 

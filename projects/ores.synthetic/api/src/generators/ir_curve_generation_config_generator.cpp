@@ -45,9 +45,9 @@ generate_synthetic_ir_curve_generation_config(utility::generation::generation_co
     r.party_id = ctx.generate_uuid();
     r.config_id = ctx.generate_uuid();
     r.currency_code = std::string("USD") + "-" + std::to_string(idx);
-    r.index_family = std::string("sofr") + "-" + std::to_string(idx);
-    r.tenor = std::string("") + "-" + std::to_string(idx);
-    r.role = std::string("self_discounting") + "-" + std::to_string(idx);
+    r.index_family = std::string("sofr");
+    r.tenor = std::string("");
+    r.role = std::string("self_discounting");
     r.process_type = std::string("VASICEK");
     r.ticks_per_hour = faker::number::integer(1, 3600);
     r.enabled = faker::datatype::boolean();

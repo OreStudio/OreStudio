@@ -31,9 +31,9 @@ class DetachableMdiSubWindow;
 {{#domain_entity.qt.has_badge_columns}}
 class BadgeCache;
 {{/domain_entity.qt.has_badge_columns}}
-{{#domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.wires_change_reason_cache}}
 class ChangeReasonCache;
-{{/domain_entity.qt.has_change_reason_cache}}
+{{/domain_entity.qt.wires_change_reason_cache}}
 {{#domain_entity.qt.needs_image_cache}}
 class ImageCache;
 {{/domain_entity.qt.needs_image_cache}}
@@ -65,9 +65,9 @@ public:
 {{#domain_entity.qt.needs_image_cache}}
         ImageCache* imageCache,
 {{/domain_entity.qt.needs_image_cache}}
-{{#domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.wires_change_reason_cache}}
         ChangeReasonCache* changeReasonCache,
-{{/domain_entity.qt.has_change_reason_cache}}
+{{/domain_entity.qt.wires_change_reason_cache}}
         const QString& username,
 {{#domain_entity.qt.has_badge_columns}}
         BadgeCache* badgeCache,
@@ -181,9 +181,9 @@ private:
 {{#domain_entity.qt.has_parent_scoped_list}}
     void showListWindow(const QString& {{domain_entity.qt.parent_key_param}});
 {{/domain_entity.qt.has_parent_scoped_list}}
-{{#domain_entity.qt.has_change_reason_cache}}
+{{#domain_entity.qt.wires_change_reason_cache}}
     ChangeReasonCache* changeReasonCache_;
-{{/domain_entity.qt.has_change_reason_cache}}
+{{/domain_entity.qt.wires_change_reason_cache}}
 {{#domain_entity.qt.has_badge_columns}}
     BadgeCache* badgeCache_;
 {{/domain_entity.qt.has_badge_columns}}

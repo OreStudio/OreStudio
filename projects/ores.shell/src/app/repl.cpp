@@ -42,6 +42,7 @@
 #include "ores.shell/app/commands/script_commands.hpp"
 #include "ores.shell/app/commands/subscription_commands.hpp"
 #include "ores.shell/app/commands/synthetic_commands.hpp"
+#include "ores.shell/app/commands/synthetic/synthetic_entity_commands.hpp"
 #include "ores.shell/app/commands/tenants_commands.hpp"
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
 #include "ores.shell/app/commands/variability_commands.hpp"
@@ -106,6 +107,7 @@ std::unique_ptr<cli::Cli> repl::setup_menus() {
     marketdata_commands::register_commands(*root, session_);
     crm_commands::register_commands(*root, session_);
     synthetic_commands::register_commands(*root, session_);
+    synthetic_entity_commands::register_commands(*root, session_, pagination_);
     parties_commands::register_commands(*root, session_);
     account_parties_commands::register_commands(*root, session_);
     reports_commands::register_commands(*root, session_);

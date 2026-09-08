@@ -50,6 +50,7 @@ KNOWN_DRIFT_FREE = (
     "compute-cpp",
     "iam",
     "iam-cpp",
+    "synthetic",
 )
 
 

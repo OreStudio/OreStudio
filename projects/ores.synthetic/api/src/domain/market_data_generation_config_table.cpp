@@ -28,10 +28,12 @@ std::string convert_to_table(const std::vector<market_data_generation_config>& v
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "Name" << "Scope" << "Binding" << "Enabled" << "Description"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& c : v) {
-        table << fort::endr;
+        table << c.name << c.scope << c.binding_mode << (c.enabled ? "true" : "false")
+              << c.description << c.modified_by << c.version << fort::endr;
     }
     return table.to_string();
 }

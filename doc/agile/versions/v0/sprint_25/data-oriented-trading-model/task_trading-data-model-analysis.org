@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/trading-data-model-analysis
-#+pr:
+#+pr: 2038
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-08
@@ -64,7 +64,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2038][#2038]] | [doc] Analyse ores.trading data model against data-oriented criteria |
 
 * Review
 

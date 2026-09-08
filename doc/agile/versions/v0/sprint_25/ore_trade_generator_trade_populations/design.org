@@ -35,9 +35,16 @@ must be a configuration change and not a code change. And realism is a property
 of the configuration rather than of the row count, because a small book differs
 from a large one in what it trades and not only in how much.
 
-The choice of generation mechanism is left open. Four candidates are described
-with the evidence available; the measurements that would settle it are named,
-and they have not been taken.
+The measurements have since been taken, against the deployed schema rather than
+a model of it, and they moved the design. The cost of writing a trade is
+dominated by a per-row validation trigger and not by the notify trigger, the
+instrument's complexity or the row width, so a bulk population path is needed and
+suppressing notifications is not worth doing. Populating the trading tables also
+turned out to depend on reference data that provisioning never published, which
+is now fixed.
+
+The choice between the remaining candidates is still open, and the questions that
+would settle it are listed at the end with those already answered marked.
 
 * Detail
 
@@ -116,8 +123,13 @@ recorded here rather than inside one option.
 
 ** The Candidates
 
-Four approaches, with what is known. None has been measured, and the
-measurements that would separate them are named under /Open Questions/.
+Four approaches, with what is known. One has since been measured: algorithmic
+generation, in the narrow form of a script that introspects the schema and writes
+directly to it, populates all 41 trading tables. That is evidence about the
+approach's reach rather than a decision, since the script writes to the database
+and not through the trade service, and the service boundary is the design's
+position. The measurements separating the remaining three are named under /Open
+Questions/.
 
 #+ATTR_HTML: :class hug-leading
 | Approach | Mechanism | Known strength | Known risk |
@@ -215,8 +227,8 @@ the 86 products in ORE's catalogue, stated as an assumption on the terms above.
 
 ** What Measurement Found
 
-Four of the open questions are now answered, one by reading the code and three by
-measuring. The measurements settle which path bulk population takes, and they
+Six of the open questions are now answered, one by reading the code and five by
+measuring against the deployed schema. The measurements settle which path bulk population takes, and they
 show that the choice of path matters more than the choice of instrument.
 
 *** The trade interface batches
@@ -364,6 +376,52 @@ population path can bypass the per-row insert trigger and establish the
 bitemporal versioning in a set operation instead, which is a change to how the
 row is written rather than to what is published.
 
+*** What can be populated
+
+A second question the measurements answer is coverage, which matters as much as
+speed: a fast mechanism that cannot express half a book is not a population.
+
+=scripts/load_trade_population.py= fills every column of all 41 deployed
+=ores_trading= tables and loads all 41. That establishes the floor. Every table
+the schema has can be written by a generator that knows the schema, with no C++
+and no ORE dependency.
+
+The ceiling is lower, and it is set by the schema rather than by the generator.
+ORE defines 27 equity trade types and the nine equity tables can store 16 of
+them, so eleven equity products cannot be represented at all. The same survey has
+not been done for the other asset classes.
+
+The consequence for this story is bounded. The presets can be realistic within
+what the schema holds, and they cannot cover a desk's full equity book. A
+distribution asserting a weight for =EquityBasketOption= would be asserting
+something the database cannot store. See
+[[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]] for what that would take to change; it is not
+this story's work.
+
+*** What populating a trade requires
+
+Loading the trading tables is not self-contained, and the dependency was
+invisible until a load was attempted.
+
+=ores_trading_trades_tbl= validates six references before accepting a row, three
+of which live outside =ores.trading=: a book, a portfolio and a counterparty. A
+seventh rule requires the portfolio to be the book's parent, so the two
+references must agree rather than merely resolve.
+
+None of that data was present. Acme's books and portfolios were staged in the DQ
+artefact tables and never published into refdata, because nothing in provisioning
+called the publish functions. A freshly provisioned database therefore could not
+hold a single trade.
+
+That is fixed. =populate/acme/acme_publish_populate.sql= runs during provisioning
+and a rebuild from scratch now yields 31 books, 36 portfolios, 28 business units
+and 4 counterparties, after which trades load.
+
+The design consequence is a requirement rather than a note: *a population
+mechanism must state its reference data prerequisites*, because the failure
+without them is a rejected trade naming a book id, which says nothing about the
+cause.
+
 *** What was not measured
 
 The tables carry the entities' field counts and fan-out, not their types,
@@ -428,23 +486,33 @@ required to admit it without change to the block.
 
 * Open Questions
 
-These are the measurements and decisions the analysis task owes, and this
-document deliberately does not pre-empt them.
+** Answered
 
-- How does cost scale with the number of trades, and where does each approach
-  break? Measured at more than one volume, so the shape of the curve is known
-  and not one point.
-- What does bulk insert cost with and without the per-row notify trigger, and at
-  what volume does the notification queue become the binding constraint?
-  =scripts/bench_trade_insert.py= answers this; it needs a running environment.
+- *How does cost scale, and where does each approach break?* Measured at 1000,
+  10000, 100000 and 1000000 trades. Throughput is close to 2000 rows per second
+  on the deployed schema whatever the table, because a per-row trigger dominates.
+- *What does bulk insert cost with and without the per-row notify trigger?* The
+  notify trigger costs 1.5% on the real schema, not the 4.2x a synthetic table
+  suggested. The insert trigger costs about 25x and cannot be disabled. The
+  notification queue did not become a binding constraint at eight million
+  notifications in one transaction, measured with nothing listening.
+- *Which =ores.trading= instruments can be populated?* All 41 tables. The limit
+  is the schema rather than the mechanism: eleven of ORE's 27 equity trade types
+  have no table.
+
+** Still open
+
 - What does ORE-Python cost per trade, and what does it drag into the seeding
   path? The dependency footprint matters as much as the speed.
-- Which =ores.trading= instruments can each approach populate? Measured per
-  asset class, with any instrument neither side carries named.
 - Can each approach produce a realistic small book, or only a truncated large
   one?
 - Do the small presets benefit enough from being committed to justify
   maintaining two mechanisms?
+- Can a bulk path establish the bitemporal versioning in a set operation, rather
+  than through the per-row trigger that costs the 25x? This is the question the
+  measurements raised and it did not exist when this document was written.
+- What is the equivalent coverage gap in the other asset classes? Only equity has
+  been surveyed.
 
 * See also
 

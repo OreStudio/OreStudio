@@ -8,7 +8,7 @@
 #+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
 #+owner: marco
 #+branch: feature/resolve-codegen-gaps-for-remaining-instruments
-#+pr:
+#+pr: 2035
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
@@ -247,6 +247,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2035][#2035]] | [doc] Record the trading codegen gap investigation probes and verdicts |
 
 * Review
 

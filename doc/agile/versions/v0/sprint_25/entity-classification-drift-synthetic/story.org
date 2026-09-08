@@ -7,7 +7,7 @@
 #+level: s2
 #+filetags: :codegen:drift:tooling:sprint_25:v0:
 #+created: 2026-08-04
-#+updated: 2026-09-07
+#+updated: 2026-09-08
 #+environment: festive_dijkstra
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
@@ -21,11 +21,11 @@ Bring ores.synthetic to the state the codegen-fix-drift skill defines: every cod
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | DONE (bind closed; story closes after the post-merge live system test) |
+| State         | DONE |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Post-merge live system test via ores.shell (the done shape). |
-| Waiting on    | Bind PR merge.                               |
-| Next          | Run the ores.shell system test, close the story.                   |
+| Now           | Story closed: the post-merge live system test passed and the tpl/ppv table-display defect it caught is fixed. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                   |
 | Last touched  | 2026-09-08                               |
 
 * Acceptance

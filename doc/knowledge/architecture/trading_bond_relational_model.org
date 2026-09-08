@@ -311,6 +311,17 @@ guiding decomposition, in the relational reading of dfe15809:
   become rows in the shared instrument underlyings table (defect 15).
   A bond-on-bond reference is a foreign key to the issue entity.
 
+The model in one picture, drawn in the repo's PlantUML ER
+conventions. The shared row shapes repeat the defect-1 and defect-15
+column sets of =trade_model_defects.org=; the notes on those shapes
+record where the bond proposal widens their owner:
+
+#+caption: The proposed relational model for the bond family
+[[proj:doc/knowledge/architecture/trading_bond_relational_model_er.png]]
+
+Regenerate the PNG from =trading_bond_relational_model_er.puml=, the
+source beside this document, with the file's =compile-command=.
+
 The entities:
 
 | Entity | Table | Key | Holds |
@@ -482,3 +493,4 @@ first consumer of.
 - [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][ores.trading.bond_instrument]] — the draft org probe parked at task 2548EE95; its flattening verdict is gap (a).
 - =ore_trade_generator_trade_populations/trade_model_defects.org= — the model-wide defect investigation whose shapes this page reuses (schedule pair, underlyings, coverage checks).
 - [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] — the parent story and its sequencing.
+- [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — the drawing conventions the figure follows.

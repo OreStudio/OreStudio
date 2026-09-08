@@ -335,7 +335,7 @@ so there is no codegen-side workaround.
 (b) The column-name mapping key does not exist. The tree's legacy
 tables use =id= as the primary key column while the identity group
 names the member =instrument_id=; the mapper layer bridges this by
-hand (for example, =scripted_instrument_mapper.cpp:33=). A
+hand (for example, =scripted_instrument_mapper.cpp:35=). A
 regeneration that follows the org strictly renames the column and
 breaks every legacy reference.
 

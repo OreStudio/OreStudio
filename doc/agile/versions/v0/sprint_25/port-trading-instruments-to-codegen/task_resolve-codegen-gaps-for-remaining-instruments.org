@@ -2,97 +2,236 @@
 :ID: 2548EE95-7C62-4C48-BA11-2146604B2082
 :END:
 #+title: Task: Resolve codegen feature gaps blocking the remaining trading instrument conversions
-#+description: Close the codegen feature gaps that block the deferred trading instrument conversions (bond, commodity, credit, scripted, composite, fra, swap legs) and convert them all per the established pattern.
+#+description: Convert the five remaining hand-crafted trading instrument families (bond, commodity, composite with composite_leg, credit, scripted) to codegen, closing or working around the codegen gaps that block them and making the trading component drift-checkable first.
 #+type: task
 #+level: s1
 #+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/resolve-codegen-gaps-for-remaining-instruments
+#+pr: 2035
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-09
-#+updated: 2026-08-09
-#+environment: clever_dijkstra
+#+updated: 2026-09-08
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] story. It captures the goal, current status, acceptance, and any notes or results.
 
 * Goal
 
-Convert the 7 remaining hand-crafted trading instrument sub-types
-(bond, commodity, credit, scripted, composite, fra, swap legs) to
-codegen by first closing the three codegen feature gaps that block
-them, each discovered and documented in the [[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][conversion task]]'s notes:
+Convert the five remaining hand-crafted trading instrument families
+(bond, commodity, composite with its composite_leg child, credit,
+scripted) to codegen. fra and the swap-leg families left the list when
+the rates families bound on 2026-09-06 (6c59c3cbfb); fra still carries
+a documented service exclusion, below. Each conversion follows the
+established pattern: modern-format model bound to the
+trading-instrument variability profile, zero-diff regeneration across
+all facets (verified with a second pass), messaging path reconciled,
+CMake synced, build + tests green. The blockers were three codegen
+feature gaps, discovered and documented in the
+[[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][conversion task]]'s notes,
+re-verified on 2026-09-08 with the first trading drift run the
+component has ever had:
 
-(a) *Nested domain groups*: the domain template supports only the
-fixed =instrument_identity= + =audit_record= groups and flat columns,
-so the C1202-nested domains of =bond_instrument=
-(=bond_terms=/=bond_features=/=bond_option=, several members
-non-persisted) and the similarly-nested =commodity_instrument=/
-=credit_instrument= cannot regenerate zero-diff -- a generated flat
-domain would break every consumer of the nested sub-structs
-(persistence, ores.ore XML round-trip mappers, Qt forms).
+(a) *Nested domain groups*: partly closed by construction. The rates
+orgs prove the fixed identity/audit group pair works end to end (they
+regenerate byte-identical today); the =trade= org proves a
+multi-sub-struct domain is expressible as separate field-group orgs
+(trade_identity/parties/classification/lifecycle/audit) with
+=:domain_class:= and =:domain_include:= escape hatches on the entity
+org. What remains unexpressible is the =bond_instrument= shape:
+several nested sub-structs (=bond_terms=, =bond_features= and
+=bond_option=) with non-persisted members inside one entity org. The
+2026-09-08 probe settled the open question: the trade-style shape does
+not cover it. The draft org regenerated a flat domain (identity member,
+19 flat fields, audit member); the three mid-groups vanished, the
+non-persisted =security_id= member was dropped, and the C1202
+decomposition of the tree domain is unreachable. The domain template
+must grow arbitrary mid-group support (a composition key on the entity
+org naming field-group orgs to embed between the identity and audit
+members) before bond, commodity and credit can convert. The evidence is
+in the Notes.
 
-(b) *Column-name-to-group-field mapping*: the mapper template emits
-=r.identity.{{column_name}}= keyed on the model column name while the
-=ores.trading.instrument_identity= field-group hardcodes the
-=instrument_id= field name, so =scripted_instrument='s PK column =id=
-cannot map into the group (its hand-crafted mapper bridges by hand:
-=r.identity.instrument_id = v.id=). The alternatives -- renaming the
-DB column or dropping the identity group -- both break zero-diff.
+(b) *Column-name-to-group-field mapping*: open, unchanged. No
+=:column:= or =:db_column:= override key exists in codegen, so
+=scripted_instrument='s PK column =id= cannot map into the
+=ores.trading.instrument_identity= field group whose field is named
+=instrument_id=; its hand-crafted mapper bridges by hand
+(=r.identity.instrument_id = v.id=). The alternatives are renaming the
+DB column, dropping the identity group, or taking the =trade=-style
+escape hatch for the domain. All break zero-diff as modeled today.
 
-(c) *Service paste-block/custom methods*: the service template has no
-paste-block/custom-method extension mechanism, so
-=composite_instrument=/=fra_instrument= and the swap-leg entities'
-custom transactional service logic (=save_*_instrument(data, legs)=,
-=remove_*_instrument=, =get_legs=/=get_legs_batch=) cannot be
-reproduced by generation.
+(c) *Service custom methods*: the fra bind proved the sharpest form of
+this gap. The org cannot express the cross-entity =get_swap_legs= /
+=get_swap_legs_batch= accessors (the fra service reaches into the
+shared swap_legs table through a leg repository), so the bind-era
+regeneration clobbered the restored bespoke service and the follow-up
+commit 2e75d95704 restored it by hand, adding the
+plural =delete_fra_instruments= the generated registrar calls. The
+Sep-8 drift run confirms the model's fra service omits the leg
+accessors today, so regeneration would silently drop them. The
+paste-block machinery exists in codegen (<<paste:UUID>> substitution,
+core.py:995) but no org supplies paste blocks and no template consumes
+them; the Aug-10 note stands: no org-consumable extension mechanism
+for service methods. Composite's transactional save
+(=save_*_instrument(data, legs)=), its cascade remove and its
+read-only legs subjects sit behind the same gap.
 
-Then convert each entity following the proven pattern: modern-format
-model bound to the trading-instrument variability profile, zero-diff
-regeneration across all facets (verified with a second pass), NATS
-eventing-integration-test facet enabled, messaging path reconciled,
-CMake synced, build + tests green.
+A fourth gap surfaced in the same Sep-8 verification:
+
+(d) *Per-family messaging emission cannot be suppressed*: every
+instrument org unconditionally emits its per-family protocol, handler
+and registrar. The rates consolidation lives entirely tree-side (the
+word "consolidated" appears nowhere in codegen), so when the shell
+story's rates batch deleted the 36 per-family rates messaging files as
+superseded (0ea3563012), the deletion was inexpressible in the model
+and the first trading drift run re-emitted all 36.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Codegen feature work (see Goal).       |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-09                               |
+| Now          | Gap (a) probed and decided 2026-09-08: the trade-style shape does not cover the bond domain; codegen must grow mid-group support. Probe org and evidence in Notes. |
+| Waiting on   | The gap-(a) codegen change (group-composition key in the domain template) before bond/commodity/credit conversion; trading drift reconciliation before any conversion can verify zero-diff. |
+| Next         | Probe gap (b) with scripted's column-name mapping and gap (c) with composite's service methods; then scope the (a) and (d) codegen changes. |
+| Last touched | 2026-09-08                               |
 
 * Acceptance
 
-- The codegen domain template supports arbitrary nested domain groups
-  beyond the fixed identity/audit groups, including non-persisted
-  members, so =bond_instrument=/=commodity_instrument/=
-  =credit_instrument= regenerate zero-diff.
-- The codegen mapper supports mapping a model column name to a
-  different identity-group field name, so =scripted_instrument='s =id=
-  PK column regenerates zero-diff.
-- The codegen service template supports paste-block/custom-method
-  extension points reproducing the composite/fra/swap-leg
-  transactional service logic.
-- All 7 entities (bond, commodity, credit, scripted, composite, fra,
-  swap legs) converted per the established pattern: profile-bound
-  model, eventing facet enabled, messaging reconciled, second-pass
-  zero-diff verified.
-- Build green and =ores.trading.{api,core,service}.tests= plus
-  consumer libs green after each batch.
+- Trading-cpp regenerates drift-clean and joins the drift-check
+  registry, after reconciling the Sep-8 drift inventory (36 rates
+  messaging files, 16 fx/equity service files, the fra service
+  exclusion, the trade-family outputs).
+- The =bond_instrument=/=commodity_instrument/=credit_instrument=
+  shape is decided: either trade-style field-group orgs plus escape
+  hatches cover the C1202 nesting and non-persisted members zero-diff,
+  or the domain template grows arbitrary-group support and the models
+  regenerate zero-diff.
+- =scripted_instrument='s =id= PK column maps into the identity group,
+  or its conversion takes a recorded alternative that preserves
+  zero-diff.
+- The composite/fra-class transactional service logic
+  (=save_*_instrument(data, legs)=, cascade remove, cross-entity leg
+  accessors, read-only legs subjects) is either org-expressible or
+  carried by a mechanical, documented exclusion that survives
+  regeneration.
+- All five families (bond, commodity, composite with composite_leg,
+  credit, scripted) converted per the established pattern, each batch
+  ending with build green, the =ores.trading.{api,core,service}.tests=
+  suites green, and a second-pass zero-diff regeneration verified
+  under a drift check that actually covers trading.
 
 * Notes
 
 Deferred from the [[id:F560ADDF-260A-4ECC-81EB-1C83A32CD5AA][conversion
-task]] on 2026-08-09: all four remaining flat-or-nested candidates
-(bond, commodity, credit, scripted) are feature-gated, not
-effort-gated; composite/fra/swap-legs were already deferred there for
-the same class of reason. The task is the follow-up those deferral
-notes point at.
+task]] on 2026-08-09: the remaining families are feature-gated, not
+effort-gated, and this task is the follow-up those deferral notes
+point at. fra and swap legs have since converted with the rates
+binding (Sep 6) and leave the remaining set; fra carries the service
+exclusion documented in 6c59c3cbfb and repaired in 2e75d95704.
+
+The 2026-09-08 verification ran the first trading regeneration the
+component has ever had: trading-cpp is absent from the drift registry
+(=check_component_drift.py= --all covers refdata, reporting,
+marketdata, compute-cpp, iam, iam-cpp only), so the shell story's
+drift-clean acceptance was vacuous for trading. The run produced 47
+modified and 65 untracked files, in five groups:
+
+- 16 fx/equity service files differ by brace style only (3 lines
+  each): the service template now wraps single-statement for bodies,
+  and the converted families were never regenerated since. Harmless;
+  regeneration fixes them.
+- 36 rates per-family messaging files (protocol, handler, registrar
+  for the 9 rates families) re-emitted: gap (d). The shell story's
+  rates batch deleted them from the tree (0ea3563012) after the
+  consolidated wire superseded them; the model cannot express that.
+- The fra service differs by the documented exclusion: gap (c).
+- The trade-family outputs (domain, protocol, handler, service, trades
+  SQL, and the four Qt classes =trade.org='s Qt facet drives) differ
+  from the model because the tree hand-evolved past it: the Qt
+  controllers carry features the org does not express (openEdit,
+  import, ChangeReasonCache/ImageCache wiring), the trades schema
+  carries six hand-added indexes, and the model additionally emits
+  never-tracked messaging files (=trade_registrar=, =trade_event_
+  registrar=, trade history mapper and provider registrar) that the
+  tree never carried; the deployed trade chain is composed by hand in
+  the service, outside the org's expression. trade is unbound, so
+  nothing regenerated it after the hand work and the drift accumulated
+  invisibly.
+- trade_identifier/trade_party_role/lifecycle_event and the four
+  simple lookups regenerate clean; they are not part of the drift.
+
+The 2026-09-08 bond.org probe ran the gap-(a) test. The draft
+(=ores.trading.bond_instrument.org=, parked beside this task in
+=doc/agile/versions/v0/sprint_25/port-trading-instruments-to-codegen/=)
+cloned the rates archetype
+(=vanilla_swap_instrument.org=): identity-grouped columns,
+=:domain_identity_group: ores.trading.instrument_identity=,
+=:domain_audit_group: ores.dq.audit_record=, tablename and checks
+mirroring the hand-written SQL. Regenerating trading-cpp emitted 30
+bond files: 21 tracked hand-written files were rewritten and 7 new
+files materialized. Every file diverged structurally, not cosmetically.
+
+The emitted domain =bond_instrument= holds the identity member, 19 flat
+fields and the audit member. =bond_terms=, =bond_features= and
+=bond_option= do not exist; =terms.security_id= (domain-only, no SQL
+column) disappears because no org key marks a column domain-only; and
+the nullable coupling rewrites members the tree made non-optional
+(=int settlement_days= becomes =std::optional<int>=, =double
+conversion_ratio= becomes =std::optional<double>=), deleting the
+mapper's =value_or(0)= coercion. The mapper diff rewrites every access
+path (=r.terms.issuer= to =r.issuer=). The emitted SQL create renames
+the PK column =id= to =instrument_id= (column, PK, gist exclusion,
+nil-uuid check, indexes and trigger body), merges the seven extension
+columns into the main create (the hand-written
+=*_extensions_create.sql= becomes an orphan) and drops two hand-added
+indexes. Only =bond_instrument_json_io.cpp= emitted byte-identical.
+The regen also confirmed the grammar boundary: core.py parses exactly
+two group keys (=domain_identity_group=, =domain_audit_group=), the
+=* Custom repository methods= org section feeds no template, and no key
+gates per-family messaging emission.
+
+The probe verdict: gap (a) is open. The trade-style shape does not
+cover bond. The =trade= org itself emits a fully flat domain today (no
+identity member), so the tree's five-group =struct trade= is not
+regenerable from its org either; that divergence is part of drift group
+(iv). The fix is a domain-template change: a group-composition key on
+the entity org naming field-group orgs, embedded between the identity
+and audit members, with column-less group fields (security_id) mapped
+domain-only.
+
+The other three gaps closed at grammar level on the same run, without
+further probes. (b) The bond probe's SQL diff proves the mechanism: an
+org PK column named =instrument_id= emits SQL =instrument_id=, while
+the hand-written legacy tables (bond, scripted, and the composite,
+commodity and credit siblings) name the PK =id=. No =:column:= or
+=:db_column:= override exists, so the hand-written mappers' bridge
+(=r.identity.instrument_id = ... v.id=,
+scripted_instrument_mapper.cpp:33 and its four siblings) has no org
+expression. (c) No template
+consumes the =* Custom repository methods= org section (only
+migrate_json_to_org.py and org_loader.py mention it), and the
+=<<paste:UUID>>= markers in the domain, generator and registrar
+templates have no org-side supplier. Fra's leg accessors and
+composite's legs-save stay outside the model, exactly as the Sep-6
+fiasco and the Sep-8 oracle run showed. (d) core.py has no messaging
+gate; per-family protocol, handler and registrar emission is
+unconditional, so the rates consolidation (0ea3563012) stays
+inexpressible until the model gains a per-entity opt-out key. Gaps (a)
+and (d) need codegen changes; (b) and (c) need either small codegen
+keys or a recorded exclusion per family.
+
+The eventing-test coverage question that opened this investigation is
+also settled at org level: the =:ores.cpp.eventing-integration-test.
+enabled:= variability flag sits inline in exactly the 16 converted
+fx/equity orgs and in none of the other 23 trading orgs, so the rates
+families never generated eventing tests. The systemic fix is the
+profile assignment (enable the feature in the trading-instrument
+profile), not per-org flags, and the conversion batches below must not
+repeat the per-org pattern.
 
 * Test Scenarios
 
@@ -109,10 +248,14 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2035][#2035]] | [doc] Record the trading codegen gap investigation probes and verdicts |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
+| 1 | The probe org is not inert: discover_models picks up any entity org in the trading modeling tree, so the next trading regeneration rewrites the 21 hand-written bond files; the PR's "not a bound model" claim is false as filed | projects/ores.trading/modeling/ores.trading.bond_instrument.org | Fixed | Real gap, confirmed against manifest.py: codegen discovery is path plus type only, and exclude_org_types is type-scoped (excluding "entity" would stop the 36 bound families too). The org moved beside this task in the agile tree, out of discovery, with the parking rule in its prose and the Notes location phrase corrected. |
+| 2 | :ID: is lowercase and space-padded, unlike every sibling org | doc/agile/versions/v0/sprint_25/port-trading-instruments-to-codegen/ores.trading.bond_instrument.org | Fixed | Uppercased and single-spaced. |
+| 3 | No trailing =* See also= section | doc/agile/versions/v0/sprint_25/port-trading-instruments-to-codegen/ores.trading.bond_instrument.org | Fixed | Added, linking the task and the vanilla_swap archetype. |
 
 * Result

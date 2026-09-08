@@ -387,16 +387,28 @@ the schema has can be written by a generator that knows the schema, with no C++
 and no ORE dependency.
 
 The ceiling is lower, and it is set by the schema rather than by the generator.
-ORE defines 27 equity trade types and the nine equity tables can store 16 of
-them, so eleven equity products cannot be represented at all. The same survey has
-not been done for the other asset classes.
+ORE defines 112 trade types and 30 instrument tables hold them, in two
+incompatible ways.
 
-The consequence for this story is bounded. The presets can be realistic within
-what the schema holds, and they cannot cover a desk's full equity book. A
-distribution asserting a weight for =EquityBasketOption= would be asserting
-something the database cannot store. See
-[[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]] for what that would take to change; it is not
-this story's work.
+| Coverage     | Tables | Asset classes                        | Trade types       |
+|--------------+--------+--------------------------------------+-------------------|
+| Declared     |     18 | equity, fx, scripted, composite      | 37 of 61 storable |
+| Not declared |     12 | bond, commodity, credit, swap family | 51, unknown       |
+
+Where a table declares which products it holds, the declaration is incomplete:
+equity stores 16 of 30, fx 16 of 25. Where it does not declare, coverage cannot
+be computed at all, and 51 of the 112 trade types are in that position.
+
+Two structural gaps account for 28 of the 112, a quarter of the catalogue, and
+they recur identically in equity, fx and commodity. Sixteen products are
+multi-underlying and no table can hold a basket; twelve need an observation
+schedule and the schema holds only a frequency and two dates.
+
+The consequence for this story is bounded but real. The presets can be realistic
+within what the schema holds, and a distribution asserting a weight for
+=EquityBasketOption= or =CommodityRainbowOption= would assert something the
+database cannot store. See [[id:9F706D25-7C2F-4988-83F0-A7B5E92BD5CD][Investigation: Trade model defects]] for the analysis
+and the proposed repair; it is not this story's work.
 
 *** What populating a trade requires
 
@@ -511,8 +523,9 @@ required to admit it without change to the block.
 - Can a bulk path establish the bitemporal versioning in a set operation, rather
   than through the per-row trigger that costs the 25x? This is the question the
   measurements raised and it did not exist when this document was written.
-- What is the equivalent coverage gap in the other asset classes? Only equity has
-  been surveyed.
+- What can the twelve unconstrained instrument tables actually hold? They cover
+  51 of the 112 trade types and declare nothing, so the coverage figure above is
+  a lower bound rather than a measurement.
 
 * See also
 

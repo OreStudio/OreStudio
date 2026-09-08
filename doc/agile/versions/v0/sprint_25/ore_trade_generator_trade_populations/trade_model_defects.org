@@ -486,78 +486,97 @@ models and regenerates through the schema and repositories.
 The child tables are the priority regardless of which name wins, because they are
 where the mismatch causes a wrong reference rather than merely a surprise.
 
-** The Equity Family
+** Coverage Across the Asset Classes
 
-Every defect-9 table is an equity table, which is reason enough to look at the
-asset class as a whole rather than at the five constraints. Doing so found a
-larger problem than the constraints are.
+Every defect-9 table is an equity table, which prompted a survey of that asset
+class. The survey then had to be repeated for the others, and the result is that
+equity is not special: it is the class where the schema states its coverage, so
+it is the class where the gap is visible.
 
-*** Scope
+*** Two modelling strategies, not one
 
-Nine tables model equity. ORE defines 27 equity trade types. The nine tables can
-store 16 of them.
+ORE defines 112 trade types across eight asset classes. The schema has 30
+instrument tables, and they follow two incompatible approaches.
 
-| Table                 | Types | Which                                   |
-|-----------------------+-------+-----------------------------------------|
-| =equity_barrier_option= |     3 | Barrier, DoubleBarrier, EuropeanBarrier |
-| =equity_accumulator=    |     2 | Accumulator, TaRF                       |
-| =equity_digital_option= |     2 | Digital, Touch                          |
-| =equity_option=         |     2 | Option, CliquetOption                   |
-| =equity_position=       |     2 | Position, OptionPosition                |
-| =equity_swap=           |     2 | Swap, WorstOfBasketSwap                 |
-| =equity_asian_option=   |     1 | AsianOption                             |
-| =equity_forward=        |     1 | Forward                                 |
-| =equity_variance_swap=  |     1 | VarianceSwap                            |
+| Approach                 | Tables | Asset classes            | Coverage declared |
+|--------------------------+--------+--------------------------+-------------------|
+| A table per product family |     18 | equity, fx, scripted, composite | Yes, by a check constraint on =trade_type_code= |
+| One table per asset class  |     12 | bond, commodity, credit, and the swap family | No |
 
-*** Defect 14: eleven equity products cannot be stored
+The first group constrains =trade_type_code= to the products the table holds, so
+the table says what it is for and a product it cannot hold is refused. The second
+group has no such constraint. =ores_trading_commodity_instruments_tbl= has 26
+domain columns, 24 of them nullable, and accepts any of the 23 commodity trade
+types with nothing recording which columns belong to which product.
 
-*Current shape.* Eleven of ORE's 27 equity trade types have no table that will
-accept them: =EquityBasketOption=, =EquityBasketVarianceSwap=,
-=EquityBestEntryOption=, =EquityDoubleTouchOption=, =EquityFutureOption=,
-=EquityGenericBarrierOption=, =EquityOutperformanceOption=,
-=EquityPairwiseVarianceSwap=, =EquityRainbowOption=,
-=EquityStrikeResettableOption= and =EquityWindowBarrierOption=.
+*This is defect 9 without the constraint.* The equity tables hold two products
+each and say so. The commodity table holds twenty-three and does not.
 
-The trade type reference table names all 27, and =trades.trade_type= accepts any
-of them, so a trade can be booked that no instrument table can describe.
+*** Defect 14: declared coverage is incomplete, and elsewhere undeclared
 
-*Why it is wrong.* This is not a backlog of tables not yet written. Nine of the
-eleven are blocked by a structural decision rather than by absent work, and
-adding a table per product would not fix them.
+*Where coverage is declared*, it is incomplete:
 
-*** Defect 15: an equity underlying is an unqualified name
+| Asset class | Trade types | Storable | Missing |
+|-------------+-------------+----------+---------|
+| equity      |          30 |       16 |      14 |
+| fx          |          25 |       16 |       9 |
+| scripted    |           5 |        4 |       1 |
+| composite   |           1 |        1 |       0 |
 
-*Current shape.* All nine tables carry =underlying_name text=. It is not a
-foreign key, no trigger validates it, and it carries no scheme, so the string
-alone does not say what it identifies.
+*Where it is not declared*, coverage cannot be computed at all. Bond, commodity,
+credit and the swap family account for 51 of the 112 trade types, and no
+statement in the schema says which of them their tables can hold. The answer may
+be all of them or may not; the model does not say, and a generator cannot ask.
 
-*Why it is wrong.* Two consequences, and the second is the larger.
+The trade type reference table names all 112, and =trades.trade_type= accepts any
+of them, so a trade can be booked in every asset class that no instrument table
+is known to describe.
 
-The value is unconstrained, so one instrument can be written as =VOD.L=, =VOD LN=
-and =Vodafone= in three rows with nothing relating them. Any question about
-exposure to an issuer becomes a string-matching exercise. The name also omits
-what pricing needs: an equity is identified by a ticker *and* a currency, and the
-currency here lives in a separate column that nothing ties to the name.
+*How to address it.* Declare the coverage everywhere first, before adding any
+table. A =trade_type_code= constraint on the twelve unconstrained tables turns an
+unknown into a list, and the list is what says whether a table is missing. Doing
+this is cheap and it is the prerequisite for knowing how large the rest of the
+work is.
 
-More importantly, *a single column cannot hold a basket*. Five of the eleven
-missing products are multi-underlying: basket options, basket variance swaps,
-rainbow options, outperformance options and pairwise variance swaps. They are
-absent because the column shape cannot express them. The one product that does
-have a basket, =EquityWorstOfBasketSwap=, escapes through =basket_json=, a text
-column holding an unqueryable list.
+*** Defect 15: an underlying is an unqualified name
+
+*Current shape.* Equity's nine tables carry =underlying_name text=, unvalidated
+and carrying no scheme. Commodity carries =commodity_code= and =basket_json=. FX
+identifies its pair by currency columns.
+
+*Why it is wrong.* The value is unconstrained, so one instrument can be written
+as =VOD.L=, =VOD LN= and =Vodafone= in three rows with nothing relating them, and
+any question about exposure to an issuer becomes a string-matching exercise. The
+name also omits what pricing needs: an equity is identified by a ticker *and* a
+currency, and the currency lives in a separate column that nothing ties to it.
+
+More importantly, *a single column cannot hold a basket*. Sixteen trade types
+across equity, fx and commodity are multi-underlying, and none can be stored:
+
+| Family                 | Present in            |
+|------------------------+-----------------------|
+| =BasketOption=           | commodity, equity, fx |
+| =BasketVarianceSwap=     | commodity, equity, fx |
+| =RainbowOption=          | commodity, equity, fx |
+| =PairwiseVarianceSwap=   | commodity, equity, fx |
+| =WorstOfBasketSwap=      | commodity, equity, fx |
+| =OutperformanceOption=   | equity                |
+
+The two products that do carry a basket, =EquityWorstOfBasketSwap= and the
+commodity basket, escape through =basket_json=, a text column holding an
+unqueryable list.
 
 *Replacement shape.* This project already has the identifier this column should
 carry. [[id:C3E053CA-0D4B-480B-9119-E11530160EC1][oresmd]] is a canonical, structured market data URI, implemented in
-=ores.marketdata.api= as =oresmd_uri=, and an equity underlying is exactly what
-it addresses:
+=ores.marketdata.api= as =oresmd_uri=, and an underlying is what it addresses:
 
 : oresmd://equity/aapl?ccy=usd
 
 The authority is the asset class, the path is the ticker, and the currency is a
 query parameter, so the identifier carries what the name and the =currency=
 column carry today and says which scheme it is in. It projects deterministically
-into ORE's own quote key, =EQUITY/PRICE/AAPL/USD=, which is what the pricing
-side needs.
+into ORE's own quote key, =EQUITY/PRICE/AAPL/USD=. Because the authority is the
+asset class, the same column serves commodity and fx underlyings.
 
 An underlying is then a row rather than a column, so a basket is n rows:
 
@@ -572,8 +591,8 @@ ores_trading_instrument_underlyings_tbl
 #+end_src
 
 A single-underlying option is one row, a basket is n, and an outperformance
-option is two. =basket_json= is deleted and =underlying_name= comes out of all
-nine tables.
+option is two. =basket_json= is deleted and =underlying_name= comes out of the
+nine equity tables.
 
 *What this depends on.* =oresmd= is implemented as a domain type and no database
 column uses it yet, so this would be its first persisted use. Two questions
@@ -582,44 +601,79 @@ validation in the trigger, or parsed into columns, and whether a resolved
 identifier should be registered in a table so that two trades naming the same
 underlying share a row rather than a string.
 
-*** Defect 16: no observation schedule for equity
+*** Defect 16: no observation schedule
 
-*Current shape.* Products that observe the underlying over time hold that
-schedule as scalars. =equity_asian_option= has =averaging_start_date= and
-=averaging_end_date=, =equity_accumulator= has =fixing_frequency=, and
-=equity_option= has =cliquet_frequency=.
+*Current shape.* Products that observe an underlying over time hold that schedule
+as scalars. =equity_asian_option= has =averaging_start_date= and
+=averaging_end_date=, =equity_accumulator= has =fixing_frequency=,
+=equity_option= has =cliquet_frequency=, and =commodity= has
+=averaging_start_date=, =averaging_end_date= and =strip_frequency_code=.
 
 *Why it is wrong.* A frequency plus two dates describes a regular schedule and
 nothing else. It cannot express an irregular fixing list, a schedule with
-holidays removed, or an observation window that opens and closes. That is why
-=EquityWindowBarrierOption=, =EquityGenericBarrierOption=,
-=EquityBestEntryOption= and =EquityStrikeResettableOption= have no home.
+holidays removed, or an observation window that opens and closes. Twelve trade
+types across three asset classes need one and have no home:
 
-*Replacement shape.* This is defect 1's schedule table applied to equity. The
-same =ores_trading_schedules_tbl=, with a =schedule_type_code= of =fixing=,
-=averaging= or =observation=, serves all four, and the scalar frequency columns
+| Family                     | Present in            |
+|----------------------------+-----------------------|
+| =BestEntryOption=            | commodity, equity, fx |
+| =StrikeResettableOption=     | commodity, equity, fx |
+| =WindowBarrierOption=        | commodity, equity, fx |
+| =GenericBarrierOption=       | commodity, equity, fx |
+
+*Replacement shape.* This is defect 1's schedule table. The same
+=ores_trading_schedules_tbl=, with a =schedule_type_code= of =fixing=,
+=averaging= or =observation=, serves all twelve, and the scalar frequency columns
 become a generated schedule rather than a special case.
 
 *** What the repair looks like
 
-Ordered by dependency rather than by size.
+Two structural gaps account for 28 of the 112 trade types, a quarter of the
+catalogue, and they are the same two gaps in every asset class that has them.
+That is the argument for fixing the mechanisms rather than adding tables.
 
-1. *The underlyings table, carrying an oresmd URI.* Everything else is easier
-   afterwards, and five missing products stop being blocked. It needs no new
-   master, since oresmd already identifies an equity by ticker and currency; it
-   does need a decision on how a URI is stored and validated.
-2. *The schedule table*, shared with defect 1 rather than built for equity. Four
-   more missing products stop being blocked.
-3. *Split the two exclusive-or tables*, per defect 9. Independent of the other
-   two and can be done at any point.
-4. *Add tables for what is then left*: the double touch and future option
-   variants, which have no structural obstacle once the first two are done.
+1. *Declare coverage on the twelve unconstrained tables.* Cheap, and it converts
+   an unknown into a list. Nothing else can be sized until this is done.
+2. *The underlyings table, carrying an oresmd URI.* Sixteen trade types stop
+   being blocked, across three asset classes. It needs no new master.
+3. *The schedule table*, shared with defect 1. Twelve more stop being blocked.
+4. *Split the exclusive-or tables*, per defect 9, and decide what to do about the
+   generic commodity, bond and credit tables, which are the same problem at
+   greater scale.
+5. *Add tables for what is then left*, which is a much shorter list than it looks
+   today.
 
 *What this is not.* None of this changes how a product is priced, and none of it
-blocks the trade population story, since the 16 storable types are enough to
+blocks the trade population story, since what the schema stores is enough to
 generate a realistic population. It is recorded because the population work
-surfaced it, and because a population that silently omits eleven of a desk's
-products is not the population anyone asked for.
+surfaced it, and because a population that silently omits a quarter of the
+catalogue is not the population anyone asked for.
+
+** The Equity Family in detail
+
+Equity is the worked example, because it is the class with the most declared
+coverage and therefore the clearest gap.
+
+Nine tables model equity. ORE defines 30 equity trade types and the nine can
+store 16.
+
+| Table                 | Types | Which                                   |
+|-----------------------+-------+-----------------------------------------|
+| =equity_barrier_option= |     3 | Barrier, DoubleBarrier, EuropeanBarrier |
+| =equity_accumulator=    |     2 | Accumulator, TaRF                       |
+| =equity_digital_option= |     2 | Digital, Touch                          |
+| =equity_option=         |     2 | Option, CliquetOption                   |
+| =equity_position=       |     2 | Position, OptionPosition                |
+| =equity_swap=           |     2 | Swap, WorstOfBasketSwap                 |
+| =equity_asian_option=   |     1 | AsianOption                             |
+| =equity_forward=        |     1 | Forward                                 |
+| =equity_variance_swap=  |     1 | VarianceSwap                            |
+
+The fourteen it cannot store divide as the defects above predict. Eleven are the
+multi-underlying and observation-schedule families. The remaining three,
+=CashPosition=, =ContractForDifference= and =TotalReturnSwap=, are classified as
+equity products and have no table of any kind, which is the ordinary kind of gap:
+a table nobody has written yet.
 
 ** What the loader could not populate
 
@@ -712,12 +766,14 @@ the counts suggest.
 
 Defects 14 to 16 are *expressiveness defects*, and they are the only kind that
 loses information rather than discipline. A shape the domain has cannot be
-written down at all: eleven equity products have no table, because an underlying
-is a scalar and an observation schedule is a frequency. The others make the model
+written down at all: 28 of ORE's 112 trade types have no table, across equity, fx
+and commodity, because an underlying is a scalar and an observation schedule is a
+frequency. The others make the model
 harder to trust; these make it unable to hold what a desk trades.
 
 Two defects carry a measurement rather than an argument. Defect 1 costs 4x on the
-load path and defect 7 costs about 25x. Defect 14 carries a count: 11 of 27.
+load path and defect 7 costs about 25x. Defect 14 carries a count: 37 of 112
+trade types are known to be storable, and for 51 the schema says nothing.
 
 * Recommendations
 

@@ -33,13 +33,20 @@ The 41 entity headers under
 field name and declared type, and the fields grouped by pattern. Counts below are
 from that scan and are reproducible against the headers.
 
-Two of the defects were also measured. =scripts/bench_trade_shapes.py= loads
-populations of each instrument shape and times them, which is how the cost of the
-JSON column was separated from the cost of the instrument's complexity.
+Three of the defects were also measured. =scripts/bench_trade_shapes.py= loads
+populations of each instrument shape, which separated the cost of the JSON column
+from the cost of the instrument's complexity.
+=scripts/load_trade_population.py= fills every column of all 41 deployed tables
+and times each, which attributed the insert cost between the triggers and the
+bitemporal exclusion constraint.
 
-The scan reads declared C++ types, not the deployed SQL schema. Where a mapper
-converts a type on the way to the database, the defect may be narrower than the
-count suggests. That is stated per defect where it applies.
+The loader also found defects by failing. Where the schema rejected a fully
+populated row, the rejection named the rule that no declaration carries, and
+defects 8 and 9 are those rejections read as findings.
+
+Defects 2 and 3 were raised from the C++ headers and then checked against the
+deployed SQL, which corrected them. Both are recorded with what the check
+found.
 
 * Defects
 
@@ -124,10 +131,13 @@ this shape makes expensive.
 genuinely carried. Postgres stores a =date= in four bytes against ten or more for
 the text, so the change also narrows every instrument row.
 
-*Caveat.* The scan reads the C++ declaration. The generated SQL may already
-declare =date= for some of these, in which case the defect is the C++ type losing
-information rather than the storage. The repair differs in size but not in
-direction, and the deployed schema should be checked before the count is quoted.
+*Resolved against the deployed schema.* The SQL is correct. The deployed columns
+are =date=, and 56 of them are. The defect is therefore narrower than the scan
+suggested: the C++ declaration widens a =date= to a string on the way out of the
+database, so the type information is lost at the boundary rather than in storage.
+
+That makes this a mapper defect, not a schema defect, and it is cheaper than the
+count implies.
 
 ** Defect 3: monetary amounts held as double
 
@@ -148,6 +158,10 @@ amounts. They are inputs to analytics that are themselves floating point, and
 =numeric= would cost performance to buy a precision the mathematics does not
 have. The rule is the denomination, not the field's apparent numeric nature: if
 it has a currency, it is =numeric=.
+
+*Resolved against the deployed schema.* The SQL is again correct: 72 columns are
+=numeric= and only two are =double precision=. As with defect 2, the loss happens
+in the C++ declaration rather than in the database, so this is a mapper defect.
 
 ** Defect 4: enumerations held as free text with no reference table
 
@@ -229,9 +243,98 @@ new instrument copies whichever name it happened to see.
 the survivor, and =payment_frequency_code= keeps the suffix the convention
 requires.
 
+** Defect 7: referential integrity implemented in PL/pgSQL
+
+*Current shape.* The 41 trading tables carry 866 check constraints, 41 primary
+keys and *no foreign keys at all*. Referential integrity is instead enforced by
+=insert= triggers that query the parent table and raise. The trigger source calls
+these soft foreign keys in its own comments.
+
+*Why it is wrong.* This is the population loader's largest finding, and it is a
+performance defect rather than a correctness one.
+
+A foreign key is enforced by an index probe the planner controls. A trigger is a
+PL/pgSQL function invoked per row, which runs a query per reference and raises on
+failure. Measured on =ores_trading_vanilla_swap_instruments_tbl=, the deployed
+table loads at 2200 rows/sec, against 56032 for a clone carrying the same
+bitemporal exclusion constraint but no triggers. The triggers account for a
+factor of about 25.
+
+The database also cannot reason about a relationship it is not told about. No
+cascade, no deferral, and no plan that exploits the reference.
+
+*Replacement shape.* Declared foreign keys wherever the reference is to a table
+that exists, leaving triggers only for the checks a foreign key cannot express,
+such as tenancy scoping. The bulk population path is the immediate beneficiary,
+since a set-based load can defer or drop constraints in a way it cannot defer a
+per-row trigger.
+
+*What must not be lost.* These triggers do more than check references. They
+denormalise fields and maintain the bitemporal validity range that the exclusion
+constraint enforces, so they cannot simply be removed. Separating the validation
+from the versioning is the first step, and only the validation half is replaceable
+by a foreign key.
+
+** Defect 8: enumerations enforced in PL/pgSQL
+
+*Current shape.* Loading every table surfaced 27 enumerations that no check
+constraint and no foreign key declares. They live inside trigger functions, which
+raise with the valid set in the message, for example =trade_type= against 112
+values, =leg_type= against ten and =payment_frequency= against nine.
+
+*Why it is wrong.* This is defects 4 and 5 in a third form, and the worst of the
+three. The valid set exists, and it is written in a procedure rather than in the
+schema. Nothing can query it, no tool can generate from it, and a reader
+discovers it by triggering a failure.
+
+=ores_trading_trade_types_tbl= holds 112 rows and =trades.trade_type= is =text=
+with no foreign key to it. The reference table and the enforcement both exist,
+and they are not connected.
+
+*Replacement shape.* Declare the foreign key to the reference table that already
+holds the values, and delete the validation from the trigger. Where no reference
+table exists, defect 5's remedy applies first.
+
+*Evidence.* =scripts/load_trade_population.py= discovers these by loading a row,
+reading the rejection, and retrying with what the message named. Its output lists
+the 27 it learned, which is the current inventory.
+
+** Defect 9: one table holding two products
+
+*Current shape.* Four equity instrument tables carry a check constraint of the
+form "either this =trade_type_code= and this column is not null, or that
+=trade_type_code= and that column is null". =ores_trading_equity_option_instruments_tbl=
+holds both =EquityOption= and =EquityCliquetOption=, discriminated by
+=trade_type_code=, with =cliquet_frequency= required to be null for the former.
+
+*Why it is wrong.* The table's columns are not all meaningful for all its rows,
+so every reader must know the discriminator before it can interpret a row. The
+constraint expresses in SQL what a type system would express in structure.
+
+It also has a practical cost that the loader found first: a population cannot
+fill every column, because filling them is invalid for one of the two products.
+
+*Replacement shape.* Either a table per product, which the schema already does
+for 30 other instruments, or an explicit optional-group construct if the pattern
+is common enough to be worth naming. The inconsistency is the defect: these four
+are modelled differently from the rest for no stated reason.
+
+** Defect 10: product type names an asset class
+
+*Current shape.* =product_type_t= is an enum on =ores_trading_trades_tbl= with
+eight values: =swap=, =fx=, =bond=, =credit=, =equity=, =commodity=, =composite=
+and =scripted=.
+
+*Why it is wrong.* Those are asset classes, and the column is called product
+type. The name is taken by a coarser concept than the one a desk means by
+product, which blocks the term for the classification that actually needs it.
+
+*Replacement shape.* Rename the column and the type to =asset_class=, which is
+what it holds, and leave =product_type= free.
+
 * Conclusions
 
-The six defects fall into two kinds, and confusing them would misdirect the
+The ten defects fall into three kinds, and confusing them would misdirect the
 repair.
 
 Defects 1 to 3 are *type defects*. A value is held in a type too wide for its
@@ -240,17 +343,29 @@ These cost performance and correctness together, and defect 1 is the only one of
 the six whose cost is measured rather than argued.
 
 Defects 4 to 6 are *integrity defects*. A relationship the model relies on is not
-declared, so nothing enforces it. These cost nothing at load time and are the
-more expensive kind, because a wrong value enters the system silently and is
-found later by whoever consumes it.
+declared in the schema, so nothing the database controls enforces it.
+
+Defects 7 to 10 are *placement defects*, and they are the ones the loader found.
+The rule exists and it is written in the wrong place. Referential integrity lives
+in PL/pgSQL rather than in a foreign key, enumerations live in trigger bodies
+rather than in the reference tables that already hold their values, a product
+distinction lives in a check constraint rather than in a table, and a concept
+sits under a name that means something else.
+
+Placement is why these are expensive. A rule in a procedure cannot be queried,
+planned against, deferred or generated from, and defect 7 shows the price: the
+triggers cost a factor of about 25 on the insert path.
 
 The single largest finding is that the model already knows the right answers.
-Reference tables exist, the =_code= convention is established, and both are
-applied to a minority of the fields that need them. *The repair is mostly the
-consistent application of decisions this model has already made*, which makes it
-a smaller undertaking than the field counts suggest.
+Reference tables exist, the =_code= convention is established, the SQL types are
+correct where the C++ ones are not, and the valid value sets are written down.
+Each is applied to a minority of the places that need it, or is written somewhere
+the database cannot use it. *The repair is mostly the consistent application of
+decisions this model has already made*, which makes it a smaller undertaking than
+the counts suggest.
 
-Defect 1 is the exception, and it is the one with a measurement behind it.
+Two defects carry a measurement rather than an argument. Defect 1 costs 4x on the
+load path and defect 7 costs about 25x.
 
 * Recommendations
 

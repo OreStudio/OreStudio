@@ -319,6 +319,51 @@ the design must say which path it takes. At the smaller presets the difference i
 seconds and does not matter. At a million trades it is the difference between a
 provisioning step someone waits through and one they do not.
 
+*** What the real schema costs
+
+The measurements above use tables built to match the entities' shape. The real
+schema is deployed, so it can be loaded directly, and it behaves differently
+enough that the synthetic figures do not carry over.
+
+=scripts/load_trade_population.py= fills every column of all 41 deployed
+=ores_trading= tables, including the nullable ones and the JSON schedules, and
+times each. It introspects the schema rather than carrying a copy, so it stays
+correct as the model changes.
+
+| Configuration                                    | Rows/sec |
+|--------------------------------------------------+----------|
+| Real table, as deployed                          |     2200 |
+| Real table, notify trigger disabled              |     2234 |
+| Clone with the exclusion constraint, no triggers |    56032 |
+| Clone with neither                               |   121218 |
+
+Three results, and the first two are the ones that matter.
+
+*The notify trigger is not the cost.* Disabling it moves throughput by 1.5%. The
+synthetic benchmark put it at 4.2x, and on the real schema that is wrong, because
+there the trigger was the only thing happening and here it competes with work
+that dwarfs it.
+
+*The insert trigger is the cost.* It cannot be disabled, because it maintains the
+bitemporal validity range that an exclusion constraint enforces, so a row will
+not insert without it. Its cost is what separates 56032 rows/sec on a clone
+carrying the same constraint from 2200 on the real table, a factor of about 25.
+
+The bitemporal exclusion constraint costs 2.2x on its own. That is real, and it
+is an order of magnitude smaller than the trigger it works with.
+
+*** What this changes
+
+A million vanilla swaps at 2200 rows/sec is about 7.6 minutes, against the 15
+seconds the synthetic =COPY= path suggested. The population design must be sized
+against the first number.
+
+It also redirects the optimisation. Suppressing the notify trigger for bulk loads
+buys 1.5% and is not worth doing. The question worth asking is whether a bulk
+population path can bypass the per-row insert trigger and establish the
+bitemporal versioning in a set operation instead, which is a change to how the
+row is written rather than to what is published.
+
 *** What was not measured
 
 The tables carry the entities' field counts and fan-out, not their types,

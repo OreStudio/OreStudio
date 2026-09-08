@@ -1,0 +1,144 @@
+:PROPERTIES:
+:ID: F7BDA6CE-AC29-46C0-9D8C-E238797F9F96
+:END:
+#+title: Task: Analyse the bond family and propose its relational data model
+#+description: Bond is the pilot for the relational target of the trading analysis (dfe15809): survey every bond-related type and subtype in the tree (domain, SQL, mappers, repositories, services, messaging, the ores.ore mapping, ores.qt), then propose the entity-relationship model based on the existing tables but in the clean DOP shape - atomised entities with keys and foreign keys, normalised, no object graph. Deliverable is the analysis and ER proposal only; codegen of the types and SQL, the ore mapping update and the qt impedance bridge are follow-up tasks.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/bond-data-model-analysis
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Bond is the pilot for the relational target model of the trading
+analysis ([[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][dfe15809]]). This task delivers the first two steps of the
+pilot as an analysis document: find every bond-related type and
+subtype in the tree, and propose the entity-relationship model for
+them — built on the existing tables, but in the clean DOP relational
+shape: atomised entities with proper primary and foreign keys,
+normalised, no object graph. The analysis must cover the full stack
+the pilot will touch: the hand-written bond domain and SQL, the
+mappers and repositories, the services, the wire, the =ores.ore=
+mapping, and the =ores.qt= side with its impedance mismatch. The
+deliverable is the analysis and ER proposal only; codegen of the
+types and SQL, the =ores.ore= mapping update and the =ores.qt=
+bridge are follow-up tasks on the same story.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-08                               |
+
+* Acceptance
+
+- The analysis inventories every bond-related type and subtype in the
+  tree across all surfaces: domain C++, SQL schema, mappers,
+  repositories, services, messaging, the =ores.ore= mapping and the
+  =ores.qt= usage, plus any subtype spread across other components.
+- The analysis proposes the entity-relationship model for the bond
+  set, derived from the existing tables but stated in the clean DOP
+  relational shape: atomised entities, primary and foreign keys,
+  normalised tables, no object graph and no aggregate invariants.
+- The analysis states how each existing bond artefact maps onto the
+  proposed entities (table-to-entity, column-to-member), and what
+  changes codegen, the =ores.ore= mapping and the =ores.qt= side
+  each need.
+- The deliverable is the analysis document only, sequenced across the
+  follow-up PRs for codegen, mapping and the qt bridge.
+
+* Plan
+
+The work ran in two passes. Pass one inventoried the family across
+every surface: the ten trade types in =ores_trading_trade_types_tbl=
+against the nine =bond=-tagged instrument codes in refdata (Ascot is
+tagged =cross_asset= there), the hand-written table with its seven
+extension columns, the C++ domain with its C1202-motivated sub-structs
+(and its domain-only =security_id= member), the repositories, the
+service verbs, the messaging and shell surfaces, the =ores.ore=
+mapper (seven of ten products) and the =ores.qt= form. Pass one also
+folded in the two prior bond analyses: the codegen probe draft org
+BE4698B1 parked at task 2548EE95 (its flattening verdict, grammar gap
+(a)) and the =ore_trade_generator_trade_populations= investigation
+(schedule pair, underlyings, coverage and identity-naming defects).
+The findings table in the deliverable cites both.
+
+Pass two reasoned the entity-relationship model from the existing
+table and stated it in the relational reading of dfe15809: a bond
+issue entity (the terms, the ISIN, the call and conversion features)
+and a per-trade instrument entity referencing the issue by foreign
+key, with per-product fact tables for the five products that carry
+structure and keyed child rows for the call schedule and the
+conversion target. The alternatives (per-trade copy kept, ten product
+tables) are recorded with the reasons they fail. The column-to-entity
+mapping and the per-surface deltas for codegen, the =ores.ore= mapper
+and the =ores.qt= bridge are stated. The deliverable is the analysis
+document only.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The analysis =trading_bond_relational_model.org= was written to
+=doc/knowledge/architecture/=. It meets all four acceptance bullets:
+
+- The inventory covers every bond artefact in the tree: the ten trade
+  types, the nine =bond=-tagged instrument codes, the table and its
+  extension columns, the C++ domain (with the domain-only
+  =security_id=), repositories, services, messaging, shell, the
+  =ores.ore= mapper and the =ores.qt= form, plus the two prior
+  analyses of the family (BE4698B1, =trade_model_defects.org=).
+- The ER proposal states the family in the clean DOP relational
+  shape: bond issue, bond instrument, per-product fact tables, and
+  the call schedule and conversion target as keyed child rows in the
+  shared schedule and underlyings shapes, every table on the SCD2
+  spine with keys and foreign keys and no aggregate invariants.
+  Twelve evidence-backed findings (B1-B12) justify the split; the
+  rejected alternatives are recorded.
+- The mapping section carries every current column to its destination
+  entity, and the per-surface section states what codegen (orgs,
+  remaining grammar gaps), the =ores.ore= mapper (flattening stops,
+  product coverage) and =ores.qt= (container, views, pickers) each
+  need.
+- The deliverable is analysis only; the follow-up PRs (codegen of the
+  types and SQL, the ore mapping, the qt bridge) are sequenced at the
+  end of the document and depend on the container-grammar work and
+  the shared schedule and underlyings tables of the parent story.

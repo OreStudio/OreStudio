@@ -31,6 +31,7 @@
 #include "ores.refdata.api/messaging/party_protocol.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/commands/rbac_commands.hpp"
+#include "ores.shell/app/login_helpers.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
@@ -318,18 +319,15 @@ void accounts_commands::process_login(std::ostream& out,
         return;
     }
 
-    nats_client::login_info info;
-    info.jwt = result->token;
-    info.username = result->username;
-    info.account_id = result->account_id;
-    info.tenant_id = result->tenant_id;
-    info.tenant_name = result->tenant_name;
-    info.default_party_id = result->default_party_id;
-    session.set_auth(std::move(info));
+    auto selected = complete_login(out, session, *result);
+    if (!selected)
+        return;
 
     out << "✓ Login successful!" << std::endl;
     out << "  User: " << result->username << std::endl;
     out << "  Tenant: " << result->tenant_name << " (" << result->tenant_id << ")" << std::endl;
+    if (!selected->empty())
+        out << "  Party: " << *selected << std::endl;
 }
 
 void accounts_commands::process_lock_account(std::ostream& out,

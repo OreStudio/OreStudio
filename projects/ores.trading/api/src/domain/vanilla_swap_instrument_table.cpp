@@ -20,18 +20,34 @@
 #include "ores.trading.api/domain/vanilla_swap_instrument_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<vanilla_swap_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Settlement Lag"
+          << "Netting Set" << "Recorded At" << fort::endr;
 
     for (const auto& vs : v) {
-        table << fort::endr;
+        table << vs.identity.instrument_id << vs.identity.trade_type_code << vs.start_date
+              << vs.maturity_date << opt_str(vs.settlement_lag) << vs.netting_set_id
+              << vs.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

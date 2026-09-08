@@ -215,6 +215,17 @@ repository profiles regenerate correctly.
 :iterator_var: cs
 :END:
 
+** Table display
+
+|  column                    |  header       |
+|--------------------------|-------------|
+|  identity.instrument_id    |  ID           |
+|  identity.trade_type_code  |  Type         |
+|  start_date                |  Start Date   |
+|  maturity_date             |  Maturity Date |
+|  call_type                 |  Call Type    |
+|  audit.recorded_at         |  Recorded At  |
+
 ** Custom repository methods
 
 * See also

@@ -205,6 +205,17 @@ repository profiles regenerate correctly.
 :iterator_var: bg
 :END:
 
+** Table display
+
+|  column                    |  header       |
+|--------------------------|-------------|
+|  identity.instrument_id    |  ID           |
+|  identity.trade_type_code  |  Type         |
+|  start_date                |  Start Date   |
+|  maturity_date             |  Maturity Date |
+|  lockout_days              |  Lockout Days |
+|  audit.recorded_at         |  Recorded At  |
+
 ** Custom repository methods
 
 * See also

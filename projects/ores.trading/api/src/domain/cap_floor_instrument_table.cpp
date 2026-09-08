@@ -28,10 +28,12 @@ std::string convert_to_table(const std::vector<cap_floor_instrument>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << fort::endr;
+    table << fort::header << "ID" << "Type" << "Start Date" << "Maturity Date" << "Recorded At"
+          << fort::endr;
 
     for (const auto& cf : v) {
-        table << fort::endr;
+        table << cf.identity.instrument_id << cf.identity.trade_type_code << cf.start_date
+              << cf.maturity_date << cf.audit.recorded_at << fort::endr;
     }
     return table.to_string();
 }

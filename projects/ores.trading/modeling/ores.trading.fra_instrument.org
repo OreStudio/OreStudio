@@ -273,6 +273,21 @@ repository profiles regenerate correctly.
 :iterator_var: fi
 :END:
 
+** Table display
+
+|  column                    |  header       |
+|--------------------------|-------------|
+|  identity.instrument_id    |  ID           |
+|  identity.trade_type_code  |  Type         |
+|  start_date                |  Start Date   |
+|  end_date                  |  End Date     |
+|  currency                  |  Currency     |
+|  rate_index                |  Rate Index   |
+|  long_short                |  Long/Short   |
+|  strike                    |  Strike       |
+|  notional                  |  Notional     |
+|  audit.recorded_at         |  Recorded At  |
+
 ** Custom repository methods
 
 * See also

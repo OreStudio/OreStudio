@@ -200,6 +200,18 @@ Full CRUD verified live against the recreated database:
   removal.
 - The feed control plane (start/stop cascade over the folder
   hierarchy) was exercised earlier in the same session.
+- The gap-closing pass added: folder create via shell, the update path
+  (add with the same natural key bumps the version - UPDTEST history
+  shows versions 1 and 2), and per-entity history reads on all nine
+  entities with their own keys.
+- Finding recorded as a capture (party GUCs leaking across pooled
+  connections): rows written by a session without a party context are
+  stamped with the nil party uuid and are invisible to subsequent
+  party-filtered reads through the service pool - the same session saw
+  26 party-scoped rows, then 0, with identical credentials, while the
+  same read as the service role with explicit GUCs returned all rows.
+  The RLS policies and the bind's data are correct; the defect is the
+  per-connection GUC hygiene in the service layer, outside this task.
 
 Ran on this environment's fleet against the recreated database, before
 merge (the post-merge confirmation rerun closes the story):

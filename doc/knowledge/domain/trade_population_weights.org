@@ -68,6 +68,29 @@ tiny preset still covers the catalogue.
 This is the one respect in which the distribution is deliberately not
 realistic. A real book of a thousand trades holds no ascots at all.
 
+** Why a weight for Swap is not yet an instruction
+
+The weights are stated at the granularity of ORE's trade types, and for most
+products that is the granularity a desk uses. For a few it is not, and those few
+carry the largest weights.
+
+A desk treats a Bermudan swaption, a cross-currency swap, a tenor basis swap and
+a vanilla fixed-float swap as four distinct products. It quotes them separately
+and reports them on separate lines. ORE prices all four through =Swap= and
+=Swaption=, because to a pricing library they are one builder with different
+legs and exercise data. Both views are correct for their own purpose.
+
+The consequence is that the 19% on =Swap= is not directly actionable. It does not
+say what proportion is OIS, cross-currency or tenor basis, and that choice decides
+which curves and discounting paths a generated population exercises. The same
+applies to =Swaption=, where exercise style selects a different pricing model
+entirely, and to a lesser degree to =CapFloor= and =Bond=.
+
+Closing this needs a desk-facing product classification that ORE Studio does not
+have yet. Until it exists, treat the weight on a trade type covering several
+desk-facing products as a total to be divided, not as a single population to
+generate.
+
 ** The distribution
 *** Interest rate — 42%
 

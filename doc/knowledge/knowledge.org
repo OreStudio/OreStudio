@@ -413,6 +413,10 @@ organised by asset class on the [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE P
 
 How the codebase is put together.
 
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — what data-oriented design
+  means for this codebase: the three regimes (numerical kernels,
+  persisted domain data, wire), and the criteria for reviewing a
+  component's data model against them.
 - [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] — api/core/service split, facet
   placement, CMake dependency chain, and scaffold profiles.
 - [[id:1805BAFC-7E43-4D9C-822F-17C3455C6E00][Compute job lifecycle]] — how a compute job travels through the

@@ -1,0 +1,219 @@
+:PROPERTIES:
+:ID: BBD43BF2-9FEE-42B0-A667-9468AF759DC2
+:END:
+#+title: Data-Oriented Design in ORE Studio
+#+description: What data-oriented design means for ORE Studio and the criteria for reviewing a component's data model against it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:modelling:performance:data_oriented_design:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+* Summary
+
+Data-oriented design (DOD) organises data by how code accesses it,
+not by the conceptual hierarchy of the domain. In ORE Studio it
+governs two regimes: /numerical kernels/ (pricing, simulation,
+analytics) where layout decides cache and vectorisation performance,
+and /persisted domain data/ (entities, reference data, trades) where
+the value-semantics and shape of the C++ types decide cost. A third
+regime, the wire format, applies the same axioms to NATS messages and
+JSON. The [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] skill reviews a
+component's data model against the criteria below; this page is the
+canonical statement of those criteria.
+
+* Detail
+
+** The principle and the axioms
+
+The first statement is the founding principle of DOD. The five that
+follow are the operational axioms derived from it. Only the axioms
+produce review checks. The principle explains why the axioms hold;
+it is not itself a check, so never score it.
+
+1. /Data is memory/ — the principle. Code exists only to transform
+   data from one representation to another. The representation
+   decides the cost.
+2. /Access patterns drive layout./ Organise data by how and when code
+   reads and writes it together, not by real-world taxonomy.
+3. /Structure of Arrays (SoA) over Array of Structures (AoS)./ Prefer
+   parallel contiguous arrays per attribute over arrays of fat
+   heap-allocated objects.
+4. /Separate hot and cold data./ Isolate state read or written on
+   high-frequency paths from metadata read rarely or once.
+5. /Handles over pointers./ Use keys, indices, and offsets instead of
+   per-object heap pointers and object trees.
+6. /Batch over per-object./ Write functions that process contiguous
+   collections in bulk, not one call per object.
+
+** Where each axiom applies
+
+ORE Studio is a database-backed application with Qt clients and a
+quantitative engine on QuantLib. DOD is not one rule for the whole
+codebase. A review that demands SoA for a CRUD entity, or accepts a
+pointer graph inside a simulation kernel, has misread the regime.
+
+*** Regime 1 — numerical kernels
+
+The hot paths: valuation, simulation, curve bootstrapping, analytics,
+compute workunits. Axioms 2-6 apply in full. Typical evidence: a loop
+over trades, paths, or steps that reads a few fields of each object.
+
+*** Regime 2 — persisted domain data
+
+Entities and their C++ value types: reference data, trading
+instruments, market data, synthetic entities. The database owns the
+storage layout; the C++ types are the in-memory and wire shape. DOD
+here means value semantics, identity by key, and a clean split of
+core state from cold annexes — not cache-line gymnastics.
+
+*** Regime 3 — wire and messaging
+
+NATS messages, JSON, CSV, and table I/O. The axioms apply as: flat
+value-shaped messages, versioned schemas, closed explicit
+polymorphism (see [[id:C951B5F1-B51C-4274-BA4D-6297AD46A4FB][Polymorphic types over NATS]]), and batched
+messages for high-volume feeds.
+
+The wire shape is a codegen projection of the Regime 2 entity, not a
+second artefact: one entity yields one JSON codec and one table
+codec. Review each entity once — its org model, its generated C++
+type, and its projections together — and do not walk the message
+shape again separately. Hand-written message types are the
+exception; they get their own Regime 3 walk.
+
+*** The boundary of the regimes
+
+The three regimes cover table-shaped data and its projections. They
+are a labelled cover of this codebase, not a partition of every
+possible data shape. One category sits outside them: document-shaped
+payloads — an FpML trade document, an ORE XML input, an org-mode
+file parsed into a heading tree. Such documents enter at the
+boundary of the stack, where a mapping layer converts them to and
+from the core data-model representation (for example, an FpML trade
+maps to =trade= and its instrument entities). The document tree is
+transient; the entity representation, designed for performance, is
+the review target.
+
+For a document-shaped type, mark the table-shaped-children and
+flat-value-message checks as not applicable and say why. In-tree
+today the category exists only as hand-written core types in
+=ores.orgmode= (the heading/document structure) and in the FpML
+parsing path of =ores.fpml=; no entity model instantiates it yet.
+Revisit this paragraph if an entity model ever persists document
+trees.
+
+** The data model of a component
+
+The artefacts a review reads, per component under =projects/ores.<name>=:
+
+- =modeling/*.org= — the codegen entity, junction, and field-group
+  models (where the component is codegen-driven). The
+  =lookup_entity= metatype is reserved in codegen but has no
+  authored instances; do not hunt for lookup models.
+- The domain C++ types they generate, or hand-written domain headers
+  in the =core= facet. This generated representation is the core
+  data model, designed for performance; the review target.
+- The SQL schema the entity maps to: the =CREATE TABLE= statements
+  generated under =projects/ores.sql/create/<component>/=.
+- Repository and service signatures: how code fetches collections and
+  looks up records.
+- Kernel entry points and their inner loops, for Regime 1 components.
+
+** Review criteria
+
+*** Regime 1 checklist
+
+| Check | Description |
+|-------+-------------|
+| SoA on the hot path | Fields a kernel iterates sit in parallel contiguous arrays, not in an array of fat objects. |
+| No hot-loop allocation | Buffers are reused; no allocate/free or lock inside the loop. |
+| No per-object dispatch | The hot path calls batch free functions over spans; no virtual or per-object indirection. |
+| Hot/cold kernel inputs | Metadata read once per run is not interleaved with per-step state. |
+| Predictable access | Inner loops are stride-1 over contiguous memory so the compiler can vectorise. |
+| Plain inputs | Kernels take plain structs and free functions (e.g. a log-normal short-rate SDE), not stateful class hierarchies. |
+
+*** Regime 2 checklist
+
+Regime 2 review walks two surfaces, and each check below states
+which one it applies to:
+
+- /The decision surface/: the =modeling/*.org= model choices — key
+  style, field-group split, junction versus blob, batched access.
+  These choices can fail; codegen does not rescue them. Review them
+  per entity model.
+- /The invariant surface/: on codegen entities, value semantics,
+  pointer-freedom, and generated codecs are generator invariants.
+  Codegen cannot emit a =shared_ptr= or a hand-rolled codec. Walking
+  a guarantee per entity rubber-stamps it. Spot-check each invariant
+  once per component on the generated output, or rely on the codegen
+  drift check (the [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]] skill owns drift). Hand-written
+  domain types in the =core= facet have no generator; walk both
+  tables in full on them.
+
+Decision checks — walk per entity model:
+
+| Check | Description |
+|-------+-------------|
+| Identity by key | Relationships are keys and foreign keys, not pointers or owning-parent links. |
+| Table-shaped children | Child records are rows in their own table (junction/FK), not nested object trees. |
+| Core/cold split | =field_group= and table design separate core fields from cold annexes (change-reason cache, history, versioning, audit). |
+| Batched collection access | Repositories and services return collections, not row-at-a-time callbacks. |
+| Explicit variation | A family of related entities (for example, instruments) states its variation explicitly — per-type tables or a closed variant — not open inheritance webs. |
+
+Invariant checks — spot-check once per component:
+
+| Check | Description |
+|-------+-------------|
+| Value semantics | Generated domain types are plain values with a key; no owning-pointer members. |
+| No shared-ownership webs | No =shared_ptr= inside domain types; ownership sits at component boundaries. |
+| Codec drift | JSON/CSV/table codecs come from codegen unmodified; regenerate rather than hand-patch. |
+
+*** Regime 3 checklist
+
+| Check | Description |
+|-------+-------------|
+| Flat value messages | Messages are value-shaped, not object graphs over the wire. |
+| Versioned and closed | Schema evolution is explicit; polymorphism is closed and versioned. |
+| Feed batching | High-volume feeds batch items per message instead of one message per item. |
+
+** Report conventions
+
+A component review produces, per component:
+
+- A regime classification with the reasons (what is hot, what is
+  cold, where the boundaries are).
+- A findings table: severity (Critical / Important / Minor), effort
+  (Small / Medium / Large), and the criterion each finding maps to.
+- A per-regime score of 1-5 where the regime applies.
+- An overall data-model verdict and a debt level of Low / Medium /
+  High.
+
+Scores are anchored, not arithmetic. Pick the row the review most
+resembles:
+
+| Score | What that looks like | Debt |
+|-------+----------------------+------|
+| 5 | All applicable checks pass; only evidence-free opportunities remain. | Low |
+| 4 | Decisions pass with Minor findings; invariants hold. | Low |
+| 3 | One Important finding, localised to one model or one kernel. | Medium |
+| 2 | Several Important findings, or one Critical finding in a main flow. | Medium |
+| 1 | Critical findings on identity, core/cold split, or a hot loop; systemic. | High |
+
+The debt bands follow the score: 4-5 is Low, 3 is Medium, 1-2 is
+High. A regime that does not apply to the component is unscored,
+not scored 0. Two reviews of the same component should land within
+one point of each other; if they do not, the classification or the
+evidence was unclear, not the scale.
+
+Hot-path claims need evidence: the loop structure, a profile, or a
+benchmark. Without evidence, record a layout risk as an opportunity,
+not a defect. A finding that demands a transformation outside the
+component's regime is a review error, not a finding.
+
+* See also
+
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] — the sibling criteria set for general
+  component and PR review.
+- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] — the broad whole-component audit this lens
+  complements.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this page belongs to.

@@ -1,0 +1,121 @@
+:PROPERTIES:
+:ID: AE72D444-02B1-4428-B56C-062B849ED568
+:END:
+#+title: Code Review Data Model Skill
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:review:modelling:data_oriented_design:
+#+created: 2026-09-08
+#+updated: 2026-09-08
+
+#+begin_export markdown
+---
+name: code-review-data-model
+description: Review a component's data model against the data-oriented design criteria: regime classification, layout, value semantics, hot/cold split, batch access. Use when asked to review or audit the data model or domain types of one or more ORE Studio components.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you must assess a component's /data model/ — its domain types,
+entity models, schemas, and kernel data structures — against the
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][data-oriented design]] criteria: layout, value semantics, hot/cold
+split, batch access. Use before major data-model refactors, when
+onboarding to a component, or periodically to track data-model debt.
+It is the single-lens complement to the broad
+[[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] audit. For PR-delta reviews, use
+[[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]].
+
+* How to use this skill
+
+1. /Identify the component(s)/. Components live under
+   =projects/ores.<component>=. To see all known components:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh list --type component
+   #+end_src
+
+2. /Classify the regimes/. For each component, map its parts onto the
+   three regimes in [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]: numerical
+   kernels (Regime 1), persisted domain data (Regime 2), wire and
+   messaging (Regime 3). A component spans regimes; state which part
+   is which and why. Document-shaped payloads sit outside the three
+   regimes — the knowledge doc states the boundary.
+
+3. /Gather the data-model artefacts/. Regime 2 review walks two
+   surfaces, and the checklist states which surface each check
+   applies to:
+   - /The decision surface/: the =modeling/*.org= entity, junction,
+     and field-group models. The =lookup_entity= metatype is reserved
+     but has no authored instances; do not hunt for lookup models.
+   - /The invariant surface/: the domain C++ types codegen generates
+     from those models, and hand-written domain headers in the
+     =core= facet.
+   Also gather, per regime: the SQL schema the entities map to (the
+   =CREATE TABLE= statements under
+   =projects/ores.sql/create/<component>/=); repository and service
+   signatures; and kernel entry points with their inner loops.
+
+4. /Apply the matching checklists/. The checklists live under
+   =* Review criteria= in the knowledge doc. Walk the Regime 1, 2, or
+   3 checklist for each classified part; on Regime 2, walk the
+   decision checks per entity model and spot-check the invariant
+   checks once per component. Mark checks outside a part's regime as
+   not-applicable — never demand SoA of a CRUD entity, never accept a
+   pointer graph inside a simulation kernel, and never force
+   table-shaped or flat-message checks onto document-shaped payloads.
+
+5. /Apply the evidence rule/. Hot-path claims need the loop
+   structure, a profile, or a benchmark as evidence. Without
+   evidence, record a layout risk as an opportunity, not a defect.
+
+6. /Score and report/. Per component: a 1-5 score per applicable
+   regime using the scoring anchors in the knowledge doc, a findings
+   table (severity, effort, mapped criterion), an overall data-model
+   verdict, and a debt level of Low / Medium / High. Follow the
+   report conventions in the knowledge doc.
+
+7. /Summarise/. Conclude with the per-component score table, the top
+   3-5 recommendations, and the overall debt level. This skill only
+   reviews — filing remediation stories is a separate decision made
+   through the backlog.
+
+* Recipes
+
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — to inspect the component's
+  =component_overview.org= and its modeling docs.
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — to enumerate a
+  component's modeling files, tasks, and stories.
+
+* Reference
+
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the criteria, regimes, and
+  report conventions this skill applies.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] — the sibling criteria set for general
+  component and PR review.
+- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] — the broad whole-component audit this lens
+  complements.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

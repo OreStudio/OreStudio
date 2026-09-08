@@ -372,9 +372,34 @@ does not say.
 *Repair applied.* =populate/acme/acme_publish_populate.sql= calls the same
 publish functions in dependency order, wired into =populate.sql= before the
 trading layer. It is a second trigger of one implementation rather than a second
-implementation, and it is idempotent. After it runs the tenant holds 16 parties,
-4 counterparties, 28 business units, 36 portfolios and 31 books, and =trades=
-populates.
+implementation, and it is idempotent. =fpml/fpml_populate.sql= is wired in ahead
+of it, since it stages the business centres. After both run the tenant holds 250
+countries, 217 business centres, 16 parties, 4 counterparties, 28 business units,
+36 portfolios and 31 books, and =trades= populates.
+
+*The order is not a preference.* It was derived by reading what each publish
+function selects from, and what the target table's insert trigger validates. The
+two give different edges and both matter.
+
+| Step             | Depends on       | Established by                                  |
+|------------------+------------------+-------------------------------------------------|
+| Countries        | nothing          |                                                 |
+| Business centres | Countries        | The publish function reads countries            |
+| Parties          | Business centres | The parties insert trigger validates the centre |
+| Business units   | Parties          | The publish function reads parties              |
+| Portfolios       | Business units   | The publish function reads business units       |
+| Books            | Portfolios       | The publish function reads portfolios           |
+| Counterparties   | nothing          |                                                 |
+
+The parties edge is the one a reader would miss. No publish function mentions a
+business centre, so the dependency is invisible on the read side. It appears only
+when the row is written, as a rejected party naming an unknown centre. *A
+dependency enforced by a trigger does not show up in the code that appears to do
+the work.*
+
+Business unit types, book statuses and regulatory book types are prerequisites
+too. They have no publish function and are loaded by direct populate scripts, so
+they carry no ordering constraint here.
 
 ** Defect 12: the publish guard collapses every office onto one party
 

@@ -53,7 +53,17 @@ declare
     v_dataset_id uuid;
     v_result record;
 begin
-    -- Business centres, required before any party is written.
+    -- Countries, read when a business centre is written.
+    select id into v_dataset_id from ores_dq_datasets_tbl
+    where code = 'iso.countries'
+      and valid_to = ores_utility_infinity_timestamp_fn();
+    if v_dataset_id is not null then
+        select * into v_result from
+            ores_refdata_publish_countries_from_dq_fn(v_dataset_id, v_tenant_id);
+        raise notice 'countries: % %', v_result.action, v_result.record_count;
+    end if;
+
+    -- Business centres, validated when a party is written.
     select id into v_dataset_id from ores_dq_datasets_tbl
     where code = 'fpml.business_center'
       and valid_to = ores_utility_infinity_timestamp_fn();

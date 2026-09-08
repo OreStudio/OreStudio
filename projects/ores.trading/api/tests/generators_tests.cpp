@@ -18,10 +18,10 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
-#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
 #include "ores.trading.api/generator/trade_identifier_generator.hpp"
 #include "ores.trading.api/generators/activity_type_generator.hpp"
 #include "ores.trading.api/generators/fpml_event_type_generator.hpp"
+#include "ores.trading.api/generators/lifecycle_event_generator.hpp"
 #include "ores.trading.api/generators/party_role_type_generator.hpp"
 #include "ores.trading.api/generators/trade_generator.hpp"
 #include "ores.trading.api/generators/trade_id_type_generator.hpp"

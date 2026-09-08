@@ -60,8 +60,8 @@ public:
      * @brief Process a get trade id types request.
      */
     static void process_get_trade_id_types(std::ostream& out,
-                                             ores::nats::service::nats_client& session,
-                                             pagination_context& pagination);
+                                           ores::nats::service::nats_client& session,
+                                           pagination_context& pagination);
 
     /**
      * @brief Process an add trade id type request.
@@ -71,25 +71,25 @@ public:
      * domain fields the caller supplied.
      */
     static void process_add_trade_id_type(std::ostream& out,
-                                            ores::nats::service::nats_client& session,
-                                            std::string code,
-                                            std::string description,
-                                            std::string change_reason_code,
-                                            std::string change_commentary);
+                                          ores::nats::service::nats_client& session,
+                                          std::string code,
+                                          std::string description,
+                                          std::string change_reason_code,
+                                          std::string change_commentary);
 
     /**
      * @brief Process a delete trade id type request.
      */
     static void process_delete_trade_id_type(std::ostream& out,
-                                               ores::nats::service::nats_client& session,
-                                               std::string code);
+                                             ores::nats::service::nats_client& session,
+                                             std::string code);
 
     /**
      * @brief Process a trade id type history request.
      */
     static void process_get_trade_id_type_history(std::ostream& out,
-                                                    ores::nats::service::nats_client& session,
-                                                    const std::vector<std::string>& args);
+                                                  ores::nats::service::nats_client& session,
+                                                  const std::vector<std::string>& args);
 };
 
 }

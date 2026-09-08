@@ -37,8 +37,8 @@ using ores::nats::service::nats_client;
 namespace domain = ores::trading::domain;
 
 void trade_id_type_commands::register_commands(cli::Menu& root_menu,
-                                                 nats_client& session,
-                                                 pagination_context& pagination) {
+                                               nats_client& session,
+                                               pagination_context& pagination) {
     auto trade_id_types_menu = std::make_unique<cli::Menu>("trade_id_types");
 
     trade_id_types_menu->Insert(
@@ -49,10 +49,9 @@ void trade_id_type_commands::register_commands(cli::Menu& root_menu,
         "Retrieve trade id types from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("trade_id_types",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_trade_id_types(out, session, pagination);
-                                      });
+    pagination.register_list_callback("trade_id_types", [&session, &pagination](std::ostream& out) {
+        process_get_trade_id_types(out, session, pagination);
+    });
 
     trade_id_types_menu->Insert(
         "add",
@@ -62,11 +61,11 @@ void trade_id_type_commands::register_commands(cli::Menu& root_menu,
                    std::string change_reason_code,
                    std::string change_commentary) {
             process_add_trade_id_type(std::ref(out),
-                                        std::ref(session),
-                                        std::move(code),
-                                        std::move(description),
-                                        std::move(change_reason_code),
-                                        std::move(change_commentary));
+                                      std::ref(session),
+                                      std::move(code),
+                                      std::move(description),
+                                      std::move(change_reason_code),
+                                      std::move(change_commentary));
         },
         "Add a trade id type (code description reason_code \"commentary\")");
 
@@ -90,8 +89,8 @@ void trade_id_type_commands::register_commands(cli::Menu& root_menu,
 }
 
 void trade_id_type_commands::process_get_trade_id_types(std::ostream& out,
-                                                            nats_client& session,
-                                                            pagination_context& pagination) {
+                                                        nats_client& session,
+                                                        pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get trade id types request.";
 
     auto& state = pagination.state_for("trade_id_types");
@@ -118,16 +117,16 @@ void trade_id_type_commands::process_get_trade_id_types(std::ostream& out,
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->id_types.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->id_types.size() << " of "
+        << state.total_count << " total)" << std::endl;
 }
 
 void trade_id_type_commands::process_add_trade_id_type(std::ostream& out,
-                                                           nats_client& session,
-                                                           std::string code,
-                                                           std::string description,
-                                                           std::string change_reason_code,
-                                                           std::string change_commentary) {
+                                                       nats_client& session,
+                                                       std::string code,
+                                                       std::string description,
+                                                       std::string change_reason_code,
+                                                       std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add trade id type request for: " << code;
 
     if (!session.is_logged_in()) {
@@ -137,10 +136,10 @@ void trade_id_type_commands::process_add_trade_id_type(std::ostream& out,
 
     auto req = trading::messaging::save_trade_id_type_request::from(
         domain::trade_id_type{.code = std::move(code),
-                                .description = std::move(description),
-                                .change_reason_code = std::move(change_reason_code),
-                                .change_commentary = std::move(change_commentary),
-                                .recorded_at = std::chrono::system_clock::now()});
+                              .description = std::move(description),
+                              .change_reason_code = std::move(change_reason_code),
+                              .change_commentary = std::move(change_commentary),
+                              .recorded_at = std::chrono::system_clock::now()});
 
     auto result = do_auth_request<trading::messaging::save_trade_id_type_response>(
         out, session, "trading.v1.trade_id_types.save", req);
@@ -158,8 +157,8 @@ void trade_id_type_commands::process_add_trade_id_type(std::ostream& out,
 }
 
 void trade_id_type_commands::process_delete_trade_id_type(std::ostream& out,
-                                                              nats_client& session,
-                                                              std::string code) {
+                                                          nats_client& session,
+                                                          std::string code) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete trade id type request for: " << code;
 
     if (!session.is_logged_in()) {

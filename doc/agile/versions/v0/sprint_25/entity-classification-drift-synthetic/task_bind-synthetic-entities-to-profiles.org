@@ -365,7 +365,61 @@ data, app/host/config). The manual wiring that superseded codegen
 carried (the hand-wired registrar blocks, the hand-era RLS policies,
 the old folder hierarchy stack) was removed earlier in this task.
 
+** Component audit fixes (2026-09-08)
+
+The component audit's five recommendations, applied on this branch:
+
+1. *Stale component overviews.* The three =component_overview.org=
+   files (api, core, service) still described the pre-codegen
+   component (organisation/catalog generation only). All three were
+   rewritten to describe the nine bound entities, the generated
+   facets, the feeds and template resolver, the feed control plane,
+   and the catalog/organisation generators that remain hand-written.
+2. *CRUD and history coverage in the integration tests.* The shared
+   eventing integration test template now emits a CRUD round trip
+   after the eventing assertions: update through the repository, read
+   the version history through the service, delete, then assert the
+   row is gone from latest reads while the history keeps every
+   version. Three template bugs were fixed at source while landing
+   it: the section now reuses the test's party-scoped context (the
+   first cut called =set_party= with the SQL-resolving overload,
+   which cannot resolve a generator-stamped party); entities whose
+   party is a parties FK (=parent_is_party=) build the session's
+   visible-party set from the row's own seeded party; and the
+   read-by-id call honours =service_find_prefix= (=find_= vs
+   =get_=). The change propagates to every registry component's
+   eventing tests (84 files: refdata, iam, compute, reporting) —
+   the drift gate is global, so the regeneration is checked in with
+   this PR, and every affected suite runs green locally.
+3. *Domain enum converters.* =scope= and =binding_mode= gained
+   =to_string=, =operator<<=, and =*_from_string= (std::optional)
+   converters, replacing the shell's hand-rolled parsers.
+4. *Table template enum streaming.* The market data generation
+   config's Table display declares the =scope= and =binding_mode=
+   enum columns; the generated table converter streams them through
+   the new =operator<<=. The list shells render the enums.
+5. *std::expected migration.* Assessed, recorded as a capture, not
+   applied: the ~60 throw sites split into the generated
+   throw/catch-at-handler chain (the codegen pattern across all
+   components — migrating synthetic alone would fork the pattern)
+   and a small set of hand-written feed/resolver throws. A
+   house-wide error-handling convention decision covers both and
+   belongs in its own story.
+
 * Result
+
+Live-test residue cleanup: the =shell_param= VASICEK parameter
+definition row left in the shared database by the ores.shell session
+was soft-deleted; it broke the =definitions.size() == 4= catalogue
+counts in the feed config handler tests (the test and dev
+environments share one database).
+
+Acceptance for this round: full build exit 0; the five affected core
+suites (refdata, iam, compute, reporting, synthetic) 100% pass with
+the CRUD round trips in place; roundtrip check exit 0; misspell
+clean over changed files; cmake component lists regenerated.
+
+
 
 Closed 2026-09-08. All nine ores.synthetic entities were surveyed
 against the profile catalogue; eight bound (yield_curve_process_type to

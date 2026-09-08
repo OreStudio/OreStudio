@@ -210,6 +210,9 @@ The design does not fix those numbers here. It requires that each preset carry
 its distribution explicitly, and that the source or assumption behind each be
 stated alongside it.
 
+[[id:A1310399-0ACD-4FA1-9645-AB24B3C8BEB8][Trade Population Weights]] holds the starting distribution, a weight for each of
+the 86 products in ORE's catalogue, stated as an assumption on the terms above.
+
 ** What Measurement Found
 
 Four of the open questions are now answered, one by reading the code and three by

@@ -19,8 +19,12 @@
  */
 #include "ores.shell/app/commands/trading/trading_commands.hpp"
 #include "ores.shell/app/commands/trading/balance_guaranteed_swap_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/bond_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/callable_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/cap_floor_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/commodity_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/composite_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/credit_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_accumulator_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_asian_option_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/equity_barrier_option_instrument_commands.hpp"
@@ -42,6 +46,7 @@
 #include "ores.shell/app/commands/trading/knock_out_swap_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/party_role_type_commands.hpp"
 #include "ores.shell/app/commands/trading/rpa_instrument_commands.hpp"
+#include "ores.shell/app/commands/trading/scripted_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/swaption_instrument_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_id_type_commands.hpp"
 #include "ores.shell/app/commands/trading/trade_type_commands.hpp"
@@ -56,8 +61,12 @@ void trading_commands::register_commands(cli::Menu& root_menu,
                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Registering trading command surface.";
     balance_guaranteed_swap_instrument_commands::register_commands(root_menu, session, pagination);
+    bond_instrument_commands::register_commands(root_menu, session, pagination);
     callable_swap_instrument_commands::register_commands(root_menu, session, pagination);
     cap_floor_instrument_commands::register_commands(root_menu, session, pagination);
+    commodity_instrument_commands::register_commands(root_menu, session, pagination);
+    composite_instrument_commands::register_commands(root_menu, session, pagination);
+    credit_instrument_commands::register_commands(root_menu, session, pagination);
     equity_accumulator_instrument_commands::register_commands(root_menu, session, pagination);
     equity_asian_option_instrument_commands::register_commands(root_menu, session, pagination);
     equity_barrier_option_instrument_commands::register_commands(root_menu, session, pagination);
@@ -79,6 +88,7 @@ void trading_commands::register_commands(cli::Menu& root_menu,
     knock_out_swap_instrument_commands::register_commands(root_menu, session, pagination);
     party_role_type_commands::register_commands(root_menu, session, pagination);
     rpa_instrument_commands::register_commands(root_menu, session, pagination);
+    scripted_instrument_commands::register_commands(root_menu, session, pagination);
     swaption_instrument_commands::register_commands(root_menu, session, pagination);
     trade_id_type_commands::register_commands(root_menu, session, pagination);
     trade_type_commands::register_commands(root_menu, session, pagination);

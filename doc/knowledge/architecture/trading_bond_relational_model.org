@@ -1,0 +1,610 @@
+:PROPERTIES:
+:ID: 9ABB181D-2582-4084-8FFB-A0CE4114B171
+:END:
+#+title: A relational data model for the bond family
+#+description: Bond is the pilot for the relational target of the trading analysis (dfe15809). This page inventories every bond-related type and subtype in the tree and proposes the entity-relationship model for the family, derived from the existing tables but in the clean DOP relational shape - atomised entities with primary and foreign keys, normalised, no object graph. Codegen of the types and SQL, the ores.ore mapping update and the ores.qt bridge are follow-up tasks.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:architecture:trading:data_model:data_oriented_design:codegen:
+#+created: 2026-09-08
+#+updated: 2026-09-09
+
+* Summary
+
+The bond family is the pilot for the relational target model of the
+trading analysis [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][dfe15809]]. The family is one asset class with ten
+trade types that all share one hand-written table
+(=ores_trading_bond_instruments_tbl=) plus seven hand-added extension
+columns. The table is sparse: each row type uses a few columns and the
+rest are null. No statement in the schema says which of the ten
+products the table serves, the bond's own security identifier (ISIN)
+is never persisted, and the derivative products carry no reference to
+their underlying bond. The ores.ore mapper flattens ORE's product
+structures into this one row and drops the call schedule, the
+conversion terms, the option exercise list, and the repo and TRS legs;
+on the way back it fabricates a minimal repo leg and hardcodes the TRS
+return type.
+
+The proposed model separates the family into atomised entities with
+keys and foreign keys: a bond issue (the instrument master that the
+terms describe, keyed by ISIN), a per-trade instrument line that
+references both the issue and the trade, and per-product fact tables
+for the products that carry structure (option, future, TRS, repo,
+Ascot). The issue's call dates and its conversion target are keyed child
+rows in family tables that hang off the issue row; product schedules
+(exercise, funding, repo payment) are rows in the shared schedule and
+underlyings tables, which keep the instrument owner the parent story
+draws. Every table keeps the
+SCD2 temporal spine and is small enough that the C1202-driven
+sub-struct decomposition disappears from the persisted domain. This
+page is the inventory and the proposal; codegen of the types and SQL,
+the ores.ore mapping update, and the ores.qt bridge are follow-up
+tasks on the same story.
+
+* Detail
+
+** Context: the pilot and the prior analysis
+
+The redesign story [[id:688959F0-A1AB-4021-A57E-1103AD92773A][688959F0]] sequences the trading rework across
+nine PRs. Bond is named there as one of the families that live only in
+the tree. This task makes bond the pilot for PR 4 of the sequence
+(normalise the bound families), ahead of commodity, credit, and the
+legacy five. The task that drives this page is
+[[id:F7BDA6CE-AC29-46C0-9D8C-E238797F9F96][F7BDA6CE]].
+
+Three prior analyses feed this one, and their conclusions are assumed:
+
+- The relational reading of the data-oriented design book, as
+  recorded in [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][dfe15809]]: no object graph; entities are atomised rows
+  with primary and foreign keys; data is normalised; optional or
+  repeating structure is declared as keyed child rows, not nullable
+  feature columns; versioning is a per-table property of the SCD2
+  spine; composite reads are temporal joins over keys.
+- The codegen gap investigation of task
+  [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]], whose probe org for the bond table (the draft
+  [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][BE4698B1]], parked beside that task) proved that the current
+  single-table org shape cannot express the nested domain groups and
+  drops the domain-only =security_id= member.
+- The trade generation story's model investigation
+  =ore_trade_generator_trade_populations/trade_model_defects.org=
+  (parent story [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][894B369A]]), which measured and catalogued model-wide
+  defects that this family exhibits: one table per asset class with no
+  declared coverage (defects 9 and 14), an instrument's identity under
+  two names (defect 13), no reference table for enumerations and no
+  declared foreign keys for =_code= columns (defects 4, 5, 7, 8), and
+  the missing underlyings and schedule mechanisms (defects 1, 15, 16).
+
+The investigation in =trade_model_defects.org= is a population-driven
+review of all 41 trading tables. Where its counts cover the whole
+model, this page re-derives the facts for the bond family alone and
+then proposes the family's entity-relationship model.
+
+** What counts as the bond family
+
+The survey scope is every artefact that names a bond product, in any
+component. The family has three layers of naming, and the layers do
+not line up.
+
+The asset class. The trade type table
+(=ores_trading_trade_types_tbl=) carries a =product_type=
+column of type =product_type_t= whose value =bond= names the asset
+class (the column is misnamed; the trade-model investigation calls
+this defect 10). The reference data for asset classes in ores.refdata
+also lists =bond=.
+
+The trade types. The same table declares ten trade types with
+=product_type= =bond=:
+
+| Code             | has_options | has_extension |
+|------------------+-------------+---------------|
+| Bond             | false       | false         |
+| ForwardBond      | false       | false         |
+| BondFuture       | false       | true          |
+| BondOption       | false       | true          |
+| BondRepo         | false       | false         |
+| BondTRS          | false       | true          |
+| BondPosition     | false       | false         |
+| CallableBond     | false       | false         |
+| ConvertibleBond  | false       | false         |
+| Ascot            | false       | true          |
+
+The =has_options= and =has_extension= flags drive the Qt form's tab
+visibility, described below.
+
+The instrument codes. A separate refdata catalogue
+(=refdata_instrument_codes_populate.sql=) names products as uppercase
+codes with an asset class tag. Nine of the ten trade types have a
+matching code tagged =bond=: Bond, BondPosition, BondOption, BondTRS,
+BondRepo, ForwardBond, BondFuture, CallableBond, ConvertibleBond.
+The tenth, Ascot, is tagged =cross_asset= in that catalogue, not
+=bond=: two taxonomies disagree on the same product's asset class.
+
+The =ores.ore= XSD domain names the trade types as C++ enum values
+(=BondPosition=, =BondFuture= and the rest) and carries product data
+structures for the ones ORE's schema defines: =bondData=,
+=forwardBondData=, =callableBondData=, =convertibleBondData=,
+=bondOptionData=, =bondTRSData=, =bondRepoData=, and
+=bondFutureData=.
+
+The ten products are not ten equal things. Economically they split by
+what the instrument row describes:
+
+- Products that are the bond itself: Bond, ForwardBond, CallableBond,
+  ConvertibleBond, BondPosition. The row's economics are the bond's
+  economics.
+- Products on a bond: BondOption, Ascot (option on a convertible
+  bond), BondFuture, BondTRS (total return on a bond), BondRepo
+  (financing against a bond). The row's economics are the product's
+  economics plus the terms of the underlying bond, which ORE's XML
+  embeds as an inner =BondData=.
+
+This split is the key to the entity model in the proposal below.
+
+** The current model, surface by surface
+
+The family touches five components. The full inventory:
+
+| Surface | Artefacts |
+|---------+-----------|
+| ores.sql | =trading_bond_instruments_create.sql= (the table, 168 lines), =trading_bond_instruments_extensions_create.sql= (seven hand-added columns), =trading_bond_instruments_notify_trigger_create.sql=, and the two drop files. Reference data: the ten trade types, the instrument codes, and the =product_type_t= enum value. |
+| ores.trading api | =domain/bond_instrument.hpp= with the nested =bond_terms=, =bond_features=, =bond_option= sub-structs and the =audit_record= and =instrument_identity= members; =bond_instrument_json_io=, =bond_instrument_table= (a text-table conversion), =bond_instrument_changed_event= |
+| ores.trading core | =repository/bond_instrument_entity.hpp= (flat row struct), =bond_instrument_mapper.hpp=, =bond_instrument_repository.hpp=; =service/bond_instrument_service.hpp= (get/save/remove/history/batch verbs); =messaging/bond_instrument_handler.hpp= and =registrar_bond.cpp= (NATS subjects) |
+| ores.trading service | =messaging/bond_instrument_event_registrar= |
+| ores.ore | =domain/bond_instrument_mapper.{hpp,cpp}= (425 lines) mapping seven ORE XML products in and out of the trading domain; four XML roundtrip test files including a bond-option pair |
+| ores.qt | =BondInstrumentForm.{hpp,cpp,ui}=, registered per trade type in the instrument form registry |
+| ores.shell | =bond_instrument_commands.{hpp,cpp}=: get/add/delete/history verbs over the same service |
+
+No bond artefact exists in marketdata, analytics, compute, or any
+other component.
+
+The C++ domain shape. =bond_instrument.hpp= models one instrument
+as four nested members: =instrument_identity= (version, tenant,
+workspace, =instrument_id=, =trade_type_code=, party), the =terms=
+group (security_id, issuer, currency, face value, coupon rate,
+coupon frequency code, day count code, issue date, maturity date),
+the =features= group (settlement days, call date, conversion ratio,
+future expiry, TRS return type, TRS funding code), the =option= group
+(option type, option expiry, option strike, Ascot option type), plus
+=description= and =audit_record=. The groups were split out to keep
+each rfl::Literal under the MSVC C1202 ceiling, not because they are
+persistence entities. The header comments still describe the table as
+serving five products although the structs carry fields for ten.
+
+The table. The hand-written create is a copy of the codegen SQL
+template's output minus the generated-file banner. One copy of the
+pattern, with drift:
+
+- The primary key column is =id=, not =instrument_id=, and the C++
+  entity types it as =sqlgen::PrimaryKey<std::string>=. The fifteen
+  codegen-converted families all key on =instrument_id= as uuid;
+  defect 13 of the trade-model investigation names this split, and
+  the draft org BE4698B1 maps the PK through the identity group the
+  way the converted families do.
+- The =trade_type_code= column is validated only for existence in the
+  trade types table (the shared =ores_trading_validate_trade_type_fn=
+  checks the code exists, never that it belongs to a table's family).
+  The codegen-generated tables declare their coverage with a check
+  such as =check ("trade_type_code" in ('EquityForward'))=; the bond
+  table has no coverage statement at all. Nothing stops an
+  EquityOption row being written into the bond table.
+- The insert trigger validates tenant, party, trade type and change
+  reason but not the workspace, where the generated trigger validates
+  =workspace_id= through =ores_workspace_validate_fn=.
+- Twenty-one of the columns sit in the hand-added extensions file:
+  seven nullable columns for BondFuture, BondOption, BondTRS,
+  BondPosition and Ascot, added by ALTER. The base file's own header
+  comment lists five products; the extension file lists five more;
+  the domain lists ten in its fields and five in its comments.
+
+The column layout, grouped by which rows use them:
+
+| Group | Columns | Rows that use them |
+|-------+---------+--------------------|
+| SCD2/audit spine | tenant_id, version, valid_from, valid_to, modified_by, performed_by, change_reason_code, change_commentary | all |
+| Identity | id, party_id, trade_type_code | all |
+| Soft FKs | trade_id, workspace_id | all (trade_id nullable) |
+| Bond terms | issuer, currency, face_value, coupon_rate, coupon_frequency_code, day_count_code, issue_date, maturity_date | Bond, ForwardBond, CallableBond, ConvertibleBond, BondPosition (copied from the underlying =BondData= for the derivative products) |
+| Optional terms | settlement_days | cash products |
+| Callable | call_date | CallableBond only |
+| Convertible | conversion_ratio | ConvertibleBond only |
+| BondFuture | future_expiry_date | BondFuture only |
+| BondOption | option_type, option_expiry_date, option_strike | BondOption only |
+| BondTRS | trs_return_type, trs_funding_leg_code | BondTRS only |
+| Ascot | ascot_option_type | Ascot only |
+| Notes | description | all, nullable |
+
+The domain-only member =terms.security_id= (the ISIN) has no column.
+The trade-model investigation's defect 2 finding is visible here too:
+dates are ISO strings in the domain (=issue_date=, =maturity_date=,
+=call_date=) against =date= columns in SQL, with the mapper
+translating.
+
+The ores.ore mapping. The mapper is the largest single piece of
+hand-written logic in the family. Forward mapping takes each ORE XML
+product's data structure and fills one =bond_instrument=:
+
+- =map_bond_data= reads only the first leg, the first notional, the
+  first rate and the first schedule rule of the embedded =BondData=.
+  A bond whose coupon steps or whose notional amortises is captured
+  at its first value only.
+- =forward_callable_bond= and =forward_convertible_bond= map only the
+  inner =BondData=; the callable wrapper's call schedule and the
+  convertible wrapper's conversion terms are never read. A callable
+  bond imported from XML arrives with no call date, and a convertible
+  with no ratio. Nothing in the tree populates =call_date= or
+  =conversion_ratio= from ORE XML; the columns can only be filled by
+  hand (Qt or shell).
+- =forward_bond_option= captures the option type and strike and the
+  first exercise date only; the XSD =exerciseDates= list is
+  truncated to its first element.
+- =forward_bond_trs= writes a hardcoded =trs_return_type= of
+  =TotalReturn= and, from the funding leg, either the floating index
+  or the literal string =Fixed= into =trs_funding_leg_code=. The
+  funding leg's schedule is dropped.
+- =forward_bond_repo= maps the underlying =BondData= and then writes
+  the repo leg's type into =coupon_frequency_code= (=Quarterly= for a
+  floating repo leg, =Maturity= for a fixed one). The repo leg's
+  rate, dates and economics are dropped. This is term corruption: the
+  coupon frequency column then says nothing about the bond's coupon.
+- BondFuture, BondPosition and Ascot have no mapper at all, although
+  the XSD domain defines =bondFutureData= and the trade types exist.
+- Reverse mapping reconstructs ORE XML from the row. It synthesises a
+  full =BondData= cashflow leg (schedule rule, notional, rate) from
+  the flat scalars, hardcodes =Dirty= as the TRS price type, and
+  fabricates a minimal repo leg (fixed, non-payer) that was never
+  captured. The reverse of a repo import is therefore not the import.
+
+The Qt surface. =BondInstrumentForm= is one form for all ten
+products. The registry passes the trade type's =has_options= and
+=has_extension= flags to the form, which hides an extensions tab
+unless the product needs it; the option, future, TRS and Ascot
+widgets live on that tab. Every widget maps to one domain member, and
+the form's in-memory model is the whole =bond_instrument= struct. The
+currency, coupon frequency, day count, option type, TRS return type
+and Ascot option type pickers are populated from hardcoded lists in
+=InstrumentFormUtils=, not from reference tables.
+
+The shell surface. The four verbs (get, add, delete, history) wrap
+the same service and protocol as the form; the add verb serialises a
+=save_bond_instrument_request= whose =data= member is the whole domain
+struct.
+
+** Findings for the family
+
+The family exhibits the model-wide defects of dfe15809 and of
+=trade_model_defects.org= in concrete form. Each finding names its
+evidence:
+
+| # | Finding | Evidence |
+|---+---------+----------|
+| B1 | The table is sparse: each of ten row types uses its own few columns. This is finding F11 of dfe15809 in the bond family. | 7 extension columns serve 5 products; 21 columns are null on most rows |
+| B2 | Coverage is undeclared and unenforceable: no check lists the ten codes, and the trigger's validation function checks existence only. Defect 14 of the trade-model investigation. | =trading_bond_instruments_create.sql=; =ores_trading_validate_trade_type_fn= |
+| B3 | The identity column is =id= against the converted families' =instrument_id=, and the table's C++ row struct keys it as a string. Defect 13. | entity header; the mapper's hand bridge |
+| B4 | The ISIN (=security_id=) is never persisted, although it is the market identifier of the bond and the only stable key an instrument master could have. | domain-only member; no column in either SQL file |
+| B5 | The derivative products cannot name their underlying. No column, table or foreign key links a BondOption, BondFuture, BondTRS or BondRepo row to the bond it references. Defect 15. | schema; the underlying appears only as a copied =BondData= inside the ORE XML |
+| B6 | Product economics are destroyed at the boundary: call schedules, conversion terms, option exercise lists, TRS funding schedules and all repo economics are dropped or truncated on import, and fabricated on export. | the mapper facts above |
+| B7 | The repo leg type is written into the coupon frequency column, corrupting the bond terms. | =forward_bond_repo= |
+| B8 | The domain and the schema disagree on the family's own scope: comments name five products, fields and extensions name ten. | header comments of the create file and of =bond_instrument.hpp= |
+| B9 | Call dates are a single nullable column although a call schedule is a list (defect 1's JSON-schedule finding in a column form); exercise dates are a single column although the XSD carries a list. | =call_date=, =option_expiry_date=; =ExerciseDates= in the mapper |
+| B10 | The family's reference values are free text with no foreign keys: =coupon_frequency_code=, =day_count_code=, =currency=, and the code columns. Defects 4, 5, 7, 8. | schema (no FK on any of them); Qt hardcodes the picker lists |
+| B11 | The terms are duplicated per trade: two trades in the same ISIN store two copies of the issue's economics, and an amendment to one does not touch the other. The duplicate is a 3NF violation: the terms depend on the issue, not on the instrument row. | any two rows sharing an ISIN |
+| B12 | The insert trigger skips the workspace validation the generated pattern performs, and the extension columns live outside the create file. | trigger bodies of bond vs =equity_forward_instruments= |
+
+** The proposed entity-relationship model
+
+The model separates the ten products into what they describe. The
+guiding decomposition, in the relational reading of dfe15809:
+
+- The economics of a bond describe the bond issue, not any one trade
+  of it. A call schedule and a conversion right describe the issue
+  too. These become a bond issue entity.
+- A trade of a bond family product is a trade-line fact: which
+  product, which trade, which issue, and the product's own
+  parameters. These become an instrument entity that references the
+  issue, one row per trade (or per standalone instrument), exactly as
+  instrument rows reference trades today.
+- A product with structure of its own (option, future, TRS, repo,
+  Ascot) declares that structure in its own fact table, keyed to the
+  instrument row. The fact table's columns are all meaningful for its
+  rows; the sparse parent columns disappear.
+- Lists on an instrument (exercise dates, funding and repo payment
+  schedules) become rows in the shared schedule pair that
+  =trade_model_defects.org= proposes (defect 1). References from an
+  instrument to anything outside the family become rows in the shared
+  instrument underlyings table (defect 15). A bond-on-bond reference
+  is a foreign key to the issue entity. The shared shapes keep the
+  owner key the parent story draws: =instrument_id=, unchanged.
+- Lists on the issue are family-owned rows keyed by =issue_id=, not
+  rows in the shared shapes: the call dates of a callable issue hang
+  off the issue row, and the conversion target of a convertible issue
+  does the same. The family does not widen the shared tables' owner.
+
+The model in one picture, drawn in the repo's PlantUML ER
+conventions. The shared row shapes repeat the defect-1 and defect-15
+column sets of =trade_model_defects.org= unchanged, with the
+instrument owner the parent story draws. The issue's child rows are
+family tables keyed by =issue_id=, drawn beside the shared shapes:
+
+#+caption: The proposed relational model for the bond family
+[[proj:doc/knowledge/architecture/trading_bond_relational_model_er.png]]
+
+Regenerate the PNG from =trading_bond_relational_model_er.puml=, the
+source beside this document, with the file's =compile-command=.
+
+The entities:
+
+| Entity | Table | Key | Holds |
+|--------+-------+-----+-------|
+| Bond issue | =ores_trading_bond_issues_tbl= | (tenant_id, issue_id) + SCD2 | security_id (ISIN, unique current per tenant), issuer, currency, face_value, coupon_rate, coupon_frequency_code, day_count_code, issue_date, maturity_date, settlement_days, description, workspace, audit spine |
+| Bond instrument | =ores_trading_bond_instruments_tbl= (reshaped) | (tenant_id, instrument_id) + SCD2 | version, party_id, trade_id (nullable soft FK to trades), trade_type_code (coverage check over the ten codes), issue_id (FK to the issue), workspace_id |
+| Bond option facts | =ores_trading_bond_options_tbl= | (tenant_id, instrument_id) + SCD2 | option_type (Call/Put), option_strike; exercise dates as schedule rows |
+| Bond future facts | =ores_trading_bond_futures_tbl= | (tenant_id, instrument_id) + SCD2 | delivery date and the facts the XSD =bondFutureData= carries |
+| Bond TRS facts | =ores_trading_bond_trs_tbl= | (tenant_id, instrument_id) + SCD2 | return type, funding index or rate; funding payment dates as schedule rows |
+| Bond repo facts | =ores_trading_bond_repos_tbl= | (tenant_id, instrument_id) + SCD2 | repo rate and type; repo payment dates as schedule rows |
+| Ascot facts | =ores_trading_ascots_tbl= | (tenant_id, instrument_id) + SCD2 | =ascot_option_type= and the conversion-option facts the XSD carries |
+| Call dates | =ores_trading_bond_issue_call_dates_tbl= | (tenant_id, issue_id, sequence) + SCD2 | one row per call date of a callable issue |
+| Conversion target | =ores_trading_bond_issue_conversion_targets_tbl= | (tenant_id, issue_id, sequence) + SCD2 | the equity share a convertible issue converts into, with the conversion ratio as the row weight |
+
+Every table keeps the standard SCD2 spine: =valid_from=, =valid_to=,
+the overlap exclusion, the optimistic =version= column with its
+uniqueness index, and the audit columns. Every table is small; the
+largest proposed table (the issue) has fewer columns than the current
+table has nulls on a typical row, and no entity needs the C1202
+sub-struct decomposition in its persisted domain type.
+
+The relationships, stated as keys:
+
+- instrument.issue_id FK to issue: every instrument row, of any of
+  the ten products, names one issue. The essence of the relationship
+  follows the product. For Bond, ForwardBond, CallableBond,
+  ConvertibleBond and BondPosition the issue is the bond itself, and
+  the row's economics are the issue's economics. For BondRepo the
+  issue is the collateral the financing runs against; the repo row's
+  economics are the financing's, not the bond's. For BondOption,
+  BondFuture, BondTRS and Ascot the issue is the bond the product is
+  written on. The schema draws one foreign key for all ten. The
+  =trade_type_code= discriminates the essence, and the mapper and the
+  views branch on it. The column is NOT NULL; a product row with no
+  bond is not a bond product.
+- instrument.trade_id soft FK to trades, unchanged in meaning and
+  uniqueness from today.
+- instrument schedule rows key to =instrument_id= and to the tenant,
+  with a sequence number, in the shape =trade_model_defects.org=
+  draws for defect 1 and defect 15, exactly as the parent story
+  shapes them.
+- issue call-date and conversion-target rows key to =issue_id= and to
+  the tenant, with a sequence number, in the family tables
+  =ores_trading_bond_issue_call_dates_tbl= and
+  =ores_trading_bond_issue_conversion_targets_tbl=. The issue row is
+  their parent; the shared tables do not widen.
+
+The trade type code sits on the instrument row, as today. The
+coverage check lists all ten codes. Whether the issue's features and
+the instrument's code agree (a Bond line on a callable issue) is an
+invariant the service enforces on save; the schema cannot span the
+two tables.
+
+The issue's reference columns close finding B10: =currency=,
+=day_count_code= and =coupon_frequency_code= become declared foreign
+keys into the trading reference tables the trade-model investigation
+names (=ores_trading_currencies_tbl=, =ores_trading_day_count_conventions_tbl=
+and =ores_trading_payment_frequencies_tbl=). The reference tables and
+their populate sources are shared work of the parent story, not of
+this family; until they land, the repair defect 4 records applies.
+
+Why the terms move to the issue rather than staying copied per trade:
+finding B11 is a genuine 3NF violation, and the derivative products
+need a stable row to reference (finding B5). The cost of the master
+entity is that an amendment to the issue's terms changes what every
+open instrument of that issue reads. That is precisely the semantic
+dfe15809 records for the target model: composite as-of reads are
+temporal joins over keys, and versioning is a per-table property. A
+read of an instrument is a temporal join of the instrument's row and
+the issue's rows as of the read point, exactly as a composite read
+joins its legs. No aggregate invariant exists: the issue does not
+bump the versions of its instruments.
+
+The alternative readings, rejected:
+
+- Keep one row per trade and split only the sparse columns into
+  children. This removes the nulls but keeps the copied terms and
+  still has no row for a product to reference as its underlying.
+  It is the current design with the sparsity moved, not a normalised
+  model.
+- Split the current table into ten product tables in the codegen
+  style. This matches how equity families are shaped but leaves each
+  product table carrying the copied bond economics and nullable
+  optional columns (the option table's settlement days), and it
+  duplicates the terms in ten places.
+- Model the product as the entity and the issue as its attribute.
+  This is the current object-graph instinct reversed; it fails the
+  same way, because ten products share one issue and the issue is the
+  stable reference.
+
+** The measured performance of the target model
+
+The trade generation story
+[[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][894B369A]] measured the
+deployed trading schema before this proposal was drawn. The numbers
+live in the story's =design.org= and in =trade_model_defects.org=. A
+council review of this proposal, recorded on 2026-09-09, checked the
+model against those numbers. The review approved the normalisation
+and asked for the amendments recorded in this section.
+
+The database charges per row, not per trade. The per-row insert
+trigger, which maintains the bitemporal validity range and cannot be
+disabled, costs about 25x. The deployed schema inserts about 2200
+rows per second; a clone without the trigger reaches 56032. The
+exclusion constraint costs 2.2x on its own, and the notify trigger
+costs 1.5%. On the fast synthetic path (COPY, trigger off), a
+fan-out of six versus eight rows per trade costs at most 1.4x, while
+one wide JSON column holding forty schedule dates costs 4x. Read
+performance was never measured; no read volumes exist to measure.
+
+One trade is one row today. In this model it is one instrument row, a
+share of one issue row, one fact row for the five products that carry
+structure, and schedule rows only where the current model stores
+nothing, because the current mapper truncates lists and drops
+economics. The issue rows amortise. A population of many trades on
+one ISIN pays one issue row for all of them, which is the generator
+story's premise. The fact and schedule rows buy data the current row
+does not hold. Storing the truth is not a regression these figures
+price.
+
+The split is not a performance claim. It moves width off the
+per-trade row, but the measured 4x width case is a forty-value JSON
+blob, and ten narrow term columns are not that case. The split stands
+on correctness, findings B11 and B5. The codegen task must not sell
+it as a performance win.
+
+The write path decides the economics. An interactive save writes a
+handful of rows in one transaction, and the trigger tax is
+irrelevant there. Bulk population pays the trigger until the
+generator story answers its open question of set-based bitemporal
+versioning. Until then, any generator or migration path must be
+sized at about 2000 rows per second on the deployed schema.
+
+The shared shapes inherit the same measurements. The defects
+investigation measured rows against width on the fast path, 1.4x
+against 4x, and chose rows for schedules and underlyings; this
+proposal follows that choice. It goes beyond the measured shapes in
+one place. This page draws the full SCD2 spine on the leaf rows it
+proposes: the instrument schedule rows in the shared pair, and the
+issue's call-date and conversion-target rows in the family tables,
+where the defect shapes carry none. Forty call dates as versioned rows pay the per-row trigger
+forty times and carry the audit columns forty times. The review
+asked whether the leaf rows could inherit their version from the
+schedule instead. The owner answered that every amendment to trade
+data is an audit requirement and must be traceable, and schedule
+dates are trade data. The leaf rows keep the full SCD2 spine as
+drawn. The inherit option is closed, and the trigger cost on the
+leaf rows is the accepted price of the audit requirement. The
+generator story's bulk-path question is the lever if that price
+binds.
+
+One composite needs a declared version rule. An instrument row and
+its fact rows describe one trade. The save verb writes them in one
+transaction, and the fact rows' version tracks the instrument's.
+The owner answered that =trade_type_code= cannot change on an
+existing row. A product change is a cancel and a rebook, expressed
+as closing the instrument row's validity and inserting a new
+instrument row with its fact rows. The verb must not accept a
+=trade_type_code= change in place, and the early draft's
+fact-retirement clause never runs. The rule must live where the
+codegen task reads it, not only in the verb. The schema carries no
+aggregate invariant, and a rule the document does not record is a
+rule drift deletes.
+
+The four review questions are answered, and the answers are recorded
+here so the codegen task reads them as decisions:
+
+| # | Question | Answer |
+|---+----------+--------|
+| 1 | Is amendment history of a call or exercise schedule an audit requirement? | Yes. Every amendment to trade data must be traceable, and schedule dates are trade data. The leaf rows keep the full SCD2 spine, as drawn. |
+| 2 | Can an instrument row change its =trade_type_code= in place? | No. A product change is a cancel and a rebook: close the instrument row's validity and insert a new instrument row with its fact rows. |
+| 3 | How does a bond issue own rows in the shared tables, whose owner key is =instrument_id=? | It does not. The shared tables stay keyed to instruments exactly as the parent story shapes them. The issue's call dates and conversion target are family-owned rows keyed by =issue_id= with real foreign keys (=ores_trading_bond_issue_call_dates_tbl=, =ores_trading_bond_issue_conversion_targets_tbl=). The typed-owner and exactly-one alternatives are closed. |
+| 4 | Does the repo relationship essence need its own mapper treatment? | No. The repo row points at the bond issue through the same single =issue_id= foreign key every instrument row carries; for a repo row the issue is the collateral the financing runs against. The =trade_type_code= discriminates the essence, and the mapper and views branch on it as for any product. |
+
+** Mapping the current model onto the target
+
+The current table's columns, column by column:
+
+| Current column | Destination |
+|----------------+-------------|
+| id | instrument row key, renamed =instrument_id= |
+| tenant_id, version, valid_from, valid_to, modified_by, performed_by, change_reason_code, change_commentary | unchanged, in both the issue and the instrument table |
+| party_id | the instrument row |
+| trade_id | the instrument row |
+| trade_type_code | the instrument row, with the ten-code coverage check added |
+| issuer, currency, face_value, coupon_rate, coupon_frequency_code, day_count_code, issue_date, maturity_date | the issue |
+| settlement_days | the issue (a market convention of the bond) |
+| call_date | a call-date row keyed to the issue in =ores_trading_bond_issue_call_dates_tbl= |
+| conversion_ratio | a conversion-target row keyed to the issue in =ores_trading_bond_issue_conversion_targets_tbl=, as its weight |
+| description | the issue |
+| future_expiry_date | the bond future facts table |
+| option_type, option_strike | the bond option facts table |
+| option_expiry_date | exercise schedule rows on the option instrument |
+| trs_return_type, trs_funding_leg_code | the bond TRS facts table, with the funding schedule as rows |
+| ascot_option_type | the Ascot facts table |
+| workspace_id | unchanged, both tables, with the validation restored |
+| (no column) security_id | the issue, NOT NULL |
+
+Migrating existing rows: each current row becomes one issue row (the
+row's terms and description, deduplicated per ISIN) plus one
+instrument row (identity, trade link, code, the issue FK) plus the
+fact rows its product needs. Deduplication of issues across trades is
+the only join in the migration; the SQL for it is a follow-up task.
+
+** What each surface must change
+
+Codegen. The family becomes a set of entity orgs in the modeling
+tree, one per table: issue, instrument, the five product fact
+tables, the issue's call-date and conversion-target tables, plus org
+models for the instrument schedule and underlyings rows when those
+shared tables land. Each org's columns map one to one with its
+table, so the org grammar's gaps shrink for this family: the column
+name =id= disappears (gap (b) is not needed once the key is renamed),
+and the C1202 mid-group decomposition (gap (a)) is not needed in any
+persisted entity because no entity is wide. What remains open in the
+grammar, from the draft org's verdict, is the boundary shape: the
+service and the wire still need a container that carries an
+instrument with its issue and its fact rows, and that container is a
+mid-group composition. Per dfe15809 the container is handcrafted
+first over the generated part types, and code-generated when the
+grammar can express it. The codegen task must read the ORE XSD
+product structures (=bondFutureData=, =bondRepoData= and the Ascot
+shape in ores.ore's domain) to fix the fact tables' columns, which
+this page names but does not invent.
+
+ores.ore. The mapper becomes a mapper per entity plus an assembler:
+one XML product document produces an issue (found or created), an
+instrument row and its fact rows; the reverse direction joins them
+back into the product document. The mapping must stop flattening:
+the call schedule, the conversion terms, the full exercise date list,
+the funding leg with its schedule, and the repo leg with its rate and
+dates all have destinations now. The coupon frequency corruption in
+=forward_bond_repo= and the hardcoded TRS values disappear with the
+flattening. BondFuture, BondPosition and Ascot gain mappers or a
+recorded decision that their products are out of scope for the
+import path.
+
+ores.qt. The form today binds the single flattened domain struct, so
+its impedance mismatch is the shape change: the widgets split across
+the issue, the instrument and the product fact types. The form's
+in-memory model becomes the handcrafted container the wire carries,
+and the save path sends the parts or the container instead of the
+single struct. The form is per product in effect already (the
+extensions tab is per trade type); the natural split is one view per
+product over the container, which the qt bridge task sizes. Whether
+that view can be code-generated depends on the container grammar
+work, exactly as dfe15809 sequences it; if not, the views stay hand
+written against the generated part types. The hardcoded picker lists
+move to reference data regardless.
+
+ores.shell. The four verbs keep their surface; the add verb changes
+what it constructs (the parts or the container) and the get verb
+returns the assembled container. No new verb is needed.
+
+** Staging
+
+This page delivers the inventory and the proposal only. The follow-up
+tasks on story 688959F0 are, in order:
+
+1. The org models and codegen of every entity including the SQL, the
+   migration script, and the drift gate for the family.
+2. The ores.ore mapping rework over the new entities.
+3. The qt bridge: container, views, wire protocol.
+
+The sequence depends on the container grammar work of the parent
+story where the boundary shape is concerned, and on the shared schedule and underlyings tables of the parent
+story, whose org models this family's instrument rows are an early
+consumer of.
+
+* See also
+
+- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — the parent analysis; the relational target this proposal instantiates for bond.
+- [[id:F7BDA6CE-AC29-46C0-9D8C-E238797F9F96][Analyse the bond family and propose its relational data model]] — the task this page delivers.
+- [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][ores.trading.bond_instrument]] — the draft org probe parked at task 2548EE95; its flattening verdict is gap (a).
+- =ore_trade_generator_trade_populations/trade_model_defects.org= — the model-wide defect investigation whose shapes this page reuses (schedule pair, underlyings, coverage checks).
+- [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] — the parent story and its sequencing.
+- [[id:496DC90B-8951-42A6-A63E-B1762DF496C6][PlantUML ER diagram conventions]] — the drawing conventions the figure follows.

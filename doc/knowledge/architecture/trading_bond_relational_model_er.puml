@@ -1,0 +1,243 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+
+title Bond family — proposed relational model (target)
+
+hide circle
+skinparam linetype ortho
+
+package "Proposed family tables" {
+  entity ores_trading_bond_issues_tbl <<temporal>> #C6F0D8 {
+    * issue_id : uuid <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * security_id : text <<unique>>
+    * issuer : text
+    * currency : text
+    * face_value : numeric
+    * coupon_rate : numeric
+    * coupon_frequency_code : text
+    * day_count_code : text
+    * issue_date : date
+    * maturity_date : date
+      settlement_days : int
+      description : text
+    * workspace_id : uuid <<FK>>
+    * modified_by : text
+    * performed_by : text
+    * change_reason_code : text
+    * change_commentary : text
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_issue_call_dates_tbl <<temporal>> #C6F0D8 {
+    * issue_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * call_date : date
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_issue_conversion_targets_tbl <<temporal>> #C6F0D8 {
+    * issue_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * underlying_uri : text
+    * weight : numeric
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_instruments_tbl <<temporal>> #C6F0D8 {
+    * instrument_id : uuid <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * party_id : uuid <<FK>>
+      trade_id : uuid <<FK>>
+    * trade_type_code : text
+    * issue_id : uuid <<FK>>
+    * workspace_id : uuid <<FK>>
+    * modified_by : text
+    * performed_by : text
+    * change_reason_code : text
+    * change_commentary : text
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_options_tbl <<temporal>> #C6F0D8 {
+    * instrument_id : uuid <<PK, FK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * option_type : text
+    * option_strike : numeric
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_futures_tbl <<temporal>> #C6F0D8 {
+    * instrument_id : uuid <<PK, FK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * delivery_date : date
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_trs_tbl <<temporal>> #C6F0D8 {
+    * instrument_id : uuid <<PK, FK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * trs_return_type : text
+    * funding_leg_code : text
+      funding_rate : numeric
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_repos_tbl <<temporal>> #C6F0D8 {
+    * instrument_id : uuid <<PK, FK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * repo_rate_type : text
+    * repo_rate : numeric
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_ascots_tbl <<temporal>> #C6F0D8 {
+    * instrument_id : uuid <<PK, FK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * ascot_option_type : text
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+}
+
+package "Shared row shapes (defect 1 and 15 of trade_model_defects.org)" {
+  entity ores_trading_schedules_tbl <<temporal>> #C6F0D8 {
+    * schedule_id : text <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+      owner_id : uuid <<FK>>
+    * schedule_type_code : text
+      business_day_convention_code : text
+      calendar_code : text
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_schedule_dates_tbl <<temporal>> #C6F0D8 {
+    * schedule_id : text <<PK, FK>>
+    * sequence_number : int <<PK>>
+    --
+    * schedule_date : date
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_instrument_underlyings_tbl <<temporal>> #C6F0D8 {
+    * tenant_id : uuid <<PK, FK>>
+    * instrument_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    --
+    * underlying_uri : text
+      weight : numeric
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+}
+
+note right of ores_trading_bond_issues_tbl
+  One row per bond issue, keyed by its ISIN
+  (security_id). The terms describe the issue,
+  not any single trade of it. Call-date rows and
+  conversion-target rows hang off the issue in
+  the family tables beside it.
+end note
+
+note right of ores_trading_bond_instruments_tbl
+  One row per trade (or per standalone instrument).
+  No economics on this row: the terms live on the
+  issue. trade_type_code carries the coverage check
+  over the ten bond codes. trade_id is a soft FK to
+  ores_trading_trades (out of family).
+end note
+
+note left of ores_trading_bond_options_tbl
+  Each fact table is 1:0..1 per instrument row and
+  exists only for its product: options for BondOption,
+  futures for BondFuture, trs for BondTRS, repos for
+  BondRepo, ascots for Ascot. Plus the shared audit
+  spine (modified_by, performed_by, change_reason_code,
+  change_commentary) on every table.
+end note
+
+note right of ores_trading_ascots_tbl
+  Ascot option and delivery facts read from the ORE
+  XSD in the codegen task.
+end note
+
+note left of ores_trading_schedules_tbl
+  Columns per defect 1. The shared shape keys its
+  owner as instrument_id, exactly as the parent
+  story shapes it. Exercise, funding and repo
+  payment rows key here. A callable issue's call
+  rows are not copied per trade because they hang
+  off the issue in a family table.
+end note
+
+note right of ores_trading_instrument_underlyings_tbl
+  Columns per defect 15, keyed to instruments as
+  the parent story draws it. The bond proposal
+  does not widen the owner: a convertible issue's
+  conversion-target row hangs off the issue in a
+  family table, with the conversion ratio as the
+  row weight.
+end note
+
+ores_trading_bond_issues_tbl ||--o{ ores_trading_bond_instruments_tbl : "is traded as"
+ores_trading_bond_instruments_tbl ||--o| ores_trading_bond_options_tbl : "BondOption facts"
+ores_trading_bond_instruments_tbl ||--o| ores_trading_bond_futures_tbl : "BondFuture facts"
+ores_trading_bond_instruments_tbl ||--o| ores_trading_bond_trs_tbl : "BondTRS facts"
+ores_trading_bond_instruments_tbl ||--o| ores_trading_bond_repos_tbl : "BondRepo facts"
+ores_trading_bond_instruments_tbl ||--o| ores_trading_ascots_tbl : "Ascot facts"
+ores_trading_bond_issues_tbl ||--o{ ores_trading_bond_issue_call_dates_tbl : "call dates"
+ores_trading_bond_issues_tbl ||--o{ ores_trading_bond_issue_conversion_targets_tbl : "conversion targets"
+ores_trading_bond_instruments_tbl ||--o{ ores_trading_schedules_tbl : "exercise, funding and repo payment rows"
+ores_trading_schedules_tbl ||--o{ ores_trading_schedule_dates_tbl : "dates"
+
+' Local Variables:
+' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar trading_bond_relational_model_er.puml"
+' End:
+@enduml

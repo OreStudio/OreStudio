@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-bond-relational-codegen
-#+pr: 2042
+#+pr: 2044
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-09
@@ -862,6 +862,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2044][#2044]] | [ores.trading] Bond relational model: the reshape, wave 1.5 |
 | [[https://github.com/OreStudio/OreStudio/pull/2042][#2042]] | [ores.trading] Bond relational model: population loader wave 1.4 |
 | [[https://github.com/OreStudio/OreStudio/pull/2041][#2041]] | [ores.trading] Bond relational model: additive codegen waves 1.1 to 1.3 |
 

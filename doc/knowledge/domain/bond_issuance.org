@@ -1,0 +1,125 @@
+:PROPERTIES:
+:ID: 9754A325-F6FB-4F44-AB56-660D980A3F11
+:END:
+#+title: Bond Issuance
+#+description: Bond issuance creates the security behind every bond trade: one issue per ISIN with terms fixed for its life; ORE names the issue by SecurityId and reads its terms from reference data.
+#+type: knowledge
+#+level: cross
+#+filetags: :domain:finance:bond:
+#+created: 2026-09-09
+#+updated: 2026-09-09
+
+Bond issuance is the act by which a borrower creates a bond as a
+tradable security. This note explains what that act creates: the bond
+issue, the thing that every bond trade and every ORE trade form on a
+bond references. The bond family product pages and the ORE Studio data
+model of the family both build on this concept. Return to
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
+
+* Summary
+
+An issue is one security, with one ISIN and one set of terms. The
+borrower fixes the terms at issuance: currency, face value, coupon,
+schedule and maturity. The terms do not change when the bond changes
+hands. Trades of the bond reference the issue; they do not copy or
+modify its terms. ORE names the issue with a =SecurityId=, usually the
+ISIN, and reads the terms from reference data.
+
+* Detail
+
+** What issuance creates
+
+At issuance, a borrower sells a new bond to raise money. The sale
+creates one security. That security is the issue. The issue fixes the
+terms that define the borrower's debt:
+
+- Issuer. The borrower of the money. It promises to pay interest and
+  to repay the principal.
+- Currency and face value. The currency of the debt and the principal
+  the borrower repays. A trade of the bond is sized as a notional in
+  the same currency, but the face value belongs to the issue, not to
+  any one trade.
+- Coupon. The interest the borrower pays. The coupon structure can be
+  fixed, floating, zero-coupon or amortising, per the coupon leg of
+  the bond's specification.
+- Schedule. The coupon payment dates, the calendar and the day-count
+  convention that fix each payment amount.
+- Dates. The issue date and the maturity date, when the principal is
+  repaid.
+- Features. Rights that alter the cash flows. A callable issue lets the
+  issuer redeem early at set prices on set dates. A convertible issue
+  gives the holder the right to convert into shares. The call schedule
+  and the conversion right belong to the issue.
+
+** One issue per ISIN
+
+The ISIN names the issue. One issue has one ISIN, and one ISIN names
+one issue. When a borrower needs different terms, it issues a new bond,
+which is a new issue with a new ISIN. The terms of an existing issue
+stay as they were fixed at issuance.
+
+** The issue and the trade
+
+An issue is a security. A trade is an event on the security. The two
+carry different facts:
+
+- The issue carries the terms. They describe the debt itself.
+- The trade carries the event: the parties, the price, the quantity,
+  the trade date and the settlement.
+- A position carries a holding: which party holds how much of the
+  issue at a point in time.
+
+Many trades can reference one issue. Each trade can be at a different
+price. The terms of the issue are the same for all of them.
+
+** The issue in ORE
+
+ORE's bond trade forms reference the issue by =SecurityId=, typically
+the ISIN with the =ISIN:= prefix. The short form of a trade names the
+issue and reads the terms from reference data. The long form inlines
+the terms in the trade. Either way, the trade is on the issue, not on a
+copy of it. Every product page of the bond family grounds on the issue
+in this way: see the links below.
+
+** In plain terms
+
+A borrower raises money by issuing one bond with one set of terms, for
+example a 4% coupon paid yearly, maturing in ten years. From then on,
+every trade of that bond is a trade of that same security. The coupon,
+the maturity and the ISIN do not change because the bond changes hands.
+What differs between trades is the price, the size and the parties.
+
+* See also
+
+** Trade forms whose economics are the issue's economics
+
+- [[id:691B6CE9-930A-4015-942C-A0DD4B04E690][Bond]]. The cash bond
+  trade; the issue is the bond itself.
+- [[id:8CCD37D5-1D16-4972-8582-13595E62381C][Forward Bond]]. A forward
+  contract on the issue, with the terms inlined.
+- [[id:C00D82F7-942F-4270-AB9F-D0C31F0881A9][Bond Forward (Reference
+  Data)]]. A forward contract on the issue, read from reference data.
+- [[id:4E78B88B-432F-445D-9FEA-9DBE80718DBF][Callable Bond]]. The issue
+  carries issuer call and investor put rights.
+- [[id:F5D8E0C4-EC67-4210-AF1C-B664246810C9][Convertible Bond]]. The
+  issue carries the right to convert into shares.
+
+** Positions and structures that reference the issue
+
+- [[id:531499CE-C843-4178-8F89-CA901B1BA9AE][Bond Position]]. A
+  position in a weighted basket of issues.
+- [[id:B50027E5-44CD-49FA-B4DF-1177E321F156][Bond Future]]. A contract
+  to buy or sell the issue at expiry.
+- [[id:52C1431E-517D-40EC-AE9F-838F040A4103][Bond Option]]. A right on
+  the issue, with the terms inlined.
+- [[id:0E145E20-C296-4D0F-B26C-2CC5EAA22F3B][Bond Option (Reference
+  Data)]]. A right on the issue, read from reference data.
+- [[id:0727A454-AB7F-4202-A3A8-A4A183683566][Bond Total Return Swap]].
+  A swap paying the total return of the issue.
+- [[id:C96BBC70-71C1-442A-97FF-CCD596C193DB][Bond Repo]]. A cash
+  borrowing with the issue posted as collateral.
+- [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]]. A structured
+  product whose underlyings are issues of convertible bonds.
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]]. The hub of all
+  knowledge notes.

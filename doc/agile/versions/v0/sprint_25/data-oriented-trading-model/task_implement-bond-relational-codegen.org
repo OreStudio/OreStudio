@@ -49,6 +49,116 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+Wave 1.1, the XSD survey and the deletion inventory (2026-09-09).
+
+The deliverable names the product fact tables but does not invent
+their columns. Its instruction to this task reads: "The codegen task
+must read the ORE XSD product structures (=bondFutureData=,
+=bondRepoData= and the Ascot shape in ores.ore's domain) to fix the
+fact tables' columns, which this page names but does not invent"
+(=trading_bond_relational_model.org=, section "What each surface must
+change"). This note records that reading against
+=external/ore/xsd/instruments.xsd=, and the deletion inventory of the
+hand-written stack. The ER's decided columns stay primary; the XSD
+structures below are the pools the org authoring (wave 1.3) picks
+from. All line numbers cite =instruments.xsd=.
+
+The ten product structures and their destinations in the model:
+
+| XSD type | Line | Composition | Destination in the model |
+|----------+------+-------------+--------------------------|
+| =bondData= | 382 | IssuerId, CreditCurveId, SecurityId; SettlementDays, Calendar, IssueDate, BondNotional, Payer, SubType, =LegData= | the issue entity; every product carries one. The issue's decided columns map from it and its coupon leg |
+| =forwardBondData= | 405 | bondData + SettlementData, PremiumData, LongInForward, KnockOut | instrument row only; the forward's extra terms have no fact destination (below) |
+| =bondFutureData= | 422 | ContractName, ContractNotional, LongShort, Currency, ContractMonth, DeliverableGrade, FairPrice, Settlement, SettlementDirty, RootDate, ExpiryBasis, SettlementBasis, ExpiryLag, SettlementLag, LastTradingDate, LastDeliveryDate, =DeliveryBasket= | =ores_trading_bond_futures_tbl=; the whole body is the candidate pool ("delivery date and the facts the XSD carries"). =DeliveryBasket= is a list of Ids |
+| =bondOptionData= | 2273 | =optionData= + =strikeGroup= + Redemption, PriceType, KnocksOut, bondData | =ores_trading_bond_options_tbl=: =OptionType= feeds =option_type=, the strike group feeds =option_strike=; =exerciseDatesGroup= feeds exercise schedule rows |
+| =optionData= | 327 | LongShort, OptionType, PayoffType, PayoffType2, Style, NoticePeriod, NoticeCalendar, NoticeConvention, MidCouponExercise, Settlement, SettlementMethod, PayOffAtExpiry, PremiumAmount, PremiumCurrency, PremiumPayDate, =Premiums=, =ExercisePrices=, =ExerciseFees=, ExerciseFeeSettlement*, =exerciseDatesGroup=, AutomaticExercise, =ExerciseData=, =PaymentData=, =SettlementData= | base of the option products; the per-trade facts the option fact row can carry |
+| =bondRepoData= | 2284 | bondData + =RepoData= wrapping one =legData= | =ores_trading_bond_repos_tbl=: the repo leg carries the rate, the type and the payment dates; the issue is the collateral (review answer 4) |
+| =bondTRSData= | 2338 | bondData + =totalReturnData= + =fundingData= | =ores_trading_bond_trs_tbl=: the return side (2313: Payer, InitialPrice, PriceType, observation and payment terms, =PaymentDates= list, FXConversion, FXTerms, ScheduleData, PayBondCashFlowsImmediately) and the funding leg (=fundingData= at 2297 wraps one =legData=) |
+| =convertibleBondData= | 2346 | bondData + CallData/PutData (=cbCallData=) + =cbConversionData= + DividendProtectionData + Detachable | conversion terms feed =ores_trading_bond_issue_conversion_targets_tbl=; the call and put schedules feed call-date rows |
+| =cbCallData= | 2700 | ScheduleData + dated Styles/Prices/PriceTypes/IncludeAccruals lists (value + startDate attribute) + Soft | the convertible's call or put schedule |
+| =cbConversionData= | 2981 | ScheduleData + dated =ConversionRatios= (float + startDate) + =FixedAmountConversion= (currency + dated Amounts) + Underlying | conversion-target child rows; the ratio is the row weight |
+| =ascotData= | 2357 | convertibleBondData + =optionData= + ReferenceSwapData (=fundingData=) | =ores_trading_ascots_tbl=: =ascot_option_type= and the conversion-option facts the XSD carries; the reference swap is a funding leg |
+| =callableBondData= | 2431 | bondData + CallData/PutData (=callableBondCallData=) | the callable's call and put schedules |
+| =callableBondCallData= | 2365 | ScheduleData + dated Styles/Prices/PriceTypes/IncludeAccruals lists | call-date child rows of the callable issue |
+| =bondBasketData= | 2566 | Quantity, Identifier, Underlying (unbounded) | no trade type is seeded for a basket product (below); its underlyings are a list |
+
+XSD structure with no destination in the decided ER shape, recorded
+for the wave 1.3 decision and unit 2:
+
+- The dated call data. =callableBondCallData= and =cbCallData= attach
+  Styles, Prices, PriceTypes and IncludeAccruals per date (each a
+  value with a =startDate= attribute). The ER's call-date rows carry
+  the schedule dates; they name no price, style, type or accrual
+  column. A call that reprices must not be flattened away: the
+  destination decision (extra columns on the child rows, or dated
+  lists as more rows) lands in wave 1.3 and binds unit 2.
+- The dated conversion ratios. =cbConversionData= carries
+  ConversionRatios as dated floats and a FixedAmountConversion with
+  dated amounts. The ER draws one conversion-target row per share
+  with the ratio as its weight. A convertible whose ratio changes
+  over time needs a decision in wave 1.3 (one row per dated ratio,
+  or a recorded scope limit).
+- The forward's extra terms. =forwardBondData= adds SettlementData,
+  PremiumData, LongInForward and KnockOut to the bond terms. The
+  ER draws no forward fact table. The instrument row holds the code;
+  the terms need a recorded decision in wave 1.3 or unit 2.
+- The basket. =bondBasketData= carries no bond terms at all and no
+  trade type row is seeded for it. The basket's underlyings belong
+  to the shared instrument-underlyings shape of the parent story,
+  not to a family fact table.
+
+The ten trade type codes, verified in the seed
+(=ores.sql/populate/trading/trading_trade_types_populate.sql=, lines
+173-202): Bond, ForwardBond, BondFuture, BondOption, BondRepo,
+BondTRS, BondPosition, CallableBond, ConvertibleBond, Ascot. The
+reshaped instrument's =trade_type_code= check is the membership check
+against =ores_trading_trade_types_tbl= through
+=ores_trading_validate_trade_type_fn=, the mechanism every generated
+trading instrument uses; the ten rows seed per tenant. The XSD's
+=bondData= is the plain bond (seeded as Bond and named BondPosition
+in the same seed); note the count mismatch with the mapper's product
+set is a unit 2 concern.
+
+The deletion inventory, verified against the tree on 2026-09-09. The
+whole hand-written bond stack lives in five components. A repo-wide
+grep for the type name and the table name finds no consumer outside
+them, no test fixture data, and no modeling reference.
+
+- =ores.trading=: 20 files. api: domain =bond_instrument.hpp=,
+  =bond_instrument_json_io.hpp=, =bond_instrument_table.hpp=,
+  =bond_instrument_table_io.hpp=, eventing
+  =bond_instrument_changed_event.hpp=, src
+  =bond_instrument_json_io.cpp=, =bond_instrument_table.cpp=,
+  =bond_instrument_table_io.cpp=. core: messaging
+  =bond_instrument_handler.hpp=, repository
+  =bond_instrument_entity.hpp=, =bond_instrument_mapper.hpp=,
+  =bond_instrument_repository.hpp=, service
+  =bond_instrument_service.hpp=, src =registrar_bond.cpp=,
+  =bond_instrument_entity.cpp=, =bond_instrument_mapper.cpp=,
+  =bond_instrument_repository.cpp=, =bond_instrument_service.cpp=.
+  service: messaging =bond_instrument_event_registrar.hpp= and
+  =bond_instrument_event_registrar.cpp=.
+- =ores.sql=: three create files and two drop files
+  (=trading_bond_instruments_create.sql=,
+  =trading_bond_instruments_extensions_create.sql=,
+  =trading_bond_instruments_notify_trigger_create.sql=,
+  =trading_bond_instruments_drop.sql=,
+  =trading_bond_instruments_notify_trigger_drop.sql=), the three
+  =trading_create.sql= =\ir= entries (lines 108-110), and the bond
+  section of =trading_rls_policies_create.sql= (lines 151-170: RLS
+  enable plus the tenant and party isolation policies). The RLS
+  deletion is partial: the file stays for the other trading tables.
+- =ores.qt=: =BondInstrumentForm.hpp=, =BondInstrumentForm.cpp=,
+  =BondInstrumentForm.ui=.
+- =ores.shell=: =bond_instrument_commands.hpp= and
+  =bond_instrument_commands.cpp=.
+- =ores.ore=: =bond_instrument_mapper.hpp= and
+  =bond_instrument_mapper.cpp= (the flattening mapper), plus the four
+  roundtrip suites =xml_bond_golden_roundtrip_tests.cpp=,
+  =xml_bond_mapper_roundtrip_tests.cpp=,
+  =xml_bond_option_golden_roundtrip_tests.cpp= and
+  =xml_bond_option_mapper_roundtrip_tests.cpp=.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

@@ -28,9 +28,9 @@ Bond is the pilot for the relational target model of the trading analysis (dfe15
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave 1.2 done: the three probe orgs regenerate and the shape verdicts are in the Notes. One mapper-template growth item found (F1: integer primary-key members drop in the mapper) before the child tables generate for real. |
+| Now          | Wave 1.3 done and gated: all eight additive entities have orgs and their full generated stacks sit in the tree, F1 is closed through the org-source is_int branches, the SQL create/drop/RLS files are wired, and every entity re-diffs clean against the final tangled template. Check gate: full build green (linux-clang-debug-make) and ctest 71/71 passed after a targeted refresh of the seven synthetic RLS policies in the worktree database, whose live shape predated the read-side rework of fce56925b4. The wave record is in the Notes. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave 1.3: author the remaining six orgs, close the F1 growth item, generate all nine entities and wire the SQL create and drop files. |
+| Next         | Wave 1.4: extend the population loader (scripts/load_trade_population.py) so the family loads with a coherent population: the REFERENCES chains, the per-family fact/instrument pairing by product code and the issue amortisation per ISIN. |
 | Last touched | 2026-09-09                               |
 
 * Acceptance
@@ -248,6 +248,119 @@ The three orgs stay in the modeling tree. They are the wave 1.3
 entities, not parked probes, so discovery picking them up is
 intentional; this wave writes nothing and full trading regeneration
 does not run again until wave 1.3 generates deliberately.
+
+Wave 1.3, the additive entities (2026-09-09).
+
+Five new orgs join the three probe orgs in
+=projects/ores.trading/modeling/=: =ores.trading.bond_future=,
+=ores.trading.bond_trs=, =ores.trading.bond_repo=, =ores.trading.ascot=
+and =ores.trading.bond_issue_conversion_target=, all in the flat
+trade_identifier style the probes validated. The three probe orgs'
+prose was finalised. Each column list was picked from the wave 1.1 XSD
+survey against the ER's decided columns, which stay primary; the
+survey recorded the XSD structures as pools, and the orgs draw
+=instrument_id= plus the per-product term columns only, exactly as the
+ER page names them. =bond_issue_conversion_target= and
+=bond_issue_call_date= carry the two-member key with the integer
+=sequence_number= member; the other six carry single-member keys.
+
+*F1 closed.* The mapper growth item landed as a codegen core flag plus
+template branches. =core.py= enriches every primary-key field with
+=is_int= when the drawer type is =integer= or =int=. Each of the four
+primary-key mapping sites of =cpp_domain_type_mapper.cpp.mustache=
+(identity and flat, entity to domain and domain to entity) gained an
+=is_int= branch between the =is_uuid= branch and the section close;
+the entity-to-domain casts use =boost::lexical_cast<int>= and the
+domain-to-entity casts assign =std::to_string(...)= to the entity's
+string-typed key member, keeping the uniform
+=sqlgen::PrimaryKey<std::string>= convention.
+
+The first full build surfaced a second F1-class site in the synthetic
+generator: =cpp_domain_type_generator.cpp.mustache= assigns a
+=faker= string noun to every composite-key extra column, which cannot
+compile against the integer =sequence_number= domain member. The
+extra-column block gained the =is_int= branch the natural-keys block
+already had (default value zero, =generator_expr= honoured), with the
+string fallback guarded by =^is_int=. Both growth items live in the
+tangled templates; the org sources carry the durable edits, per the
+topology note below.
+
+The second full build surfaced a third F1-class site in the service:
+the save preconditions of =cpp_service.cpp.mustache= emit an
+=empty()= check on every non-uuid key member, which cannot compile
+against the integer =sequence_number= domain member. The per-key
+validation now skips =is_int= members: an integer key member has no
+empty state, so no empty-key guard is emitted for it (uuid members
+keep the =is_nil()= check). The durable edit lives in
+=ores.cpp.service.service_impl.org=, which records the validation
+policy in its prose.
+
+The tangle topology shaped how the fix landed. The .mustache is
+itself generated: =compass build --direct codegen_templates= tangles
+=ores.cpp.repository.mapper_impl.org= (its
+=#+begin_src mustache :tangle cpp_domain_type_mapper.cpp.mustache=
+block) and clobbers direct .mustache edits. The branches were first
+edited into the .mustache and then wiped by the next tangle, which
+surfaced the topology. The durable edits now live in the org source;
+the tangle reproduces them. The lesson is recorded as a project
+memory (=tangle-codegen-templates-edit-the-org-source=).
+
+Only the two child orgs carry integer keys repo-wide, so the branch
+is inert for every pre-existing entity: a python scan over the codegen
+property drawers found no other primary-key member whose drawer holds
+=:primary_key: true= and =:type: integer=. The registered-component
+drift regeneration confirmed it: the =--all= run over the
+=KNOWN_DRIFT_FREE= registry (refdata, reporting, marketdata,
+compute-cpp, iam, iam-cpp, synthetic) rewrote every model and left
+zero changes under those paths.
+
+All eight entities generated for real into the tree
+(=compass codegen entity generate <entity>=, full stack per entity:
+domain, json_io, table, table_io, generator, changed event, protocol,
+handler, the three registrars, presentation history mapper, entity,
+mapper, repository, service, plus the four SQL files). After the
+final tangle, every entity re-diffs clean: =--diff= reports no
+differences for all eight. The component file lists were regenerated
+with =regenerate_cmake_component_files.py --all= (three trading files
+updated).
+
+The SQL create and drop masters are wired. =trading_create.sql=
+gains a "Bond relational model (pilot, task D7943D7E)" section with
+16 =ir= entries: the issue create and notify trigger first, then the
+two child tables, then the five fact tables. =drop_trading.sql= gains
+the matching 16 entries in reverse: children before the issue they
+belong to, the fact tables order-free, each trigger drop before its
+table drop. The four hand-maintained RLS files gained the family: 8
+enable-plus-policy blocks in
+=trading_rls_policies_create.sql= and 8 drop statements in
+=trading_rls_policies_drop.sql=.
+
+*RLS decision.* The issue row carries the party scope of its family;
+the fact and child rows carry no =party_id= and are family-owned, so
+each new table gets the tenant isolation policy only. The legacy
+instrument tables with =party_id= keep their restrictive party policy;
+nothing in the family emits one. This matches the approved ER answer
+that the issue's child rows are family-owned.
+
+Observation F2 stays open and widened to a second surface. The
+child tables' SQL notify payloads array both key members while the
+generated changed event carries one id vector; and the generated
+history-provider registrar cannot call the composite-key service
+history function through the dispatch registry's single-string
+=history_provider= interface, which the second full build surfaced as
+a compile error in the child registrars. No consumer of the child
+registrars exists in this wave (the hand-maintained =registrar.cpp=
+wires legacy entities only), so the registrar template gained a
+compound-key guard instead of a representation change: a single-key
+entity keeps its registered provider, a compound-key entity emits an
+empty registrar body with a comment naming the gap, because its rows
+have no single-string id to register under. The durable edit lives in
+=ores.cpp.history-provider-registrar.history_provider_registrar_implementation.org= and the sentinel re-diff shows the single-key
+path byte-identical. The F2 representation decision lands with the
+first consumer, in the loader wave or the reshape. The F1 runtime
+question also stays open: whether the repository's integer-column
+comparison against string key parameters binds in PostgreSQL is
+settled by the first live load.
 
 * Test Scenarios
 

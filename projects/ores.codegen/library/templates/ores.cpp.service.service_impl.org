@@ -13,6 +13,10 @@
 
 Repository-backed operations exposed to messaging. =service= profile (per entity).  Application-layer service wrapping repository calls with business-rule validation, NATS event emission, and structured error handling.
 
+Save preconditions validate each key member: a uuid member must not
+be nil, a text member must not be empty. An integer key member has no
+empty state and is not validated.
+
 See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
 variables and their semantics.
 
@@ -168,8 +172,10 @@ std::vector<domain::{{entity_singular}}>
 
 void {{entity_singular}}_service::save_{{entity_singular_short}}(const domain::{{entity_singular}}& v) {
 {{#primary_key.columns}}
+{{^is_int}}
     if (v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
         throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
+{{/is_int}}
 {{/primary_key.columns}}
     BOOST_LOG_SEV(lg(), debug) << "Saving {{entity_singular_words}}. " << {{{primary_key.value_log_fields}}};
     auto t = v;
@@ -182,8 +188,10 @@ void {{entity_singular}}_service::save_{{entity_plural_short}}(
     const std::vector<domain::{{entity_singular}}>& {{entity_plural_short}}) {
     for (const auto& e : {{entity_plural_short}}) {
 {{#primary_key.columns}}
+{{^is_int}}
         if (e.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}}.{{#is_uuid}}is_nil(){{/is_uuid}}{{^is_uuid}}empty(){{/is_uuid}})
             throw std::invalid_argument("{{entity_title}} {{column}} cannot be empty.");
+{{/is_int}}
 {{/primary_key.columns}}
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << {{entity_plural_short}}.size()

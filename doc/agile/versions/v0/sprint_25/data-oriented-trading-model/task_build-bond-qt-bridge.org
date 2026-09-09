@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: 3E14AEC0-23DA-47B7-9FC9-32D1DC661E5F
+:END:
+#+title: Task: Build the ores.qt bond bridge over the relational model
+#+description: Build the ores.qt bridge over the relational bond model: the container over the generated part types, handcrafted first per the parent analysis, the qt views over the new row shapes, the wire protocol and the reworked BondInstrumentForm.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-09
+#+updated: 2026-09-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The qt bridge is the last of the three bond follow-up tasks staged by the deliverable trading_bond_relational_model.org. The instrument the forms edit is no longer one row: it is an instrument row, its issue, its fact rows and the issue's child rows, joined by keys. This task delivers the container over the generated part types (handcrafted first; codegen absorbs it only when the parent story's container grammar lands), the qt views over the new row shapes, the wire protocol and the reworked BondInstrumentForm. The deliverable lists the shared schedule and underlyings tables and the container grammar as dependencies of the parent story; the probe resolves with evidence whether the family's views need the shared tables at all, since the issue's child rows live in family tables per the approved answers.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-09                               |
+
+* Acceptance
+
+- The container over the generated part types is handcrafted and assembles the instrument with its issue, fact rows and the issue's child rows.
+- The qt views present the new row shapes and the BondInstrumentForm works against the new rows; the wire protocol carries the assembled container.
+- The probe records with evidence whether the family's views need the shared schedule and underlyings tables, and what the family depends on from the parent story's container grammar.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

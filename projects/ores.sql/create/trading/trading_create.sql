@@ -109,6 +109,34 @@
 \ir ./trading_bond_instruments_notify_trigger_create.sql
 \ir ./trading_bond_instruments_extensions_create.sql
 
+-- Bond relational model (pilot, task D7943D7E): the issue table plus
+-- the per-trade fact tables and the issue-keyed child tables. Additive
+-- for now; nothing consumes them until the reshape. The issue row
+-- carries tenant + workspace; the fact and child rows are tenant-scoped.
+\ir ./trading_bond_issues_create.sql
+\ir ./trading_bond_issues_notify_trigger_create.sql
+
+\ir ./trading_bond_issue_call_dates_create.sql
+\ir ./trading_bond_issue_call_dates_notify_trigger_create.sql
+
+\ir ./trading_bond_issue_conversion_targets_create.sql
+\ir ./trading_bond_issue_conversion_targets_notify_trigger_create.sql
+
+\ir ./trading_bond_options_create.sql
+\ir ./trading_bond_options_notify_trigger_create.sql
+
+\ir ./trading_bond_futures_create.sql
+\ir ./trading_bond_futures_notify_trigger_create.sql
+
+\ir ./trading_bond_trs_create.sql
+\ir ./trading_bond_trs_notify_trigger_create.sql
+
+\ir ./trading_bond_repos_create.sql
+\ir ./trading_bond_repos_notify_trigger_create.sql
+
+\ir ./trading_ascots_create.sql
+\ir ./trading_ascots_notify_trigger_create.sql
+
 -- Credit instruments (depends on reference data above)
 \ir ./trading_credit_instruments_create.sql
 \ir ./trading_credit_instruments_notify_trigger_create.sql

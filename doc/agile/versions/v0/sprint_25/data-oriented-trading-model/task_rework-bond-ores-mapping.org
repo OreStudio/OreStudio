@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 212862C4-65C5-470D-99DC-09C23448FE4D
+:END:
+#+title: Task: Rework the ores.ore bond mapping to the relational model
+#+description: The ores.ore bond mapping becomes a mapper per entity plus an assembler over the new entities: import reads one XML product document into an issue (found or created), an instrument row and its fact rows; export joins the rows back into the product document. Flattening stops; the covered products roundtrip at the new shapes, validated through the mapper and golden suites and the ores.cli file roundtrip.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-09
+#+updated: 2026-09-09
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The ores.ore mapping rides the codegen reshape of the bond family: once the instrument entity and its issue, facts and child rows exist as generated types, the mapper targets them directly. This task delivers the depth of the mapping rework: a mapper per entity plus an assembler, import and export that work to the new shape, flattening that stops (the call schedule, conversion terms, exercise dates, funding leg and repo leg all have destinations now), and validation of both directions at the new shapes. Import and export are validated through the surfaces that exist: the mapper roundtrip and golden suites in projects/ores.ore/core/tests/ at unit level, and the ores.cli XML roundtrip at file level. No new verb surface is added; the shell trading verbs keep their surface.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-09                               |
+
+* Acceptance
+
+- The mapper reads one XML product document into an issue (found or created), an instrument row and its fact rows, and joins the rows back into the product document; both directions run over the generated entities.
+- Flattening stops: the call schedule, the conversion terms, the full exercise date list, the funding leg with its schedule and the repo leg with its rate and dates map to their table destinations. The coupon frequency corruption in forward_bond_repo and the hardcoded TRS values disappear, with tests that assert it.
+- Product coverage spans the ten bond codes per the deliverable's coverage findings, with a recorded decision for any product the import path does not cover.
+- A document survives the round trip at the new shape for every covered product: the golden and mapper roundtrip suites pass, and the ores.cli XML roundtrip (exporter::roundtrip) roundtrips the portfolio XML through the mapper with trades_mapped counting the coverage.
+- The DB-bound import path stays the workflow.v1.ore.import service with its existing drivers; no new import or export verb surface is added anywhere.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

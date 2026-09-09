@@ -28,9 +28,9 @@ Bond is the pilot for the relational target model of the trading analysis (dfe15
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave 1.4 done and gated: the loader loads the family to its model premise, with the ten codes cycling over the instrument rows and the issue, child and fact tables at rows / 10. The account-validated triggers are satisfied through a resolved service account, the gate run at 1000 rows reports zero findings (49 tables, 41,800 rows), and coherence of the kept population is proven by SQL joins and a seed-layout recomputation. The wave record, the RLS measurement lesson and the ownership split are in the Notes. |
+| Now          | Wave 1.5 done and verified. The reshaped instrument table and the nine family tables are live on a recreated database (schema version 0.0.25, commit cc013f1589 stamped), the baseline population runs at the family premise with zero findings, and the verification cycle is green on the new shape: ctest 71 of 71, roundtrip exit 0, codegen drift and cmake lists clean. The migration script converts an old-shape database with its row counts and joins validated on a scratch copy. The wave records are in the Notes. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave 1.5, the reshape: author ores.trading.bond_instrument.org per the deliverable (instrument_id key, the ten-code trade_type_code check, issue_id FK, soft FKs, profile spine), delete the hand-written bond stack the generated files supersede, migrate every consumer in one wave (ores.ore mapper switch-over, ores.shell verb, ores.cli call sites, the qt minimum), write and validate the migration script against an old-shape database, and recreate the test database. |
+| Next         | Wave 1.6, the loading exercise and the family drift gate: run the population loader at --rows 1000, 10000 and 20000 with the per-table rows/sec and the aggregate recorded against the deliverable baseline of about 2200 rows/sec, then regenerate each of the nine family entities with --diff and show zero diff. |
 | Last touched | 2026-09-09                               |
 
 * Acceptance
@@ -805,6 +805,47 @@ rows for the migrating tenants."). Each guard fired before any
 mutation. The delete-rule demo note: the legacy instrument delete
 rule is INSTEAD OF, so removing a demo row on the scratch needed the
 rule disabled first. Results land in the PR description.
+
+Wave 1.5, the reshape, part 6: the recreate and the verification
+cycle (2026-09-09).
+
+The dev database now lives at the reshaped shape. =compass db
+recreate -y -k= ran clean (47 s, schema version 0.0.25, git commit
+cc013f1589 stamped). The two scratch validation databases dropped
+first: the environment roles own objects inside them, and a role drop
+refuses while such databases exist. The live schema was re-verified
+after the recreate: the instrument table has its 14 columns with the
+ten-code check and =issue_id= NOT NULL, and the nine family tables
+exist under the recreated roles.
+
+The baseline population ran on the new shape: =--rows 1000 --keep=
+loaded 49 tables and 41,800 rows in 6.55 s with zero findings and the
+23 enumeration learns unchanged. The family loads at its model
+premise: instruments 1000 rows at 7123 rows/sec, and the eight family
+tables 100 rows each at roughly 1400 to 2040 rows/sec. This is the
+empirical proof of the populate finding in part 5: the loader needs
+no change for the reshape, because it introspects the deployed
+schema. Coherence of the kept population on the reshaped tables:
+zero instrument rows without an issue, exactly 10 instruments per
+issue, and no issue spans more than one trade-type code.
+
+The full verification cycle is green against the recreated database.
+ctest: 71 of 71 suites passed in 908.63 s, the trading, shell, cli,
+ore and qt suites among them, all against the reshaped schema. The
+domain roundtrip check exits 0 with the bond products at partial
+fidelity, the recorded mapper state of this wave; the deep import and
+export rework is unit 2's scope. Codegen drift: the template build is
+clean, =check_component_drift.py --all= reports no drift, and
+=regenerate_cmake_component_files.py --all --check= finds the
+component lists up to date. The compiled delta of the wave was
+verified green at commit 7e1d1426a0; the fix commit cc013f1589 that
+follows carries only migration SQL and this record, so the full build
+state carries over unchanged.
+
+The tree sits at cc013f1589 on
+=feature/implement-bond-relational-codegen= with a clean working
+tree and nothing pushed. The validation results of this wave land in
+the PR description at raise time, on user direction.
 
 * Test Scenarios
 

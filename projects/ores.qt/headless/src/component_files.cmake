@@ -22,6 +22,7 @@ set(files
     "OrgDocRenderer.cpp"
     "RepoFileFinder.cpp"
     "TestScenarioResultsWriter.cpp"
+    "parse_bond_instruments.cpp"
     "parse_swap_instruments.cpp"
     "parse_trade_instrument.cpp"
 )

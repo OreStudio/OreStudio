@@ -57,7 +57,7 @@ using ores::trading::domain::scripted_instrument;
 using ores::ore::domain::composite_instrument_mapper;
 using ores::trading::domain::composite_instrument_data;
 using ores::ore::domain::bond_instrument_mapper;
-using ores::trading::domain::bond_instrument;
+using ores::trading::domain::bond_instrument_data;
 using namespace ores::logging;
 
 std::filesystem::path example_path(const std::string& filename) {
@@ -109,7 +109,7 @@ composite_instrument_data load_and_map_composite(const std::string& filename) {
     return *r;
 }
 
-bond_instrument load_and_map_bond(const std::string& filename, std::size_t index = 0) {
+bond_instrument_data load_and_map_bond(const std::string& filename, std::size_t index = 0) {
     using ores::platform::filesystem::file;
     const std::string content = file::read_content(example_path(filename));
     portfolio p;
@@ -390,11 +390,12 @@ TEST_CASE("bond_repo_forward", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_bond("Cash_BondRepo_and_Bond.xml", 0);
 
-    CHECK(r.identity.trade_type_code == "BondRepo");
-    CHECK(!r.terms.security_id.empty());
+    CHECK(r.instrument.identity.trade_type_code == "BondRepo");
+    CHECK(!r.issue.security_id.empty());
+    REQUIRE(r.repo.has_value());
 
     BOOST_LOG_SEV(lg, info) << "BondRepo forward test passed. "
-                            << "security_id=" << r.terms.security_id;
+                            << "security_id=" << r.issue.security_id;
 }
 
 TEST_CASE("bond_repo_reverse", tags) {

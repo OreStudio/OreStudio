@@ -66,10 +66,21 @@ public:
     /**
      * @brief Process an add bond instrument request.
      *
-     * The instrument id is minted client-side; the tenant and party
+     * Add assembles the family rows of the reshaped bond model: one
+     * fresh issue row (minted issue_id) holding the bond terms, the
+     * slim instrument row pinned to that issue_id, and the engaged
+     * fact row of the product (bond_option for option_type,
+     * bond_trs for trs_return_type). The rows persist in that order
+     * through the per-entity save services; the issue row is saved
+     * first so the instrument's issue_id names a stored issue. The
+     * instrument id is minted client-side; the tenant and party
      * scope come from the logged-in session. The audit change fields
      * arrive as the trailing arguments, matching the reference-entity
      * add verbs.
+     *
+     * The four add arguments whose wide columns have no row in this
+     * wave leave the surface: call_date, future_expiry_date,
+     * option_expiry_date and the ascot option type.
      */
     static void process_add_bond_instrument(std::ostream& out,
                                             ores::nats::service::nats_client& session,
@@ -83,14 +94,10 @@ public:
                                             std::string day_count_code,
                                             std::string issue_date,
                                             std::string maturity_date,
-                                            std::string call_date,
-                                            std::string future_expiry_date,
                                             std::string trs_return_type,
                                             std::string trs_funding_leg_code,
                                             std::string option_type,
-                                            std::string option_expiry_date,
                                             std::string option_strike,
-                                            std::string ascot_option_type,
                                             std::string description,
                                             std::string change_reason_code,
                                             std::string change_commentary);

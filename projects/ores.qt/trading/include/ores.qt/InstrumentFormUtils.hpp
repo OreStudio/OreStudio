@@ -74,9 +74,6 @@ public:
     /** "", "TotalReturn", "PriceReturn" */
     static void populateTrsReturnType(QComboBox* cb);
 
-    /** "", "Call", "Put" — ASCOT bond option type */
-    static void populateAscotOptionType(QComboBox* cb);
-
     /** "", "TotalReturn", "PriceReturn" — equity swap / TRS return type */
     static void populateReturnType(QComboBox* cb);
 

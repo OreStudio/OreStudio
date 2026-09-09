@@ -20,7 +20,7 @@
 #ifndef ORES_TRADING_DOMAIN_TRADE_INSTRUMENT_HPP
 #define ORES_TRADING_DOMAIN_TRADE_INSTRUMENT_HPP
 
-#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/credit_instrument.hpp"
 #include "ores.trading.api/domain/equity_instrument_variant.hpp"
@@ -42,7 +42,7 @@ namespace ores::trading::domain {
 using trade_instrument = std::variant<std::monostate,
                                       swap_instrument_data,
                                       fx_instrument_variant,
-                                      bond_instrument,
+                                      bond_instrument_data,
                                       credit_instrument,
                                       equity_instrument_variant,
                                       commodity_instrument,

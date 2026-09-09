@@ -21,7 +21,10 @@
 #include "ores.shell/app/command_feedback.hpp"
 #include "ores.shell/app/request_helpers.hpp"
 #include "ores.trading.api/domain/bond_instrument_table_io.hpp" // IWYU pragma: keep.
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/bond_issue_protocol.hpp"
+#include "ores.trading.api/messaging/bond_option_protocol.hpp"
+#include "ores.trading.api/messaging/bond_trs_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/lexical_cast.hpp>
@@ -31,6 +34,7 @@
 #include <functional>
 #include <optional>
 #include <ostream>
+#include <type_traits>
 
 namespace ores::shell::app::commands {
 
@@ -94,14 +98,10 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu,
                    std::string day_count_code,
                    std::string issue_date,
                    std::string maturity_date,
-                   std::string call_date,
-                   std::string future_expiry_date,
                    std::string trs_return_type,
                    std::string trs_funding_leg_code,
                    std::string option_type,
-                   std::string option_expiry_date,
                    std::string option_strike,
-                   std::string ascot_option_type,
                    std::string description,
                    std::string change_reason_code,
                    std::string change_commentary) {
@@ -117,27 +117,21 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu,
                                         std::move(day_count_code),
                                         std::move(issue_date),
                                         std::move(maturity_date),
-                                        std::move(call_date),
-                                        std::move(future_expiry_date),
                                         std::move(trs_return_type),
                                         std::move(trs_funding_leg_code),
                                         std::move(option_type),
-                                        std::move(option_expiry_date),
                                         std::move(option_strike),
-                                        std::move(ascot_option_type),
                                         std::move(description),
                                         std::move(change_reason_code),
                                         std::move(change_commentary));
         },
         "Add an Bond instrument (trade_type_code [security_id] issuer currency face_value "
-        "coupon_rate coupon_frequency_code [day_count_code] issue_date [maturity_date] [call_date] "
-        "[future_expiry_date] [trs_return_type] [trs_funding_leg_code] [option_type] "
-        "[option_expiry_date] [option_strike] [ascot_option_type] description change_reason_code "
-        "\"change_commentary\")",
+        "coupon_rate coupon_frequency_code [day_count_code] issue_date [maturity_date] "
+        "[trs_return_type] [trs_funding_leg_code] [option_type] [option_strike] description "
+        "change_reason_code \"change_commentary\")",
         {"trade_type_code security_id issuer currency face_value coupon_rate coupon_frequency_code "
-         "day_count_code issue_date maturity_date call_date future_expiry_date trs_return_type "
-         "trs_funding_leg_code option_type option_expiry_date option_strike ascot_option_type "
-         "description change_reason_code change_commentary"});
+         "day_count_code issue_date maturity_date trs_return_type trs_funding_leg_code option_type "
+         "option_strike description change_reason_code change_commentary"});
 
     bond_instruments_menu->Insert("delete",
                                   [&session](std::ostream& out, std::string instrument_id) {
@@ -179,9 +173,9 @@ void bond_instrument_commands::process_get_bond_instruments(std::ostream& out,
     state.total_count = result->total_available_count;
     pagination.set_last_entity("bond_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->bond_instruments.size()
                               << " Bond instruments.";
-    out << result->instruments << std::endl;
+    out << result->bond_instruments << std::endl;
 
     // Display pagination info
     const auto page = (state.current_offset / pagination.page_size()) + 1;
@@ -189,7 +183,7 @@ void bond_instrument_commands::process_get_bond_instruments(std::ostream& out,
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+    out << "\nPage " << page << " of " << total_pages << " (" << result->bond_instruments.size()
         << " of " << state.total_count << " total)" << std::endl;
 }
 
@@ -205,14 +199,10 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
                                                            std::string day_count_code,
                                                            std::string issue_date,
                                                            std::string maturity_date,
-                                                           std::string call_date,
-                                                           std::string future_expiry_date,
                                                            std::string trs_return_type,
                                                            std::string trs_funding_leg_code,
                                                            std::string option_type,
-                                                           std::string option_expiry_date,
                                                            std::string option_strike,
-                                                           std::string ascot_option_type,
                                                            std::string description,
                                                            std::string change_reason_code,
                                                            std::string change_commentary) {
@@ -223,69 +213,152 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
         return;
     }
 
-    domain::bond_instrument v;
-    v.identity.instrument_id = boost::uuids::random_generator()();
-    v.identity.trade_type_code = std::move(trade_type_code);
+    std::optional<double> parsed_strike;
     try {
-        v.identity.party_id = party_uuid_for(session);
-    } catch (const std::exception& e) {
-        fail(out) << e.what() << std::endl;
-        return;
-    }
-    const auto& tenant = session.auth().tenant_id;
-    if (auto tid = utility::uuid::tenant_id::from_string(tenant); tid)
-        v.identity.tenant_id = *tid;
-
-    v.terms.security_id = (security_id == "-") ? "" : std::move(security_id);
-    v.terms.issuer = std::move(issuer);
-    v.terms.currency = std::move(currency);
-    v.terms.face_value = face_value;
-    v.terms.coupon_rate = coupon_rate;
-    v.terms.coupon_frequency_code = std::move(coupon_frequency_code);
-    v.terms.day_count_code = std::move(day_count_code);
-    v.terms.issue_date = std::move(issue_date);
-    v.terms.maturity_date = std::move(maturity_date);
-    v.features.call_date = (call_date == "-") ? "" : std::move(call_date);
-    v.features.future_expiry_date =
-        (future_expiry_date == "-") ? "" : std::move(future_expiry_date);
-    v.features.trs_return_type = (trs_return_type == "-") ? "" : std::move(trs_return_type);
-    v.features.trs_funding_leg_code =
-        (trs_funding_leg_code == "-") ? "" : std::move(trs_funding_leg_code);
-    v.option.option_type = (option_type == "-") ? "" : std::move(option_type);
-    v.option.option_expiry_date = (option_expiry_date == "-") ? "" : std::move(option_expiry_date);
-    v.option.ascot_option_type = (ascot_option_type == "-") ? "" : std::move(ascot_option_type);
-    v.description = std::move(description);
-
-    try {
-        v.option.option_strike = parse_optional_double(option_strike, "option_strike");
+        parsed_strike = parse_optional_double(option_strike, "option_strike");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
     }
 
-    // The trading tables require modified_by to name a real account
-    // username; the logged-in account is the acting principal.
-    v.audit.modified_by = session.auth().username;
-    v.audit.change_reason_code = std::move(change_reason_code);
-    v.audit.change_commentary = std::move(change_commentary);
+    option_type = (option_type == "-") ? "" : std::move(option_type);
+    trs_return_type = (trs_return_type == "-") ? "" : std::move(trs_return_type);
+    if (!option_type.empty() && !trs_return_type.empty()) {
+        fail(out) << "The option and trs fact arguments cannot combine on one add; the product "
+                     "carries one fact row."
+                  << std::endl;
+        return;
+    }
 
-    auto req = trading::messaging::save_bond_instrument_request{.data = std::move(v)};
+    boost::uuids::uuid party_id;
+    try {
+        party_id = party_uuid_for(session);
+    } catch (const std::exception& e) {
+        fail(out) << e.what() << std::endl;
+        return;
+    }
 
-    auto result = do_auth_request<trading::messaging::save_bond_instrument_response>(
-        out, session, "trading.v1.bond_instruments.save", req);
-    if (!result)
+    auto generator = boost::uuids::random_generator();
+    const auto issue_id = generator();
+    const auto instrument_id = generator();
+
+    const auto username = session.auth().username;
+    const auto session_tenant = utility::uuid::tenant_id::from_string(session.auth().tenant_id);
+
+    // The add assembles the reshaped rows: the issue holds the bond
+    // terms, the slim instrument pins the trade to that issue, and the
+    // engaged product fact holds the option or trs terms. The rows
+    // save in that order, each through its own service; the saves are
+    // not atomic, so a later failure leaves the earlier rows saved.
+
+    domain::bond_issue issue;
+    issue.issue_id = issue_id;
+    issue.security_id = (security_id == "-") ? "" : std::move(security_id);
+    issue.issuer = std::move(issuer);
+    issue.currency = std::move(currency);
+    issue.face_value = face_value;
+    issue.coupon_rate = coupon_rate;
+    issue.coupon_frequency_code = std::move(coupon_frequency_code);
+    issue.day_count_code = (day_count_code == "-") ? "" : std::move(day_count_code);
+    issue.issue_date = std::move(issue_date);
+    issue.maturity_date = (maturity_date == "-") ? "" : std::move(maturity_date);
+    issue.description = std::move(description);
+    if (session_tenant)
+        issue.tenant_id = *session_tenant;
+    issue.modified_by = username;
+    issue.change_reason_code = change_reason_code;
+    issue.change_commentary = change_commentary;
+
+    domain::bond_instrument instrument;
+    instrument.identity.instrument_id = instrument_id;
+    instrument.identity.trade_type_code = std::move(trade_type_code);
+    instrument.identity.party_id = party_id;
+    if (session_tenant)
+        instrument.identity.tenant_id = *session_tenant;
+    instrument.issue_id = issue_id;
+    instrument.audit.modified_by = username;
+    instrument.audit.change_reason_code = change_reason_code;
+    instrument.audit.change_commentary = change_commentary;
+
+    const auto save_row = [&](const auto& request,
+                              std::string_view subject,
+                              std::string_view what) {
+        using request_type = std::decay_t<decltype(request)>;
+        auto result = do_auth_request<typename request_type::response_type>(out, session, subject,
+                                                                            request);
+        if (!result)
+            return false;
+        if (!result->success) {
+            const auto& msg = result->message.empty() ? "Unknown error" : result->message;
+            BOOST_LOG_SEV(lg(), warn) << "Failed to save the " << what << " row: " << msg;
+            fail(out) << "Failed to save the " << what << " row: " << msg << std::endl;
+            return false;
+        }
+        return true;
+    };
+
+    auto issue_req = trading::messaging::save_bond_issue_request::from(std::move(issue));
+    if (!save_row(issue_req, "trading.v1.bond_issues.save", "bond issue"))
         return;
 
-    if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully added Bond instrument.";
-        out << "✓ Bond instrument added successfully!" << std::endl;
-        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
-            << std::endl;
-    } else {
-        const auto& msg = result->message.empty() ? "Unknown error" : result->message;
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add Bond instrument: " << msg;
-        fail(out) << "Failed to add Bond instrument: " << msg << std::endl;
+    auto instrument_req =
+        trading::messaging::save_bond_instrument_request::from(std::move(instrument));
+    if (!save_row(instrument_req, "trading.v1.bond_instruments.save", "bond instrument")) {
+        fail(out) << "The issue row remains saved (issue id "
+                  << boost::uuids::to_string(issue_id) << ")." << std::endl;
+        return;
     }
+
+    if (!option_type.empty()) {
+        domain::bond_option option_row;
+        option_row.instrument_id = instrument_id;
+        option_row.option_type = std::move(option_type);
+        option_row.option_strike = parsed_strike.value_or(0.0);
+        if (session_tenant)
+            option_row.tenant_id = *session_tenant;
+        option_row.modified_by = username;
+        option_row.change_reason_code = change_reason_code;
+        option_row.change_commentary = change_commentary;
+
+        auto option_req =
+            trading::messaging::save_bond_option_request::from(std::move(option_row));
+        if (!save_row(option_req, "trading.v1.bond_options.save", "bond option")) {
+            fail(out) << "The issue and instrument rows remain saved (issue id "
+                      << boost::uuids::to_string(issue_id) << ", instrument id "
+                      << boost::uuids::to_string(instrument_id) << ")." << std::endl;
+            return;
+        }
+    }
+
+    if (!trs_return_type.empty()) {
+        domain::bond_trs trs_row;
+        trs_row.instrument_id = instrument_id;
+        trs_row.return_type = std::move(trs_return_type);
+        trs_row.funding_index =
+            (trs_funding_leg_code == "-") ? "" : std::move(trs_funding_leg_code);
+        // The verb carries no funding-rate or leg-type argument; the
+        // rate column has no generated default, so the unset value is
+        // explicit here rather than an indeterminate double on the wire.
+        trs_row.funding_rate = 0.0;
+        if (session_tenant)
+            trs_row.tenant_id = *session_tenant;
+        trs_row.modified_by = username;
+        trs_row.change_reason_code = change_reason_code;
+        trs_row.change_commentary = change_commentary;
+
+        auto trs_req = trading::messaging::save_bond_trs_request::from(std::move(trs_row));
+        if (!save_row(trs_req, "trading.v1.bond_trs.save", "bond trs")) {
+            fail(out) << "The issue and instrument rows remain saved (issue id "
+                      << boost::uuids::to_string(issue_id) << ", instrument id "
+                      << boost::uuids::to_string(instrument_id) << ")." << std::endl;
+            return;
+        }
+    }
+
+    BOOST_LOG_SEV(lg(), info) << "Successfully added Bond instrument.";
+    out << "✓ Bond instrument added successfully!" << std::endl;
+    out << "Instrument id: " << boost::uuids::to_string(instrument_id) << std::endl;
+    out << "Issue id: " << boost::uuids::to_string(issue_id) << std::endl;
 }
 
 void bond_instrument_commands::process_delete_bond_instrument(std::ostream& out,
@@ -327,7 +400,7 @@ void bond_instrument_commands::process_get_bond_instrument_history(std::ostream&
     }
 
     trading::messaging::get_bond_instrument_history_request req;
-    req.id = std::move(instrument_id);
+    req.instrument_id = std::move(instrument_id);
 
     auto result = do_auth_request<trading::messaging::get_bond_instrument_history_response>(
         out, session, "trading.v1.bond_instruments.history", req);

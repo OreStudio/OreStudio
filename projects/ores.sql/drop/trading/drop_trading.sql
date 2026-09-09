@@ -74,12 +74,9 @@
 \ir ./trading_fx_forward_instruments_notify_trigger_drop.sql
 \ir ./trading_fx_forward_instruments_drop.sql
 
--- Bond instruments (depend on reference data, drop before reference data)
-\ir ./trading_bond_instruments_notify_trigger_drop.sql
-\ir ./trading_bond_instruments_drop.sql
-
 -- Bond relational model (pilot, task D7943D7E): child rows before the
--- issue they belong to; fact rows carry no dependencies on each other.
+-- issue they belong to; fact rows before the instrument they reference;
+-- the instrument before the issue it references.
 \ir ./trading_bond_issue_call_dates_notify_trigger_drop.sql
 \ir ./trading_bond_issue_call_dates_drop.sql
 \ir ./trading_bond_issue_conversion_targets_notify_trigger_drop.sql
@@ -94,6 +91,8 @@
 \ir ./trading_bond_repos_drop.sql
 \ir ./trading_ascots_notify_trigger_drop.sql
 \ir ./trading_ascots_drop.sql
+\ir ./trading_bond_instruments_notify_trigger_drop.sql
+\ir ./trading_bond_instruments_drop.sql
 \ir ./trading_bond_issues_notify_trigger_drop.sql
 \ir ./trading_bond_issues_drop.sql
 

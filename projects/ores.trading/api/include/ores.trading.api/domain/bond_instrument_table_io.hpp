@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_BOND_INSTRUMENT_TABLE_IO_HPP
-#define ORES_TRADING_DOMAIN_BOND_INSTRUMENT_TABLE_IO_HPP
+#ifndef ORES_TRADING_API_DOMAIN_BOND_INSTRUMENT_TABLE_IO_HPP
+#define ORES_TRADING_API_DOMAIN_BOND_INSTRUMENT_TABLE_IO_HPP
 
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/export.hpp"
@@ -28,7 +28,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief Dumps bond_instruments to a stream in table format.
+ * @brief Dumps the bond_instrument objects to a stream in table format.
  */
 ORES_TRADING_API_EXPORT std::ostream& operator<<(std::ostream& s,
                                                  const std::vector<bond_instrument>& v);

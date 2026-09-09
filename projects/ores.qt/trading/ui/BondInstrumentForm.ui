@@ -130,26 +130,9 @@
            </widget>
           </item>
           <item row="1" column="0">
-           <widget class="QLabel"><property name="text"><string>Call Date:</string></property></widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="OreDateEdit" name="callDateEdit"/>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel"><property name="text"><string>Conversion Ratio:</string></property></widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="OreDoubleSpinBox" name="conversionRatioSpinBox">
-            <property name="decimals"><number>6</number></property>
-            <property name="minimum"><double>0.000000000000000</double></property>
-            <property name="maximum"><double>9999.000000000000000</double></property>
-            <property name="toolTip"><string>Conversion ratio (ConvertibleBond; 0 = not applicable)</string></property>
-           </widget>
-          </item>
-          <item row="3" column="0">
            <widget class="QLabel"><property name="text"><string>Description:</string></property></widget>
           </item>
-          <item row="3" column="1">
+          <item row="1" column="1">
            <widget class="QPlainTextEdit" name="descriptionEdit">
             <property name="minimumSize">
              <size><width>0</width><height>60</height></size>
@@ -187,27 +170,21 @@
          </property>
          <layout class="QFormLayout" name="extensionsFormLayout">
           <item row="0" column="0">
-           <widget class="QLabel"><property name="text"><string>Future Expiry Date:</string></property></widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="OreDateEdit" name="futureExpiryDateEdit"/>
-          </item>
-          <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Option Type:</string></property></widget>
           </item>
-          <item row="1" column="1">
+          <item row="0" column="1">
            <widget class="QComboBox" name="optionTypeCombo"/>
           </item>
-          <item row="2" column="0">
+          <item row="1" column="0">
            <widget class="QLabel"><property name="text"><string>Option Expiry Date:</string></property></widget>
           </item>
-          <item row="2" column="1">
+          <item row="1" column="1">
            <widget class="OreDateEdit" name="optionExpiryDateEdit"/>
           </item>
-          <item row="3" column="0">
+          <item row="2" column="0">
            <widget class="QLabel"><property name="text"><string>Option Strike:</string></property></widget>
           </item>
-          <item row="3" column="1">
+          <item row="2" column="1">
            <widget class="OreDoubleSpinBox" name="optionStrikeSpinBox">
             <property name="decimals"><number>6</number></property>
             <property name="minimum"><double>0.000000000000000</double></property>
@@ -215,25 +192,19 @@
             <property name="toolTip"><string>Clean price strike for BondOption (0 = not set)</string></property>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="3" column="0">
            <widget class="QLabel"><property name="text"><string>TRS Return Type:</string></property></widget>
           </item>
-          <item row="4" column="1">
+          <item row="3" column="1">
            <widget class="QComboBox" name="trsReturnTypeCombo"/>
           </item>
-          <item row="5" column="0">
+          <item row="4" column="0">
            <widget class="QLabel"><property name="text"><string>TRS Funding Leg:</string></property></widget>
           </item>
-          <item row="5" column="1">
+          <item row="4" column="1">
            <widget class="QLineEdit" name="trsFundingLegCodeEdit">
             <property name="placeholderText"><string>Floating index code (BondTRS)</string></property>
            </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QLabel"><property name="text"><string>ASCOT Option Type:</string></property></widget>
-          </item>
-          <item row="6" column="1">
-           <widget class="QComboBox" name="ascotOptionTypeCombo"/>
           </item>
          </layout>
         </widget>

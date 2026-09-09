@@ -28,7 +28,7 @@ namespace ores #F2F2F2 {
             -clientManager_ : ClientManager*
             -imageCache_ : ImageCache*
             -username_ : string
-            -instrument_ : trading::domain::bond_instrument
+            -data_ : trading::domain::bond_instrument_data
             -dirty_ : bool
             -loaded_ : bool
         }

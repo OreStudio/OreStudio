@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,6 +17,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_TRADING_CORE_PRESENTATION_BOND_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
+#define ORES_TRADING_CORE_PRESENTATION_BOND_INSTRUMENT_HISTORY_FIELD_MAPPER_HPP
 
-drop trigger if exists ores_trading_bond_instruments_notify_trg on "ores_trading_bond_instruments_tbl";
-drop function if exists ores_trading_bond_instruments_notify_fn;
+#include "ores.diff/domain/field_value.hpp"
+#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.core/export.hpp"
+#include <vector>
+
+namespace ores::trading::presentation {
+
+/**
+ * @brief Renders a bond_instrument to an ordered field list for
+ * history-diff display. One line per field, in mapper order; no
+ * runtime reflection.
+ */
+[[nodiscard]] ORES_TRADING_CORE_EXPORT std::vector<ores::diff::domain::field_value>
+render_bond_instrument_fields(const domain::bond_instrument& v);
+
+}
+
+#endif

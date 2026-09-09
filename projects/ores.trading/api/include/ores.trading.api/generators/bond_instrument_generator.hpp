@@ -17,26 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/bond_instrument_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_TRADING_API_GENERATORS_BOND_INSTRUMENT_GENERATOR_HPP
+#define ORES_TRADING_API_GENERATORS_BOND_INSTRUMENT_GENERATOR_HPP
 
-namespace ores::trading::domain {
+#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/export.hpp"
+#include "ores.utility/generation/generation_context.hpp"
+#include <vector>
 
+namespace ores::trading::generators {
 
-std::string convert_to_table(const std::vector<bond_instrument>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
+/**
+ * @brief Generates a synthetic bond_instrument.
+ */
+ORES_TRADING_API_EXPORT domain::bond_instrument
+generate_synthetic_bond_instrument(utility::generation::generation_context& ctx);
 
-    table << fort::header << "ID" << "Type" << "Issue ID" << "Version" << "Recorded At"
-          << fort::endr;
+/**
+ * @brief Generates N synthetic bond_instruments.
+ */
+ORES_TRADING_API_EXPORT std::vector<domain::bond_instrument>
+generate_synthetic_bond_instruments(std::size_t n, utility::generation::generation_context& ctx);
 
-    for (const auto& bi : v) {
-        table << bi.identity.instrument_id << bi.identity.trade_type_code
-              << boost::uuids::to_string(bi.issue_id) << bi.identity.version << bi.audit.recorded_at
-              << fort::endr;
-    }
-    return table.to_string();
 }
 
-}
+#endif

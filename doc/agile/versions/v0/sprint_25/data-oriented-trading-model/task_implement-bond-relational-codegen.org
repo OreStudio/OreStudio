@@ -385,6 +385,203 @@ uninitialized like every uuid primary-key member in the tree. A
 deterministic default for all primary-key members is a
 domain-template decision; it rides with the F1 follow-up work.
 
+Wave 1.5, the reshape, part 1: the mapper switch-over decisions
+(2026-09-09).
+
+The ores.ore mapper switch-over is pulled into this wave by the
+approved plan: the mapper roundtrip suites compile against the mapper,
+so the mapper must target the new rows or the wave loses coverage. The
+deep rework (issue find-or-create, per-entity mappers and the
+assembler, full ten-code coverage) is unit 2 of the mapping task. This
+note records the boundary between the two and the container decisions
+the wave implements.
+
+*The variant carrier.* The bond alternative of =trade_instrument= (the
+only in-memory carrier between import and export) becomes an assembled
+container over the generated part types, handcrafted per the plan's
+unit-3 instruction. It mirrors the rates precedent shape
+(=swap_instrument_data = with_legs<rates_instrument_variant,
+swap_leg>=) with named rows instead of a leg vector: the slim
+=bond_instrument= header row, its =bond_issue= row, the engaged
+per-product fact row (=bond_option=, =bond_trs= or =bond_repo=) and a
+document remainder holding the fields reverse needs that no row yet
+carries. The remainder exists because the option exercise dates have
+no destination in the nine tables (recorded scope limit, wave 1.3):
+reverse_bond_option emits the exercise date today, so dropping it
+would change element presence, which the wave's fidelity definition
+forbids. The remainder rides the container until the shared
+instrument-keyed schedule tables of the parent story give the dates a
+row.
+
+*Forward storage, reverse emission.* The wave's fidelity definition:
+reverse emits exactly what it emits today for the seven mapped
+products; forward storage retargets to the new rows. The forward
+mappers fill the issue row with the fields =map_bond_data= filled into
+the wide terms and features (settlement_days is an issue column), the
+slim header with =trade_type_code= and =issue_id=, and the fact row of
+the product with its economics. BondOption stores =option_type= and
+=option_strike= in =bond_option=; BondTRS stores =return_type=
+"TotalReturn" (the hardcoding stays, unit 2 removes it) and the funding
+leg type and index in =bond_trs=; BondRepo stores the repo leg type
+and rate in =bond_repo=, new capture. The coupon-frequency corruption
+in forward_bond_repo ("Quarterly"/"Maturity" overwriting the issue's
+real tenor) disappears: a shared issue row cannot carry a per-trade
+artifact. Where the collateral carries a real schedule the output
+keeps its real tenor, a value-only change; where it carries no leg
+data the fabricated Tenor element vanishes from the output, which
+converges toward the upstream document the roundtrip check compares
+against. The element inventory therefore improves or stays neutral on
+every repo file. The container mints
+one fresh =issue_id= per mapped trade and pins =instrument.issue_id=
+to it; deduplication over =security_id= is the DB boundary of unit 2.
+
+*The DB-bound import boundary.* The workflow import handler
+(=ore_import_execute_handler.cpp=) saves the slim instrument header
+row only for the bond family in this wave, mirroring the rates
+precedent, whose DB import persists header rows and drops the legs.
+Issue find-or-create, the saving of issue and fact rows, and the
+dedup over =security_id= land in unit 2 ("Import reads one XML product
+document into an issue (found or created)"). The wave records that the
+workflow-imported bond rows therefore carry no readable economics
+until unit 2: the instrument header persists, the issue it points to
+does not.
+
+*The classification visitor catch.* The wave's ctest run caught the
+one silent casualty of the switch-over. =importer.cpp= stamps the
+routed =product_type= by type-testing each instrument-variant
+member, and in the reshape the bond branch of that visitor went
+dead, so bonds imported with an empty =product_type=
+(=xml_trade_import_tests.cpp:343= failed on the empty value). The
+fix binds the branch to the generated =bond_instrument_data= member.
+An =if constexpr= visitor branch that matches no live member
+compiles clean and eats its input silently; only the suite's
+classification assertion trips on it. The assertion is the tripwire
+the switch-over leaned on.
+
+Wave 1.5, the reshape, part 2: the ores.qt minimum (2026-09-09).
+
+*Decision: keep the BondInstrumentForm trio and rebind it to the
+assembled container.* The plan's deletion scope is the hand-written
+bond stack the generated files supersede, the ores.trading facets
+(domain, table io, repository, service, messaging, registrar); the qt
+form is not in that set. The plan's wave sentence commits the form to
+compiling and working against the new rows in this wave, and the full
+bridge (per-product views, parts save) is the qt bridge task's unit.
+Deleting the trio would trip the registry's no-form-registered warning
+on every bond open until that unit lands. The rates precedent
+(SwapInstrumentForm) shows the house pattern: the form binds the wire
+shape and persists what the wave's save handlers persist.
+
+What the minimum changes:
+
+- The form binds the container: =data_= (=bond_instrument_data=)
+  replaces =instrument_= (the wide type). Its =populate= overload
+  takes the container, matching the base class, whose bond overload
+  already moved to the container in this wave.
+- The widget mapping follows the row ownership: the economics and
+  optional tabs bind the issue row (issuer, currency, face value,
+  coupon rate, coupon frequency, day count, issue and maturity dates,
+  settlement days and description all live on =bond_issue=);
+  option type and strike bind the engaged =bond_option= fact; the TRS
+  return type and funding index bind the engaged =bond_trs= fact;
+  option expiry binds the container's document remainder, which is
+  where reverse_bond_option keeps the exercise date.
+- Four widgets are removed with the facts they edited, whose rows the
+  container does not carry in this wave: call date (child rows),
+  conversion ratio (child rows), future expiry date (=bond_future=)
+  and the ascot option type (=ascots=). Keeping them bound to nothing
+  would silently eat input; the bridge's per-product views add the
+  child-row tables.
+- The save path sends the slim header row only
+  (=req.data = data_.instrument=), mirroring this wave's DB import
+  boundary. The write direction engages a fact row only when its combo
+  carries a value, so an empty extensions page cannot fabricate a fact
+  for a plain bond.
+- The two GUI import call sites (OreImporter and ImportTradeDialog)
+  had silently dead bond branches: they matched the wide type, which
+  is no longer a =trade_instrument= alternative, so imported bond
+  trades saved no instrument at all. They now match the container and
+  save its slim row.
+
+Recorded limitation, binding unit 3: the form persists the slim row
+only; issue and fact edits ride the in-memory container; the GUI
+create path cannot satisfy the =issue_id= FK in this wave; and loaded
+rows display what the service assembles, which is the slim row until
+unit 2 persists and serves the issue and fact rows.
+
+Wave 1.5, the reshape, part 3: the ores.shell verb (2026-09-09).
+
+*Decision: the verb add persists the assembled parts; it does not
+mirror the slim-only save of the DB import and the qt minimum.* The
+plan's wave sentence says the verb changes "what add constructs and
+what get returns: the assembled instrument with its issue and fact
+rows". The wave's part 1 and part 2 records bind slim-only persistence
+to surfaces a later unit reworks: the DB import boundary is unit 2's
+("Import reads one XML product document into an issue (found or
+created)") and the qt parts save is unit 3's. No task owns the shell
+verb after this wave, yet the wave-1.7 acceptance runs live shell
+round trips with DB-row verification inside this task. A slim-only
+shell add would insert instrument rows whose =issue_id= names no
+stored issue (the SQL has no REFERENCES constraint; the FK is
+model-level), a state no later wave repairs. The verb therefore
+follows the rates precedent, where the add constructs what its rows
+carry, and persists in order through the generated per-entity save
+services: one fresh issue row (minted =issue_id=) holding the bond
+terms, the slim instrument row pinned to that issue, and the engaged
+fact row of the product (=bond_option= for =option_type=, =bond_trs=
+for =trs_return_type=, whose funding index takes
+=trs_funding_leg_code=, mirroring the qt minimum). The three saves are
+not atomic; the failure report names the surviving row ids. That is
+the recorded price.
+
+*The four dropped add arguments.* The call date, future expiry date,
+option expiry date and the ascot option type leave the add surface:
+their wide columns have no row in this wave, and the qt orphan rule
+applies (a bound-to-nothing argument would silently eat input). Their
+destinations are the child tables, =bond_future=, the shared schedule
+tables and =ascots= of later units. The verb also refuses to combine
+the option and trs fact arguments on one add: the product carries one
+fact row.
+
+*What get returns.* List, get and history return what the generated
+service serves: the slim instrument rows, whose table io renders the
+identity, the =issue_id= and the audit tail. The response member
+rename (=instruments= to =bond_instruments=) rides the regenerated
+protocol. Engaged facts write on add and the issue row persists on
+add; the read surfaces of the fact rows are unit 2's and unit 3's.
+
+Wave 1.5, the reshape, part 4: the deletion inventory outcome
+(2026-09-09).
+
+The wave-1.1 inventory named a 20-file ores.trading stack, five
+ores.sql files and the RLS section for deletion. The regeneration ran
+over the same paths, so the outcome differs per path kind.
+
+- The instrument stack paths regenerate: the org emits every facet
+  the hand-written stack had (domain, json_io, table, table_io,
+  changed event, handler, repository entity, mapper and repository,
+  service, registrar) at the same paths, so the regen overwrote the
+  hand-written files in place. The pure additions the wide shape
+  never had (the per-entity registrar, the per-entity protocol, the
+  generator and the presentation history mapper) land as new files.
+- Two inventory paths came out byte-identical: the service event
+  registrar pair and the api =json_io.cpp= (its TU carries no shape,
+  it includes the header). Nothing to delete there; the regen already
+  produced that content.
+- The ores.sql side: the extensions create file is deleted (the wide
+  extension columns have no table in the reshaped model), the two
+  =trading_create.sql= =\ir= entries and the drop references for it
+  are gone, and the remaining four files regenerated at their paths.
+  The RLS section keeps its partial deletion: the file stays for the
+  other trading tables, and no =extensions= reference remains
+  anywhere in =projects/ores.sql=.
+- The qt trio, the shell verb pair and the ores.ore mapper are not
+  deletion targets: parts 2 and 3 above rebind them to the new rows,
+  and the four mapper roundtrip suites stay with the mapper.
+
+Net deletions: one SQL file. The hand-written instrument stack exists
+in the tree only as the regeneration's input.
+
 Wave 1.4, the loader extension (2026-09-09).
 
 =scripts/load_trade_population.py= now loads the family to its model
@@ -448,6 +645,122 @@ The wave leaves observation F2 open: the loader copies rows and never
 consumes the generated registrars or repositories, so the
 compound-key registrar representation and the F1 repository-bind
 question both land with the first real consumer in the reshape.
+
+Wave 1.5, the reshape, part 5: the migration script (2026-09-09).
+
+=projects/ores.sql/migration/trading_bond_instruments_flat_columns_to_relational_rows_migration.sql=,
+styled on the synthetic reference: one-shot, single transaction,
+applied by hand. The docstring orders the work in three steps. The
+eight family create scripts apply first, with their tables holding
+no rows for the migrating tenants. The migration runs second. The
+reshaped =trading_bond_instruments_create.sql= and
+=trading_bond_instruments_notify_trigger_create.sql= run last.
+Until they run, any write to the instrument table fails loudly: the
+legacy insert trigger and notify trigger stay installed, and their
+function bodies reference the pre-reshape =id= column. On a freshly
+recreated database the instrument table has no =id= column and the
+script is a guarded no-op.
+
+*The guards.* Three, all before any mutation. The legacy =id= column
+must exist, else the script notices and returns: this is the
+idempotency guard and the ordering guard in one. Every
+=trade_type_code= must sit inside the ten, else the script aborts.
+The eight family tables must hold no rows of the migrating tenants,
+else the script aborts naming the table. The loader population on a
+dev database trips the third guard, which is why validation runs on
+a wiped scratch copy.
+
+*The only join.* The wide table never carried a security identifier,
+so the migration derives one per row: ='MIG-' || md5= over the eight
+NOT NULL term columns, computed once in a snapshot temp table.
+Merging is safe by construction: a group is exactly the rows that
+agree on every fingerprinted term. The fingerprint excludes
+=settlement_days= and =description=, so a group can disagree on
+them; the issue row takes the earliest row's values, and disagreeing
+groups and null =settlement_days= (written as 0) are counted and
+noticed. The deliverable's recorded limitation applies: the wide
+table carried no identifier to tell two different securities with
+identical terms apart. The minting inserts group by (tenant_id, fp):
+a =select distinct= over =gen_random_uuid()= would defeat its own
+dedup, because the uuid differs per row. Current rows mint open
+issues (valid_to = infinity) with the group's earliest =valid_from=.
+Closed rows whose fp matches a live issue join it; the rest mint
+closed issues from their own terms, one per fp, carrying the
+validity window of the latest row that bears the fp. Every
+instrument row maps 1:1 to an issue; the migration counts orphans
+and aborts if any exist.
+
+*The surgery.* In place on the instrument table: rename =id= to
+=instrument_id= (the rename cascades to the primary key, the gist
+exclusion, the checks and the indexes), add =issue_id=, fill it from
+the map, set it NOT NULL, drop the 19 moved columns with their
+inline checks, and add the ten-code check explicitly. The table's
+triggers disable around the migration's own UPDATE, because the
+notify trigger fires on UPDATE and its installed body references the
+pre-reshape column.
+
+*The raw inserts.* Issue, fact and child rows insert with the target
+insert triggers disabled, and the audit columns are set by hand. The
+issues insert trigger validates the account username, which raises
+for a DBA session user, and rewrites =valid_from= and =valid_to= on
+every insert; the fact and child insert triggers validate the
+account username too. The minted issue rows must bypass the issues
+trigger for the same reason as the raw fact rows. A read of the
+trigger bodies before the first validation run caught the minting
+section arming the issues trigger: the run would have raised on the
+session user and, under a validated account, would have rewritten
+the windows the migration had just chosen. The disable moved ahead
+of the mints. New rows are version 1 with =valid_to= equal to
+infinity and =valid_from= equal to the source row's =valid_from=
+for facts and children. Every legacy family row is single-row, so
+version-1-with-full-window is exact and amended SCD2 history is not
+preserved because none exists.
+
+*The audit.* New rows take =change_reason_code= 'system.new_record'
+with the commentary 'Migrated from the wide legacy bond instrument
+columns'. The reference migration used 'system.data_migration', but
+that code is not in the canonical change-reason catalogue, which
+holds 'system.new_record' and 'system.test' only. =modified_by= =
+coalesce(ores_iam_current_service_fn(), current_user) and
+=performed_by= = current_user, as in the reference. Instrument rows
+keep their own audit and validity unchanged.
+
+*The gates.* Fact and child rows migrate by code. Options take
+=option_type= in (Call, Put) with =option_strike= at least 0. TRS
+rows take TotalReturn or PriceReturn with a funding leg code, and
+the code decodes: 'Fixed' becomes a fixed leg with no index, any
+other code a floating leg carrying the code as the funding index;
+=funding_rate= stays null, because the wide table never carried it.
+Ascots take any non-null =ascot_option_type=, and the loader-era
+junk copies faithfully: the ascot table has no check to reject it.
+Call-date children come only from CallableBond rows, deduplicated
+per (issue, call_date), with per-issue sequence numbers. Rows that
+fail a gate are left unmigrated and counted; the failure is a
+notice, never an abort. Three legacy columns have no destination,
+and their values are noticed before the drop: =future_expiry_date=
+(the futures fact table carries no such column, and the wave-1.1 XSD
+survey supersedes the deliverable's mapping row),
+=option_expiry_date= (the exercise-schedule tables are not part of
+this wave) and =conversion_ratio= (conversion targets need an
+underlying identifier the wide table never carried). BondRepo rows
+do not migrate: the wide table never carried repo economics. The
+script ends with a union-all summary select over the nine tables and
+an integrity select counting instrument rows without an issue.
+
+*The validation vehicle.* The script validates on an old-shape
+database: a pg_dump/pg_restore scratch copy of the dev database,
+taken after the ctest run so the snapshot never catches a mid-test
+reset. The loader-era family rows are wiped, crafted duplicate-terms
+and per-code rows are added, and the run asserts the row counts, the
+1:1 instrument-to-issue map, the dedup join and the chosen validity
+windows. The guard aborts demonstrate safely on the real dev
+database: the guards fire before any mutation, inside the single
+transaction. Results land in the PR description.
+
+*Populate and fixtures.* Nothing to update. The audit found no
+populate, testdata or fixture writer of the legacy table, and the
+loader needs no change for the reshape. Wave 1.6 runs it as it
+stands.
 
 * Test Scenarios
 

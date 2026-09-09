@@ -22,7 +22,7 @@
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.qt/IInstrumentForm.hpp"
-#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/bond_instrument_data.hpp"
 
 namespace Ui {
 class BondInstrumentForm;
@@ -33,10 +33,12 @@ namespace ores::qt {
 /**
  * @brief @c IInstrumentForm subclass owning the bond instrument editor.
  *
- * Hosts an internal @c QTabWidget with three pages: economics (always
- * visible), optional fields, and extensions (revealed when @c has_extension
- * is true on the trade type row, e.g. BondFuture, BondOption, BondTRS,
- * Ascot).
+ * Binds the assembled bond container (the slim header row, its issue row
+ * and the product's fact rows), the shape the wire carries for the
+ * family. Hosts an internal @c QTabWidget with three pages: economics
+ * (always visible; the issue terms), optional fields, and extensions
+ * (revealed when @c has_extension is true on the trade type row; the
+ * engaged option and TRS fact editors).
  */
 class BondInstrumentForm final : public IInstrumentForm {
     Q_OBJECT
@@ -58,7 +60,7 @@ public:
     void setUsername(const std::string& username) override;
     void setImageCache(ImageCache* cache) override;
 
-    void populate(const trading::domain::bond_instrument& instr) override;
+    void populate(const trading::domain::bond_instrument_data& data) override;
     void clear() override;
 
     void setTradeType(const QString& code, bool has_options, bool has_extension) override;
@@ -84,7 +86,7 @@ private:
     ClientManager* clientManager_ = nullptr;
     ImageCache* imageCache_ = nullptr;
     std::string username_;
-    trading::domain::bond_instrument instrument_;
+    trading::domain::bond_instrument_data data_;
     bool dirty_ = false;
     bool loaded_ = false;
 };

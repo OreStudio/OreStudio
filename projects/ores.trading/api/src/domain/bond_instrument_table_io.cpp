@@ -23,8 +23,16 @@
 
 namespace ores::trading::domain {
 
+namespace {
+
+void print_bond_instrument_table(std::ostream& s, const std::vector<bond_instrument>& v) {
+    s << std::endl << convert_to_table(v) << std::endl;
+}
+
+}
+
 std::ostream& operator<<(std::ostream& s, const std::vector<bond_instrument>& v) {
-    s << convert_to_table(v);
+    print_bond_instrument_table(s, v);
     return s;
 }
 

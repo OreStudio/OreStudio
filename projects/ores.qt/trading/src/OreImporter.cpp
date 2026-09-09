@@ -23,6 +23,7 @@
 #include "ores.refdata.api/messaging/book_protocol.hpp"
 #include "ores.refdata.api/messaging/currency_protocol.hpp"
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
+#include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -379,7 +380,7 @@ ore_import_result OreImporter::execute(ore::scanner::scan_result scan_result,
             using namespace ores::trading::messaging;
             using ores::trading::domain::swap_instrument_data;
             using ores::trading::domain::fx_instrument_variant;
-            using ores::trading::domain::bond_instrument;
+            using ores::trading::domain::bond_instrument_data;
             using ores::trading::domain::credit_instrument;
             using ores::trading::domain::equity_instrument_variant;
             using ores::trading::domain::commodity_instrument;
@@ -596,9 +597,12 @@ ore_import_result OreImporter::execute(ore::scanner::scan_result scan_result,
                                     }
                                 },
                                 r);
-                        } else if constexpr (std::is_same_v<T, bond_instrument>) {
+                        } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
+                            // Save the slim header row only; the issue and
+                            // fact saves land with the wave-1.5 DB-import
+                            // boundary of the bond relational reshape.
                             save_bond_instrument_request req;
-                            req.data = r;
+                            req.data = r.instrument;
                             const auto resp = cm_->process_authenticated_request(std::move(req));
                             if (!resp || !resp->success)
                                 record_error(resp);

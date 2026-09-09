@@ -20,6 +20,7 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.qt.headless/IInstrumentFormPopulator.hpp"
 #include "ores.qt.headless/parse_trade_instrument.hpp"
+#include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/domain/product_type.hpp"
 #include "ores.trading.api/domain/trade.hpp"
@@ -104,9 +105,9 @@ struct FxVanillaOptionPopulator : ores::qt::IInstrumentFormPopulator {
 };
 
 struct BondPopulator : ores::qt::IInstrumentFormPopulator {
-    bond_instrument got;
+    bond_instrument_data got;
     bool called = false;
-    void populate(const bond_instrument& i) override {
+    void populate(const bond_instrument_data& i) override {
         got = i;
         called = true;
     }
@@ -186,12 +187,23 @@ struct EquityForwardPopulator : ores::qt::IInstrumentFormPopulator {
 // =============================================================================
 
 TEST_CASE("parse_trade_instrument_dispatches_bond", tags) {
+    const auto issue_id = boost::uuids::random_generator()();
+
     bond_instrument instr;
     instr.identity.instrument_id = boost::uuids::random_generator()();
     instr.identity.trade_type_code = "Bond";
+    instr.issue_id = issue_id;
+
+    bond_issue issue;
+    issue.issue_id = issue_id;
+    issue.issuer = "Acme";
+
+    bond_instrument_data data;
+    data.instrument = instr;
+    data.issue = issue;
 
     auto json =
-        make_response_json(make_test_trade(product_type::bond, "Bond"), trade_instrument{instr});
+        make_response_json(make_test_trade(product_type::bond, "Bond"), trade_instrument{data});
 
     BondPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);
@@ -199,8 +211,11 @@ TEST_CASE("parse_trade_instrument_dispatches_bond", tags) {
     REQUIRE(result.has_value());
     CHECK(result->classification.product_type == product_type::bond);
     REQUIRE(pop.called);
-    CHECK(pop.got.identity.instrument_id == instr.identity.instrument_id);
-    CHECK(pop.got.identity.trade_type_code == "Bond");
+    CHECK(pop.got.instrument.identity.instrument_id == instr.identity.instrument_id);
+    CHECK(pop.got.instrument.identity.trade_type_code == "Bond");
+    CHECK(pop.got.instrument.issue_id == issue_id);
+    CHECK(pop.got.issue.issue_id == issue_id);
+    CHECK(pop.got.issue.issuer == "Acme");
 }
 
 // =============================================================================
@@ -428,7 +443,7 @@ TEST_CASE("parse_trade_instrument_dispatches_equity_forward", tags) {
 
 TEST_CASE("parse_trade_instrument_returns_nullopt_for_unknown_product_type", tags) {
     auto json = make_response_json(make_test_trade(product_type::unknown, "Something"),
-                                   trade_instrument{bond_instrument{}});
+                                   trade_instrument{bond_instrument_data{}});
 
     ores::qt::IInstrumentFormPopulator pop;
     auto result = ores::qt::parse_trade_instrument(json, pop);

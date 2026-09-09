@@ -43,7 +43,7 @@ using namespace ores::logging;
 using namespace ores::ore::domain;
 using trading::domain::swap_instrument_data;
 using trading::domain::fx_instrument_variant;
-using trading::domain::bond_instrument;
+using trading::domain::bond_instrument_data;
 using trading::domain::credit_instrument;
 using trading::domain::equity_instrument_variant;
 using trading::domain::commodity_instrument;
@@ -211,7 +211,7 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for FX type: " << tt;
                         return;
                     }
-                } else if constexpr (std::is_same_v<T, bond_instrument>) {
+                } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
                     if (tt == "Bond")
                         xsd_t = bond_instrument_mapper::reverse_bond(r);
                     else if (tt == "ForwardBond")

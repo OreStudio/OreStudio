@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_BOND_INSTRUMENT_MAPPER_HPP
-#define ORES_TRADING_REPOSITORY_BOND_INSTRUMENT_MAPPER_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_BOND_INSTRUMENT_MAPPER_HPP
+#define ORES_TRADING_CORE_REPOSITORY_BOND_INSTRUMENT_MAPPER_HPP
 
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
@@ -28,7 +28,7 @@
 namespace ores::trading::repository {
 
 /**
- * @brief Maps bond_instrument domain entities to data storage and vice-versa.
+ * @brief Maps bond_instrument domain entities to data storage layer and vice-versa.
  */
 class ORES_TRADING_CORE_EXPORT bond_instrument_mapper {
 private:

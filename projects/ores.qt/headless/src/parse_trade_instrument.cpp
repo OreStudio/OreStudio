@@ -22,13 +22,14 @@
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.qt.headless/IInstrumentFormPopulator.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
+#include "parse_bond_impl.hpp"
 #include "parse_swap_impl.hpp"
 #include <span>
 
-// Swap-type rfl instantiations live in parse_swap_instruments.cpp (separate TU)
-// to avoid MSVC C1202: the accumulated rfl::StringLiteral field-name types from
-// flat/FX/equity types fill MSVC's template dependency graph; swap types need a
-// clean slate.
+// Swap- and bond-type rfl instantiations live in parse_swap_instruments.cpp and
+// parse_bond_instruments.cpp (separate TUs) to avoid MSVC C1202: the accumulated
+// rfl::StringLiteral field-name types from flat/FX/equity types fill MSVC's template
+// dependency graph; the container types need a clean slate.
 
 namespace {
 
@@ -63,9 +64,6 @@ struct response_envelope {
 
 // --- Flat types (no legs) ---
 
-struct bond_wrapper {
-    td::bond_instrument instrument;
-};
 struct credit_wrapper {
     td::credit_instrument instrument;
 };
@@ -186,11 +184,10 @@ std::optional<trading::domain::trade> parse_trade_instrument(const std::string& 
 
     switch (pt) {
         case product_type::bond: {
-            BOOST_LOG_SEV(lg(), debug) << "getTradeInstrument: reading bond_instrument";
-            auto r = try_parse<bond_wrapper>(raw);
-            if (!r)
+            // Bond-type rfl instantiations are in parse_bond_instruments.cpp
+            // (separate TU).
+            if (!internal::parse_bond_instrument(raw, populator))
                 return std::nullopt;
-            populator.populate(r->instrument);
             break;
         }
         case product_type::credit: {

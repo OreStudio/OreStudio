@@ -17,26 +17,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#include "ores.trading.api/domain/bond_instrument_table.hpp"
-#include <boost/uuid/uuid_io.hpp>
-#include <fort.hpp>
+#ifndef ORES_QT_PARSE_BOND_IMPL_HPP
+#define ORES_QT_PARSE_BOND_IMPL_HPP
 
-namespace ores::trading::domain {
+// Internal header: declares the bond-instrument parse entry point implemented
+// in parse_bond_instruments.cpp. Kept separate so that the rfl::json::read
+// instantiation for the assembled bond container lives in its own translation
+// unit, avoiding MSVC C1202 (template dependency graph too complex) which fires
+// when those instantiations share a TU with the flat/FX/equity instrument types.
 
+#include <string>
 
-std::string convert_to_table(const std::vector<bond_instrument>& v) {
-    fort::char_table table;
-    table.set_border_style(FT_BASIC_STYLE);
-
-    table << fort::header << "ID" << "Type" << "Issue ID" << "Version" << "Recorded At"
-          << fort::endr;
-
-    for (const auto& bi : v) {
-        table << bi.identity.instrument_id << bi.identity.trade_type_code
-              << boost::uuids::to_string(bi.issue_id) << bi.identity.version << bi.audit.recorded_at
-              << fort::endr;
-    }
-    return table.to_string();
+namespace ores::qt {
+struct IInstrumentFormPopulator;
 }
 
+namespace ores::qt::internal {
+
+// Parses the assembled bond container (the slim header, its issue row and the
+// product's engaged fact row) out of the response payload. Returns false and
+// logs on parse failure.
+bool parse_bond_instrument(const std::string& raw, ores::qt::IInstrumentFormPopulator& pop);
+
 }
+
+#endif

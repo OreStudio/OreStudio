@@ -17,14 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_SERVICE_BOND_INSTRUMENT_SERVICE_HPP
-#define ORES_TRADING_SERVICE_BOND_INSTRUMENT_SERVICE_HPP
+#ifndef ORES_TRADING_CORE_SERVICE_BOND_INSTRUMENT_SERVICE_HPP
+#define ORES_TRADING_CORE_SERVICE_BOND_INSTRUMENT_SERVICE_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/repository/bond_instrument_repository.hpp"
+#include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -33,6 +35,9 @@ namespace ores::trading::service {
 
 /**
  * @brief Service for managing bond instruments.
+ *
+ * Provides a higher-level interface for bond instrument operations,
+ * wrapping the underlying repository.
  */
 class ORES_TRADING_CORE_EXPORT bond_instrument_service {
 private:
@@ -47,24 +52,87 @@ private:
 public:
     using context = ores::database::context;
 
+    /**
+     * @brief Constructs a bond_instrument_service with a database context.
+     *
+     * @param ctx The database context for operations.
+     */
     explicit bond_instrument_service(context ctx);
 
-    std::vector<domain::bond_instrument> list_bond_instruments();
-
+    /**
+     * @brief Lists bond instruments with pagination support.
+     *
+     * @param offset Number of records to skip.
+     * @param limit Maximum number of records to return.
+     * @return Vector of bond instruments for the requested page.
+     */
     std::vector<domain::bond_instrument> list_bond_instruments(std::uint32_t offset,
                                                                std::uint32_t limit);
 
+    /**
+     * @brief Gets the total count of active bond instruments.
+     *
+     * @return Total number of active bond instruments.
+     */
     std::uint32_t count_bond_instruments();
 
-    std::optional<domain::bond_instrument> get_bond_instrument(const std::string& id);
 
-    void save_bond_instrument(const domain::bond_instrument& v);
+    /**
+     * @brief Retrieves a single bond instrument as it stood at a specific
+     * version. See the "Temporal composite entity versioning" architecture doc.
+     *
+     * @param version The version to fetch.
+     * @return The bond instrument at that version if found, std::nullopt otherwise.
+     */
+    std::optional<domain::bond_instrument>
+    get_bond_instrument_at_version(const std::string& instrument_id, std::uint32_t version);
 
-    void remove_bond_instrument(const std::string& id);
+    /**
+     * @brief Retrieves a single bond instrument by its primary key.
+     *
+     * @return The bond instrument if found, std::nullopt otherwise.
+     */
+    std::optional<domain::bond_instrument> get_bond_instrument(const std::string& instrument_id);
 
-    std::vector<domain::bond_instrument> get_bond_instrument_history(const std::string& id);
+    /**
+     * @brief Retrieves a batch of bond instruments by primary key.
+     */
+    std::vector<domain::bond_instrument>
+    get_bond_instruments(const std::vector<std::string>& instrument_ids);
 
-    std::vector<domain::bond_instrument> get_bond_instruments(const std::vector<std::string>& ids);
+    /**
+     * @brief Saves a bond instrument (creates or updates).
+     *
+     * @param bond_instrument The bond instrument to save.
+     * @throws std::exception on failure.
+     */
+    void save_bond_instrument(const domain::bond_instrument& bond_instrument);
+
+    /**
+     * @brief Saves a batch of bond instruments.
+     *
+     * @param bond_instruments The bond instruments to save.
+     * @throws std::exception on failure.
+     */
+    void save_bond_instruments(const std::vector<domain::bond_instrument>& bond_instruments);
+
+    /**
+     * @brief Deletes a bond instrument by its primary key.
+     *
+     * @throws std::exception on failure.
+     */
+    void delete_bond_instrument(const std::string& instrument_id);
+
+    /**
+     * @brief Deletes bond instruments by their primary keys.
+     */
+    void delete_bond_instruments(const std::vector<std::string>& instrument_ids);
+
+    /**
+     * @brief Retrieves all historical versions of a bond instrument.
+     */
+    std::vector<domain::bond_instrument>
+    get_bond_instrument_history(const std::string& instrument_id);
 
 private:
     context ctx_;

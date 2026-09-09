@@ -22,7 +22,8 @@ from typing import Iterable, Iterator
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-EXCLUDED_DIRS = {"build", ".packages", "vcpkg", "external", ".git", "node_modules", ".claude"}
+EXCLUDED_DIRS = {".git", ".claude", "node_modules", "__pycache__"}
+EXCLUDED_ROOT_DIRS = {"build", ".packages", "vcpkg", "external"}
 
 ID_RE       = re.compile(r"^:ID:\s+([0-9A-Fa-f-]+)\s*$",   re.MULTILINE)
 TITLE_RE    = re.compile(r"^#\+title:\s*(.*?)\s*$",        re.MULTILINE | re.IGNORECASE)
@@ -191,11 +192,20 @@ def parse_doc(path: Path) -> Doc | None:
 
 
 def find_org_files(root: Path = REPO_ROOT) -> Iterator[Path]:
-    """Walk root for *.org files, pruning EXCLUDED_DIRS so the walk never
-    descends into them (build/ and friends can be huge and slow/IO-bound;
-    filtering after Path.rglob had already visited every file inside)."""
+    """Walk root for *.org files, pruning excluded directories so the walk
+    never descends into them (build/ and friends can be huge and
+    slow/IO-bound; filtering after Path.rglob had already visited every file
+    inside).
+
+    EXCLUDED_ROOT_DIRS is anchored at the repository root: doc/knowledge/external
+    is documentation and must be indexed, while the vendored ./external is not."""
     for dirpath, dirnames, filenames in os.walk(root):
-        dirnames[:] = sorted(d for d in dirnames if d not in EXCLUDED_DIRS)
+        at_root = Path(dirpath) == Path(root)
+        dirnames[:] = sorted(
+            d for d in dirnames
+            if d not in EXCLUDED_DIRS
+            and not (at_root and d in EXCLUDED_ROOT_DIRS)
+        )
         for name in sorted(filenames):
             if name.endswith(".org"):
                 yield Path(dirpath) / name

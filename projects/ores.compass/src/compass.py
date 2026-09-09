@@ -2460,6 +2460,24 @@ def _lint_durable_links(files, id_types):
     return out
 
 
+def _lint_dangling_links(files, id_types):
+    """Report [[id:...]] links whose target :ID: exists nowhere in the corpus.
+
+    A dangling link makes its target invisible to graph traversal and to
+    compass search, and nothing else notices: the link renders, it just goes
+    nowhere.
+    """
+    out = []
+    for rel, text in files:
+        for lineno, line in enumerate(text.splitlines(), 1):
+            for m in _ID_LINK_RE.finditer(line):
+                if m.group(1).upper() in id_types:
+                    continue
+                label = (m.group(2) or "(no label)")[:50]
+                out.append((str(rel), lineno, m.group(1), label))
+    return out
+
+
 def _collect_org_types(files):
     """Map every :ID: in the corpus to the #+type: of its document."""
     types = {}
@@ -2478,7 +2496,8 @@ def cmd_lint(argv):
         description=(
             "Validate the org corpus. Checks filetags (every tag lowercase, "
             "matching [a-z][a-z0-9_-]*), generator markers (every BEGIN has a "
-            "matching END on its own line), and links from durable documents "
+            "matching END on its own line), dangling id links (every "
+            "[[id:...]] resolves), and links from durable documents "
             "into agile content. The first two are enforced; the link check is "
             "advisory unless --strict-links is given."
         ),
@@ -2505,10 +2524,10 @@ def cmd_lint(argv):
     all_exclude = always_exclude | extra_exclude
 
     files = []
-    for org_file in sorted(root.rglob("*.org")):
+    for org_file in sorted(doc_index.find_org_files(root)):
         rel = org_file.relative_to(Path(PROJECT_ROOT))
         first_part = rel.parts[0] if rel.parts else ""
-        if first_part in all_exclude:
+        if first_part in all_exclude or org_file.name.startswith("."):
             continue
         try:
             files.append((rel, org_file.read_text(encoding="utf-8",
@@ -2528,7 +2547,9 @@ def cmd_lint(argv):
             break
 
     markers = _lint_generator_markers(files)
-    links = _lint_durable_links(files, _collect_org_types(files))
+    id_types = _collect_org_types(files)
+    links = _lint_durable_links(files, id_types)
+    dangling = _lint_dangling_links(files, id_types)
 
     failed = False
 
@@ -2545,6 +2566,14 @@ def cmd_lint(argv):
               file=sys.stderr)
         for path, lineno, msg in markers:
             print(f"  {path}:{lineno}: {msg}", file=sys.stderr)
+
+    if dangling:
+        failed = True
+        print(f"\u274c  dangling id links: {len(dangling)} link(s) resolve to "
+              f"no :ID: in the corpus:\n", file=sys.stderr)
+        for path, lineno, target, label in dangling:
+            print(f"  {path}:{lineno}: [[id:{target}]] -> {label}",
+                  file=sys.stderr)
 
     if links:
         by_file = {}

@@ -59,9 +59,10 @@ public:
     /**
      * @brief Process a get balance guaranteed swap instruments request.
      */
-    static void process_get_balance_guaranteed_swap_instruments(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+    static void
+    process_get_balance_guaranteed_swap_instruments(std::ostream& out,
+                                                    ores::nats::service::nats_client& session,
+                                                    pagination_context& pagination);
 
     /**
      * @brief Process an add balance guaranteed swap instrument request.
@@ -71,22 +72,22 @@ public:
      * arrive as the trailing arguments, matching the reference-entity
      * add verbs.
      */
-    static void process_add_balance_guaranteed_swap_instrument(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string trade_type_code,
-        std::string start_date,
-        std::string maturity_date,
-        std::string lockout_days,
-        std::string description,
-        std::string change_reason_code,
-        std::string change_commentary);
+    static void
+    process_add_balance_guaranteed_swap_instrument(std::ostream& out,
+                                                   ores::nats::service::nats_client& session,
+                                                   std::string trade_type_code,
+                                                   std::string start_date,
+                                                   std::string maturity_date,
+                                                   std::string lockout_days,
+                                                   std::string description,
+                                                   std::string change_reason_code,
+                                                   std::string change_commentary);
 
     /**
      * @brief Process a delete balance guaranteed swap instrument request.
      */
-    static void process_delete_balance_guaranteed_swap_instrument(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_delete_balance_guaranteed_swap_instrument(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 
     /**
      * @brief Process an balance guaranteed swap instrument history request.
@@ -95,9 +96,8 @@ public:
      * provider: history renders over the per-product subject, so the
      * diff flags are not offered.
      */
-    static void process_get_balance_guaranteed_swap_instrument_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_get_balance_guaranteed_swap_instrument_history(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 };
 
 }

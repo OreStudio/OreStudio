@@ -47,10 +47,9 @@ namespace ores::shell::app::commands {
  * std::nullopt when no party could be selected. Failures are reported
  * through @p out and leave the session without auth.
  */
-inline std::optional<std::string> complete_login(
-    std::ostream& out,
-    ores::nats::service::nats_client& session,
-    const iam::messaging::login_response& response) {
+inline std::optional<std::string> complete_login(std::ostream& out,
+                                                 ores::nats::service::nats_client& session,
+                                                 const iam::messaging::login_response& response) {
 
     ores::nats::service::nats_client::login_info info;
     info.jwt = response.token;
@@ -73,7 +72,9 @@ inline std::optional<std::string> complete_login(
 
     session.set_auth(info);
     auto selected = do_auth_request<iam::messaging::select_party_response>(
-        out, session, iam::messaging::select_party_request::nats_subject,
+        out,
+        session,
+        iam::messaging::select_party_request::nats_subject,
         iam::messaging::select_party_request{.party_id = party_id});
     if (!selected || !selected->success) {
         // Do not leave the single-use login token as the session bearer.

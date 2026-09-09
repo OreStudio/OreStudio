@@ -59,9 +59,10 @@ public:
     /**
      * @brief Process a get equity accumulator instruments request.
      */
-    static void process_get_equity_accumulator_instruments(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+    static void
+    process_get_equity_accumulator_instruments(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               pagination_context& pagination);
 
     /**
      * @brief Process an add equity accumulator instrument request.
@@ -93,9 +94,8 @@ public:
     /**
      * @brief Process a delete equity accumulator instrument request.
      */
-    static void process_delete_equity_accumulator_instrument(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_delete_equity_accumulator_instrument(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 
     /**
      * @brief Process an equity accumulator instrument history request.
@@ -104,9 +104,8 @@ public:
      * provider: history renders over the per-product subject, so the
      * diff flags are not offered.
      */
-    static void process_get_equity_accumulator_instrument_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_get_equity_accumulator_instrument_history(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 };
 
 }

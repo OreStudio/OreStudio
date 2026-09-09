@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,24 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void fx_variance_swap_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+                                                             nats_client& session,
+                                                             pagination_context& pagination) {
     auto fx_variance_swap_instruments_menu =
         std::make_unique<cli::Menu>("fx_variance_swap_instruments");
 
     fx_variance_swap_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_fx_variance_swap_instruments(std::ref(out), std::ref(session),
-                                                     std::ref(pagination));
+            process_get_fx_variance_swap_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve FX variance swap instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("fx_variance_swap_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_fx_variance_swap_instruments(out, session,
-                                                                                   pagination);
-                                      });
+    pagination.register_list_callback(
+        "fx_variance_swap_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_fx_variance_swap_instruments(out, session, pagination);
+        });
 
     fx_variance_swap_instruments_menu->Insert(
         "add",
@@ -111,8 +110,8 @@ void fx_variance_swap_instrument_commands::register_commands(cli::Menu& root_men
     fx_variance_swap_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_fx_variance_swap_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_fx_variance_swap_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an FX variance swap instrument by instrument id",
         {"instrument_id"});
@@ -120,8 +119,8 @@ void fx_variance_swap_instrument_commands::register_commands(cli::Menu& root_men
     fx_variance_swap_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_fx_variance_swap_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_fx_variance_swap_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an FX variance swap instrument's version history",
         {"instrument_id"});
@@ -224,8 +223,8 @@ void fx_variance_swap_instrument_commands::process_add_fx_variance_swap_instrume
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added FX variance swap instrument.";
         out << "✓ FX variance swap instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add FX variance swap instrument: " << msg;
@@ -257,7 +256,8 @@ void fx_variance_swap_instrument_commands::process_delete_fx_variance_swap_instr
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete FX variance swap instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete FX variance swap instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete FX variance swap instrument: " << result->message
+                  << std::endl;
     }
 }
 
@@ -267,7 +267,8 @@ void fx_variance_swap_instrument_commands::process_get_fx_variance_swap_instrume
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get FX variance swap instrument history." << std::endl;
+        fail(out) << "You must be logged in to get FX variance swap instrument history."
+                  << std::endl;
         return;
     }
 

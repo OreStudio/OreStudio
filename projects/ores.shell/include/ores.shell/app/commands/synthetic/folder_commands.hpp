@@ -60,20 +60,20 @@ public:
      * @brief Process a get folders request.
      */
     static void process_get_folders(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+                                    ores::nats::service::nats_client& session,
+                                    pagination_context& pagination);
 
     /**
      * @brief Process an add folder request.
      */
     static void process_add_folder(std::ostream& out,
                                    ores::nats::service::nats_client& session,
-                                      std::string s_name,
-                                      std::string s_kind,
-                                      std::string s_parent_id,
-                                      std::string s_collection_id,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+                                   std::string s_name,
+                                   std::string s_kind,
+                                   std::string s_parent_id,
+                                   std::string s_collection_id,
+                                   std::string change_reason_code,
+                                   std::string change_commentary);
 
     /**
      * @brief Process a delete folder request.

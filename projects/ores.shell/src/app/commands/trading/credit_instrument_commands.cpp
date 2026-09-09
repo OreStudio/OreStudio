@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,39 +50,35 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty() || value == "-")
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void credit_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto credit_instruments_menu =
-        std::make_unique<cli::Menu>("credit_instruments");
+                                                   nats_client& session,
+                                                   pagination_context& pagination) {
+    auto credit_instruments_menu = std::make_unique<cli::Menu>("credit_instruments");
 
     credit_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_credit_instruments(std::ref(out), std::ref(session),
-                                           std::ref(pagination));
+            process_get_credit_instruments(std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Credit instruments from the server (paginated)");
 
     // Register list callback for navigation
     pagination.register_list_callback("credit_instruments",
                                       [&session, &pagination](std::ostream& out) {
-                                          process_get_credit_instruments(out, session,
-                                                                         pagination);
+                                          process_get_credit_instruments(out, session, pagination);
                                       });
 
     credit_instruments_menu->Insert(
@@ -140,27 +136,28 @@ void credit_instrument_commands::register_commands(cli::Menu& root_menu,
         "Add an Credit instrument (trade_type_code reference_entity currency notional spread "
         "recovery_rate [seniority] [restructuring] [linked_asset_code] tenor [start_date] "
         "[maturity_date] [day_count_code] [payment_frequency_code] [index_name] [option_type] "
-        "[option_expiry_date] [option_strike] [tranche_attachment] [tranche_detachment] description "
+        "[option_expiry_date] [option_strike] [tranche_attachment] [tranche_detachment] "
+        "description "
         "change_reason_code \"change_commentary\")",
         {"trade_type_code reference_entity currency notional spread recovery_rate seniority "
          "restructuring linked_asset_code tenor start_date maturity_date day_count_code "
          "payment_frequency_code index_name option_type option_expiry_date option_strike "
          "tranche_attachment tranche_detachment description change_reason_code change_commentary"});
 
-    credit_instruments_menu->Insert(
-        "delete",
-        [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_credit_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
-        },
-        "Delete an Credit instrument by instrument id",
-        {"instrument_id"});
+    credit_instruments_menu->Insert("delete",
+                                    [&session](std::ostream& out, std::string instrument_id) {
+                                        process_delete_credit_instrument(std::ref(out),
+                                                                         std::ref(session),
+                                                                         std::move(instrument_id));
+                                    },
+                                    "Delete an Credit instrument by instrument id",
+                                    {"instrument_id"});
 
     credit_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_credit_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_credit_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Credit instrument's version history",
         {"instrument_id"});
@@ -168,8 +165,9 @@ void credit_instrument_commands::register_commands(cli::Menu& root_menu,
     root_menu.Insert(std::move(credit_instruments_menu));
 }
 
-void credit_instrument_commands::process_get_credit_instruments(
-    std::ostream& out, nats_client& session, pagination_context& pagination) {
+void credit_instrument_commands::process_get_credit_instruments(std::ostream& out,
+                                                                nats_client& session,
+                                                                pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get Credit instruments request.";
 
     auto& state = pagination.state_for("credit_instruments");
@@ -186,8 +184,7 @@ void credit_instrument_commands::process_get_credit_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("credit_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Credit instruments.";
     out << result->instruments << std::endl;
 
@@ -197,37 +194,35 @@ void credit_instrument_commands::process_get_credit_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
-void credit_instrument_commands::process_add_credit_instrument(
-    std::ostream& out,
-    nats_client& session,
-    std::string trade_type_code,
-    std::string reference_entity,
-    std::string currency,
-    double notional,
-    double spread,
-    double recovery_rate,
-    std::string seniority,
-    std::string restructuring,
-    std::string linked_asset_code,
-    std::string tenor,
-    std::string start_date,
-    std::string maturity_date,
-    std::string day_count_code,
-    std::string payment_frequency_code,
-    std::string index_name,
-    std::string option_type,
-    std::string option_expiry_date,
-    std::string option_strike,
-    std::string tranche_attachment,
-    std::string tranche_detachment,
-    std::string description,
-    std::string change_reason_code,
-    std::string change_commentary) {
+void credit_instrument_commands::process_add_credit_instrument(std::ostream& out,
+                                                               nats_client& session,
+                                                               std::string trade_type_code,
+                                                               std::string reference_entity,
+                                                               std::string currency,
+                                                               double notional,
+                                                               double spread,
+                                                               double recovery_rate,
+                                                               std::string seniority,
+                                                               std::string restructuring,
+                                                               std::string linked_asset_code,
+                                                               std::string tenor,
+                                                               std::string start_date,
+                                                               std::string maturity_date,
+                                                               std::string day_count_code,
+                                                               std::string payment_frequency_code,
+                                                               std::string index_name,
+                                                               std::string option_type,
+                                                               std::string option_expiry_date,
+                                                               std::string option_strike,
+                                                               std::string tranche_attachment,
+                                                               std::string tranche_detachment,
+                                                               std::string description,
+                                                               std::string change_reason_code,
+                                                               std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Credit instrument request.";
 
     if (!session.is_logged_in()) {
@@ -268,8 +263,10 @@ void credit_instrument_commands::process_add_credit_instrument(
 
     try {
         v.option.option_strike = parse_optional_double(option_strike, "option_strike");
-        v.tranche.tranche_attachment = parse_optional_double(tranche_attachment, "tranche_attachment");
-        v.tranche.tranche_detachment = parse_optional_double(tranche_detachment, "tranche_detachment");
+        v.tranche.tranche_attachment =
+            parse_optional_double(tranche_attachment, "tranche_attachment");
+        v.tranche.tranche_detachment =
+            parse_optional_double(tranche_detachment, "tranche_detachment");
     } catch (const std::exception& e) {
         fail(out) << e.what() << std::endl;
         return;
@@ -291,8 +288,8 @@ void credit_instrument_commands::process_add_credit_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Credit instrument.";
         out << "✓ Credit instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Credit instrument: " << msg;
@@ -300,8 +297,9 @@ void credit_instrument_commands::process_add_credit_instrument(
     }
 }
 
-void credit_instrument_commands::process_delete_credit_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void credit_instrument_commands::process_delete_credit_instrument(std::ostream& out,
+                                                                  nats_client& session,
+                                                                  std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Credit instrument request for: "
                                << instrument_id;
 
@@ -322,16 +320,15 @@ void credit_instrument_commands::process_delete_credit_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Credit instrument.";
         out << "✓ Credit instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Credit instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Credit instrument: " << result->message;
         fail(out) << "Failed to delete Credit instrument: " << result->message << std::endl;
     }
 }
 
-void credit_instrument_commands::process_get_credit_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get Credit instrument history for: "
-                               << instrument_id;
+void credit_instrument_commands::process_get_credit_instrument_history(std::ostream& out,
+                                                                       nats_client& session,
+                                                                       std::string instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get Credit instrument history for: " << instrument_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to get Credit instrument history." << std::endl;
@@ -341,15 +338,13 @@ void credit_instrument_commands::process_get_credit_instrument_history(
     trading::messaging::get_credit_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_credit_instrument_history_response>(
-            out, session, "trading.v1.credit_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_credit_instrument_history_response>(
+        out, session, "trading.v1.credit_instruments.history", req);
     if (!result)
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get Credit instrument history: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get Credit instrument history: " << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

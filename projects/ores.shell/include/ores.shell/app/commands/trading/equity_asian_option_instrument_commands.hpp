@@ -59,9 +59,10 @@ public:
     /**
      * @brief Process a get equity asian option instruments request.
      */
-    static void process_get_equity_asian_option_instruments(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        pagination_context& pagination);
+    static void
+    process_get_equity_asian_option_instruments(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                pagination_context& pagination);
 
     /**
      * @brief Process an add equity asian option instrument request.
@@ -71,30 +72,30 @@ public:
      * arrive as the trailing arguments, matching the reference-entity
      * add verbs.
      */
-    static void process_add_equity_asian_option_instrument(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string trade_type_code,
-        std::string underlying_name,
-        std::string currency,
-        double notional,
-        std::string option_type,
-        double strike,
-        std::string expiry_date,
-        std::string exercise_type,
-        std::string long_short,
-        std::string average_type,
-        std::string averaging_start_date,
-        std::string averaging_end_date,
-        std::string description,
-        std::string change_reason_code,
-        std::string change_commentary);
+    static void
+    process_add_equity_asian_option_instrument(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               std::string trade_type_code,
+                                               std::string underlying_name,
+                                               std::string currency,
+                                               double notional,
+                                               std::string option_type,
+                                               double strike,
+                                               std::string expiry_date,
+                                               std::string exercise_type,
+                                               std::string long_short,
+                                               std::string average_type,
+                                               std::string averaging_start_date,
+                                               std::string averaging_end_date,
+                                               std::string description,
+                                               std::string change_reason_code,
+                                               std::string change_commentary);
 
     /**
      * @brief Process a delete equity asian option instrument request.
      */
-    static void process_delete_equity_asian_option_instrument(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_delete_equity_asian_option_instrument(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 
     /**
      * @brief Process an equity asian option instrument history request.
@@ -103,9 +104,8 @@ public:
      * provider: history renders over the per-product subject, so the
      * diff flags are not offered.
      */
-    static void process_get_equity_asian_option_instrument_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_get_equity_asian_option_instrument_history(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 };
 
 }

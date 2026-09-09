@@ -28,8 +28,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <functional>
 #include <optional>
 #include <ostream>
@@ -69,22 +69,24 @@ std::optional<boost::uuids::uuid> parse_uuid(const std::string& value) {
 } // namespace
 
 void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu,
-                                        nats_client& session,
-                                        pagination_context& pagination) {
-    auto ir_curve_generation_configs_menu = std::make_unique<cli::Menu>("ir_curve_generation_configs");
+                                                            nats_client& session,
+                                                            pagination_context& pagination) {
+    auto ir_curve_generation_configs_menu =
+        std::make_unique<cli::Menu>("ir_curve_generation_configs");
 
     ir_curve_generation_configs_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_ir_curve_generation_configs(std::ref(out), std::ref(session), std::ref(pagination));
+            process_get_ir_curve_generation_configs(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve ir_curve_generation_configs from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("ir_curve_generation_configs",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_ir_curve_generation_configs(out, session, pagination);
-                                      });
+    pagination.register_list_callback(
+        "ir_curve_generation_configs", [&session, &pagination](std::ostream& out) {
+            process_get_ir_curve_generation_configs(out, session, pagination);
+        });
 
     ir_curve_generation_configs_menu->Insert(
         "add",
@@ -108,32 +110,36 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
                    std::string change_reason_code,
                    std::string change_commentary) {
             process_add_ir_curve_generation_config(std::ref(out),
-                               std::ref(session),
-                               std::move(s_config_id),
-                               std::move(s_currency_code),
-                               std::move(s_index_family),
-                               std::move(s_tenor),
-                               std::move(s_role),
-                               std::move(s_process_type),
-                               std::move(s_ticks_per_hour),
-                               std::move(s_enabled),
-                               std::move(s_auto_start),
-                               std::move(s_price_source),
-                               std::move(s_vintage_source),
-                               std::move(s_vintage_date),
-                               std::move(s_description),
-                               std::move(s_fixed_leg_payment_frequency_code),
-                               std::move(s_source_name),
-                               std::move(s_folder_id),
-                               std::move(change_reason_code),
-                               std::move(change_commentary));
+                                                   std::ref(session),
+                                                   std::move(s_config_id),
+                                                   std::move(s_currency_code),
+                                                   std::move(s_index_family),
+                                                   std::move(s_tenor),
+                                                   std::move(s_role),
+                                                   std::move(s_process_type),
+                                                   std::move(s_ticks_per_hour),
+                                                   std::move(s_enabled),
+                                                   std::move(s_auto_start),
+                                                   std::move(s_price_source),
+                                                   std::move(s_vintage_source),
+                                                   std::move(s_vintage_date),
+                                                   std::move(s_description),
+                                                   std::move(s_fixed_leg_payment_frequency_code),
+                                                   std::move(s_source_name),
+                                                   std::move(s_folder_id),
+                                                   std::move(change_reason_code),
+                                                   std::move(change_commentary));
         },
-        "Add a ir_curve_generation_config (<config_id> <currency_code> <index_family> <tenor> <role> <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> <vintage_source> <vintage_date> <description> <fixed_leg_payment_frequency_code> <source_name> <folder_id> <reason_code> \"commentary\")");
+        "Add a ir_curve_generation_config (<config_id> <currency_code> <index_family> <tenor> "
+        "<role> <process_type> <ticks_per_hour> <enabled> <auto_start> <price_source> "
+        "<vintage_source> <vintage_date> <description> <fixed_leg_payment_frequency_code> "
+        "<source_name> <folder_id> <reason_code> \"commentary\")");
 
     ir_curve_generation_configs_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string id) {
-            process_delete_ir_curve_generation_config(std::ref(out), std::ref(session), std::move(id));
+            process_delete_ir_curve_generation_config(
+                std::ref(out), std::ref(session), std::move(id));
         },
         "Delete a ir_curve_generation_config by id");
 
@@ -142,16 +148,16 @@ void ir_curve_generation_config_commands::register_commands(cli::Menu& root_menu
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_ir_curve_generation_config_history(std::ref(out), std::ref(session), args);
         },
-        "Show a ir_curve_generation_config's version history (--diff for a unified diff, --version <n> to "
+        "Show a ir_curve_generation_config's version history (--diff for a unified diff, --version "
+        "<n> to "
         "pick one)",
         {"id [--diff] [--version <n>]"});
 
     root_menu.Insert(std::move(ir_curve_generation_configs_menu));
 }
 
-void ir_curve_generation_config_commands::process_get_ir_curve_generation_configs(std::ostream& out,
-                                           nats_client& session,
-                                           pagination_context& pagination) {
+void ir_curve_generation_config_commands::process_get_ir_curve_generation_configs(
+    std::ostream& out, nats_client& session, pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get ir_curve_generation_configs request.";
 
     auto& state = pagination.state_for("ir_curve_generation_configs");
@@ -168,7 +174,8 @@ void ir_curve_generation_config_commands::process_get_ir_curve_generation_config
     state.total_count = result->total_available_count;
     pagination.set_last_entity("ir_curve_generation_configs");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->ir_curve_generation_configs.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << result->ir_curve_generation_configs.size()
                               << " ir_curve_generation_configs.";
     out << result->ir_curve_generation_configs << std::endl;
 
@@ -178,31 +185,32 @@ void ir_curve_generation_config_commands::process_get_ir_curve_generation_config
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->ir_curve_generation_configs.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " ("
+        << result->ir_curve_generation_configs.size() << " of " << state.total_count << " total)"
+        << std::endl;
 }
 
-void ir_curve_generation_config_commands::process_add_ir_curve_generation_config(std::ostream& out,
-                                         nats_client& session
-                                         ,
-                                   std::string s_config_id,
-                                   std::string s_currency_code,
-                                   std::string s_index_family,
-                                   std::string s_tenor,
-                                   std::string s_role,
-                                   std::string s_process_type,
-                                   std::string s_ticks_per_hour,
-                                   std::string s_enabled,
-                                   std::string s_auto_start,
-                                   std::string s_price_source,
-                                   std::string s_vintage_source,
-                                   std::string s_vintage_date,
-                                   std::string s_description,
-                                   std::string s_fixed_leg_payment_frequency_code,
-                                   std::string s_source_name,
-                                   std::string s_folder_id,
-                                   std::string change_reason_code,
-                                   std::string change_commentary) {
+void ir_curve_generation_config_commands::process_add_ir_curve_generation_config(
+    std::ostream& out,
+    nats_client& session,
+    std::string s_config_id,
+    std::string s_currency_code,
+    std::string s_index_family,
+    std::string s_tenor,
+    std::string s_role,
+    std::string s_process_type,
+    std::string s_ticks_per_hour,
+    std::string s_enabled,
+    std::string s_auto_start,
+    std::string s_price_source,
+    std::string s_vintage_source,
+    std::string s_vintage_date,
+    std::string s_description,
+    std::string s_fixed_leg_payment_frequency_code,
+    std::string s_source_name,
+    std::string s_folder_id,
+    std::string change_reason_code,
+    std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add ir_curve_generation_config request.";
 
     if (!session.is_logged_in()) {
@@ -309,10 +317,10 @@ void ir_curve_generation_config_commands::process_add_ir_curve_generation_config
     }
 }
 
-void ir_curve_generation_config_commands::process_delete_ir_curve_generation_config(std::ostream& out,
-                                            nats_client& session,
-                                            std::string id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete ir_curve_generation_config request for: " << id;
+void ir_curve_generation_config_commands::process_delete_ir_curve_generation_config(
+    std::ostream& out, nats_client& session, std::string id) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete ir_curve_generation_config request for: "
+                               << id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to delete a ir_curve_generation_config." << std::endl;
@@ -331,22 +339,25 @@ void ir_curve_generation_config_commands::process_delete_ir_curve_generation_con
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted ir_curve_generation_config.";
         out << "✓ Ir Curve Generation Config deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete ir_curve_generation_config: " << result->message;
-        fail(out) << "Failed to delete ir_curve_generation_config: " << result->message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete ir_curve_generation_config: "
+                                  << result->message;
+        fail(out) << "Failed to delete ir_curve_generation_config: " << result->message
+                  << std::endl;
     }
 }
 
-void ir_curve_generation_config_commands::process_get_ir_curve_generation_config_history(std::ostream& out,
-                                                 nats_client& session,
-                                                 const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {{.name = "diff", .requires_value = false, .default_value = "false"},
-                                   {.name = "version", .requires_value = true, .default_value = ""}});
+void ir_curve_generation_config_commands::process_get_ir_curve_generation_config_history(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
     if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: ir_curve_generation_configs history id [--diff] [--version <n>]" << std::endl;
+        fail(out) << "Usage: ir_curve_generation_configs history id [--diff] [--version <n>]"
+                  << std::endl;
         return;
     }
     auto key = parsed->positionals.front();
@@ -362,7 +373,8 @@ void ir_curve_generation_config_commands::process_get_ir_curve_generation_config
     }
 
     if (parsed->flag_set("diff")) {
-        render_history_diff(out, session, "ores.synthetic.ir_curve_generation_config", std::move(key), version);
+        render_history_diff(
+            out, session, "ores.synthetic.ir_curve_generation_config", std::move(key), version);
         return;
     }
 
@@ -374,20 +386,23 @@ void ir_curve_generation_config_commands::process_get_ir_curve_generation_config
     BOOST_LOG_SEV(lg(), debug) << "Initiating get ir_curve_generation_config history for: " << key;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get ir_curve_generation_config history." << std::endl;
+        fail(out) << "You must be logged in to get ir_curve_generation_config history."
+                  << std::endl;
         return;
     }
 
     synthetic::messaging::get_ir_curve_generation_config_history_request req;
     req.id = key;
 
-    auto result = do_auth_request<synthetic::messaging::get_ir_curve_generation_config_history_response>(
-        out, session, "synthetic.v1.ir_curve_generation_configs.history", req);
+    auto result =
+        do_auth_request<synthetic::messaging::get_ir_curve_generation_config_history_response>(
+            out, session, "synthetic.v1.ir_curve_generation_configs.history", req);
     if (!result)
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get ir_curve_generation_config history: " << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get ir_curve_generation_config history: "
+                                  << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

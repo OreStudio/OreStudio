@@ -22,11 +22,11 @@
 #include "ores.shell/app/commands/synthetic/fx_spot_generation_config_commands.hpp"
 #include "ores.shell/app/commands/synthetic/gmm_component_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_commands.hpp"
-#include "ores.shell/app/commands/synthetic/ir_curve_template_entry_commands.hpp"
 #include "ores.shell/app/commands/synthetic/ir_curve_generation_config_process_parameter_value_commands.hpp"
+#include "ores.shell/app/commands/synthetic/ir_curve_template_entry_commands.hpp"
 #include "ores.shell/app/commands/synthetic/market_data_generation_config_commands.hpp"
-#include "ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
 #include "ores.shell/app/commands/synthetic/yield_curve_process_parameter_definition_commands.hpp"
+#include "ores.shell/app/commands/synthetic/yield_curve_process_type_commands.hpp"
 
 namespace ores::shell::app::commands {
 
@@ -41,11 +41,12 @@ void synthetic_entity_commands::register_commands(cli::Menu& root_menu,
     gmm_component_commands::register_commands(root_menu, session, pagination);
     ir_curve_generation_config_commands::register_commands(root_menu, session, pagination);
     ir_curve_template_entry_commands::register_commands(root_menu, session, pagination);
-    ir_curve_generation_config_process_parameter_value_commands::register_commands(root_menu, session, pagination);
+    ir_curve_generation_config_process_parameter_value_commands::register_commands(
+        root_menu, session, pagination);
     market_data_generation_config_commands::register_commands(root_menu, session, pagination);
     yield_curve_process_type_commands::register_commands(root_menu, session, pagination);
-    yield_curve_process_parameter_definition_commands::register_commands(root_menu, session, pagination);
+    yield_curve_process_parameter_definition_commands::register_commands(
+        root_menu, session, pagination);
 }
 
 }
-

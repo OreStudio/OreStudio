@@ -28,8 +28,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <functional>
 #include <optional>
 #include <ostream>
@@ -87,22 +87,24 @@ std::optional<domain::binding_mode> parse_binding_mode(const std::string& value)
 } // namespace
 
 void market_data_generation_config_commands::register_commands(cli::Menu& root_menu,
-                                        nats_client& session,
-                                        pagination_context& pagination) {
-    auto market_data_generation_configs_menu = std::make_unique<cli::Menu>("market_data_generation_configs");
+                                                               nats_client& session,
+                                                               pagination_context& pagination) {
+    auto market_data_generation_configs_menu =
+        std::make_unique<cli::Menu>("market_data_generation_configs");
 
     market_data_generation_configs_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_market_data_generation_configs(std::ref(out), std::ref(session), std::ref(pagination));
+            process_get_market_data_generation_configs(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve market_data_generation_configs from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("market_data_generation_configs",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_market_data_generation_configs(out, session, pagination);
-                                      });
+    pagination.register_list_callback(
+        "market_data_generation_configs", [&session, &pagination](std::ostream& out) {
+            process_get_market_data_generation_configs(out, session, pagination);
+        });
 
     market_data_generation_configs_menu->Insert(
         "add",
@@ -116,40 +118,43 @@ void market_data_generation_config_commands::register_commands(cli::Menu& root_m
                    std::string change_reason_code,
                    std::string change_commentary) {
             process_add_market_data_generation_config(std::ref(out),
-                               std::ref(session),
-                               std::move(s_scope),
-                               std::move(s_binding_mode),
-                               std::move(s_name),
-                               std::move(s_description),
-                               std::move(s_enabled),
-                               std::move(s_dataset_id),
-                               std::move(change_reason_code),
-                               std::move(change_commentary));
+                                                      std::ref(session),
+                                                      std::move(s_scope),
+                                                      std::move(s_binding_mode),
+                                                      std::move(s_name),
+                                                      std::move(s_description),
+                                                      std::move(s_enabled),
+                                                      std::move(s_dataset_id),
+                                                      std::move(change_reason_code),
+                                                      std::move(change_commentary));
         },
-        "Add a market_data_generation_config (<scope> <binding_mode> <name> <description> <enabled> <dataset_id> <reason_code> \"commentary\")");
+        "Add a market_data_generation_config (<scope> <binding_mode> <name> <description> "
+        "<enabled> <dataset_id> <reason_code> \"commentary\")");
 
     market_data_generation_configs_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string id) {
-            process_delete_market_data_generation_config(std::ref(out), std::ref(session), std::move(id));
+            process_delete_market_data_generation_config(
+                std::ref(out), std::ref(session), std::move(id));
         },
         "Delete a market_data_generation_config by id");
 
     market_data_generation_configs_menu->Insert(
         "history",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_market_data_generation_config_history(std::ref(out), std::ref(session), args);
+            process_get_market_data_generation_config_history(
+                std::ref(out), std::ref(session), args);
         },
-        "Show a market_data_generation_config's version history (--diff for a unified diff, --version <n> to "
+        "Show a market_data_generation_config's version history (--diff for a unified diff, "
+        "--version <n> to "
         "pick one)",
         {"id [--diff] [--version <n>]"});
 
     root_menu.Insert(std::move(market_data_generation_configs_menu));
 }
 
-void market_data_generation_config_commands::process_get_market_data_generation_configs(std::ostream& out,
-                                           nats_client& session,
-                                           pagination_context& pagination) {
+void market_data_generation_config_commands::process_get_market_data_generation_configs(
+    std::ostream& out, nats_client& session, pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get market_data_generation_configs request.";
 
     auto& state = pagination.state_for("market_data_generation_configs");
@@ -158,15 +163,17 @@ void market_data_generation_config_commands::process_get_market_data_generation_
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<synthetic::messaging::get_market_data_generation_configs_response>(
-        out, session, "synthetic.v1.market_data_generation_configs.list", req);
+    auto result =
+        do_auth_request<synthetic::messaging::get_market_data_generation_configs_response>(
+            out, session, "synthetic.v1.market_data_generation_configs.list", req);
     if (!result)
         return;
 
     state.total_count = result->total_available_count;
     pagination.set_last_entity("market_data_generation_configs");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->market_data_generation_configs.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << result->market_data_generation_configs.size()
                               << " market_data_generation_configs.";
     out << result->market_data_generation_configs << std::endl;
 
@@ -176,21 +183,22 @@ void market_data_generation_config_commands::process_get_market_data_generation_
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->market_data_generation_configs.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " ("
+        << result->market_data_generation_configs.size() << " of " << state.total_count << " total)"
+        << std::endl;
 }
 
-void market_data_generation_config_commands::process_add_market_data_generation_config(std::ostream& out,
-                                         nats_client& session
-                                         ,
-                                   std::string s_scope,
-                                   std::string s_binding_mode,
-                                   std::string s_name,
-                                   std::string s_description,
-                                   std::string s_enabled,
-                                   std::string s_dataset_id,
-                                   std::string change_reason_code,
-                                   std::string change_commentary) {
+void market_data_generation_config_commands::process_add_market_data_generation_config(
+    std::ostream& out,
+    nats_client& session,
+    std::string s_scope,
+    std::string s_binding_mode,
+    std::string s_name,
+    std::string s_description,
+    std::string s_enabled,
+    std::string s_dataset_id,
+    std::string change_reason_code,
+    std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add market_data_generation_config request.";
 
     if (!session.is_logged_in()) {
@@ -247,8 +255,9 @@ void market_data_generation_config_commands::process_add_market_data_generation_
 
     auto req = synthetic::messaging::save_market_data_generation_config_request::from(std::move(v));
 
-    auto result = do_auth_request<synthetic::messaging::save_market_data_generation_config_response>(
-        out, session, "synthetic.v1.market_data_generation_configs.save", req);
+    auto result =
+        do_auth_request<synthetic::messaging::save_market_data_generation_config_response>(
+            out, session, "synthetic.v1.market_data_generation_configs.save", req);
     if (!result)
         return;
 
@@ -262,21 +271,23 @@ void market_data_generation_config_commands::process_add_market_data_generation_
     }
 }
 
-void market_data_generation_config_commands::process_delete_market_data_generation_config(std::ostream& out,
-                                            nats_client& session,
-                                            std::string id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete market_data_generation_config request for: " << id;
+void market_data_generation_config_commands::process_delete_market_data_generation_config(
+    std::ostream& out, nats_client& session, std::string id) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating delete market_data_generation_config request for: "
+                               << id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete a market_data_generation_config." << std::endl;
+        fail(out) << "You must be logged in to delete a market_data_generation_config."
+                  << std::endl;
         return;
     }
 
     synthetic::messaging::delete_market_data_generation_config_request req;
     req.ids = {std::move(id)};
 
-    auto result = do_auth_request<synthetic::messaging::delete_market_data_generation_config_response>(
-        out, session, "synthetic.v1.market_data_generation_configs.delete", req);
+    auto result =
+        do_auth_request<synthetic::messaging::delete_market_data_generation_config_response>(
+            out, session, "synthetic.v1.market_data_generation_configs.delete", req);
     if (!result)
         return;
 
@@ -284,22 +295,25 @@ void market_data_generation_config_commands::process_delete_market_data_generati
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted market_data_generation_config.";
         out << "✓ Market Data Generation Config deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete market_data_generation_config: " << result->message;
-        fail(out) << "Failed to delete market_data_generation_config: " << result->message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete market_data_generation_config: "
+                                  << result->message;
+        fail(out) << "Failed to delete market_data_generation_config: " << result->message
+                  << std::endl;
     }
 }
 
-void market_data_generation_config_commands::process_get_market_data_generation_config_history(std::ostream& out,
-                                                 nats_client& session,
-                                                 const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {{.name = "diff", .requires_value = false, .default_value = "false"},
-                                   {.name = "version", .requires_value = true, .default_value = ""}});
+void market_data_generation_config_commands::process_get_market_data_generation_config_history(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
     if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: market_data_generation_configs history id [--diff] [--version <n>]" << std::endl;
+        fail(out) << "Usage: market_data_generation_configs history id [--diff] [--version <n>]"
+                  << std::endl;
         return;
     }
     auto key = parsed->positionals.front();
@@ -315,7 +329,8 @@ void market_data_generation_config_commands::process_get_market_data_generation_
     }
 
     if (parsed->flag_set("diff")) {
-        render_history_diff(out, session, "ores.synthetic.market_data_generation_config", std::move(key), version);
+        render_history_diff(
+            out, session, "ores.synthetic.market_data_generation_config", std::move(key), version);
         return;
     }
 
@@ -324,23 +339,27 @@ void market_data_generation_config_commands::process_get_market_data_generation_
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get market_data_generation_config history for: " << key;
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get market_data_generation_config history for: "
+                               << key;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get market_data_generation_config history." << std::endl;
+        fail(out) << "You must be logged in to get market_data_generation_config history."
+                  << std::endl;
         return;
     }
 
     synthetic::messaging::get_market_data_generation_config_history_request req;
     req.id = key;
 
-    auto result = do_auth_request<synthetic::messaging::get_market_data_generation_config_history_response>(
-        out, session, "synthetic.v1.market_data_generation_configs.history", req);
+    auto result =
+        do_auth_request<synthetic::messaging::get_market_data_generation_config_history_response>(
+            out, session, "synthetic.v1.market_data_generation_configs.history", req);
     if (!result)
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get market_data_generation_config history: " << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get market_data_generation_config history: "
+                                  << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

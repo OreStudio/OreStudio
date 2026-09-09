@@ -92,9 +92,8 @@ public:
     /**
      * @brief Process a delete fx barrier option instrument request.
      */
-    static void process_delete_fx_barrier_option_instrument(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_delete_fx_barrier_option_instrument(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 
     /**
      * @brief Process an fx barrier option instrument history request.
@@ -103,9 +102,8 @@ public:
      * provider: history renders over the per-product subject, so the
      * diff flags are not offered.
      */
-    static void process_get_fx_barrier_option_instrument_history(std::ostream& out,
-        ores::nats::service::nats_client& session,
-        std::string instrument_id);
+    static void process_get_fx_barrier_option_instrument_history(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string instrument_id);
 };
 
 }

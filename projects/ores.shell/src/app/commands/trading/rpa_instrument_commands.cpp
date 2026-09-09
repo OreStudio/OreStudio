@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,24 +52,21 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void rpa_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto rpa_instruments_menu =
-        std::make_unique<cli::Menu>("rpa_instruments");
+                                                nats_client& session,
+                                                pagination_context& pagination) {
+    auto rpa_instruments_menu = std::make_unique<cli::Menu>("rpa_instruments");
 
     rpa_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_rpa_instruments(std::ref(out), std::ref(session),
-                                        std::ref(pagination));
+            process_get_rpa_instruments(std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Risk participation agreement instruments from the server (paginated)");
 
     // Register list callback for navigation
     pagination.register_list_callback("rpa_instruments",
                                       [&session, &pagination](std::ostream& out) {
-                                          process_get_rpa_instruments(out, session,
-                                                                      pagination);
+                                          process_get_rpa_instruments(out, session, pagination);
                                       });
 
     rpa_instruments_menu->Insert(
@@ -103,8 +100,8 @@ void rpa_instrument_commands::register_commands(cli::Menu& root_menu,
     rpa_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_rpa_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_rpa_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Risk participation agreement instrument by instrument id",
         {"instrument_id"});
@@ -112,8 +109,8 @@ void rpa_instrument_commands::register_commands(cli::Menu& root_menu,
     rpa_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_rpa_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_rpa_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Risk participation agreement instrument's version history",
         {"instrument_id"});
@@ -121,9 +118,11 @@ void rpa_instrument_commands::register_commands(cli::Menu& root_menu,
     root_menu.Insert(std::move(rpa_instruments_menu));
 }
 
-void rpa_instrument_commands::process_get_rpa_instruments(
-    std::ostream& out, nats_client& session, pagination_context& pagination) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get Risk participation agreement instruments request.";
+void rpa_instrument_commands::process_get_rpa_instruments(std::ostream& out,
+                                                          nats_client& session,
+                                                          pagination_context& pagination) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating get Risk participation agreement instruments request.";
 
     auto& state = pagination.state_for("rpa_instruments");
 
@@ -139,8 +138,7 @@ void rpa_instrument_commands::process_get_rpa_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("rpa_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Risk participation agreement instruments.";
     out << result->instruments << std::endl;
 
@@ -150,26 +148,25 @@ void rpa_instrument_commands::process_get_rpa_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
-void rpa_instrument_commands::process_add_rpa_instrument(
-    std::ostream& out,
-    nats_client& session,
-    std::string start_date,
-    std::string maturity_date,
-    std::string reference_counterparty,
-    double participation_rate,
-    double protection_fee,
-    std::string description,
-    std::string change_reason_code,
-    std::string change_commentary) {
+void rpa_instrument_commands::process_add_rpa_instrument(std::ostream& out,
+                                                         nats_client& session,
+                                                         std::string start_date,
+                                                         std::string maturity_date,
+                                                         std::string reference_counterparty,
+                                                         double participation_rate,
+                                                         double protection_fee,
+                                                         std::string description,
+                                                         std::string change_reason_code,
+                                                         std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Risk participation agreement instrument request.";
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add an Risk participation agreement instrument." << std::endl;
+        fail(out) << "You must be logged in to add an Risk participation agreement instrument."
+                  << std::endl;
         return;
     }
 
@@ -208,22 +205,26 @@ void rpa_instrument_commands::process_add_rpa_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Risk participation agreement instrument.";
         out << "✓ Risk participation agreement instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add Risk participation agreement instrument: " << msg;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add Risk participation agreement instrument: "
+                                  << msg;
         fail(out) << "Failed to add Risk participation agreement instrument: " << msg << std::endl;
     }
 }
 
-void rpa_instrument_commands::process_delete_rpa_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete Risk participation agreement instrument request for: "
-                               << instrument_id;
+void rpa_instrument_commands::process_delete_rpa_instrument(std::ostream& out,
+                                                            nats_client& session,
+                                                            std::string instrument_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating delete Risk participation agreement instrument request for: "
+        << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete an Risk participation agreement instrument." << std::endl;
+        fail(out) << "You must be logged in to delete an Risk participation agreement instrument."
+                  << std::endl;
         return;
     }
 
@@ -236,37 +237,40 @@ void rpa_instrument_commands::process_delete_rpa_instrument(
         return;
 
     if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted Risk participation agreement instrument.";
+        BOOST_LOG_SEV(lg(), info)
+            << "Successfully deleted Risk participation agreement instrument.";
         out << "✓ Risk participation agreement instrument deleted successfully!" << std::endl;
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Risk participation agreement instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete Risk participation agreement instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete Risk participation agreement instrument: " << result->message
+                  << std::endl;
     }
 }
 
-void rpa_instrument_commands::process_get_rpa_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get Risk participation agreement instrument history for: "
-                               << instrument_id;
+void rpa_instrument_commands::process_get_rpa_instrument_history(std::ostream& out,
+                                                                 nats_client& session,
+                                                                 std::string instrument_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating get Risk participation agreement instrument history for: " << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get Risk participation agreement instrument history." << std::endl;
+        fail(out) << "You must be logged in to get Risk participation agreement instrument history."
+                  << std::endl;
         return;
     }
 
     trading::messaging::get_rpa_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_rpa_instrument_history_response>(
-            out, session, "trading.v1.rpa_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_rpa_instrument_history_response>(
+        out, session, "trading.v1.rpa_instruments.history", req);
     if (!result)
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get Risk participation agreement instrument history: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to get Risk participation agreement instrument history: " << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

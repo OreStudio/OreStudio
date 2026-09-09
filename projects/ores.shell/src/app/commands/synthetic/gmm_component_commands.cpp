@@ -28,8 +28,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <functional>
 #include <optional>
 #include <ostream>
@@ -69,8 +69,8 @@ std::optional<boost::uuids::uuid> parse_uuid(const std::string& value) {
 } // namespace
 
 void gmm_component_commands::register_commands(cli::Menu& root_menu,
-                                        nats_client& session,
-                                        pagination_context& pagination) {
+                                               nats_client& session,
+                                               pagination_context& pagination) {
     auto gmm_components_menu = std::make_unique<cli::Menu>("gmm_components");
 
     gmm_components_menu->Insert(
@@ -81,10 +81,9 @@ void gmm_component_commands::register_commands(cli::Menu& root_menu,
         "Retrieve gmm_components from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("gmm_components",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_gmm_components(out, session, pagination);
-                                      });
+    pagination.register_list_callback("gmm_components", [&session, &pagination](std::ostream& out) {
+        process_get_gmm_components(out, session, pagination);
+    });
 
     gmm_components_menu->Insert(
         "add",
@@ -98,17 +97,18 @@ void gmm_component_commands::register_commands(cli::Menu& root_menu,
                    std::string change_reason_code,
                    std::string change_commentary) {
             process_add_gmm_component(std::ref(out),
-                               std::ref(session),
-                               std::move(s_fx_spot_config_id),
-                               std::move(s_component_index),
-                               std::move(s_description),
-                               std::move(s_mean),
-                               std::move(s_stdev),
-                               std::move(s_weight),
-                               std::move(change_reason_code),
-                               std::move(change_commentary));
+                                      std::ref(session),
+                                      std::move(s_fx_spot_config_id),
+                                      std::move(s_component_index),
+                                      std::move(s_description),
+                                      std::move(s_mean),
+                                      std::move(s_stdev),
+                                      std::move(s_weight),
+                                      std::move(change_reason_code),
+                                      std::move(change_commentary));
         },
-        "Add a gmm_component (<fx_spot_config_id> <component_index> <description> <mean> <stdev> <weight> <reason_code> \"commentary\")");
+        "Add a gmm_component (<fx_spot_config_id> <component_index> <description> <mean> <stdev> "
+        "<weight> <reason_code> \"commentary\")");
 
     gmm_components_menu->Insert(
         "delete",
@@ -130,8 +130,8 @@ void gmm_component_commands::register_commands(cli::Menu& root_menu,
 }
 
 void gmm_component_commands::process_get_gmm_components(std::ostream& out,
-                                           nats_client& session,
-                                           pagination_context& pagination) {
+                                                        nats_client& session,
+                                                        pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get gmm_components request.";
 
     auto& state = pagination.state_for("gmm_components");
@@ -163,16 +163,15 @@ void gmm_component_commands::process_get_gmm_components(std::ostream& out,
 }
 
 void gmm_component_commands::process_add_gmm_component(std::ostream& out,
-                                         nats_client& session
-                                         ,
-                                   std::string s_fx_spot_config_id,
-                                   std::string s_component_index,
-                                   std::string s_description,
-                                   std::string s_mean,
-                                   std::string s_stdev,
-                                   std::string s_weight,
-                                   std::string change_reason_code,
-                                   std::string change_commentary) {
+                                                       nats_client& session,
+                                                       std::string s_fx_spot_config_id,
+                                                       std::string s_component_index,
+                                                       std::string s_description,
+                                                       std::string s_mean,
+                                                       std::string s_stdev,
+                                                       std::string s_weight,
+                                                       std::string change_reason_code,
+                                                       std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add gmm_component request.";
 
     if (!session.is_logged_in()) {
@@ -254,8 +253,8 @@ void gmm_component_commands::process_add_gmm_component(std::ostream& out,
 }
 
 void gmm_component_commands::process_delete_gmm_component(std::ostream& out,
-                                            nats_client& session,
-                                            std::string id) {
+                                                          nats_client& session,
+                                                          std::string id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete gmm_component request for: " << id;
 
     if (!session.is_logged_in()) {
@@ -280,11 +279,11 @@ void gmm_component_commands::process_delete_gmm_component(std::ostream& out,
     }
 }
 
-void gmm_component_commands::process_get_gmm_component_history(std::ostream& out,
-                                                 nats_client& session,
-                                                 const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {{.name = "diff", .requires_value = false, .default_value = "false"},
-                                   {.name = "version", .requires_value = true, .default_value = ""}});
+void gmm_component_commands::process_get_gmm_component_history(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;

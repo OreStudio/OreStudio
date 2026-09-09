@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/fx_digital_option_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,40 +50,38 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty())
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void fx_digital_option_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+                                                              nats_client& session,
+                                                              pagination_context& pagination) {
     auto fx_digital_option_instruments_menu =
         std::make_unique<cli::Menu>("fx_digital_option_instruments");
 
     fx_digital_option_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_fx_digital_option_instruments(std::ref(out), std::ref(session),
-                                                      std::ref(pagination));
+            process_get_fx_digital_option_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve FX digital option instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("fx_digital_option_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_fx_digital_option_instruments(out, session,
-                                                                                    pagination);
-                                      });
+    pagination.register_list_callback(
+        "fx_digital_option_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_fx_digital_option_instruments(out, session, pagination);
+        });
 
     fx_digital_option_instruments_menu->Insert(
         "add",
@@ -131,8 +129,8 @@ void fx_digital_option_instrument_commands::register_commands(cli::Menu& root_me
     fx_digital_option_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_fx_digital_option_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_fx_digital_option_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an FX digital option instrument by instrument id",
         {"instrument_id"});
@@ -140,8 +138,8 @@ void fx_digital_option_instrument_commands::register_commands(cli::Menu& root_me
     fx_digital_option_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_fx_digital_option_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_fx_digital_option_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an FX digital option instrument's version history",
         {"instrument_id"});
@@ -256,8 +254,8 @@ void fx_digital_option_instrument_commands::process_add_fx_digital_option_instru
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added FX digital option instrument.";
         out << "✓ FX digital option instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add FX digital option instrument: " << msg;
@@ -271,7 +269,8 @@ void fx_digital_option_instrument_commands::process_delete_fx_digital_option_ins
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete an FX digital option instrument." << std::endl;
+        fail(out) << "You must be logged in to delete an FX digital option instrument."
+                  << std::endl;
         return;
     }
 
@@ -289,7 +288,8 @@ void fx_digital_option_instrument_commands::process_delete_fx_digital_option_ins
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete FX digital option instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete FX digital option instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete FX digital option instrument: " << result->message
+                  << std::endl;
     }
 }
 
@@ -299,7 +299,8 @@ void fx_digital_option_instrument_commands::process_get_fx_digital_option_instru
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get FX digital option instrument history." << std::endl;
+        fail(out) << "You must be logged in to get FX digital option instrument history."
+                  << std::endl;
         return;
     }
 

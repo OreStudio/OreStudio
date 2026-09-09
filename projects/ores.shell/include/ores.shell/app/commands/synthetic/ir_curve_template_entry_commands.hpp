@@ -60,35 +60,36 @@ public:
      * @brief Process a get ir_curve_template_entries request.
      */
     static void process_get_ir_curve_template_entries(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+                                                      ores::nats::service::nats_client& session,
+                                                      pagination_context& pagination);
 
     /**
      * @brief Process an add ir_curve_template_entry request.
      */
     static void process_add_ir_curve_template_entry(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                      std::string s_ir_curve_config_id,
-                                      std::string s_sequence_index,
-                                      std::string s_start_tenor_code,
-                                      std::string s_end_tenor_code,
-                                      std::string s_instrument_code,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+                                                    ores::nats::service::nats_client& session,
+                                                    std::string s_ir_curve_config_id,
+                                                    std::string s_sequence_index,
+                                                    std::string s_start_tenor_code,
+                                                    std::string s_end_tenor_code,
+                                                    std::string s_instrument_code,
+                                                    std::string change_reason_code,
+                                                    std::string change_commentary);
 
     /**
      * @brief Process a delete ir_curve_template_entry request.
      */
     static void process_delete_ir_curve_template_entry(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string id);
+                                                       ores::nats::service::nats_client& session,
+                                                       std::string id);
 
     /**
      * @brief Process a get ir_curve_template_entry history request.
      */
-    static void process_get_ir_curve_template_entry_history(std::ostream& out,
-                                           ores::nats::service::nats_client& session,
-                                           const std::vector<std::string>& args);
+    static void
+    process_get_ir_curve_template_entry_history(std::ostream& out,
+                                                ores::nats::service::nats_client& session,
+                                                const std::vector<std::string>& args);
 };
 
 } // namespace ores::shell::app::commands

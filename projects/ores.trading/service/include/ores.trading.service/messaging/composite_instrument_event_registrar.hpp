@@ -26,10 +26,10 @@
 
 namespace ores::trading::service::messaging {
 
-[[nodiscard]] ores::eventing::service::subscription
-register_composite_instrument_event_mapping(ores::eventing::service::postgres_event_source& event_source,
-                                      ores::eventing::service::event_bus& event_bus,
-                                      ores::nats::service::client& nats);
+[[nodiscard]] ores::eventing::service::subscription register_composite_instrument_event_mapping(
+    ores::eventing::service::postgres_event_source& event_source,
+    ores::eventing::service::event_bus& event_bus,
+    ores::nats::service::client& nats);
 
 } // namespace ores::trading::service::messaging
 

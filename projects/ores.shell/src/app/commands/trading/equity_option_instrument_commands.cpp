@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/equity_option_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,23 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void equity_option_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto equity_option_instruments_menu =
-        std::make_unique<cli::Menu>("equity_option_instruments");
+                                                          nats_client& session,
+                                                          pagination_context& pagination) {
+    auto equity_option_instruments_menu = std::make_unique<cli::Menu>("equity_option_instruments");
 
     equity_option_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_equity_option_instruments(std::ref(out), std::ref(session),
-                                                  std::ref(pagination));
+            process_get_equity_option_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Equity option instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("equity_option_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_equity_option_instruments(out, session,
-                                                                                pagination);
-                                      });
+    pagination.register_list_callback(
+        "equity_option_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_equity_option_instruments(out, session, pagination);
+        });
 
     equity_option_instruments_menu->Insert(
         "add",
@@ -110,14 +108,15 @@ void equity_option_instrument_commands::register_commands(cli::Menu& root_menu,
         "option_type strike expiry_date exercise_type long_short [settlement_type] "
         "[cliquet_frequency] [description] change_reason_code \"change_commentary\")",
         {"trade_type_code underlying_name currency notional option_type strike expiry_date "
-         "exercise_type long_short settlement_type cliquet_frequency description change_reason_code "
+         "exercise_type long_short settlement_type cliquet_frequency description "
+         "change_reason_code "
          "change_commentary"});
 
     equity_option_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_equity_option_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_equity_option_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Equity option instrument by instrument id",
         {"instrument_id"});
@@ -125,8 +124,8 @@ void equity_option_instrument_commands::register_commands(cli::Menu& root_menu,
     equity_option_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_equity_option_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_equity_option_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Equity option instrument's version history",
         {"instrument_id"});
@@ -233,8 +232,8 @@ void equity_option_instrument_commands::process_add_equity_option_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Equity option instrument.";
         out << "✓ Equity option instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Equity option instrument: " << msg;

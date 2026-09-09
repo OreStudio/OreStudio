@@ -2498,8 +2498,8 @@ def cmd_lint(argv):
             "matching [a-z][a-z0-9_-]*), generator markers (every BEGIN has a "
             "matching END on its own line), dangling id links (every "
             "[[id:...]] resolves), and links from durable documents "
-            "into agile content. The first two are enforced; the link check is "
-            "advisory unless --strict-links is given."
+            "into agile content. All but the last are enforced; the durable "
+            "link check is advisory unless --strict-links is given."
         ),
     )
     ap.add_argument(

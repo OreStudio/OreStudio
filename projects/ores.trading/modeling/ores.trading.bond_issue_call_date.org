@@ -1,0 +1,117 @@
+:PROPERTIES:
+:ID: 4c233e10-0d5e-4d1f-8d30-4e920ef262d5
+:END:
+#+title: ores.trading.bond_issue_call_date
+#+description: Codegen entity model for the trading =bond_issue_call_date= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One call date of a callable bond issue, keyed to the issue.
+#+entity_singular: bond_issue_call_date
+#+entity_plural: bond_issue_call_dates
+#+entity_title: Bond Issue Call Date
+#+created: 2026-09-09
+#+updated: 2026-09-09
+
+One row per call date of a callable bond issue, family-owned by the
+issue. Probe org for the keyed-child entity shape with the two-member
+primary key (wave 1.2 of the bond relational codegen task).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** issue_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the issue this call date belongs to.
+
+The issue row carries the workspace; the child rows are family-owned
+and ride the issue's scope, so no workspace column rides them.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:nullable:    false
+:END:
+
+Ordinal of this call date within the issue's schedule.
+
+The ER names this member =sequence=; the org spells it
+=sequence_number= to keep the SQL keyword out of the identifier. The
+emitted SQL shows whether the spelling matters.
+
+** call_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The call date (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::string("2029-01-15")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_issue_call_dates_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: call_date
+:entity_plural_short:   call_dates
+:entity_singular_words: bond issue call date
+:entity_plural_words:   bond issue call dates
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: cld
+:END:
+
+** Table display
+
+| column           | header      |
+|------------------+-------------|
+| sequence_number  | Sequence    |
+| call_date        | Call Date   |
+| modified_by      | Modified By |
+| version          | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

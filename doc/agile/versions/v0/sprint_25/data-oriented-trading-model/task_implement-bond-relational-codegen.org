@@ -28,9 +28,9 @@ Bond is the pilot for the relational target model of the trading analysis (dfe15
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Wave 1.2 done: the three probe orgs regenerate and the shape verdicts are in the Notes. One mapper-template growth item found (F1: integer primary-key members drop in the mapper) before the child tables generate for real. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Wave 1.3: author the remaining six orgs, close the F1 growth item, generate all nine entities and wire the SQL create and drop files. |
 | Last touched | 2026-09-09                               |
 
 * Acceptance
@@ -158,6 +158,96 @@ them, no test fixture data, and no modeling reference.
   =xml_bond_mapper_roundtrip_tests.cpp=,
   =xml_bond_option_golden_roundtrip_tests.cpp= and
   =xml_bond_option_mapper_roundtrip_tests.cpp=.
+
+Wave 1.2, the org-shape probe (2026-09-09).
+
+Three draft orgs were authored in =projects/ores.trading/modeling/=
+(flat =trade_identifier=-style, no profile): =ores.trading.bond_issue=
+(issue-keyed, has_tenant_id + has_workspace_id),
+=ores.trading.bond_option= (fact entity, has_tenant_id only) and
+=ores.trading.bond_issue_call_date= (issue-keyed child, has_tenant_id
+only, two-member primary key). Each was regenerated with
+=compass codegen entity generate <entity> --diff= (temp-dir diff, no
+tree writes) and the facets were inspected through scratch generation
+in the compass venv. The verdicts below answer the probe questions of
+the approved plan.
+
+First, what all three emit: the full flat entity stack, unconditional
+(domain class, json_io, table, table_io, generator, changed event,
+protocol, handler, the three registrars, the presentation history
+mapper, repository and service) plus the four SQL files per entity
+(create, drop, notify trigger create and drop). No Qt files emit: the
+Qt archetypes are admissible for these model types, but no org in the
+family declares Qt surface, so the family lands no generated Qt until
+the qt bridge task decides it needs any.
+
+*Question 1, foreign keys at the data level.* No second identity
+field group is needed and the column-name mapping growth item (b) of
+the gap task is not needed. =issue_id= and =instrument_id= are plain
+columns: primary key members on the fact and child orgs, and a plain
+FK column after the identity group on the instrument org (the
+=vanilla_swap_instrument=-style shape, wave 1.5).
+
+*Question 2, the two-member primary key.* SQL emission supports it
+completely: =primary key (tenant_id, issue_id, sequence_number,
+valid_from, valid_to)=, the gist exclusion over both key members plus
+the =tstzrange=, the version-unique index, the current-row id-unique
+index, the insert trigger's version management, the delete rule and
+the notify payload all iterate the full key list. The C++ repository
+supports it: the entity declares both members as
+=sqlgen::PrimaryKey<std::string>=, the keyed read, keyed remove and
+=read_at_version= take both members as parameters, the batch remove
+deletes tuple by tuple (the per-column =.in()= cross-product trap is
+documented in the emitted comment) and =read_latest= orders by both
+members. One mapper gap surfaced, F1 below. The org spells the second
+member =sequence_number= where the ER row labels it =sequence=: every
+SQL identifier emits double-quoted, so the keyword is harmless in SQL,
+but the generated C++ member, JSON key and protocol field keep the
+keyword-free spelling. Recorded as decided.
+
+*Question 3, profiles and features per entity kind.* No profile
+growth is needed. The issue org carries has_tenant_id plus
+has_workspace_id; its SQL emits the workspace column with the
+live-workspace default, the workspace validation in the insert
+trigger and the workspace index. The fact and child orgs carry
+has_tenant_id only, matching the ER rows, which carry no workspace
+column on the five fact or the two child tables; their creates emit
+no workspace column and their triggers skip the workspace validation.
+The trading-instrument profile stays instrument-only (wave 1.5).
+
+*Question 4, which entities carry repositories, services and
+messaging.* Every flat entity emits the full stack and "tables and
+domain only" is inexpressible without a suppression key (the recorded
+gap-(d) class). Decision: the generated stacks for the facts and
+children stay in the tree. They are the house pattern and deletion
+would re-drift on the next regeneration.
+
+Finding F1, the mapper drops integer primary-key members. The mapper
+template's primary-key blocks branch on =is_text= and =is_uuid= only,
+so the integer =sequence_number= member is silently dropped in both
+map directions (never read from the entity, never written to it); a
+uuid or text second member maps fine (=issue_id= maps). The fix is a
+minimal mapper-template growth item, an =is_int= branch at each
+primary-key mapping site in
+=cpp_domain_type_mapper.cpp.mustache=; the entity-side string-key
+convention is unaffected. The child tables need this growth before
+they generate for real in wave 1.3. One runtime question stays open
+to the first live load: the repository compares the integer column to
+string key parameters exactly as uuid keys compare today, and sqlgen's
+parameter casting decides whether that binds; if PostgreSQL rejects
+the comparison, the wave records the fix with the load evidence.
+
+Observation F2, composite-key changed events. The child's SQL notify
+payload arrays both key members (=entity_ids= holds issue_id and
+sequence_number) while the generated changed event carries one id
+vector (=call_date_ids=). No consumer of the child's events exists
+yet; the composite-key eventing representation is a wave 1.3
+decision.
+
+The three orgs stay in the modeling tree. They are the wave 1.3
+entities, not parked probes, so discovery picking them up is
+intentional; this wave writes nothing and full trading regeneration
+does not run again until wave 1.3 generates deliberately.
 
 * Test Scenarios
 

@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-bond-relational-codegen
-#+pr: 2041
+#+pr: 2042
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-09
@@ -28,9 +28,9 @@ Bond is the pilot for the relational target model of the trading analysis (dfe15
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave 1.3 done and gated: all eight additive entities have orgs and their full generated stacks sit in the tree, F1 is closed through the org-source is_int branches, the SQL create/drop/RLS files are wired, and every entity re-diffs clean against the final tangled template. Check gate: full build green (linux-clang-debug-make) and ctest 71/71 passed after a targeted refresh of the seven synthetic RLS policies in the worktree database, whose live shape predated the read-side rework of fce56925b4. The wave record is in the Notes. |
+| Now          | Wave 1.4 done and gated: the loader loads the family to its model premise, with the ten codes cycling over the instrument rows and the issue, child and fact tables at rows / 10. The account-validated triggers are satisfied through a resolved service account, the gate run at 1000 rows reports zero findings (49 tables, 41,800 rows), and coherence of the kept population is proven by SQL joins and a seed-layout recomputation. The wave record, the RLS measurement lesson and the ownership split are in the Notes. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave 1.4: extend the population loader (scripts/load_trade_population.py) so the family loads with a coherent population: the REFERENCES chains, the per-family fact/instrument pairing by product code and the issue amortisation per ISIN. |
+| Next         | Wave 1.5, the reshape: author ores.trading.bond_instrument.org per the deliverable (instrument_id key, the ten-code trade_type_code check, issue_id FK, soft FKs, profile spine), delete the hand-written bond stack the generated files supersede, migrate every consumer in one wave (ores.ore mapper switch-over, ores.shell verb, ores.cli call sites, the qt minimum), write and validate the migration script against an old-shape database, and recreate the test database. |
 | Last touched | 2026-09-09                               |
 
 * Acceptance
@@ -385,6 +385,70 @@ uninitialized like every uuid primary-key member in the tree. A
 deterministic default for all primary-key members is a
 domain-template decision; it rides with the F1 follow-up work.
 
+Wave 1.4, the loader extension (2026-09-09).
+
+=scripts/load_trade_population.py= now loads the family to its model
+premise. The ten trade-type codes cycle over the bond instrument rows,
+so block =j= of ten consecutive rows trades one ISIN. The issue row of
+that ISIN, the issue-keyed child rows and the per-product fact rows
+load one per block. The family tables therefore load at =rows / 10=;
+every other table loads at =rows=. The family set derives from the
+loader's own table constants, and the header prints the family count
+when every family table is present.
+
+The chains the wave names are wired at the seed level, per the
+loader's uuid5 grammar. The instrument rows of code =k= sit at the
+row indices congruent to =k= modulo ten, so the =j=-th fact row of a
+product pairs instrument row =10j + code_index= by seed; a
+recomputation of the expected seed set per code over the live rows
+proves the layout (all ten codes, zero mismatches). The child rows
+couple to the issue rows row-wise through the new =REFERENCES=
+entries, one child row per issue. The =instrument.issue_id= hook
+fires only when the reshaped instrument table replaces the legacy one
+in wave 1.5; the legacy table has no such column, and the comment on
+the hook records that.
+
+*Account validation.* The insert triggers validate =modified_by= and
+=performed_by= through =ores_iam_validate_account_username_fn=, which
+is strict whenever accounts exist. This schema-era validation postdates
+the deliverable's baseline loader runs, which is why the first probe
+of this wave loaded zero tables with username findings. The loader now
+resolves a service account up front (=ores_brave_hopper_analytics_service=
+on this database) and reuses it for both columns. The enumeration
+learning count is unchanged at 23.
+
+*Loader evidence.* The gate run at =--rows 1000 --keep= loaded 49
+tables and 41,800 rows in 10.88s, with the family at 100 and zero
+findings. Coherence was verified by SQL over the kept population as
+the loader's own user: per-table counts exact (instruments 1000,
+issues, children and facts 100 each), the ten codes at 100 rows each,
+100 distinct XS-shaped =security_id=s, zero orphaned children, zero
+orphan, wrong-code or uncovered fact rows per product, and no NULL in
+any family column. The database holds the kept population for wave
+1.5's use. The deterministic seeds mean a =--keep= rerun over a
+standing population collides on primary keys; a default (non-=--keep=)
+run first removes the bench rows, which is the loader's own cleanup
+path.
+
+*RLS measurement lesson.* The loader reaches postgres as the .env
+=PGUSER= (the postgres superuser here), so COPY bypasses row-level
+security on every table, the RLS-enabled legacy tables included. A
+verification session as the DDL user is RLS-filtered instead: the
+legacy tables' party-scoped policies hide their rows when
+=app.current_party_id= is not set, while the family's tenant-only
+policies let rows through under the default system tenant. A first
+verification pass misread those filtered counts as vanished rows;
+counts for loader verification must run as the loader's own user. The
+ownership split is recorded too: the family tables are owned by the
+test DDL user (hand-applied in wave 1.3) and the legacy tables by the
+main DDL user. The loader is unaffected, and the wave 1.5 recreate
+resolves the split.
+
+The wave leaves observation F2 open: the loader copies rows and never
+consumes the generated registrars or repositories, so the
+compound-key registrar representation and the F1 repository-bind
+question both land with the first real consumer in the reshape.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -400,6 +464,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2042][#2042]] | [ores.trading] Bond relational model: population loader wave 1.4 |
 | [[https://github.com/OreStudio/OreStudio/pull/2041][#2041]] | [ores.trading] Bond relational model: additive codegen waves 1.1 to 1.3 |
 
 * Review
@@ -408,5 +473,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The synthetic generators always emit 0 for =sequence_number= | =bond_issue_call_date.org= (and =bond_issue_conversion_target.org=) | Recorded, not changed | No collision reachable today: each generated child draws its own random =issue_id=. A real ordinal needs parent-keyed generation. See the Notes entry. |
 | 2 | =int sequence_number= has no in-class default, unlike =version= | =cpp_domain_type_generator.cpp.mustache= | Recorded, not changed | Defaulting the int alone leaves =issue_id= uninitialized, like every uuid primary-key member. A template-level default for all primary-key members is a codegen decision. See the Notes entry. |
+| 3 | =--rows= not a multiple of 10 silently truncates the family counts, leaving the last instrument block without its issue row | =load_trade_population.py= =main()= | Accepted | A guard after argparse exits with a clear message unless =--rows= is a multiple of 10, before any DB work. |
+| 4 | =counts[next(iter(family))]= pulls an arbitrary set member to print the family count | =load_trade_population.py= =main()= | Accepted | A =family_size= computed once now feeds both the per-table counts and the header printout. |
 
 * Result

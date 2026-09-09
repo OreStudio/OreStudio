@@ -11,6 +11,12 @@ a finding instead of failing silently. Two outputs: a per-table cost table that
 shows where the time goes, and a findings list that shows where the model
 resists being populated.
 
+The bond family (pilot task D7943D7E) loads to its model premise rather than to
+uniform counts. Its ten trade-type codes cycle over the bond instrument rows, so
+each block of ten consecutive rows trades one ISIN; the issue row of that ISIN,
+the issue-keyed child rows and the per-product fact rows load one per block.
+The family tables therefore load at rows / 10; every other table loads at rows.
+
 Reaches postgres through psql. Deletes the rows it inserted unless --keep.
 
   ./scripts/load_trade_population.py --rows 1000
@@ -71,8 +77,43 @@ BOOK_SQL = ("select id, parent_portfolio_id from ores_refdata_books_tbl "
             "and valid_to = ores_utility_infinity_timestamp_fn() "
             "and parent_portfolio_id is not null order by id limit 1;")
 
+# The insert triggers stamp modified_by and performed_by with a validated value,
+# so a text value of the loader's own making is rejected. Any account username
+# passes; service accounts keep the bench rows from impersonating a user.
+ACCOUNT_SQL = ("select username from ores_iam_accounts_tbl "
+               "where valid_to = ores_utility_infinity_timestamp_fn() "
+               "order by (account_type = 'service') desc, username limit 1;")
+
+# The legacy bond instrument table keeps its name through the reshape, so the
+# family entries below stay valid when the reshaped table replaces it.
+BOND_INSTRUMENTS = "ores_trading_bond_instruments_tbl"
+BOND_ISSUES = "ores_trading_bond_issues_tbl"
+
+# The ten bond trade-type codes, in declaration order. One trade of each code
+# loads per ISIN, so the j-th instrument row of a code sits at
+# j * len(codes) + code_index, and that row belongs to issue block j. The
+# facts and children load one row per block, aligned to the same index.
+TRADE_TYPE_CODES = ("Bond", "ForwardBond", "BondFuture", "BondOption",
+                    "BondRepo", "BondTRS", "BondPosition", "CallableBond",
+                    "ConvertibleBond", "Ascot")
+
+# The five codes whose product carries structure beyond the instrument row.
+# Each fact table extends the instrument rows of its own code.
+FACT_TABLES = {
+    "BondOption": "ores_trading_bond_options_tbl",
+    "BondFuture": "ores_trading_bond_futures_tbl",
+    "BondRepo": "ores_trading_bond_repos_tbl",
+    "BondTRS": "ores_trading_bond_trs_tbl",
+    "Ascot": "ores_trading_ascots_tbl",
+}
+
+FACT_CODE = {t: c for c, t in FACT_TABLES.items()}
+CHILD_TABLES = ("ores_trading_bond_issue_call_dates_tbl",
+                "ores_trading_bond_issue_conversion_targets_tbl")
+
 # Soft foreign keys, enforced in PL/pgSQL. A referencing column must carry an id
-# the referenced table already holds, so the referenced table loads first.
+# the referenced table already holds, so the referenced table loads first. Row
+# i of the referencing table couples to row i of the referenced one.
 REFERENCES = {
     ("ores_trading_composite_legs_tbl", "instrument_id"):
         ("ores_trading_composite_instruments_tbl", "id"),
@@ -80,6 +121,10 @@ REFERENCES = {
         ("ores_trading_trades_tbl", "id"),
     ("ores_trading_trade_identifiers_tbl", "trade_id"):
         ("ores_trading_trades_tbl", "id"),
+    ("ores_trading_bond_issue_call_dates_tbl", "issue_id"):
+        ("ores_trading_bond_issues_tbl", "issue_id"),
+    ("ores_trading_bond_issue_conversion_targets_tbl", "issue_id"):
+        ("ores_trading_bond_issues_tbl", "issue_id"),
 }
 
 INTROSPECT_COLUMNS = """
@@ -160,7 +205,7 @@ class Generator:
     """Produces a value for one column, given its type and any check constraint."""
 
     def __init__(self, allowed, bounds, enums, tenant, workspace, party, reason,
-                 book, portfolio, counterparty=None, status=None,
+                 book, portfolio, account=None, counterparty=None, status=None,
                  required_null=None):
         self.required_null = required_null or {}
         self.counterparty = counterparty
@@ -174,6 +219,7 @@ class Generator:
         self.workspace = workspace
         self.party = party
         self.reason = reason
+        self.account = account
 
     def value(self, table, col, dtype, udt, i):
         if col == "tenant_id":
@@ -182,6 +228,8 @@ class Generator:
             return self.workspace
         if col == "change_reason_code":
             return self.reason
+        if col in ("modified_by", "performed_by") and self.account:
+            return self.account
         if col in NULLABLE_SELF_REFS:
             return "\\N"
         if col in self.required_null.get(table, ()):
@@ -196,6 +244,22 @@ class Generator:
             return self.book
         if col == "portfolio_id" and self.portfolio:
             return self.portfolio
+        if table == BOND_INSTRUMENTS:
+            if col == "trade_type_code":
+                return TRADE_TYPE_CODES[i % len(TRADE_TYPE_CODES)]
+            if col == "issue_id":
+                # Row i trades the i // len(codes) issue's ISIN. Inert while the
+                # legacy table lacks the column; the reshaped instrument rows
+                # carry it, and the seed couples them to the loaded issue.
+                return str(uuid.uuid5(NS, f"{BOND_ISSUES}.issue_id."
+                                        f"{i // len(TRADE_TYPE_CODES)}"))
+        if col == "security_id" and table == BOND_ISSUES:
+            return f"XS{i:010d}"
+        if col == "instrument_id" and table in FACT_CODE:
+            # The fact row of the j-th instrument row of its own product code.
+            return str(uuid.uuid5(
+                NS, f"{BOND_INSTRUMENTS}.id."
+                    f"{i * len(TRADE_TYPE_CODES) + TRADE_TYPE_CODES.index(FACT_CODE[table])}"))
         ref = REFERENCES.get((table, col))
         if ref:
             return str(uuid.uuid5(NS, f"{ref[0]}.{ref[1]}.{i}"))
@@ -413,6 +477,11 @@ def main():
                     help="time one table with each trigger disabled in turn, "
                          "to attribute the cost")
     args = ap.parse_args()
+    if args.rows % len(TRADE_TYPE_CODES):
+        sys.exit(f"--rows must be a multiple of {len(TRADE_TYPE_CODES)}: the "
+                 f"family loads one issue, child and fact row per block of "
+                 f"{len(TRADE_TYPE_CODES)} instrument rows, so a partial "
+                 f"block would reference an issue row that never loads.")
 
     sql = make_sql(read_env())
 
@@ -438,6 +507,9 @@ def main():
         if r.returncode == 0 and r.stdout.strip() else []
     book = book_row[0] if book_row else None
     portfolio = book_row[1] if len(book_row) > 1 else None
+    r = sql(ACCOUNT_SQL, check=False)
+    account = r.stdout.strip().splitlines()[-1] if r.returncode == 0 and \
+        r.stdout.strip() else None
     r = sql(COUNTERPARTY_SQL.format(tenant=tenant), check=False)
     counterparty = r.stdout.strip().splitlines()[-1] if r.returncode == 0 and \
         r.stdout.strip() else None
@@ -445,13 +517,19 @@ def main():
     status = r.stdout.strip().splitlines()[-1] if r.returncode == 0 and \
         r.stdout.strip() else None
     gen = Generator(allowed, bounds, enums, tenant, workspace, party, reason,
-                    book, portfolio, counterparty, status, required_null)
+                    book, portfolio, account, counterparty, status,
+                    required_null)
     preamble = SESSION_PREAMBLE.format(party=party)
     print(f"tenant {tenant}\nworkspace {workspace}\nparty {party}\n"
-          f"change reason {reason}\nbook {book}  portfolio {portfolio}")
+          f"change reason {reason}\nbook {book}  portfolio {portfolio}\n"
+          f"account {account}")
 
+    family = {BOND_ISSUES, *CHILD_TABLES, *FACT_TABLES.values()}
+    family_size = args.rows // len(TRADE_TYPE_CODES)
+    counts = {t: family_size if t in family else args.rows for t in cols}
     print(f"{len(cols)} tables, {sum(len(v) for v in cols.values())} columns, "
-          f"{args.rows} rows each\n")
+          f"{args.rows} rows per table"
+          f"{', family at ' + str(family_size) if family <= set(cols) else ''}\n")
 
     results, findings, discovered = [], [], []
     if args.attribute:
@@ -466,9 +544,10 @@ def main():
     for table in order:
         spec = cols[table]
         names = [c for c, _, _, _ in spec]
+        count = counts[table]
         try:
             body = []
-            for i in range(args.rows):
+            for i in range(count):
                 body.append("\t".join(
                     gen.value(table, c, d, u, i).replace("\t", " ")
                     for c, d, _, u in spec))
@@ -483,7 +562,7 @@ def main():
             r = sql(stdin=preamble + stmt + payload + "\\.\n", check=False)
             elapsed = time.perf_counter() - start
             if r.returncode == 0:
-                results.append((table, len(spec), elapsed))
+                results.append((table, count, len(spec), elapsed))
                 break
             learned = _learn(r.stderr, table, gen)
             if not learned:
@@ -494,21 +573,22 @@ def main():
                 payload = "\n".join(
                     "\t".join(gen.value(table, c, d, u, i).replace("\t", " ")
                                for c, d, _, u in spec)
-                    for i in range(args.rows)) + "\n"
+                    for i in range(count)) + "\n"
             except KeyError as e:
                 findings.append((table, f"cannot generate: {e}"))
                 break
         else:
             findings.append((table, "still rejected after learning 6 sets"))
 
-    results.sort(key=lambda r: -r[2])
-    total = sum(e for _, _, e in results)
-    print(f"{'table':<52} {'cols':>5} {'seconds':>9} {'rows/sec':>10} {'%':>6}")
-    for t, n, e in results:
-        print(f"{t:<52} {n:>5} {e:>9.3f} {args.rows / e:>10.0f} "
+    results.sort(key=lambda r: -r[3])
+    total = sum(e for _, _, _, e in results)
+    print(f"{'table':<52} {'rows':>6} {'cols':>5} {'seconds':>9} "
+          f"{'rows/sec':>10} {'%':>6}")
+    for t, c, n, e in results:
+        print(f"{t:<52} {c:>6} {n:>5} {e:>9.3f} {c / e:>10.0f} "
               f"{100 * e / total:>5.1f}%")
     print(f"\n{len(results)} tables loaded in {total:.2f}s "
-          f"({args.rows * len(results):,} rows)")
+          f"({sum(c for _, c, _, _ in results):,} rows)")
 
     if discovered:
         print(f"\n{len(discovered)} enumeration(s) learned from trigger errors, "

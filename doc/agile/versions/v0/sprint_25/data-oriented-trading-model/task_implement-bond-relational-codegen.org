@@ -762,6 +762,50 @@ populate, testdata or fixture writer of the legacy table, and the
 loader needs no change for the reshape. Wave 1.6 runs it as it
 stands.
 
+*The validation run.* Two scratch copies of the dev database carry the
+run: =ores_bond_mig_val= for the migrate path and =ores_bond_mig_guard=
+for the pristine guard demos. On =ores_bond_mig_val= the crafted set
+(14 rows, ids ...01-...14, fps A-K) was raw-inserted with the legacy
+instrument triggers disabled, the eight family tables were wiped, and
+the script ran end to end: exit 0. The summary select matched the
+derived numbers exactly: instruments 1018, issues 1014 (1010 open,
+1000 loader fps plus 10 crafted fps; 4 closed, 3 loader fps plus
+fp_B), options 1, trs 2, ascots 101, call dates 102, futures, repos
+and conversion targets 0, orphans 0. The dedup join held: the fp_A
+group (T1-T3 current, T4 closed) minted one open issue carrying the
+terms of its earliest row (T1, settlement 5, window
+2026-01-15-to-open) with all four instruments joined to it; the
+closed fp_B minted a closed issue with the bearer window
+2026-08-01-to-2026-09-01 and no fact; the loader closed pair
+=36a7f7aa2a94= minted one closed issue on the max-valid_from bearer
+window. The gates held: the option fact is T6 only (closed T5 and
+strike -3 T7 refused), the trs facts are T8 (Fixed leg, null index)
+and T9 (Floating leg, SONIA index). The ten-code check, the dropped
+legacy extension columns and the audit values
+(=system.new_record= / "Migrated from the wide legacy bond instrument
+columns") were all asserted. Two notices exceeded the survey: null
+settlement 5 and variance 2. The guard copy explains both: the four
+loader closed rows carry null settlement (current rows carry 1), and
+the loader's only multi-row fp group is the closed pair, which varies
+in description. The notices are correct.
+
+The run found one defect, now fixed: the plain temp table
+=bond_mig_issue= carried =on commit drop= between its name and column
+list, which the grammar allows only in the CTAS form used by the
+other two temp tables. The clause moved after the column list and the
+run went clean.
+
+The guards demoed on =ores_bond_mig_guard=: guard 1 (re-run on the
+migrated scratch) notices "no legacy id column" and exits 0 with the
+counts unchanged; guard 2 aborts on a raw-inserted out-of-ten row
+("Aborting: 1 instrument rows carry a trade_type_code outside the ten
+codes.") with the id column untouched; guard 3 aborts naming the
+first offending table ("Aborting: ores_trading_bond_issues_tbl holds
+rows for the migrating tenants."). Each guard fired before any
+mutation. The delete-rule demo note: the legacy instrument delete
+rule is INSTEAD OF, so removing a demo row on the scratch needed the
+rule disabled first. Results land in the PR description.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

@@ -202,13 +202,12 @@ begin
     -- 6. Mint one open issue per distinct fingerprint among the live
     --    rows. The issue row takes its values from the earliest row of
     --    the group.
-    create temp table bond_mig_issue on commit drop (
+    create temp table bond_mig_issue (
         tenant_id uuid,
         fp text,
         is_open boolean,
         issue_id uuid
-    );
-
+    ) on commit drop;
     -- The issues insert trigger validates the account username, which
     -- raises for the session user, and rewrites valid_from and valid_to.
     -- The minted issue rows bypass it; the enable after the fact and

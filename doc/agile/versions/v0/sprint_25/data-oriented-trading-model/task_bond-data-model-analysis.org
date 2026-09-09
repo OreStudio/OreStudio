@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-08
-#+updated: 2026-09-08
+#+updated: 2026-09-09
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -43,7 +43,7 @@ bridge are follow-up tasks on the same story.
 | Now          | Nothing. |
 | Waiting on   | Nothing.                               |
 | Next         | Nothing. |
-| Last touched | 2026-09-08                               |
+| Last touched | 2026-09-09                               |
 
 * Acceptance
 
@@ -143,3 +143,12 @@ The analysis =trading_bond_relational_model.org= was written to
   types and SQL, the ore mapping, the qt bridge) are sequenced at the
   end of the document and depend on the container-grammar work and
   the shared schedule and underlyings tables of the parent story.
+
+After the task closed, a council review of the proposal checked the
+model against the measured performance evidence of the trade
+generation story [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][894B369A]]
+and approved the normalisation with amendments. The deliverable now
+records that evidence and the amendments: the issue relationship
+essences, the composite version rule for instrument and fact rows,
+the leaf-row spine decision on the shared shapes, and four open
+questions the codegen task must answer before it draws the SQL.

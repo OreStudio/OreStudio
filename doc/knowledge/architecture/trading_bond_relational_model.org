@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:architecture:trading:data_model:data_oriented_design:codegen:
 #+created: 2026-09-08
-#+updated: 2026-09-08
+#+updated: 2026-09-09
 
 * Summary
 
@@ -346,11 +346,17 @@ sub-struct decomposition in its persisted domain type.
 The relationships, stated as keys:
 
 - instrument.issue_id FK to issue: every instrument row, of any of
-  the ten products, names one issue. For Bond, ForwardBond,
-  CallableBond, ConvertibleBond, BondPosition and BondRepo the issue
-  is the bond itself; for BondOption, BondFuture, BondTRS and Ascot
-  it is the bond the product references. The column is NOT NULL; a
-  product row with no bond is not a bond product.
+  the ten products, names one issue. The essence of the relationship
+  follows the product. For Bond, ForwardBond, CallableBond,
+  ConvertibleBond and BondPosition the issue is the bond itself, and
+  the row's economics are the issue's economics. For BondRepo the
+  issue is the collateral the financing runs against; the repo row's
+  economics are the financing's, not the bond's. For BondOption,
+  BondFuture, BondTRS and Ascot the issue is the bond the product is
+  written on. The schema draws one foreign key for all ten. The
+  =trade_type_code= discriminates the essence, and the mapper and the
+  views branch on it. The column is NOT NULL; a product row with no
+  bond is not a bond product.
 - instrument.trade_id soft FK to trades, unchanged in meaning and
   uniqueness from today.
 - schedule and underlyings rows key to their owner (an issue or an
@@ -399,6 +405,82 @@ The alternative readings, rejected:
   This is the current object-graph instinct reversed; it fails the
   same way, because ten products share one issue and the issue is the
   stable reference.
+
+** The measured performance of the target model
+
+The trade generation story
+[[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][894B369A]] measured the
+deployed trading schema before this proposal was drawn. The numbers
+live in the story's =design.org= and in =trade_model_defects.org=. A
+council review of this proposal, recorded on 2026-09-09, checked the
+model against those numbers. The review approved the normalisation
+and asked for the amendments recorded in this section.
+
+The database charges per row, not per trade. The per-row insert
+trigger, which maintains the bitemporal validity range and cannot be
+disabled, costs about 25x. The deployed schema inserts about 2200
+rows per second; a clone without the trigger reaches 56032. The
+exclusion constraint costs 2.2x on its own, and the notify trigger
+costs 1.5%. On the fast synthetic path (COPY, trigger off), a
+fan-out of six versus eight rows per trade costs at most 1.4x, while
+one wide JSON column holding forty schedule dates costs 4x. Read
+performance was never measured; no read volumes exist to measure.
+
+One trade is one row today. In this model it is one instrument row, a
+share of one issue row, one fact row for the five products that carry
+structure, and schedule rows only where the current model stores
+nothing, because the current mapper truncates lists and drops
+economics. The issue rows amortise. A population of many trades on
+one ISIN pays one issue row for all of them, which is the generator
+story's premise. The fact and schedule rows buy data the current row
+does not hold. Storing the truth is not a regression these figures
+price.
+
+The split is not a performance claim. It moves width off the
+per-trade row, but the measured 4x width case is a forty-value JSON
+blob, and ten narrow term columns are not that case. The split stands
+on correctness, findings B11 and B5. The codegen task must not sell
+it as a performance win.
+
+The write path decides the economics. An interactive save writes a
+handful of rows in one transaction, and the trigger tax is
+irrelevant there. Bulk population pays the trigger until the
+generator story answers its open question of set-based bitemporal
+versioning. Until then, any generator or migration path must be
+sized at about 2000 rows per second on the deployed schema.
+
+The shared shapes inherit the same measurements. The defects
+investigation measured rows against width on the fast path, 1.4x
+against 4x, and chose rows for schedules and underlyings; this
+proposal follows that choice. It goes beyond the measured shapes in
+one place. This page draws the full SCD2 spine on the leaf rows of
+the schedule and underlyings tables, where the defect shapes carry
+none. Forty call dates as versioned rows pay the per-row trigger
+forty times and carry the audit columns forty times, for a fidelity
+nothing in the requirements asks for. A date list is an accident of
+its schedule; its version is derivative of its owner's. The review
+amendment is to version the substance, the issue, the instrument,
+the fact row, the schedule, and to let the leaf rows inherit. The
+exception is a stated audit requirement for schedule amendment
+history; see question 1 below.
+
+One composite needs a declared version rule. An instrument row and
+its fact rows describe one trade. The save verb writes them in one
+transaction, and the fact row's version tracks the instrument's. A
+change of =trade_type_code= on an existing row retires the old
+product's fact rows. The rule must live where the codegen task reads
+it, not only in the verb. The schema carries no aggregate invariant,
+and a rule the document does not record is a rule drift deletes.
+
+Four questions stay open from the review. The codegen task must
+answer them before it draws the SQL:
+
+| # | Question | Decides |
+|---+----------+---------|
+| 1 | Is amendment history of a call or exercise schedule an audit requirement? | Whether the leaf rows keep the SCD2 spine |
+| 2 | Can an instrument row change its =trade_type_code= in place? | Whether the save verb's fact-retirement rule is ever exercised |
+| 3 | How does a bond issue own rows in the shared tables, whose owner key is =instrument_id=? | The owner foreign-key mechanics: two nullable keys with an exactly-one check, or a typed owner |
+| 4 | Does the repo relationship essence need its own mapper treatment? | The =ores.ore= mapping and the =ores.qt= view branching |
 
 ** Mapping the current model onto the target
 

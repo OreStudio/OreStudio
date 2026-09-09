@@ -166,6 +166,101 @@ for select using (
 );
 
 -- -----------------------------------------------------------------------------
+-- Bond relational model (pilot), task D7943D7E
+-- -----------------------------------------------------------------------------
+-- The issue row carries the party scope of its family; the fact and
+-- child rows are family-owned and carry no party_id, so each gets the
+-- tenant isolation policy only.
+
+-- Bond Issues
+alter table ores_trading_bond_issues_tbl enable row level security;
+
+create policy bond_issues_tenant_isolation_policy on ores_trading_bond_issues_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Bond Issue Call Dates
+alter table ores_trading_bond_issue_call_dates_tbl enable row level security;
+
+create policy bond_issue_call_dates_tenant_isolation_policy on ores_trading_bond_issue_call_dates_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Bond Issue Conversion Targets
+alter table ores_trading_bond_issue_conversion_targets_tbl enable row level security;
+
+create policy bond_issue_conversion_targets_tenant_isolation_policy on ores_trading_bond_issue_conversion_targets_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Bond Options
+alter table ores_trading_bond_options_tbl enable row level security;
+
+create policy bond_options_tenant_isolation_policy on ores_trading_bond_options_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Bond Futures
+alter table ores_trading_bond_futures_tbl enable row level security;
+
+create policy bond_futures_tenant_isolation_policy on ores_trading_bond_futures_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Bond TRS
+alter table ores_trading_bond_trs_tbl enable row level security;
+
+create policy bond_trs_tenant_isolation_policy on ores_trading_bond_trs_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Bond Repos
+alter table ores_trading_bond_repos_tbl enable row level security;
+
+create policy bond_repos_tenant_isolation_policy on ores_trading_bond_repos_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- Ascots
+alter table ores_trading_ascots_tbl enable row level security;
+
+create policy ascots_tenant_isolation_policy on ores_trading_ascots_tbl
+for all using (
+    tenant_id = ores_iam_current_tenant_id_fn()
+)
+with check (
+    tenant_id = ores_iam_current_tenant_id_fn()
+);
+
+-- -----------------------------------------------------------------------------
 -- Commodity Instruments
 -- -----------------------------------------------------------------------------
 alter table ores_trading_commodity_instruments_tbl enable row level security;

@@ -8,7 +8,7 @@
 #+filetags: :llm:skills:claude_code:refactor:naming:sprint_25:v0:
 #+created: 2026-08-25
 #+updated: 2026-08-25
-#+environment:
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -21,7 +21,7 @@ Our 79 skills describe our process well but never tell an agent how to think or 
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | BACKLOG                              |
+| State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | Not yet started.                       |
 | Waiting on    | Nothing.                               |
@@ -72,7 +72,7 @@ Tasks are listed in intended execution order.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:FE910755-16F8-4854-BA3D-D780BE5AFB64][Fix the invisible knowledge cluster and audit graph integrity]] | BACKLOG | | | The whole doc/knowledge/external cluster does not resolve in the graph; diagnose, fix, and add a continuous S3-star check so it cannot recur. Unblocks domain grounding. |
+| [[id:FE910755-16F8-4854-BA3D-D780BE5AFB64][Fix the invisible knowledge cluster and audit graph integrity]] | DONE | 2026-09-09 | 2026-09-09 | The whole doc/knowledge/external cluster does not resolve in the graph; diagnose, fix, and add a continuous S3-star check so it cannot recur. Unblocks domain grounding. |
 | [[id:37BC3547-4FE9-4D13-B3E7-5C071C5155B9][Instrument skill selection so the baseline accrues forward]] | BACKLOG | | | Record selection events as they happen rather than scoring past tasks, so skill-choice quality becomes measurable and reportable from now on. |
 | [[id:9388A184-1EFA-4855-8C0B-7FDFE93C3647][Decide the disposition of every external skill]] | DONE | 2026-08-26 | 2026-08-26 | Read every pstack and Matt Pocock skill in full and record a per-skill disposition against the skill architecture: adopt, adapt, harvest or reject, with the reason. |
 | [[id:F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF][Land the skill architecture into policy]] | BACKLOG | | | Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword. |
@@ -100,6 +100,14 @@ Tasks are listed in intended execution order.
 | [[id:39264768-EE92-4DB1-B048-3C960415B358][Specify the skills framework as a regulator]] | DONE | 2026-09-07 | 2026-09-07 | Respecify the framework as a regulator over an agent, deriving its scope and its seven classes of document from cybernetics rather than stipulating them, and classify the upstream pstack collection against that derivation. |
 
 * Decisions
+
+- Directory exclusions in the doc walker are anchored at the repository root.
+  A bare name matched at any depth, and =external= then hid
+  =doc/knowledge/external= as well as the vendored tree it was written for.
+  Names that are noise at any depth (=.git=, =node_modules=) stay unanchored.
+- =compass lint= is the enforced channel for corpus invariants, and it shares
+  the graph's own walker. The S3\* auditor states that every id link must
+  resolve; the lint now proves it on every push and pull request.
 
 * Out of scope
 

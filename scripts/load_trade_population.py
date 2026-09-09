@@ -477,6 +477,11 @@ def main():
                     help="time one table with each trigger disabled in turn, "
                          "to attribute the cost")
     args = ap.parse_args()
+    if args.rows % len(TRADE_TYPE_CODES):
+        sys.exit(f"--rows must be a multiple of {len(TRADE_TYPE_CODES)}: the "
+                 f"family loads one issue, child and fact row per block of "
+                 f"{len(TRADE_TYPE_CODES)} instrument rows, so a partial "
+                 f"block would reference an issue row that never loads.")
 
     sql = make_sql(read_env())
 

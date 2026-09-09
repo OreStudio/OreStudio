@@ -13,11 +13,12 @@
 #+created: 2026-09-09
 #+updated: 2026-09-09
 
-The economics of a bond describe the bond issue, not any one trade of
-it. This entity is the master row per security_id (ISIN) that the
-per-trade instrument rows and the issue's own child rows (call dates,
-conversion targets) reference. Probe org for the issue-keyed entity
-shape (wave 1.2 of the bond relational codegen task).
+One row per bond issue (ISIN), the stable row every instrument of the
+family references. The columns map one to one from =bondData=
+(instruments.xsd lines 382-403): security_id, issuer, currency,
+face_value, coupon_rate, coupon_frequency_code, day_count_code,
+issue_date, maturity_date, settlement_days and the free description;
+the coupon terms come from the coupon leg of the issue's =LegData=.
 
 * Flags
 :PROPERTIES:

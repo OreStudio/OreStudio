@@ -1,0 +1,160 @@
+:PROPERTIES:
+:ID: 2b43a87c-efb0-4b74-8b12-fa03188a1e0d
+:END:
+#+title: ores.trading.bond_trs
+#+description: Codegen entity model for the trading =bond_trs= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Per-trade bond total return swap facts: one row per TRS instrument, keyed by instrument_id.
+#+entity_singular: bond_trs
+#+entity_plural: bond_trs
+#+entity_title: Bond TRS
+#+created: 2026-09-09
+#+updated: 2026-09-09
+
+One row per bond total return swap trade, keyed by the instrument row
+it extends. The columns fix the ER row ("return type, funding index
+or rate") from the return side (=totalReturnData=, instruments.xsd
+lines 2313-2336) and the funding leg (=fundingData= lines 2297-2301
+wrapping one =legData=). The funding payment dates and the leg
+schedules have no destination in the nine tables; they land in the
+shared instrument-keyed schedule tables of the parent story (recorded
+scope limit, task D7943D7E wave 1.3).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the bond TRS instrument this fact row extends.
+
+The instrument row carries the trade, workspace and party; the fact
+row only carries the swap terms. Per the ER, no workspace column
+rides the fact tables.
+
+** return_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Return type of the total return side (TotalReturn, PriceReturn).
+
+The flattening mapper hardcodes this value today; the reworked mapper
+must read it from =TotalReturnData.PriceType=.
+
+#+begin_src cpp :name generator
+std::string("TotalReturn")
+#+end_src
+
+** funding_leg_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Leg type of the funding leg (Fixed, Floating).
+
+#+begin_src cpp :name generator
+std::string("Floating")
+#+end_src
+
+** funding_rate
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: double
+:nullable: true
+:END:
+
+Fixed rate of the funding leg, when the leg is fixed.
+
+#+begin_src cpp :name generator
+0.045
+#+end_src
+
+** funding_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Index code of the funding leg, when the leg is floating.
+
+#+begin_src cpp :name generator
+std::string("SOFR")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_trs_tbl
+:END:
+
+** Checks
+
+| expression                             |
+|----------------------------------------|
+| "return_type" in ('TotalReturn', 'PriceReturn') |
+| "funding_leg_type" in ('Fixed', 'Floating') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trs
+:entity_plural_short:   trs
+:entity_singular_words: bond trs
+:entity_plural_words:   bond trs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bts
+:END:
+
+** Table display
+
+| column         | header     |
+|----------------+------------|
+| return_type    | Return Type |
+| funding_leg_type | Funding Leg |
+| funding_rate   | Funding Rate |
+| funding_index  | Funding Index |
+| modified_by    | Modified By |
+| version        | Version    |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

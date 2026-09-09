@@ -1,0 +1,319 @@
+:PROPERTIES:
+:ID: 33453d64-863c-4f00-a93b-863b9b035fbb
+:END:
+#+title: ores.trading.bond_future
+#+description: Codegen entity model for the trading =bond_future= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: Per-trade bond future facts: one row per future instrument, keyed by instrument_id.
+#+entity_singular: bond_future
+#+entity_plural: bond_futures
+#+entity_title: Bond Future
+#+created: 2026-09-09
+#+updated: 2026-09-09
+
+One row per bond future trade, keyed by the instrument row it
+extends. The columns fix the ER row ("delivery date and the facts the
+XSD =bondFutureData= carries") from =external/ore/xsd/instruments.xsd=
+lines 422-448: every single-valued scalar of the structure, minus the
+=DeliveryBasket= list, which has no destination in the nine tables and
+lands in the shared instrument-keyed underlyings of the parent story
+(recorded scope limit, task D7943D7E wave 1.3).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the bond future instrument this fact row extends.
+
+The instrument row carries the trade, workspace and party; the fact
+row only carries the future terms. Per the ER, no workspace column
+rides the fact tables.
+
+** contract_name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Name of the futures contract (the bond the contract is written on).
+
+#+begin_src cpp :name generator
+std::string("US 10YR T-NOTE")
+#+end_src
+
+** contract_notional
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Notional of one contract.
+
+#+begin_src cpp :name generator
+100000.0
+#+end_src
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Long or short position in the contract.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+ISO 4217 currency code of the contract.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** contract_month
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Delivery month of the contract (YYYY-MM text).
+
+#+begin_src cpp :name generator
+std::string("2029-09")
+#+end_src
+
+** deliverable_grade
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Deliverable grade of the contract, when the contract names one.
+
+#+begin_src cpp :name generator
+std::string("T 2.75 11/15/2042")
+#+end_src
+
+** fair_price
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Fair price of the contract at trade time.
+
+#+begin_src cpp :name generator
+98.5
+#+end_src
+
+** settlement
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Settlement type of the contract (Cash, Physical).
+
+#+begin_src cpp :name generator
+std::string("Cash")
+#+end_src
+
+** settlement_dirty
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the settlement price is dirty (includes accrued).
+
+#+begin_src cpp :name generator
+false
+#+end_src
+
+** root_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Root date of the contract's expiry basis (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::string("2029-03-01")
+#+end_src
+
+** expiry_basis
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Expiry basis of the contract, when the contract names one.
+
+#+begin_src cpp :name generator
+std::string("Futures")
+#+end_src
+
+** settlement_basis
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: true
+:END:
+
+Settlement basis of the contract, when the contract names one.
+
+#+begin_src cpp :name generator
+std::string("Futures")
+#+end_src
+
+** expiry_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default_value: 0
+:END:
+
+Lag in days between the root date and the expiry basis.
+
+#+begin_src cpp :name generator
+1
+#+end_src
+
+** settlement_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: int
+:nullable: false
+:default_value: 0
+:END:
+
+Lag in days between the expiry basis and the settlement basis.
+
+#+begin_src cpp :name generator
+2
+#+end_src
+
+** last_trading_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Last trading date of the contract (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::string("2029-09-27")
+#+end_src
+
+** last_delivery_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Last delivery date of the contract (ISO 8601 date string). The ER
+names this the delivery date of the fact row.
+
+#+begin_src cpp :name generator
+std::string("2029-09-28")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_futures_tbl
+:END:
+
+** Checks
+
+| expression                            |
+|---------------------------------------|
+| "long_short" in ('Long', 'Short')     |
+| "last_delivery_date" >= "last_trading_date" |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name: generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: future
+:entity_plural_short:   futures
+:entity_singular_words: bond future
+:entity_plural_words:   bond futures
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bf
+:END:
+
+** Table display
+
+| column            | header         |
+|-------------------+----------------|
+| contract_name     | Contract       |
+| contract_month    | Contract Month |
+| long_short        | Long/Short     |
+| currency          | Currency       |
+| fair_price        | Fair Price     |
+| last_delivery_date | Last Delivery |
+| modified_by       | Modified By    |
+| version           | Version        |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -14,8 +14,12 @@
 #+updated: 2026-09-09
 
 One row per call date of a callable bond issue, family-owned by the
-issue. Probe org for the keyed-child entity shape with the two-member
-primary key (wave 1.2 of the bond relational codegen task).
+issue. The row carries the schedule dates only: the dated styles,
+prices, price types and include-accrual flags of
+=callableBondCallData= and =cbCallData= (instruments.xsd lines
+2365-2429, 2700-2732) have no destination in the nine tables, and a
+call that reprices is a recorded coverage finding for the mapping
+task (task D7943D7E wave 1.3).
 
 * Flags
 :PROPERTIES:

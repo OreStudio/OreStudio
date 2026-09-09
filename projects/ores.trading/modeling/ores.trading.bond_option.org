@@ -14,9 +14,12 @@
 #+updated: 2026-09-09
 
 One row per bond option trade, keyed by the instrument row it
-extends. Probe org for the fact-table entity shape (wave 1.2 of the
-bond relational codegen task); the column set is minimal until wave
-1.3 fixes the fact columns from the XSD product structures.
+extends. The column set is final: the ER row names option_type and
+option_strike, which map from =optionData= and the =strikeGroup= of
+=bondOptionData= (instruments.xsd lines 2273-2282). The exercise
+dates have no destination in the nine tables; they land as schedule
+rows in the shared instrument-keyed schedule tables of the parent
+story (recorded scope limit, task D7943D7E wave 1.3).
 
 * Flags
 :PROPERTIES:

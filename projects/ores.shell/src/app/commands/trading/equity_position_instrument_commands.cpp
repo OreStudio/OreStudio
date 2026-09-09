@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/equity_position_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,40 +50,38 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty() || value == "-")
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void equity_position_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+                                                            nats_client& session,
+                                                            pagination_context& pagination) {
     auto equity_position_instruments_menu =
         std::make_unique<cli::Menu>("equity_position_instruments");
 
     equity_position_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_equity_position_instruments(std::ref(out), std::ref(session),
-                                                    std::ref(pagination));
+            process_get_equity_position_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Equity position instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("equity_position_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_equity_position_instruments(out, session,
-                                                                                  pagination);
-                                      });
+    pagination.register_list_callback(
+        "equity_position_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_equity_position_instruments(out, session, pagination);
+        });
 
     equity_position_instruments_menu->Insert(
         "add",
@@ -109,7 +107,8 @@ void equity_position_instrument_commands::register_commands(cli::Menu& root_menu
                                                    std::move(change_reason_code),
                                                    std::move(change_commentary));
         },
-        "Add an Equity position instrument (trade_type_code underlying_name currency quantity price "
+        "Add an Equity position instrument (trade_type_code underlying_name currency quantity "
+        "price "
         "[option_data_json] [description] change_reason_code \"change_commentary\")",
         {"trade_type_code underlying_name currency quantity price option_data_json description "
          "change_reason_code change_commentary"});
@@ -117,8 +116,8 @@ void equity_position_instrument_commands::register_commands(cli::Menu& root_menu
     equity_position_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_equity_position_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_equity_position_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Equity position instrument by instrument id",
         {"instrument_id"});
@@ -126,8 +125,8 @@ void equity_position_instrument_commands::register_commands(cli::Menu& root_menu
     equity_position_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_equity_position_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_equity_position_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Equity position instrument's version history",
         {"instrument_id"});
@@ -230,8 +229,8 @@ void equity_position_instrument_commands::process_add_equity_position_instrument
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Equity position instrument.";
         out << "✓ Equity position instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Equity position instrument: " << msg;
@@ -263,7 +262,8 @@ void equity_position_instrument_commands::process_delete_equity_position_instrum
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Equity position instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete Equity position instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete Equity position instrument: " << result->message
+                  << std::endl;
     }
 }
 
@@ -273,7 +273,8 @@ void equity_position_instrument_commands::process_get_equity_position_instrument
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get Equity position instrument history." << std::endl;
+        fail(out) << "You must be logged in to get Equity position instrument history."
+                  << std::endl;
         return;
     }
 

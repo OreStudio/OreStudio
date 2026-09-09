@@ -40,7 +40,8 @@ namespace ores::shell::app::commands {
 class ir_curve_generation_config_process_parameter_value_commands {
 private:
     inline static std::string_view logger_name =
-        "ores.shell.app.commands.synthetic.ir_curve_generation_config_process_parameter_value_commands";
+        "ores.shell.app.commands.synthetic.ir_curve_generation_config_process_parameter_value_"
+        "commands";
 
     static auto& lg() {
         using namespace ores::logging;
@@ -59,34 +60,36 @@ public:
     /**
      * @brief Process a get ir_curve_generation_config_process_parameter_values request.
      */
-    static void process_get_ir_curve_generation_config_process_parameter_values(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+    static void process_get_ir_curve_generation_config_process_parameter_values(
+        std::ostream& out,
+        ores::nats::service::nats_client& session,
+        pagination_context& pagination);
 
     /**
      * @brief Process an add ir_curve_generation_config_process_parameter_value request.
      */
-    static void process_add_ir_curve_generation_config_process_parameter_value(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                      std::string s_config_id,
-                                      std::string s_parameter_definition_id,
-                                      std::string s_parameter_value,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+    static void process_add_ir_curve_generation_config_process_parameter_value(
+        std::ostream& out,
+        ores::nats::service::nats_client& session,
+        std::string s_config_id,
+        std::string s_parameter_definition_id,
+        std::string s_parameter_value,
+        std::string change_reason_code,
+        std::string change_commentary);
 
     /**
      * @brief Process a delete ir_curve_generation_config_process_parameter_value request.
      */
-    static void process_delete_ir_curve_generation_config_process_parameter_value(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string id);
+    static void process_delete_ir_curve_generation_config_process_parameter_value(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string id);
 
     /**
      * @brief Process a get ir_curve_generation_config_process_parameter_value history request.
      */
-    static void process_get_ir_curve_generation_config_process_parameter_value_history(std::ostream& out,
-                                           ores::nats::service::nats_client& session,
-                                           const std::vector<std::string>& args);
+    static void process_get_ir_curve_generation_config_process_parameter_value_history(
+        std::ostream& out,
+        ores::nats::service::nats_client& session,
+        const std::vector<std::string>& args);
 };
 
 } // namespace ores::shell::app::commands

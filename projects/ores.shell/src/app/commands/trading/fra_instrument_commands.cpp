@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,24 +52,21 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void fra_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto fra_instruments_menu =
-        std::make_unique<cli::Menu>("fra_instruments");
+                                                nats_client& session,
+                                                pagination_context& pagination) {
+    auto fra_instruments_menu = std::make_unique<cli::Menu>("fra_instruments");
 
     fra_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_fra_instruments(std::ref(out), std::ref(session),
-                                        std::ref(pagination));
+            process_get_fra_instruments(std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Forward rate agreement instruments from the server (paginated)");
 
     // Register list callback for navigation
     pagination.register_list_callback("fra_instruments",
                                       [&session, &pagination](std::ostream& out) {
-                                          process_get_fra_instruments(out, session,
-                                                                      pagination);
+                                          process_get_fra_instruments(out, session, pagination);
                                       });
 
     fra_instruments_menu->Insert(
@@ -106,29 +103,30 @@ void fra_instrument_commands::register_commands(cli::Menu& root_menu,
         {"trade_type_code start_date end_date currency rate_index long_short strike notional "
          "description change_reason_code change_commentary"});
 
-    fra_instruments_menu->Insert(
-        "delete",
-        [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_fra_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
-        },
-        "Delete an Forward rate agreement instrument by instrument id",
-        {"instrument_id"});
+    fra_instruments_menu->Insert("delete",
+                                 [&session](std::ostream& out, std::string instrument_id) {
+                                     process_delete_fra_instrument(std::ref(out),
+                                                                   std::ref(session),
+                                                                   std::move(instrument_id));
+                                 },
+                                 "Delete an Forward rate agreement instrument by instrument id",
+                                 {"instrument_id"});
 
-    fra_instruments_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::string instrument_id) {
-            process_get_fra_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
-        },
-        "Show an Forward rate agreement instrument's version history",
-        {"instrument_id"});
+    fra_instruments_menu->Insert("history",
+                                 [&session](std::ostream& out, std::string instrument_id) {
+                                     process_get_fra_instrument_history(std::ref(out),
+                                                                        std::ref(session),
+                                                                        std::move(instrument_id));
+                                 },
+                                 "Show an Forward rate agreement instrument's version history",
+                                 {"instrument_id"});
 
     root_menu.Insert(std::move(fra_instruments_menu));
 }
 
-void fra_instrument_commands::process_get_fra_instruments(
-    std::ostream& out, nats_client& session, pagination_context& pagination) {
+void fra_instrument_commands::process_get_fra_instruments(std::ostream& out,
+                                                          nats_client& session,
+                                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get Forward rate agreement instruments request.";
 
     auto& state = pagination.state_for("fra_instruments");
@@ -145,8 +143,7 @@ void fra_instrument_commands::process_get_fra_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("fra_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Forward rate agreement instruments.";
     out << result->instruments << std::endl;
 
@@ -156,29 +153,28 @@ void fra_instrument_commands::process_get_fra_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
-void fra_instrument_commands::process_add_fra_instrument(
-    std::ostream& out,
-    nats_client& session,
-    std::string trade_type_code,
-    std::string start_date,
-    std::string end_date,
-    std::string currency,
-    std::string rate_index,
-    std::string long_short,
-    double strike,
-    double notional,
-    std::string description,
-    std::string change_reason_code,
-    std::string change_commentary) {
+void fra_instrument_commands::process_add_fra_instrument(std::ostream& out,
+                                                         nats_client& session,
+                                                         std::string trade_type_code,
+                                                         std::string start_date,
+                                                         std::string end_date,
+                                                         std::string currency,
+                                                         std::string rate_index,
+                                                         std::string long_short,
+                                                         double strike,
+                                                         double notional,
+                                                         std::string description,
+                                                         std::string change_reason_code,
+                                                         std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Forward rate agreement instrument request.";
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add an Forward rate agreement instrument." << std::endl;
+        fail(out) << "You must be logged in to add an Forward rate agreement instrument."
+                  << std::endl;
         return;
     }
 
@@ -220,8 +216,8 @@ void fra_instrument_commands::process_add_fra_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Forward rate agreement instrument.";
         out << "✓ Forward rate agreement instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Forward rate agreement instrument: " << msg;
@@ -229,13 +225,15 @@ void fra_instrument_commands::process_add_fra_instrument(
     }
 }
 
-void fra_instrument_commands::process_delete_fra_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete Forward rate agreement instrument request for: "
-                               << instrument_id;
+void fra_instrument_commands::process_delete_fra_instrument(std::ostream& out,
+                                                            nats_client& session,
+                                                            std::string instrument_id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating delete Forward rate agreement instrument request for: " << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete an Forward rate agreement instrument." << std::endl;
+        fail(out) << "You must be logged in to delete an Forward rate agreement instrument."
+                  << std::endl;
         return;
     }
 
@@ -253,26 +251,28 @@ void fra_instrument_commands::process_delete_fra_instrument(
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Forward rate agreement instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete Forward rate agreement instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete Forward rate agreement instrument: " << result->message
+                  << std::endl;
     }
 }
 
-void fra_instrument_commands::process_get_fra_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void fra_instrument_commands::process_get_fra_instrument_history(std::ostream& out,
+                                                                 nats_client& session,
+                                                                 std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get Forward rate agreement instrument history for: "
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get Forward rate agreement instrument history." << std::endl;
+        fail(out) << "You must be logged in to get Forward rate agreement instrument history."
+                  << std::endl;
         return;
     }
 
     trading::messaging::get_fra_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_fra_instrument_history_response>(
-            out, session, "trading.v1.fra_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_fra_instrument_history_response>(
+        out, session, "trading.v1.fra_instruments.history", req);
     if (!result)
         return;
 

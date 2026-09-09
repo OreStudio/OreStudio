@@ -39,8 +39,7 @@ namespace ores::shell::app::commands {
  */
 class trade_commands {
 private:
-    inline static std::string_view logger_name =
-        "ores.shell.app.commands.trading.trade_commands";
+    inline static std::string_view logger_name = "ores.shell.app.commands.trading.trade_commands";
 
     static auto& lg() {
         using namespace ores::logging;

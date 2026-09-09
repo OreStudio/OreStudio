@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,40 +50,37 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<int> parse_optional_int(std::string_view value,
-                                      std::string_view name) {
+std::optional<int> parse_optional_int(std::string_view value, std::string_view name) {
     if (value.empty() || value == "-")
         return std::nullopt;
     try {
         return std::stoi(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
-void balance_guaranteed_swap_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+void balance_guaranteed_swap_instrument_commands::register_commands(
+    cli::Menu& root_menu, nats_client& session, pagination_context& pagination) {
     auto balance_guaranteed_swap_instruments_menu =
         std::make_unique<cli::Menu>("balance_guaranteed_swap_instruments");
 
     balance_guaranteed_swap_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_balance_guaranteed_swap_instruments(std::ref(out), std::ref(session),
-                                                            std::ref(pagination));
+            process_get_balance_guaranteed_swap_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Balance guaranteed swap instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("balance_guaranteed_swap_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_balance_guaranteed_swap_instruments(out, session,
-                                                                                          pagination);
-                                      });
+    pagination.register_list_callback(
+        "balance_guaranteed_swap_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_balance_guaranteed_swap_instruments(out, session, pagination);
+        });
 
     balance_guaranteed_swap_instruments_menu->Insert(
         "add",
@@ -113,8 +110,8 @@ void balance_guaranteed_swap_instrument_commands::register_commands(cli::Menu& r
     balance_guaranteed_swap_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_balance_guaranteed_swap_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_balance_guaranteed_swap_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Balance guaranteed swap instrument by instrument id",
         {"instrument_id"});
@@ -122,8 +119,8 @@ void balance_guaranteed_swap_instrument_commands::register_commands(cli::Menu& r
     balance_guaranteed_swap_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_balance_guaranteed_swap_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_balance_guaranteed_swap_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Balance guaranteed swap instrument's version history",
         {"instrument_id"});
@@ -141,16 +138,16 @@ void balance_guaranteed_swap_instrument_commands::process_get_balance_guaranteed
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<trading::messaging::get_balance_guaranteed_swap_instruments_response>(
-        out, session, "trading.v1.balance_guaranteed_swap_instruments.list", req);
+    auto result =
+        do_auth_request<trading::messaging::get_balance_guaranteed_swap_instruments_response>(
+            out, session, "trading.v1.balance_guaranteed_swap_instruments.list", req);
     if (!result)
         return;
 
     state.total_count = result->total_available_count;
     pagination.set_last_entity("balance_guaranteed_swap_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Balance guaranteed swap instruments.";
     out << result->instruments << std::endl;
 
@@ -160,9 +157,8 @@ void balance_guaranteed_swap_instrument_commands::process_get_balance_guaranteed
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
 void balance_guaranteed_swap_instrument_commands::process_add_balance_guaranteed_swap_instrument(
@@ -178,7 +174,8 @@ void balance_guaranteed_swap_instrument_commands::process_add_balance_guaranteed
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Balance guaranteed swap instrument request.";
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add an Balance guaranteed swap instrument." << std::endl;
+        fail(out) << "You must be logged in to add an Balance guaranteed swap instrument."
+                  << std::endl;
         return;
     }
 
@@ -212,18 +209,20 @@ void balance_guaranteed_swap_instrument_commands::process_add_balance_guaranteed
     v.audit.change_reason_code = std::move(change_reason_code);
     v.audit.change_commentary = std::move(change_commentary);
 
-    auto req = trading::messaging::save_balance_guaranteed_swap_instrument_request{.data = std::move(v)};
+    auto req =
+        trading::messaging::save_balance_guaranteed_swap_instrument_request{.data = std::move(v)};
 
-    auto result = do_auth_request<trading::messaging::save_balance_guaranteed_swap_instrument_response>(
-        out, session, "trading.v1.balance_guaranteed_swap_instruments.save", req);
+    auto result =
+        do_auth_request<trading::messaging::save_balance_guaranteed_swap_instrument_response>(
+            out, session, "trading.v1.balance_guaranteed_swap_instruments.save", req);
     if (!result)
         return;
 
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Balance guaranteed swap instrument.";
         out << "✓ Balance guaranteed swap instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Balance guaranteed swap instrument: " << msg;
@@ -233,19 +232,21 @@ void balance_guaranteed_swap_instrument_commands::process_add_balance_guaranteed
 
 void balance_guaranteed_swap_instrument_commands::process_delete_balance_guaranteed_swap_instrument(
     std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete Balance guaranteed swap instrument request for: "
-                               << instrument_id;
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating delete Balance guaranteed swap instrument request for: " << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete an Balance guaranteed swap instrument." << std::endl;
+        fail(out) << "You must be logged in to delete an Balance guaranteed swap instrument."
+                  << std::endl;
         return;
     }
 
     trading::messaging::delete_balance_guaranteed_swap_instrument_request req;
     req.ids = {std::move(instrument_id)};
 
-    auto result = do_auth_request<trading::messaging::delete_balance_guaranteed_swap_instrument_response>(
-        out, session, "trading.v1.balance_guaranteed_swap_instruments.delete", req);
+    auto result =
+        do_auth_request<trading::messaging::delete_balance_guaranteed_swap_instrument_response>(
+            out, session, "trading.v1.balance_guaranteed_swap_instruments.delete", req);
     if (!result)
         return;
 
@@ -255,26 +256,30 @@ void balance_guaranteed_swap_instrument_commands::process_delete_balance_guarant
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Balance guaranteed swap instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete Balance guaranteed swap instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete Balance guaranteed swap instrument: " << result->message
+                  << std::endl;
     }
 }
 
-void balance_guaranteed_swap_instrument_commands::process_get_balance_guaranteed_swap_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void balance_guaranteed_swap_instrument_commands::
+    process_get_balance_guaranteed_swap_instrument_history(std::ostream& out,
+                                                           nats_client& session,
+                                                           std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get Balance guaranteed swap instrument history for: "
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get Balance guaranteed swap instrument history." << std::endl;
+        fail(out) << "You must be logged in to get Balance guaranteed swap instrument history."
+                  << std::endl;
         return;
     }
 
     trading::messaging::get_balance_guaranteed_swap_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_balance_guaranteed_swap_instrument_history_response>(
-            out, session, "trading.v1.balance_guaranteed_swap_instruments.history", req);
+    auto result = do_auth_request<
+        trading::messaging::get_balance_guaranteed_swap_instrument_history_response>(
+        out, session, "trading.v1.balance_guaranteed_swap_instruments.history", req);
     if (!result)
         return;
 

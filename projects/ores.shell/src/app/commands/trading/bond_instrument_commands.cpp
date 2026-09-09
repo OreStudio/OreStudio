@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,39 +50,35 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty() || value == "-")
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void bond_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto bond_instruments_menu =
-        std::make_unique<cli::Menu>("bond_instruments");
+                                                 nats_client& session,
+                                                 pagination_context& pagination) {
+    auto bond_instruments_menu = std::make_unique<cli::Menu>("bond_instruments");
 
     bond_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_bond_instruments(std::ref(out), std::ref(session),
-                                         std::ref(pagination));
+            process_get_bond_instruments(std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Bond instruments from the server (paginated)");
 
     // Register list callback for navigation
     pagination.register_list_callback("bond_instruments",
                                       [&session, &pagination](std::ostream& out) {
-                                          process_get_bond_instruments(out, session,
-                                                                       pagination);
+                                          process_get_bond_instruments(out, session, pagination);
                                       });
 
     bond_instruments_menu->Insert(
@@ -143,29 +139,30 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu,
          "trs_funding_leg_code option_type option_expiry_date option_strike ascot_option_type "
          "description change_reason_code change_commentary"});
 
-    bond_instruments_menu->Insert(
-        "delete",
-        [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_bond_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
-        },
-        "Delete an Bond instrument by instrument id",
-        {"instrument_id"});
+    bond_instruments_menu->Insert("delete",
+                                  [&session](std::ostream& out, std::string instrument_id) {
+                                      process_delete_bond_instrument(std::ref(out),
+                                                                     std::ref(session),
+                                                                     std::move(instrument_id));
+                                  },
+                                  "Delete an Bond instrument by instrument id",
+                                  {"instrument_id"});
 
-    bond_instruments_menu->Insert(
-        "history",
-        [&session](std::ostream& out, std::string instrument_id) {
-            process_get_bond_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
-        },
-        "Show an Bond instrument's version history",
-        {"instrument_id"});
+    bond_instruments_menu->Insert("history",
+                                  [&session](std::ostream& out, std::string instrument_id) {
+                                      process_get_bond_instrument_history(std::ref(out),
+                                                                          std::ref(session),
+                                                                          std::move(instrument_id));
+                                  },
+                                  "Show an Bond instrument's version history",
+                                  {"instrument_id"});
 
     root_menu.Insert(std::move(bond_instruments_menu));
 }
 
-void bond_instrument_commands::process_get_bond_instruments(
-    std::ostream& out, nats_client& session, pagination_context& pagination) {
+void bond_instrument_commands::process_get_bond_instruments(std::ostream& out,
+                                                            nats_client& session,
+                                                            pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get Bond instruments request.";
 
     auto& state = pagination.state_for("bond_instruments");
@@ -182,8 +179,7 @@ void bond_instrument_commands::process_get_bond_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("bond_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Bond instruments.";
     out << result->instruments << std::endl;
 
@@ -193,35 +189,33 @@ void bond_instrument_commands::process_get_bond_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
-void bond_instrument_commands::process_add_bond_instrument(
-    std::ostream& out,
-    nats_client& session,
-    std::string trade_type_code,
-    std::string security_id,
-    std::string issuer,
-    std::string currency,
-    double face_value,
-    double coupon_rate,
-    std::string coupon_frequency_code,
-    std::string day_count_code,
-    std::string issue_date,
-    std::string maturity_date,
-    std::string call_date,
-    std::string future_expiry_date,
-    std::string trs_return_type,
-    std::string trs_funding_leg_code,
-    std::string option_type,
-    std::string option_expiry_date,
-    std::string option_strike,
-    std::string ascot_option_type,
-    std::string description,
-    std::string change_reason_code,
-    std::string change_commentary) {
+void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
+                                                           nats_client& session,
+                                                           std::string trade_type_code,
+                                                           std::string security_id,
+                                                           std::string issuer,
+                                                           std::string currency,
+                                                           double face_value,
+                                                           double coupon_rate,
+                                                           std::string coupon_frequency_code,
+                                                           std::string day_count_code,
+                                                           std::string issue_date,
+                                                           std::string maturity_date,
+                                                           std::string call_date,
+                                                           std::string future_expiry_date,
+                                                           std::string trs_return_type,
+                                                           std::string trs_funding_leg_code,
+                                                           std::string option_type,
+                                                           std::string option_expiry_date,
+                                                           std::string option_strike,
+                                                           std::string ascot_option_type,
+                                                           std::string description,
+                                                           std::string change_reason_code,
+                                                           std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Bond instrument request.";
 
     if (!session.is_logged_in()) {
@@ -252,9 +246,11 @@ void bond_instrument_commands::process_add_bond_instrument(
     v.terms.issue_date = std::move(issue_date);
     v.terms.maturity_date = std::move(maturity_date);
     v.features.call_date = (call_date == "-") ? "" : std::move(call_date);
-    v.features.future_expiry_date = (future_expiry_date == "-") ? "" : std::move(future_expiry_date);
+    v.features.future_expiry_date =
+        (future_expiry_date == "-") ? "" : std::move(future_expiry_date);
     v.features.trs_return_type = (trs_return_type == "-") ? "" : std::move(trs_return_type);
-    v.features.trs_funding_leg_code = (trs_funding_leg_code == "-") ? "" : std::move(trs_funding_leg_code);
+    v.features.trs_funding_leg_code =
+        (trs_funding_leg_code == "-") ? "" : std::move(trs_funding_leg_code);
     v.option.option_type = (option_type == "-") ? "" : std::move(option_type);
     v.option.option_expiry_date = (option_expiry_date == "-") ? "" : std::move(option_expiry_date);
     v.option.ascot_option_type = (ascot_option_type == "-") ? "" : std::move(ascot_option_type);
@@ -283,8 +279,8 @@ void bond_instrument_commands::process_add_bond_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Bond instrument.";
         out << "✓ Bond instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Bond instrument: " << msg;
@@ -292,8 +288,9 @@ void bond_instrument_commands::process_add_bond_instrument(
     }
 }
 
-void bond_instrument_commands::process_delete_bond_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void bond_instrument_commands::process_delete_bond_instrument(std::ostream& out,
+                                                              nats_client& session,
+                                                              std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Bond instrument request for: "
                                << instrument_id;
 
@@ -314,16 +311,15 @@ void bond_instrument_commands::process_delete_bond_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Bond instrument.";
         out << "✓ Bond instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Bond instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Bond instrument: " << result->message;
         fail(out) << "Failed to delete Bond instrument: " << result->message << std::endl;
     }
 }
 
-void bond_instrument_commands::process_get_bond_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get Bond instrument history for: "
-                               << instrument_id;
+void bond_instrument_commands::process_get_bond_instrument_history(std::ostream& out,
+                                                                   nats_client& session,
+                                                                   std::string instrument_id) {
+    BOOST_LOG_SEV(lg(), debug) << "Initiating get Bond instrument history for: " << instrument_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to get Bond instrument history." << std::endl;
@@ -333,15 +329,13 @@ void bond_instrument_commands::process_get_bond_instrument_history(
     trading::messaging::get_bond_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_bond_instrument_history_response>(
-            out, session, "trading.v1.bond_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_bond_instrument_history_response>(
+        out, session, "trading.v1.bond_instruments.history", req);
     if (!result)
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get Bond instrument history: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get Bond instrument history: " << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

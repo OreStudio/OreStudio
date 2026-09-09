@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/fx_asian_forward_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,40 +50,38 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty())
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void fx_asian_forward_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+                                                             nats_client& session,
+                                                             pagination_context& pagination) {
     auto fx_asian_forward_instruments_menu =
         std::make_unique<cli::Menu>("fx_asian_forward_instruments");
 
     fx_asian_forward_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_fx_asian_forward_instruments(std::ref(out), std::ref(session),
-                                                     std::ref(pagination));
+            process_get_fx_asian_forward_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve FX asian forward instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("fx_asian_forward_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_fx_asian_forward_instruments(out, session,
-                                                                                   pagination);
-                                      });
+    pagination.register_list_callback(
+        "fx_asian_forward_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_fx_asian_forward_instruments(out, session, pagination);
+        });
 
     fx_asian_forward_instruments_menu->Insert(
         "add",
@@ -132,8 +130,8 @@ void fx_asian_forward_instrument_commands::register_commands(cli::Menu& root_men
     fx_asian_forward_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_fx_asian_forward_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_fx_asian_forward_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an FX asian forward instrument by instrument id",
         {"instrument_id"});
@@ -141,8 +139,8 @@ void fx_asian_forward_instrument_commands::register_commands(cli::Menu& root_men
     fx_asian_forward_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_fx_asian_forward_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_fx_asian_forward_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an FX asian forward instrument's version history",
         {"instrument_id"});
@@ -257,8 +255,8 @@ void fx_asian_forward_instrument_commands::process_add_fx_asian_forward_instrume
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added FX asian forward instrument.";
         out << "✓ FX asian forward instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add FX asian forward instrument: " << msg;
@@ -290,7 +288,8 @@ void fx_asian_forward_instrument_commands::process_delete_fx_asian_forward_instr
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete FX asian forward instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete FX asian forward instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete FX asian forward instrument: " << result->message
+                  << std::endl;
     }
 }
 
@@ -300,7 +299,8 @@ void fx_asian_forward_instrument_commands::process_get_fx_asian_forward_instrume
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get FX asian forward instrument history." << std::endl;
+        fail(out) << "You must be logged in to get FX asian forward instrument history."
+                  << std::endl;
         return;
     }
 

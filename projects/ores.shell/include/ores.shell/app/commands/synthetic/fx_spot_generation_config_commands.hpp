@@ -60,44 +60,45 @@ public:
      * @brief Process a get fx_spot_generation_configs request.
      */
     static void process_get_fx_spot_generation_configs(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+                                                       ores::nats::service::nats_client& session,
+                                                       pagination_context& pagination);
 
     /**
      * @brief Process an add fx_spot_generation_config request.
      */
     static void process_add_fx_spot_generation_config(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                      std::string s_config_id,
-                                      std::string s_base_currency_code,
-                                      std::string s_quote_currency_code,
-                                      std::string s_source_name,
-                                      std::string s_ore_key,
-                                      std::string s_price_source,
-                                      std::string s_gmm_initial_price,
-                                      std::string s_ticks_per_hour,
-                                      std::string s_process_type,
-                                      std::string s_enabled,
-                                      std::string s_auto_start,
-                                      std::string s_vintage_source,
-                                      std::string s_vintage_date,
-                                      std::string s_folder_id,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+                                                      ores::nats::service::nats_client& session,
+                                                      std::string s_config_id,
+                                                      std::string s_base_currency_code,
+                                                      std::string s_quote_currency_code,
+                                                      std::string s_source_name,
+                                                      std::string s_ore_key,
+                                                      std::string s_price_source,
+                                                      std::string s_gmm_initial_price,
+                                                      std::string s_ticks_per_hour,
+                                                      std::string s_process_type,
+                                                      std::string s_enabled,
+                                                      std::string s_auto_start,
+                                                      std::string s_vintage_source,
+                                                      std::string s_vintage_date,
+                                                      std::string s_folder_id,
+                                                      std::string change_reason_code,
+                                                      std::string change_commentary);
 
     /**
      * @brief Process a delete fx_spot_generation_config request.
      */
     static void process_delete_fx_spot_generation_config(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string id);
+                                                         ores::nats::service::nats_client& session,
+                                                         std::string id);
 
     /**
      * @brief Process a get fx_spot_generation_config history request.
      */
-    static void process_get_fx_spot_generation_config_history(std::ostream& out,
-                                           ores::nats::service::nats_client& session,
-                                           const std::vector<std::string>& args);
+    static void
+    process_get_fx_spot_generation_config_history(std::ostream& out,
+                                                  ores::nats::service::nats_client& session,
+                                                  const std::vector<std::string>& args);
 };
 
 } // namespace ores::shell::app::commands

@@ -59,42 +59,44 @@ public:
     /**
      * @brief Process a get yield_curve_process_parameter_definitions request.
      */
-    static void process_get_yield_curve_process_parameter_definitions(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+    static void
+    process_get_yield_curve_process_parameter_definitions(std::ostream& out,
+                                                          ores::nats::service::nats_client& session,
+                                                          pagination_context& pagination);
 
     /**
      * @brief Process an add yield_curve_process_parameter_definition request.
      */
-    static void process_add_yield_curve_process_parameter_definition(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                      std::string s_process_type_code,
-                                      std::string s_parameter_name,
-                                      std::string s_display_name,
-                                      std::string s_symbol,
-                                      std::string s_short_label,
-                                      std::string s_description,
-                                      std::string s_data_type,
-                                      std::string s_default_value,
-                                      std::string s_min_value,
-                                      std::string s_max_value,
-                                      std::string s_display_order,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+    static void
+    process_add_yield_curve_process_parameter_definition(std::ostream& out,
+                                                         ores::nats::service::nats_client& session,
+                                                         std::string s_process_type_code,
+                                                         std::string s_parameter_name,
+                                                         std::string s_display_name,
+                                                         std::string s_symbol,
+                                                         std::string s_short_label,
+                                                         std::string s_description,
+                                                         std::string s_data_type,
+                                                         std::string s_default_value,
+                                                         std::string s_min_value,
+                                                         std::string s_max_value,
+                                                         std::string s_display_order,
+                                                         std::string change_reason_code,
+                                                         std::string change_commentary);
 
     /**
      * @brief Process a delete yield_curve_process_parameter_definition request.
      */
-    static void process_delete_yield_curve_process_parameter_definition(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string id);
+    static void process_delete_yield_curve_process_parameter_definition(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string id);
 
     /**
      * @brief Process a get yield_curve_process_parameter_definition history request.
      */
-    static void process_get_yield_curve_process_parameter_definition_history(std::ostream& out,
-                                           ores::nats::service::nats_client& session,
-                                           const std::vector<std::string>& args);
+    static void process_get_yield_curve_process_parameter_definition_history(
+        std::ostream& out,
+        ores::nats::service::nats_client& session,
+        const std::vector<std::string>& args);
 };
 
 } // namespace ores::shell::app::commands

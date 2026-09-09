@@ -27,8 +27,8 @@
 #include "ores.synthetic.api/messaging/yield_curve_process_parameter_definition_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <functional>
 #include <optional>
 #include <ostream>
@@ -59,23 +59,24 @@ bool parse_flag(const std::string& value, bool& out) {
 
 } // namespace
 
-void yield_curve_process_parameter_definition_commands::register_commands(cli::Menu& root_menu,
-                                        nats_client& session,
-                                        pagination_context& pagination) {
-    auto yield_curve_process_parameter_definitions_menu = std::make_unique<cli::Menu>("yield_curve_process_parameter_definitions");
+void yield_curve_process_parameter_definition_commands::register_commands(
+    cli::Menu& root_menu, nats_client& session, pagination_context& pagination) {
+    auto yield_curve_process_parameter_definitions_menu =
+        std::make_unique<cli::Menu>("yield_curve_process_parameter_definitions");
 
     yield_curve_process_parameter_definitions_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_yield_curve_process_parameter_definitions(std::ref(out), std::ref(session), std::ref(pagination));
+            process_get_yield_curve_process_parameter_definitions(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve yield_curve_process_parameter_definitions from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("yield_curve_process_parameter_definitions",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_yield_curve_process_parameter_definitions(out, session, pagination);
-                                      });
+    pagination.register_list_callback(
+        "yield_curve_process_parameter_definitions", [&session, &pagination](std::ostream& out) {
+            process_get_yield_curve_process_parameter_definitions(out, session, pagination);
+        });
 
     yield_curve_process_parameter_definitions_menu->Insert(
         "add",
@@ -94,46 +95,53 @@ void yield_curve_process_parameter_definition_commands::register_commands(cli::M
                    std::string change_reason_code,
                    std::string change_commentary) {
             process_add_yield_curve_process_parameter_definition(std::ref(out),
-                               std::ref(session),
-                               std::move(s_process_type_code),
-                               std::move(s_parameter_name),
-                               std::move(s_display_name),
-                               std::move(s_symbol),
-                               std::move(s_short_label),
-                               std::move(s_description),
-                               std::move(s_data_type),
-                               std::move(s_default_value),
-                               std::move(s_min_value),
-                               std::move(s_max_value),
-                               std::move(s_display_order),
-                               std::move(change_reason_code),
-                               std::move(change_commentary));
+                                                                 std::ref(session),
+                                                                 std::move(s_process_type_code),
+                                                                 std::move(s_parameter_name),
+                                                                 std::move(s_display_name),
+                                                                 std::move(s_symbol),
+                                                                 std::move(s_short_label),
+                                                                 std::move(s_description),
+                                                                 std::move(s_data_type),
+                                                                 std::move(s_default_value),
+                                                                 std::move(s_min_value),
+                                                                 std::move(s_max_value),
+                                                                 std::move(s_display_order),
+                                                                 std::move(change_reason_code),
+                                                                 std::move(change_commentary));
         },
-        "Add a yield_curve_process_parameter_definition (<process_type_code> <parameter_name> <display_name> <symbol> <short_label> <description> <data_type> <default_value> <min_value> <max_value> <display_order> <reason_code> \"commentary\")");
+        "Add a yield_curve_process_parameter_definition (<process_type_code> <parameter_name> "
+        "<display_name> <symbol> <short_label> <description> <data_type> <default_value> "
+        "<min_value> <max_value> <display_order> <reason_code> \"commentary\")");
 
     yield_curve_process_parameter_definitions_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string id) {
-            process_delete_yield_curve_process_parameter_definition(std::ref(out), std::ref(session), std::move(id));
+            process_delete_yield_curve_process_parameter_definition(
+                std::ref(out), std::ref(session), std::move(id));
         },
         "Delete a yield_curve_process_parameter_definition by id");
 
     yield_curve_process_parameter_definitions_menu->Insert(
         "history",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            process_get_yield_curve_process_parameter_definition_history(std::ref(out), std::ref(session), args);
+            process_get_yield_curve_process_parameter_definition_history(
+                std::ref(out), std::ref(session), args);
         },
-        "Show a yield_curve_process_parameter_definition's version history (--diff for a unified diff, --version <n> to "
+        "Show a yield_curve_process_parameter_definition's version history (--diff for a unified "
+        "diff, --version <n> to "
         "pick one)",
         {"id [--diff] [--version <n>]"});
 
     root_menu.Insert(std::move(yield_curve_process_parameter_definitions_menu));
 }
 
-void yield_curve_process_parameter_definition_commands::process_get_yield_curve_process_parameter_definitions(std::ostream& out,
-                                           nats_client& session,
-                                           pagination_context& pagination) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get yield_curve_process_parameter_definitions request.";
+void yield_curve_process_parameter_definition_commands::
+    process_get_yield_curve_process_parameter_definitions(std::ostream& out,
+                                                          nats_client& session,
+                                                          pagination_context& pagination) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating get yield_curve_process_parameter_definitions request.";
 
     auto& state = pagination.state_for("yield_curve_process_parameter_definitions");
 
@@ -141,7 +149,8 @@ void yield_curve_process_parameter_definition_commands::process_get_yield_curve_
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<synthetic::messaging::get_yield_curve_process_parameter_definitions_response>(
+    auto result = do_auth_request<
+        synthetic::messaging::get_yield_curve_process_parameter_definitions_response>(
         out, session, "synthetic.v1.yield_curve_process_parameter_definitions.list", req);
     if (!result)
         return;
@@ -159,30 +168,33 @@ void yield_curve_process_parameter_definition_commands::process_get_yield_curve_
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->parameter_definitions.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " ("
+        << result->parameter_definitions.size() << " of " << state.total_count << " total)"
+        << std::endl;
 }
 
-void yield_curve_process_parameter_definition_commands::process_add_yield_curve_process_parameter_definition(std::ostream& out,
-                                         nats_client& session
-                                         ,
-                                   std::string s_process_type_code,
-                                   std::string s_parameter_name,
-                                   std::string s_display_name,
-                                   std::string s_symbol,
-                                   std::string s_short_label,
-                                   std::string s_description,
-                                   std::string s_data_type,
-                                   std::string s_default_value,
-                                   std::string s_min_value,
-                                   std::string s_max_value,
-                                   std::string s_display_order,
-                                   std::string change_reason_code,
-                                   std::string change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add yield_curve_process_parameter_definition request.";
+void yield_curve_process_parameter_definition_commands::
+    process_add_yield_curve_process_parameter_definition(std::ostream& out,
+                                                         nats_client& session,
+                                                         std::string s_process_type_code,
+                                                         std::string s_parameter_name,
+                                                         std::string s_display_name,
+                                                         std::string s_symbol,
+                                                         std::string s_short_label,
+                                                         std::string s_description,
+                                                         std::string s_data_type,
+                                                         std::string s_default_value,
+                                                         std::string s_min_value,
+                                                         std::string s_max_value,
+                                                         std::string s_display_order,
+                                                         std::string change_reason_code,
+                                                         std::string change_commentary) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating add yield_curve_process_parameter_definition request.";
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add a yield_curve_process_parameter_definition." << std::endl;
+        fail(out) << "You must be logged in to add a yield_curve_process_parameter_definition."
+                  << std::endl;
         return;
     }
 
@@ -257,9 +269,11 @@ void yield_curve_process_parameter_definition_commands::process_add_yield_curve_
     v.change_commentary = std::move(change_commentary);
     v.recorded_at = std::chrono::system_clock::now();
 
-    auto req = synthetic::messaging::save_yield_curve_process_parameter_definition_request::from(std::move(v));
+    auto req = synthetic::messaging::save_yield_curve_process_parameter_definition_request::from(
+        std::move(v));
 
-    auto result = do_auth_request<synthetic::messaging::save_yield_curve_process_parameter_definition_response>(
+    auto result = do_auth_request<
+        synthetic::messaging::save_yield_curve_process_parameter_definition_response>(
         out, session, "synthetic.v1.yield_curve_process_parameter_definitions.save", req);
     if (!result)
         return;
@@ -269,49 +283,60 @@ void yield_curve_process_parameter_definition_commands::process_add_yield_curve_
         out << "✓ Yield Curve Process Parameter Definition added successfully!" << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
-        BOOST_LOG_SEV(lg(), warn) << "Failed to add yield_curve_process_parameter_definition: " << msg;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to add yield_curve_process_parameter_definition: "
+                                  << msg;
         fail(out) << "Failed to add yield_curve_process_parameter_definition: " << msg << std::endl;
     }
 }
 
-void yield_curve_process_parameter_definition_commands::process_delete_yield_curve_process_parameter_definition(std::ostream& out,
-                                            nats_client& session,
-                                            std::string id) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating delete yield_curve_process_parameter_definition request for: " << id;
+void yield_curve_process_parameter_definition_commands::
+    process_delete_yield_curve_process_parameter_definition(std::ostream& out,
+                                                            nats_client& session,
+                                                            std::string id) {
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating delete yield_curve_process_parameter_definition request for: " << id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete a yield_curve_process_parameter_definition." << std::endl;
+        fail(out) << "You must be logged in to delete a yield_curve_process_parameter_definition."
+                  << std::endl;
         return;
     }
 
     synthetic::messaging::delete_yield_curve_process_parameter_definition_request req;
     req.ids = {std::move(id)};
 
-    auto result = do_auth_request<synthetic::messaging::delete_yield_curve_process_parameter_definition_response>(
+    auto result = do_auth_request<
+        synthetic::messaging::delete_yield_curve_process_parameter_definition_response>(
         out, session, "synthetic.v1.yield_curve_process_parameter_definitions.delete", req);
     if (!result)
         return;
 
     if (result->success) {
-        BOOST_LOG_SEV(lg(), info) << "Successfully deleted yield_curve_process_parameter_definition.";
+        BOOST_LOG_SEV(lg(), info)
+            << "Successfully deleted yield_curve_process_parameter_definition.";
         out << "✓ Yield Curve Process Parameter Definition deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete yield_curve_process_parameter_definition: " << result->message;
-        fail(out) << "Failed to delete yield_curve_process_parameter_definition: " << result->message << std::endl;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete yield_curve_process_parameter_definition: "
+                                  << result->message;
+        fail(out) << "Failed to delete yield_curve_process_parameter_definition: "
+                  << result->message << std::endl;
     }
 }
 
-void yield_curve_process_parameter_definition_commands::process_get_yield_curve_process_parameter_definition_history(std::ostream& out,
-                                                 nats_client& session,
-                                                 const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {{.name = "diff", .requires_value = false, .default_value = "false"},
-                                   {.name = "version", .requires_value = true, .default_value = ""}});
+void yield_curve_process_parameter_definition_commands::
+    process_get_yield_curve_process_parameter_definition_history(
+        std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
     if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: yield_curve_process_parameter_definitions history id [--diff] [--version <n>]" << std::endl;
+        fail(out) << "Usage: yield_curve_process_parameter_definitions history id [--diff] "
+                     "[--version <n>]"
+                  << std::endl;
         return;
     }
     auto key = parsed->positionals.front();
@@ -327,7 +352,11 @@ void yield_curve_process_parameter_definition_commands::process_get_yield_curve_
     }
 
     if (parsed->flag_set("diff")) {
-        render_history_diff(out, session, "ores.synthetic.yield_curve_process_parameter_definition", std::move(key), version);
+        render_history_diff(out,
+                            session,
+                            "ores.synthetic.yield_curve_process_parameter_definition",
+                            std::move(key),
+                            version);
         return;
     }
 
@@ -336,23 +365,29 @@ void yield_curve_process_parameter_definition_commands::process_get_yield_curve_
         return;
     }
 
-    BOOST_LOG_SEV(lg(), debug) << "Initiating get yield_curve_process_parameter_definition history for: " << key;
+    BOOST_LOG_SEV(lg(), debug)
+        << "Initiating get yield_curve_process_parameter_definition history for: " << key;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get yield_curve_process_parameter_definition history." << std::endl;
+        fail(out)
+            << "You must be logged in to get yield_curve_process_parameter_definition history."
+            << std::endl;
         return;
     }
 
     synthetic::messaging::get_yield_curve_process_parameter_definition_history_request req;
     req.id = key;
 
-    auto result = do_auth_request<synthetic::messaging::get_yield_curve_process_parameter_definition_history_response>(
+    auto result = do_auth_request<
+        synthetic::messaging::get_yield_curve_process_parameter_definition_history_response>(
         out, session, "synthetic.v1.yield_curve_process_parameter_definitions.history", req);
     if (!result)
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get yield_curve_process_parameter_definition history: " << result->message;
+        BOOST_LOG_SEV(lg(), warn)
+            << "Failed to get yield_curve_process_parameter_definition history: "
+            << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

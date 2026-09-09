@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,23 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto fx_forward_instruments_menu =
-        std::make_unique<cli::Menu>("fx_forward_instruments");
+                                                       nats_client& session,
+                                                       pagination_context& pagination) {
+    auto fx_forward_instruments_menu = std::make_unique<cli::Menu>("fx_forward_instruments");
 
     fx_forward_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_fx_forward_instruments(std::ref(out), std::ref(session),
-                                               std::ref(pagination));
+            process_get_fx_forward_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve FX forward instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("fx_forward_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_fx_forward_instruments(out, session,
-                                                                             pagination);
-                                      });
+    pagination.register_list_callback(
+        "fx_forward_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_fx_forward_instruments(out, session, pagination);
+        });
 
     fx_forward_instruments_menu->Insert(
         "add",
@@ -107,8 +105,8 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu,
     fx_forward_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_fx_forward_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_fx_forward_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an FX forward instrument by instrument id",
         {"instrument_id"});
@@ -116,8 +114,8 @@ void fx_forward_instrument_commands::register_commands(cli::Menu& root_menu,
     fx_forward_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_fx_forward_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_fx_forward_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an FX forward instrument's version history",
         {"instrument_id"});
@@ -143,8 +141,7 @@ void fx_forward_instrument_commands::process_get_fx_forward_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("fx_forward_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->fx_forward_instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->fx_forward_instruments.size()
                               << " FX forward instruments.";
     out << result->fx_forward_instruments << std::endl;
 
@@ -216,8 +213,8 @@ void fx_forward_instrument_commands::process_add_fx_forward_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added FX forward instrument.";
         out << "✓ FX forward instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add FX forward instrument: " << msg;
@@ -247,8 +244,7 @@ void fx_forward_instrument_commands::process_delete_fx_forward_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted FX forward instrument.";
         out << "✓ FX forward instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete FX forward instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete FX forward instrument: " << result->message;
         fail(out) << "Failed to delete FX forward instrument: " << result->message << std::endl;
     }
 }
@@ -266,9 +262,8 @@ void fx_forward_instrument_commands::process_get_fx_forward_instrument_history(
     trading::messaging::get_fx_forward_instrument_history_request req;
     req.instrument_id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_fx_forward_instrument_history_response>(
-            out, session, "trading.v1.fx_forward_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_fx_forward_instrument_history_response>(
+        out, session, "trading.v1.fx_forward_instruments.history", req);
     if (!result)
         return;
 

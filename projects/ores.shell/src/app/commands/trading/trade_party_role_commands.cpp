@@ -148,8 +148,7 @@ void trade_party_role_commands::process_add_trade_party_role(std::ostream& out,
                                                              std::string role,
                                                              std::string change_reason_code,
                                                              std::string change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add trade party role request for trade: "
-                               << trade_id;
+    BOOST_LOG_SEV(lg(), debug) << "Initiating add trade party role request for trade: " << trade_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to add a trade party role." << std::endl;
@@ -268,8 +267,7 @@ void trade_party_role_commands::process_get_trade_party_role_history(
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get trade party role history: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get trade party role history: " << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

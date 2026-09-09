@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,23 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void composite_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto composite_instruments_menu =
-        std::make_unique<cli::Menu>("composite_instruments");
+                                                      nats_client& session,
+                                                      pagination_context& pagination) {
+    auto composite_instruments_menu = std::make_unique<cli::Menu>("composite_instruments");
 
     composite_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_composite_instruments(std::ref(out), std::ref(session),
-                                              std::ref(pagination));
+            process_get_composite_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Composite instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("composite_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_composite_instruments(out, session,
-                                                                            pagination);
-                                      });
+    pagination.register_list_callback(
+        "composite_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_composite_instruments(out, session, pagination);
+        });
 
     composite_instruments_menu->Insert(
         "add",
@@ -93,8 +91,8 @@ void composite_instrument_commands::register_commands(cli::Menu& root_menu,
     composite_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_composite_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_composite_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Composite instrument by instrument id",
         {"instrument_id"});
@@ -102,8 +100,8 @@ void composite_instrument_commands::register_commands(cli::Menu& root_menu,
     composite_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_composite_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_composite_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Composite instrument's version history",
         {"instrument_id"});
@@ -129,8 +127,7 @@ void composite_instrument_commands::process_get_composite_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("composite_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Composite instruments.";
     out << result->instruments << std::endl;
 
@@ -140,9 +137,8 @@ void composite_instrument_commands::process_get_composite_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
 void composite_instrument_commands::process_add_composite_instrument(
@@ -190,8 +186,8 @@ void composite_instrument_commands::process_add_composite_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Composite instrument.";
         out << "✓ Composite instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Composite instrument: " << msg;
@@ -199,8 +195,9 @@ void composite_instrument_commands::process_add_composite_instrument(
     }
 }
 
-void composite_instrument_commands::process_delete_composite_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void composite_instrument_commands::process_delete_composite_instrument(std::ostream& out,
+                                                                        nats_client& session,
+                                                                        std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Composite instrument request for: "
                                << instrument_id;
 
@@ -221,8 +218,7 @@ void composite_instrument_commands::process_delete_composite_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Composite instrument.";
         out << "✓ Composite instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Composite instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Composite instrument: " << result->message;
         fail(out) << "Failed to delete Composite instrument: " << result->message << std::endl;
     }
 }
@@ -240,9 +236,8 @@ void composite_instrument_commands::process_get_composite_instrument_history(
     trading::messaging::get_composite_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_composite_instrument_history_response>(
-            out, session, "trading.v1.composite_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_composite_instrument_history_response>(
+        out, session, "trading.v1.composite_instruments.history", req);
     if (!result)
         return;
 

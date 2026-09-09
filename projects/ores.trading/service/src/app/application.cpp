@@ -199,9 +199,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
     auto trade_party_role_sub =
         ores::trading::service::messaging::register_trade_party_role_event_mapping(
             event_source, event_bus, nats);
-    auto balance_guaranteed_swap_instrument_sub =
-        ores::trading::service::messaging::register_balance_guaranteed_swap_instrument_event_mapping(
-            event_source, event_bus, nats);
+    auto balance_guaranteed_swap_instrument_sub = ores::trading::service::messaging::
+        register_balance_guaranteed_swap_instrument_event_mapping(event_source, event_bus, nats);
     auto callable_swap_instrument_sub =
         ores::trading::service::messaging::register_callable_swap_instrument_event_mapping(
             event_source, event_bus, nats);

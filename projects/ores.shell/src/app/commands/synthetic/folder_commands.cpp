@@ -28,8 +28,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <functional>
 #include <optional>
 #include <ostream>
@@ -81,10 +81,9 @@ void folder_commands::register_commands(cli::Menu& root_menu,
         "Retrieve folders from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("folders",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_folders(out, session, pagination);
-                                      });
+    pagination.register_list_callback("folders", [&session, &pagination](std::ostream& out) {
+        process_get_folders(out, session, pagination);
+    });
 
     folders_menu->Insert(
         "add",
@@ -126,8 +125,8 @@ void folder_commands::register_commands(cli::Menu& root_menu,
 }
 
 void folder_commands::process_get_folders(std::ostream& out,
-                                           nats_client& session,
-                                           pagination_context& pagination) {
+                                          nats_client& session,
+                                          pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get folders request.";
 
     auto& state = pagination.state_for("folders");
@@ -144,8 +143,7 @@ void folder_commands::process_get_folders(std::ostream& out,
     state.total_count = result->total_available_count;
     pagination.set_last_entity("folders");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->folders.size()
-                              << " folders.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->folders.size() << " folders.";
     out << result->folders << std::endl;
 
     // Display pagination info
@@ -154,19 +152,18 @@ void folder_commands::process_get_folders(std::ostream& out,
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->folders.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->folders.size() << " of "
+        << state.total_count << " total)" << std::endl;
 }
 
 void folder_commands::process_add_folder(std::ostream& out,
-                                         nats_client& session
-                                         ,
-                                   std::string s_name,
-                                   std::string s_kind,
-                                   std::string s_parent_id,
-                                   std::string s_collection_id,
-                                   std::string change_reason_code,
-                                   std::string change_commentary) {
+                                         nats_client& session,
+                                         std::string s_name,
+                                         std::string s_kind,
+                                         std::string s_parent_id,
+                                         std::string s_collection_id,
+                                         std::string change_reason_code,
+                                         std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add folder request.";
 
     if (!session.is_logged_in()) {
@@ -254,8 +251,9 @@ void folder_commands::process_delete_folder(std::ostream& out,
 void folder_commands::process_get_folder_history(std::ostream& out,
                                                  nats_client& session,
                                                  const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {{.name = "diff", .requires_value = false, .default_value = "false"},
-                                   {.name = "version", .requires_value = true, .default_value = ""}});
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;

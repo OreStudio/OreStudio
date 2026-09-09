@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,40 +50,37 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty() || value == "-")
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto commodity_instruments_menu =
-        std::make_unique<cli::Menu>("commodity_instruments");
+                                                      nats_client& session,
+                                                      pagination_context& pagination) {
+    auto commodity_instruments_menu = std::make_unique<cli::Menu>("commodity_instruments");
 
     commodity_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_commodity_instruments(std::ref(out), std::ref(session),
-                                              std::ref(pagination));
+            process_get_commodity_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Commodity instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("commodity_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_commodity_instruments(out, session,
-                                                                            pagination);
-                                      });
+    pagination.register_list_callback(
+        "commodity_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_commodity_instruments(out, session, pagination);
+        });
 
     commodity_instruments_menu->Insert(
         "add",
@@ -168,8 +165,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
     commodity_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_commodity_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_commodity_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Commodity instrument by instrument id",
         {"instrument_id"});
@@ -177,8 +174,8 @@ void commodity_instrument_commands::register_commands(cli::Menu& root_menu,
     commodity_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_commodity_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_commodity_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Commodity instrument's version history",
         {"instrument_id"});
@@ -204,8 +201,7 @@ void commodity_instrument_commands::process_get_commodity_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("commodity_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Commodity instruments.";
     out << result->instruments << std::endl;
 
@@ -215,9 +211,8 @@ void commodity_instrument_commands::process_get_commodity_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
 void commodity_instrument_commands::process_add_commodity_instrument(
@@ -280,15 +275,20 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     v.terms.start_date = (start_date == "-") ? "" : std::move(start_date);
     v.terms.maturity_date = (maturity_date == "-") ? "" : std::move(maturity_date);
     v.terms.day_count_code = (day_count_code == "-") ? "" : std::move(day_count_code);
-    v.terms.payment_frequency_code = (payment_frequency_code == "-") ? "" : std::move(payment_frequency_code);
+    v.terms.payment_frequency_code =
+        (payment_frequency_code == "-") ? "" : std::move(payment_frequency_code);
     v.option.option_type = (option_type == "-") ? "" : std::move(option_type);
     v.option.exercise_type = (exercise_type == "-") ? "" : std::move(exercise_type);
-    v.option.swaption_expiry_date = (swaption_expiry_date == "-") ? "" : std::move(swaption_expiry_date);
+    v.option.swaption_expiry_date =
+        (swaption_expiry_date == "-") ? "" : std::move(swaption_expiry_date);
     v.pricing.average_type = (average_type == "-") ? "" : std::move(average_type);
-    v.pricing.averaging_start_date = (averaging_start_date == "-") ? "" : std::move(averaging_start_date);
+    v.pricing.averaging_start_date =
+        (averaging_start_date == "-") ? "" : std::move(averaging_start_date);
     v.pricing.averaging_end_date = (averaging_end_date == "-") ? "" : std::move(averaging_end_date);
-    v.pricing.spread_commodity_code = (spread_commodity_code == "-") ? "" : std::move(spread_commodity_code);
-    v.pricing.strip_frequency_code = (strip_frequency_code == "-") ? "" : std::move(strip_frequency_code);
+    v.pricing.spread_commodity_code =
+        (spread_commodity_code == "-") ? "" : std::move(spread_commodity_code);
+    v.pricing.strip_frequency_code =
+        (strip_frequency_code == "-") ? "" : std::move(strip_frequency_code);
     v.exotic.barrier_type = (barrier_type == "-") ? "" : std::move(barrier_type);
     v.exotic.basket_json = (basket_json == "-") ? "" : std::move(basket_json);
     v.description = std::move(description);
@@ -298,7 +298,8 @@ void commodity_instrument_commands::process_add_commodity_instrument(
         v.option.strike_price = parse_optional_double(strike_price, "strike_price");
         v.pricing.spread_amount = parse_optional_double(spread_amount, "spread_amount");
         v.exotic.variance_strike = parse_optional_double(variance_strike, "variance_strike");
-        v.exotic.accumulation_amount = parse_optional_double(accumulation_amount, "accumulation_amount");
+        v.exotic.accumulation_amount =
+            parse_optional_double(accumulation_amount, "accumulation_amount");
         v.exotic.knock_out_barrier = parse_optional_double(knock_out_barrier, "knock_out_barrier");
         v.exotic.lower_barrier = parse_optional_double(lower_barrier, "lower_barrier");
         v.exotic.upper_barrier = parse_optional_double(upper_barrier, "upper_barrier");
@@ -323,8 +324,8 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Commodity instrument.";
         out << "✓ Commodity instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Commodity instrument: " << msg;
@@ -332,8 +333,9 @@ void commodity_instrument_commands::process_add_commodity_instrument(
     }
 }
 
-void commodity_instrument_commands::process_delete_commodity_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void commodity_instrument_commands::process_delete_commodity_instrument(std::ostream& out,
+                                                                        nats_client& session,
+                                                                        std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Commodity instrument request for: "
                                << instrument_id;
 
@@ -354,8 +356,7 @@ void commodity_instrument_commands::process_delete_commodity_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Commodity instrument.";
         out << "✓ Commodity instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Commodity instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Commodity instrument: " << result->message;
         fail(out) << "Failed to delete Commodity instrument: " << result->message << std::endl;
     }
 }
@@ -373,9 +374,8 @@ void commodity_instrument_commands::process_get_commodity_instrument_history(
     trading::messaging::get_commodity_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_commodity_instrument_history_response>(
-            out, session, "trading.v1.commodity_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_commodity_instrument_history_response>(
+        out, session, "trading.v1.commodity_instruments.history", req);
     if (!result)
         return;
 

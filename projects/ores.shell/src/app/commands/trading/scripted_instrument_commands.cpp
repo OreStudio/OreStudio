@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,23 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void scripted_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto scripted_instruments_menu =
-        std::make_unique<cli::Menu>("scripted_instruments");
+                                                     nats_client& session,
+                                                     pagination_context& pagination) {
+    auto scripted_instruments_menu = std::make_unique<cli::Menu>("scripted_instruments");
 
     scripted_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_scripted_instruments(std::ref(out), std::ref(session),
-                                             std::ref(pagination));
+            process_get_scripted_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Scripted instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("scripted_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_scripted_instruments(out, session,
-                                                                           pagination);
-                                      });
+    pagination.register_list_callback(
+        "scripted_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_scripted_instruments(out, session, pagination);
+        });
 
     scripted_instruments_menu->Insert(
         "add",
@@ -97,15 +95,16 @@ void scripted_instrument_commands::register_commands(cli::Menu& root_menu,
                                             std::move(change_commentary));
         },
         "Add an Scripted instrument (trade_type_code script_name [script_body] [events_json] "
-        "[underlyings_json] [parameters_json] description change_reason_code \"change_commentary\")",
+        "[underlyings_json] [parameters_json] description change_reason_code "
+        "\"change_commentary\")",
         {"trade_type_code script_name script_body events_json underlyings_json parameters_json "
          "description change_reason_code change_commentary"});
 
     scripted_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_scripted_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_scripted_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Scripted instrument by instrument id",
         {"instrument_id"});
@@ -113,8 +112,8 @@ void scripted_instrument_commands::register_commands(cli::Menu& root_menu,
     scripted_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_scripted_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_scripted_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Scripted instrument's version history",
         {"instrument_id"});
@@ -140,8 +139,7 @@ void scripted_instrument_commands::process_get_scripted_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("scripted_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Scripted instruments.";
     out << result->instruments << std::endl;
 
@@ -151,23 +149,21 @@ void scripted_instrument_commands::process_get_scripted_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
-void scripted_instrument_commands::process_add_scripted_instrument(
-    std::ostream& out,
-    nats_client& session,
-    std::string trade_type_code,
-    std::string script_name,
-    std::string script_body,
-    std::string events_json,
-    std::string underlyings_json,
-    std::string parameters_json,
-    std::string description,
-    std::string change_reason_code,
-    std::string change_commentary) {
+void scripted_instrument_commands::process_add_scripted_instrument(std::ostream& out,
+                                                                   nats_client& session,
+                                                                   std::string trade_type_code,
+                                                                   std::string script_name,
+                                                                   std::string script_body,
+                                                                   std::string events_json,
+                                                                   std::string underlyings_json,
+                                                                   std::string parameters_json,
+                                                                   std::string description,
+                                                                   std::string change_reason_code,
+                                                                   std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Scripted instrument request.";
 
     if (!session.is_logged_in()) {
@@ -211,8 +207,8 @@ void scripted_instrument_commands::process_add_scripted_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Scripted instrument.";
         out << "✓ Scripted instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Scripted instrument: " << msg;
@@ -220,8 +216,9 @@ void scripted_instrument_commands::process_add_scripted_instrument(
     }
 }
 
-void scripted_instrument_commands::process_delete_scripted_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void scripted_instrument_commands::process_delete_scripted_instrument(std::ostream& out,
+                                                                      nats_client& session,
+                                                                      std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Scripted instrument request for: "
                                << instrument_id;
 
@@ -242,8 +239,7 @@ void scripted_instrument_commands::process_delete_scripted_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Scripted instrument.";
         out << "✓ Scripted instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Scripted instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Scripted instrument: " << result->message;
         fail(out) << "Failed to delete Scripted instrument: " << result->message << std::endl;
     }
 }
@@ -261,9 +257,8 @@ void scripted_instrument_commands::process_get_scripted_instrument_history(
     trading::messaging::get_scripted_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_scripted_instrument_history_response>(
-            out, session, "trading.v1.scripted_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_scripted_instrument_history_response>(
+        out, session, "trading.v1.scripted_instruments.history", req);
     if (!result)
         return;
 

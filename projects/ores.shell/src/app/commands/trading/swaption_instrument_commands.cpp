@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,23 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void swaption_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto swaption_instruments_menu =
-        std::make_unique<cli::Menu>("swaption_instruments");
+                                                     nats_client& session,
+                                                     pagination_context& pagination) {
+    auto swaption_instruments_menu = std::make_unique<cli::Menu>("swaption_instruments");
 
     swaption_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_swaption_instruments(std::ref(out), std::ref(session),
-                                             std::ref(pagination));
+            process_get_swaption_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Swaption instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("swaption_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_swaption_instruments(out, session,
-                                                                           pagination);
-                                      });
+    pagination.register_list_callback(
+        "swaption_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_swaption_instruments(out, session, pagination);
+        });
 
     swaption_instruments_menu->Insert(
         "add",
@@ -107,8 +105,8 @@ void swaption_instrument_commands::register_commands(cli::Menu& root_menu,
     swaption_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_swaption_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_swaption_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Swaption instrument by instrument id",
         {"instrument_id"});
@@ -116,8 +114,8 @@ void swaption_instrument_commands::register_commands(cli::Menu& root_menu,
     swaption_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_swaption_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_swaption_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Swaption instrument's version history",
         {"instrument_id"});
@@ -143,8 +141,7 @@ void swaption_instrument_commands::process_get_swaption_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("swaption_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Swaption instruments.";
     out << result->instruments << std::endl;
 
@@ -154,24 +151,22 @@ void swaption_instrument_commands::process_get_swaption_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
-void swaption_instrument_commands::process_add_swaption_instrument(
-    std::ostream& out,
-    nats_client& session,
-    std::string trade_type_code,
-    std::string expiry_date,
-    std::string exercise_type,
-    std::string settlement_type,
-    std::string long_short,
-    std::string start_date,
-    std::string maturity_date,
-    std::string description,
-    std::string change_reason_code,
-    std::string change_commentary) {
+void swaption_instrument_commands::process_add_swaption_instrument(std::ostream& out,
+                                                                   nats_client& session,
+                                                                   std::string trade_type_code,
+                                                                   std::string expiry_date,
+                                                                   std::string exercise_type,
+                                                                   std::string settlement_type,
+                                                                   std::string long_short,
+                                                                   std::string start_date,
+                                                                   std::string maturity_date,
+                                                                   std::string description,
+                                                                   std::string change_reason_code,
+                                                                   std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Swaption instrument request.";
 
     if (!session.is_logged_in()) {
@@ -216,8 +211,8 @@ void swaption_instrument_commands::process_add_swaption_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Swaption instrument.";
         out << "✓ Swaption instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Swaption instrument: " << msg;
@@ -225,8 +220,9 @@ void swaption_instrument_commands::process_add_swaption_instrument(
     }
 }
 
-void swaption_instrument_commands::process_delete_swaption_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void swaption_instrument_commands::process_delete_swaption_instrument(std::ostream& out,
+                                                                      nats_client& session,
+                                                                      std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Swaption instrument request for: "
                                << instrument_id;
 
@@ -247,8 +243,7 @@ void swaption_instrument_commands::process_delete_swaption_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Swaption instrument.";
         out << "✓ Swaption instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Swaption instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Swaption instrument: " << result->message;
         fail(out) << "Failed to delete Swaption instrument: " << result->message << std::endl;
     }
 }
@@ -266,9 +261,8 @@ void swaption_instrument_commands::process_get_swaption_instrument_history(
     trading::messaging::get_swaption_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_swaption_instrument_history_response>(
-            out, session, "trading.v1.swaption_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_swaption_instrument_history_response>(
+        out, session, "trading.v1.swaption_instruments.history", req);
     if (!result)
         return;
 

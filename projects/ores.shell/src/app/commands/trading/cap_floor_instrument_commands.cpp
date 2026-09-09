@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,23 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void cap_floor_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto cap_floor_instruments_menu =
-        std::make_unique<cli::Menu>("cap_floor_instruments");
+                                                      nats_client& session,
+                                                      pagination_context& pagination) {
+    auto cap_floor_instruments_menu = std::make_unique<cli::Menu>("cap_floor_instruments");
 
     cap_floor_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_cap_floor_instruments(std::ref(out), std::ref(session),
-                                              std::ref(pagination));
+            process_get_cap_floor_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Cap floor instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("cap_floor_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_cap_floor_instruments(out, session,
-                                                                            pagination);
-                                      });
+    pagination.register_list_callback(
+        "cap_floor_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_cap_floor_instruments(out, session, pagination);
+        });
 
     cap_floor_instruments_menu->Insert(
         "add",
@@ -92,13 +90,14 @@ void cap_floor_instrument_commands::register_commands(cli::Menu& root_menu,
         },
         "Add an Cap floor instrument (trade_type_code start_date maturity_date [description] "
         "change_reason_code \"change_commentary\")",
-        {"trade_type_code start_date maturity_date description change_reason_code change_commentary"});
+        {"trade_type_code start_date maturity_date description change_reason_code "
+         "change_commentary"});
 
     cap_floor_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_cap_floor_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_cap_floor_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Cap floor instrument by instrument id",
         {"instrument_id"});
@@ -106,8 +105,8 @@ void cap_floor_instrument_commands::register_commands(cli::Menu& root_menu,
     cap_floor_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_cap_floor_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_cap_floor_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Cap floor instrument's version history",
         {"instrument_id"});
@@ -133,8 +132,7 @@ void cap_floor_instrument_commands::process_get_cap_floor_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("cap_floor_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Cap floor instruments.";
     out << result->instruments << std::endl;
 
@@ -144,9 +142,8 @@ void cap_floor_instrument_commands::process_get_cap_floor_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
 void cap_floor_instrument_commands::process_add_cap_floor_instrument(
@@ -198,8 +195,8 @@ void cap_floor_instrument_commands::process_add_cap_floor_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Cap floor instrument.";
         out << "✓ Cap floor instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Cap floor instrument: " << msg;
@@ -207,8 +204,9 @@ void cap_floor_instrument_commands::process_add_cap_floor_instrument(
     }
 }
 
-void cap_floor_instrument_commands::process_delete_cap_floor_instrument(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void cap_floor_instrument_commands::process_delete_cap_floor_instrument(std::ostream& out,
+                                                                        nats_client& session,
+                                                                        std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete Cap floor instrument request for: "
                                << instrument_id;
 
@@ -229,8 +227,7 @@ void cap_floor_instrument_commands::process_delete_cap_floor_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Cap floor instrument.";
         out << "✓ Cap floor instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Cap floor instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Cap floor instrument: " << result->message;
         fail(out) << "Failed to delete Cap floor instrument: " << result->message << std::endl;
     }
 }
@@ -248,9 +245,8 @@ void cap_floor_instrument_commands::process_get_cap_floor_instrument_history(
     trading::messaging::get_cap_floor_instrument_history_request req;
     req.id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_cap_floor_instrument_history_response>(
-            out, session, "trading.v1.cap_floor_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_cap_floor_instrument_history_response>(
+        out, session, "trading.v1.cap_floor_instruments.history", req);
     if (!result)
         return;
 

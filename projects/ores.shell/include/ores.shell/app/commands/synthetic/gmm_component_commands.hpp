@@ -60,36 +60,36 @@ public:
      * @brief Process a get gmm_components request.
      */
     static void process_get_gmm_components(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+                                           ores::nats::service::nats_client& session,
+                                           pagination_context& pagination);
 
     /**
      * @brief Process an add gmm_component request.
      */
     static void process_add_gmm_component(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                      std::string s_fx_spot_config_id,
-                                      std::string s_component_index,
-                                      std::string s_description,
-                                      std::string s_mean,
-                                      std::string s_stdev,
-                                      std::string s_weight,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+                                          ores::nats::service::nats_client& session,
+                                          std::string s_fx_spot_config_id,
+                                          std::string s_component_index,
+                                          std::string s_description,
+                                          std::string s_mean,
+                                          std::string s_stdev,
+                                          std::string s_weight,
+                                          std::string change_reason_code,
+                                          std::string change_commentary);
 
     /**
      * @brief Process a delete gmm_component request.
      */
     static void process_delete_gmm_component(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string id);
+                                             ores::nats::service::nats_client& session,
+                                             std::string id);
 
     /**
      * @brief Process a get gmm_component history request.
      */
     static void process_get_gmm_component_history(std::ostream& out,
-                                           ores::nats::service::nats_client& session,
-                                           const std::vector<std::string>& args);
+                                                  ores::nats::service::nats_client& session,
+                                                  const std::vector<std::string>& args);
 };
 
 } // namespace ores::shell::app::commands

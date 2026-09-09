@@ -28,8 +28,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_generators.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <functional>
 #include <optional>
 #include <ostream>
@@ -69,22 +69,23 @@ std::optional<boost::uuids::uuid> parse_uuid(const std::string& value) {
 } // namespace
 
 void ir_curve_template_entry_commands::register_commands(cli::Menu& root_menu,
-                                        nats_client& session,
-                                        pagination_context& pagination) {
+                                                         nats_client& session,
+                                                         pagination_context& pagination) {
     auto ir_curve_template_entries_menu = std::make_unique<cli::Menu>("ir_curve_template_entries");
 
     ir_curve_template_entries_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_ir_curve_template_entries(std::ref(out), std::ref(session), std::ref(pagination));
+            process_get_ir_curve_template_entries(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve ir_curve_template_entries from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("ir_curve_template_entries",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_ir_curve_template_entries(out, session, pagination);
-                                      });
+    pagination.register_list_callback(
+        "ir_curve_template_entries", [&session, &pagination](std::ostream& out) {
+            process_get_ir_curve_template_entries(out, session, pagination);
+        });
 
     ir_curve_template_entries_menu->Insert(
         "add",
@@ -97,16 +98,17 @@ void ir_curve_template_entry_commands::register_commands(cli::Menu& root_menu,
                    std::string change_reason_code,
                    std::string change_commentary) {
             process_add_ir_curve_template_entry(std::ref(out),
-                               std::ref(session),
-                               std::move(s_ir_curve_config_id),
-                               std::move(s_sequence_index),
-                               std::move(s_start_tenor_code),
-                               std::move(s_end_tenor_code),
-                               std::move(s_instrument_code),
-                               std::move(change_reason_code),
-                               std::move(change_commentary));
+                                                std::ref(session),
+                                                std::move(s_ir_curve_config_id),
+                                                std::move(s_sequence_index),
+                                                std::move(s_start_tenor_code),
+                                                std::move(s_end_tenor_code),
+                                                std::move(s_instrument_code),
+                                                std::move(change_reason_code),
+                                                std::move(change_commentary));
         },
-        "Add a ir_curve_template_entry (<ir_curve_config_id> <sequence_index> <start_tenor_code> <end_tenor_code> <instrument_code> <reason_code> \"commentary\")");
+        "Add a ir_curve_template_entry (<ir_curve_config_id> <sequence_index> <start_tenor_code> "
+        "<end_tenor_code> <instrument_code> <reason_code> \"commentary\")");
 
     ir_curve_template_entries_menu->Insert(
         "delete",
@@ -120,16 +122,16 @@ void ir_curve_template_entry_commands::register_commands(cli::Menu& root_menu,
         [&session](std::ostream& out, std::vector<std::string> args) {
             process_get_ir_curve_template_entry_history(std::ref(out), std::ref(session), args);
         },
-        "Show a ir_curve_template_entry's version history (--diff for a unified diff, --version <n> to "
+        "Show a ir_curve_template_entry's version history (--diff for a unified diff, --version "
+        "<n> to "
         "pick one)",
         {"id [--diff] [--version <n>]"});
 
     root_menu.Insert(std::move(ir_curve_template_entries_menu));
 }
 
-void ir_curve_template_entry_commands::process_get_ir_curve_template_entries(std::ostream& out,
-                                           nats_client& session,
-                                           pagination_context& pagination) {
+void ir_curve_template_entry_commands::process_get_ir_curve_template_entries(
+    std::ostream& out, nats_client& session, pagination_context& pagination) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get ir_curve_template_entries request.";
 
     auto& state = pagination.state_for("ir_curve_template_entries");
@@ -146,7 +148,8 @@ void ir_curve_template_entry_commands::process_get_ir_curve_template_entries(std
     state.total_count = result->total_available_count;
     pagination.set_last_entity("ir_curve_template_entries");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->ir_curve_template_entries.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
+                              << result->ir_curve_template_entries.size()
                               << " ir_curve_template_entries.";
     out << result->ir_curve_template_entries << std::endl;
 
@@ -156,20 +159,21 @@ void ir_curve_template_entry_commands::process_get_ir_curve_template_entries(std
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " (" << result->ir_curve_template_entries.size()
-        << " of " << state.total_count << " total)" << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " ("
+        << result->ir_curve_template_entries.size() << " of " << state.total_count << " total)"
+        << std::endl;
 }
 
-void ir_curve_template_entry_commands::process_add_ir_curve_template_entry(std::ostream& out,
-                                         nats_client& session
-                                         ,
-                                   std::string s_ir_curve_config_id,
-                                   std::string s_sequence_index,
-                                   std::string s_start_tenor_code,
-                                   std::string s_end_tenor_code,
-                                   std::string s_instrument_code,
-                                   std::string change_reason_code,
-                                   std::string change_commentary) {
+void ir_curve_template_entry_commands::process_add_ir_curve_template_entry(
+    std::ostream& out,
+    nats_client& session,
+    std::string s_ir_curve_config_id,
+    std::string s_sequence_index,
+    std::string s_start_tenor_code,
+    std::string s_end_tenor_code,
+    std::string s_instrument_code,
+    std::string change_reason_code,
+    std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add ir_curve_template_entry request.";
 
     if (!session.is_logged_in()) {
@@ -227,8 +231,8 @@ void ir_curve_template_entry_commands::process_add_ir_curve_template_entry(std::
 }
 
 void ir_curve_template_entry_commands::process_delete_ir_curve_template_entry(std::ostream& out,
-                                            nats_client& session,
-                                            std::string id) {
+                                                                              nats_client& session,
+                                                                              std::string id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete ir_curve_template_entry request for: " << id;
 
     if (!session.is_logged_in()) {
@@ -248,22 +252,24 @@ void ir_curve_template_entry_commands::process_delete_ir_curve_template_entry(st
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted ir_curve_template_entry.";
         out << "✓ Ir Curve Template Entry deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete ir_curve_template_entry: " << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete ir_curve_template_entry: "
+                                  << result->message;
         fail(out) << "Failed to delete ir_curve_template_entry: " << result->message << std::endl;
     }
 }
 
-void ir_curve_template_entry_commands::process_get_ir_curve_template_entry_history(std::ostream& out,
-                                                 nats_client& session,
-                                                 const std::vector<std::string>& args) {
-    auto parsed = parse_args(args, {{.name = "diff", .requires_value = false, .default_value = "false"},
-                                   {.name = "version", .requires_value = true, .default_value = ""}});
+void ir_curve_template_entry_commands::process_get_ir_curve_template_entry_history(
+    std::ostream& out, nats_client& session, const std::vector<std::string>& args) {
+    auto parsed = parse_args(args,
+                             {{.name = "diff", .requires_value = false, .default_value = "false"},
+                              {.name = "version", .requires_value = true, .default_value = ""}});
     if (!parsed) {
         fail(out) << parsed.error() << std::endl;
         return;
     }
     if (parsed->positionals.size() != 1) {
-        fail(out) << "Usage: ir_curve_template_entries history id [--diff] [--version <n>]" << std::endl;
+        fail(out) << "Usage: ir_curve_template_entries history id [--diff] [--version <n>]"
+                  << std::endl;
         return;
     }
     auto key = parsed->positionals.front();
@@ -279,7 +285,8 @@ void ir_curve_template_entry_commands::process_get_ir_curve_template_entry_histo
     }
 
     if (parsed->flag_set("diff")) {
-        render_history_diff(out, session, "ores.synthetic.ir_curve_template_entry", std::move(key), version);
+        render_history_diff(
+            out, session, "ores.synthetic.ir_curve_template_entry", std::move(key), version);
         return;
     }
 
@@ -298,13 +305,15 @@ void ir_curve_template_entry_commands::process_get_ir_curve_template_entry_histo
     synthetic::messaging::get_ir_curve_template_entry_history_request req;
     req.id = key;
 
-    auto result = do_auth_request<synthetic::messaging::get_ir_curve_template_entry_history_response>(
-        out, session, "synthetic.v1.ir_curve_template_entries.history", req);
+    auto result =
+        do_auth_request<synthetic::messaging::get_ir_curve_template_entry_history_response>(
+            out, session, "synthetic.v1.ir_curve_template_entries.history", req);
     if (!result)
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get ir_curve_template_entry history: " << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get ir_curve_template_entry history: "
+                                  << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

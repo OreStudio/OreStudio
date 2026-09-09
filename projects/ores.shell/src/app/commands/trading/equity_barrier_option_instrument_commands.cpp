@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,40 +50,38 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty() || value == "-")
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void equity_barrier_option_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+                                                                  nats_client& session,
+                                                                  pagination_context& pagination) {
     auto equity_barrier_option_instruments_menu =
         std::make_unique<cli::Menu>("equity_barrier_option_instruments");
 
     equity_barrier_option_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_equity_barrier_option_instruments(std::ref(out), std::ref(session),
-                                                          std::ref(pagination));
+            process_get_equity_barrier_option_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Equity barrier option instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("equity_barrier_option_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_equity_barrier_option_instruments(out, session,
-                                                                                        pagination);
-                                      });
+    pagination.register_list_callback(
+        "equity_barrier_option_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_equity_barrier_option_instruments(out, session, pagination);
+        });
 
     equity_barrier_option_instruments_menu->Insert(
         "add",
@@ -125,7 +123,8 @@ void equity_barrier_option_instrument_commands::register_commands(cli::Menu& roo
                                                          std::move(change_reason_code),
                                                          std::move(change_commentary));
         },
-        "Add an Equity barrier option instrument (trade_type_code underlying_name currency notional "
+        "Add an Equity barrier option instrument (trade_type_code underlying_name currency "
+        "notional "
         "option_type strike expiry_date exercise_type long_short lower_barrier lower_barrier_type "
         "upper_barrier [upper_barrier_type] rebate [description] change_reason_code "
         "\"change_commentary\")",
@@ -136,8 +135,8 @@ void equity_barrier_option_instrument_commands::register_commands(cli::Menu& roo
     equity_barrier_option_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_equity_barrier_option_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_equity_barrier_option_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Equity barrier option instrument by instrument id",
         {"instrument_id"});
@@ -145,8 +144,8 @@ void equity_barrier_option_instrument_commands::register_commands(cli::Menu& roo
     equity_barrier_option_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_equity_barrier_option_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_equity_barrier_option_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Equity barrier option instrument's version history",
         {"instrument_id"});
@@ -164,8 +163,9 @@ void equity_barrier_option_instrument_commands::process_get_equity_barrier_optio
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<trading::messaging::get_equity_barrier_option_instruments_response>(
-        out, session, "trading.v1.equity_barrier_option_instruments.list", req);
+    auto result =
+        do_auth_request<trading::messaging::get_equity_barrier_option_instruments_response>(
+            out, session, "trading.v1.equity_barrier_option_instruments.list", req);
     if (!result)
         return;
 
@@ -184,8 +184,8 @@ void equity_barrier_option_instrument_commands::process_get_equity_barrier_optio
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
     out << "\nPage " << page << " of " << total_pages << " ("
-        << result->equity_barrier_option_instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+        << result->equity_barrier_option_instruments.size() << " of " << state.total_count
+        << " total)" << std::endl;
 }
 
 void equity_barrier_option_instrument_commands::process_add_equity_barrier_option_instrument(
@@ -211,7 +211,8 @@ void equity_barrier_option_instrument_commands::process_add_equity_barrier_optio
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Equity barrier option instrument request.";
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add an Equity barrier option instrument." << std::endl;
+        fail(out) << "You must be logged in to add an Equity barrier option instrument."
+                  << std::endl;
         return;
     }
 
@@ -255,18 +256,20 @@ void equity_barrier_option_instrument_commands::process_add_equity_barrier_optio
     v.audit.change_reason_code = std::move(change_reason_code);
     v.audit.change_commentary = std::move(change_commentary);
 
-    auto req = trading::messaging::save_equity_barrier_option_instrument_request::from(std::move(v));
+    auto req =
+        trading::messaging::save_equity_barrier_option_instrument_request::from(std::move(v));
 
-    auto result = do_auth_request<trading::messaging::save_equity_barrier_option_instrument_response>(
-        out, session, "trading.v1.equity_barrier_option_instruments.save", req);
+    auto result =
+        do_auth_request<trading::messaging::save_equity_barrier_option_instrument_response>(
+            out, session, "trading.v1.equity_barrier_option_instruments.save", req);
     if (!result)
         return;
 
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Equity barrier option instrument.";
         out << "✓ Equity barrier option instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Equity barrier option instrument: " << msg;
@@ -280,15 +283,17 @@ void equity_barrier_option_instrument_commands::process_delete_equity_barrier_op
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete an Equity barrier option instrument." << std::endl;
+        fail(out) << "You must be logged in to delete an Equity barrier option instrument."
+                  << std::endl;
         return;
     }
 
     trading::messaging::delete_equity_barrier_option_instrument_request req;
     req.ids = {std::move(instrument_id)};
 
-    auto result = do_auth_request<trading::messaging::delete_equity_barrier_option_instrument_response>(
-        out, session, "trading.v1.equity_barrier_option_instruments.delete", req);
+    auto result =
+        do_auth_request<trading::messaging::delete_equity_barrier_option_instrument_response>(
+            out, session, "trading.v1.equity_barrier_option_instruments.delete", req);
     if (!result)
         return;
 
@@ -298,17 +303,21 @@ void equity_barrier_option_instrument_commands::process_delete_equity_barrier_op
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Equity barrier option instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete Equity barrier option instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete Equity barrier option instrument: " << result->message
+                  << std::endl;
     }
 }
 
-void equity_barrier_option_instrument_commands::process_get_equity_barrier_option_instrument_history(
-    std::ostream& out, nats_client& session, std::string instrument_id) {
+void equity_barrier_option_instrument_commands::
+    process_get_equity_barrier_option_instrument_history(std::ostream& out,
+                                                         nats_client& session,
+                                                         std::string instrument_id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating get Equity barrier option instrument history for: "
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get Equity barrier option instrument history." << std::endl;
+        fail(out) << "You must be logged in to get Equity barrier option instrument history."
+                  << std::endl;
         return;
     }
 

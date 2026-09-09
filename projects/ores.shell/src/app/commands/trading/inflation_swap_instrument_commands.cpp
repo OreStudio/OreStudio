@@ -24,12 +24,12 @@
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <optional>
+#include <cli/cli.h>
 #include <functional>
+#include <optional>
 #include <ostream>
 
 namespace ores::shell::app::commands {
@@ -50,40 +50,38 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
     return boost::lexical_cast<boost::uuids::uuid>(party);
 }
 
-std::optional<double> parse_optional_double(std::string_view value,
-                                        std::string_view name) {
+std::optional<double> parse_optional_double(std::string_view value, std::string_view name) {
     if (value.empty() || value == "-")
         return std::nullopt;
     try {
         return std::stod(std::string(value));
     } catch (const std::exception&) {
-        throw std::runtime_error(std::string("Invalid numeric value for ") +
-                                 std::string(name) + ".");
+        throw std::runtime_error(std::string("Invalid numeric value for ") + std::string(name) +
+                                 ".");
     }
 }
 
 } // namespace
 
 void inflation_swap_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+                                                           nats_client& session,
+                                                           pagination_context& pagination) {
     auto inflation_swap_instruments_menu =
         std::make_unique<cli::Menu>("inflation_swap_instruments");
 
     inflation_swap_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_inflation_swap_instruments(std::ref(out), std::ref(session),
-                                                   std::ref(pagination));
+            process_get_inflation_swap_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Inflation swap instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("inflation_swap_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_inflation_swap_instruments(out, session,
-                                                                                 pagination);
-                                      });
+    pagination.register_list_callback(
+        "inflation_swap_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_inflation_swap_instruments(out, session, pagination);
+        });
 
     inflation_swap_instruments_menu->Insert(
         "add",
@@ -118,8 +116,8 @@ void inflation_swap_instrument_commands::register_commands(cli::Menu& root_menu,
     inflation_swap_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_inflation_swap_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_inflation_swap_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Inflation swap instrument by instrument id",
         {"instrument_id"});
@@ -127,8 +125,8 @@ void inflation_swap_instrument_commands::register_commands(cli::Menu& root_menu,
     inflation_swap_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_inflation_swap_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_inflation_swap_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Inflation swap instrument's version history",
         {"instrument_id"});
@@ -154,8 +152,7 @@ void inflation_swap_instrument_commands::process_get_inflation_swap_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("inflation_swap_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->instruments.size()
                               << " Inflation swap instruments.";
     out << result->instruments << std::endl;
 
@@ -165,9 +162,8 @@ void inflation_swap_instrument_commands::process_get_inflation_swap_instruments(
         state.total_count > 0 ?
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
-    out << "\nPage " << page << " of " << total_pages << " ("
-        << result->instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+    out << "\nPage " << page << " of " << total_pages << " (" << result->instruments.size()
+        << " of " << state.total_count << " total)" << std::endl;
 }
 
 void inflation_swap_instrument_commands::process_add_inflation_swap_instrument(
@@ -231,8 +227,8 @@ void inflation_swap_instrument_commands::process_add_inflation_swap_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Inflation swap instrument.";
         out << "✓ Inflation swap instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Inflation swap instrument: " << msg;

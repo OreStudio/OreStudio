@@ -60,34 +60,35 @@ public:
      * @brief Process a get yield_curve_process_types request.
      */
     static void process_get_yield_curve_process_types(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+                                                      ores::nats::service::nats_client& session,
+                                                      pagination_context& pagination);
 
     /**
      * @brief Process an add yield_curve_process_type request.
      */
     static void process_add_yield_curve_process_type(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                      std::string s_code,
-                                      std::string s_name,
-                                      std::string s_description,
-                                      std::string s_display_order,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+                                                     ores::nats::service::nats_client& session,
+                                                     std::string s_code,
+                                                     std::string s_name,
+                                                     std::string s_description,
+                                                     std::string s_display_order,
+                                                     std::string change_reason_code,
+                                                     std::string change_commentary);
 
     /**
      * @brief Process a delete yield_curve_process_type request.
      */
     static void process_delete_yield_curve_process_type(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string code);
+                                                        ores::nats::service::nats_client& session,
+                                                        std::string code);
 
     /**
      * @brief Process a get yield_curve_process_type history request.
      */
-    static void process_get_yield_curve_process_type_history(std::ostream& out,
-                                           ores::nats::service::nats_client& session,
-                                           const std::vector<std::string>& args);
+    static void
+    process_get_yield_curve_process_type_history(std::ostream& out,
+                                                 ores::nats::service::nats_client& session,
+                                                 const std::vector<std::string>& args);
 };
 
 } // namespace ores::shell::app::commands

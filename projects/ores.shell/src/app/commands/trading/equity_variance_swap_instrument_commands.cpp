@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/equity_variance_swap_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,24 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void equity_variance_swap_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
+                                                                 nats_client& session,
+                                                                 pagination_context& pagination) {
     auto equity_variance_swap_instruments_menu =
         std::make_unique<cli::Menu>("equity_variance_swap_instruments");
 
     equity_variance_swap_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_equity_variance_swap_instruments(std::ref(out), std::ref(session),
-                                                         std::ref(pagination));
+            process_get_equity_variance_swap_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Equity variance swap instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("equity_variance_swap_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_equity_variance_swap_instruments(out, session,
-                                                                                       pagination);
-                                      });
+    pagination.register_list_callback(
+        "equity_variance_swap_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_equity_variance_swap_instruments(out, session, pagination);
+        });
 
     equity_variance_swap_instruments_menu->Insert(
         "add",
@@ -109,8 +108,8 @@ void equity_variance_swap_instrument_commands::register_commands(cli::Menu& root
     equity_variance_swap_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_equity_variance_swap_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_equity_variance_swap_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Equity variance swap instrument by instrument id",
         {"instrument_id"});
@@ -118,8 +117,8 @@ void equity_variance_swap_instrument_commands::register_commands(cli::Menu& root
     equity_variance_swap_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_equity_variance_swap_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_equity_variance_swap_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Equity variance swap instrument's version history",
         {"instrument_id"});
@@ -137,8 +136,9 @@ void equity_variance_swap_instrument_commands::process_get_equity_variance_swap_
     req.offset = state.current_offset;
     req.limit = pagination.page_size();
 
-    auto result = do_auth_request<trading::messaging::get_equity_variance_swap_instruments_response>(
-        out, session, "trading.v1.equity_variance_swap_instruments.list", req);
+    auto result =
+        do_auth_request<trading::messaging::get_equity_variance_swap_instruments_response>(
+            out, session, "trading.v1.equity_variance_swap_instruments.list", req);
     if (!result)
         return;
 
@@ -157,8 +157,8 @@ void equity_variance_swap_instrument_commands::process_get_equity_variance_swap_
             ((state.total_count + pagination.page_size() - 1) / pagination.page_size()) :
             1;
     out << "\nPage " << page << " of " << total_pages << " ("
-        << result->equity_variance_swap_instruments.size() << " of " << state.total_count << " total)"
-        << std::endl;
+        << result->equity_variance_swap_instruments.size() << " of " << state.total_count
+        << " total)" << std::endl;
 }
 
 void equity_variance_swap_instrument_commands::process_add_equity_variance_swap_instrument(
@@ -178,7 +178,8 @@ void equity_variance_swap_instrument_commands::process_add_equity_variance_swap_
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Equity variance swap instrument request.";
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to add an Equity variance swap instrument." << std::endl;
+        fail(out) << "You must be logged in to add an Equity variance swap instrument."
+                  << std::endl;
         return;
     }
 
@@ -212,16 +213,17 @@ void equity_variance_swap_instrument_commands::process_add_equity_variance_swap_
 
     auto req = trading::messaging::save_equity_variance_swap_instrument_request::from(std::move(v));
 
-    auto result = do_auth_request<trading::messaging::save_equity_variance_swap_instrument_response>(
-        out, session, "trading.v1.equity_variance_swap_instruments.save", req);
+    auto result =
+        do_auth_request<trading::messaging::save_equity_variance_swap_instrument_response>(
+            out, session, "trading.v1.equity_variance_swap_instruments.save", req);
     if (!result)
         return;
 
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Equity variance swap instrument.";
         out << "✓ Equity variance swap instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Equity variance swap instrument: " << msg;
@@ -235,15 +237,17 @@ void equity_variance_swap_instrument_commands::process_delete_equity_variance_sw
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to delete an Equity variance swap instrument." << std::endl;
+        fail(out) << "You must be logged in to delete an Equity variance swap instrument."
+                  << std::endl;
         return;
     }
 
     trading::messaging::delete_equity_variance_swap_instrument_request req;
     req.ids = {std::move(instrument_id)};
 
-    auto result = do_auth_request<trading::messaging::delete_equity_variance_swap_instrument_response>(
-        out, session, "trading.v1.equity_variance_swap_instruments.delete", req);
+    auto result =
+        do_auth_request<trading::messaging::delete_equity_variance_swap_instrument_response>(
+            out, session, "trading.v1.equity_variance_swap_instruments.delete", req);
     if (!result)
         return;
 
@@ -253,7 +257,8 @@ void equity_variance_swap_instrument_commands::process_delete_equity_variance_sw
     } else {
         BOOST_LOG_SEV(lg(), warn) << "Failed to delete Equity variance swap instrument: "
                                   << result->message;
-        fail(out) << "Failed to delete Equity variance swap instrument: " << result->message << std::endl;
+        fail(out) << "Failed to delete Equity variance swap instrument: " << result->message
+                  << std::endl;
     }
 }
 
@@ -263,7 +268,8 @@ void equity_variance_swap_instrument_commands::process_get_equity_variance_swap_
                                << instrument_id;
 
     if (!session.is_logged_in()) {
-        fail(out) << "You must be logged in to get Equity variance swap instrument history." << std::endl;
+        fail(out) << "You must be logged in to get Equity variance swap instrument history."
+                  << std::endl;
         return;
     }
 

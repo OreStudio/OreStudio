@@ -152,8 +152,7 @@ void trade_identifier_commands::process_add_trade_identifier(std::ostream& out,
                                                              std::string id_scheme,
                                                              std::string change_reason_code,
                                                              std::string change_commentary) {
-    BOOST_LOG_SEV(lg(), debug) << "Initiating add trade identifier request for trade: "
-                               << trade_id;
+    BOOST_LOG_SEV(lg(), debug) << "Initiating add trade identifier request for trade: " << trade_id;
 
     if (!session.is_logged_in()) {
         fail(out) << "You must be logged in to add a trade identifier." << std::endl;
@@ -270,8 +269,7 @@ void trade_identifier_commands::process_get_trade_identifier_history(
         return;
 
     if (!result->success) {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to get trade identifier history: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to get trade identifier history: " << result->message;
         fail(out) << result->message << std::endl;
         return;
     }

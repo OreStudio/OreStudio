@@ -1,8 +1,8 @@
 #ifndef ORES_SYNTHETIC_API_DOMAIN_SCOPE_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_SCOPE_HPP
 
-#include <ostream>
 #include <optional>
+#include <ostream>
 #include <stdexcept>
 #include <string_view>
 

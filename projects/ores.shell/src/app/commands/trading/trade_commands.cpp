@@ -130,8 +130,7 @@ void trade_commands::process_get_trades(std::ostream& out,
     state.total_count = result->total_available_count;
     pagination.set_last_entity("trades");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->trades.size()
-                              << " trades.";
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->trades.size() << " trades.";
     out << result->trades << std::endl;
 
     // Display pagination info
@@ -169,16 +168,15 @@ void trade_commands::process_add_trade(std::ostream& out,
         return;
 
     const auto id = boost::uuids::random_generator()();
-    auto req = trading::messaging::save_trade_request::from(
-        std::vector<domain::trade>{domain::trade{
-            .identity = {.id = id},
-            .parties = {.book_id = *book_uuid, .portfolio_id = *portfolio_uuid},
-            .classification = {.trade_type = std::move(trade_type),
-                               .netting_set_id = std::move(netting_set_id),
-                               .activity_type_code = std::move(activity_type_code)},
-            .audit = {.change_reason_code = std::move(change_reason_code),
-                      .change_commentary = std::move(change_commentary),
-                      .recorded_at = std::chrono::system_clock::now()}}});
+    auto req = trading::messaging::save_trade_request::from(std::vector<domain::trade>{
+        domain::trade{.identity = {.id = id},
+                      .parties = {.book_id = *book_uuid, .portfolio_id = *portfolio_uuid},
+                      .classification = {.trade_type = std::move(trade_type),
+                                         .netting_set_id = std::move(netting_set_id),
+                                         .activity_type_code = std::move(activity_type_code)},
+                      .audit = {.change_reason_code = std::move(change_reason_code),
+                                .change_commentary = std::move(change_commentary),
+                                .recorded_at = std::chrono::system_clock::now()}}});
 
     auto result = do_auth_request<trading::messaging::save_trade_response>(
         out, session, "trading.v1.trades.save", req);
@@ -196,9 +194,7 @@ void trade_commands::process_add_trade(std::ostream& out,
     }
 }
 
-void trade_commands::process_delete_trade(std::ostream& out,
-                                          nats_client& session,
-                                          std::string id) {
+void trade_commands::process_delete_trade(std::ostream& out, nats_client& session, std::string id) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating delete trade request for: " << id;
 
     if (!session.is_logged_in()) {

@@ -28,8 +28,8 @@ namespace ores::trading::service::messaging {
 
 [[nodiscard]] ores::eventing::service::subscription
 register_bond_instrument_event_mapping(ores::eventing::service::postgres_event_source& event_source,
-                                      ores::eventing::service::event_bus& event_bus,
-                                      ores::nats::service::client& nats);
+                                       ores::eventing::service::event_bus& event_bus,
+                                       ores::nats::service::client& nats);
 
 } // namespace ores::trading::service::messaging
 

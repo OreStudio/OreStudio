@@ -59,37 +59,38 @@ public:
     /**
      * @brief Process a get market_data_generation_configs request.
      */
-    static void process_get_market_data_generation_configs(std::ostream& out,
-                                          ores::nats::service::nats_client& session,
-                                          pagination_context& pagination);
+    static void
+    process_get_market_data_generation_configs(std::ostream& out,
+                                               ores::nats::service::nats_client& session,
+                                               pagination_context& pagination);
 
     /**
      * @brief Process an add market_data_generation_config request.
      */
     static void process_add_market_data_generation_config(std::ostream& out,
-                                   ores::nats::service::nats_client& session,
-                                      std::string s_scope,
-                                      std::string s_binding_mode,
-                                      std::string s_name,
-                                      std::string s_description,
-                                      std::string s_enabled,
-                                      std::string s_dataset_id,
-                                      std::string change_reason_code,
-                                      std::string change_commentary);
+                                                          ores::nats::service::nats_client& session,
+                                                          std::string s_scope,
+                                                          std::string s_binding_mode,
+                                                          std::string s_name,
+                                                          std::string s_description,
+                                                          std::string s_enabled,
+                                                          std::string s_dataset_id,
+                                                          std::string change_reason_code,
+                                                          std::string change_commentary);
 
     /**
      * @brief Process a delete market_data_generation_config request.
      */
-    static void process_delete_market_data_generation_config(std::ostream& out,
-                                      ores::nats::service::nats_client& session,
-                                      std::string id);
+    static void process_delete_market_data_generation_config(
+        std::ostream& out, ores::nats::service::nats_client& session, std::string id);
 
     /**
      * @brief Process a get market_data_generation_config history request.
      */
-    static void process_get_market_data_generation_config_history(std::ostream& out,
-                                           ores::nats::service::nats_client& session,
-                                           const std::vector<std::string>& args);
+    static void
+    process_get_market_data_generation_config_history(std::ostream& out,
+                                                      ores::nats::service::nats_client& session,
+                                                      const std::vector<std::string>& args);
 };
 
 } // namespace ores::shell::app::commands

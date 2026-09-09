@@ -1,8 +1,8 @@
 #ifndef ORES_SYNTHETIC_API_DOMAIN_BINDING_MODE_HPP
 #define ORES_SYNTHETIC_API_DOMAIN_BINDING_MODE_HPP
 
-#include <ostream>
 #include <optional>
+#include <ostream>
 #include <stdexcept>
 #include <string_view>
 
@@ -17,8 +17,8 @@ namespace ores::synthetic::domain {
  * ingests.
  */
 enum class binding_mode {
-    bound,     ///< Authoritative: publishes on the ingested subjects.
-    sandboxed  ///< Exploratory: publishes on non-ingested subjects.
+    bound,    ///< Authoritative: publishes on the ingested subjects.
+    sandboxed ///< Exploratory: publishes on non-ingested subjects.
 };
 
 /**

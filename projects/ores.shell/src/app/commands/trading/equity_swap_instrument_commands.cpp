@@ -24,10 +24,10 @@
 #include "ores.trading.api/messaging/equity_swap_instrument_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include "ores.utility/uuid/tenant_id.hpp"
-#include <cli/cli.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cli/cli.h>
 #include <functional>
 #include <ostream>
 
@@ -52,25 +52,23 @@ boost::uuids::uuid party_uuid_for(nats_client& session) {
 } // namespace
 
 void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
-                             nats_client& session,
-                             pagination_context& pagination) {
-    auto equity_swap_instruments_menu =
-        std::make_unique<cli::Menu>("equity_swap_instruments");
+                                                        nats_client& session,
+                                                        pagination_context& pagination) {
+    auto equity_swap_instruments_menu = std::make_unique<cli::Menu>("equity_swap_instruments");
 
     equity_swap_instruments_menu->Insert(
         "get",
         [&session, &pagination](std::ostream& out) {
-            process_get_equity_swap_instruments(std::ref(out), std::ref(session),
-                                                std::ref(pagination));
+            process_get_equity_swap_instruments(
+                std::ref(out), std::ref(session), std::ref(pagination));
         },
         "Retrieve Equity swap instruments from the server (paginated)");
 
     // Register list callback for navigation
-    pagination.register_list_callback("equity_swap_instruments",
-                                      [&session, &pagination](std::ostream& out) {
-                                          process_get_equity_swap_instruments(out, session,
-                                                                              pagination);
-                                      });
+    pagination.register_list_callback(
+        "equity_swap_instruments", [&session, &pagination](std::ostream& out) {
+            process_get_equity_swap_instruments(out, session, pagination);
+        });
 
     equity_swap_instruments_menu->Insert(
         "add",
@@ -114,8 +112,8 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
     equity_swap_instruments_menu->Insert(
         "delete",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_delete_equity_swap_instrument(std::ref(out), std::ref(session),
-                                   std::move(instrument_id));
+            process_delete_equity_swap_instrument(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Delete an Equity swap instrument by instrument id",
         {"instrument_id"});
@@ -123,8 +121,8 @@ void equity_swap_instrument_commands::register_commands(cli::Menu& root_menu,
     equity_swap_instruments_menu->Insert(
         "history",
         [&session](std::ostream& out, std::string instrument_id) {
-            process_get_equity_swap_instrument_history(std::ref(out), std::ref(session),
-                                        std::move(instrument_id));
+            process_get_equity_swap_instrument_history(
+                std::ref(out), std::ref(session), std::move(instrument_id));
         },
         "Show an Equity swap instrument's version history",
         {"instrument_id"});
@@ -150,8 +148,7 @@ void equity_swap_instrument_commands::process_get_equity_swap_instruments(
     state.total_count = result->total_available_count;
     pagination.set_last_entity("equity_swap_instruments");
 
-    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved "
-                              << result->equity_swap_instruments.size()
+    BOOST_LOG_SEV(lg(), info) << "Successfully retrieved " << result->equity_swap_instruments.size()
                               << " Equity swap instruments.";
     out << result->equity_swap_instruments << std::endl;
 
@@ -229,8 +226,8 @@ void equity_swap_instrument_commands::process_add_equity_swap_instrument(
     if (result->success) {
         BOOST_LOG_SEV(lg(), info) << "Successfully added Equity swap instrument.";
         out << "✓ Equity swap instrument added successfully!" << std::endl;
-        out << "Instrument id: "
-            << boost::uuids::to_string(req.data.identity.instrument_id) << std::endl;
+        out << "Instrument id: " << boost::uuids::to_string(req.data.identity.instrument_id)
+            << std::endl;
     } else {
         const auto& msg = result->message.empty() ? "Unknown error" : result->message;
         BOOST_LOG_SEV(lg(), warn) << "Failed to add Equity swap instrument: " << msg;
@@ -260,8 +257,7 @@ void equity_swap_instrument_commands::process_delete_equity_swap_instrument(
         BOOST_LOG_SEV(lg(), info) << "Successfully deleted Equity swap instrument.";
         out << "✓ Equity swap instrument deleted successfully!" << std::endl;
     } else {
-        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Equity swap instrument: "
-                                  << result->message;
+        BOOST_LOG_SEV(lg(), warn) << "Failed to delete Equity swap instrument: " << result->message;
         fail(out) << "Failed to delete Equity swap instrument: " << result->message << std::endl;
     }
 }
@@ -279,9 +275,8 @@ void equity_swap_instrument_commands::process_get_equity_swap_instrument_history
     trading::messaging::get_equity_swap_instrument_history_request req;
     req.instrument_id = std::move(instrument_id);
 
-    auto result =
-        do_auth_request<trading::messaging::get_equity_swap_instrument_history_response>(
-            out, session, "trading.v1.equity_swap_instruments.history", req);
+    auto result = do_auth_request<trading::messaging::get_equity_swap_instrument_history_response>(
+        out, session, "trading.v1.equity_swap_instruments.history", req);
     if (!result)
         return;
 

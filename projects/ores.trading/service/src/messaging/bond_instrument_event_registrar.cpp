@@ -31,8 +31,8 @@ namespace ev = ores::eventing;
 
 [[nodiscard]] ev::service::subscription
 register_bond_instrument_event_mapping(ev::service::postgres_event_source& event_source,
-                                      ev::service::event_bus& event_bus,
-                                      ores::nats::service::client& nats) {
+                                       ev::service::event_bus& event_bus,
+                                       ores::nats::service::client& nats) {
     ev::service::registrar::register_mapping<trading::eventing::bond_instrument_changed_event>(
         event_source, "ores.trading.bond_instrument", "ores_trading_bond_instruments");
 

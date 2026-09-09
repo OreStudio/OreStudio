@@ -473,5 +473,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The synthetic generators always emit 0 for =sequence_number= | =bond_issue_call_date.org= (and =bond_issue_conversion_target.org=) | Recorded, not changed | No collision reachable today: each generated child draws its own random =issue_id=. A real ordinal needs parent-keyed generation. See the Notes entry. |
 | 2 | =int sequence_number= has no in-class default, unlike =version= | =cpp_domain_type_generator.cpp.mustache= | Recorded, not changed | Defaulting the int alone leaves =issue_id= uninitialized, like every uuid primary-key member. A template-level default for all primary-key members is a codegen decision. See the Notes entry. |
+| 3 | =--rows= not a multiple of 10 silently truncates the family counts, leaving the last instrument block without its issue row | =load_trade_population.py= =main()= | Accepted | A guard after argparse exits with a clear message unless =--rows= is a multiple of 10, before any DB work. |
+| 4 | =counts[next(iter(family))]= pulls an arbitrary set member to print the family count | =load_trade_population.py= =main()= | Accepted | A =family_size= computed once now feeds both the per-table counts and the header printout. |
 
 * Result

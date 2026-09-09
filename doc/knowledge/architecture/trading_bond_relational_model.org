@@ -30,8 +30,11 @@ keys and foreign keys: a bond issue (the instrument master that the
 terms describe, keyed by ISIN), a per-trade instrument line that
 references both the issue and the trade, and per-product fact tables
 for the products that carry structure (option, future, TRS, repo,
-Ascot). The call schedule and the conversion target become keyed child
-rows in shared schedule and underlyings tables. Every table keeps the
+Ascot). The issue's call dates and its conversion target are keyed child
+rows in family tables that hang off the issue row; product schedules
+(exercise, funding, repo payment) are rows in the shared schedule and
+underlyings tables, which keep the instrument owner the parent story
+draws. Every table keeps the
 SCD2 temporal spine and is small enough that the C1202-driven
 sub-struct decomposition disappears from the persisted domain. This
 page is the inventory and the proposal; codegen of the types and SQL,
@@ -304,17 +307,23 @@ guiding decomposition, in the relational reading of dfe15809:
   Ascot) declares that structure in its own fact table, keyed to the
   instrument row. The fact table's columns are all meaningful for its
   rows; the sparse parent columns disappear.
-- Lists (call dates, exercise dates, funding and repo payment
+- Lists on an instrument (exercise dates, funding and repo payment
   schedules) become rows in the shared schedule pair that
-  =trade_model_defects.org= proposes (defect 1). References to
-  anything outside the family (a convertible's underlying equity)
-  become rows in the shared instrument underlyings table (defect 15).
-  A bond-on-bond reference is a foreign key to the issue entity.
+  =trade_model_defects.org= proposes (defect 1). References from an
+  instrument to anything outside the family become rows in the shared
+  instrument underlyings table (defect 15). A bond-on-bond reference
+  is a foreign key to the issue entity. The shared shapes keep the
+  owner key the parent story draws: =instrument_id=, unchanged.
+- Lists on the issue are family-owned rows keyed by =issue_id=, not
+  rows in the shared shapes: the call dates of a callable issue hang
+  off the issue row, and the conversion target of a convertible issue
+  does the same. The family does not widen the shared tables' owner.
 
 The model in one picture, drawn in the repo's PlantUML ER
 conventions. The shared row shapes repeat the defect-1 and defect-15
-column sets of =trade_model_defects.org=; the notes on those shapes
-record where the bond proposal widens their owner:
+column sets of =trade_model_defects.org= unchanged, with the
+instrument owner the parent story draws. The issue's child rows are
+family tables keyed by =issue_id=, drawn beside the shared shapes:
 
 #+caption: The proposed relational model for the bond family
 [[proj:doc/knowledge/architecture/trading_bond_relational_model_er.png]]
@@ -333,8 +342,8 @@ The entities:
 | Bond TRS facts | =ores_trading_bond_trs_tbl= | (tenant_id, instrument_id) + SCD2 | return type, funding index or rate; funding payment dates as schedule rows |
 | Bond repo facts | =ores_trading_bond_repos_tbl= | (tenant_id, instrument_id) + SCD2 | repo rate and type; repo payment dates as schedule rows |
 | Ascot facts | =ores_trading_ascots_tbl= | (tenant_id, instrument_id) + SCD2 | =ascot_option_type= and the conversion-option facts the XSD carries |
-| Call schedule | the shared schedule pair | (tenant_id, owner, schedule_type_code=call, sequence) | the call dates of a callable issue |
-| Conversion target | the shared underlyings table | (tenant_id, owner, sequence) | the equity share a convertible converts into, with the conversion ratio as the row weight |
+| Call dates | =ores_trading_bond_issue_call_dates_tbl= | (tenant_id, issue_id, sequence) + SCD2 | one row per call date of a callable issue |
+| Conversion target | =ores_trading_bond_issue_conversion_targets_tbl= | (tenant_id, issue_id, sequence) + SCD2 | the equity share a convertible issue converts into, with the conversion ratio as the row weight |
 
 Every table keeps the standard SCD2 spine: =valid_from=, =valid_to=,
 the overlap exclusion, the optimistic =version= column with its
@@ -359,9 +368,15 @@ The relationships, stated as keys:
   bond is not a bond product.
 - instrument.trade_id soft FK to trades, unchanged in meaning and
   uniqueness from today.
-- schedule and underlyings rows key to their owner (an issue or an
-  instrument) and to the tenant, with a sequence number, in the shape
-  =trade_model_defects.org= draws for defect 1 and defect 15.
+- instrument schedule rows key to =instrument_id= and to the tenant,
+  with a sequence number, in the shape =trade_model_defects.org=
+  draws for defect 1 and defect 15, exactly as the parent story
+  shapes them.
+- issue call-date and conversion-target rows key to =issue_id= and to
+  the tenant, with a sequence number, in the family tables
+  =ores_trading_bond_issue_call_dates_tbl= and
+  =ores_trading_bond_issue_conversion_targets_tbl=. The issue row is
+  their parent; the shared tables do not widen.
 
 The trade type code sits on the instrument row, as today. The
 coverage check lists all ten codes. Whether the issue's features and
@@ -453,34 +468,42 @@ The shared shapes inherit the same measurements. The defects
 investigation measured rows against width on the fast path, 1.4x
 against 4x, and chose rows for schedules and underlyings; this
 proposal follows that choice. It goes beyond the measured shapes in
-one place. This page draws the full SCD2 spine on the leaf rows of
-the schedule and underlyings tables, where the defect shapes carry
-none. Forty call dates as versioned rows pay the per-row trigger
-forty times and carry the audit columns forty times, for a fidelity
-nothing in the requirements asks for. A date list is an accident of
-its schedule; its version is derivative of its owner's. The review
-amendment is to version the substance, the issue, the instrument,
-the fact row, the schedule, and to let the leaf rows inherit. The
-exception is a stated audit requirement for schedule amendment
-history; see question 1 below.
+one place. This page draws the full SCD2 spine on the leaf rows it
+proposes: the instrument schedule rows in the shared pair, and the
+issue's call-date and conversion-target rows in the family tables,
+where the defect shapes carry none. Forty call dates as versioned rows pay the per-row trigger
+forty times and carry the audit columns forty times. The review
+asked whether the leaf rows could inherit their version from the
+schedule instead. The owner answered that every amendment to trade
+data is an audit requirement and must be traceable, and schedule
+dates are trade data. The leaf rows keep the full SCD2 spine as
+drawn. The inherit option is closed, and the trigger cost on the
+leaf rows is the accepted price of the audit requirement. The
+generator story's bulk-path question is the lever if that price
+binds.
 
 One composite needs a declared version rule. An instrument row and
 its fact rows describe one trade. The save verb writes them in one
-transaction, and the fact row's version tracks the instrument's. A
-change of =trade_type_code= on an existing row retires the old
-product's fact rows. The rule must live where the codegen task reads
-it, not only in the verb. The schema carries no aggregate invariant,
-and a rule the document does not record is a rule drift deletes.
+transaction, and the fact rows' version tracks the instrument's.
+The owner answered that =trade_type_code= cannot change on an
+existing row. A product change is a cancel and a rebook, expressed
+as closing the instrument row's validity and inserting a new
+instrument row with its fact rows. The verb must not accept a
+=trade_type_code= change in place, and the early draft's
+fact-retirement clause never runs. The rule must live where the
+codegen task reads it, not only in the verb. The schema carries no
+aggregate invariant, and a rule the document does not record is a
+rule drift deletes.
 
-Four questions stay open from the review. The codegen task must
-answer them before it draws the SQL:
+The four review questions are answered, and the answers are recorded
+here so the codegen task reads them as decisions:
 
-| # | Question | Decides |
-|---+----------+---------|
-| 1 | Is amendment history of a call or exercise schedule an audit requirement? | Whether the leaf rows keep the SCD2 spine |
-| 2 | Can an instrument row change its =trade_type_code= in place? | Whether the save verb's fact-retirement rule is ever exercised |
-| 3 | How does a bond issue own rows in the shared tables, whose owner key is =instrument_id=? | The owner foreign-key mechanics: two nullable keys with an exactly-one check, or a typed owner |
-| 4 | Does the repo relationship essence need its own mapper treatment? | The =ores.ore= mapping and the =ores.qt= view branching |
+| # | Question | Answer |
+|---+----------+--------|
+| 1 | Is amendment history of a call or exercise schedule an audit requirement? | Yes. Every amendment to trade data must be traceable, and schedule dates are trade data. The leaf rows keep the full SCD2 spine, as drawn. |
+| 2 | Can an instrument row change its =trade_type_code= in place? | No. A product change is a cancel and a rebook: close the instrument row's validity and insert a new instrument row with its fact rows. |
+| 3 | How does a bond issue own rows in the shared tables, whose owner key is =instrument_id=? | It does not. The shared tables stay keyed to instruments exactly as the parent story shapes them. The issue's call dates and conversion target are family-owned rows keyed by =issue_id= with real foreign keys (=ores_trading_bond_issue_call_dates_tbl=, =ores_trading_bond_issue_conversion_targets_tbl=). The typed-owner and exactly-one alternatives are closed. |
+| 4 | Does the repo relationship essence need its own mapper treatment? | No. The repo row points at the bond issue through the same single =issue_id= foreign key every instrument row carries; for a repo row the issue is the collateral the financing runs against. The =trade_type_code= discriminates the essence, and the mapper and views branch on it as for any product. |
 
 ** Mapping the current model onto the target
 
@@ -495,8 +518,8 @@ The current table's columns, column by column:
 | trade_type_code | the instrument row, with the ten-code coverage check added |
 | issuer, currency, face_value, coupon_rate, coupon_frequency_code, day_count_code, issue_date, maturity_date | the issue |
 | settlement_days | the issue (a market convention of the bond) |
-| call_date | a call schedule row on the issue |
-| conversion_ratio | a conversion underlyings row on the issue, as its weight |
+| call_date | a call-date row keyed to the issue in =ores_trading_bond_issue_call_dates_tbl= |
+| conversion_ratio | a conversion-target row keyed to the issue in =ores_trading_bond_issue_conversion_targets_tbl=, as its weight |
 | description | the issue |
 | future_expiry_date | the bond future facts table |
 | option_type, option_strike | the bond option facts table |
@@ -515,9 +538,10 @@ the only join in the migration; the SQL for it is a follow-up task.
 ** What each surface must change
 
 Codegen. The family becomes a set of entity orgs in the modeling
-tree, one per table: issue, instrument, and the five product fact
-tables, plus org models for the schedule and underlyings rows when
-those shared tables land. Each org's columns map one to one with its
+tree, one per table: issue, instrument, the five product fact
+tables, the issue's call-date and conversion-target tables, plus org
+models for the instrument schedule and underlyings rows when those
+shared tables land. Each org's columns map one to one with its
 table, so the org grammar's gaps shrink for this family: the column
 name =id= disappears (gap (b) is not needed once the key is renamed),
 and the C1202 mid-group decomposition (gap (a)) is not needed in any
@@ -572,9 +596,9 @@ tasks on story 688959F0 are, in order:
 3. The qt bridge: container, views, wire protocol.
 
 The sequence depends on the container grammar work of the parent
-story where the boundary shape is concerned, and on the shared
-schedule and underlyings tables, whose org models this family is the
-first consumer of.
+story where the boundary shape is concerned, and on the shared schedule and underlyings tables of the parent
+story, whose org models this family's instrument rows are an early
+consumer of.
 
 * See also
 

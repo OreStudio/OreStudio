@@ -48,6 +48,29 @@ package "Proposed family tables" {
     * valid_to : timestamptz
   }
 
+  entity ores_trading_bond_issue_call_dates_tbl <<temporal>> #C6F0D8 {
+    * issue_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * call_date : date
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
+  entity ores_trading_bond_issue_conversion_targets_tbl <<temporal>> #C6F0D8 {
+    * issue_id : uuid <<PK, FK>>
+    * sequence_number : int <<PK>>
+    --
+    * tenant_id : uuid <<FK>>
+    * version : int
+    * underlying_uri : text
+    * weight : numeric
+    * valid_from : timestamptz
+    * valid_to : timestamptz
+  }
+
   entity ores_trading_bond_instruments_tbl <<temporal>> #C6F0D8 {
     * instrument_id : uuid <<PK>>
     --
@@ -158,8 +181,9 @@ package "Shared row shapes (defect 1 and 15 of trade_model_defects.org)" {
 note right of ores_trading_bond_issues_tbl
   One row per bond issue, keyed by its ISIN
   (security_id). The terms describe the issue,
-  not any single trade of it. Call schedule rows
-  and conversion rows hang off the issue.
+  not any single trade of it. Call-date rows and
+  conversion-target rows hang off the issue in
+  the family tables beside it.
 end note
 
 note right of ores_trading_bond_instruments_tbl
@@ -186,15 +210,20 @@ end note
 
 note left of ores_trading_schedules_tbl
   Columns per defect 1. The shared shape keys its
-  owner as instrument_id; the bond proposal widens
-  the owner to bond issues so a callable issue's
-  call rows are not copied per trade.
+  owner as instrument_id, exactly as the parent
+  story shapes it. Exercise, funding and repo
+  payment rows key here. A callable issue's call
+  rows are not copied per trade because they hang
+  off the issue in a family table.
 end note
 
 note right of ores_trading_instrument_underlyings_tbl
-  Columns per defect 15. The bond proposal lets a
-  bond issue own a conversion-target row, with the
-  conversion ratio as the row weight.
+  Columns per defect 15, keyed to instruments as
+  the parent story draws it. The bond proposal
+  does not widen the owner: a convertible issue's
+  conversion-target row hangs off the issue in a
+  family table, with the conversion ratio as the
+  row weight.
 end note
 
 ores_trading_bond_issues_tbl ||--o{ ores_trading_bond_instruments_tbl : "is traded as"
@@ -203,10 +232,10 @@ ores_trading_bond_instruments_tbl ||--o| ores_trading_bond_futures_tbl : "BondFu
 ores_trading_bond_instruments_tbl ||--o| ores_trading_bond_trs_tbl : "BondTRS facts"
 ores_trading_bond_instruments_tbl ||--o| ores_trading_bond_repos_tbl : "BondRepo facts"
 ores_trading_bond_instruments_tbl ||--o| ores_trading_ascots_tbl : "Ascot facts"
-ores_trading_bond_issues_tbl ||--o{ ores_trading_schedules_tbl : "call schedule rows"
+ores_trading_bond_issues_tbl ||--o{ ores_trading_bond_issue_call_dates_tbl : "call dates"
+ores_trading_bond_issues_tbl ||--o{ ores_trading_bond_issue_conversion_targets_tbl : "conversion targets"
 ores_trading_bond_instruments_tbl ||--o{ ores_trading_schedules_tbl : "exercise, funding and repo payment rows"
 ores_trading_schedules_tbl ||--o{ ores_trading_schedule_dates_tbl : "dates"
-ores_trading_bond_issues_tbl ||--o{ ores_trading_instrument_underlyings_tbl : "conversion target rows"
 
 ' Local Variables:
 ' compile-command: "java -Djava.awt.headless=true -DPLANTUML_SECURITY_PROFILE=UNSECURE -DPLANTUML_LIMIT_SIZE=65535 -jar /usr/share/plantuml/plantuml.jar trading_bond_relational_model_er.puml"

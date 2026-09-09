@@ -150,5 +150,9 @@ generation story [[id:894B369A-CE00-4E6A-B71B-C7BAC8B158BE][894B369A]]
 and approved the normalisation with amendments. The deliverable now
 records that evidence and the amendments: the issue relationship
 essences, the composite version rule for instrument and fact rows,
-the leaf-row spine decision on the shared shapes, and four open
-questions the codegen task must answer before it draws the SQL.
+the leaf-row spine decision on the shared shapes, and the owner's
+answers to the four review questions: schedule dates stay on the
+full spine, product changes cancel and rebook, the shared tables
+keep the instrument owner with the issue's child rows in family
+tables keyed by =issue_id=, and the repo row references the issue
+as its collateral.

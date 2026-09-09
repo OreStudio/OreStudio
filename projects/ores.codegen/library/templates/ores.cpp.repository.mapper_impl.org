@@ -71,6 +71,9 @@ domain::{{entity_singular}}
 {{#is_uuid}}
     r.identity.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
 {{/is_uuid}}
+{{#is_int}}
+    r.identity.{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
+{{/is_int}}
 {{/primary_key.columns}}
 {{/has_identity_group}}
 {{^has_identity_group}}
@@ -90,6 +93,9 @@ domain::{{entity_singular}}
 {{#is_uuid}}
     r.{{column}} = boost::lexical_cast<boost::uuids::uuid>(v.{{column}}.value());
 {{/is_uuid}}
+{{#is_int}}
+    r.{{column}} = boost::lexical_cast<int>(v.{{column}}.value());
+{{/is_int}}
 {{/primary_key.columns}}
 {{/has_identity_group}}
 {{! Natural keys are not identity-group-column-aware: they always map flat.
@@ -237,6 +243,9 @@ domain::{{entity_singular}}
 {{#is_uuid}}
     r.{{column}} = boost::uuids::to_string(v.identity.{{column}});
 {{/is_uuid}}
+{{#is_int}}
+    r.{{column}} = std::to_string(v.identity.{{column}});
+{{/is_int}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
     r.tenant_id = v.identity.tenant_id.to_string();
@@ -256,6 +265,9 @@ domain::{{entity_singular}}
 {{#is_uuid}}
     r.{{column}} = boost::uuids::to_string(v.{{column}});
 {{/is_uuid}}
+{{#is_int}}
+    r.{{column}} = std::to_string(v.{{column}});
+{{/is_int}}
 {{/primary_key.columns}}
 {{#has_tenant_id}}
     r.tenant_id = v.tenant_id.to_string();

@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: 5B0E6E69-EFE5-4A22-8E04-5332129449E7
+:END:
+#+title: Tangled codegen templates: edit the org source, not the mustache
+#+description: Some .mustache files under library/templates are themselves tangled output of a literate org; the codegen_templates tangle clobbers direct .mustache edits, so the durable edit goes in the org source
+#+type: memory
+#+memory_subtype: feedback
+#+level: cross
+#+filetags: :memory:feedback:
+#+created: 2026-09-09
+#+updated: 2026-09-09
+
+Codegen templates under projects/ores.codegen/library/templates/ are not all hand-written: several are themselves the tangled output of a literate org source (cpp_domain_type_mapper.cpp.mustache tangles from ores.cpp.repository.mapper_impl.org, cpp_domain_type_generator.cpp.mustache tangles from ores.cpp.generator.generator_impl.org). Running compass build --direct codegen_templates re-tangles every org source and silently clobbers any direct .mustache edit.
+
+*Why:* While closing the F1 mapper growth item, four is_int branches added directly to cpp_domain_type_mapper.cpp.mustache were wiped by the next codegen_templates tangle. The template banner names cpp_repository.org as its source, but that file does not hold the template: the content lives in ores.cpp.repository.mapper_impl.org, whose mustache tangle block emits the file. Direct mustache edits looked correct until the next tangle, then vanished.
+
+*How to apply:* Before editing any .mustache under library/templates, grep the templates directory for an org whose mustache tangle block names that file as its target. Edit the org source, then run compass build --direct codegen_templates and verify the tangle reproduced the edit. Never treat the .mustache as the durable source unless no org tangles it. The tangle command is a compass build and must run bare.

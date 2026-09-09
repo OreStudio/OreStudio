@@ -67,13 +67,23 @@ domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
 {{#is_uuid}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = ctx.generate_uuid();
 {{/is_uuid}}
+{{#is_int}}
+{{#generator_expr}}
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{{generator_expr}}};
+{{/generator_expr}}
+{{^generator_expr}}
+    r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = 0;
+{{/generator_expr}}
+{{/is_int}}
 {{^is_uuid}}
+{{^is_int}}
 {{#generator_expr}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{{generator_expr}}};
 {{/generator_expr}}
 {{^generator_expr}}
     r.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = std::string(faker::word::noun());
 {{/generator_expr}}
+{{/is_int}}
 {{/is_uuid}}
 {{/primary_key.extra_columns}}
 {{#natural_keys}}

@@ -2844,6 +2844,7 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
             field_type = field.get('type', 'uuid')
             field['is_uuid'] = field_type == 'uuid'
             field['is_text'] = field_type == 'text'
+            field['is_int'] = field_type in ('integer', 'int')
             if field['is_uuid'] and 'uuid_check_fn' not in field:
                 field['uuid_check_fn'] = 'ores_utility_nil_uuid_fn()'
             if 'cpp_type' not in field:

@@ -525,11 +525,11 @@ def main():
           f"account {account}")
 
     family = {BOND_ISSUES, *CHILD_TABLES, *FACT_TABLES.values()}
-    counts = {t: args.rows // len(TRADE_TYPE_CODES) if t in family else args.rows
-              for t in cols}
+    family_size = args.rows // len(TRADE_TYPE_CODES)
+    counts = {t: family_size if t in family else args.rows for t in cols}
     print(f"{len(cols)} tables, {sum(len(v) for v in cols.values())} columns, "
           f"{args.rows} rows per table"
-          f"{', family at ' + str(counts[next(iter(family))]) if family <= set(cols) else ''}\n")
+          f"{', family at ' + str(family_size) if family <= set(cols) else ''}\n")
 
     results, findings, discovered = [], [], []
     if args.attribute:

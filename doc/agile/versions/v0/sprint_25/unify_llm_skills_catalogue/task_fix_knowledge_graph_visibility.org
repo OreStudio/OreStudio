@@ -8,7 +8,7 @@
 #+filetags: :llm:knowledge:zettelkasten:audit:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/fix-knowledge-graph-visibility
-#+pr:
+#+pr: 2043
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
@@ -86,7 +86,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2043][#2043]] | [compass] Index doc/knowledge/external and lint dangling id links |
 
 * Review
 

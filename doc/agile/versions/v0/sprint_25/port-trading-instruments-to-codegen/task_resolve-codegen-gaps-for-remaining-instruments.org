@@ -2,7 +2,7 @@
 :ID: 2548EE95-7C62-4C48-BA11-2146604B2082
 :END:
 #+title: Task: Resolve codegen feature gaps blocking the remaining trading instrument conversions
-#+description: Convert the five remaining hand-crafted trading instrument families (bond, commodity, composite with composite_leg, credit, scripted) to codegen, closing or working around the codegen gaps that block them and making the trading component drift-checkable first.
+#+description: Convert the remaining hand-crafted trading instrument families (commodity, composite with composite_leg, credit, scripted) to codegen, closing or working around the codegen gaps that block them and making the trading component drift-checkable first. Bond left the list on 2026-09-09: the data-oriented redesign (688959F0) supersedes its conversion in the atomised relational shape.
 #+type: task
 #+level: s1
 #+filetags: :port-trading-instruments-to-codegen:sprint_25:v0:
@@ -20,11 +20,15 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Convert the five remaining hand-crafted trading instrument families
-(bond, commodity, composite with its composite_leg child, credit,
+Convert the remaining hand-crafted trading instrument families
+(commodity, composite with its composite_leg child, credit,
 scripted) to codegen. fra and the swap-leg families left the list when
 the rates families bound on 2026-09-06 (6c59c3cbfb); fra still carries
-a documented service exclusion, below. Each conversion follows the
+a documented service exclusion, below. bond left the list on
+2026-09-09: the data-oriented redesign story
+[[id:688959F0-A1AB-4021-A57E-1103AD92773A][688959F0]] supersedes its
+conversion and converts the family in the atomised relational shape
+proposed by its analysis; see Notes. Each conversion follows the
 established pattern: modern-format model bound to the
 trading-instrument variability profile, zero-diff regeneration across
 all facets (verified with a second pass), messaging path reconciled,
@@ -94,8 +98,8 @@ and the first trading drift run re-emitted all 36.
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:FBBC0235-C506-440B-A849-4DC96B5921C4][Port trading instruments to codegen]] |
-| Now          | Gap (a) probed and decided 2026-09-08: the trade-style shape does not cover the bond domain; codegen must grow mid-group support. Probe org and evidence in Notes. |
-| Waiting on   | The gap-(a) codegen change (group-composition key in the domain template) before bond/commodity/credit conversion; trading drift reconciliation before any conversion can verify zero-diff. |
+| Now          | Gap (a) probed and decided 2026-09-08: the trade-style shape does not cover the bond domain; codegen must grow mid-group support. Probe org and evidence in Notes. Bond's conversion is superseded (2026-09-09): the data-oriented redesign converts it in the atomised shape; commodity, credit, scripted stay here. |
+| Waiting on   | The gap-(a) codegen change (group-composition key in the domain template) before commodity/credit conversion; trading drift reconciliation before any conversion can verify zero-diff. |
 | Next         | Probe gap (b) with scripted's column-name mapping and gap (c) with composite's service methods; then scope the (a) and (d) codegen changes. |
 | Last touched | 2026-09-08                               |
 
@@ -105,11 +109,12 @@ and the first trading drift run re-emitted all 36.
   registry, after reconciling the Sep-8 drift inventory (36 rates
   messaging files, 16 fx/equity service files, the fra service
   exclusion, the trade-family outputs).
-- The =bond_instrument=/=commodity_instrument/=credit_instrument=
-  shape is decided: either trade-style field-group orgs plus escape
-  hatches cover the C1202 nesting and non-persisted members zero-diff,
-  or the domain template grows arbitrary-group support and the models
-  regenerate zero-diff.
+- The =commodity_instrument=/=credit_instrument= shape is decided:
+  either trade-style field-group orgs plus escape hatches cover the
+  C1202 nesting and non-persisted members zero-diff, or the domain
+  template grows arbitrary-group support and the models regenerate
+  zero-diff. (bond_instrument's shape is the atomised relational model
+  of the data-oriented redesign.)
 - =scripted_instrument='s =id= PK column maps into the identity group,
   or its conversion takes a recorded alternative that preserves
   zero-diff.
@@ -118,11 +123,12 @@ and the first trading drift run re-emitted all 36.
   accessors, read-only legs subjects) is either org-expressible or
   carried by a mechanical, documented exclusion that survives
   regeneration.
-- All five families (bond, commodity, composite with composite_leg,
+- All remaining families (commodity, composite with composite_leg,
   credit, scripted) converted per the established pattern, each batch
   ending with build green, the =ores.trading.{api,core,service}.tests=
   suites green, and a second-pass zero-diff regeneration verified
-  under a drift check that actually covers trading.
+  under a drift check that actually covers trading. Bond's conversion
+  happens on the data-oriented redesign in the atomised shape.
 
 * Notes
 
@@ -132,6 +138,19 @@ effort-gated, and this task is the follow-up those deferral notes
 point at. fra and swap legs have since converted with the rates
 binding (Sep 6) and leave the remaining set; fra carries the service
 exclusion documented in 6c59c3cbfb and repaired in 2e75d95704.
+
+Change of scope on 2026-09-09: bond's conversion is superseded. The
+data-oriented redesign ([[id:688959F0-A1AB-4021-A57E-1103AD92773A][688959F0]])
+approved the bond relational pilot (analysis PR #2039, deliverable
+=trading_bond_relational_model.org=) and its
+=implement-bond-relational-codegen= task converts the family in the
+atomised shape: nine entities on the SCD2 spine (issue, per-trade
+instrument, five product fact tables, two issue-keyed child tables).
+The old-shape conversion this task scoped for bond would be dead work.
+The gap work above now gates commodity, credit and scripted only; the
+bond probe org stays the evidence for the gap-(a) mid-group change,
+which commodity and credit still need. The description, acceptance and
+story rows reflect the four-family scope.
 
 The 2026-09-08 verification ran the first trading regeneration the
 component has ever had: trading-cpp is absent from the drift registry

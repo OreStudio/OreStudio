@@ -387,8 +387,119 @@ which is the same 39.
 
 The gate now holds the one-directional rule. Re-running it over the same
 tree gives exactly those numbers, so the rule change moves the 39 pairs
-and nothing else. Wave A.3b carries both paths and restores 6,761 and
-44.
+and nothing else.
+
+The prediction here was that A.3b restores 6,761 and 44. It carried the
+two hidden paths, so it did restore those, and it carried the
+ForwardBond and BondTRS residue as well. Both fell further.
+
+** Wave A.3b, the per-product residue
+
+Two products stated members that had no home in the container and no
+column in any row. A forward bond states a flag, a settlement block and
+a premium. A TRS states a payer, an initial price and a return schedule.
+The classifier reported all six, and two of them only after the
+previous wave made the boolean rule one-directional.
+
+*** The container carries the forward settlement and premium whole
+
+=bond_schedule_data.hpp= gained two types.
+=bond_forward_settlement= mirrors =settlementData=: the forward maturity
+date is required and the other seven members are optional, so a forward
+bond always states the first and the container keeps the difference for
+the rest. =bond_forward_premium= holds the amount and the date, both
+required strings. The schema spells the amount as text, not as a number.
+
+=bond_instrument_data= gained six members: =forward_long_in_forward=,
+=forward_settlement=, =forward_premium=, =trs_payer=,
+=trs_initial_price= and =trs_schedule=. The last is a
+=bond_schedule_data=, the type wave A.2b built for the legs, so the TRS
+return schedule costs no new type.
+
+The settlement block states its amount, lock rate and dv01 as =xs:float=.
+The container holds them as =double= and the two directions cast, the
+way =map_number= and =reverse_number= already do.
+
+The premium and the settlement block belong to the product and not to
+the issue, so they sit on the container beside the fact rows and not in
+the fact rows.
+
+*** The measured effect
+
+Both trees were read with the strict classifier, over
+=external/ore/examples=.
+
+| Measure | A.3a | A.3b |
+|---------+------+------|
+| In-scope lost pairs | 6,800 | 6,582 |
+| In-scope unexplained pairs | 83 | 9 |
+| In-scope lost paths | 50 | 38 |
+
+218 lost pairs came back and 12 paths left the list whole. No path got
+worse: the path diff holds removals only. The twelve are the five
+BondTRS total-return paths and the seven ForwardBond paths, which is
+every path this wave set out to carry.
+
+The unexplained class fell by 74, in two parts. The first is the 39
+pairs of the two hidden paths: the source states =true= in a required
+string and the committed mapper left the whole forward block unset apart
+from =BondData=, so our writer emitted =LongInForward= empty against a
+document that states it. The second is the remaining 35, and the cause
+is the same one: the settlement block is required, so the writer marked
+it with an empty forward maturity date on every forward bond in the
+corpus.
+
+Under the rule the gate used before this wave, the A.3a tree read 6,761
+and 44. The A.3b tree reads below both, so the wave clears the two
+hidden paths and carries the product residue as well.
+
+*** What remains in scope
+
+The 6,582 lost pairs and the 38 lost paths fall into two groups, and
+between them they account for every one of the 6,582.
+
+- The option block, 72 pairs over 24 paths, shared by BondOptionData and
+  AscotData. =OptionData/LongShort= is nine of them, six on
+  BondOptionData and three on AscotData: the source states =Long= and
+  our output states the element empty, so each is a lost pair as well as
+  an unexplained one. The rest is =Style=, =Settlement=, =Redemption=,
+  =PriceType=, =KnocksOut=, the strike group (=StrikePrice= with its
+  value and currency, =StrikeYield= with its yield and compounding) and
+  the Ascot premium list. This is wave A.3c.
+- The trade envelope, 6,510 pairs over 14 paths, from
+  =Envelope/CounterParty= down to the =AdditionalFields= extras. This
+  is wave A.4.
+
+*** The full suite, and one failure that is not this wave's
+
+=compass build= is clean and =compass test run= reads 71 of 71 passing.
+
+The first run of the suite failed =ores.reporting.core.tests= on the
+temporal exclusion constraint for report definitions. The second run
+passed the same test with no code change between them.
+
+The cause sits in that component's own test.
+=report_definition_eventing_integration_tests.cpp= waits for a NATS
+notification after a write, and when the notification does not arrive it
+re-drives =repo.write(party_ctx, v)= up to four times, passing the same
+version object each time. The comment on that loop says the re-drive
+makes a new version row. It does not:
+=ores.database/repository/bitemporal_operations.hpp= implements
+=execute_write_query= as a plain insert, with no version bump and no
+upsert, so the second insert repeats the first row and the exclusion
+constraint rejects it.
+
+The retry therefore cannot work on any path it is taken, and load is
+what decides whether it is taken. That is why it reads as a flake. It is
+a defect in =ores.reporting= and this wave does not fix it. It is
+recorded here because it makes every later full-suite gate in this work
+unreliable until someone does.
+
+*** No generated code was touched
+
+The four files this wave changes are the two container headers, the
+mapper and the mapper's test suite. =domain.hpp= and =domain.cpp= are
+untouched.
 
 * Test Scenarios
 

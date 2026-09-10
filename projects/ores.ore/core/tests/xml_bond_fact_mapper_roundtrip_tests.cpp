@@ -833,6 +833,7 @@ TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
       </BondData>
       <TotalReturnData>
         <Payer>false</Payer>
+        <InitialPrice>109.712</InitialPrice>
         <PriceType>Clean</PriceType>
         <ScheduleData>
           <Dates>
@@ -887,9 +888,29 @@ TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
     CHECK(r.trs->funding_leg_type == "Fixed");
     CHECK(r.trs->funding_rate == Approx(0.0125).epsilon(0.0001));
 
+    // The total return block carries three members of its own. The payer
+    // is a required string the corpus spells as text, the initial price
+    // is a number and the schedule states its dates as a list.
+    REQUIRE(r.trs_payer);
+    CHECK(*r.trs_payer == "false");
+    REQUIRE(r.trs_initial_price);
+    CHECK(*r.trs_initial_price == Approx(109.712));
+    REQUIRE(r.trs_schedule.dates.size() == 1);
+    REQUIRE(r.trs_schedule.dates.front().calendar);
+    CHECK(*r.trs_schedule.dates.front().calendar == "GBP");
+    REQUIRE(r.trs_schedule.dates.front().dates.size() == 2);
+    CHECK(r.trs_schedule.dates.front().dates[0] == "2025-01-15");
+    CHECK(r.trs_schedule.dates.front().dates[1] == "2025-07-15");
+
     const auto rt = bond_instrument_mapper::reverse_bond_trs(r);
     REQUIRE(rt.BondTRSData);
     CHECK(std::string(rt.BondTRSData->TotalReturnData.PriceType) == "Clean");
+    CHECK(std::string(rt.BondTRSData->TotalReturnData.Payer) == "false");
+    REQUIRE(rt.BondTRSData->TotalReturnData.InitialPrice);
+    CHECK(*rt.BondTRSData->TotalReturnData.InitialPrice == Approx(109.712f));
+    REQUIRE(rt.BondTRSData->TotalReturnData.ScheduleData.Dates.size() == 1);
+    REQUIRE(rt.BondTRSData->TotalReturnData.ScheduleData.Dates.front().Calendar);
+    CHECK(std::string(*rt.BondTRSData->TotalReturnData.ScheduleData.Dates.front().Calendar) == "GBP");
     CHECK(rt.BondTRSData->FundingData.LegData.Payer);
 
     BOOST_LOG_SEV(lg, info) << "BondTRS price type and payer read from the document.";
@@ -1292,6 +1313,118 @@ TEST_CASE("a_forward_bonds_income_curve_survives_the_round_trip", tags) {
     CHECK(std::string(*rt.ForwardBondData->BondData.Calendar) == "TARGET");
 
     BOOST_LOG_SEV(lg, info) << "Forward bond income curve survived.";
+}
+
+// =============================================================================
+// The per-product residue no row holds
+// =============================================================================
+
+TEST_CASE("a_forward_bonds_settlement_premium_and_flag_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema declares the flag, the settlement block and its maturity
+    // date required, so a forward bond always states them, and no row of
+    // the nine tables holds any of the three. The corpus spells the flag
+    // and the settlement dirty flag as text.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Forward_Bond_Settlement">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:XS1234567890</SecurityId>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>2025-12-20</ForwardMaturityDate>
+        <ForwardSettlementDate>2025-12-24</ForwardSettlementDate>
+        <Settlement>Cash</Settlement>
+        <Amount>1000000</Amount>
+        <LockRate>0.025</LockRate>
+        <dv01>123.45</dv01>
+        <LockRateDayCounter>A360</LockRateDayCounter>
+        <SettlementDirty>true</SettlementDirty>
+      </SettlementData>
+      <PremiumData>
+        <Amount>2500</Amount>
+        <Date>2025-01-15</Date>
+      </PremiumData>
+      <LongInForward>true</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.forward_long_in_forward);
+    CHECK(*r.forward_long_in_forward == "true");
+    REQUIRE(r.forward_settlement);
+    CHECK(r.forward_settlement->forward_maturity_date == "2025-12-20");
+    REQUIRE(r.forward_settlement->forward_settlement_date);
+    CHECK(*r.forward_settlement->forward_settlement_date == "2025-12-24");
+    REQUIRE(r.forward_settlement->settlement);
+    CHECK(*r.forward_settlement->settlement == "Cash");
+    REQUIRE(r.forward_settlement->amount);
+    CHECK(*r.forward_settlement->amount == Approx(1000000.0));
+    REQUIRE(r.forward_settlement->lock_rate);
+    CHECK(*r.forward_settlement->lock_rate == Approx(0.025));
+    REQUIRE(r.forward_settlement->dv01);
+    CHECK(*r.forward_settlement->dv01 == Approx(123.45));
+    REQUIRE(r.forward_settlement->lock_rate_day_counter);
+    CHECK(*r.forward_settlement->lock_rate_day_counter == "A360");
+    REQUIRE(r.forward_settlement->settlement_dirty);
+    CHECK(*r.forward_settlement->settlement_dirty == "true");
+    REQUIRE(r.forward_premium);
+    CHECK(r.forward_premium->amount == "2500");
+    CHECK(r.forward_premium->date == "2025-01-15");
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    CHECK(std::string(rt.ForwardBondData->LongInForward) == "true");
+    CHECK(std::string(rt.ForwardBondData->SettlementData.ForwardMaturityDate) == "2025-12-20");
+    REQUIRE(rt.ForwardBondData->SettlementData.ForwardSettlementDate);
+    CHECK(std::string(*rt.ForwardBondData->SettlementData.ForwardSettlementDate) == "2025-12-24");
+    REQUIRE(rt.ForwardBondData->SettlementData.Amount);
+    CHECK(*rt.ForwardBondData->SettlementData.Amount == Approx(1000000.0f));
+    REQUIRE(rt.ForwardBondData->SettlementData.SettlementDirty);
+    CHECK(std::string(*rt.ForwardBondData->SettlementData.SettlementDirty) == "true");
+    REQUIRE(rt.ForwardBondData->PremiumData);
+    CHECK(std::string(rt.ForwardBondData->PremiumData->Amount) == "2500");
+    CHECK(std::string(rt.ForwardBondData->PremiumData->Date) == "2025-01-15");
+
+    BOOST_LOG_SEV(lg, info) << "Forward bond settlement, premium and flag survived.";
+}
+
+TEST_CASE("a_forward_bond_without_a_premium_omits_the_element", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The premium is the one optional member of the three, so a document
+    // that omits it must come back without it.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Forward_Bond_No_Premium">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:XS1234567890</SecurityId>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>2025-12-20</ForwardMaturityDate>
+      </SettlementData>
+      <LongInForward>false</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    CHECK(!r.forward_premium);
+    REQUIRE(r.forward_settlement);
+    CHECK(!r.forward_settlement->settlement);
+    CHECK(!r.forward_settlement->forward_settlement_date);
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    CHECK(!rt.ForwardBondData->PremiumData);
+
+    BOOST_LOG_SEV(lg, info) << "Forward bond without a premium came back without one.";
 }
 
 // =============================================================================

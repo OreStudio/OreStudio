@@ -255,6 +255,35 @@ struct bond_leg_data final {
     }
 };
 
+/**
+ * @brief A forward bond's settlement block.
+ *
+ * The forward maturity date is required and every other member is
+ * optional. The nine tables carry no forward settlement column, so the
+ * container holds the block whole and export re-emits it.
+ */
+struct bond_forward_settlement final {
+    std::string forward_maturity_date;
+    std::optional<std::string> forward_settlement_date;
+    std::optional<std::string> settlement;
+    std::optional<double> amount;
+    std::optional<double> lock_rate;
+    std::optional<double> dv01;
+    std::optional<std::string> lock_rate_day_counter;
+    std::optional<std::string> settlement_dirty;
+};
+
+/**
+ * @brief A forward bond's premium: the amount and the date it pays.
+ *
+ * Both members are required strings, and the schema spells the amount as
+ * text rather than as a number.
+ */
+struct bond_forward_premium final {
+    std::string amount;
+    std::string date;
+};
+
 }
 
 #endif

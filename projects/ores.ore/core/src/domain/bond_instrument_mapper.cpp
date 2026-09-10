@@ -32,6 +32,8 @@ using ores::trading::domain::bond_fixed_leg_data;
 using ores::trading::domain::bond_float_data;
 using ores::trading::domain::bond_floating_leg_data;
 using ores::trading::domain::bond_formula_based_leg_data;
+using ores::trading::domain::bond_forward_premium;
+using ores::trading::domain::bond_forward_settlement;
 using ores::trading::domain::bond_future;
 using ores::trading::domain::bond_instrument_data;
 using ores::trading::domain::bond_issue;
@@ -363,6 +365,56 @@ stubInterpolation reverse_stub(const bond_stub_interpolation& s) {
             parse_code(*s.rounding_type, rounding_type_count, roundingType::Closest);
     if (s.rounding_precision)
         result.RoundingPrecision = *s.rounding_precision;
+    return result;
+}
+
+bond_forward_settlement map_forward_settlement(const settlementData& s) {
+    bond_forward_settlement result;
+    result.forward_maturity_date = std::string(s.ForwardMaturityDate);
+    if (s.ForwardSettlementDate)
+        result.forward_settlement_date = std::string(*s.ForwardSettlementDate);
+    if (s.Settlement)
+        result.settlement = std::string(*s.Settlement);
+    if (s.Amount)
+        result.amount = static_cast<double>(*s.Amount);
+    if (s.LockRate)
+        result.lock_rate = static_cast<double>(*s.LockRate);
+    if (s.dv01)
+        result.dv01 = static_cast<double>(*s.dv01);
+    if (s.LockRateDayCounter)
+        result.lock_rate_day_counter = std::string(*s.LockRateDayCounter);
+    if (s.SettlementDirty)
+        result.settlement_dirty = std::string(*s.SettlementDirty);
+    return result;
+}
+
+settlementData reverse_forward_settlement(const bond_forward_settlement& row) {
+    settlementData result;
+    set_text(result.ForwardMaturityDate, row.forward_maturity_date);
+    set_present_text(result.ForwardSettlementDate, row.forward_settlement_date);
+    set_present_text(result.Settlement, row.settlement);
+    if (row.amount)
+        result.Amount = static_cast<float>(*row.amount);
+    if (row.lock_rate)
+        result.LockRate = static_cast<float>(*row.lock_rate);
+    if (row.dv01)
+        result.dv01 = static_cast<float>(*row.dv01);
+    set_present_text(result.LockRateDayCounter, row.lock_rate_day_counter);
+    set_present_text(result.SettlementDirty, row.settlement_dirty);
+    return result;
+}
+
+bond_forward_premium map_forward_premium(const forwardBondData_PremiumData_t& p) {
+    bond_forward_premium result;
+    result.amount = std::string(p.Amount);
+    result.date = std::string(p.Date);
+    return result;
+}
+
+forwardBondData_PremiumData_t reverse_forward_premium(const bond_forward_premium& row) {
+    forwardBondData_PremiumData_t result;
+    set_text(result.Amount, row.amount);
+    set_text(result.Date, row.date);
     return result;
 }
 
@@ -915,8 +967,14 @@ bond_instrument_data bond_instrument_mapper::forward_forward_bond(
     const trade& t, const bond_issue_lookup& lookup) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ForwardBond: " << std::string(t.id);
     bond_instrument_data result = make_base("ForwardBond");
-    if (t.ForwardBondData)
-        map_bond_data(t.ForwardBondData->BondData, result);
+    if (t.ForwardBondData) {
+        const auto& d = *t.ForwardBondData;
+        map_bond_data(d.BondData, result);
+        result.forward_long_in_forward = std::string(d.LongInForward);
+        result.forward_settlement = map_forward_settlement(d.SettlementData);
+        if (d.PremiumData)
+            result.forward_premium = map_forward_premium(*d.PremiumData);
+    }
     resolve_issue(result, lookup);
     return result;
 }
@@ -1019,6 +1077,10 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
     result.trs = trs;
     result.trs_funding_leg = map_leg(ld);
     result.trs_price_type = d.TotalReturnData.PriceType;
+    result.trs_payer = std::string(d.TotalReturnData.Payer);
+    if (d.TotalReturnData.InitialPrice)
+        result.trs_initial_price = static_cast<double>(*d.TotalReturnData.InitialPrice);
+    result.trs_schedule = map_schedule(d.TotalReturnData.ScheduleData);
     return result;
 }
 
@@ -1141,6 +1203,12 @@ trade bond_instrument_mapper::reverse_forward_bond(const bond_instrument_data& d
     t.TradeType = oreTradeType::ForwardBond;
     forwardBondData fbd;
     fbd.BondData = reverse_bond_data(data);
+    if (data.forward_long_in_forward)
+        set_text(fbd.LongInForward, *data.forward_long_in_forward);
+    if (data.forward_settlement)
+        fbd.SettlementData = reverse_forward_settlement(*data.forward_settlement);
+    if (data.forward_premium)
+        fbd.PremiumData = reverse_forward_premium(*data.forward_premium);
     t.ForwardBondData = std::move(fbd);
     return t;
 }
@@ -1237,6 +1305,11 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
         ldt.FloatingLegData = std::move(fld);
         d.FundingData.LegData.legDataType = std::move(ldt);
     }
+    if (data.trs_payer)
+        set_text(d.TotalReturnData.Payer, *data.trs_payer);
+    if (data.trs_initial_price)
+        d.TotalReturnData.InitialPrice = static_cast<float>(*data.trs_initial_price);
+    d.TotalReturnData.ScheduleData = reverse_schedule(data.trs_schedule);
     t.BondTRSData = std::move(d);
     return t;
 }

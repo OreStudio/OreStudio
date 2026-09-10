@@ -138,6 +138,28 @@ struct bond_instrument_data final {
     std::string trs_price_type;
 
     /**
+     * @brief The forward bond members no row holds.
+     *
+     * The long-in-forward flag, the settlement block and the premium. The
+     * schema declares the flag and the settlement block required, so a
+     * forward bond always states them and an unengaged member here means
+     * the container came from a row set rather than from a document.
+     */
+    std::optional<std::string> forward_long_in_forward;
+    std::optional<bond_forward_settlement> forward_settlement;
+    std::optional<bond_forward_premium> forward_premium;
+
+    /**
+     * @brief The total return members of a TRS that no row holds.
+     *
+     * The payer flag, the initial price and the return schedule. The
+     * payer and the schedule are required, so a TRS always states them.
+     */
+    std::optional<std::string> trs_payer;
+    std::optional<double> trs_initial_price;
+    bond_schedule_data trs_schedule;
+
+    /**
      * @brief The bond's own coupon legs, re-emitted whole and in order.
      *
      * A bond states one leg per coupon and the schema declares the

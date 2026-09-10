@@ -150,6 +150,15 @@ The skills themselves.
 | [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][compass-skill-review]] | Skill Review Skill | Review existing skills against the skill contract. Use when auditing skill quality, before adding a new ski... |
 | [[id:52DA0E52-ABB6-4AC3-A586-BA6336F08FDA][compass-skill-show-catalogue]] | Skill Show Catalogue | Show the skills catalogue nicely grouped by domain prefix, with each skill's name, title, and description —... |
 
+* Principles (=compass-principle-=)
+
+Local bindings on an upstream principle, supplying the project detail the rule cannot know.
+
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:D1F13734-216D-47AA-BA00-28F3A20F97C1][compass-principle-never-block-on-the-human]] | Compass Principle Never Block On The Human | The local binding for never-block-on-the-human — proceed on reversible work and record the assumption; conf... |
+| [[id:FAABB6FF-FA3A-4E5C-B0B7-FE3E2E661A6C][compass-principle-type-system-discipline]] | Compass Principle Type System Discipline | The C++ binding for type-system-discipline — what each upstream pattern becomes in this codebase, which the... |
+
 # END generated catalogue
 
 * Rebuilding skills

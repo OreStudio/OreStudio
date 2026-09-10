@@ -2,18 +2,18 @@
 :ID: A7BCF024-9222-40C3-9151-AFE9C9B4BDBE
 :END:
 #+title: Task: Cite the principles under the citation function
-#+description: REFRAMED by the reference approach. The eleven adopted pstack principles are referenced upstream rather than ported; this task now covers citing them from our catalogue and writing the thin local bindings, not copying them.
+#+description: REFRAMED by the reference approach. The thirteen adopted pstack principles are referenced upstream rather than ported; this task now covers citing them from our catalogue and writing the thin local bindings, not copying them.
 #+type: task
 #+level: s1
 #+filetags: :llm:skills:principles:pstack:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/port-principles-layer
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The citation function holds rules an agent cites rather than runs. Port the psta
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -45,11 +45,52 @@ The citation function holds rules an agent cites rather than runs. Port the psta
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The acceptance was written before the reference approach settled, so it
+asks for principles to be ported as skills. Porting them would fork
+thirteen upstream documents, which the collection page argues against at
+length and which the abandoned attribution task already decided against.
+The work therefore cites rather than copies, and writes a local skill only
+where the upstream rule is wrong in local detail.
+
+[[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] is the index: the
+thirteen grouped by when they are cited — before writing, while designing,
+while working, at the gate, after the fact — so a phase can reach for the
+two that bear on its decision rather than reading the set. It carries the
+upstream attribution once for the collection, which is where the
+attribution belongs when nothing is forked.
+
+Two needed a binding. =type-system-discipline= is written for TypeScript
+and its intent survives the move to C++ while several mechanisms do not,
+so the binding is a translation table plus the two patterns the language
+makes harder: exhaustive matching, which the compiler will not enforce
+once a =default:= label appears, and branding, which costs a struct and
+its operators rather than a type alias. =never-block-on-the-human= reads
+as opposed to our confirmation conventions and is not, so the binding
+states the single criterion that resolves it: proceed where a written
+record makes the choice reversible, confirm where the cost is paid before
+anyone reads the trail.
 
 * Notes
+
+The audit said eleven of twenty-one principles were adopted; its own table
+says thirteen. Two rows had been changed to Adopt with a note reading "see
+below" and the count was never updated. Fixed here, in the collection page
+and in the two agile documents repeating the figure, because the set this
+task cites is the set that table defines.
+
+The encode-as-a-check test found one rule worth moving out of prose.
+=separate-before-serializing-shared-state= is literally true of the stash
+stack: every worktree shares one, so a bare push contends for its top and
+a bare pop can take another session's work. That rule existed only as
+prose in the session prompt, so it is now a =PreToolUse= hook that denies
+the two bare forms and names the safe ones in the denial.
+
+Writing the hook demonstrated the point twice over. Its first pattern
+denied =echo git stash is shared=, which meant the deployed hook blocked
+the very commands I was using to fix it — the rule was live and enforcing
+before it was right. The parser now reads the subcommand rather than
+matching the tail, and the false positive has its own test.
+
 
 * Test Scenarios
 
@@ -75,3 +116,31 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All seven acceptance criteria are met, with one reinterpreted against a
+later decision and the reinterpretation recorded.
+
+Reinterpreted: /every adopted principle is a loadable skill named after
+its rule/. The thirteen are loadable as the upstream skills they already
+are, and they are cited from
+[[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] rather than
+copied. Forking them would contradict the reference-not-fork argument the
+collection page makes and the attribution task that was abandoned on those
+grounds.
+
+The two principles wrong in local detail have bindings:
+=compass-principle-type-system-discipline= recasts the rule for C++, and
+=compass-principle-never-block-on-the-human= reconciles it against our
+conventions on irreversible and outward-facing actions. Both divergences
+are stated in the binding itself rather than in a changelog.
+
+The index groups the thirteen by the moment they are cited, which is what
+lets a method read the set at task start without reading all of it. The
+upstream repository, plugin, version and maintainers are recorded once for
+the collection, which is the right granularity when nothing is forked.
+
+Every candidate was tested against the encode-as-a-check rule. One moved:
+the shared stash stack is now enforced by a hook rather than advised in
+prose. The seven rules a check already carries are listed in the index
+with what checks them, so an agent can see why they are absent from the
+citation list.

@@ -115,6 +115,11 @@ LEVELS = {
     # Identity: what belongs in the product at all.
     "compass-agile-brainstorm-idea": "s5",
 
+    # Bindings on an upstream principle. The level is the level of the
+    # judgement the principle is cited at, not of the principle itself.
+    "compass-principle-type-system-discipline": "s1",
+    "compass-principle-never-block-on-the-human": "cross",
+
     # Every level acts on these: the documents and skills themselves, and
     # the orientation any System starts from.
     "compass-doc-add": "cross",

@@ -176,10 +176,9 @@ underlying at expiry.
   treatment of random walks, including the simple $\pm 1$ walk and its
   key combinatorial results.
 - Wikipedia: [[https://en.wikipedia.org/wiki/Random_walk][Random walk]].
-- Tuncer, T. D. (2026). [LinkedIn post on random walks as a
-  discrete-time stochastic process driven by successive random
-  increments.] LinkedIn. Retrieved 10 September 2026. The post
-  prompted the "Stationary steps, non-stationary level", "A unit root,
-  not a force", and "First-passage problems" sections above; this
-  document restates that material in its own terms and ties it to ORE
-  Studio's processes.
+- Tuncer, T. D. (2026). "A random walk is a discrete-time stochastic
+  process driven by successive random increments." LinkedIn post,
+  September 2026. Retrieved 10 September 2026. The post prompted the
+  "Stationary steps, non-stationary level", "A unit root, not a force",
+  and "First-passage problems" sections above; this document restates
+  that material in its own terms and ties it to ORE Studio's processes.

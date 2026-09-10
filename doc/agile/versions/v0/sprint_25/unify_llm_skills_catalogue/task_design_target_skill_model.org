@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:skills:naming:convention:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/design-target-skill-model
+#+pr: 2049
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-25
 #+updated: 2026-08-25
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,12 +33,12 @@ decision log, as the policy already demands.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -51,11 +51,43 @@ decision log, as the policy already demands.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The architecture already states the model, so this task moved statements
+into the two documents that bind an author, and changed nothing about the
+model itself.
+
+The naming conventions document takes the =compass-= prefix, the five name
+shapes, the =principle-= and =method-= second segments, a table mapping each
+name shape to the regulatory function it offers, the =act-= and =export-=
+verbs, the level register with its advisory and binding strengths, and the
+placement procedure. The glossary takes the terminology register, because
+terminology governs every document and the skills cluster is only one reader.
+
+Policy binds where an author meets it, so =skill-add= carries the same rules
+in its own steps: the naming step now states the prefix and the segments and
+routes an unsure author to the placement procedure, and a new step makes
+=#+level:= a filled-in field rather than a rule stated elsewhere.
 
 * Notes
+
+Three things the sources disagreed on, resolved in favour of the later
+document and recorded in the decision log.
+
+The acceptance says six regulatory functions. There are seven: /recording/
+was added when the framework was respecified as a regulator, after this task
+was written. The naming document carries all seven.
+
+The design's terminology table renders the role a session adopts as
+/function/, which now collides with /regulatory function/. The architecture
+resolves it to /System/, and the glossary follows the architecture. The
+glossary's =Agent= entry defined an agent as a subprocess forked by an
+orchestrator, which is what the architecture calls a /delegate/; it now
+carries the general definition, and =Session= and =Delegate= are separate
+entries.
+
+=#+level:= is mandatory from now on, and 52 of the 83 existing skills do not
+carry it yet. Tagging them is its own task in this story, which is where the
+sweep belongs; this task lands the rule and the register the sweep reads
+from.
 
 * Test Scenarios
 
@@ -72,12 +104,28 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2049][#2049]] | [doc] Land the skill architecture into policy |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =execution_model.org= still uses both terms this PR retires: every role row says "function" where it now means System, and the Agent row says "subagent" | doc/meta/execution_model.org | Accept | Fixed here rather than deferred. The glossary Agent entry links straight to this table, so a reader following it met the retired vocabulary one hop from the register. Also corrected the =S1 Agent= description, which called the role a subagent |
+| 2 | The name-shape table lists a representative rather than exhaustive set of document types per function | doc/llm/skills/skill_naming_conventions.org | Decline | Deliberate. The table orients an author naming something; the exhaustive mapping is one link away in Regulatory Functions, and duplicating it here would create a second copy to keep in step |
 
 * Result
+
+All six acceptance criteria are met, with one correction of record.
+
+The naming conventions document carries the =compass-= prefix rule, the seven
+regulatory functions rather than the six the acceptance names, and the
+=principle-= and =method-= segments. =#+level:= is mandatory, and the
+level-to-scope table is recorded with its advisory and binding strengths. The
+verb register gains =act-= and =export-=, and =helm= as a bare name, each with
+a decision-log entry; the verbs the ported methods need arrive with that port,
+as its own entry records. The terminology table is in the glossary, naming the
+retired synonyms and both traps. The reference-only rule now exempts the
+citation function, with the reasoning stated. The placement procedure is
+reproduced in the naming document, where an author naming something meets it.
+
+=skill-add= enforces all of it, and the deployed bundle rebuilt clean.

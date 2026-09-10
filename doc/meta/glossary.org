@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :meta:glossary:terminology:
 #+created: 2026-05-18
-#+updated: 2026-05-21
+#+updated: 2026-09-10
 
 Every term used across the ORE Studio [[id:C0CF98E8-082F-2F04-2533-94B2DA9BE3D2][information architecture]] has a single
 definition here. Other documents link to these entries with =[[id:...]]= so
@@ -15,6 +15,45 @@ meaning is defined once and reused everywhere. Each entry says what the term is
 and (where applicable) carries a small table covering its owner among the
 [[id:926B916E-A57E-498E-99AB-720B583C0362][cybernetic systems]], how to generate one, a representative example, and the
 inventory page that lists every instance.
+
+* Terminology register
+:PROPERTIES:
+:ID: 9C2E4A17-5B3D-4E88-A6F1-2D7B0C4E8351
+:END:
+
+One word per concept, across every document and not only the skills. Where a
+synonym below still appears in older prose, the left-hand column is what the
+text should say. The full entries follow; this table is the index and the
+retirement notice.
+
+#+ATTR_HTML: :class hug-leading
+| Concept                          | We use    | Retired synonyms                         |
+|----------------------------------+-----------+------------------------------------------|
+| A unit of work an agent executes | task      | ticket, issue, unit, slice               |
+| A body of related tasks          | story     | epic, spec, map                          |
+| A recorded idea, not yet work    | capture   | backlog item, inbox item                 |
+| The approach to a kind of work   | method    | playbook, flow                           |
+| The sticky posture for a session | mode      | stance skill, style                      |
+| A rule that is cited, not run    | principle | rule, guideline                          |
+| A durable fact about the domain  | knowledge | research note, doc, ADR                  |
+| Intended behaviour, checkable    | spec      | —                                        |
+| The role a session or delegate acts as | System | persona, agent type, role, function   |
+| Any LLM process doing work       | agent     | —                                        |
+| The agent a human talks to       | session   | —                                        |
+| An agent spawned by another      | delegate  | subagent                                 |
+| The typed thing acted upon       | target    | object, candidate, entity                |
+| The operation applied to it      | action    | command, verb, skill                     |
+
+Two terms admit a misreading, and both are worth stating negatively.
+
+- *Spec* denotes an Allium specification and nothing else. A story's plan is a
+  *plan*.
+- *Persona* denotes a Council member and nothing else. The role a session
+  adopts is a *System*.
+
+/Function/ is likewise reserved: it names a
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][regulatory function]], never the
+role a session adopts.
 
 * Task
 :PROPERTIES:
@@ -400,9 +439,30 @@ A story in a later sprint that picks up where this one left off. Captured as
 :ID: 366D6521-79E0-42CE-97F4-5FD0F443A923
 :END:
 
-A subprocess forked by a [[id:BF4F183F-BB33-44F2-A53F-D9BD602E9BE8][System 2]] orchestrator LLM to execute one task. Operates
-at [[id:DBFD530B-4B56-48D1-9F03-3A0D0DA16552][System 1]]. See [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][execution model]] for the role and [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1 Agent]] for the
-priming context.
+Any LLM process doing work. The general word: use it when the distinction
+between a session and a delegate does not matter. An agent is not a role, so
+it names no level; the level designated S1 is called *Agent*, but that is a
+[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][System]], acted as by a session or
+a delegate. See [[id:F58CA9E7-C65F-4D17-A9A7-95FDE25B9EBD][execution model]]
+for how the roles compose, and [[id:B544713A-BA23-4D5A-9CEE-084212D7C8BA][S1
+Agent]] for the priming context.
+
+* Session
+:PROPERTIES:
+:ID: 4E8B1D63-7A05-49C2-B3F7-8C1A5D02E9B4
+:END:
+
+The agent a human is talking to. It has a conversation and an operator, which
+is what separates it from a delegate.
+
+* Delegate
+:PROPERTIES:
+:ID: 6B0F92C5-1E47-4A38-95D2-7F4C3E81A0D6
+:END:
+
+An agent spawned by another agent to do a bounded piece of work and report
+back. It has no operator, only a brief. Claude Code calls this a *subagent*;
+we say delegate because the relationship is what matters, not the mechanism.
 
 * Orchestrator
 :PROPERTIES:

@@ -31,13 +31,17 @@ propagate to Claude Code.
    many tasks, it is a [[id:66F2A9E8-0385-4D56-B4B1-0957208990DC][System]], not a skill. See
    [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][document types]]§=skill= for the contract.
 
-2. /Validate the name against [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]]/. The name
-   must be =<domain>-<verb>[-<object>]= with the domain prefix and
-   verb taken from the closed registers in that document — named
-   after the action, never a role, artefact, or wrapped command. If
-   the name does not parse, fix the name; if no register entry fits,
-   extending a register is a deliberate act recorded in that
-   document's decision log — never invent a one-off.
+2. /Validate the name against [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]]/. Every skill
+   this project owns carries the =compass-= prefix, and the second
+   segment says which regulatory function it offers: =principle-= for
+   a stance, =method-= for a sequence of phases, a domain for an
+   action. An action's domain and verb come from the closed registers
+   in that document — named after the action, never a role, artefact,
+   or wrapped command. If the name does not parse, fix the name; if no
+   register entry fits, extending a register is a deliberate act
+   recorded in that document's decision log — never invent a one-off.
+   Unsure which kind of thing you are naming? Take the first match in
+   that document's placement procedure.
 
 3. /Check the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] for duplication/. Search the
    inventory for an existing skill covering the same action — by
@@ -58,7 +62,13 @@ propagate to Claude Code.
    [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]] §"New Claude Code skill" for
    the exact invocation.
 
-6. /Fill in the skeleton/, in this order:
+6. /Set =#+level:=/. It is mandatory on every skill: it is what lets a
+   session's declared System attenuate the catalogue. Take the value
+   from the level register in
+   [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] —
+   =cross= when the skill applies at every level.
+
+7. /Fill in the skeleton/, in this order:
    - =* When to use this skill= — one or two sentences.
    - =* How to use this skill= — numbered steps that mostly link
      to recipes (do not embed procedural detail).
@@ -66,16 +76,16 @@ propagate to Claude Code.
    - =* Reference= — id-link to the knowledge document or
      component model that backs the skill.
 
-7. /Check the markdown export block/. The =name:= must match the
+8. /Check the markdown export block/. The =name:= must match the
    folder slug and the =#+title:=' kebab-case stem. The
    =description:= is what Claude Code shows in its skill selector;
    make it crisp and actionable.
 
-8. /Verify against the doc contract/. The [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review]] skill is
+9. /Verify against the doc contract/. The [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review]] skill is
    the canonical checklist — frontmatter, required sections,
    task-shape, no embedded inventories.
 
-9. /Cross-reference the new skill from the relevant [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][System]] docs/.
+10. /Cross-reference the new skill from the relevant [[id:1A5E0079-5771-4213-B624-62FA9AC947B4][System]] docs/.
    Each System lists the skills its cybernetic level invokes (see
    the =* Skills= section of each =doc/systems/s*.org=). A new
    skill that isn't linked from at least one System is effectively
@@ -83,10 +93,10 @@ propagate to Claude Code.
    System or Systems the skill belongs to, usually one and often
    two, and add an id-link with a one-line "when to use" hint.
 
-10. /Update the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]/ — add the new skill under the
+11. /Update the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]]/ — add the new skill under the
    appropriate area heading. This is the canonical inventory.
 
-11. /Rebuild the shipped bundle/ so Claude Code picks up the new or
+12. /Rebuild the shipped bundle/ so Claude Code picks up the new or
    updated skill — see [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]].
 
 * Recipes

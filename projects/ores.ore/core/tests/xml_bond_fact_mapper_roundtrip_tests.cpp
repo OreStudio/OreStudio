@@ -143,7 +143,8 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
     CHECK(carried.calendar == "EUR");
     CHECK(carried.term_convention == "MF");
     CHECK(carried.rule == "Forward");
-    CHECK(carried.end_of_month);
+    REQUIRE(carried.end_of_month);
+    CHECK(*carried.end_of_month);
     CHECK(r.bond_leg.leg_type == "Fixed");
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
@@ -166,6 +167,71 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
 
     BOOST_LOG_SEV(lg, info)
         << "The coupon leg keeps a start date the issue date does not hold.";
+}
+
+// =============================================================================
+// An element the document states empty is not an element it omits
+// =============================================================================
+
+TEST_CASE("an_empty_schedule_element_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Every member here is optional in the schema, and the corpus states
+    // some of them empty. Presence is itself data: a document that states
+    // an empty FirstDate, one that omits it and one that states a date are
+    // three documents, and the container has to tell them apart.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Empty_Elements">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-02-03</StartDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+            <EndOfMonth/>
+            <FirstDate/>
+            <LastDate/>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_leg.schedule.rules.size() == 1);
+    const auto& carried = r.bond_leg.schedule.rules.front();
+    REQUIRE(carried.first_date);
+    CHECK(carried.first_date->empty());
+    REQUIRE(carried.last_date);
+    CHECK(carried.last_date->empty());
+    CHECK(!carried.end_date);
+    CHECK(!carried.calendar);
+    // The generated reader pre-fills bool_::Y for a bool element it finds
+    // empty, so an empty EndOfMonth reads as on.
+    REQUIRE(carried.end_of_month);
+    CHECK(*carried.end_of_month);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData->Rules.size() == 1);
+    const auto& rule = rt.BondData->LegData.front().ScheduleData->Rules.front();
+    CHECK(rule.FirstDate == "");
+    CHECK(rule.LastDate == "");
+    CHECK(!rule.EndDate);
+    CHECK(!rule.Calendar);
+    REQUIRE(rule.EndOfMonth);
+    CHECK(to_string(*rule.EndOfMonth) == "Y");
+
+    BOOST_LOG_SEV(lg, info) << "An empty schedule element survives the round trip.";
 }
 
 TEST_CASE("a_forward_bonds_coupon_leg_keeps_its_own_schedule", tags) {

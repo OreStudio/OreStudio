@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_DATA_HPP
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -28,36 +29,37 @@ namespace ores::trading::domain {
 /**
  * @brief A schedule the document states as a tenor expanded against a calendar.
  *
- * Dates are ISO 8601. An empty string means the document omits the
- * field. The codes (calendar, convention, rule and the rest) are the
- * canonical spellings the ORE schema uses.
+ * Dates are ISO 8601 and the codes (calendar, convention, rule and the
+ * rest) are the canonical spellings the ORE schema uses. A member the
+ * schema declares optional is an optional here, so an element the
+ * document states empty stays distinct from one it omits.
  */
 struct bond_schedule_rules final {
     std::string start_date;
-    std::string end_date;
-    bool adjust_end_date_to_previous_month_end = false;
+    std::optional<std::string> end_date;
+    std::optional<bool> adjust_end_date_to_previous_month_end;
     std::string tenor;
-    std::string calendar;
+    std::optional<std::string> calendar;
     std::string convention;
-    std::string term_convention;
-    std::string rule;
-    bool end_of_month = false;
-    std::string end_of_month_convention;
-    std::string first_date;
-    std::string last_date;
-    bool remove_first_date = false;
-    bool remove_last_date = false;
+    std::optional<std::string> term_convention;
+    std::optional<std::string> rule;
+    std::optional<bool> end_of_month;
+    std::optional<std::string> end_of_month_convention;
+    std::optional<std::string> first_date;
+    std::optional<std::string> last_date;
+    std::optional<bool> remove_first_date;
+    std::optional<bool> remove_last_date;
 };
 
 /**
  * @brief A schedule the document states as an explicit date list.
  */
 struct bond_schedule_dates final {
-    std::string calendar;
-    std::string convention;
-    std::string tenor;
-    bool end_of_month = false;
-    bool include_duplicate_dates = false;
+    std::optional<std::string> calendar;
+    std::optional<std::string> convention;
+    std::optional<std::string> tenor;
+    std::optional<bool> end_of_month;
+    std::optional<bool> include_duplicate_dates;
     std::vector<std::string> dates;
 };
 
@@ -102,6 +104,17 @@ struct bond_leg_data final {
     bool payer = false;
     std::string leg_type;
     bond_schedule_data schedule;
+
+    /**
+     * @brief True when the leg carries nothing, so a writer can skip it.
+     *
+     * The schema requires the leg's type and its payer, so a leg a writer
+     * emits empty is not a document the reader accepts. The guard belongs
+     * beside the members, so a member added here reaches it in one place.
+     */
+    bool is_empty() const {
+        return !payer && leg_type.empty() && schedule.rules.empty() && schedule.dates.empty();
+    }
 };
 
 }

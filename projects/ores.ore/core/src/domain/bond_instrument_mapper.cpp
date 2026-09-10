@@ -126,8 +126,13 @@ bool flag_of(const std::string& text) {
            text == "1";
 }
 
+// An empty string is the on spelling. The bool type enumerates thirteen
+// spellings and the corpus writes the empty one for the on state: EndOfMonth
+// is the only element any document types as bool, and the documents write it
+// empty 3,442 times, false 103 times and true 12 times.
 bool flag_of(const bool_& value) {
-    return flag_of(to_string(value));
+    const std::string text = to_string(value);
+    return text.empty() || flag_of(text);
 }
 
 // A generated wrapper derives from the string type it carries, and a
@@ -144,6 +149,17 @@ void set_optional_text(xsd::optional<Field>& field, const std::string& value) {
         return;
     Field wrapper;
     static_cast<std::string&>(wrapper) = value;
+    field = std::move(wrapper);
+}
+
+// Emits on presence rather than on content: an element the document
+// states empty is a different document from one it omits.
+template <typename Field>
+void set_present_text(xsd::optional<Field>& field, const std::optional<std::string>& value) {
+    if (!value)
+        return;
+    Field wrapper;
+    static_cast<std::string&>(wrapper) = *value;
     field = std::move(wrapper);
 }
 
@@ -197,58 +213,59 @@ bond_schedule_data map_schedule(const scheduleData& sd) {
     return result;
 }
 
-// A flag the document states as false and a flag the document omits are
-// the same value, so a false flag exports as an omitted element.
+// Text members emit on presence, so an element the document states
+// empty is re-emitted rather than dropped. A flag has no empty
+// spelling to hand back, so it emits the canonical Y or N.
 scheduleData reverse_schedule(const bond_schedule_data& sd) {
     scheduleData result;
     for (const auto& row : sd.rules) {
         scheduleData_Rules_t r;
         r.StartDate = row.start_date;
-        if (!row.end_date.empty())
-            r.EndDate = row.end_date;
+        if (row.end_date)
+            r.EndDate = *row.end_date;
         if (row.adjust_end_date_to_previous_month_end)
-            r.AdjustEndDateToPreviousMonthEnd = bool_::Y;
+            r.AdjustEndDateToPreviousMonthEnd =
+                *row.adjust_end_date_to_previous_month_end ? bool_::Y : bool_::N;
         set_text(r.Tenor, row.tenor);
-        if (!row.calendar.empty())
-            r.Calendar = row.calendar;
+        if (row.calendar)
+            r.Calendar = *row.calendar;
         r.Convention =
             parse_code(row.convention, business_day_convention_count, businessDayConvention::F);
-        if (!row.term_convention.empty())
-            r.TermConvention = parse_code(row.term_convention,
+        if (row.term_convention)
+            r.TermConvention = parse_code(*row.term_convention,
                                           business_day_convention_count,
                                           businessDayConvention::F);
-        if (!row.rule.empty())
-            r.Rule = parse_code(row.rule, date_rule_count, dateRule::Backward);
+        if (row.rule)
+            r.Rule = parse_code(*row.rule, date_rule_count, dateRule::Backward);
         if (row.end_of_month)
-            r.EndOfMonth = bool_::Y;
-        if (!row.end_of_month_convention.empty())
-            r.EndOfMonthConvention = parse_code(row.end_of_month_convention,
+            r.EndOfMonth = *row.end_of_month ? bool_::Y : bool_::N;
+        if (row.end_of_month_convention)
+            r.EndOfMonthConvention = parse_code(*row.end_of_month_convention,
                                                 business_day_convention_count,
                                                 businessDayConvention::F);
-        if (!row.first_date.empty())
-            r.FirstDate = row.first_date;
-        if (!row.last_date.empty())
-            r.LastDate = row.last_date;
+        if (row.first_date)
+            r.FirstDate = *row.first_date;
+        if (row.last_date)
+            r.LastDate = *row.last_date;
         if (row.remove_first_date)
-            r.RemoveFirstDate = true;
+            r.RemoveFirstDate = *row.remove_first_date;
         if (row.remove_last_date)
-            r.RemoveLastDate = true;
+            r.RemoveLastDate = *row.remove_last_date;
         result.Rules.push_back(std::move(r));
     }
     for (const auto& row : sd.dates) {
         scheduleData_Dates_t d;
-        if (!row.calendar.empty())
-            d.Calendar = row.calendar;
-        if (!row.convention.empty())
-            d.Convention = parse_code(row.convention,
+        if (row.calendar)
+            d.Calendar = *row.calendar;
+        if (row.convention)
+            d.Convention = parse_code(*row.convention,
                                       business_day_convention_count,
                                       businessDayConvention::F);
-        if (!row.tenor.empty())
-            set_optional_text(d.Tenor, row.tenor);
+        set_present_text(d.Tenor, row.tenor);
         if (row.end_of_month)
-            d.EndOfMonth = bool_::Y;
+            d.EndOfMonth = *row.end_of_month ? bool_::Y : bool_::N;
         if (row.include_duplicate_dates)
-            d.IncludeDuplicateDates = bool_::Y;
+            d.IncludeDuplicateDates = *row.include_duplicate_dates ? bool_::Y : bool_::N;
         for (const auto& date : row.dates)
             d.Dates.Date.push_back(date);
         result.Dates.push_back(std::move(d));
@@ -348,7 +365,11 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
         bd.SettlementDays = std::move(sd);
     }
 
-    if (!issue.currency.empty() || issue.face_value != 0.0) {
+    // The leg is emitted when the document held one, whether or not the
+    // columns that mirror it hold a value: Currency and Notionals are
+    // optional in the schema, so a leg the document carries with neither
+    // still has to come back out.
+    if (!data.bond_leg.is_empty() || !issue.currency.empty() || issue.face_value != 0.0) {
         legData ld;
         reverse_leg(data.bond_leg, ld);
         ld.LegType = data.bond_leg.leg_type.empty()

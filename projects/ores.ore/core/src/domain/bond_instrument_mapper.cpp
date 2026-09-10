@@ -428,12 +428,21 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
     totalReturnData_PriceType_t pt;
     static_cast<std::string&>(pt) = "Dirty";
     d.TotalReturnData.PriceType = std::move(pt);
-    // Reconstruct funding leg from the captured type and index.
+    // Reconstruct funding leg from the captured type, index and rate.
     d.FundingData.LegData.Payer = false;
     const bool fixed = !data.trs || data.trs->funding_leg_type.empty() ||
                        data.trs->funding_leg_type == "Fixed";
     if (fixed) {
         d.FundingData.LegData.LegType = legType::Fixed;
+        if (data.trs && data.trs->funding_rate != 0.0) {
+            _FixedLegData_t fld;
+            _FixedLegData_t_Rates_t_Rate_t rate;
+            static_cast<float&>(rate) = static_cast<float>(data.trs->funding_rate);
+            fld.Rates.Rate.push_back(rate);
+            legDataType_group_t ldt;
+            ldt.FixedLegData = std::move(fld);
+            d.FundingData.LegData.legDataType = std::move(ldt);
+        }
     } else if (data.trs) {
         d.FundingData.LegData.LegType = legType::Floating;
         _FloatingLegData_t fld;
@@ -456,9 +465,26 @@ trade bond_instrument_mapper::reverse_bond_repo(const bond_instrument_data& data
     t.TradeType = oreTradeType::BondRepo;
     bondRepoData d;
     d.BondData = reverse_bond_data(data.issue);
-    // Reconstruct a minimal repo leg (fixed, non-payer)
+    // Reconstruct the financing leg from the captured repo fact. The
+    // payer flag has no fact column; it stays false as before.
     d.RepoData.LegData.Payer = false;
-    d.RepoData.LegData.LegType = legType::Fixed;
+    const bool floating = data.repo && data.repo->repo_type == "Floating";
+    d.RepoData.LegData.LegType = floating ? legType::Floating : legType::Fixed;
+    if (floating) {
+        _FloatingLegData_t fld;
+        static_cast<std::string&>(fld.Index) = data.repo->repo_index;
+        legDataType_group_t ldt;
+        ldt.FloatingLegData = std::move(fld);
+        d.RepoData.LegData.legDataType = std::move(ldt);
+    } else if (data.repo && data.repo->repo_rate != 0.0) {
+        _FixedLegData_t fld;
+        _FixedLegData_t_Rates_t_Rate_t rate;
+        static_cast<float&>(rate) = static_cast<float>(data.repo->repo_rate);
+        fld.Rates.Rate.push_back(rate);
+        legDataType_group_t ldt;
+        ldt.FixedLegData = std::move(fld);
+        d.RepoData.LegData.legDataType = std::move(ldt);
+    }
     t.BondRepoData = std::move(d);
     return t;
 }

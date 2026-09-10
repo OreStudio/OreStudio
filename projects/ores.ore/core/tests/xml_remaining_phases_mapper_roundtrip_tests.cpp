@@ -401,10 +401,20 @@ TEST_CASE("bond_repo_forward", tags) {
 TEST_CASE("bond_repo_reverse", tags) {
     auto lg(make_logger(test_suite));
     const auto r = load_and_map_bond("Cash_BondRepo_and_Bond.xml", 0);
+    REQUIRE(r.repo.has_value());
+    CHECK(r.repo->repo_type == "Fixed");
+    CHECK(r.repo->repo_rate == Approx(0.0178).epsilon(0.0001));
 
     const auto rt = bond_instrument_mapper::reverse_bond_repo(r);
     REQUIRE(rt.BondRepoData.operator bool());
     CHECK(!std::string(rt.BondRepoData->BondData.SecurityId).empty());
+    const auto& leg = rt.BondRepoData->RepoData.LegData;
+    CHECK(leg.LegType == ores::ore::domain::legType::Fixed);
+    REQUIRE(leg.legDataType.operator bool());
+    REQUIRE(leg.legDataType->FixedLegData.operator bool());
+    REQUIRE(!leg.legDataType->FixedLegData->Rates.Rate.empty());
+    CHECK(static_cast<double>(leg.legDataType->FixedLegData->Rates.Rate.front()) ==
+          Approx(r.repo->repo_rate).epsilon(0.0001));
 
     BOOST_LOG_SEV(lg, info) << "BondRepo reverse test passed";
 }

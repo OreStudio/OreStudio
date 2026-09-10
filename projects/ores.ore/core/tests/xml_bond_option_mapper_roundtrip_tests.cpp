@@ -126,6 +126,13 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_trs", tags) {
     REQUIRE(rt.BondTRSData);
     const bool has_price_type = !std::string(rt.BondTRSData->TotalReturnData.PriceType).empty();
     CHECK(has_price_type);
+    const auto& funding_leg = rt.BondTRSData->FundingData.LegData;
+    CHECK(funding_leg.LegType == ores::ore::domain::legType::Fixed);
+    REQUIRE(funding_leg.legDataType.operator bool());
+    REQUIRE(funding_leg.legDataType->FixedLegData.operator bool());
+    REQUIRE(!funding_leg.legDataType->FixedLegData->Rates.Rate.empty());
+    CHECK(static_cast<double>(funding_leg.legDataType->FixedLegData->Rates.Rate.front()) ==
+          Approx(r.trs->funding_rate).epsilon(0.0001));
 
     BOOST_LOG_SEV(lg, info) << "BondTRS roundtrip passed. Funding type: "
                             << r.trs->funding_leg_type;

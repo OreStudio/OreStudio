@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: AD238B8D-ADFE-488A-9536-AA7F0B5A5559
+:END:
+#+title: Compass Method Refactoring
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: s1
+#+filetags: :llm:skill:skills:claude_code:method:sequencing:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-method-refactoring
+description: The method for a behaviour-preserving change to structure — establish the evidence that behaviour is preserved before moving anything, then move it as a script rather than by hand.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Structure changes and behaviour does not: a rename, an extraction, a
+collapse of duplicates, a move across a boundary. The deliverable is the
+same system in a better shape, plus the evidence that it is the same.
+
+Not this method if behaviour changes, however slightly. A refactor that
+"also fixes" something is two changes wearing one commit, and the fix
+loses its reproduction while the refactor loses its guarantee.
+
+* How to use this skill
+
+** 1. Establish the invariant first
+
+Before moving anything, name what must still be true afterwards and find
+what checks it. A refactor without that is indistinguishable from a
+rewrite with optimism.
+
+Where nothing checks it, the first unit of work is the check, not the
+move. That check is also the deliverable's proof, so it is never wasted.
+
+** 2. Ground and map the blast radius
+
+Resolve the concepts ([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]),
+then find everything that references what you are about to change,
+including archived documents and generated output. The cost of a refactor
+is dominated by the references nobody remembered, and finding them is
+mechanical.
+
+** 3. Subtract before restructuring
+
+Ask what can be deleted outright before deciding where the rest should
+live (=principle-subtract-before-you-add=). Code that no longer needs to
+exist is the cheapest thing to move, because it does not get moved.
+
+Ask also whether the shape is right rather than merely tidier
+(=principle-redesign-from-first-principles=). A refactor that preserves a
+structure nobody would choose today has spent effort to keep a decision
+that should have been revisited.
+
+** 4. Write the change as a script where it repeats
+
+A change across many files is a script, not an afternoon
+(=principle-build-the-lever=). The script is what a reviewer re-runs, it
+is idempotent so a partial run is recoverable, and it is what makes the
+next change of the same shape cheap.
+
+Give it a =--check= mode where the new state is something that could drift
+back, and wire that into CI
+(=principle-encode-lessons-in-structure=). A refactor whose result nothing
+enforces is a shape that decays.
+
+** 5. Move, in verifiable units
+
+Sequence the change so each step ends in a system that builds and passes
+(=principle-sequence-verifiable-units=). Where an old and a new form must
+coexist, migrate the callers and delete the old one in the same wave
+rather than leaving both: two ways to do one thing is the debt the
+refactor was meant to remove
+(=principle-migrate-callers-then-delete-legacy-apis=).
+
+** 6. Prove behaviour survived
+
+Run the invariant from phase 1 (=principle-prove-it-works=), then the
+class checks for what you touched via
+[[id:654D4A70-E63D-4C18-B5A5-886066E36314][compass-code-run-build]]. For
+generated code, the proof is byte-identical regeneration
+([[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][compass-codegen-fix-drift]]).
+
+A green build is necessary and not sufficient: it says nothing about the
+references that live in documentation, and those break silently.
+
+** 7. Land
+
+Close with
+[[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]] and
+raise with
+[[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][compass-pr-raise]]. Keep the
+script in the tree: it is the artefact that makes the change reviewable
+and repeatable.
+
+* When this method is the wrong one
+
+Re-match if phase 1 shows the behaviour is not currently correct, which
+makes it =compass-method-bug-fix= first and a refactor afterwards; or if
+the restructuring turns out to require new behaviour, which is
+=compass-method-feature=.
+
+* Recipes
+
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — the lifecycle this method runs inside.
+
+* Reference
+
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what a method is, and how a phase binds to actions.
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the rules cited above.
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — what the result is judged against.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

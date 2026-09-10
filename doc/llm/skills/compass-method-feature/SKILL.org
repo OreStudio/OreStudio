@@ -1,0 +1,149 @@
+:PROPERTIES:
+:ID: D4D8B874-0D78-4558-AF80-776AB4F2F4F8
+:END:
+#+title: Compass Method Feature
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: s1
+#+filetags: :llm:skill:skills:claude_code:method:sequencing:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-method-feature
+description: The method for new or changed behaviour — ground, state the predicate, name the data shape, check what exists, build, prove, land. The shape is decided before the code, not discovered by writing it.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Behaviour that does not exist yet, or behaviour that must change. Use it
+from the request to the merged change.
+
+Not this method when the behaviour exists and is wrong: that is
+=compass-method-bug-fix=. Not when the question is which of two designs to
+choose and the answer is observable: settle that with
+=compass-method-prototype= first, then come back.
+
+* How to use this skill
+
+Copy the phases into the todo list before reasoning about the task. A
+phase you skip stays in the list with =skip:= and the reason.
+
+** 1. Ground
+
+Resolve every domain concept the request names to a knowledge document
+([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]), reading the
+cluster's structure note first where one exists. A feature built on a
+misunderstood concept is not a feature with a bug in it; it is the wrong
+feature, and no amount of later verification finds that.
+
+** 2. State the predicate
+
+What will be true when this is done, in terms someone else can check?
+Write it before designing. Where behaviour is involved, the predicate
+belongs in a specification rather than only in prose, so it can be checked
+rather than remembered.
+
+** 3. Name the data shape
+
+Before any control flow, name what is being represented and how it is
+held (=principle-model-the-domain=). Most of the difficulty in a feature
+is in this decision, and it is the cheapest thing to change now and the
+most expensive later.
+
+In C++, take the type decisions with
+=compass-principle-type-system-discipline=: illegal states unrepresentable,
+semantic primitives branded, external input parsed at the boundary.
+
+Where the shape belongs to an entity, it is generated rather than written:
+the model is the source and the code follows from it.
+
+** 4. Check what already exists
+
+Search before writing (=principle-subtract-before-you-add=). The most
+common waste is re-implementing something a few files over, and the second
+most common is adding a parallel mechanism beside one that nearly fits.
+
+Ask also what comes out. A feature that only adds has usually not been
+thought about long enough.
+
+** 5. Build
+
+The smallest thing that satisfies the predicate
+(=principle-laziness-protocol=). No interface with one implementation, no
+configuration for a value that never varies, no scaffolding for a second
+case that has not arrived.
+
+Where the work is repetitive across many files, write the script rather
+than doing it by hand (=principle-build-the-lever=): the script is what a
+reviewer re-runs, and the next change of the same shape is then cheap.
+
+Sequence it so each step ends in something checkable
+(=principle-sequence-verifiable-units=), rather than one commit that works
+only when finished.
+
+** 6. Prove
+
+Against the predicate from phase 2, on the real artefact rather than a
+proxy (=principle-prove-it-works=). Climb the
+[[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification ladder]] as far as
+what changed requires, via
+[[id:654D4A70-E63D-4C18-B5A5-886066E36314][compass-code-run-build]] and,
+for anything a user touches,
+[[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]].
+
+"It compiles" is not evidence. Neither is a unit test that asserts the
+implementation back to itself.
+
+** 7. Land
+
+Close the bookkeeping with
+[[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]],
+then raise with
+[[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][compass-pr-raise]]. What
+generalises beyond this task goes to a memory, a principle or a check
+rather than staying in the diff.
+
+* When this method is the wrong one
+
+Re-match if grounding shows the capability already exists in another form,
+which makes this a refactor or a documentation gap; or if the request
+cannot be reduced to a checkable predicate, which usually means the
+requirement is still a wish and belongs in deliberation first.
+
+* Recipes
+
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — the lifecycle this method runs inside.
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — the build phase 6 runs.
+
+* Reference
+
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what a method is, and how a phase binds to actions.
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the rules cited above.
+- [[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]] — why phase 3 prefers the model to the file.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

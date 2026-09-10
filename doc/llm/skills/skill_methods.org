@@ -137,12 +137,27 @@ first to the checkers that do not share the session model's priors
 with =compass-agile-close-task= and =compass-pr-raise=, and what generalises is routed into a
 memory, a principle or a skill edit, with approval rather than automatically.
 
-** Inventory
+** The methods
 
-# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every method, the shape of work it covers, and the verification rungs it must
-climb. Populated when the methods land.
-# END generated inventory
+Six exist. Each opens by grounding the work and stating what would make it
+finished, and each names the actions and recipes its phases call rather
+than improvising a command.
+
+#+ATTR_HTML: :class hug-leading
+| Method | The work it sequences |
+|--------+-----------------------|
+| [[id:D9452D4A-0B0F-466F-B97F-95BD4C36A452][compass-method-bug-fix]] | A reported defect: reproduce, root-cause, fix, prove |
+| [[id:D4D8B874-0D78-4558-AF80-776AB4F2F4F8][compass-method-feature]] | New or changed behaviour, built from a named data shape |
+| [[id:AD238B8D-ADFE-488A-9536-AA7F0B5A5559][compass-method-refactoring]] | Structure changes, behaviour does not, and the proof is the deliverable |
+| [[id:440659B3-5996-4739-B2CB-37B84F5757DC][compass-method-investigation]] | A read-only question, answered with citations and its gaps named |
+| [[id:9DDEE5BF-9B2E-49C4-BAF9-8A2CE87D295B][compass-method-prototype]] | An empirical fork, settled by observing it and then deleted |
+| [[id:A8CBA1B2-EBC5-42A6-96B4-D19371278FB7][compass-method-figure-it-out]] | Work no method fits: design the phases, then run them |
+
+Matching is the first decision a session makes and the one most worth
+getting right: a misjudged shape is the failure a method exists to
+prevent, and no phase recovers from it. Where two match different parts,
+=compass-method-figure-it-out= sequences them rather than replacing them.
+
 
 * See also
 

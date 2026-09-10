@@ -115,6 +115,16 @@ LEVELS = {
     # Identity: what belongs in the product at all.
     "compass-agile-brainstorm-idea": "s5",
 
+    # Methods. The level is the level of the work the method sequences:
+    # execution for the four that carry a change, cross for one that only
+    # reads, s2 for the one that plans work spanning many units.
+    "compass-method-bug-fix": "s1",
+    "compass-method-feature": "s1",
+    "compass-method-refactoring": "s1",
+    "compass-method-prototype": "s1",
+    "compass-method-investigation": "cross",
+    "compass-method-figure-it-out": "s2",
+
     # Bindings on an upstream principle. The level is the level of the
     # judgement the principle is cited at, not of the principle itself.
     "compass-principle-type-system-discipline": "s1",

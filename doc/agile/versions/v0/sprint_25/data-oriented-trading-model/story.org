@@ -44,9 +44,9 @@ component.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Unit 1 of the pilot is delivered, and the task closes: the bond relational model is implemented end to end (nine entities over nine tables with codegen C++ and SQL, the validated migration script, the loader exercise at 1k/10k/20k rows, the family drift gate and the live shell round trips for all ten trade type codes). Three findings from the live run are recorded on the task as boundaries. |
+| Now           | Unit 2 of the pilot is delivered, and the task closes: the ores.ore bond mapping is reworked to the relational model (a mapper pair per product over the generated entities, the find-or-create seam, the child rows, and the container that carries what the nine tables cannot). Wave 2.5 ran the validation: full build, ctest at 71 of 71, the mapper-path diff over 543 documents, and the ores.cli file roundtrip counting 2590 mapped trades. It found and fixed two defects that corrupted values rather than dropping them. |
 | Waiting on    | Nothing.                               |
-| Next          | Unit 2, =rework-bond-ores-mapping=: the mapper per entity plus the assembler over the new entities, with import and export validated through the mapper suites and the ores.cli roundtrip. |
+| Next          | Unit 3, =build-bond-qt-bridge=: the container, the qt views over the new row shapes, the wire protocol and the reworked BondInstrumentForm. It is BACKLOG and awaits the container grammar the parent analysis sequences over it. |
 | Last touched  | 2026-09-10                               |
 
 * Acceptance
@@ -87,10 +87,35 @@ component.
 | [[id:40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7][Analyse the ores.trading data model against the data-oriented criteria]] | DONE | 2026-09-08 | 2026-09-08 | Run the compass-code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow. |
 | [[id:F7BDA6CE-AC29-46C0-9D8C-E238797F9F96][Analyse the bond family and propose its relational data model]] | DONE | 2026-09-08 | 2026-09-08 | Bond is the pilot for the relational target of the trading analysis (dfe15809): survey every bond-related type and subtype in the tree (domain, SQL, mappers, repositories, services, messaging, the ores.ore mapping, ores.qt), then propose the entity-relationship model based on the existing tables but in the clean DOP shape - atomised entities with keys and foreign keys, normalised, no object graph. Deliverable is the analysis and ER proposal only; codegen of the types and SQL, the ore mapping update and the qt impedance bridge are follow-up tasks. |
 | [[id:D7943D7E-2889-4C6B-857A-C382DBF755BA][Implement the bond relational model: codegen, SQL and the loader exercise]] | DONE | 2026-09-09 | 2026-09-10 | Bond is the pilot of the data-oriented redesign (dfe15809). Author the modeling orgs for the nine-table relational family, generate the C++ and SQL per entity, extend the population loader with the family recipe, write and validate the migration script, run the loading exercise at 1k/10k/20k rows, prove family regeneration drift-clean, and run the shell system test for the family. The old bond shape and its hand-written stack are deleted once the generated shape is in place. |
-| [[id:212862C4-65C5-470D-99DC-09C23448FE4D][Rework the ores.ore bond mapping to the relational model]] | STARTED | 2026-09-10 | | The ores.ore bond mapping becomes a mapper per entity plus an assembler over the new entities: import reads one XML product document into an issue (found or created), an instrument row and its fact rows; export joins the rows back into the product document. Flattening stops; the covered products roundtrip at the new shapes, validated through the mapper and golden suites and the ores.cli file roundtrip. |
+| [[id:212862C4-65C5-470D-99DC-09C23448FE4D][Rework the ores.ore bond mapping to the relational model]] | DONE | 2026-09-10 | 2026-09-10 | The ores.ore bond mapping becomes a mapper per entity plus an assembler over the new entities: import reads one XML product document into an issue (found or created), an instrument row and its fact rows; export joins the rows back into the product document. Flattening stops; the covered products roundtrip at the new shapes, validated through the mapper and golden suites and the ores.cli file roundtrip. |
 | [[id:3E14AEC0-23DA-47B7-9FC9-32D1DC661E5F][Build the ores.qt bond bridge over the relational model]] | BACKLOG | | | Build the ores.qt bridge over the relational bond model: the container over the generated part types, handcrafted first per the parent analysis, the qt views over the new row shapes, the wire protocol and the reworked BondInstrumentForm. |
 
 * Decisions
+
+- *What the nine tables cannot store, the document keeps.* The
+  exercise date list, the funding leg's schedule, the repo leg's dates
+  and the leg's =legDataType= rate group have no column in the bond
+  family tables. The mapper's container carries each one whole and
+  export re-emits it, rather than flattening it into the issue row.
+  The shared instrument-keyed schedule and underlyings tables of this
+  story are their destination. Recorded at task 212862C4, waves 2.2
+  and 2.5.
+- *BondPosition is the bond family's uncovered product, by evidence.*
+  The ORE schema declares no =positionData= structure, so a
+  BondPosition has no product document to import. It has no fact table
+  and no mapper, and the suite asserts the absence.
+- *The domain path round trips at zero loss; the mapper path does
+  not.* Over the 132 example documents, =save_data(load_data(x))=
+  loses no pair, with 543 numeric and 25 boolean spelling differences
+  only. Over the 543 documents the mapper path writes, 115572 pairs
+  are lost and 7386 are unexplained. The difference is what each path
+  re-emits: the domain path re-emits the document it read, and the
+  mapper path re-emits what the rows and the container hold.
+- *The trade envelope belongs to the trade entity.* =Trade/Envelope=,
+  =CounterParty=, =AdditionalFields=, =party_id= and =valuation_date=
+  are lost on the mapper path throughout the tree, 2080 pairs in the
+  bond documents alone. This story's trade work owns them, not the
+  instrument family.
 
 * Out of scope
 

@@ -26,11 +26,11 @@ The ores.ore mapping rides the codegen reshape of the bond family: once the inst
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Waves 2.1 to 2.5 are complete. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | The task closes: the Result, the parent story's decisions and the PR. |
+| Next         | Nothing. |
 | Last touched | 2026-09-10                               |
 
 * Acceptance
@@ -743,3 +743,63 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Waves 2.1 to 2.5 are complete. The branch carries the planning commit
+and one commit per wave.
+
+Acceptance, item by item.
+
+- *The mapper reads one XML product document into an issue (found or
+  created), an instrument row and its fact rows, and joins the rows
+  back into the product document.* Met. The mapper is one file of
+  forward and reverse functions per product, over the generated
+  entities, with =bond_instrument_data= as the container that carries
+  the rows. The find-or-create boundary is the resolver seam, with the
+  DB path supplying the lookup and the tests a stub.
+- *Flattening stops: the call schedule, the conversion terms, the full
+  exercise date list, the funding leg with its schedule and the repo
+  leg with its rate and dates map to their table destinations. The
+  coupon frequency corruption in forward_bond_repo and the hardcoded
+  TRS values disappear, with tests that assert it.* Met for the five
+  items. The call schedule and the conversion terms land as child
+  rows. The exercise date list, the funding schedule and the repo
+  dates have no table among the nine, so the container carries them
+  whole and reverse re-emits them; the flattening stops at the mapping
+  boundary, which is the plan's split. The coupon frequency corruption
+  is gone and asserted. The TRS hardcoding is gone and asserted.
+- *Product coverage spans the ten bond codes, with a recorded decision
+  for any product the import path does not cover.* Met. Nine are
+  importable and each has a mapper pair. BondPosition is the recorded
+  uncovered product: the schema declares no =positionData=, so no
+  product document exists for it. The suite asserts its absence.
+- *A document survives the round trip at the new shape for every
+  covered product.* Met for the suites and the counter; not met under
+  the literal reading of "survives". The golden and mapper roundtrip
+  suites pass, 493 cases with none failing, and the ores.cli XML
+  roundtrip walks the tree with =trades_mapped= counting 2590 trades
+  over 543 written documents. No bond document round trips at zero
+  loss on the mapper path: 0 of 41. Every loss is enumerated in the
+  wave 2.5 notes with its cause, and each belongs to a residue the
+  plan assigns to the parent story's shared tables. The domain path
+  (=save_data(load_data(document))=) does round trip at zero loss over
+  the 132 documents, per wave 2.4.
+- *The DB-bound import path stays the workflow.v1.ore.import service
+  with its existing drivers; no new import or export verb surface is
+  added anywhere.* Met. No verb, service or driver changed in this
+  task.
+
+The task closes with the residue position recorded rather than
+resolved. Five residues stay: a second coupon leg; the leg's
+=legDataType= rate group; the forward bond's =SettlementData=; its
+=PremiumData=, =LongInForward= and =KnockOut=; and the trade envelope.
+The first four are the parent story's shared schedule tables. The
+envelope is the trade entity, which the parent story owns.
+
+Wave 2.5 found and fixed two defects that corrupted values rather than
+dropping them. The first is a control byte in two date fields, where
+an =xsd::optional= assigned to a plain =std::string= selected
+=operator=(char)= through =operator bool()=; 43 of the 543 written
+documents were not well formed XML as a result. The second is a
+coupon leg rebuilt from the issue row, which moved a schedule start
+date and dropped the leg's calendar, conventions and date rules. Both
+are recorded in the wave 2.5 notes above.

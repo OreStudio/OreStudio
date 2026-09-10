@@ -633,8 +633,7 @@ void ImportTradeDialog::onImportClicked() {
                         r.instrument.identity.instrument_id = instr_id;
                         r.instrument.identity.trade_id = tti.trade.identity.id;
                     } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
-                        r.instrument.identity.instrument_id = instr_id;
-                        r.instrument.identity.trade_id = tti.trade.identity.id;
+                        trading::domain::stamp_ids(r, instr_id, tti.trade.identity.id);
                     } else {
                         // credit/commodity/scripted — identity at top level.
                         r.identity.instrument_id = instr_id;

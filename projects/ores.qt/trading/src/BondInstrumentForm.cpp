@@ -187,11 +187,15 @@ void BondInstrumentForm::writeUiToInstrument() {
     data_.issue.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     data_.option_expiry_date = ui_->optionExpiryDateEdit->isoDate();
 
-    // The fact rows engage only when their combo carries a value; the
-    // loaded container decides which product rows this trade has, and an
-    // empty extensions page must not fabricate a fact for a plain bond.
+    // The fact rows engage only when their combo carries a value, and an
+    // emptied combo clears the staged fact so the container tracks the
+    // form; the loaded container decides which product rows this trade
+    // has, and an empty extensions page must not fabricate a fact for a
+    // plain bond.
     const std::string option_type = InstrumentFormUtils::getComboValue(ui_->optionTypeCombo);
-    if (!option_type.empty()) {
+    if (option_type.empty()) {
+        data_.option = std::nullopt;
+    } else {
         if (!data_.option)
             data_.option.emplace();
         data_.option->option_type = option_type;
@@ -199,7 +203,9 @@ void BondInstrumentForm::writeUiToInstrument() {
     }
     const std::string trs_return_type =
         InstrumentFormUtils::getComboValue(ui_->trsReturnTypeCombo);
-    if (!trs_return_type.empty()) {
+    if (trs_return_type.empty()) {
+        data_.trs = std::nullopt;
+    } else {
         if (!data_.trs)
             data_.trs.emplace();
         data_.trs->return_type = trs_return_type;

@@ -27,13 +27,20 @@ a difference, and each one is classified:
   unexplained any other pair our output states that the source does not. A
               failure: it needs a decision.
 
+Two scopes are reported. The in-scope pairs are the ones the bond programme
+gates on: everything under a bond product element, plus the top-level trade
+envelope. The out-of-scope pairs are the other instrument families, which this
+programme does not own yet. They are counted and listed so the debt stays
+visible, and they do not fail the run unless --all-products asks for the whole
+corpus.
+
 Usage:
   python3 scripts/ore_mapper_roundtrip_diff.py \\
-      --source-dir <dir> --output-dir <dir> [--verbose]
+      --source-dir <dir> --output-dir <dir> [--verbose] [--all-products]
 
 Exit codes:
-  0 -- every document round trips with no lost or unexplained pair
-  1 -- a lost or unexplained pair, or a missing output file
+  0 -- every in-scope document round trips with no lost or unexplained pair
+  1 -- an in-scope lost or unexplained pair, or a missing output file
 """
 
 import argparse
@@ -46,6 +53,33 @@ from pathlib import Path
 TOLERANCE = Decimal("1e-6")
 
 ORE_TRUE = {"Y", "YES", "TRUE", "True", "true", "1"}
+
+# The ORE product elements of the bond family. A path under one of these is in
+# scope for the bond programme, as is the top-level trade envelope.
+BOND_PRODUCTS = frozenset({
+    "AscotData",
+    "BondData",
+    "BondFutureData",
+    "BondOptionData",
+    "BondRepoData",
+    "BondTRSData",
+    "CallableBondData",
+    "ConvertibleBondData",
+    "ForwardBondData",
+})
+
+TRADE_PREFIX = "/Portfolio/Trade/"
+ENVELOPE_PATH = TRADE_PREFIX + "Envelope"
+
+
+def in_bond_scope(path: str) -> bool:
+    """True when the path sits under a bond product or the trade envelope."""
+    if path == ENVELOPE_PATH or path.startswith(ENVELOPE_PATH + "/"):
+        return True
+    if not path.startswith(TRADE_PREFIX):
+        return False
+    element = path[len(TRADE_PREFIX):].split("/", 1)[0]
+    return element in BOND_PRODUCTS
 
 
 def local_name(tag: str) -> str:
@@ -150,6 +184,8 @@ def main() -> int:
     parser.add_argument("--source-dir", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--all-products", action="store_true",
+                        help="gate on every product, not only the bond scope")
     args = parser.parse_args()
 
     if not args.source_dir.exists():
@@ -159,6 +195,9 @@ def main() -> int:
     failures = 0
     documents = 0
     totals: Counter = Counter()
+    scoped: Counter = Counter()
+    outside: Counter = Counter()
+    outside_paths: Counter = Counter()
     worst = Decimal(0)
 
     for source in sorted(args.source_dir.rglob("*.xml")):
@@ -183,20 +222,44 @@ def main() -> int:
         for kind in ("numeric", "boolean"):
             totals[kind] += len(found[kind])
 
-        if found["lost"] or found["unexplained"]:
+        here: Counter = Counter()
+        for kind in ("lost", "unexplained"):
+            for path, value in found[kind]:
+                if in_bond_scope(path):
+                    here[kind] += 1
+                else:
+                    outside[kind] += 1
+                    outside_paths[path] += 1
+        scoped.update(here)
+
+        differs = bool(here["lost"] or here["unexplained"]) or (
+            args.all_products and bool(found["lost"] or found["unexplained"]))
+
+        if differs:
             failures += 1
-            print(f"DIFFERENT   {relative}: {len(found['lost'])} lost, "
-                  f"{len(found['unexplained'])} unexplained")
-            for path, value in sorted(found["lost"])[:10]:
-                print(f"              lost:        {path} = {value!r}")
-            for path, value in sorted(found["unexplained"])[:10]:
-                print(f"              unexplained: {path} = {value!r}")
+            shown = found if args.all_products else None
+            print(f"DIFFERENT   {relative}: {here['lost']} lost, "
+                  f"{here['unexplained']} unexplained in scope")
+            for path, value in sorted(found["lost"]):
+                if shown is not None or in_bond_scope(path):
+                    print(f"              lost:        {path} = {value!r}")
+            for path, value in sorted(found["unexplained"]):
+                if shown is not None or in_bond_scope(path):
+                    print(f"              unexplained: {path} = {value!r}")
         elif args.verbose:
             print(f"OK          {relative}: numeric {len(found['numeric'])}, "
                   f"boolean {len(found['boolean'])}")
 
     print(f"\nDocuments: {documents}  Failures: {failures}")
     print(f"Classified: numeric {totals['numeric']}, boolean {totals['boolean']}")
+    print(f"In scope, bond products and the trade envelope: "
+          f"lost {scoped['lost']}, unexplained {scoped['unexplained']}")
+    print(f"Out of scope, the other instrument families: "
+          f"lost {outside['lost']}, unexplained {outside['unexplained']}")
+    if outside_paths:
+        print("Out-of-scope paths by pair count:")
+        for path, count in outside_paths.most_common(10):
+            print(f"  {count:6d}  {path}")
     print(f"Worst relative error on a numeric pair: {worst:.3e} "
           f"(tolerance {TOLERANCE:g})")
 

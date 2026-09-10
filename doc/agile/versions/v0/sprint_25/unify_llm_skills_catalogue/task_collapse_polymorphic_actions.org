@@ -8,7 +8,7 @@
 #+filetags: :llm:skills:refactor:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/collapse-polymorphic-actions
-#+pr:
+#+pr: 2050
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
@@ -110,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2050][#2050]] | [doc] Collapse the uniform verbs into polymorphic actions |
 
 * Review
 

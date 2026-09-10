@@ -4,7 +4,7 @@
 #+title: Agile Refine Backlog
 #+description: Run a backlog housekeeping session (standard) or a full deep refinement sweep across inbox/next/deferred with a written report.
 #+type: skill
-#+level: cross
+#+level: s3
 #+filetags: :llm:skill:skills:claude_code:agile:backlog:deep:
 #+created: 2026-05-24
 #+updated: 2026-07-11

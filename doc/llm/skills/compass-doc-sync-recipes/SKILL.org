@@ -4,7 +4,7 @@
 #+title: Doc Sync Recipes
 #+description: Keep recipe documentation in sync with the source it describes — CLI parsers, HTTP routes, shell commands, or any other recipe topic.
 #+type: skill
-#+level: cross
+#+level: s1
 #+filetags: :llm:skill:skills:claude_code:recipes:documentation:
 #+created: 2026-05-21
 #+updated: 2026-06-06

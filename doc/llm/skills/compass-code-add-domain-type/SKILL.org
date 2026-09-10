@@ -4,7 +4,7 @@
 #+title: Code Add Domain Type
 #+description: Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen.
 #+type: skill
-#+level: cross
+#+level: s1
 #+filetags: :llm:skill:skills:claude_code:domain:codegen:
 #+created: 2024-09-01
 #+updated: 2026-07-12

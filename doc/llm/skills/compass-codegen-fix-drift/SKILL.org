@@ -6,6 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
+#+level: s1
 #+filetags: :llm:skill:skills:claude_code:codegen:drift:
 #+created: 2026-09-04
 #+updated: 2026-09-07

@@ -120,6 +120,20 @@ it at spawn time is worth more than any instruction inside the prompt,
 because a delegate under pressure to finish will reinterpret an
 instruction and cannot reinterpret a capability it does not have.
 
+The enforcement is what is on disk when the delegate starts. Pruning the
+deployed catalogue to a level removes every out-of-scope skill from it, so
+an agent spawned afterwards cannot load one:
+
+#+begin_src sh :results verbatim
+python3 build/scripts/apply_skill_levels.py --prune-deployed s3star
+#+end_src
+
+An auditor spawned into that tree sees five skills, all of them read-only.
+Rebuilding the bundle restores the full set. Read-only is derived from the
+verb register rather than declared per skill, which is one of the reasons
+the register exists: =show-= and =find-= promise to change nothing, and the
+promise is now load-bearing.
+
 *** Structural Findings
 
 A read-only System that cannot change the code is not thereby limited
@@ -141,9 +155,22 @@ that ends in a structural flag outlives a finding that ends in a deletion.
 
 ** Inventory
 
-# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every System, its level, the regulatory functions it sees, and whether it may
-mutate. Populated when levels are assigned.
+# BEGIN generated inventory (build/scripts/apply_skill_levels.py)
+
+What each System sees by default, counted from the levels the skills carry. Attenuation is advisory everywhere except the audit channel, where it is binding and enforced by what is deployed.
+
+#+ATTR_HTML: :class hug-leading
+| Level | System | Horizon | Sees | Attenuation |
+|-------+--------+---------+------+-------------|
+| =s1= | Agent | Hours | 58 skills | advisory |
+| =s2= | Orchestrator | Days | 15 skills | advisory |
+| =s3= | Sprint Planner | Weeks | 18 skills | advisory |
+| =s3star= | Auditor | Continuous | 5 skills | binding |
+| =s4= | Version Planner | Months | 13 skills | advisory |
+| =s5= | Identity Steward | Indefinite | 13 skills | advisory |
+
+12 skills are tagged =cross= and appear in every advisory slice: the documents and the skills themselves, and the orientation any System starts from.
+
 # END generated inventory
 
 * See also

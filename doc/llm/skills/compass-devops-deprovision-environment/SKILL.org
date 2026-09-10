@@ -6,6 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
+#+level: s2
 #+filetags: :compass:env:deprovision:worktree:
 #+created: 2026-06-16
 #+updated: 2026-06-16

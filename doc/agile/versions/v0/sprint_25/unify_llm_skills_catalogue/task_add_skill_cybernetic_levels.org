@@ -8,7 +8,7 @@
 #+filetags: :llm:skills:cybernetics:levels:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-skill-cybernetic-levels
-#+pr:
+#+pr: 2052
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
@@ -96,7 +96,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2052][#2052]] | [doc] Tag every skill with its cybernetic level |
 
 * Review
 

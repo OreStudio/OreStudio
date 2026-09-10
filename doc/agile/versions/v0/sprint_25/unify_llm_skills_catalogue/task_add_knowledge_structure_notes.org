@@ -8,7 +8,7 @@
 #+filetags: :llm:knowledge:zettelkasten:documentation:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/add-knowledge-structure-notes
-#+pr:
+#+pr: 2055
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
@@ -98,7 +98,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2055][#2055]] | [doc] Add structure notes to the knowledge Zettelkasten |
 
 * Review
 

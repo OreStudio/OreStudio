@@ -8,7 +8,7 @@
 #+filetags: :llm:skills:principles:pstack:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/port-principles-layer
-#+pr:
+#+pr: 2056
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
@@ -107,7 +107,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2056][#2056]] | [doc] Cite the principles under the citation function |
 
 * Review
 

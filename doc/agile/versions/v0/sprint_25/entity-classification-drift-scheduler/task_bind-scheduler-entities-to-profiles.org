@@ -2,7 +2,7 @@
 :ID: 66997EC9-8A28-4436-8496-181DF8EC0F83
 :END:
 #+title: Task: Bind ores.scheduler entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the scheduler-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. Known starting point: set service_find_prefix on job_definition; delete leftover hand-written generators/ directory that conflicts with the new template-generated generator/ directory.
+#+description: Implement profile binding for the scheduler-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: set service_find_prefix on job_definition; delete leftover hand-written generators/ directory that conflicts with the new template-generated generator/ directory.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-scheduler:

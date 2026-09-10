@@ -181,7 +181,7 @@ follows.
 No single wrapper script — each step delegates to its own tool
 (=cmake=, =validate_schemas.sh=, =validate_docs.sh=, =compass db=,
 =compass shell -f=, =compass add test_scenario=, =compass client
-start=); this recipe is the sequencing. The [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] skill
+start=); this recipe is the sequencing. The [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] skill
 executes it as one pass.
 
 * Tested by
@@ -199,4 +199,4 @@ tester can tick through steps to a saved =* Results= section.
 - [[id:719F3770-0838-4FBC-B376-8CE41A3D1328][How do I solve the postgres max connections error?]]
 - [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]]
 - [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][PR Raise]]
-- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] — the skill that executes this recipe.
+- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] — the skill that executes this recipe.

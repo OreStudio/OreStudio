@@ -17,7 +17,7 @@ required check), and the =claude-code-review.yml= auto review is
 retired too. The
 [[id:368E2B3E-CD2C-4FD5-90DD-D0E935810F4D][absorb-PR-checks-locally story]]'s submit-PR skills classify the change
 and run only the matching checks before raising the PR; the review
-runs locally before submit (the =code-review-pr= skill, including the
+runs locally before submit (the =compass-code-review-pr= skill, including the
 misspell check), and the on-demand =@claude= trigger (=claude.yml=)
 remains on GitHub. GitHub keeps the continuous builds, nightlies, site
 deploy, and coverage. This document is the inventory, the fate of
@@ -42,9 +42,9 @@ The workflow that touches PR branches:
 
 | Check                 | Fate            | Where it runs instead / rationale |
 |-----------------------+-----------------+-----------------------------------|
-| classify, site, roundtrip, cmake-sources-drift, codegen-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally); optional CDash submission as experimental. Roundtrip: local =python3 scripts/ore_domain_roundtrip_check.py=. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =codegen-sync-cmake-sources= skill wraps it. codegen-drift: local tangle (=compass build --direct codegen_templates=) then =check_component_drift.py --all= over the script's =KNOWN_DRIFT_FREE= registry; a component not yet at zero drift is measured with =--component <name>=. pr-gate: no branch-protection required check remains. |
-| claude-code-review    | deleted with the local-review task | Local: the =code-review-pr= skill runs before submit (in =pr-raise=); findings go into the task's =* Review= table and are addressed in the round. The on-demand =@claude= trigger (=claude.yml=) stays. |
-| misspell              | deleted with the local-review task | Local misspell check folded into the =code-review-pr= review pass (=misspell-fixer .=, check-only; exit 0 = clean; =.misspell-fixer.ignore= respected). |
+| classify, site, roundtrip, cmake-sources-drift, codegen-drift, pr-gate | deleted with pr.yml | classify: path classifier, audit trail only — nothing consumed its buckets once the gate shrank. Site: local =compass build --direct site= (same emacs export; ~5-10 min locally); optional CDash submission as experimental. Roundtrip: local =python3 scripts/ore_domain_roundtrip_check.py=. cmake-sources-drift: local =python3 projects/ores.codegen/scripts/regenerate_cmake_component_files.py --all --check=; the =compass-codegen-sync-cmake-sources= skill wraps it. codegen-drift: local tangle (=compass build --direct codegen_templates=) then =check_component_drift.py --all= over the script's =KNOWN_DRIFT_FREE= registry; a component not yet at zero drift is measured with =--component <name>=. pr-gate: no branch-protection required check remains. |
+| claude-code-review    | deleted with the local-review task | Local: the =compass-code-review-pr= skill runs before submit (in =compass-pr-raise=); findings go into the task's =* Review= table and are addressed in the round. The on-demand =@claude= trigger (=claude.yml=) stays. |
+| misspell              | deleted with the local-review task | Local misspell check folded into the =compass-code-review-pr= review pass (=misspell-fixer .=, check-only; exit 0 = clean; =.misspell-fixer.ignore= respected). |
 | site-cdash (Doxygen)  | stays        | =build-site.yml= builds the full site + Doxygen and deploys on main push. |
 | continuous-* (linux/macos/windows) | stays | Every 2/3/12h + tags: full build matrix + ctest, submitted to CDash as continuous. |
 | nightly-linux         | stays        | Daily: full build + =ctest -VV= to CDash Nightly + valgrind dynamic analysis. |
@@ -89,7 +89,7 @@ modeling paths also runs the codegen drift checks (tangle, then
    (=./compass.sh test run --preset <preset> --cdash Experimental=;
    runs the CTest.cmake script under the build lock, same shape CI
    uses).
-4. Run the review skill locally (=code-review-pr=, including the
+4. Run the review skill locally (=compass-code-review-pr=, including the
    misspell check); record findings in the task's =* Review= table;
    address them.
 5. Record the verification in the PR description as a

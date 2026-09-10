@@ -45,7 +45,7 @@ Survey every ores.trading entity (projects/ores.trading/modeling) against the pr
 * Plan
 
 Unit plan, written at start on 2026-09-06. The canonical method is the
-codegen-fix-drift skill (steps 1-7); the byproduct-sweep and two-mode
+compass-codegen-fix-drift skill (steps 1-7); the byproduct-sweep and two-mode
 drift rules of the regen-byproduct-hygiene memory are in force
 throughout.
 
@@ -60,14 +60,14 @@ tool, not by discipline:
   runs in exactly two modes: =--all= regenerates every component known
   to be drift-free (a registry in the script, seeded with
   refdata,reporting,marketdata,compute-cpp,iam,iam-cpp, the list the
-  pr-raise skill carried), and =--component NAME= regenerates one named
+  compass-pr-raise skill carried), and =--component NAME= regenerates one named
   component.
 - Both modes fail when regeneration materializes untracked files under
   a checked component's project root: git diff cannot see untracked
   files, so a new template family that postdates a component's
   committed baseline is drift and must fail the check.
-- pr-raise's local codegen-drift check moves to =--all= (the list now
-  lives only in the script's registry), and codegen-fix-drift step 7
+- compass-pr-raise's local codegen-drift check moves to =--all= (the list now
+  lives only in the script's registry), and compass-codegen-fix-drift step 7
   words the gate as registry entry.
 - Verified live: =--all= over the seeded registry must end with a clean
   tree, zero tracked diff and zero untracked materialization.
@@ -181,7 +181,7 @@ service_find_prefix / pagination / batch-read wrinkles) or
 superseded-era (lookup_entity outputs under retirement). The former
 binds to byte-identity; the latter lands the current-template shape
 as the deliberate delta, exactly the lookup-entity migration the
-codegen-fix-drift skill prescribes. The 14 heading-PK orgs additionally
+compass-codegen-fix-drift skill prescribes. The 14 heading-PK orgs additionally
 migrate their primary-key expression to the column flag as part of
 binding, or the component cannot regenerate at all.
 
@@ -434,7 +434,7 @@ the decision is recorded here rather than forcing the gate:
 - =trading-cpp= shares =trade='s modeling dir and Qt outputs; the same
   exclusion applies.
 - Registering either would make =--all= fail by construction. The
-  registry stays at the seeded six; the phase-0 wording in pr-raise
+  registry stays at the seeded six; the phase-0 wording in compass-pr-raise
   ("the list now lives only in the script's registry") is unchanged.
 - The seed itself is re-verified green under this branch's generator
   changes: retangle clean, then =check_component_drift.py --all= exits

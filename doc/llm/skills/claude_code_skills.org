@@ -18,8 +18,8 @@ See [[id:654D4A70-E63D-4C18-B5A5-886066E36314][CMake Runner]] for the deployment
 #+begin_note
 *Skill naming.* Every skill is named =<domain>-<verb>[-<object>]= in
 kebab-case, after the /action/ it performs — never a role, an
-artefact, or the command it wraps: =agile-add-story=, =pr-merge=,
-=devops-setup-environment=. The domain prefixes (=agile-=, =pr-=,
+artefact, or the command it wraps: =agile-add-story=, =compass-pr-merge=,
+=compass-devops-setup-environment=. The domain prefixes (=agile-=, =pr-=,
 =doc-=, =code-=, =codegen-=, =devops-=, =skill-=) and the verbs are
 closed registers defined in [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — read it /before/ adding or
 renaming a skill, and check this inventory for an existing skill
@@ -32,123 +32,123 @@ skill delete the old deployed directory by hand.
 
 # BEGIN generated catalogue (build/scripts/generate_skills_catalogue.py)
 
-* Agile (=agile-=)
+* Agile (=compass-agile-=)
 
 Stories, tasks, sprints, backlog, journal, orientation.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][agile-add-release-notes]] | Agile Add Release Notes | Generate ORE Studio release notes from merged PRs and the closing sprint backlog, then tag main and open a... |
-| [[id:1B837DB5-B27A-451B-A0D0-DD17142476E4][agile-add-timeline-snapshot]] | Agile Add Timeline Snapshot | Create a 20-minute timeline snapshot of recent agile activity; write it to the current sprint's timeline/ f... |
-| [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] | Agile Brainstorm Idea | Explore user intent and design through collaborative dialogue — one question at a time, alternatives with t... |
-| [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]] | Agile Close Task | Close a task's bookkeeping before raising its PR (not after review): DONE, Result, story and sprint sync; c... |
-| [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] | Agile Find Bearings | Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary an... |
-| [[id:117A7CC5-67B7-4B51-BD6D-41E0A00B5A3D][agile-find-heading]] | Agile Find Heading | Find the next work item — run compass heading, surface the ranked suggestions, and recommend the top action. |
-| [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][agile-open-sprint]] | Agile Open Sprint | Open a new ORE Studio sprint. Scaffold the sprint folder via codegen, set its mission, link it from the ver... |
-| [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][agile-plan-sprint]] | Agile Plan Sprint | Run a sprint planning session: read the sprint mission, score next-backlog captures against sprint goals, p... |
-| [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] | Agile Refine Backlog | / |
-| [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]] | Agile Review Sprint | / |
-| [[id:764FFF86-CB1B-4F9B-90B2-5AA2675EEF75][agile-start-hotfix]] | Agile Start Hotfix | Start a hotfix: scaffold story and task on a hotfix/ branch from the production error. |
-| [[id:498C9F9E-2699-47E5-8934-ED3F55CD7E22][agile-start-story]] | Agile Start Story | Pick up a story: fetch main, create the feature branch, mark STARTED, stamp the journal. |
-| [[id:B8A12E7B-0FB0-4871-A132-EA0AA3CBE5E9][agile-start-task]] | Agile Start Task | Pick up a task: switch or create its branch, mark it STARTED, stamp the journal. |
+| [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][compass-agile-add-release-notes]] | Agile Add Release Notes | Generate ORE Studio release notes from merged PRs and the closing sprint backlog, then tag main and open a... |
+| [[id:1B837DB5-B27A-451B-A0D0-DD17142476E4][compass-agile-add-timeline-snapshot]] | Agile Add Timeline Snapshot | Create a 20-minute timeline snapshot of recent agile activity; write it to the current sprint's timeline/ f... |
+| [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][compass-agile-brainstorm-idea]] | Agile Brainstorm Idea | Explore user intent and design through collaborative dialogue — one question at a time, alternatives with t... |
+| [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]] | Agile Close Task | Close a task's bookkeeping before raising its PR (not after review): DONE, Result, story and sprint sync; c... |
+| [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][compass-agile-find-bearings]] | Agile Find Bearings | Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary an... |
+| [[id:117A7CC5-67B7-4B51-BD6D-41E0A00B5A3D][compass-agile-find-heading]] | Agile Find Heading | Find the next work item — run compass heading, surface the ranked suggestions, and recommend the top action. |
+| [[id:C5EEF144-BB9D-2F44-453B-4B7338D8A457][compass-agile-open-sprint]] | Agile Open Sprint | Open a new ORE Studio sprint. Scaffold the sprint folder via codegen, set its mission, link it from the ver... |
+| [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][compass-agile-plan-sprint]] | Agile Plan Sprint | Run a sprint planning session: read the sprint mission, score next-backlog captures against sprint goals, p... |
+| [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][compass-agile-refine-backlog]] | Agile Refine Backlog | / |
+| [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][compass-agile-review-sprint]] | Agile Review Sprint | / |
+| [[id:764FFF86-CB1B-4F9B-90B2-5AA2675EEF75][compass-agile-start-hotfix]] | Agile Start Hotfix | Start a hotfix: scaffold story and task on a hotfix/ branch from the production error. |
+| [[id:498C9F9E-2699-47E5-8934-ED3F55CD7E22][compass-agile-start-story]] | Agile Start Story | Pick up a story: fetch main, create the feature branch, mark STARTED, stamp the journal. |
+| [[id:B8A12E7B-0FB0-4871-A132-EA0AA3CBE5E9][compass-agile-start-task]] | Agile Start Task | Pick up a task: switch or create its branch, mark it STARTED, stamp the journal. |
 
-* Pull requests (=pr-=)
+* Pull requests (=compass-pr-=)
 
 PR lifecycle.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:38ACE767-95D6-4A6E-88A8-EC93BB350292][pr-address-review]] | PR Address Review | Handle one complete PR review round: sync, read comments, decide, fix, push, reply, resolve, record. |
-| [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][pr-merge]] | PR Merge | Merge a PR with guard rails: threads resolved, CI green, task bookkeeping already closed. |
-| [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][pr-raise]] | PR Raise | Run the local code review, then open a pull request with compass pr create and post an @claude comment to t... |
-| [[id:D3CF614D-4889-409F-B938-22C877189B07][pr-sync-branch]] | PR Sync Branch | Rebase the current feature branch on origin/main and report divergence; never work on a stale branch. |
+| [[id:38ACE767-95D6-4A6E-88A8-EC93BB350292][compass-pr-address-review]] | PR Address Review | Handle one complete PR review round: sync, read comments, decide, fix, push, reply, resolve, record. |
+| [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][compass-pr-merge]] | PR Merge | Merge a PR with guard rails: threads resolved, CI green, task bookkeeping already closed. |
+| [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][compass-pr-raise]] | PR Raise | Run the local code review, then open a pull request with compass pr create and post an @claude comment to t... |
+| [[id:D3CF614D-4889-409F-B938-22C877189B07][compass-pr-sync-branch]] | PR Sync Branch | Rebase the current feature branch on origin/main and report divergence; never work on a stale branch. |
 
-* Documentation (=doc-=)
+* Documentation (=compass-doc-=)
 
 Recipes, knowledge, manual, memory, diagrams, search.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][doc-add]] | Doc Add | Create a document of any type — story, task, capture, knowledge, recipe, memory and the rest. Scaffold it,... |
-| [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][doc-add-chart]] | Doc Add Chart | / |
-| [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][doc-add-class-diagram]] | Doc Add Class Diagram | Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture dia... |
-| [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][doc-add-component-model]] | Doc Add Component Model | Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component. |
-| [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]] | Doc Add Entity Chapter | Author a complete user-manual chapter for a reference-data entity, from domain grounding through screenshot... |
-| [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][doc-add-er-diagram]] | Doc Add ER Diagram | Author or update the PlantUML ER diagram for the ORE Studio SQL schema — tables, relationships, temporal pa... |
-| [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
-| [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
-| [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][doc-find]] | Doc Find | Search every document in the repository: full-text search and structured filters over the org-roam graph. |
-| [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][doc-review-academic]] | Review and write academic prose | Layered review of argumentative documentation: claim, spine, paragraph, sentence, term, evidence, honesty. |
-| [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] | Review and rewrite agent output using ASD-STE100 Simplified Technical English | Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short... |
-| [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] | Doc Run Manual Screenshots | Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build... |
-| [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][doc-show]] | Doc Show | Show the current state of anything — a document, the sprint, the fleet, the journal, services, CI checks, a... |
-| [[id:4A986B6B-1678-453E-8357-C086E78C0698][doc-sync-index]] | Doc Sync Index | Rebuild the compass search index and org-roam database when they are stale. |
-| [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |
-| [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][doc-update-manual]] | Doc Update Manual | When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders,... |
+| [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][compass-doc-add]] | Doc Add | Create a document of any type — story, task, capture, knowledge, recipe, memory and the rest. Scaffold it,... |
+| [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][compass-doc-add-chart]] | Doc Add Chart | / |
+| [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][compass-doc-add-class-diagram]] | Doc Add Class Diagram | Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture dia... |
+| [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][compass-doc-add-component-model]] | Doc Add Component Model | Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component. |
+| [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][compass-doc-add-entity-chapter]] | Doc Add Entity Chapter | Author a complete user-manual chapter for a reference-data entity, from domain grounding through screenshot... |
+| [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][compass-doc-add-er-diagram]] | Doc Add ER Diagram | Author or update the PlantUML ER diagram for the ORE Studio SQL schema — tables, relationships, temporal pa... |
+| [[id:7357C672-A49F-4974-9399-A166F761D222][compass-doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
+| [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][compass-doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
+| [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][compass-doc-find]] | Doc Find | Search every document in the repository: full-text search and structured filters over the org-roam graph. |
+| [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][compass-doc-review-academic]] | Review and write academic prose | Layered review of argumentative documentation: claim, spine, paragraph, sentence, term, evidence, honesty. |
+| [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][compass-doc-review-ste100]] | Review and rewrite agent output using ASD-STE100 Simplified Technical English | Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short... |
+| [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][compass-doc-run-manual-screenshots]] | Doc Run Manual Screenshots | Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build... |
+| [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][compass-doc-show]] | Doc Show | Show the current state of anything — a document, the sprint, the fleet, the journal, services, CI checks, a... |
+| [[id:4A986B6B-1678-453E-8357-C086E78C0698][compass-doc-sync-index]] | Doc Sync Index | Rebuild the compass search index and org-roam database when they are stale. |
+| [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][compass-doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |
+| [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][compass-doc-update-manual]] | Doc Update Manual | When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders,... |
 
-* Hand-written code (=code-=)
+* Hand-written code (=compass-code-=)
 
 Build, tests, review, investigation — code written by hand.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]] | Code Add Domain Type | Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen. |
-| [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests]] | Code Add Tests | Generate Catch2 unit tests for ORE Studio components — domain, repository, messaging, generators, service,... |
-| [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure]] | Code Investigate Test Failure | Investigate unit test failures by enabling logging, running the failing suite, parsing the result XML, and... |
-| [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] | Review and clean code comments | Review and clean code comments — remove clutter, keep necessary explanations, place comments above the code... |
-| [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] | Code Review Component Skill | Deep audit of one or more ORE Studio components for technical debt, modernisation opportunities, and conven... |
-| [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] | Code Review Data Model Skill | Review a component's data model against the data-oriented design criteria: regime classification, layout, v... |
-| [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] | Code Review PR Skill | Review changes in a pull request against the ORE Studio code-review checklist; produce findings bucketed by... |
-| [[id:654D4A70-E63D-4C18-B5A5-886066E36314][code-run-build]] | Code Run Build | Run CMake operations on ORE Studio — configure, build, test, deploy site, deploy skills, generate PlantUML... |
-| [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] | Code Run Feature Test | Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, provi... |
-| [[id:6EEA2ACE-BD40-4209-9CBE-6A86553AEEB7][code-start-branch]] | Code Start Branch | Create a clean branch off main for out-of-band work with no task attached; task-shaped work uses agile-star... |
+| [[id:B1450696-8C51-4CC5-8910-84912A411AB6][compass-code-add-domain-type]] | Code Add Domain Type | Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen. |
+| [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][compass-code-add-tests]] | Code Add Tests | Generate Catch2 unit tests for ORE Studio components — domain, repository, messaging, generators, service,... |
+| [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][compass-code-investigate-test-failure]] | Code Investigate Test Failure | Investigate unit test failures by enabling logging, running the failing suite, parsing the result XML, and... |
+| [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][compass-code-review-comments]] | Review and clean code comments | Review and clean code comments — remove clutter, keep necessary explanations, place comments above the code... |
+| [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][compass-code-review-component]] | Code Review Component Skill | Deep audit of one or more ORE Studio components for technical debt, modernisation opportunities, and conven... |
+| [[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] | Code Review Data Model Skill | Review a component's data model against the data-oriented design criteria: regime classification, layout, v... |
+| [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][compass-code-review-pr]] | Code Review PR Skill | Review changes in a pull request against the ORE Studio code-review checklist; produce findings bucketed by... |
+| [[id:654D4A70-E63D-4C18-B5A5-886066E36314][compass-code-run-build]] | Code Run Build | Run CMake operations on ORE Studio — configure, build, test, deploy site, deploy skills, generate PlantUML... |
+| [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] | Code Run Feature Test | Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, provi... |
+| [[id:6EEA2ACE-BD40-4209-9CBE-6A86553AEEB7][compass-code-start-branch]] | Code Start Branch | Create a clean branch off main for out-of-band work with no task attached; task-shaped work uses compass-ag... |
 
-* Generated code (=codegen-=)
+* Generated code (=compass-codegen-=)
 
 Entities, components, and schemas produced by ores.codegen.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][codegen-add-component]] | Codegen Add Component | Scaffold a new ORE Studio component (api/core/service) via codegen profiles. |
-| [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] | Codegen Add Entity | Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill. |
-| [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]] | Codegen Add QT Entity | Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and co... |
-| [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]] | Codegen Add SQL Schema | Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio. |
-| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | Codegen Add Surface Entity | Add an entity to a user-facing surface — the CLI, the HTTP API, the shell REPL, or the Wt web UI. One three... |
-| [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]] | Codegen Fix Drift | Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, b... |
-| [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]] | codegen-sync-cmake-sources | Regenerate CMake component file lists (component_files.cmake) after adding/removing a source file, or after... |
+| [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][compass-codegen-add-component]] | Codegen Add Component | Scaffold a new ORE Studio component (api/core/service) via codegen profiles. |
+| [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] | Codegen Add Entity | Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill. |
+| [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][compass-codegen-add-qt-entity]] | Codegen Add QT Entity | Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and co... |
+| [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][compass-codegen-add-sql-schema]] | Codegen Add SQL Schema | Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio. |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Codegen Add Surface Entity | Add an entity to a user-facing surface — the CLI, the HTTP API, the shell REPL, or the Wt web UI. One three... |
+| [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][compass-codegen-fix-drift]] | Codegen Fix Drift | Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, b... |
+| [[id:B45805F2-BAD4-4879-A571-3C962C79670B][compass-codegen-sync-cmake-sources]] | compass-codegen-sync-cmake-sources | Regenerate CMake component file lists (component_files.cmake) after adding/removing a source file, or after... |
 
-* DevOps (=devops-=)
+* DevOps (=compass-devops-=)
 
 Environment, database, services, shell, client, site.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:68056570-965C-4B2B-9A32-64A3AEA20611][devops-deploy-manual]] | Devops Deploy Manual | Build and publish the user manual PDF. |
-| [[id:7BB0B6CC-A88D-4EA1-900C-7AC01B5B432F][devops-deploy-settings]] | Devops Deploy Settings | Tangle Claude Code settings.json from its org source. |
-| [[id:C6E41D12-6D7A-4C5E-BD89-C399A4ECA021][devops-deploy-site]] | Devops Deploy Site | Build and publish the documentation website from the org-roam graph. |
-| [[id:1226649E-49D5-4C80-878D-6A17D3F20A62][devops-deploy-skills]] | Devops Deploy Skills | Build the Claude Code skills bundle from doc/llm/skills and purge stale deployed directories. |
-| [[id:3A869409-B8E7-420B-9BFA-0BAC9E9F804F][devops-deprovision-environment]] | Deprovision a named environment | Use compass env deprovision to remove a named worktree and its directory. |
-| [[id:AA14F8A0-F037-4303-88D9-059771BD764D][devops-provision-environment]] | Provision a new named environment | Use compass env provision to create a named worktree, assign isolated ports, and write a skeleton .env. |
-| [[id:435BD960-CA83-4B1A-829D-F345181206B2][devops-recreate-db]] | Devops Recreate DB | Rebuild the database from scratch: drop, recreate, restore schema and seed data. |
-| [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour for parallel runs. |
-| [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][devops-run-environment]] | Devops Run Environment | Run the full environment-readying sequence: stop services, recreate the database, start services, provision... |
-| [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
-| [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |
-| [[id:C35F1575-4894-46B9-9356-E68F275CFD3B][devops-setup-environment]] | Devops Setup Environment | Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB. |
-| [[id:96EBB175-83BD-4DD3-B35C-769C86CB3075][devops-start-services]] | Devops Start Services | Start the service fleet and verify everything came up. |
-| [[id:74D7BEDE-5FEC-45AE-9977-CC9A6C5D47A0][devops-stop-services]] | Devops Stop Services | Stop the service fleet cleanly. |
-| [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][devops-update-environment]] | Update a worktree to latest main | Bring a worktree fully up to date with main: fetch, detached checkout of the latest commit, sync submodules... |
+| [[id:68056570-965C-4B2B-9A32-64A3AEA20611][compass-devops-deploy-manual]] | Devops Deploy Manual | Build and publish the user manual PDF. |
+| [[id:7BB0B6CC-A88D-4EA1-900C-7AC01B5B432F][compass-devops-deploy-settings]] | Devops Deploy Settings | Tangle Claude Code settings.json from its org source. |
+| [[id:C6E41D12-6D7A-4C5E-BD89-C399A4ECA021][compass-devops-deploy-site]] | Devops Deploy Site | Build and publish the documentation website from the org-roam graph. |
+| [[id:1226649E-49D5-4C80-878D-6A17D3F20A62][compass-devops-deploy-skills]] | Devops Deploy Skills | Build the Claude Code skills bundle from doc/llm/skills and purge stale deployed directories. |
+| [[id:3A869409-B8E7-420B-9BFA-0BAC9E9F804F][compass-devops-deprovision-environment]] | Deprovision a named environment | Use compass env deprovision to remove a named worktree and its directory. |
+| [[id:AA14F8A0-F037-4303-88D9-059771BD764D][compass-devops-provision-environment]] | Provision a new named environment | Use compass env provision to create a named worktree, assign isolated ports, and write a skeleton .env. |
+| [[id:435BD960-CA83-4B1A-829D-F345181206B2][compass-devops-recreate-db]] | Devops Recreate DB | Rebuild the database from scratch: drop, recreate, restore schema and seed data. |
+| [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][compass-devops-run-client]] | Devops Run Client | Launch the Qt client detached, with optional colour for parallel runs. |
+| [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][compass-devops-run-environment]] | Devops Run Environment | Run the full environment-readying sequence: stop services, recreate the database, start services, provision... |
+| [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][compass-devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
+| [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][compass-devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |
+| [[id:C35F1575-4894-46B9-9356-E68F275CFD3B][compass-devops-setup-environment]] | Devops Setup Environment | Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB. |
+| [[id:96EBB175-83BD-4DD3-B35C-769C86CB3075][compass-devops-start-services]] | Devops Start Services | Start the service fleet and verify everything came up. |
+| [[id:74D7BEDE-5FEC-45AE-9977-CC9A6C5D47A0][compass-devops-stop-services]] | Devops Stop Services | Stop the service fleet cleanly. |
+| [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][compass-devops-update-environment]] | Update a worktree to latest main | Bring a worktree fully up to date with main: fetch, detached checkout of the latest commit, sync submodules... |
 
-* Skills (=skill-=)
+* Skills (=compass-skill-=)
 
 The skills themselves.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] | Skill Add | Create or update Claude Code skills and rebuild the shipped skill bundle. |
-| [[id:72984867-3B87-4EFD-ABA1-DFD36000825D][skill-delete]] | Skill Delete | Retire a skill safely: check incoming links, re-point or downgrade them, remove the source, regenerate the... |
-| [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][skill-review]] | Skill Review Skill | Review existing skills against the skill contract. Use when auditing skill quality, before adding a new ski... |
-| [[id:52DA0E52-ABB6-4AC3-A586-BA6336F08FDA][skill-show-catalogue]] | Skill Show Catalogue | Show the skills catalogue nicely grouped by domain prefix, with each skill's name, title, and description —... |
+| [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][compass-skill-add]] | Skill Add | Create or update Claude Code skills and rebuild the shipped skill bundle. |
+| [[id:72984867-3B87-4EFD-ABA1-DFD36000825D][compass-skill-delete]] | Skill Delete | Retire a skill safely: check incoming links, re-point or downgrade them, remove the source, regenerate the... |
+| [[id:44D7A328-F69C-4EE9-83A5-74BD3634AD69][compass-skill-review]] | Skill Review Skill | Review existing skills against the skill contract. Use when auditing skill quality, before adding a new ski... |
+| [[id:52DA0E52-ABB6-4AC3-A586-BA6336F08FDA][compass-skill-show-catalogue]] | Skill Show Catalogue | Show the skills catalogue nicely grouped by domain prefix, with each skill's name, title, and description —... |
 
 # END generated catalogue
 

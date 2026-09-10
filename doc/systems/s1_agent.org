@@ -56,52 +56,52 @@ Before acting, load:
 
 The Claude Code [[id:4F6384FE-CDE9-40F6-B13D-8A84B6CD77F7][skills]] you invoke per situation:
 
-- [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][agile-find-bearings]] — at session start: orient yourself (branch,
+- [[id:936389EC-7E0A-4925-9023-D4FA33C0FBF4][compass-agile-find-bearings]] — at session start: orient yourself (branch,
   story, task, PR state, environment health).
-- [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] — after bearings, at session start: apply
+- [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][compass-doc-review-ste100]] — after bearings, at session start: apply
   ASD-STE100 Simplified Technical English rules to all user-facing
   prose output (not JSON, diffs, code, or commit messages).
-- [[id:117A7CC5-67B7-4B51-BD6D-41E0A00B5A3D][agile-find-heading]] — when the user asks what to work on next:
+- [[id:117A7CC5-67B7-4B51-BD6D-41E0A00B5A3D][compass-agile-find-heading]] — when the user asks what to work on next:
   run =compass heading= and surface the top suggestion.
-- the work lifecycle (=agile-start-task= → =agile-close-task=) — the default: take one story / task,
+- the work lifecycle (=compass-agile-start-task= → =compass-agile-close-task=) — the default: take one story / task,
   implement it incrementally with tests and commits, submit for
   review.
-- =pr-merge= — merge the PR once green and reviewed.
-- =pr-address-review= — after PR is open, address review comments and CI
+- =compass-pr-merge= — merge the PR once green and reviewed.
+- =compass-pr-address-review= — after PR is open, address review comments and CI
   failures until green.
-- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]], [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] — self-review before
+- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][compass-code-review-component]], [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][compass-code-review-pr]] — self-review before
   asking for human review.
-- [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] — when the review target is a
+- [[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] — when the review target is a
   component's data model: assess domain types, entity models, and
   kernel data structures against the data-oriented design criteria.
-- [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] — when creating,
+- [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][compass-code-review-comments]] — when creating,
   editing, or cleaning code comments: keep them sparse, above the
   code, with no edit-history narration.
-- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][code-add-tests]] — when the task adds or changes code that
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][compass-code-add-tests]] — when the task adds or changes code that
   needs Catch2 coverage.
-- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][code-investigate-test-failure]] — when a test goes red mid-task.
-- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][code-run-feature-test]] — once implementation is otherwise done,
+- [[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][compass-code-investigate-test-failure]] — when a test goes red mid-task.
+- [[id:4FEB154D-50EF-4346-BB75-B0881188E4F5][compass-code-run-feature-test]] — once implementation is otherwise done,
   before raising a PR: full build, run all tests, validate schemas,
   recreate the database, provision the tenant, write and hand off a
   test scenario for manual QA.
-- [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] — when the user gives feedback that should outlive
+- [[id:7357C672-A49F-4974-9399-A166F761D222][compass-doc-add-memory]] — when the user gives feedback that should outlive
   this session, file a memory before moving on.
-- [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][devops-run-environment]] — when a task needs a live, logged-in-ready
+- [[id:7562DD4F-8F75-408B-BAE2-BB943839969D][compass-devops-run-environment]] — when a task needs a live, logged-in-ready
   environment (Qt UI verification, manual testing): stop services,
   recreate the database, start services, provision the tenant, start
   the client.
-- [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][devops-update-environment]] — when a worktree has drifted from main
+- [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][compass-devops-update-environment]] — when a worktree has drifted from main
   (stale vcpkg submodule, settings, or skills bundle): fetch, detached
   checkout of latest main, sync submodules, rebuild settings/skills.
-- Entity / component / type creators ([[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]],
-  [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][codegen-add-component]], [[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]],
-  [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]]) — when the task is
+- Entity / component / type creators ([[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]],
+  [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][compass-codegen-add-component]], [[id:B1450696-8C51-4CC5-8910-84912A411AB6][compass-code-add-domain-type]],
+  [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][compass-codegen-add-qt-entity]]) — when the task is
   adding a new entity / type / component.
-- [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]] — a linker error names an undefined
+- [[id:B45805F2-BAD4-4879-A571-3C962C79670B][compass-codegen-sync-cmake-sources]] — a linker error names an undefined
   symbol that clearly exists somewhere in the tree (typically right
   after a rebase/merge), or a new source file was just added to a
   component: regenerate its =component_files.cmake=.
-- [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]] — a remediation story must bring one component
+- [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][compass-codegen-fix-drift]] — a remediation story must bring one component
   to zero codegen drift (or a regen just surfaced drift): run the
   component through the drift-elimination method — survey, profile
   binding, byte-identical regen, drift gate.

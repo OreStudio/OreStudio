@@ -8,7 +8,7 @@ instead of its .org model source, or a model changed without running
 The check runs in exactly two modes:
 
   --all           regenerate every component in the known-drift-free
-                  registry below; the local pr-raise gate covers this set
+                  registry below; the local compass-pr-raise gate covers this set
   --component X   regenerate one named component, by catalogue slug
 
 An ad hoc multi-component list is never a valid invocation: a component
@@ -40,8 +40,8 @@ from codegen.logging_config import configure  # noqa: E402
 
 # Components verified to regenerate byte-identical to their committed
 # tree, with no untracked materialization. --all checks exactly this
-# set, the drift gate the pr-raise skill runs. A component joins only
-# when codegen-fix-drift step 7 verifies its regeneration leaves the
+# set, the drift gate the compass-pr-raise skill runs. A component joins only
+# when compass-codegen-fix-drift step 7 verifies its regeneration leaves the
 # tree fully clean.
 KNOWN_DRIFT_FREE = (
     "refdata",

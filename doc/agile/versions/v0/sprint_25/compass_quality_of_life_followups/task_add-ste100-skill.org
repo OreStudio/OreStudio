@@ -73,7 +73,7 @@ via its "Verifies task" field.
 PR [#1916](https://github.com/OreStudio/OreStudio/pull/1916) — merged
 9ef6ce4b9.
 
-Created doc-review-ste100 skill under doc/llm/skills/ — SKILL.org
+Created compass-doc-review-ste100 skill under doc/llm/skills/ — SKILL.org
 tangles SKILL.md, LICENSE.txt (MIT, attributed upstream), writing-rules.md,
 and before-after.md. Skill is cross-referenced from s1_agent.org and the
 Skills catalogue. CLAUDE.md loads it after compass bearings, scoped to

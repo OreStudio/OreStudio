@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Run =codegen-add-component= to scaffold =ores.orgmode= with this
+Run =compass-codegen-add-component= to scaffold =ores.orgmode= with this
 project's standard simple-component layout (no api/core/service split — this is a pure parsing library, not a DB/service-backed domain component) and CMake wiring, so the
 parser/link-resolution work in the following tasks has somewhere to
 land. No parsing logic here — just a building, empty-but-wired
@@ -83,7 +83,7 @@ in scope here).
 | 3 | =unquote()= escaping logic hard to read at a glance | resolver.cpp | Accepted | Added a concrete before/after example to the docstring in 9197362b2. |
 | 4 | =find_keyword=/=id()= are case-sensitive; org-mode itself isn't | document.hpp | Accepted | Documented explicitly in 9197362b2; not a live bug (this repo's corpus is consistent), just clarified. |
 | 5 | Unterminated =:PROPERTIES:= drawer swallows rest of file | parser.cpp | Declined | Already documented as a known simplification; corpus test confirms no real doc hits it. |
-| 6 | Prepared statement not cached across =resolve()= calls | resolver.cpp | Declined | Not a hot path yet (single lookup per =doc-show= call); revisit if a future consumer resolves many links per document. |
+| 6 | Prepared statement not cached across =resolve()= calls | resolver.cpp | Declined | Not a hot path yet (single lookup per =compass-doc-show= call); revisit if a future consumer resolves many links per document. |
 | 7 | Bare =**= heading (no title text) falls through to body text | parser.cpp | Declined | Consistent with the documented restricted-subset scope; no real doc in the corpus relies on that form. |
 
 * Result

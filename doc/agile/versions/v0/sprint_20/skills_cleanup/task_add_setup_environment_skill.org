@@ -48,19 +48,19 @@ task closes. Plans do not outlive their task.)
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1124][#1124]] | [llm] Add devops-setup-environment; close the skill cleanup story |
+| [[https://github.com/OreStudio/OreStudio/pull/1124][#1124]] | [llm] Add compass-devops-setup-environment; close the skill cleanup story |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | Description exceeds the catalogue's 110-char limit, truncates | devops-setup-environment/SKILL.org | Accepted | Fixed in 03d1b265b; 109 chars. |
-| 1 | license: LICENSE.txt vs :tangle LICENCE.txt mismatch | devops-setup-environment/SKILL.org | Accepted (broadened) | Template defect in all 63 skills; fixed doc_skill.org.mustache and every skill in 03d1b265b. |
+| 1 | Description exceeds the catalogue's 110-char limit, truncates | compass-devops-setup-environment/SKILL.org | Accepted | Fixed in 03d1b265b; 109 chars. |
+| 1 | license: LICENSE.txt vs :tangle LICENCE.txt mismatch | compass-devops-setup-environment/SKILL.org | Accepted (broadened) | Template defect in all 63 skills; fixed doc_skill.org.mustache and every skill in 03d1b265b. |
 
 * Result
 
-devops-setup-environment created: composes the per-piece devops
-skills in dependency order — doc-sync-index, deploy skills, deploy
+compass-devops-setup-environment created: composes the per-piece devops
+skills in dependency order — compass-doc-sync-index, deploy skills, deploy
 settings, env init, db recreate, optional shell provisioning via
 projects/ores.shell/scripts/bootstrap.ores, and a bearings
 verification at the end. Catalogue regenerated with no pending

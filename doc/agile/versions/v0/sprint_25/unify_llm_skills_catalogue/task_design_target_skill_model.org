@@ -62,7 +62,7 @@ verbs, the level register with its advisory and binding strengths, and the
 placement procedure. The glossary takes the terminology register, because
 terminology governs every document and the skills cluster is only one reader.
 
-Policy binds where an author meets it, so =skill-add= carries the same rules
+Policy binds where an author meets it, so =compass-skill-add= carries the same rules
 in its own steps: the naming step now states the prefix and the segments and
 routes an unsure author to the placement procedure, and a new step makes
 =#+level:= a filled-in field rather than a rule stated elsewhere.
@@ -128,4 +128,4 @@ retired synonyms and both traps. The reference-only rule now exempts the
 citation function, with the reasoning stated. The placement procedure is
 reproduced in the naming document, where an author naming something meets it.
 
-=skill-add= enforces all of it, and the deployed bundle rebuilt clean.
+=compass-skill-add= enforces all of it, and the deployed bundle rebuilt clean.

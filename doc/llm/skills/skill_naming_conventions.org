@@ -50,10 +50,10 @@ spans several.
   [[proj:.claude/skills][=.claude/skills/=]], and the =name:= frontmatter field —
   keep all three identical.
 - Named after the intent, not the mechanism: the user thinks "I want
-  to merge this PR", so the skill is =pr-merge= — regardless of
+  to merge this PR", so the skill is =compass-pr-merge= — regardless of
   whether =compass pr merge=, =gh=, or anything else implements it.
 - The object is omitted only when the verb is unambiguous within the
-  domain (=pr-merge=).
+  domain (=compass-pr-merge=).
 
 ** Prefix register
 
@@ -68,8 +68,8 @@ spans several.
 | =skill-=   | the skills themselves (meta)                                 |
 
 =code-= vs =codegen-=: manual versus automatic. Writing a unit test
-by hand is =code-add-tests=; scaffolding a Qt entity from a model
-is =codegen-add-qt-entity=.
+by hand is =compass-code-add-tests=; scaffolding a Qt entity from a model
+is =compass-codegen-add-qt-entity=.
 
 Every entry above is preceded by =compass-=, so the domain is the *second*
 segment of an action's name: =compass-pr-merge=, =compass-agile-start-task=.
@@ -122,7 +122,7 @@ a hierarchy of kinds.
 | =fix-=    | repair a defect to a defined end state: drift elimination, template bugs, failing behaviour |
 | =act-=   | dispatch on a target: resolve its type, offer the operations its regulatory functions declare |
 | =export-= | hand a result set to the artefact type that owns that shape   |
-| (bare)   | rare domain verbs with no object, e.g. =pr-merge=; also =compass-helm=, the mode |
+| (bare)   | rare domain verbs with no object, e.g. =compass-pr-merge=; also =compass-helm=, the mode |
 
 =add= versus =start= is the create-versus-pick-up distinction. Creating a story
 for backlog refinement must not create a branch; picking one up must.
@@ -131,7 +131,7 @@ for backlog refinement must not create a branch; picking one up must.
 
 - /No roles./ A skill is what we do, not who does it. Role skills are
   dissolved into their constituent actions (e.g. /agile product
-  owner/ → =agile-refine-backlog=, =agile-plan-sprint=).
+  owner/ → =compass-agile-refine-backlog=, =compass-agile-plan-sprint=).
 - /Reference-only skills, except principles./ If the instructions
   contain no executable steps, it is usually knowledge wearing a skill
   costume: demote it to a knowledge doc and link it from the skills
@@ -215,10 +215,10 @@ where an author naming something will meet it. Take the first match.
 | Roles dissolved, reference skills demoted | Keep the action namespace pure — that is what makes discovery work |
 | =run-runbook= deleted | The new action skills map ~1:1 onto the runbook catalogue; a dispatcher adds a layer without adding capability |
 | =review-=, =update-=, =open-=, =investigate-=, =brainstorm-= added | Surfaced by the audit of all 40 existing skills: review recurs across four skills; the others each name an action no existing verb covers without distortion |
-| =write= rejected | =code-add-tests=, not =code-write-tests= — =add= already means "create the artefact" |
+| =write= rejected | =compass-code-add-tests=, not =code-write-tests= — =add= already means "create the artefact" |
 | =deploy-= added | The build pillar's deploy_manual/skills/settings/site targets are publish actions, not plain runs |
-| =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=skill-delete=) |
-| =fix-= added | The drift-elimination method needs the plain repair verb: =add-= (create), =run-= (execute), and =update-= (align with a change elsewhere) each name a different action, and remediation is the load-bearing action of the 12 per-component stories (=codegen-fix-drift=) |
+| =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=compass-skill-delete=) |
+| =fix-= added | The drift-elimination method needs the plain repair verb: =add-= (create), =run-= (execute), and =update-= (align with a change elsewhere) each name a different action, and remediation is the load-bearing action of the 12 per-component stories (=compass-codegen-fix-drift=) |
 | =compass-= prefix on every skill we own | Ownership is the thing a reader needs at a glance, because an upstream skill is referenced and cannot be edited here. The prefix also separates our catalogue from every plugin's in one keystroke |
 | =principle-= and =method-= as second segments, not domains | A principle names no artefact type and a method spans several, so neither parses as =<domain>-<verb>=. Making them segments keeps the action form untouched |
 | =#+level:= mandatory on every skill | Attenuation is the mechanism that keeps the offered set small enough to choose well. An unlevelled skill is visible at every level, which defeats it |
@@ -248,6 +248,6 @@ registers like any other.
 * See also
 
 - [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] — the inventory this policy governs.
-- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]] — enforces this policy when adding skills.
+- [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][compass-skill-add]] — enforces this policy when adding skills.
 - [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.
 - [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — the upstream skills these registers do not govern.

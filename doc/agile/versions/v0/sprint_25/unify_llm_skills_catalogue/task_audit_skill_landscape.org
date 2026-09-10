@@ -58,8 +58,8 @@ than from their READMEs. The dispositions are recorded in the story's
 Ten first-pass judgements changed, all in the same direction: items
 dismissed from a one-line description carried the ideas worth having.
 The largest reversal is =writing-for-agents=, first judged as material
-to fold into =skill-add=; it is a theory of agent-facing documentation
-and supersedes =skill-add= instead.
+to fold into =compass-skill-add=; it is a theory of agent-facing documentation
+and supersedes =compass-skill-add= instead.
 
 Four findings apply to our own work rather than to the imports:
 

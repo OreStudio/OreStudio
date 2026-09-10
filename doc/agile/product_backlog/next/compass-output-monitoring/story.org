@@ -2,7 +2,7 @@
 :ID: 7D92A697-CE9D-4760-B817-E630F9081CFB
 :END:
 #+title: Story: Improve compass output monitoring
-#+description: Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once. Split from Sprint 23's 'Compass improvements' story once its own acceptance (vcpkg drift warning, devops-update-environment skill) was met.
+#+description: Move all compass command output out of ad-hoc /tmp files into a well-known, rotated, per-checkout log directory, and add a services-start concurrency lock so at most 4 environments run services at once. Split from Sprint 23's 'Compass improvements' story once its own acceptance (vcpkg drift warning, compass-devops-update-environment skill) was met.
 #+type: story
 #+level: s2
 #+filetags: :compass-output-monitoring:next:

@@ -31,7 +31,7 @@ correctly-formatted title and a structured body?
 
 2. /Close task/story bookkeeping now, if not already done/ — task
    =DONE=, =* Result= written, story/sprint rows synced (see
-   [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]]). This happens *before* raising the PR, so the
+   [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]]). This happens *before* raising the PR, so the
    bookkeeping commit is part of the very first push, not a follow-up
    after review.
 

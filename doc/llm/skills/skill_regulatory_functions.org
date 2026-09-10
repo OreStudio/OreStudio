@@ -575,7 +575,7 @@ A regulatory function is a property of an artefact, not of an act. Any single ac
 therefore touches at least two of them, one on each side, and confusing the two
 sides is the commonest way to misread this taxonomy.
 
-Consider an agent closing a task. It engages the skill =agile-close-task= under
+Consider an agent closing a task. It engages the skill =compass-agile-close-task= under
 that skill's *execution* regulatory function: running the skill is the agent's
 relation to it. The skill's effect engages the task under the task's
 *recording* regulatory function: the state moves to =DONE=, the result is
@@ -594,7 +594,7 @@ have an
 enough to be ignored: closing a task targets that task and produces nothing new.
 For creation they diverge, and must.
 
-An agent adding a task executes =doc-add=. Its target is the *story*, not
+An agent adding a task executes =compass-doc-add=. Its target is the *story*, not
 the task, which is why =compass add task= takes the parent as an argument. The
 regulatory function engaged is the story's recording: its table of tasks gains
 a row, which records that this work now exists. The new task document is the

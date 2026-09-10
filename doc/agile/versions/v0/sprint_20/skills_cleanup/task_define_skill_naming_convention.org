@@ -21,7 +21,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Define and document a single, action-oriented naming convention for all
 Claude Code skills so that skill discovery is obvious. Names are actions
-(verb phrases) prefixed by domain — e.g. =agile-plan-sprint= — never
+(verb phrases) prefixed by domain — e.g. =compass-agile-plan-sprint= — never
 artefact names like =sprint-planner= and never the compass command the
 skill happens to run. The convention is the foundation for every
 downstream task in the story: the compass command inventory, the audit
@@ -60,7 +60,7 @@ Brainstormed 2026-06-06; design validated question by question.
 - Verb register (closed): =add= (docs only, no side effects), =start=
   (pick up: branch + STARTED + journal), =close= (bookkeeping;
   cascades task→story), =find=, =show= (read-only), =run=, =sync=;
-  rare bare verbs (=pr-merge=).
+  rare bare verbs (=compass-pr-merge=).
 - Reference-only skills demoted to knowledge docs
   (=design-principles=, =icon-guidelines=); role skills dissolved into
   actions; =run-runbook= deleted — one skill per runbook.

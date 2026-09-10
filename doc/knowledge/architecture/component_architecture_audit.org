@@ -214,8 +214,8 @@ generated tree is a codegen finding, not a component finding.
 
 *** 7. Comments
 
-Hand-written code follows the =code-review-comments= skill
-([[proj:.claude/skills/code-review-comments/SKILL.md][=code-review-comments=]]): comments are rare, they explain why, and
+Hand-written code follows the =compass-code-review-comments= skill
+([[proj:.claude/skills/compass-code-review-comments/SKILL.md][=compass-code-review-comments=]]): comments are rare, they explain why, and
 they never narrate. Generated code never gets hand-edited comments.
 Comments in generated files are a template concern: the template is the
 only place to fix them, and a comment survives only when it documents

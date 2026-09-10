@@ -2,7 +2,7 @@
 :ID: D8DD4E78-0B21-4286-A82C-9FE65E79097B
 :END:
 #+title: Task: Bind ores.workflow entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the workflow-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. Known starting point: no model changes; only stateful-to-stateless repository migration via regeneration.
+#+description: Implement profile binding for the workflow-cpp catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: no model changes; only stateful-to-stateless repository migration via regeneration.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-workflow:

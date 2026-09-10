@@ -57,7 +57,7 @@ justification before proceeding.
 ./compass.sh codegen entity generate <entity> --address ores.cpp.qt
 #+end_src
 
-Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] skill for CMakeLists integration, controller
+Follow the [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] skill for CMakeLists integration, controller
 wiring, and PR checkpoints at each layer boundary.
 
 ** 4. Validate
@@ -74,7 +74,7 @@ Ask the user to build the affected targets before raising each PR.
 
 * Script
 
-See [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] skill for the full phase-by-phase execution guide and
+See [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][compass-codegen-add-entity]] skill for the full phase-by-phase execution guide and
 layer-specific skills for deep detail on each layer.
 
 * Tested by

@@ -2,7 +2,7 @@
 :ID: C98C9A7D-C679-41C7-B93B-F3BF10A94582
 :END:
 #+title: Task: Bind ores.marketdata entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the marketdata catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill. Known starting point: market_fixing regenerates with new untracked files (messaging/presentation registrars) on clean origin/main -- the 75-model drift catalog never audited this component.
+#+description: Implement profile binding for the marketdata catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill. Known starting point: market_fixing regenerates with new untracked files (messaging/presentation registrars) on clean origin/main -- the 75-model drift catalog never audited this component.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-marketdata:

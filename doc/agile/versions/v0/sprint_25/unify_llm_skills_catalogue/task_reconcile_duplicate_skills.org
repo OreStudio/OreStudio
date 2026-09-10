@@ -2,7 +2,7 @@
 :ID: 26921590-0B75-401F-80C6-52CDF76104CD
 :END:
 #+title: Task: Reconcile duplicate skills and standardise terminology
-#+description: Fold every overlapping import into a single skill, retire the losers through skill-delete, and sweep the catalogue onto the agreed vocabulary.
+#+description: Fold every overlapping import into a single skill, retire the losers through compass-skill-delete, and sweep the catalogue onto the agreed vocabulary.
 #+type: task
 #+level: s1
 #+filetags: :llm:skills:refactor:terminology:unify_llm_skills_catalogue:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Several imports overlap skills we already own. Interrogate against code-review-pr, unslop against doc-review-ste100, no-comments against code-review-comments, research against doc-add-knowledge, writing-for-agents against skill-add, and grilling against agile-brainstorm-idea. In each case one skill should survive with the other's good ideas harvested into it, and the loser retired properly so incoming links are re-pointed and deployed copies purged. Then sweep every skill onto the terminology table, watching the two traps: spec means an Allium specification and never a story plan, and persona means a Council member and never a session's role.
+Several imports overlap skills we already own. Interrogate against compass-code-review-pr, unslop against compass-doc-review-ste100, no-comments against compass-code-review-comments, research against doc-add-knowledge, writing-for-agents against compass-skill-add, and grilling against compass-agile-brainstorm-idea. In each case one skill should survive with the other's good ideas harvested into it, and the loser retired properly so incoming links are re-pointed and deployed copies purged. Then sweep every skill onto the terminology table, watching the two traps: spec means an Allium specification and never a story plan, and persona means a Council member and never a session's role.
 
 * Status
 
@@ -36,11 +36,11 @@ Several imports overlap skills we already own. Interrogate against code-review-p
 * Acceptance
 
 - Every known overlapping pair is resolved to one surviving skill, with the harvested ideas folded in.
-- Retired skills go through skill-delete; no incoming link is left dangling and no deployed copy remains.
+- Retired skills go through compass-skill-delete; no incoming link is left dangling and no deployed copy remains.
 - Every skill uses the agreed word for each concept, and the retired synonyms appear nowhere.
 - The two terminology traps are checked explicitly across the catalogue.
 - No two skills in the catalogue cover the same action.
-- code-review-comments harvests three things from pstack's comment reviewer: the enumerated keep-list with its in-doubt-it-goes tie-break, the structural flag that names the symbol needing a rename or extraction rather than only deleting the prose, and the rule that a reviewer grounds itself in the surrounding code before judging a comment's claim. The persona is not harvested.
+- compass-code-review-comments harvests three things from pstack's comment reviewer: the enumerated keep-list with its in-doubt-it-goes tie-break, the structural flag that names the symbol needing a rename or extraction rather than only deleting the prose, and the rule that a reviewer grounds itself in the surrounding code before judging a comment's claim. The persona is not harvested.
 - The comment reviewer is a read-only function that cannot write application code, enforced at spawn time rather than requested in the prompt.
 
 * Plan

@@ -2,7 +2,7 @@
 :ID: 03D33800-80BC-4D99-B6E6-8A47AE50FF99
 :END:
 #+title: Task: Implement the fixed PR body template with a Testing section in compass pr create
-#+description: Add required --testing-plan/--testing-evidence/--testing-limitations flags to compass pr create behind a canonical body template (Summary / Changes / Traceability / Testing + footer); update the compass tests; update the pr-raise skill, the create-a-PR recipe and the developer.org PR spec to the fixed template; raise this PR using the new template itself.
+#+description: Add required --testing-plan/--testing-evidence/--testing-limitations flags to compass pr create behind a canonical body template (Summary / Changes / Traceability / Testing + footer); update the compass tests; update the compass-pr-raise skill, the create-a-PR recipe and the developer.org PR spec to the fixed template; raise this PR using the new template itself.
 #+type: task
 #+level: s1
 #+filetags: :standardize-pr-body-template:sprint_25:v0:
@@ -29,7 +29,7 @@ table. This task puts the Testing section in the generator. Required
 flags feed a ## Testing section (Plan, Evidence and Limitations
 paragraphs) emitted after the Traceability table and before the
 footer; a raise with any flag missing refuses with an error naming
-the missing flags. Compass tests pin the body shape. The pr-raise
+the missing flags. Compass tests pin the body shape. The compass-pr-raise
 skill, the how-do-I-create-a-PR recipe and developer.org describe the
 fixed Summary / Changes / Traceability / Testing + footer template,
 and the skills bundle is rebuilt. This PR itself is raised with the
@@ -57,7 +57,7 @@ Traceability table intact.
   naming the missing flags.
 - Compass tests cover the body shape and the flag validation; the
   suite is green.
-- The pr-raise skill, the how-do-I-create-a-PR recipe and developer.org
+- The compass-pr-raise skill, the how-do-I-create-a-PR recipe and developer.org
   document the fixed template; the skills bundle is rebuilt.
 - This PR is raised with the new template.
 - PR #2021's body carries the fixed template with its Traceability
@@ -75,7 +75,7 @@ table and before the footer.
 shape and the flag validation, following the import pattern of
 =test_test_run.py=.
 
-** Phase 3 — docs. Update the pr-raise skill, the
+** Phase 3 — docs. Update the compass-pr-raise skill, the
 how-do-I-create-a-PR recipe and the developer.org PR index row to the
 fixed template; rebuild the skills bundle with =compass build --direct
 skills=.
@@ -129,7 +129,7 @@ assembly lives in the pure =_canonical_body= builder.
 Ten tests in =test_compass_pr.py= pin the section order, the Changes
 bullets, the Testing paragraphs, the Traceability rows and the
 refusal paths (missing flags, subset missing, blank flags, missing
-title); compass suite 127 passed, 1 skipped. The pr-raise skill, the
+title); compass suite 127 passed, 1 skipped. The compass-pr-raise skill, the
 how-do-I-create-a-PR recipe and developer.org document the fixed
 template; the skills bundle is rebuilt (=compass build --direct
 skills=). Class: python tooling + docs. Checks run: compass test

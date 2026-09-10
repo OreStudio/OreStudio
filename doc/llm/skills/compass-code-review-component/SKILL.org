@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: DADF4117-757A-4EEF-A137-CC2EE8023C73
+:END:
+#+title: Code Review Component Skill
+#+description: Audit an entire component against the ORE Studio code-review checklist — every file plus structure, CMake, modeling, and test coverage.
+#+type: skill
+#+level: cross
+#+filetags: :llm:skill:skills:claude_code:review:component:audit:
+#+created: 2024-09-01
+#+updated: 2026-05-21
+
+#+begin_export markdown
+---
+name: compass-code-review-component
+description: Deep audit of one or more ORE Studio components for technical debt, modernisation opportunities, and convention drift. Produce a prioritised report and file findings as stories.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need a comprehensive audit of a component — not just the
+recent delta. Use before major refactors, when onboarding to assess
+quality, periodically to track technical debt, or before declaring a
+component "production-ready". For PR-delta reviews, use the sibling
+[[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][compass-code-review-pr]] skill.
+
+* How to use this skill
+
+1. /Identify the component(s)/. Components live under
+   =projects/ores.<component>/=. To see all known components:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh list --type component
+   #+end_src
+
+2. /Walk the full checklist/. The canonical list is [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review
+   checklist]]. /All/ categories apply here, including the
+   "Component-only checks" section at the end (structure, CMake,
+   PlantUML, component_overview.org).
+
+3. /Run the validators that automate parts of the checklist/:
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.codegen/validate_docs.sh
+   #+end_src
+
+4. /Score each dimension/ 1–5 to produce a Component Health Score:
+
+   | Dimension          |
+   |--------------------|
+   | Structure          |
+   | Code style         |
+   | Domain completeness |
+   | Test coverage      |
+   | Documentation      |
+   | Security           |
+   | Modernisation      |
+
+5. /Bucket findings by severity/ (Critical / Important / Minor —
+   see the checklist) and add an /Effort/ estimate
+   (Small / Medium / Large) to each.
+
+6. /Group into themed stories/ for the sprint backlog via
+   =agile-product-owner=. Suggested themes:
+   - Structure & CMake
+   - Headers & style
+   - Domain completeness (missing services for domain types)
+   - Test coverage
+   - Modernisation (C++23 upgrades)
+   - Documentation (Doxygen, diagrams)
+   - Security
+
+7. /Summary report/. Conclude with:
+   - The health-score table.
+   - Top 3–5 priority recommendations (mix of critical fixes,
+     high-impact improvements, and quick wins).
+   - Overall debt level: /Low/ / /Medium/ / /High/.
+
+* Recipes
+
+- [[id:E8231C22-CB31-4D85-A9C0-7602953764FF][How do I show a doc by UUID?]] — to inspect the component's
+  =component_overview.org= and follow its links.
+- [[id:D1AE0786-5F2F-4437-8449-0E480C278A1B][How do I find docs matching a pattern?]] — to enumerate the
+  component's tasks, stories, and related knowledge docs.
+
+* Reference
+
+- [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code review checklist]] — every category applied here.
+- [[id:B9D3D469-9E59-465F-8C18-34546B680D13][Component documentation guide]] — the doc-side contract.
+- [[id:D773166D-0C91-8CB4-3323-42166BC07687][System Model]] — cross-component context the audit needs.
+- [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][compass-code-review-pr]] — sibling skill for the delta-only review.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

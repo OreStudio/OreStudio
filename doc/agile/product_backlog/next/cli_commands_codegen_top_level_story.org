@@ -15,7 +15,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 
 Make *CLI entity commands* a top-level story rather than an "implement CLI
 commands" task buried in each =commission_*= story. =ores.cli= has *no codegen
-profile* (confirmed in the =codegen-add-surface-entity= skill's "Codegen gap"
+profile* (confirmed in the =compass-codegen-add-surface-entity= skill's "Codegen gap"
 section) — entity commands are hand-written. Identical situation to the shell
 layer: establish the per-entity pattern on a reference entity, add a generated
 aggregator for registration, templatize into a codegen CLI facet, then roll out
@@ -32,7 +32,7 @@ CLI surface.
 
 * References
 
-- Codegen gap: =.claude/skills/codegen-add-surface-entity/SKILL.md= ("Codegen gap").
+- Codegen gap: =.claude/skills/compass-codegen-add-surface-entity/SKILL.md= ("Codegen gap").
 - Hand-written CLI command units under =projects/ores.cli/=.
 
 * See also

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:skills:naming:refactor:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/rename-skills-to-compass-namespace
+#+pr: 2051
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-25
 #+updated: 2026-08-25
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The compass- prefix separates our skills from every plugin skill the harness als
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-25                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -43,11 +43,40 @@ The compass- prefix separates our skills from every plugin skill the harness als
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The rename is a script, as the goal asks. Doing it by hand across 271 files
+is how a reference gets missed, and the script makes the next namespace
+change cheap rather than another week of the same work.
+
+=build/scripts/rename_skills_to_compass_namespace.py= moves each source
+directory with =git mv=, rewrites every mention across the repository, and
+purges the deployed directories deployment would otherwise leave behind. The
+rewrite orders names longest first, so renaming a shorter name never eats a
+longer one that contains it, and it matches on word boundaries that treat the
+hyphen as part of the name. The =name:= field the harness reads is rewritten
+by the same pass, because it is just another mention.
+
+The script is idempotent: a skill already carrying the prefix is skipped, so
+a second run reports nothing to do. =--check= makes that an assertion, and it
+runs in the Doc Lint workflow, so a skill added without the prefix now fails
+CI rather than sitting outside the namespace until someone notices.
 
 * Notes
+
+The catalogue generator grouped skills by their first segment, which after
+the rename is =compass= for all 69. It now strips the namespace before
+grouping, so the domain register still drives the sections.
+
+Two generator scripts under =build/= were missed on the first run: the
+script skipped =build/= wholesale, which is reasonable for 40G of output and
+wrong for the scripts beside it. The skip is now by subdirectory, and the
+two files carry the names a fresh run produces.
+
+Three classes of survivor are deliberate. Discarded captures and closed
+sprint records that name skills retired in the previous task keep their
+text, because the successor did not exist when they were written and
+rewriting them would falsify the record. =pstack.org= names upstream skills,
+which the registers do not govern. =compass_timeline.py='s =pr-opened= and
+=pr-merged= are event names that merely look like skill names.
 
 * Test Scenarios
 
@@ -64,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2051][#2051]] | [doc] Rename every skill into the compass- namespace |
 
 * Review
 
@@ -73,3 +102,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five acceptance criteria are met.
+
+Every one of the 69 skill directories, every =name:= field and every deployed
+directory carries the =compass-= prefix. The rewrite touched 271 files:
+incoming links and their labels, catalogue rows, runbooks, memories,
+CLAUDE.md, the workflows and the compass sources that name a skill in prose.
+
+No stale directory remains under =.claude/skills=: the script purged 69, and
+the deployed tree now holds exactly the 69 renamed directories plus the
+knowledge documents the bundle ships alongside them.
+
+The rename is a committed script a reviewer can re-run, with =--check= wired
+into CI.
+
+The bundle builds and deploys, and every renamed skill loads: this session's
+own catalogue lists all 69 under their new names.

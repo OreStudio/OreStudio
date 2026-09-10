@@ -48,7 +48,7 @@ or a human reviewer (review threads with inline comments).
 - =compass review resolve <PR>= resolves human review threads when present; when the only review
   comments are Claude bot issue comments (which have no resolvable thread), it reports a clear
   status rather than a misleading "no unresolved threads".
-- The =pr-address-review= skill and runbook are updated (or remain consistent) with the new
+- The =compass-pr-address-review= skill and runbook are updated (or remain consistent) with the new
   compass behaviour.
 
 * Tasks

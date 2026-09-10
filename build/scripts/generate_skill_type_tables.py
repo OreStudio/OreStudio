@@ -4,10 +4,10 @@
 A verb that behaves uniformly across artefact types is one skill plus a
 table, and the table is derived rather than typed by hand:
 
-  doc-add   the document types, read from ores.codegen's doc_*.org.mustache
+  compass-doc-add   the document types, read from ores.codegen's doc_*.org.mustache
             templates: the scaffold command, the parent-dir default compass
             applies, and the sections the template leaves to be filled.
-  doc-show  the read-only compass commands, read from compass.py's own
+  compass-doc-show  the read-only compass commands, read from compass.py's own
             subparser registry.
 
 Both regions sit between BEGIN/END markers; everything outside them is
@@ -27,8 +27,8 @@ TEMPLATES = ROOT / "projects" / "ores.codegen" / "library" / "templates"
 COMPASS = ROOT / "projects" / "ores.compass" / "src" / "compass.py"
 SKILLS = ROOT / "doc" / "llm" / "skills"
 
-ADD_SKILL = SKILLS / "doc-add" / "SKILL.org"
-SHOW_SKILL = SKILLS / "doc-show" / "SKILL.org"
+ADD_SKILL = SKILLS / "compass-doc-add" / "SKILL.org"
+SHOW_SKILL = SKILLS / "compass-doc-show" / "SKILL.org"
 
 SCRIPT = "build/scripts/generate_skill_type_tables.py"
 ADD_BEGIN = f"# BEGIN generated types ({SCRIPT})"

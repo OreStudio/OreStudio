@@ -36,8 +36,8 @@ user hit. Known sites:
   "including =#+version: 2=" clause) — strip the version/audit references.
 - =doc/recipes/documentation/how_do_i_audit_doc_versions.org= — retire (delete)
   the recipe; the thing it documents is gone.
-- Skills: =doc/llm/skills/skill-review/SKILL.org= (lists =#+version: 2= as
-  required frontmatter), =doc/llm/skills/doc-sync-recipes/SKILL.org=.
+- Skills: =doc/llm/skills/compass-skill-review/SKILL.org= (lists =#+version: 2= as
+  required frontmatter), =doc/llm/skills/compass-doc-sync-recipes/SKILL.org=.
 
 Grep for =#+version= and =doc_version_audit= across =doc/= at the end; the only
 survivors should be historical sprint-17/18 records describing the migration.
@@ -88,7 +88,7 @@ Removed the version-field bullet from =doc/orientation.org=; deleted the
 stripped =#+version: 2= guidance and audit-script invocations from the
 =how_do_i_open_a_new_sprint=, =how_do_i_create_a_memory=,
 =how_do_i_create_a_recipe=, and =how_do_i_create_a_new_doc= recipes and the
-=skill-review= skill; and cleaned the stale v1/v2 framing in =s3_star_audit.org=.
+=compass-skill-review= skill; and cleaned the stale v1/v2 framing in =s3_star_audit.org=.
 =how_do_i_audit_doc_versions.org= was already absent. =document_types.org= had no
 =#+version= section. No active guidance now mentions =#+version= or the audit
 script.

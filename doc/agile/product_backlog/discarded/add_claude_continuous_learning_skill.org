@@ -11,7 +11,7 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
 
-*Resolved (deep backlog refinement, 2026-07-11)*: The repo already has an extensive, actively maintained skill system under doc/llm/skills (skill-add, skill-review, skill-delete, skill-show-catalogue, doc-add-memory skills, plus the memory contract in doc/llm/memory/) which achieves the same underlying goal (durable, reusable knowledge capture across sessions) described in this capture, via a different mechanism (deliberate memory/skill authoring rather than automatic skill generation from debugging sessions).
+*Resolved (deep backlog refinement, 2026-07-11)*: The repo already has an extensive, actively maintained skill system under doc/llm/skills (compass-skill-add, compass-skill-review, compass-skill-delete, compass-skill-show-catalogue, compass-doc-add-memory skills, plus the memory contract in doc/llm/memory/) which achieves the same underlying goal (durable, reusable knowledge capture across sessions) described in this capture, via a different mechanism (deliberate memory/skill authoring rather than automatic skill generation from debugging sessions).
 
 #+begin_quote
 Every time you use an AI coding agent, it starts from zero. You spend an hour

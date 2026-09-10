@@ -1,0 +1,129 @@
+:PROPERTIES:
+:ID: B1450696-8C51-4CC5-8910-84912A411AB6
+:END:
+#+title: Code Add Domain Type
+#+description: Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen.
+#+type: skill
+#+level: cross
+#+filetags: :llm:skill:skills:claude_code:domain:codegen:
+#+created: 2024-09-01
+#+updated: 2026-07-12
+
+#+begin_export markdown
+---
+name: compass-code-add-domain-type
+description: Create a new ORE Studio domain type with JSON I/O, table I/O, generator, and repository support via codegen.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When you need to add a new domain type to an ORE Studio component with
+JSON I/O, table I/O, a test data generator, and repository CRUD
+support. This is the mandatory first step before any exposure layer
+(SQL schema, HTTP, CLI, shell, Wt, Qt) can be built. See the
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] overview for the full layer ordering.
+
+* How to use this skill
+
+Codegen is the primary path for a *persisted, data-carrying* entity
+(one with SQL storage, and usually a UI). Manual creation is
+appropriate — not a last resort — for a behaviour-heavy value type
+(parsing, comparison operators, computed methods) with no persistence
+or generated UI: none of codegen's entity-model types generate that
+shape, they generate flat data-carrying structs plus persistence/UI
+layers. See e.g. =ores.analytics.quant='s own domain types
+(=currency_id=, =ccy_pair=, ...), which are hand-authored for exactly
+this reason — no codegen banner, not listed in
+=compass codegen entity list=. Justify the choice in the file header
+either way.
+
+1. /Create an org-mode entity model/ under the target component's
+   =modeling/= directory (co-located org models — see the
+   =component_catalogue.org='s =modeling_dir= column), following the
+   =ores.codegen.entity= (full entity: C++ + SQL + Qt),
+   =ores.codegen.lookup_entity= (SQL-only reference table),
+   =ores.codegen.field_group= (flat C++ struct fragment composed into
+   a parent entity), =ores.codegen.table=, or =ores.codegen.junction=
+   schema — see [[id:2A2E8B6D-179D-452C-9169-04E6BB46CC07][Codegen input org-file schema reference]] for the
+   authoritative frontmatter keywords and section hierarchy per type.
+   (The legacy =*_domain_entity.json=/=models/{component}/= format
+   this step used to reference no longer exists in the repo — org-mode
+   entity models superseded it.) Scaffold via =compass add --type
+   entity_org ...= (or =field_group=/=table=/=junction=/
+   =lookup_entity= as appropriate) per [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with
+   compass?]], then fill in the sections by hand.
+
+2. /Generate the C++ artefacts/ via compass, not the generator script
+   directly:
+   =compass codegen generate --model <path/to/model.org> --address ores.cpp=
+   (=compass codegen entity generate <entity>= regenerates an
+   already-modelled entity's full supported set;
+   =compass codegen entity list= / =show= / =diff= inspect what
+   exists and whether it's stale).
+
+3. /Build and verify/: use [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] to confirm the component
+   library compiles cleanly.
+
+4. /Raise PRs at phase boundaries/ — Phase 1: domain + I/O; Phase 2:
+   generator; Phase 3: repository; Phase 4: tests + diagrams. Use
+   =feature-branch-manager= to transition between branches and
+   =pr-manager= to open each PR.
+
+5. /Update diagrams/ after Phase 4: [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][plantuml-class-modeler]] for the
+   class diagram; [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][plantuml-er-modeler]] for the ER diagram.
+
+If codegen cannot express the pattern, extend the Mustache templates
+in =library/templates/= first, then regenerate. See
+[[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]]§"Profile catalogue" for what each profile generates
+and which library it uses.
+
+* Recipes
+
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering, type mappings, service naming.
+
+* Reference
+
+- [[id:08FBD248-257A-A474-DD43-DB08949978F1][ORE Studio Codegen]] — model schema, profiles, and template catalogue.
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — canonical type mappings and service method naming.
+- [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
+- [[id:CB56337E-4839-4048-B5A7-C481812CE3D0][unit-test-writer]] — writing Catch2 tests for the new domain type.
+
+* Templates
+
+Runs via =--address ores.cpp= (combines domain · generator · repository ·
+service · protocol).  Full output paths are in
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Complete entity file checklist".
+
+| Sub-address | Key templates |
+|---|---|
+| =--address ores.cpp.domain= | =cpp_domain_type_class.hpp.mustache= (+ 6) |
+| =--address ores.cpp.generator= | =cpp_domain_type_generator.hpp.mustache= (+ 1) |
+| =--address ores.cpp.repository= | =cpp_domain_type_entity.hpp.mustache= (+ 5) |
+| =--address ores.cpp.service= | =cpp_service.hpp.mustache= (+ 1) |
+| =--address ores.cpp.protocol= | =cpp_protocol.hpp.mustache= |
+
+Read the template directly for the authoritative implementation — do not
+reproduce it here.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

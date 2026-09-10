@@ -44,7 +44,7 @@ task closes. Plans do not outlive their task.)
 
 * Notes
 
-The =skill-show-catalogue= and =skill-delete= skills invoke
+The =compass-skill-show-catalogue= and =compass-skill-delete= skills invoke
 [[proj:build/scripts/generate_skills_catalogue.py][=build/scripts/generate_skills_catalogue.py=]] by path; when the script
 folds into compass (e.g. =compass build catalogues=), update both
 skills to call the compass command instead. =compass bearings=

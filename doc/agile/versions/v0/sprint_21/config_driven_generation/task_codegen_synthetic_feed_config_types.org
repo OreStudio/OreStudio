@@ -35,7 +35,7 @@ For every new persisted type introduced by the config-driven feed work — notab
 
 * Acceptance
 
-- New config/domain types are generated via codegen profiles (codegen-add-entity and friends); no hand-rolled domain/repository/messaging boilerplate for them; generated layers build and round-trip.
+- New config/domain types are generated via codegen profiles (compass-codegen-add-entity and friends); no hand-rolled domain/repository/messaging boilerplate for them; generated layers build and round-trip.
 
 * Plan
 

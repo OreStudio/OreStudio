@@ -95,7 +95,7 @@ Scope:
   =id:= links via the org-roam SQLite index and return the resolved
   target's path/title/type; handle a dangling link (no matching row)
   without crashing.
-- [X] A minimal =ores.shell= command (=doc-show <path>=) demonstrates
+- [X] A minimal =ores.shell= command (=compass-doc-show <path>=) demonstrates
   the component end-to-end: read a doc, follow at least one link,
   print something useful — proving this works outside Qt.
 - [X] Unit tests cover the parser against representative fixtures

@@ -51,9 +51,9 @@ This task:
    =import_*= market-data recipes, countries recipes, ops recipes
    including =how_do_i_ready_up_an_environment.md= and
    =how_do_i_test_a_feature_after_implementation.md=, the
-   =code-run-feature-test=/=devops-run-client=/=devops-run-environment=/
-   =devops-setup-environment=/=doc-add-entity-chapter=/
-   =doc-run-manual-screenshots= skills, and =compass.py='s
+   =compass-code-run-feature-test=/=compass-devops-run-client=/=compass-devops-run-environment=/
+   =compass-devops-setup-environment=/=compass-doc-add-entity-chapter=/
+   =compass-doc-run-manual-screenshots= skills, and =compass.py='s
    =test_scenario= scaffold hint) to reference Acme Corporation
    instead.
 

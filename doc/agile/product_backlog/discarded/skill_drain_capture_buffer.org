@@ -11,7 +11,7 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
 
-*Resolved (deep backlog refinement, 2026-07-11)*: doc/llm/skills/agile-add-capture exists and per the skill catalogue files inbox captures into the backlog; combined with agile-refine-backlog and agile-plan-sprint skills, the described entry-by-entry triage (sprint backlog / new story / product backlog) capability already exists as a set of skills, even though no single skill is named exactly 'drain capture buffer'.
+*Resolved (deep backlog refinement, 2026-07-11)*: doc/llm/skills/agile-add-capture exists and per the skill catalogue files inbox captures into the backlog; combined with compass-agile-refine-backlog and compass-agile-plan-sprint skills, the described entry-by-entry triage (sprint backlog / new story / product backlog) capability already exists as a set of skills, even though no single skill is named exactly 'drain capture buffer'.
 
 * What
 

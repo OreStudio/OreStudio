@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0
 :END:
-#+title: Task: Add agile-find-heading skill wrapping compass heading
-#+description: Create a Claude Code skill that runs compass heading, summarises the ranked suggestions, and recommends the next action — a session-start companion to agile-find-bearings.
+#+title: Task: Add compass-agile-find-heading skill wrapping compass heading
+#+description: Create a Claude Code skill that runs compass heading, summarises the ranked suggestions, and recommends the next action — a session-start companion to compass-agile-find-bearings.
 #+type: task
 #+level: s1
 #+filetags: :suggest_next_work_item:sprint_20:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Provide a Claude Code skill (agile-find-heading) that runs compass heading, presents the ranked work-item suggestions to the user, and recommends the top action — mirroring the pattern established by agile-find-bearings for compass bearings.
+Provide a Claude Code skill (compass-agile-find-heading) that runs compass heading, presents the ranked work-item suggestions to the user, and recommends the top action — mirroring the pattern established by compass-agile-find-bearings for compass bearings.
 
 * Status
 
@@ -35,7 +35,7 @@ Provide a Claude Code skill (agile-find-heading) that runs compass heading, pres
 
 * Acceptance
 
-- agile-find-heading skill exists and is deployed; invoking it runs compass heading and surfaces the top suggestion with a short rationale; skill follows the same structure as agile-find-bearings.
+- compass-agile-find-heading skill exists and is deployed; invoking it runs compass heading and surfaces the top suggestion with a short rationale; skill follows the same structure as compass-agile-find-bearings.
 
 * Plan
 
@@ -49,7 +49,7 @@ plan itself stays — it is the historical record of what we did.)
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1263][#1263]] | [llm] Add agile-find-heading skill wrapping compass heading |
+| [[https://github.com/OreStudio/OreStudio/pull/1263][#1263]] | [llm] Add compass-agile-find-heading skill wrapping compass heading |
 
 * Review
 
@@ -60,7 +60,7 @@ plan itself stays — it is the historical record of what we did.)
 
 * Result
 
-- =doc/llm/skills/agile-find-heading/SKILL.org= scaffolded and filled: two-step skill (run =compass heading=, report back top suggestion).
-- Skill cross-referenced from =doc/functions/s1_agent.org= alongside =agile-find-bearings=.
+- =doc/llm/skills/compass-agile-find-heading/SKILL.org= scaffolded and filled: two-step skill (run =compass heading=, report back top suggestion).
+- Skill cross-referenced from =doc/functions/s1_agent.org= alongside =compass-agile-find-bearings=.
 - Added to the skills catalogue (=claude_code_skills.org=) under the agile area.
-- Bundle rebuilt and deployed; =agile-find-heading= live in the current session.
+- Bundle rebuilt and deployed; =compass-agile-find-heading= live in the current session.

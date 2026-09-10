@@ -58,39 +58,39 @@ The inventory, by compass pillar. Skill names follow
 
 | Compass command | Pillar | Skill | Notes |
 |-----------------+--------+-------+-------|
-| =bearings= / =orient= | Bearings | =agile-find-bearings= | session cold-start |
+| =bearings= / =orient= | Bearings | =compass-agile-find-bearings= | session cold-start |
 | =where= / =status= | Orient | =agile-show-status= | |
 | =fleet= | Orient | =agile-show-fleet= | |
 | =journal where/log= | Journal | =agile-show-journal= | writes are side-effects of other skills |
 | =sprint status= | Orient | =agile-show-sprint= | |
-| =sprint audit= | Orient | =agile-review-sprint= | with charts; absorbs sprint-reviewer |
-| =sprint charts= | Orient | =agile-review-sprint= | sub-step |
-| =story new= | Scaffold | =agile-add-story= + =agile-start-story= | split per lifecycle story |
-| =task new= | Scaffold | =agile-add-task= + =agile-start-task= | split per lifecycle story |
-| =task start= | Scaffold | =agile-start-task= | |
-| =task done= | Scaffold | =agile-close-task= | cascades to story |
+| =sprint audit= | Orient | =compass-agile-review-sprint= | with charts; absorbs sprint-reviewer |
+| =sprint charts= | Orient | =compass-agile-review-sprint= | sub-step |
+| =story new= | Scaffold | =agile-add-story= + =compass-agile-start-story= | split per lifecycle story |
+| =task new= | Scaffold | =agile-add-task= + =compass-agile-start-task= | split per lifecycle story |
+| =task start= | Scaffold | =compass-agile-start-task= | |
+| =task done= | Scaffold | =compass-agile-close-task= | cascades to story |
 | =add story/task/sprint/...= | Scaffold | per-type =add= skills | see expansion below |
 | =add capture= / inbox flow | Capture | =agile-add-capture= | absorbs capture skill |
 | =inbox/next/deferred/discarded= | Capture | =agile-show-backlog= | one skill, bucket argument |
-| =search= / =find= | Search | =doc-find= | all documents |
-| =list= | Search | =doc-find= | structured filters |
-| =show= | Search | =doc-show= | by UUID/prefix |
-| =index= | Search | =doc-sync-index= | with --org-roam-db-sync |
-| =review list/reply/resolve/pending= | Review | =pr-address-review= | whole review round |
+| =search= / =find= | Search | =compass-doc-find= | all documents |
+| =list= | Search | =compass-doc-find= | structured filters |
+| =show= | Search | =compass-doc-show= | by UUID/prefix |
+| =index= | Search | =compass-doc-sync-index= | with --org-roam-db-sync |
+| =review list/reply/resolve/pending= | Review | =compass-pr-address-review= | whole review round |
 | =pr checks= | PR | =pr-show-checks= | |
 | =pr create= | PR | (step inside work skills) | no standalone skill; see gaps |
-| =pr merge= | PR | =pr-merge= | sanctioned bare verb |
-| =pr sync= | PR | =pr-sync-branch= | |
+| =pr merge= | PR | =compass-pr-merge= | sanctioned bare verb |
+| =pr sync= | PR | =compass-pr-sync-branch= | |
 | =pr record= | PR | (bookkeeping inside others) | |
-| =env init/diff/list/version= | Provision | =devops-setup-environment= | diff/list as read-only sub-steps |
-| =db recreate/setup/drop/reset-*= | Provision | =devops-recreate-db= | |
-| =sql= / =db sql= | Provision | =devops-run-sql= | |
-| =services start/stop/status/clear-logs= | Operate | =devops-start-services=, =devops-stop-services=, =devops-show-services= | |
-| =client= | Operate | =devops-run-client= | |
-| =shell= | Shell | =devops-run-shell= | incl. -f scripted sessions |
+| =env init/diff/list/version= | Provision | =compass-devops-setup-environment= | diff/list as read-only sub-steps |
+| =db recreate/setup/drop/reset-*= | Provision | =compass-devops-recreate-db= | |
+| =sql= / =db sql= | Provision | =compass-devops-run-sql= | |
+| =services start/stop/status/clear-logs= | Operate | =compass-devops-start-services=, =compass-devops-stop-services=, =devops-show-services= | |
+| =client= | Operate | =compass-devops-run-client= | |
+| =shell= | Shell | =compass-devops-run-shell= | incl. -f scripted sessions |
 | =test results/logging= | Test | =code-run-tests= | results/logging as sub-steps |
-| =build= | Build | =code-run-build= | |
-| =build site= | Build | =devops-deploy-site= | |
+| =build= | Build | =compass-code-run-build= | |
+| =build site= | Build | =compass-devops-deploy-site= | |
 | =debug= | Search | (none) | internal diagnostics; no skill |
 
 ** =compass add= type expansion
@@ -98,14 +98,14 @@ The inventory, by compass pillar. Skill names follow
 | Type | Skill |
 |------+-------|
 | story, task | =agile-add-story=, =agile-add-task= |
-| sprint | =agile-open-sprint= (ceremony, not bare add) |
+| sprint | =compass-agile-open-sprint= (ceremony, not bare add) |
 | capture | =agile-add-capture= |
-| recipe | =doc-add-recipe= |
+| recipe | =compass-doc-add-recipe= |
 | knowledge | =doc-add-knowledge= |
-| manual | =doc-update-manual= |
-| memory | =doc-add-memory= |
-| skill | =skill-add= |
-| component, entity_org | =codegen-add-component=, =codegen-add-entity= |
+| manual | =compass-doc-update-manual= |
+| memory | =compass-doc-add-memory= |
+| skill | =compass-skill-add= |
+| component, entity_org | =compass-codegen-add-component=, =compass-codegen-add-entity= |
 | diagram | =doc-add-diagram= |
 | investigation, product_identity, dataset_overview, version | (no skill; rare, use =compass add= directly) |
 
@@ -115,13 +115,13 @@ The inventory, by compass pillar. Skill names follow
   (potential =devops-show-env=, deferred — YAGNI); =pr create= is
   deliberately folded into the work-lifecycle skills rather than
   exposed standalone.
-- /Skill without compass backing/: =skill-review=, =skill-sync-recipes=,
+- /Skill without compass backing/: =compass-skill-review=, =skill-sync-recipes=,
   all =codegen-*= (ores.codegen CLI), =code-write-tests=,
-  =code-review-*=, =agile-brainstorm-idea= — fine; compass is not the
+  =code-review-*=, =compass-agile-brainstorm-idea= — fine; compass is not the
   only substrate.
 - /Verb register gaps found/: none requiring extension — =audit= folds
   into =review-sprint=, =capture= becomes =add-capture=, =brainstorm=
-  is the one candidate addition (=agile-brainstorm-idea=); flagged in
+  is the one candidate addition (=compass-agile-brainstorm-idea=); flagged in
   the conventions decision log when the skill is created.
 
 * PRs

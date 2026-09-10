@@ -1,13 +1,13 @@
 :PROPERTIES:
 :ID: CBE53221-9F38-4C94-8AE5-AA86867965C8
 :END:
-#+title: Task: Add code-review-comments skill
+#+title: Task: Add compass-code-review-comments skill
 #+description: New Claude Code skill that reviews and cleans code comments, wired into CLAUDE.md so it applies to all code we create or edit. Based on two prior-art sources with attribution.
 #+type: task
 #+level: s1
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
-#+branch: feature/code-review-comments
+#+branch: feature/compass-code-review-comments
 #+pr: 1951
 #+blocked_on:
 #+blocked_since:
@@ -35,7 +35,7 @@ Give the repo one consistent rule set for code comments: sparse, durable, above-
 
 * Acceptance
 
-- Skill doc exists at doc/llm/skills/code-review-comments/SKILL.org with the comment rules, a reference file, and worked examples.
+- Skill doc exists at doc/llm/skills/compass-code-review-comments/SKILL.org with the comment rules, a reference file, and worked examples.
 - Prior art attributed: LICENSE.txt carries Apache-2.0 with the motlin source named; both upstreams linked from the Reference section.
 - CLAUDE.md carries a standing rule so the comment rules apply to every comment in code we create or edit.
 - Skill cross-referenced from the S1 Agent function doc and the skills catalogue.
@@ -45,8 +45,8 @@ Give the repo one consistent rule set for code comments: sparse, durable, above-
 * Plan
 
 Author the skill in org source under
-=doc/llm/skills/code-review-comments/SKILL.org=, following the
-=doc-review-ste100= pattern: thin index in the skill, rule set in a
+=doc/llm/skills/compass-code-review-comments/SKILL.org=, following the
+=compass-doc-review-ste100= pattern: thin index in the skill, rule set in a
 tangled =comment-rules.md= reference, worked examples in
 =before-after.md=, and the upstream Apache-2.0 licence text in
 =LICENSE.txt= with both prior-art sources attributed. The workflow
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/1951][#1951]] | [docs] Add code-review-comments skill |
+| [[https://github.com/OreStudio/OreStudio/pull/1951][#1951]] | [docs] Add compass-code-review-comments skill |
 
 * Review
 
@@ -105,12 +105,12 @@ via its "Verifies task" field.
 
 PR [#1951](https://github.com/OreStudio/OreStudio/pull/1951) — merged.
 
-Branch =feature/code-review-comments= commits:
+Branch =feature/compass-code-review-comments= commits:
 
-- =8ecd0199e= [docs] Add code-review-comments skill
-- =8bf47b67e= [agile] Add task for code-review-comments skill to Documentation improvements
+- =8ecd0199e= [docs] Add compass-code-review-comments skill
+- =8bf47b67e= [agile] Add task for compass-code-review-comments skill to Documentation improvements
 - =bb22c5f67= [agile] Record PR #1951 on task
-- =96e699430= [docs] Fix code-review-comments skill review findings
+- =96e699430= [docs] Fix compass-code-review-comments skill review findings
 - =9a736eae0= [docs] Add how_do_i_clean_code_comments recipe
 - =80eb28ecc= [docs] Regenerate skills catalogue
 - =3756c4f01= [agile] Record PR #1951 review round on task and story

@@ -24,10 +24,10 @@ def test_selection_records_the_attenuation_level(monkeypatch, tmp_path):
     use_log(monkeypatch, tmp_path)
     monkeypatch.setenv("ORES_SKILL_LEVEL", "s1")
 
-    event = skills.record_selection(tmp_path, "pr-merge", "s-1")
+    event = skills.record_selection(tmp_path, "compass-pr-merge", "s-1")
 
     assert event["level"] == "s1"
-    assert event["skill"] == "pr-merge"
+    assert event["skill"] == "compass-pr-merge"
     assert isinstance(event["offered"], int)
 
 
@@ -35,14 +35,14 @@ def test_selection_without_a_level_is_unattenuated(monkeypatch, tmp_path):
     use_log(monkeypatch, tmp_path)
     monkeypatch.delenv("ORES_SKILL_LEVEL", raising=False)
 
-    assert skills.record_selection(tmp_path, "pr-merge", "s-1")["level"] is None
+    assert skills.record_selection(tmp_path, "compass-pr-merge", "s-1")["level"] is None
 
 
 def test_correct_marks_the_most_recent_selection(monkeypatch, tmp_path):
     use_log(monkeypatch, tmp_path)
     monkeypatch.delenv("ORES_SKILL_LEVEL", raising=False)
-    skills.record_selection(tmp_path, "pr-raise", "s-1")
-    second = skills.record_selection(tmp_path, "pr-merge", "s-1")
+    skills.record_selection(tmp_path, "compass-pr-raise", "s-1")
+    second = skills.record_selection(tmp_path, "compass-pr-merge", "s-1")
 
     assert skills.cmd_correct(["--cause", "description"], tmp_path) == 0
 
@@ -61,9 +61,9 @@ def test_correct_refuses_an_empty_log(monkeypatch, tmp_path):
 def test_summary_splits_the_correction_rate_by_level(monkeypatch, tmp_path):
     use_log(monkeypatch, tmp_path)
     monkeypatch.delenv("ORES_SKILL_LEVEL", raising=False)
-    plain = skills.record_selection(tmp_path, "pr-raise", "s-1")
+    plain = skills.record_selection(tmp_path, "compass-pr-raise", "s-1")
     monkeypatch.setenv("ORES_SKILL_LEVEL", "s1")
-    skills.record_selection(tmp_path, "pr-merge", "s-2")
+    skills.record_selection(tmp_path, "compass-pr-merge", "s-2")
     skills.cmd_correct(["--cause", "catalogue-size",
                         "--selection", plain["id"]], tmp_path)
 
@@ -78,7 +78,7 @@ def test_summary_splits_the_correction_rate_by_level(monkeypatch, tmp_path):
 def test_two_corrections_on_one_selection_count_once(monkeypatch, tmp_path):
     use_log(monkeypatch, tmp_path)
     monkeypatch.delenv("ORES_SKILL_LEVEL", raising=False)
-    skills.record_selection(tmp_path, "pr-raise", "s-1")
+    skills.record_selection(tmp_path, "compass-pr-raise", "s-1")
     skills.cmd_correct(["--cause", "description"], tmp_path)
     skills.cmd_correct(["--cause", "level"], tmp_path)
 

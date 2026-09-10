@@ -49,7 +49,7 @@ directly actionable.
 * References
 
 - =projects/ores.compass/src/compass.py= — bearings command implementation
-- =doc/llm/skills/agile-find-bearings/SKILL.org= — the skill that calls bearings at session start
+- =doc/llm/skills/compass-agile-find-bearings/SKILL.org= — the skill that calls bearings at session start
 - [[id:1863389D-A909-4265-8C03-5C93109C180D][Suggest the next work item to pick up]] — the heading story
 
 * See also

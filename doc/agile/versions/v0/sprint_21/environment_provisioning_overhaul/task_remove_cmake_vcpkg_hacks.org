@@ -82,7 +82,7 @@ submission.
    =tangle_clang_format=, and =sprint_charts= blocks to the compass equivalents.
    Files: =recipes/cmake/how_do_i_deploy_the_{settings,skills}.org=,
    =recipes/codegen/how_do_i_create_a_new_doc.org=,
-   =skills/doc-update-manual/SKILL.org=,
+   =skills/compass-doc-update-manual/SKILL.org=,
    =knowledge/architecture/clang_format_config.org=,
    =recipes/compass/how_do_i_generate_sprint_charts.org=,
    =llm/claude_code_settings.org=.
@@ -164,7 +164,7 @@ there is a single canonical build path.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 1 | SKILL path inconsistency: doc-update-manual uses ./compass.sh instead of ./projects/ores.compass/compass.sh | doc/llm/skills/doc-update-manual/SKILL.org | Fixed in fd411b82a | All three claude-bot reviews noted this; reviews 2 and 3 called it pre-existing but review 1 asked for a fix |
+| 1 | SKILL path inconsistency: compass-doc-update-manual uses ./compass.sh instead of ./projects/ores.compass/compass.sh | doc/llm/skills/compass-doc-update-manual/SKILL.org | Fixed in fd411b82a | All three claude-bot reviews noted this; reviews 2 and 3 called it pre-existing but review 1 asked for a fix |
 | 2 | Shell-script drift CI failure: ores-build-recipe-scripts.el was updated but .ores files not re-tangled | projects/ores.shell/scripts/library/ (77 files) | Fixed in fd411b82a | Root cause: the migration commit updated the Lisp source but missed the tangle step |
 | 3 | emacs.org missing deploy_help_qch note (deploy_plan mentioned but not deploy_help_qch) | doc/knowledge/documentation/emacs.org | Declined — pre-existing, out of scope | Noted by reviews 3; authoritative record is the call-site table in task notes |
 | 4 | how_do_i_deploy_all_org_artefacts.org prerequisites prose reads as if cmake always needed | doc/recipes/compass/how_do_i_deploy_all_org_artefacts.org | Declined — pre-existing, out of scope | Noted by review 2; noted as minor, no action required |
@@ -180,7 +180,7 @@ qch, the =deploy_org= aggregate), and the CDash site submission.
 Key deliverables:
 - 100 files updated (recipes, skills, memories, runbook, knowledge docs, codegen template headers)
 - 77 =.ores= shell scripts re-tangled after =ores-build-recipe-scripts.el= header update
-- =doc-update-manual/SKILL.org= normalised to full compass path (review finding)
+- =compass-doc-update-manual/SKILL.org= normalised to full compass path (review finding)
 - Decision record with full call-site disposition table written in =* Notes :: Decision=
 - All three automated reviews approved; shell-script-drift CI fixed in review round
 

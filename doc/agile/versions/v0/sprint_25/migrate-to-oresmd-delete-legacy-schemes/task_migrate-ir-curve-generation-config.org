@@ -224,7 +224,7 @@ whose =id = NEW.currency_code || '-' || upper(NEW.index_family)=.
 
 ** Step 3 -- Regenerate the codegen entity
 
-Run the =codegen-add-entity= (or narrower =codegen-add-sql-schema= +
+Run the =compass-codegen-add-entity= (or narrower =compass-codegen-add-sql-schema= +
 =codegen-add-cli-entity=/etc. as needed) skill/profile against the
 edited model, or the underlying =compass= codegen invocation directly,
 to regenerate: SQL create/drop scripts, domain struct, table/json_io,

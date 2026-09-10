@@ -24,5 +24,5 @@ def test_every_alias_resolves_to_a_direct_build_target():
 
 
 def test_codegen_templates_alias():
-    """pr-raise's codegen-drift step runs `build --direct codegen_templates`."""
+    """compass-pr-raise's codegen-drift step runs `build --direct codegen_templates`."""
     assert BUILD_TARGET_ALIASES["codegen_templates"] == "tangle_codegen_templates"

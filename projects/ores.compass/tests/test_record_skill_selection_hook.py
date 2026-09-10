@@ -33,11 +33,11 @@ def events(tmp_path):
 
 def test_skill_call_is_recorded(monkeypatch, tmp_path):
     assert run({"tool_name": "Skill", "session_id": "s1", "cwd": str(tmp_path),
-                "tool_input": {"skill": "pr-merge"}}, monkeypatch, tmp_path) == 0
+                "tool_input": {"skill": "compass-pr-merge"}}, monkeypatch, tmp_path) == 0
     recorded = events(tmp_path)
     assert len(recorded) == 1
     assert recorded[0]["kind"] == "selection"
-    assert recorded[0]["skill"] == "pr-merge"
+    assert recorded[0]["skill"] == "compass-pr-merge"
     assert recorded[0]["session"] == "s1"
 
 
@@ -58,5 +58,5 @@ def test_recording_failure_never_blocks_the_tool(monkeypatch, tmp_path):
     monkeypatch.setattr(compass_skills, "record_selection", explode)
     monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(
         {"tool_name": "Skill", "cwd": str(tmp_path),
-         "tool_input": {"skill": "pr-merge"}})))
+         "tool_input": {"skill": "compass-pr-merge"}})))
     assert hook.main() == 0

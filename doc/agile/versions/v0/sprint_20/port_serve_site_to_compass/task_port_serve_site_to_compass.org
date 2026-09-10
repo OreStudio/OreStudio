@@ -70,4 +70,4 @@ Deleted =build/scripts/serve-site.sh= and updated every live reference:
 =doc/developer.org=, =how_do_i_serve_the_site_locally.org= (full rewrite),
 =how_do_i_deploy_the_site.org= (preview section), =ores-dashboard.el= (Start site button),
 =ores-build-site.el= (comment), =deploy_documentation_site/runbook.org=,
-=doc-add-component-model/SKILL.org=.  Historical agile and backlog docs left intact.
+=compass-doc-add-component-model/SKILL.org=.  Historical agile and backlog docs left intact.

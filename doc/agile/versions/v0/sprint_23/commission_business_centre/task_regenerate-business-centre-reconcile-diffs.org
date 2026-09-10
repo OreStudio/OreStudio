@@ -51,7 +51,7 @@ files it replaced:
   correctly (security-definer + bootstrap-guard already came from
   the template, moved Qt CRUD to =ores.qt/refdata= with
   =RefdataPlugin= wiring instead of =PartyPlugin=).
-- Feature-tested the result (=code-run-feature-test=: full build,
+- Feature-tested the result (=compass-code-run-feature-test=: full build,
   =compass db recreate=, provision Barclays Plc, a =test_scenario=
   doc, both clients driven manually) and used what that surfaced to
   fix three further gaps: missing =has_pagination=, =coding_scheme_code=

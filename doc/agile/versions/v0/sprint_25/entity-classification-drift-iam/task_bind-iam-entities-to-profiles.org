@@ -225,7 +225,7 @@ emits the file, and it keeps the pre-rebind unfiltered reads,
 ef7a2a8ee2). The shell tenant-history command and the qt IamPlugin
 were adapted to the regenerated APIs (e8094a710d, d61e26fd61). The
 drift gate now covers iam and iam-cpp (b85c6ac327, per the compute
-unit's extension of the pr-raise check list); a full retangle leaves
+unit's extension of the compass-pr-raise check list); a full retangle leaves
 the tracked tree byte-identical to the committed output.
 
 Moving the acceptance runs onto a recreated test DB (=compass db

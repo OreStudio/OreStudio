@@ -99,7 +99,7 @@ analytics 4, iam 4, reporting 4) are template-consistent again.
   marketdata, reporting, synthetic, trading) do not link =ores.history=
   in their core CMake today; the link is added where the build proves
   the include path missing.
-- Baseline regen before any edit (codegen-fix-drift step 1), org
+- Baseline regen before any edit (compass-codegen-fix-drift step 1), org
   edit, re-tangle, per-component regen, idempotency check, then the
   union build of all affected cores, then close out.
 

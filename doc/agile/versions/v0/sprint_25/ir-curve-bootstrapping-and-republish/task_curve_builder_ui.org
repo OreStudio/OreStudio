@@ -192,7 +192,7 @@ empty output, day-count sensitivity).
   (=ClientIrCurveBootstrapConfigModel=, =IrCurveBootstrapConfigMdiWindow=
   list, =IrCurveBootstrapConfigHistoryDialog=,
   =IrCurveBootstrapConfigController=) generated via
-  =codegen-add-qt-entity= (=--address ores.cpp.qt=) into
+  =compass-codegen-add-qt-entity= (=--address ores.cpp.qt=) into
   =ores.qt.refdata=, matching backend domain placement -- same
   component =CrmTopologyConfig='s own Qt lives in. Requires adding a
   =** Qt= drawer to

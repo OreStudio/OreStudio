@@ -115,12 +115,12 @@ already absorbed, which is the same verdict the rule reaches for a compiler.
 | how                                | execution   | Bind        | Must consult knowledge and recipes first                        |
 | why                                | execution   | Bind        | Our rationale lives in decisions and tasks                      |
 | teach                              | execution   | Skip        | Wraps how and why                                               |
-| technical-writing                  | execution   | Adopt      | Subsumes doc-review-ste100; ours become |
+| technical-writing                  | execution   | Adopt      | Subsumes compass-doc-review-ste100; ours become |
 | unslop                             | execution   | Adopt      | Same surface as technical- |
 | deslop                             | execution   | Adopt      | Enforces the rule code-review |
 | no-comments                        | execution   | Adopt      | Enforces the rule code-review |
 | thermo-nuclear-code-quality-review | execution   | Bind       | Ours files stories against com |
-| tdd                                | sequencing  | Skip       | code-add-tests binds Catch2 and our convent |
+| tdd                                | sequencing  | Skip       | compass-code-add-tests binds Catch2 and our convent |
 | create-verification-skill          | declaration | Adopt      | Builds the driver; our ladder st |
 | maintain-verification-skill        | recording   | Adopt      | Keep |
 | typescript-best-practices          | execution   | Skip        | No TypeScript here                                              |
@@ -151,7 +151,7 @@ ten are not competitors.
 
 Classifying both sides by regulatory function dissolves them. Ours state rules
 and standards, which is citation and declaration. The upstream ones run checks,
-which is execution. =code-review-comments= states where a comment belongs;
+which is execution. =compass-code-review-comments= states where a comment belongs;
 =no-comments= spawns a reviewer that finds violations of exactly that. A rule and
 the instrument that enforces it are not competitors, and holding both is the
 normal case rather than duplication.
@@ -190,7 +190,7 @@ decision whose cost is paid before anyone reads the trail.
 *** The prose standards
 
 =technical-writing= carries Diataxis structure, Google style, STE instruction
-rules and Global English. That subsumes =doc-review-ste100=, whose content is
+rules and Global English. That subsumes =compass-doc-review-ste100=, whose content is
 one of those four layers.
 
 Ours is retired as a standard and kept as a binding. What survives is the part

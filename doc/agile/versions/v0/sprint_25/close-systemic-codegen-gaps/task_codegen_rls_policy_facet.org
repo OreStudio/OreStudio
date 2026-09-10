@@ -237,7 +237,7 @@ still has to be hand-wired afterwards":
 - =check_component_drift.py= regenerates at the umbrella =ores=
   address and then runs =git diff= against the whole tree, so it
   reports every uncommitted change, intended or not. It is a
-  post-commit gate (pr-raise); mid-task the byte-identical regen round
+  post-commit gate (compass-pr-raise); mid-task the byte-identical regen round
   is the equivalent evidence.
 - Staging step 4 evidence (2026-09-04): the =WIRE_001= rule in
   =plantuml_er_parse_sql.py= fires on exactly the census files (74

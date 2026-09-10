@@ -26,7 +26,7 @@ inflating the backlog with one-off stories.
 |---------------+----------------------------------------|
 | State         | DONE                              |
 | Parent sprint | [[id:341C071C-3042-4386-BC14-0D52CE8E6250][Sprint 23]] |
-| Now           | Closed DONE 2026-07-20: own Acceptance met (vcpkg drift check + devops-update-environment skill). Output-monitoring task split into [[id:7D92A697-CE9D-4760-B817-E630F9081CFB][a product-backlog story]]; a future sprint's catch-all story takes over from here. |
+| Now           | Closed DONE 2026-07-20: own Acceptance met (vcpkg drift check + compass-devops-update-environment skill). Output-monitoring task split into [[id:7D92A697-CE9D-4760-B817-E630F9081CFB][a product-backlog story]]; a future sprint's catch-all story takes over from here. |
 | Waiting on    | Nothing.                               |
 | Next          | Nothing.                               |
 | Last touched  | 2026-07-20                               |
@@ -42,7 +42,7 @@ inflating the backlog with one-off stories.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:745B765F-BEB2-4CBA-8BA8-852FBDDBA399][Add vcpkg drift check to bearings and a devops-update-environment skill]] | DONE | 2026-07-12 | 2026-07-12 | Add a vcpkg-vs-main drift warning to compass bearings, and create a new devops-update-environment skill that brings a worktree fully up to date with main (fetch, detached checkout, submodules, settings, skills). |
+| [[id:745B765F-BEB2-4CBA-8BA8-852FBDDBA399][Add vcpkg drift check to bearings and a compass-devops-update-environment skill]] | DONE | 2026-07-12 | 2026-07-12 | Add a vcpkg-vs-main drift warning to compass bearings, and create a new compass-devops-update-environment skill that brings a worktree fully up to date with main (fetch, detached checkout, submodules, settings, skills). |
 
 * Decisions
 

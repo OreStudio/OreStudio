@@ -27,7 +27,7 @@ The [[id:6D953558-A61C-461F-859D-CBD28AD5D8F5][CRM DQ publishing task]] created 
 above raw SQL -- no domain type, repository, service, HTTP endpoint,
 shell command, or Qt UI exists for any of them (confirmed: zero Qt
 references to =crm_topology= in the codebase today). Use the
-=codegen-add-entity= orchestrator to generate the full stack for all
+=compass-codegen-add-entity= orchestrator to generate the full stack for all
 three entities (domain JSON/table I/O, repository, service,
 =ores.http.server= REST endpoints, =ores.shell= CLI commands, Qt list
 and detail views), then wire the new list view(s) into the

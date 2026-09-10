@@ -2,14 +2,14 @@
 
 Run `./compass.sh bearings` to orient yourself before acting.
 
-**ASD-STE100 skill:** After bearings, invoke the `doc-review-ste100`
+**ASD-STE100 skill:** After bearings, invoke the `compass-doc-review-ste100`
 skill via the Skill tool. It applies ASD-STE100 Simplified Technical
 English rules to all user-facing prose agent output: one meaning per
 word, active voice, simple tense, one instruction per sentence, short
 sentences. Do not apply STE100 rewriting to structured output — JSON,
 diffs, code, commit messages, or command output.
 
-**Code comments:** the `code-review-comments` skill sets the rules for
+**Code comments:** the `compass-code-review-comments` skill sets the rules for
 every comment in code we create or edit: use comments sparingly, remove
 commented-out code, never narrate edit history, never use end-of-line
 comments, place comments above the code. Apply these rules as you

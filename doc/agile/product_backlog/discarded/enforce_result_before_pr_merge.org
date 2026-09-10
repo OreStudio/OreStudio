@@ -21,7 +21,7 @@ section is missing or still contains the boilerplate placeholder, the
 command should warn (or optionally block with =--require-result=) and
 remind the user to write the result, commit, and push first. As a
 lighter-weight complement, add a one-line note to the
-=pr-address-review= skill and the =Handle a PR review round= runbook
+=compass-pr-address-review= skill and the =Handle a PR review round= runbook
 (=doc/llm/runbooks/handle_pr_review_round/runbook.org=) calling out
 the ordering constraint explicitly: "write =* Result=, commit, push,
 /then/ =compass pr merge=".
@@ -38,7 +38,7 @@ prominently flags it, so it is easy to skip under time pressure.
 * References
 
 - Runbook: =doc/llm/runbooks/handle_pr_review_round/runbook.org= (step 11)
-- Skill: =.claude/skills/pr-address-review/=
+- Skill: =.claude/skills/compass-pr-address-review/=
 - Cleanup PR: https://github.com/OreStudio/OreStudio/pull/1158
 
 * See also

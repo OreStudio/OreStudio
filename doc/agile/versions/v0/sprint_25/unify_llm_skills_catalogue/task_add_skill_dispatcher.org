@@ -40,7 +40,7 @@ An agent holding a UUID, a PR number, a branch, a component or a failing test ha
 - The presented verbs are filtered by the session's declared level.
 - compass-act-all fans one action over a collection.
 - compass-export hands a result set to the artefact type that owns the payload, and never invents a new container.
-- The division against agile-find-heading is documented: heading picks the work, act picks the verb.
+- The division against compass-agile-find-heading is documented: heading picks the work, act picks the verb.
 - Blocking, from the council review: every non-document target kind is enumerated with the source its type comes from, before any dispatcher code is written. A target whose type cannot be resolved is out of scope until it can be.
 
 * Plan

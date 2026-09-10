@@ -34,7 +34,7 @@ Our 79 skills describe our process well but never tell an agent how to think or 
 - The catalogue is layered into principles, methods and process actions, and the layering is documented with the reasoning behind it.
 - Every imported skill records its upstream repository, path, commit and divergence, and a manifest lists them all.
 - Terminology is consistent across all skills: one word per concept, recorded in the naming conventions document.
-- No imported skill duplicates an existing one; overlaps are folded into a single skill and the loser is retired through skill-delete.
+- No imported skill duplicates an existing one; overlaps are folded into a single skill and the loser is retired through compass-skill-delete.
 - The deployed bundle builds and every skill loads.
 
 * Documents
@@ -78,7 +78,7 @@ Tasks are listed in intended execution order.
 | [[id:F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF][Land the skill architecture into policy]] | DONE | 2026-09-10 | 2026-09-10 | Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword. |
 | [[id:1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE][Define the upstream attribution contract for imported skills]] | ABANDONED | | 2026-09-04 | Superseded by the reference approach. Upstream skills are referenced rather than copied, so no fork exists to attribute or drift-check; the classification table in The pstack Collection replaces it. 
 | [[id:629B48C7-BC7E-44A8-8979-3E05D6DA5BFE][Collapse the uniform verbs into polymorphic actions]] | DONE | 2026-09-10 | 2026-09-10 | Shrink the execution function before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table. |
-| [[id:7DFA4343-E553-4D3A-B71F-057329821EE5][Rename every skill into the compass- namespace]] | BACKLOG | | | Mechanical rename of every skill, with every incoming link, catalogue row, runbook, memory and settings entry updated. |
+| [[id:7DFA4343-E553-4D3A-B71F-057329821EE5][Rename every skill into the compass- namespace]] | DONE | 2026-09-10 | 2026-09-10 | Mechanical rename of every skill, with every incoming link, catalogue row, runbook, memory and settings entry updated. |
 | [[id:3969C185-48DE-47F0-A00D-FD28CD58C1B0][Tag every skill with its cybernetic level]] | BACKLOG | | | Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees. |
 | [[id:F4EF0C2D-B32E-4705-AE0F-AAC3E027FF59][Separate skill judgement from recipe commands]] | BACKLOG | | | Make every action delegate its commands to a recipe and keep only the judgement, so each has one source of truth. |
 | [[id:6766A23C-0357-4873-B5BF-B5A71BF0B1D5][Add structure notes to the knowledge Zettelkasten]] | BACKLOG | | | Give each domain cluster an entry-point note listing its pages in an argued reading order, so grounding loads a model rather than a search result. |
@@ -87,7 +87,7 @@ Tasks are listed in intended execution order.
 | [[id:08F7F925-49B2-40E0-A298-E300353CAE2E][Port the sequencing function and bind it to recipes and actions]] | BACKLOG | | | Import the adopted methods and interview skills as compass-method skills, with every step bound to one of our actions or recipes. |
 | [[id:60C7573C-763F-466D-A174-61C3A78616AF][Build compass-helm, the sticky mode]] | BACKLOG | | | One sticky entry point that declares the session System, matches work to a method, copies its phases in verbatim, and routes to actions, recipes and deliberation. |
 | [[id:BC52784C-64A6-47D2-AE13-BA8530C34507][Bind the Council to the convening function]] | BACKLOG | | | Wire the Council of High Intelligence in as the convening function, and route error detection to the checkers that are genuinely independent. |
-| [[id:26921590-0B75-401F-80C6-52CDF76104CD][Reconcile duplicate skills and standardise terminology]] | BACKLOG | | | Fold every overlapping import into a single skill, retire the losers through skill-delete, and sweep the catalogue onto the agreed vocabulary. |
+| [[id:26921590-0B75-401F-80C6-52CDF76104CD][Reconcile duplicate skills and standardise terminology]] | BACKLOG | | | Fold every overlapping import into a single skill, retire the losers through compass-skill-delete, and sweep the catalogue onto the agreed vocabulary. |
 | [[id:C4ADAD7A-949E-48D3-941D-706E7B71D30D][Verify the rebuilt skill catalogue end to end]] | BACKLOG | | | Regenerate, rebuild, deploy and prove the whole catalogue loads and dispatches, with no stale directories left behind. |
 | [[id:2DF7DE1E-77CA-419E-90E6-E70DF5223314][Wire the codegen drift checks into CI and close the false claim]] | BACKLOG | | | check_component_drift.py exists but no workflow runs it, while a nightly PR body tells readers it does; model drift has no checker at all. |
 | [[id:628EA44F-1136-426F-AFD1-F28844AB048B][Make generated-ness a target property the dispatcher enforces]] | BACKLOG | | | Teach the dispatcher that an artefact is generated, so hand-editing is never an offered verb, and fold profile selection into the register-matching discipline. |
@@ -115,7 +115,7 @@ Tasks are listed in intended execution order.
 - Instrument state lives in the git common directory, so the baseline accrues
   across the whole fleet rather than restarting on each =env provision=.
 - Policy binds where an author meets it. The naming document and the glossary
-  state the rules; =skill-add= carries the same rules as steps, so an author
+  state the rules; =compass-skill-add= carries the same rules as steps, so an author
   naming a skill cannot miss them.
 - Terminology is settled in the glossary rather than the skills cluster,
   because one word per concept governs every document. Where the design and
@@ -129,6 +129,9 @@ Tasks are listed in intended execution order.
   document type joins the table by existing rather than by being remembered.
 - The catalogue carries the current set and no ledger of what was removed.
   What a skill used to be called is in git.
+- A sweep across the corpus is a committed script with a =--check= mode, not
+  a careful afternoon. The script is the artefact a reviewer re-runs, and the
+  check is what stops the next skill landing outside the namespace.
 
 * Out of scope
 

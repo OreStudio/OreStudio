@@ -45,7 +45,7 @@ base-branch-modified race is retried instead of failing the merge.
   record path checks the staged diff instead.
 - "Base branch was modified" from GitHub's merge API is retried up to
   three times before failing.
-- The merge recipe and pr-merge skill describe the new semantics.
+- The merge recipe and compass-pr-merge skill describe the new semantics.
 
 * Plan
 
@@ -75,5 +75,5 @@ branch's task is not DONE and reminding afterwards; --keep-open is
 removed. The gh merge call retries the transient base-branch-modified
 GraphQL race (3 attempts). The PR-record path checks the staged diff
 instead of parsing git's locale- and state-dependent commit message —
-the exact crash from PR 1111. Merge recipe and pr-merge skill updated
+the exact crash from PR 1111. Merge recipe and compass-pr-merge skill updated
 to match.

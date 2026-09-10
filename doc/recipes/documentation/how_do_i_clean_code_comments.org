@@ -2,7 +2,7 @@
 :ID: DE7C2BC5-3C21-4A8F-8C2A-7A8800F1FCF2
 :END:
 #+title: How do I clean code comments?
-#+description: Remove comment clutter and keep necessary explanations when cleaning code comments in a diff or across the repository, per the code-review-comments skill.
+#+description: Remove comment clutter and keep necessary explanations when cleaning code comments in a diff or across the repository, per the compass-code-review-comments skill.
 #+type: recipe
 #+level: cross
 #+filetags: :documentation:comments:recipe:
@@ -10,7 +10,7 @@
 #+updated: 2026-08-11
 
 This recipe walks the cleanup pass of the
-[[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] skill. The skill is
+[[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][compass-code-review-comments]] skill. The skill is
 the thin index; this recipe carries the procedural detail. The rule set
 itself lives in the skill's =comment-rules.md= reference and follows the
 [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][code review checklist]] for what a code comment must satisfy.
@@ -66,5 +66,5 @@ table against =comment-rules.md=. CI does not exercise this recipe.
 
 * See also
 
-- [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]] — the skill this recipe serves.
+- [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][compass-code-review-comments]] — the skill this recipe serves.
 - [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][code review checklist]] — the Doxygen-on-public-API convention.

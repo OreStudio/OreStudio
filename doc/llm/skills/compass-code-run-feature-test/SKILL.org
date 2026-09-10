@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 4FEB154D-50EF-4346-BB75-B0881188E4F5
+:END:
+#+title: Code Run Feature Test
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+filetags: :llm:skill:skills:claude_code:code:testing:
+#+created: 2026-07-12
+#+updated: 2026-07-12
+
+#+begin_export markdown
+---
+name: compass-code-run-feature-test
+description: Test a feature after finishing implementation — ask about a build, confirm/recreate a fresh database, provision Acme Corporation yourself via ores.shell, run all tests, write a test scenario (CRUD + eventing + history for entity features), and hand the client to the user to execute.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+When implementation of a feature or task is otherwise complete and it's
+time to verify it before raising a PR: a confirmed build, a fresh
+Acme-provisioned database, the full test suite, a written test
+scenario, and a client handed to the user to execute it.
+
+* How to use this skill
+
+Run [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] end to end:
+
+1. Its *Prerequisites* section — build/test if needed, validate
+   schemas, then [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][ready the environment]] (fresh database, Acme Corporation
+   provisioned by you, not the user). Non-negotiable, in order.
+2. Its *Writing and running the scenario* section — a =test_scenario=
+   doc covering every aspect of the feature (CRUD + eventing + history
+   for an entity), then a client started with the scenario preloaded
+   and handed to the user to execute.
+
+*Leave =Clients= in =* Scenario Info= genuinely empty* for a
+single-client scenario (the common case) — any non-empty value there,
+even a placeholder like "single client", makes the Runner load *zero*
+steps, silently.
+
+* Recipes
+
+- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]]
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]
+- [[id:20D2CB34-4E2F-45D3-8FA2-F1C5B4C7B22F][How do I run the tests?]]
+
+* Reference
+
+- [[id:F5E1ECFC-D5C3-4117-98C9-10AF04F583A2][Archetype: doc_test_scenario.org.mustache]] — the =test_scenario= doc shape.
+- [[id:A8102388-6D8B-40D8-B6B1-1DB29E9DD6D2][Devops Run Client]] — the sibling skill this one hands off to for =--open-scenario=.
+- [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][compass-doc-run-manual-screenshots]] — sibling skill sharing the same
+  environment-readying recipe, applied to manual-chapter screenshots
+  instead of feature verification.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

@@ -41,7 +41,7 @@ judgement, so it is recorded by hand, right after the correction
 happens:
 
 #+begin_src sh :results verbatim
-./compass.sh skills correct --cause description --chose pr-merge
+./compass.sh skills correct --cause description --chose compass-pr-merge
 #+end_src
 
 This marks the most recent selection. Pass =--selection <id>= to correct

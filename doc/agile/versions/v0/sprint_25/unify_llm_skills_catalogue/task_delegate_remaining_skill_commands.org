@@ -35,6 +35,13 @@ copy of every command.
 Sweep the remainder on that test: if a recipe carries the command, the
 skill links it and states why the step is where it is in the sequence.
 
+Not every one of the 105 is a judged sequence, and the sweep should not
+assume it. =compass-agile-refine-backlog= already links the recipe that owns
+its commands and still restates them, =git mv= and =git commit= invocations
+included, adding no ordering judgement of its own. Cases of that shape are
+mechanical: delete the duplicate and keep the link. Sort the 105 into the
+two kinds before writing any prose, because the mechanical half needs none.
+
 
 (Describe what user-visible-or-internal change this task produces.)
 

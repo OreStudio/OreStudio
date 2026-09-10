@@ -27,18 +27,30 @@ Launching the Qt client, detached so the terminal stays free; colour keeps paral
 
 1. /Give the client a colour when more than one runs/. Parallel worktrees
    each start their own client, and the colour is what tells them apart on
-   screen and in the window title.
+   screen and in the window title. The stop verb takes the same colour, so
+   stopping without it interrupts another environment's run.
 
-2. /Launch it detached/ through the recipe below, so the session stays free
-   to keep working while the client is up.
+2. /Ready the system before opening the client, and verify it yourself/.
+   Confirm or recreate the database and provision it, and record what you
+   did in the scenario's =* Before you start= section. Never hand a tester
+   a scenario against a system you have not already checked.
 
-3. /Stop the one you started/, not all of them. The stop verb takes the
-   same colour, and stopping the wrong client interrupts another
-   environment's test run.
+3. /Pass an absolute path to =--open-scenario=/. The client's working
+   directory is not the repository root, so a relative path that is correct
+   in your own shell fails with a filesystem error. Opening the scenario
+   this way lands the tester in the Scenario Runner with the document
+   loaded, rather than hunting for it.
+
+4. /Put the login in the scenario's first step/, naming the persona and its
+   password. It has to be a =* Steps= entry rather than prose in
+   =* Context=, because the Scenario Runner tracks pass and fail per step
+   and ignores the prose. A tester left to guess credentials stops there.
 
 * Recipes
 
-- [[id:0168F066-BFA4-4CFE-8A61-A2C727D91D10][How do I use named env files?]] — launching the client per environment, with colour.
+
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] — the readiness the client assumes, and the launch with a scenario.
+- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] — handing a readied client to a tester.
 
 * Reference
 

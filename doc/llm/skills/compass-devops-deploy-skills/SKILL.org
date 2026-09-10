@@ -25,14 +25,17 @@ Skill sources changed and the deployed bundle is stale (compass bearings warns):
 
 * How to use this skill
 
+
 1. /Deploy after every skill edit/. The harness reads the deployed bundle,
    not the org sources, so an unbuilt edit changes nothing for any session.
 
-2. /Run the target/ from the recipe below.
-
-3. /Purge what the deploy leaves behind/. Deployment writes but never
+2. /Purge what the deploy leaves behind/. Deployment writes but never
    deletes, so a renamed or retired skill keeps loading under its old name
    until its deployed directory is removed.
+
+3. /Tell the user to run =/reload-skills=/. A running session holds the
+   bundle it started with, so until it reloads, the edit is live on disk
+   and invisible to the very session that made it.
 
 * Recipes
 

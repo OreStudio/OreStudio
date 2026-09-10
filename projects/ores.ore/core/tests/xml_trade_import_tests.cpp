@@ -48,7 +48,7 @@ using ores::ore::xml::trade_import_item;
 using ores::trading::domain::swap_instrument_data;
 using ores::trading::domain::fx_instrument_variant;
 using ores::trading::domain::fx_forward_instrument;
-using ores::trading::domain::bond_instrument;
+using ores::trading::domain::bond_instrument_data;
 using ores::trading::domain::trade;
 using namespace ores::logging;
 
@@ -327,7 +327,7 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     // First trade in the portfolio must be a bond.
     auto& item = items.front();
     INFO("Trade type: " << item.trade.classification.trade_type);
-    REQUIRE(std::holds_alternative<bond_instrument>(item.instrument));
+    REQUIRE(std::holds_alternative<bond_instrument_data>(item.instrument));
 
     // Mint UUIDs as the planner would; tests verify the wiring is correct.
     boost::uuids::random_generator gen;
@@ -336,14 +336,15 @@ TEST_CASE("import_portfolio_with_context_bond_has_instrument", tags) {
     ores::trading::domain::stamp_ids(item.instrument, instr_uuid, item.trade.identity.id);
     item.trade.classification.instrument_id = instr_uuid;
 
-    const auto& r = std::get<bond_instrument>(item.instrument);
-    CHECK(r.identity.instrument_id != item.trade.identity.id);
-    CHECK(r.identity.trade_id == item.trade.identity.id);
-    CHECK(item.trade.classification.instrument_id == r.identity.instrument_id);
+    const auto& r = std::get<bond_instrument_data>(item.instrument);
+    CHECK(r.instrument.identity.instrument_id != item.trade.identity.id);
+    CHECK(r.instrument.identity.trade_id == item.trade.identity.id);
+    CHECK(item.trade.classification.instrument_id == r.instrument.identity.instrument_id);
     CHECK(item.trade.classification.product_type == ores::trading::domain::product_type::bond);
-    CHECK(!r.terms.issuer.empty());
+    CHECK(r.instrument.issue_id == r.issue.issue_id);
+    CHECK(!r.issue.issuer.empty());
 
-    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.terms.issuer;
+    BOOST_LOG_SEV(lg, info) << "Bond instrument mapped. Issuer: " << r.issue.issuer;
 }
 
 TEST_CASE("import_portfolio_with_context_unmapped_type_is_monostate", tags) {

@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_REPOSITORY_BOND_INSTRUMENT_ENTITY_HPP
-#define ORES_TRADING_REPOSITORY_BOND_INSTRUMENT_ENTITY_HPP
+#ifndef ORES_TRADING_CORE_REPOSITORY_BOND_INSTRUMENT_ENTITY_HPP
+#define ORES_TRADING_CORE_REPOSITORY_BOND_INSTRUMENT_ENTITY_HPP
 
 #include "ores.database/repository/db_types.hpp"
 #include "sqlgen/PrimaryKey.hpp"
@@ -37,39 +37,20 @@ struct bond_instrument_entity {
     constexpr static const char* schema = "public";
     constexpr static const char* tablename = "ores_trading_bond_instruments_tbl";
 
-    sqlgen::PrimaryKey<std::string> id;
+    sqlgen::PrimaryKey<std::string> instrument_id;
     std::string tenant_id;
     std::string workspace_id;
     int version = 0;
+    std::string trade_type_code;
     std::string party_id;
     std::optional<std::string> trade_id;
-    std::string trade_type_code;
-    std::string issuer;
-    std::string currency;
-    double face_value = 0.0;
-    double coupon_rate = 0.0;
-    std::string coupon_frequency_code;
-    std::string day_count_code;
-    std::string issue_date;
-    std::string maturity_date;
-    std::optional<int> settlement_days;
-    std::optional<std::string> call_date;
-    std::optional<double> conversion_ratio;
-    std::optional<std::string> description;
+    std::string issue_id;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;
     std::string change_commentary;
     db_timestamp valid_from = "9999-12-31 23:59:59";
     db_timestamp valid_to = "9999-12-31 23:59:59";
-    // Phase 7 extensions
-    std::optional<std::string> future_expiry_date;
-    std::optional<std::string> option_type;
-    std::optional<std::string> option_expiry_date;
-    std::optional<double> option_strike;
-    std::optional<std::string> trs_return_type;
-    std::optional<std::string> trs_funding_leg_code;
-    std::optional<std::string> ascot_option_type;
 };
 
 std::ostream& operator<<(std::ostream& s, const bond_instrument_entity& v);

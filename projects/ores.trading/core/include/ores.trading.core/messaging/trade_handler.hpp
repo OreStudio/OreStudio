@@ -31,12 +31,17 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
 #include "ores.trading.core/service/bond_instrument_service.hpp"
+#include "ores.trading.core/service/bond_issue_service.hpp"
+#include "ores.trading.core/service/bond_option_service.hpp"
+#include "ores.trading.core/service/bond_repo_service.hpp"
+#include "ores.trading.core/service/bond_trs_service.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
@@ -108,6 +113,8 @@ private:
         using ores::trading::domain::trade_instrument;
         using ores::trading::domain::swap_instrument_data;
         using ores::trading::domain::composite_instrument_data;
+        using ores::trading::domain::bond_instrument_data;
+        using ores::trading::domain::bond_issue;
 
         // Phase 1: bucket instrument IDs by (product_type, trade_type)
         std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
@@ -244,15 +251,42 @@ private:
                                           std::vector<ores::trading::domain::swap_leg>{};
         };
 
-        // Single-table types (bond, credit, commodity, scripted).
+        // Single-table types (credit, commodity, scripted).
         auto add_flat = [&](auto&& results) {
             for (auto& v : results)
                 imap[boost::uuids::to_string(v.identity.instrument_id)] = std::move(v);
         };
 
         if (!bond_ids.empty()) {
+            // Assemble each header row with its issue row (shared by every
+            // instrument of one ISIN) and the product's fact row, which the
+            // export path reads back from the container.
             service::bond_instrument_service svc(ctx);
-            add_flat(svc.get_bond_instruments(bond_ids));
+            service::bond_issue_service issue_svc(ctx);
+            service::bond_option_service option_svc(ctx);
+            service::bond_trs_service trs_svc(ctx);
+            service::bond_repo_service repo_svc(ctx);
+            std::unordered_map<std::string, bond_issue> issue_cache;
+            for (auto& v : svc.get_bond_instruments(bond_ids)) {
+                const auto id = boost::uuids::to_string(v.identity.instrument_id);
+                const auto issue_id = boost::uuids::to_string(v.issue_id);
+                bond_instrument_data data;
+                data.instrument = std::move(v);
+                if (auto it = issue_cache.find(issue_id); it != issue_cache.end())
+                    data.issue = it->second;
+                else if (auto issue = issue_svc.get_issue(issue_id)) {
+                    data.issue = *issue;
+                    issue_cache[issue_id] = data.issue;
+                }
+                const auto& ttc = data.instrument.identity.trade_type_code;
+                if (ttc == "BondOption")
+                    data.option = option_svc.get_option(id);
+                else if (ttc == "BondTRS")
+                    data.trs = trs_svc.get_trs(id);
+                else if (ttc == "BondRepo")
+                    data.repo = repo_svc.get_repo(id);
+                imap[id] = std::move(data);
+            }
         }
         if (!credit_ids.empty()) {
             service::credit_instrument_service svc(ctx);

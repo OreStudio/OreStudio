@@ -168,9 +168,10 @@ for select using (
 -- -----------------------------------------------------------------------------
 -- Bond relational model (pilot), task D7943D7E
 -- -----------------------------------------------------------------------------
--- The issue row carries the party scope of its family; the fact and
--- child rows are family-owned and carry no party_id, so each gets the
--- tenant isolation policy only.
+-- The instrument row above is the family's party boundary; the issue
+-- (one row per ISIN, shared by every party's trades of it), the fact
+-- and the child rows carry no party_id, so each gets the tenant
+-- isolation policy only.
 
 -- Bond Issues
 alter table ores_trading_bond_issues_tbl enable row level security;

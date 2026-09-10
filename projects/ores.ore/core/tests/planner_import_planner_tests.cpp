@@ -307,6 +307,7 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                 using ores::trading::domain::fx_instrument_variant;
                 using ores::trading::domain::equity_instrument_variant;
                 using ores::trading::domain::composite_instrument_data;
+                using ores::trading::domain::bond_instrument_data;
                 using T = std::decay_t<decltype(r)>;
                 if constexpr (std::is_same_v<T, std::monostate>) {
                     // No instrument mapping for this trade type — skip.
@@ -333,8 +334,12 @@ TEST_CASE("plan_instrument_trade_id_matches_minted_trade_id", tags) {
                     REQUIRE(r.instrument.identity.trade_id.has_value());
                     CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
                     ++checked;
+                } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
+                    REQUIRE(r.instrument.identity.trade_id.has_value());
+                    CHECK(*r.instrument.identity.trade_id == item.trade.identity.id);
+                    ++checked;
                 } else {
-                    // bond/credit/commodity/scripted — all nested now.
+                    // credit/commodity/scripted — identity at the top level.
                     REQUIRE(r.identity.trade_id.has_value());
                     CHECK(*r.identity.trade_id == item.trade.identity.id);
                     ++checked;

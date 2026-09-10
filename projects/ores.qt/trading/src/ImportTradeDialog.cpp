@@ -23,6 +23,7 @@
 #include "ores.qt/MessageBoxHelper.hpp"
 #include "ores.refdata.api/messaging/counterparty_protocol.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -606,6 +607,7 @@ void ImportTradeDialog::onImportClicked() {
                 if constexpr (!std::is_same_v<T, std::monostate>) {
                     const auto instr_id = boost::uuids::random_generator()();
                     tti.trade.classification.instrument_id = instr_id;
+                    using trading::domain::bond_instrument_data;
                     using trading::domain::swap_instrument_data;
                     using trading::domain::fx_instrument_variant;
                     using trading::domain::equity_instrument_variant;
@@ -630,8 +632,10 @@ void ImportTradeDialog::onImportClicked() {
                     } else if constexpr (std::is_same_v<T, composite_instrument_data>) {
                         r.instrument.identity.instrument_id = instr_id;
                         r.instrument.identity.trade_id = tti.trade.identity.id;
+                    } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
+                        trading::domain::stamp_ids(r, instr_id, tti.trade.identity.id);
                     } else {
-                        // bond/credit/commodity/scripted — all nested now.
+                        // credit/commodity/scripted — identity at top level.
                         r.identity.instrument_id = instr_id;
                         r.identity.trade_id = tti.trade.identity.id;
                     }
@@ -832,7 +836,7 @@ void ImportTradeDialog::onImportClicked() {
                             using namespace ores::trading::messaging;
                             using trading::domain::swap_instrument_data;
                             using trading::domain::fx_instrument_variant;
-                            using trading::domain::bond_instrument;
+                            using trading::domain::bond_instrument_data;
                             using trading::domain::credit_instrument;
                             using trading::domain::equity_instrument_variant;
                             using trading::domain::commodity_instrument;
@@ -977,9 +981,12 @@ void ImportTradeDialog::onImportClicked() {
                                         }
                                     },
                                     r);
-                            } else if constexpr (std::is_same_v<T, bond_instrument>) {
+                            } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
+                                // Save the slim header row only; the issue
+                                // and fact saves land with the wave-1.5
+                                // DB-import boundary of the reshape.
                                 save_bond_instrument_request req;
-                                req.data = r;
+                                req.data = r.instrument;
                                 (void)self->clientManager_->process_authenticated_request(
                                     std::move(req));
                             } else if constexpr (std::is_same_v<T, credit_instrument>) {

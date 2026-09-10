@@ -1,0 +1,215 @@
+:PROPERTIES:
+:ID: 326b86e9-df52-4921-a875-e9f5cfec0e49
+:END:
+#+title: ores.trading.bond_instrument
+#+description: Codegen entity model for the trading =bond_instrument= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The reshaped bond instrument: one trade of the bond family, keyed by instrument_id with the ten-code trade_type_code check and the issue_id foreign key to the bond issue.
+#+entity_singular: bond_instrument
+#+entity_plural: bond_instruments
+#+entity_title: Bond Instrument
+#+created: 2026-09-09
+#+updated: 2026-09-09
+
+One row per bond trade, reshaped from the wide legacy table per the
+bond relational model deliverable
+(=doc/knowledge/architecture/trading_bond_relational_model.org=). The
+row carries the instrument's identity only: =instrument_id=,
+=trade_type_code= over the ten bond codes, =party_id=, the optional
+=trade_id= soft link, and =issue_id=, the NOT NULL foreign key to the
+bond issue row that holds every term of the bond. The economics
+moved to the issue (one row per ISIN, shared by every instrument of
+it), so an amendment to a term touches the issue row once, not every
+open instrument (finding B11 of the deliverable). A product change is
+a cancel and a rebook: the service closes the row's validity and
+inserts a new instrument row with its fact rows; =trade_type_code=
+never changes in place (review answer 2).
+
+The ten codes, in seed order (=trading_trade_types_populate.sql=):
+Bond, ForwardBond, BondFuture, BondOption, BondRepo, BondTRS,
+BondPosition, CallableBond, ConvertibleBond, Ascot. The =trade_type_code=
+check is the membership check against =ores_trading_trade_types_tbl=
+through =ores_trading_validate_trade_type_fn=, the mechanism every
+generated trading instrument uses, plus the in-list coverage check
+over the ten codes below. For Bond, ForwardBond, CallableBond,
+ConvertibleBond and BondPosition the issue is the bond itself; for
+BondRepo the issue is the collateral the financing runs against; for
+BondOption, BondFuture, BondTRS and Ascot the issue is the bond the
+product is written on (review answers 3 and 4).
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:profile:          trading-instrument
+:END:
+
+* Natural keys
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:group:       identity
+:primary_key: true
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:nullable:    false
+:END:
+
+UUID uniquely identifying this bond instrument.
+
+Surrogate key of the instrument row, renamed from the legacy =id=
+column. The per-product fact rows reference it
+(=ores_trading_bond_options_tbl= and the other four fact tables).
+
+** trade_type_code
+:PROPERTIES:
+:group:    identity
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Trade type code (soft FK to ores_trading_trade_types_tbl).
+
+One of the ten bond codes; the coverage check below lists all of
+them. Never amended in place: a product change closes this row and
+rebooks a new one.
+
+#+begin_src cpp :name generator
+std::string("Bond")
+#+end_src
+
+** party_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+Party that owns this instrument.
+
+Set from session variable app.current_party_id.
+
+** trade_id
+:PROPERTIES:
+:group:    identity
+:type:     uuid
+:cpp_type: std::optional<boost::uuids::uuid>
+:nullable: true
+:END:
+
+Optional soft FK to the parent trade.
+
+Links the instrument to a trade if applicable.
+
+** issue_id
+:PROPERTIES:
+:type:     uuid
+:cpp_type: boost::uuids::uuid
+:nullable: false
+:END:
+
+UUID of the bond issue this instrument trades (FK to
+=ores_trading_bond_issues_tbl=).
+
+NOT NULL: a bond product row with no issue is not a bond product. The
+issue holds the bond's terms; the instrument row reads them through a
+temporal join on this key, so an amended term reads as of the
+instrument row's own validity.
+
+#+begin_src cpp :name generator
+ctx.generate_uuid()
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_instruments_tbl
+:END:
+
+** Checks
+
+| expression |
+|------------|
+| "trade_type_code" in ('Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot') |
+
+** Indexes
+
+| name       | columns             | unique | current_only | where_extra          |
+|------------+---------------------+--------+--------------+----------------------|
+| party      | tenant_id, party_id | false  | true         |                      |
+| trade_type | tenant_id, trade_type_code | false | true    |                      |
+| trade_id   | tenant_id, trade_id | true   | true         | trade_id is not null |
+
+* Insert trigger
+
+** Validations
+
+| column          | validation_function                |
+|-----------------+-------------------------------------|
+| trade_type_code | ores_trading_validate_trade_type_fn |
+
+* C++
+
+The C++ domain class nests the scaffolding columns and the columns
+marked =:group: identity= below into an =instrument_identity identity;=
+member (see the ores.trading.instrument_identity field-group model),
+the implicit audit columns fold into an =ores::dq::domain::audit_record
+audit;= member (see the ores.dq.audit_record field-group model), and
+=issue_id= stays flat in between, the vanilla_swap_instrument shape
+probed for this entity in wave 1.2. The SQL schema, DB entity and
+column lists are unaffected. The entity templates consume these
+annotations; domain and repository profiles regenerate correctly.
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:domain_identity_group: ores.trading.instrument_identity
+:domain_audit_group:    ores.dq.audit_record
+:has_batch_read:        true
+:generator_facet_name:  generators
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_instrument
+:entity_plural_short:   bond_instruments
+:entity_singular_words: bond instrument
+:entity_plural_words:   bond instruments
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: bi
+:END:
+
+** Table display
+
+| column                  | header       |
+|-------------------------+--------------|
+| identity.instrument_id   | ID           |
+| identity.trade_type_code | Type         |
+| issue_id                 | Issue ID     |
+| identity.version         | Version      |
+| audit.recorded_at        | Recorded At  |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

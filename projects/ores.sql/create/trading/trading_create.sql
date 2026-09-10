@@ -104,17 +104,15 @@
 \ir ./trading_fx_variance_swap_instruments_create.sql
 \ir ./trading_fx_variance_swap_instruments_notify_trigger_create.sql
 
--- Bond instruments (depends on reference data above)
-\ir ./trading_bond_instruments_create.sql
-\ir ./trading_bond_instruments_notify_trigger_create.sql
-\ir ./trading_bond_instruments_extensions_create.sql
-
--- Bond relational model (pilot, task D7943D7E): the issue table plus
--- the per-trade fact tables and the issue-keyed child tables. Additive
--- for now; nothing consumes them until the reshape. The issue row
--- carries tenant + workspace; the fact and child rows are tenant-scoped.
+-- Bond relational model (pilot, task D7943D7E): the issue table, the
+-- instrument table that references it, the per-trade fact tables and
+-- the issue-keyed child tables. The issue, fact and child rows are
+-- tenant-scoped; the instrument row carries tenant + workspace + party.
 \ir ./trading_bond_issues_create.sql
 \ir ./trading_bond_issues_notify_trigger_create.sql
+
+\ir ./trading_bond_instruments_create.sql
+\ir ./trading_bond_instruments_notify_trigger_create.sql
 
 \ir ./trading_bond_issue_call_dates_create.sql
 \ir ./trading_bond_issue_call_dates_notify_trigger_create.sql

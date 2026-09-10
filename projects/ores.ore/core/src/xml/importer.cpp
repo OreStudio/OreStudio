@@ -148,7 +148,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                     using ores::trading::domain::product_type;
                     using ores::trading::domain::swap_instrument_data;
                     using ores::trading::domain::fx_instrument_variant;
-                    using ores::trading::domain::bond_instrument;
+                    using ores::trading::domain::bond_instrument_data;
                     using ores::trading::domain::credit_instrument;
                     using ores::trading::domain::equity_instrument_variant;
                     using ores::trading::domain::commodity_instrument;
@@ -158,7 +158,7 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
                         item.trade.classification.product_type = product_type::swap;
                     else if constexpr (std::is_same_v<T, fx_instrument_variant>)
                         item.trade.classification.product_type = product_type::fx;
-                    else if constexpr (std::is_same_v<T, bond_instrument>)
+                    else if constexpr (std::is_same_v<T, bond_instrument_data>)
                         item.trade.classification.product_type = product_type::bond;
                     else if constexpr (std::is_same_v<T, credit_instrument>)
                         item.trade.classification.product_type = product_type::credit;

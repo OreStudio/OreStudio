@@ -17,35 +17,48 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-
--- =============================================================================
--- Bond Instruments Table
---
--- Holds bond economics for Bond, ForwardBond, CallableBond, ConvertibleBond,
--- and BondRepo trades. The trade_type_code discriminates the exact product.
--- Optional fields (call_date, conversion_ratio) are NULL for non-applicable
--- product types.
--- =============================================================================
+/**
+ * AUTO-GENERATED FILE - DO NOT EDIT MANUALLY
+ * Template: sql_schema_domain_entity_create.mustache
+ * To modify, update the template and regenerate.
+ *
+ * Bond Instrument Table
+ *
+ * One row per bond trade, reshaped from the wide legacy table per the
+ * bond relational model deliverable
+ * (doc/knowledge/architecture/trading_bond_relational_model.org). The
+ * row carries the instrument's identity only: instrument_id,
+ * trade_type_code over the ten bond codes, party_id, the optional
+ * trade_id soft link, and issue_id, the NOT NULL foreign key to the
+ * bond issue row that holds every term of the bond. The economics
+ * moved to the issue (one row per ISIN, shared by every instrument of
+ * it), so an amendment to a term touches the issue row once, not every
+ * open instrument (finding B11 of the deliverable). A product change is
+ * a cancel and a rebook: the service closes the row's validity and
+ * inserts a new instrument row with its fact rows; trade_type_code
+ * never changes in place (review answer 2).
+ *
+ * The ten codes, in seed order (trading_trade_types_populate.sql):
+ * Bond, ForwardBond, BondFuture, BondOption, BondRepo, BondTRS,
+ * BondPosition, CallableBond, ConvertibleBond, Ascot. The trade_type_code
+ * check is the membership check against ores_trading_trade_types_tbl
+ * through ores_trading_validate_trade_type_fn, the mechanism every
+ * generated trading instrument uses, plus the in-list coverage check
+ * over the ten codes below. For Bond, ForwardBond, CallableBond,
+ * ConvertibleBond and BondPosition the issue is the bond itself; for
+ * BondRepo the issue is the collateral the financing runs against; for
+ * BondOption, BondFuture, BondTRS and Ascot the issue is the bond the
+ * product is written on (review answers 3 and 4).
+ */
 
 create table if not exists "ores_trading_bond_instruments_tbl" (
-    "id" uuid not null,
+    "instrument_id" uuid not null,
     "tenant_id" uuid not null,
     "version" integer not null,
+    "trade_type_code" text not null,
     "party_id" uuid not null,
     "trade_id" uuid null,
-    "trade_type_code" text not null,
-    "issuer" text not null,
-    "currency" text not null,
-    "face_value" numeric(28, 10) not null,
-    "coupon_rate" numeric(28, 10) not null,
-    "coupon_frequency_code" text not null,
-    "day_count_code" text not null,
-    "issue_date" date not null,
-    "maturity_date" date not null,
-    "settlement_days" integer null,
-    "call_date" date null,
-    "conversion_ratio" numeric(28, 10) null,
-    "description" text null,
+    "issue_id" uuid not null,
     "workspace_id" uuid not null default ores_utility_live_workspace_id_fn(), -- soft FK to ores_workspaces_tbl(id)
     "modified_by" text not null,
     "performed_by" text not null,
@@ -53,47 +66,38 @@ create table if not exists "ores_trading_bond_instruments_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, id, valid_from, valid_to),
+    primary key (tenant_id, instrument_id, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
-        id WITH =,
+        instrument_id WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("face_value" > 0),
-    check ("coupon_rate" >= 0),
-    check ("issuer" <> ''),
-    check ("currency" <> ''),
-    check ("maturity_date" > "issue_date")
+    check ("instrument_id" <> ores_utility_nil_uuid_fn()),
+    check ("trade_type_code" in ('Bond', 'ForwardBond', 'BondFuture', 'BondOption', 'BondRepo', 'BondTRS', 'BondPosition', 'CallableBond', 'ConvertibleBond', 'Ascot'))
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists bond_instruments_version_uniq_idx
-on "ores_trading_bond_instruments_tbl" (tenant_id, id, version)
+on "ores_trading_bond_instruments_tbl" (tenant_id, instrument_id, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Current record uniqueness
 create unique index if not exists bond_instruments_id_uniq_idx
-on "ores_trading_bond_instruments_tbl" (tenant_id, id)
+on "ores_trading_bond_instruments_tbl" (tenant_id, instrument_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Tenant index
 create index if not exists bond_instruments_tenant_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Party index for party isolation
 create index if not exists bond_instruments_party_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, party_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Trade type index for product filtering
 create index if not exists bond_instruments_trade_type_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, trade_type_code)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
--- Soft FK back to trade (NULL for standalone instruments)
 create unique index if not exists bond_instruments_trade_id_idx
 on "ores_trading_bond_instruments_tbl" (tenant_id, trade_id)
 where valid_to = ores_utility_infinity_timestamp_fn()
@@ -111,6 +115,9 @@ begin
     -- Validate tenant_id
     NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
 
+    -- Validate workspace_id
+    NEW.workspace_id := ores_workspace_validate_fn(NEW.workspace_id);
+
     -- Set party_id from session context
     NEW.party_id := current_setting('app.current_party_id')::uuid;
 
@@ -124,7 +131,7 @@ begin
     select version into current_version
     from "ores_trading_bond_instruments_tbl"
     where tenant_id = NEW.tenant_id
-      and id = NEW.id
+      and instrument_id = NEW.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -135,34 +142,39 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_trading_bond_instruments_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and id = NEW.id
+          and instrument_id = NEW.instrument_id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
 
     return NEW;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public, pg_temp;
 
 create or replace trigger ores_trading_bond_instruments_insert_trg
 before insert on "ores_trading_bond_instruments_tbl"
 for each row execute function ores_trading_bond_instruments_insert_fn();
 
 create or replace rule ores_trading_bond_instruments_delete_rule as
-on delete to "ores_trading_bond_instruments_tbl" do instead
+on delete to "ores_trading_bond_instruments_tbl" do instead (
     update "ores_trading_bond_instruments_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and id = OLD.id
+      and instrument_id = OLD.instrument_id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

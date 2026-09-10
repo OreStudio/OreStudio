@@ -141,7 +141,8 @@ trade_mapper::map_fx_instrument(const trade& v) {
     return std::nullopt;
 }
 
-std::optional<trading::domain::bond_instrument> trade_mapper::map_bond_instrument(const trade& v) {
+std::optional<trading::domain::bond_instrument_data>
+trade_mapper::map_bond_instrument(const trade& v) {
     const std::string type = to_string(v.TradeType);
     if (type == "Bond")
         return bond_instrument_mapper::forward_bond(v);

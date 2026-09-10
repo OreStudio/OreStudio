@@ -20,7 +20,7 @@
 #ifndef ORES_QT_IINSTRUMENTFORMPOPULATOR_HPP
 #define ORES_QT_IINSTRUMENTFORMPOPULATOR_HPP
 
-#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
 #include "ores.trading.api/domain/composite_instrument.hpp"
 #include "ores.trading.api/domain/composite_leg.hpp"
@@ -48,10 +48,12 @@ struct IInstrumentFormPopulator {
     virtual ~IInstrumentFormPopulator() = default;
 
     // --- Flat types ---
-    virtual void populate(const trading::domain::bond_instrument&) {}
     virtual void populate(const trading::domain::credit_instrument&) {}
     virtual void populate(const trading::domain::commodity_instrument&) {}
     virtual void populate(const trading::domain::scripted_instrument&) {}
+
+    // --- Bond (assembled container: header, issue and fact rows) ---
+    virtual void populate(const trading::domain::bond_instrument_data&) {}
 
     // --- Composite (with composite legs) ---
     virtual void populate(const trading::domain::composite_instrument&,

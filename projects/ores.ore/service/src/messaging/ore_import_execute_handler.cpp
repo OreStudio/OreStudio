@@ -29,6 +29,7 @@
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -397,7 +398,7 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
         using namespace ores::trading::messaging;
         using ores::trading::domain::swap_instrument_data;
         using ores::trading::domain::fx_instrument_variant;
-        using ores::trading::domain::bond_instrument;
+        using ores::trading::domain::bond_instrument_data;
         using ores::trading::domain::credit_instrument;
         using ores::trading::domain::equity_instrument_variant;
         using ores::trading::domain::commodity_instrument;
@@ -520,9 +521,13 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                             }
                         },
                         r);
-                } else if constexpr (std::is_same_v<T, bond_instrument>) {
+                } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
+                    // The bond family persists its header row only, the way
+                    // the rates family persists its headers. Issue
+                    // find-or-create and the fact-row saves are the mapping
+                    // task's rework.
                     save_bond_instrument_request req;
-                    req.data = r;
+                    req.data = r.instrument;
                     auto resp = nats_call(delegated_nats, req, instr_error);
                     return resp && resp->success;
                 } else if constexpr (std::is_same_v<T, credit_instrument>) {

@@ -23,30 +23,27 @@
 #include "ores.logging/make_logger.hpp"
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
-#include "ores.trading.api/domain/bond_instrument.hpp"
+#include "ores.trading.api/domain/bond_instrument_data.hpp"
 
 namespace ores::ore::domain {
 
 /**
- * @brief Maps ORE XSD bond trade types to ORES domain types and back.
+ * @brief Maps ORE XSD bond trade types to ORES domain rows and back.
  *
- * Handles:
- *   - Bond              (BondData)
- *   - ForwardBond       (ForwardBondData.BondData)
- *   - CallableBond      (CallableBondData.BondData)
- *   - ConvertibleBond   (ConvertibleBondData.BondData)
- *   - BondOption        (BondOptionData)
- *   - BondTRS           (BondTRSData)
+ * Handles the seven products the flattening mapper handled: Bond,
+ * ForwardBond, CallableBond and ConvertibleBond over the plain
+ * bondData; BondOption and BondTRS add their product's fact row on top
+ * of the base bond fields; BondRepo stores the repo leg economics in
+ * its fact row. BondFuture, BondPosition and Ascot keep no forward
+ * mapper until the mapping task decides their coverage.
  *
- * The first four types share the same bondData structure; BondOption and
- * BondTRS add option/TRS-specific fields on top of the base bond fields.
- *
- * Forward mapping captures the economic fields stored in the ORES relational
- * model. Fields not yet modelled are silently dropped; gaps are reported by
- * ore_coverage_check.py (Thing 2).
- *
- * Reverse mapping reconstructs ORE types from the fields captured by the
- * forward mapping.
+ * Forward mapping retargets the storage the flattening mapper filled
+ * into the wide legacy struct: the bondData fields land in the issue
+ * row of the assembled bond_instrument_data, the per-product economics
+ * in the fact row of the product, and the option exercise date in the
+ * container remainder. Reverse reconstruction emits what the flattening
+ * mapper emitted for each product; fields a fact row cannot carry yet
+ * ride the container remainder.
  */
 class ORES_ORE_CORE_EXPORT bond_instrument_mapper {
 private:
@@ -58,26 +55,26 @@ private:
         return instance;
     }
 
-    static void map_bond_data(const bondData& bd, ores::trading::domain::bond_instrument& instr);
+    static void map_bond_data(const bondData& bd, ores::trading::domain::bond_issue& issue);
 
-    static bondData reverse_bond_data(const ores::trading::domain::bond_instrument& instr);
+    static bondData reverse_bond_data(const ores::trading::domain::bond_issue& issue);
 
 public:
-    static trading::domain::bond_instrument forward_bond(const trade& t);
-    static trading::domain::bond_instrument forward_forward_bond(const trade& t);
-    static trading::domain::bond_instrument forward_callable_bond(const trade& t);
-    static trading::domain::bond_instrument forward_convertible_bond(const trade& t);
-    static trading::domain::bond_instrument forward_bond_option(const trade& t);
-    static trading::domain::bond_instrument forward_bond_trs(const trade& t);
-    static trading::domain::bond_instrument forward_bond_repo(const trade& t);
+    static trading::domain::bond_instrument_data forward_bond(const trade& t);
+    static trading::domain::bond_instrument_data forward_forward_bond(const trade& t);
+    static trading::domain::bond_instrument_data forward_callable_bond(const trade& t);
+    static trading::domain::bond_instrument_data forward_convertible_bond(const trade& t);
+    static trading::domain::bond_instrument_data forward_bond_option(const trade& t);
+    static trading::domain::bond_instrument_data forward_bond_trs(const trade& t);
+    static trading::domain::bond_instrument_data forward_bond_repo(const trade& t);
 
-    static trade reverse_bond(const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_forward_bond(const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_callable_bond(const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_convertible_bond(const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_bond_option(const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_bond_trs(const ores::trading::domain::bond_instrument& instr);
-    static trade reverse_bond_repo(const ores::trading::domain::bond_instrument& instr);
+    static trade reverse_bond(const trading::domain::bond_instrument_data& data);
+    static trade reverse_forward_bond(const trading::domain::bond_instrument_data& data);
+    static trade reverse_callable_bond(const trading::domain::bond_instrument_data& data);
+    static trade reverse_convertible_bond(const trading::domain::bond_instrument_data& data);
+    static trade reverse_bond_option(const trading::domain::bond_instrument_data& data);
+    static trade reverse_bond_trs(const trading::domain::bond_instrument_data& data);
+    static trade reverse_bond_repo(const trading::domain::bond_instrument_data& data);
 };
 
 }

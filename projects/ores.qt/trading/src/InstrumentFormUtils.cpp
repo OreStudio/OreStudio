@@ -111,11 +111,6 @@ void InstrumentFormUtils::populateTrsReturnType(QComboBox* cb) {
     cb->addItems({"", "TotalReturn", "PriceReturn"});
 }
 
-void InstrumentFormUtils::populateAscotOptionType(QComboBox* cb) {
-    cb->clear();
-    cb->addItems({"", "Call", "Put"});
-}
-
 void InstrumentFormUtils::populateReturnType(QComboBox* cb) {
     cb->clear();
     cb->addItems({"", "TotalReturn", "PriceReturn"});

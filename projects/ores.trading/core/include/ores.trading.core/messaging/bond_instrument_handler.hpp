@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_MESSAGING_BOND_INSTRUMENT_HANDLER_HPP
-#define ORES_TRADING_MESSAGING_BOND_INSTRUMENT_HANDLER_HPP
+#ifndef ORES_TRADING_CORE_MESSAGING_BOND_INSTRUMENT_HANDLER_HPP
+#define ORES_TRADING_CORE_MESSAGING_BOND_INSTRUMENT_HANDLER_HPP
 
 #include "ores.database/domain/context.hpp"
 #include "ores.logging/make_logger.hpp"
@@ -27,8 +27,7 @@
 #include "ores.security/jwt/jwt_authenticator.hpp"
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
-#include "ores.trading.api/messaging/instrument_protocol.hpp"
-#include "ores.trading.core/export.hpp"
+#include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.core/service/bond_instrument_service.hpp"
 #include <optional>
 
@@ -46,10 +45,12 @@ using ores::service::messaging::reply;
 using ores::service::messaging::decode;
 using ores::service::messaging::error_reply;
 using ores::service::messaging::has_permission;
-using ores::service::messaging::stamp;
 using namespace ores::logging;
 
-class ORES_TRADING_CORE_EXPORT bond_instrument_handler {
+/**
+ * @brief NATS message handler for bond instrument operations.
+ */
+class bond_instrument_handler {
 public:
     bond_instrument_handler(ores::nats::service::client& nats,
                             ores::database::context ctx,
@@ -60,26 +61,30 @@ public:
 
     void list(ores::nats::message msg) {
         BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::bond_instrument_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::bond_instrument_service svc(req_ctx);
         get_bond_instruments_response resp;
-        try {
-            if (auto req = decode<get_bond_instruments_request>(msg)) {
-                const auto offset = static_cast<std::uint32_t>(req->offset);
-                const auto limit = static_cast<std::uint32_t>(req->limit);
-                resp.instruments = svc.list_bond_instruments(offset, limit);
+        if (auto req = decode<get_bond_instruments_request>(msg)) {
+            try {
+                resp.bond_instruments = svc.list_bond_instruments(req->offset, req->limit);
                 resp.total_available_count = static_cast<int>(svc.count_bond_instruments());
+                resp.success = true;
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(bond_instrument_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                resp.success = false;
+                resp.message = e.what();
             }
-        } catch (const std::exception& e) {
-            BOOST_LOG_SEV(bond_instrument_handler_lg(), error)
-                << msg.subject << " failed: " << e.what();
-            resp.success = false;
-            resp.message = e.what();
+        } else {
+            BOOST_LOG_SEV(bond_instrument_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+            return;
         }
         BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Completed " << msg.subject;
         reply(nats_, msg, resp);
@@ -87,20 +92,19 @@ public:
 
     void save(ores::nats::message msg) {
         BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "trading::instruments:write")) {
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_instruments:write")) {
             error_reply(nats_, msg, ores::service::error_code::forbidden);
             return;
         }
-        service::bond_instrument_service svc(ctx);
+        service::bond_instrument_service svc(req_ctx);
         if (auto req = decode<save_bond_instrument_request>(msg)) {
             try {
-                stamp(req->data.audit, ctx);
                 svc.save_bond_instrument(req->data);
                 BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_, msg, save_bond_instrument_response{.success = true});
@@ -114,62 +118,27 @@ public:
         } else {
             BOOST_LOG_SEV(bond_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
-        }
-    }
-
-    void remove(ores::nats::message msg) {
-        BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
-            return;
-        }
-        const auto& ctx = *ctx_expected;
-        if (!has_permission(ctx, "trading::instruments:delete")) {
-            error_reply(nats_, msg, ores::service::error_code::forbidden);
-            return;
-        }
-        service::bond_instrument_service svc(ctx);
-        if (auto req = decode<delete_bond_instrument_request>(msg)) {
-            delete_bond_instrument_response resp;
-            resp.success = true;
-            for (const auto& id : req->ids) {
-                try {
-                    svc.remove_bond_instrument(id);
-                    resp.results.push_back({id, {true, ""}});
-                } catch (const std::exception& e) {
-                    BOOST_LOG_SEV(bond_instrument_handler_lg(), error)
-                        << "Failed to delete bond_instrument " << id << ": " << e.what();
-                    resp.results.push_back({id, {false, e.what()}});
-                    resp.success = false;
-                    resp.message = "One or more deletions failed";
-                }
-            }
-            BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Completed " << msg.subject;
-            reply(nats_, msg, resp);
-        } else {
-            BOOST_LOG_SEV(bond_instrument_handler_lg(), warn)
-                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 
     void history(ores::nats::message msg) {
         BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Handling " << msg.subject;
-        auto ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
-        if (!ctx_expected) {
-            error_reply(nats_, msg, ctx_expected.error());
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
-        service::bond_instrument_service svc(ctx);
+        const auto& req_ctx = *req_ctx_expected;
+        service::bond_instrument_service svc(req_ctx);
         if (auto req = decode<get_bond_instrument_history_request>(msg)) {
             try {
-                auto versions = svc.get_bond_instrument_history(req->id);
+                auto hist = svc.get_bond_instrument_history(req->instrument_id);
                 BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Completed " << msg.subject;
                 reply(nats_,
                       msg,
-                      get_bond_instrument_history_response{.success = true,
-                                                           .history = std::move(versions)});
+                      get_bond_instrument_history_response{.history = std::move(hist),
+                                                           .success = true});
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(bond_instrument_handler_lg(), error)
                     << msg.subject << " failed: " << e.what();
@@ -180,6 +149,39 @@ public:
         } else {
             BOOST_LOG_SEV(bond_instrument_handler_lg(), warn)
                 << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
+        }
+    }
+
+    void remove(ores::nats::message msg) {
+        BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Handling " << msg.subject;
+        auto req_ctx_expected = ores::service::service::make_request_context(ctx_, msg, verifier_);
+        if (!req_ctx_expected) {
+            error_reply(nats_, msg, req_ctx_expected.error());
+            return;
+        }
+        const auto& req_ctx = *req_ctx_expected;
+        if (!has_permission(req_ctx, "trading::bond_instruments:delete")) {
+            error_reply(nats_, msg, ores::service::error_code::forbidden);
+            return;
+        }
+        service::bond_instrument_service svc(req_ctx);
+        if (auto req = decode<delete_bond_instrument_request>(msg)) {
+            try {
+                svc.delete_bond_instruments(req->ids);
+                BOOST_LOG_SEV(bond_instrument_handler_lg(), debug) << "Completed " << msg.subject;
+                reply(nats_, msg, delete_bond_instrument_response{.success = true});
+            } catch (const std::exception& e) {
+                BOOST_LOG_SEV(bond_instrument_handler_lg(), error)
+                    << msg.subject << " failed: " << e.what();
+                reply(nats_,
+                      msg,
+                      delete_bond_instrument_response{.success = false, .message = e.what()});
+            }
+        } else {
+            BOOST_LOG_SEV(bond_instrument_handler_lg(), warn)
+                << "Failed to decode: " << msg.subject;
+            error_reply(nats_, msg, ores::service::error_code::bad_request);
         }
     }
 

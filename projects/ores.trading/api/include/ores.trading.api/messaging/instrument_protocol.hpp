@@ -21,7 +21,6 @@
 #define ORES_TRADING_MESSAGING_INSTRUMENT_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/balance_guaranteed_swap_instrument.hpp"
-#include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/callable_swap_instrument.hpp"
 #include "ores.trading.api/domain/cap_floor_instrument.hpp"
 #include "ores.trading.api/domain/commodity_instrument.hpp"
@@ -48,57 +47,6 @@
 #include <vector>
 
 namespace ores::trading::messaging {
-
-// ---- Bond instrument protocol ----
-
-struct get_bond_instruments_request {
-    using response_type = struct get_bond_instruments_response;
-    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.list";
-    int offset = 0;
-    int limit = 100;
-};
-
-struct get_bond_instruments_response {
-    std::vector<ores::trading::domain::bond_instrument> instruments;
-    int total_available_count = 0;
-    bool success = true;
-    std::string message;
-};
-
-struct save_bond_instrument_request {
-    using response_type = struct save_bond_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.save";
-    ores::trading::domain::bond_instrument data;
-};
-
-struct save_bond_instrument_response {
-    bool success = false;
-    std::string message;
-};
-
-struct delete_bond_instrument_request {
-    using response_type = struct delete_bond_instrument_response;
-    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.delete";
-    std::vector<std::string> ids;
-};
-
-struct delete_bond_instrument_response {
-    bool success = false;
-    std::string message;
-    std::vector<std::pair<std::string, std::pair<bool, std::string>>> results;
-};
-
-struct get_bond_instrument_history_request {
-    using response_type = struct get_bond_instrument_history_response;
-    static constexpr std::string_view nats_subject = "trading.v1.bond_instruments.history";
-    std::string id;
-};
-
-struct get_bond_instrument_history_response {
-    bool success = false;
-    std::string message;
-    std::vector<ores::trading::domain::bond_instrument> history;
-};
 
 // ---- Credit instrument protocol ----
 

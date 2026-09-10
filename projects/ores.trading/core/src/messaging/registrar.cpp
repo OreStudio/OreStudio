@@ -55,12 +55,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
                              std::optional<ores::security::jwt::jwt_authenticator> verifier,
                              std::string http_base_url) {
 
-    // trades + activity_types + trade_types=12, rates=36, fx=7, bond=4,
-    // credit=4, equity=9, commodity=4, composite=5, scripted=4,
-    // party_role_types=4, trade_id_types=4, lifecycle_events=4,
-    // trade_identifiers=4, trade_party_roles=4, history=1 → 106 total
     auto subs = detail::register_trade_handlers(nats, ctx, verifier, http_base_url);
-    subs.reserve(106);
+    // Capacity for the ~250 subscriptions the masters below return.
+    subs.reserve(256);
 
     const auto append = [&subs](auto vec) {
         subs.insert(

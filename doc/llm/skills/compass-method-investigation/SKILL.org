@@ -1,0 +1,120 @@
+:PROPERTIES:
+:ID: 440659B3-5996-4739-B2CB-37B84F5757DC
+:END:
+#+title: Compass Method Investigation
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: cross
+#+filetags: :llm:skill:skills:claude_code:method:sequencing:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-method-investigation
+description: The method for a read-only question — how does this work, why is it this way, are we sure. Ends in a cited answer rather than a change, and says plainly where the evidence ran out.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+A question whose deliverable is an answer: how does this subsystem work,
+why was it built this way, is this claim true, should we do X or Y. The
+work is reading and reasoning, and it changes nothing.
+
+Not this method the moment the answer implies a change and you start
+making it. Finish the investigation, record the answer, then re-match to
+the method the change needs. An investigation that quietly becomes a
+refactor produces neither a good answer nor a reviewable diff.
+
+* How to use this skill
+
+** 1. State the question and what would answer it
+
+Write the question down, and write what evidence would settle it. A
+question with no stated answer-shape expands until the context runs out.
+
+Say also what would change if the answer went each way. A question whose
+answers all lead to the same action does not need investigating.
+
+** 2. Ground before searching
+
+Resolve the concepts to knowledge documents first
+([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]), reading the
+cluster's structure note where one exists. Search finds pages that mention
+a term; a structure note says which of them are load-bearing
+([[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][compass-doc-find]],
+[[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][compass-doc-show]]).
+
+For why a thing is the way it is, the record is in the decisions and the
+closed tasks rather than the code: the code says what, the task says why.
+
+** 3. Read narrowly, and stop
+
+Open the two or three sources the map ranked highest, not the twenty the
+search returned (=principle-guard-the-context-window=). Reading more is
+not safer: an answer assembled from a wide shallow sweep is less reliable
+than one from a narrow deep read, and it costs the context the answer has
+to be written in.
+
+** 4. Check the claim against the system, not the language
+
+Where the answer asserts that something is enforced, verify it here rather
+than reasoning from how the tool usually behaves. A compiler flag the
+project does not set, a check no workflow runs, a rule stated in prose and
+enforced nowhere: each reads as true and is not.
+
+Running the smallest thing that would fail if the claim were false beats
+any amount of reading.
+
+** 5. Answer, with citations and with the gaps named
+
+Give the answer first, then the evidence, each claim pointing at the file,
+document or command that supports it. Where the evidence ran out, say so
+in the answer rather than smoothing over it: "I could not determine X" is
+a finding, and a confident answer covering an unchecked gap is worse than
+no answer.
+
+Record it where it will be found again. A durable fact goes to a knowledge
+document via [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][compass-doc-add]];
+an answer specific to one piece of work goes on the task.
+
+* When this method is the wrong one
+
+Re-match if the question turns out to have an observable answer nobody has
+observed, which is =compass-method-prototype=; or if it resolves to a
+defect, which is =compass-method-bug-fix=.
+
+* Recipes
+
+- [[id:BDA8F7FB-5CEC-42D8-BC78-766BBC8D4285][How do I search docs with compass?]] — the search behind phase 2.
+
+* Reference
+
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what a method is, and how a phase binds to actions.
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the rules cited above.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — why a structure note beats a search ranking in phase 2.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

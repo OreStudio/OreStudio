@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: A8CBA1B2-EBC5-42A6-96B4-D19371278FB7
+:END:
+#+title: Compass Method Figure It Out
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: s2
+#+filetags: :llm:skill:skills:claude_code:method:sequencing:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-method-figure-it-out
+description: The method for work no method fits — design the phases first, state how each will be verified, then run them. Prevents large or novel work from being drifted into one step at a time.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+The work does not match a method, or matches several. It is large,
+cross-cutting, novel, or the operator will be away while it runs. The
+failure this prevents is drift: doing large work by improvising each next
+step, which produces motion that cannot be reviewed and cannot be
+resumed.
+
+Use it also when a narrower method fits the parts but not the whole. A
+migration across many call sites is a series of refactors, and the series
+needs a shape of its own.
+
+* How to use this skill
+
+** 1. Match first, and say why nothing fits
+
+Before designing anything, check the methods that exist and state which
+you rejected and why. Most work that feels novel is a feature with an
+unfamiliar subject, and reaching here by default wastes the phases
+someone already wrote.
+
+If one fits, use it. If two fit different parts, this method sequences
+them rather than replacing them.
+
+** 2. Ground the whole scope
+
+Resolve the concepts across the whole of the work, not the first part of
+it ([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]). Large work
+fails at the seams between its parts, and the seams are where the
+unresolved concepts hide.
+
+** 3. Write the phases, with a check for each
+
+Design the method this work needs: the phases in order, what each
+produces, and how each will be shown to have worked. A phase with no
+check is a phase that will be declared done by feel
+(=principle-sequence-verifiable-units=).
+
+Say what would make you stop or change course. Work driven to completion
+without a stopping condition runs past the point where the plan stopped
+being right.
+
+** 4. Decide what is delegated, and what it is told
+
+Where parts are independent, they can run separately, but a delegate
+inherits none of the grounding the session did. Each one is spawned as a
+named System, told what to read first and what it may do
+([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]).
+
+Keep the shared state separable
+(=principle-separate-before-serializing-shared-state=). Two agents
+writing the same file, branch or lock is a coordination problem that
+should have been a partition.
+
+** 5. Run the phases, and keep the trail
+
+Work the phases in order, recording as you go: what was decided, what was
+observed, what changed course. For anything the operator will review
+later rather than watch, that trail is the deliverable alongside the code
+(=principle-never-block-on-the-human=).
+
+Re-check the plan at each phase boundary. A plan that survives contact
+unchanged for many phases is usually not being read.
+
+** 6. Close the loop
+
+When it is done, the method you designed is itself a finding. If the same
+shape of work will recur, it becomes a real method
+(=principle-encode-lessons-in-structure=); if it will not, say so, so the
+next reader does not mine it for a pattern that was never intended.
+
+* When this method is the wrong one
+
+Re-match downward as soon as the work turns out to be ordinary. Using
+this for something a narrower method covers adds a planning phase to work
+that did not need one, which is its own kind of waste.
+
+* Recipes
+
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — the lifecycle the phases run inside.
+
+* Reference
+
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what a method is, and how a phase binds to actions.
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the rules cited above.
+- [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]] — how a delegate is configured and bounded.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

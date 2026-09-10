@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:skills:methods:pstack:grilling:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/port-method-layer
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The sequencing function is control flow with no effectors; our actions and recip
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -44,11 +44,61 @@ The sequencing function is control flow with no effectors; our actions and recip
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A method is control flow with no effectors; our actions and recipes are
+effectors with no control flow. Six methods now join them, one per shape
+of work the design named: bug fix, feature, refactoring, investigation,
+prototype, and figure-it-out for work no method fits.
+
+Each has the same skeleton, because the skeleton is the contract. It
+opens by grounding the domain concepts the work names. It states, before
+anything is built, what would make the work finished in terms someone
+else can check. Its phases cite principles at the judgement calls and
+name the action or recipe that does anything touching an artefact. It
+ends by saying when it is the wrong method, which is the phase most often
+missing from a playbook and the one that prevents the commonest failure:
+running the wrong shape to completion.
+
+Nothing was copied. The upstream playbooks live inside =poteto-mode=,
+which is adopted whole, and forking them would contradict the
+reference-not-fork decision. What is written here is the local sequencing
+that binds our effectors, which upstream cannot supply because it does
+not know our actions exist.
 
 * Notes
+
+Steps that assumed a foreign host were dropped rather than translated:
+Graphite stacks, model routing between tiers, and an issue-tracker
+abstraction. Our agile layer already owns that ground, and a method that
+carried both would give an agent two answers about where a task's state
+lives.
+
+Two phases exist here that the upstream playbooks do not carry, and both
+came from this project's own failures rather than from the imports. The
+grounding phase is first because a feature built on a misunderstood
+concept is the wrong feature, which no later verification catches. The
+predicate is stated before the work because a predicate written after it
+describes the fix rather than the defect.
+
+The bug-fix method's blast-radius step is written from a defect fixed
+earlier in this story: pruning a directory name at any depth rather than
+at the root. The fix was one line, and finding every caller was the
+whole job.
+
+=compass-method-investigation= is the only one tagged =cross=. It changes
+nothing, so a session at any level can run it, including the audit
+channel.
+
+The site build could not be run for this change. It was killed three
+times by the machine's low-memory guard, twice as a background task and
+once after a foreground run was moved to the background at its timeout,
+while the box reported 19G available and Postgres and SQL Server held
+most of the resident memory. Rather than retry a fourth time, the org
+export risk was covered another way: the skills build runs the same
+emacs org export over =doc/llm/skills=, and it completed, exporting all
+six new methods and the amended methods page. The two agile documents in
+this change are the only files without that check, and both are
+conventional edits to existing sections.
+
 
 * Test Scenarios
 
@@ -74,3 +124,24 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All three acceptance criteria are met.
+
+Every method opens with the domain grounding phase and states a
+falsifiable predicate before any work is done. Both are phases rather
+than advice, so skipping one leaves =skip:= and a reason in the todo
+list.
+
+Every step that touches an artefact names the action or recipe that does
+it. No step improvises a command: the methods contain no shell blocks at
+all, which is the sharpest form of the recipe boundary this story
+established.
+
+Steps assuming a foreign host are dropped and the choice recorded in
+=* Notes=: Graphite stacks, model routing and the issue-tracker
+abstraction, all of which our agile layer already covers.
+
+The six are listed in
+[[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] with
+the work each sequences, and the catalogue groups them under the
+=compass-method-= segment the naming policy reserved.

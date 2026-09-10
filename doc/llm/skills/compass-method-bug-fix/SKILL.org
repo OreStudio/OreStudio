@@ -1,0 +1,163 @@
+:PROPERTIES:
+:ID: D9452D4A-0B0F-466F-B97F-95BD4C36A452
+:END:
+#+title: Compass Method Bug Fix
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: s1
+#+filetags: :llm:skill:skills:claude_code:method:sequencing:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-method-bug-fix
+description: The method for a reported defect — ground, reproduce, root-cause, fix, prove. States the predicate before the fix is written, so "fixed" means something checkable rather than something felt.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+A defect is reported: something behaves wrongly, and the wrongness can be
+observed. Use this method from the report to the merged fix.
+
+Not this method when there is no observable symptom. A suspicion that code
+is wrong, with nothing that misbehaves, is
+=compass-method-investigation=: find out what is true first, and come back
+here if it turns out something is broken.
+
+* How to use this skill
+
+The phases are control flow. Each names the actions and recipes that do
+the work, and the principles cited at its judgement calls. Copy them into
+the todo list before starting; a phase you skip stays in the list with
+=skip:= and the reason.
+
+** 1. Ground
+
+Name the domain concepts the report touches and resolve each to a
+knowledge document ([[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]]).
+Where a cluster has a structure note, read that first: it says which pages
+are load-bearing.
+
+A concept that resolves to nothing is a finding, not a blocker. Record the
+assumption you are proceeding on and carry on
+(=compass-principle-never-block-on-the-human=); the missing page is a
+discovered task, not a reason to stop.
+
+Use [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][compass-doc-find]] and
+[[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][compass-doc-show]].
+
+** 2. State the predicate
+
+Before touching anything, write down what would make this fixed, in terms
+someone else could check. "The link resolves" is a predicate. "Search
+works better" is not.
+
+This is the phase most often skipped and the one that decides whether the
+rest is honest. A predicate written after the fix describes the fix; a
+predicate written before it describes the defect.
+
+** 3. Reproduce
+
+Make it happen, on the surface it was reported on. A defect you cannot
+reproduce is one you cannot prove fixed, and a fix for an unreproduced
+defect is a guess with a commit message.
+
+If it will not reproduce, force it: tighten the conditions, synthesise the
+trigger, add logging and read it. That work is not overhead; it is the
+instrument the last phase needs.
+
+For a failing test, use
+[[id:8C1E8069-F6D1-44C2-8EE1-CE01FD59D527][compass-code-investigate-test-failure]].
+
+** 4. Find the root cause
+
+Form the candidate causes, then eliminate them against evidence rather
+than plausibility (=principle-fix-root-causes=). Each pass, take the split
+that cuts the most remaining space.
+
+Stop at the cause, not at the first place the symptom disappears. The test
+is whether you can say why the defect happened, not merely where it stops
+happening.
+
+Then check the blast radius before fixing: grep every caller of what you
+are about to change. A guard in the shared function is a smaller diff than
+a guard in each caller, and patching only the path the report names leaves
+its siblings broken.
+
+** 5. Fix
+
+The smallest change the evidence justifies. A belt-and-suspenders extra
+that "might also help" is a second hypothesis riding on the first; it does
+not ship (=principle-laziness-protocol=).
+
+If the fix crosses a boundary or the design is unclear, stop and design
+first rather than discovering the shape by editing.
+
+** 6. Prove
+
+Run the reproduction from phase 3 and watch it pass
+(=principle-prove-it-works=). Then climb the
+[[id:DEE49C55-1626-470D-BB0F-D58A11D35769][verification ladder]] as far as
+the change earns: the check that would have caught this, then the class
+checks for what you touched, via
+[[id:654D4A70-E63D-4C18-B5A5-886066E36314][compass-code-run-build]].
+
+Leave the check behind. A defect that no check would have caught is a
+defect that can return, so where the cost is reasonable the fix ships with
+the test or the lint that fails without it
+(=principle-encode-lessons-in-structure=,
+[[id:CB56337E-4839-4048-B5A7-C481812CE3D0][compass-code-add-tests]]).
+
+** 7. Land
+
+Order the commits so the failing case lands before the fix, and the
+history tells the story (=principle-sequence-verifiable-units=). Close the
+bookkeeping with
+[[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]],
+then raise with
+[[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][compass-pr-raise]].
+
+* When this method is the wrong one
+
+Abandon it and re-match if the reproduction shows the reported behaviour
+is correct and the expectation was wrong, which is a documentation or
+product question; or if the root cause turns out to be a missing
+capability rather than a defect, which is
+=compass-method-feature=.
+
+* Recipes
+
+- [[id:62D39F43-5D91-4A82-B1C3-62C2AF21BEFC][How do I fix a failing CI check?]] — when the symptom is red CI rather than wrong behaviour.
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — the lifecycle this method runs inside.
+
+* Reference
+
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what a method is, and how a phase binds to actions.
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the rules cited above.
+- [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] — the ladder phase 6 climbs.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

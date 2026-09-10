@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 9DDEE5BF-9B2E-49C4-BAF9-8A2CE87D295B
+:END:
+#+title: Compass Method Prototype
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: s1
+#+filetags: :llm:skill:skills:claude_code:method:sequencing:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-method-prototype
+description: The method for settling an empirical question by observing it — the smallest thing that produces the observation, thrown away once it has. Use it instead of asking a question the system can answer.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+A decision hangs on something observable that nobody has observed. Does
+this approach actually work; is the difference visible; does the
+enforcement really bite; which of two layouts reads better. The
+deliverable is the observation, not the code that produced it.
+
+Reach for it especially when about to ask the operator a question the
+system could answer. A question about behaviour, timing, output or
+whether a mechanism fires is not theirs to answer
+(=principle-never-block-on-the-human=): building the smallest thing that
+shows the answer is faster than the round trip, and it hands them a
+result to react to instead of a decision to make.
+
+* How to use this skill
+
+** 1. Write the question as an observation
+
+What will you look at, and what will each outcome look like? A prototype
+whose result needs interpreting has not been aimed. "Does pruning the
+deployed tree actually stop the skills loading" is aimed; "does
+attenuation work" is not.
+
+Decide in advance what each outcome implies, so the result cannot be
+read to mean whatever was already preferred.
+
+** 2. Build the smallest thing that produces it
+
+Not a version of the feature. The smallest apparatus that makes the
+observation happen (=principle-laziness-protocol=). Hard-code what does
+not bear on the question, skip the error handling, use a copy of the real
+thing rather than the real thing where that is safer.
+
+Where the observation can be made against what already exists, make it
+there and build nothing.
+
+** 3. Observe, and record what you saw
+
+Run it and write down the actual output, not the conclusion. The numbers,
+the message, the count of what remained. This is the part that survives
+the prototype, and a summary written from memory a phase later loses
+exactly the detail that made it evidence.
+
+** 4. Throw it away
+
+Delete the apparatus, or move it to the scratchpad. A prototype kept
+"because it might be useful" becomes something to maintain that nobody
+designed and nothing tests.
+
+Restore anything the prototype disturbed, and check that you did.
+
+** 5. Record the decision, not the code
+
+The finding goes where the decision it settled lives: the task's plan or
+notes, or a knowledge document if it is durable. Say what was observed
+and what it implies, so the next person does not repeat the experiment to
+re-derive the answer.
+
+Then re-match to the method the real work needs, now that the fork is
+settled.
+
+* When this method is the wrong one
+
+Do not use it for a question whose answer is a preference rather than a
+fact: which of two acceptable behaviours the product should have is a
+product decision, and an experiment cannot settle it.
+
+Do not use it when the apparatus would cost more than building the thing
+properly. At that point the prototype is the feature, and it should be
+built as one.
+
+* Recipes
+
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — where the apparatus has to compile.
+
+* Reference
+
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — what a method is, and how a phase binds to actions.
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the rules cited above.
+- [[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification and evaluation]] — the difference between an observation and a proof.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

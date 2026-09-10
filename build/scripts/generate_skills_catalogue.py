@@ -48,6 +48,11 @@ DOMAINS = {
     "principle": ("Principles (=compass-principle-=)",
                   "Local bindings on an upstream principle, supplying the "
                   "project detail the rule cannot know."),
+    # Likewise: a sequence of phases, which spans artefact types rather
+    # than naming one.
+    "method": ("Methods (=compass-method-=)",
+               "How a kind of work is approached, from framing to a "
+               "verified end."),
 }
 
 # Planned-but-not-yet-created skills, shown as prose under each section.

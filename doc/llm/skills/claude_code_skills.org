@@ -159,6 +159,19 @@ Local bindings on an upstream principle, supplying the project detail the rule c
 | [[id:D1F13734-216D-47AA-BA00-28F3A20F97C1][compass-principle-never-block-on-the-human]] | Compass Principle Never Block On The Human | The local binding for never-block-on-the-human — proceed on reversible work and record the assumption; conf... |
 | [[id:FAABB6FF-FA3A-4E5C-B0B7-FE3E2E661A6C][compass-principle-type-system-discipline]] | Compass Principle Type System Discipline | The C++ binding for type-system-discipline — what each upstream pattern becomes in this codebase, which the... |
 
+* Methods (=compass-method-=)
+
+How a kind of work is approached, from framing to a verified end.
+
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:D9452D4A-0B0F-466F-B97F-95BD4C36A452][compass-method-bug-fix]] | Compass Method Bug Fix | The method for a reported defect — ground, reproduce, root-cause, fix, prove. States the predicate before t... |
+| [[id:D4D8B874-0D78-4558-AF80-776AB4F2F4F8][compass-method-feature]] | Compass Method Feature | The method for new or changed behaviour — ground, state the predicate, name the data shape, check what exis... |
+| [[id:A8CBA1B2-EBC5-42A6-96B4-D19371278FB7][compass-method-figure-it-out]] | Compass Method Figure It Out | The method for work no method fits — design the phases first, state how each will be verified, then run the... |
+| [[id:440659B3-5996-4739-B2CB-37B84F5757DC][compass-method-investigation]] | Compass Method Investigation | The method for a read-only question — how does this work, why is it this way, are we sure. Ends in a cited... |
+| [[id:9DDEE5BF-9B2E-49C4-BAF9-8A2CE87D295B][compass-method-prototype]] | Compass Method Prototype | The method for settling an empirical question by observing it — the smallest thing that produces the observ... |
+| [[id:AD238B8D-ADFE-488A-9536-AA7F0B5A5559][compass-method-refactoring]] | Compass Method Refactoring | The method for a behaviour-preserving change to structure — establish the evidence that behaviour is preser... |
+
 # END generated catalogue
 
 * Rebuilding skills

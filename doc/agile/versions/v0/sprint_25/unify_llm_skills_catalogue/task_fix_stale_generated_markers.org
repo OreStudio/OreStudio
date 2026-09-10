@@ -45,9 +45,9 @@ Fix the four, and add the check that makes the promise verifiable.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Discovered in review of PR #2057.       |
+| Now          | Done; PR pending.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
 | Last touched | 2026-09-10                               |
@@ -64,9 +64,23 @@ Fix the four, and add the check that makes the promise verifiable.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Run as the first exercise of =compass-helm=, which is why it lands in
+that task's pull request rather than its own. The mode matched it to
+=compass-method-bug-fix= on question 2 of the matching rule — something
+is observably wrong — and the phases were worked in order.
+
+Reproduce: four documents name =generate_skills_catalogue.py=, which
+only ever writes =claude_code_skills.org=.
+
+Root cause: =compass lint= checked that every BEGIN has a matching END
+and nothing else. Whether the named script targets the file was never
+tested, which is why four markers sat stale without anything noticing.
+
+Fix at the cause: =_lint_marker_generators= reads each marker's named
+script and checks that it mentions the file it claims to write, keyed on
+the directory name for a =SKILL.org=. Then the four regions become
+prose, because a marker is an instruction about a script and there is no
+script to instruct about.
 
 * Notes
 
@@ -94,3 +108,21 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All four acceptance criteria are met.
+
+Every marker now names a script that writes its file, and the three
+legitimate ones — the catalogue, the level inventory, the two type
+tables — pass unchanged.
+
+The four regions whose content nobody generates are prose now, each
+saying what would be generated and what has to exist first, so a reader
+can tell an empty generated region from a promise nobody kept.
+
+The check runs in =compass lint=, and therefore in the Doc Lint
+workflow.
+
+It failed before the fix, naming the four files and lines, and passes
+after. That was the point of the acceptance: the check that would have
+caught the defect is demonstrated against the defect rather than
+asserted against a clean tree.

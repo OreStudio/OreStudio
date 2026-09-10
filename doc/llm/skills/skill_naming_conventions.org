@@ -228,6 +228,7 @@ where an author naming something will meet it. Take the first match.
 | =helm= as a bare name | The mode is a posture, not an operation on a target, so it takes no domain and no object. =compass-mode= was rejected as accurate and forgettable |
 | Level values spelled =s3star=, not =s3*= | The value is a filetag and a directory-safe token; =*= is neither |
 | Further verbs land with the ported methods | The port has not run, so the verbs its steps need are not yet knowable. Each arrives with its own entry here rather than being guessed now |
+| =compass-helm= admitted as a bare noun | A mode is a posture rather than an operation on a target, so it parses as neither =<domain>-<verb>= nor a reserved segment. =compass-mode= was rejected as accurate and forgettable; the register gains the noun rather than bending the verb rule around it |
 | /System/ preferred over /function/ for the role a session adopts | The design's terminology table said /function/, which now collides with /regulatory function/. The architecture resolves it to /System/, and the glossary follows the architecture |
 
 * Upstream skills

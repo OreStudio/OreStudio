@@ -115,6 +115,10 @@ LEVELS = {
     # Identity: what belongs in the product at all.
     "compass-agile-brainstorm-idea": "s5",
 
+    # The mode. It declares the System rather than belonging to one, so
+    # every level can enter it.
+    "compass-helm": "cross",
+
     # Methods. The level is the level of the work the method sequences:
     # execution for the four that carry a change, cross for one that only
     # reads, s2 for the one that plans work spanning many units.

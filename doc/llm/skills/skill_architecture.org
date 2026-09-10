@@ -156,9 +156,10 @@ The composition model is independent of any particular way of using it. Three
 entry points are supported. The first is to *invoke an action*, where both the
 operation and its target are already known. The second is to *dispatch on a
 target* with =compass-act=, where the target is known and the operation is not.
-The third is to *enter the mode* with =compass-helm=, which declares a System,
-matches the work to a method, and routes to the other two as the method's phases
-fire.
+The third is to *enter the mode* with
+[[id:0CEA32ED-0F13-4F95-BE30-52506FCED156][compass-helm]], which declares a
+System, matches the work to a method, and routes to the other two as the
+method's phases fire.
 
 The mode is a convenience over methods rather than a precondition for them: a
 method may be invoked directly, as may an action. Separating the three in this

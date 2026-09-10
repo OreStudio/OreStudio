@@ -53,6 +53,11 @@ DOMAINS = {
     "method": ("Methods (=compass-method-=)",
                "How a kind of work is approached, from framing to a "
                "verified end."),
+    # A bare noun rather than a domain: the mode is a posture, not an
+    # operation on a target.
+    "helm": ("The mode (=compass-helm=)",
+             "The sticky posture a session enters, which matches work to "
+             "a method and routes to everything else."),
 }
 
 # Planned-but-not-yet-created skills, shown as prose under each section.

@@ -137,24 +137,24 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
     CHECK(r.issue.maturity_date == "2035-02-03");
     CHECK(r.issue.coupon_frequency_code == "1Y");
 
-    REQUIRE(r.bond_leg.schedule.rules.size() == 1);
-    const auto& carried = r.bond_leg.schedule.rules.front();
+    REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
+    const auto& carried = r.bond_legs.front().schedule.rules.front();
     CHECK(carried.start_date == "2025-02-03");
     CHECK(carried.calendar == "EUR");
     CHECK(carried.term_convention == "MF");
     CHECK(carried.rule == "Forward");
     REQUIRE(carried.end_of_month);
     CHECK(*carried.end_of_month);
-    REQUIRE(r.bond_leg.leg_type);
-    CHECK(*r.bond_leg.leg_type == "Fixed");
-    REQUIRE(r.bond_leg.currency);
-    CHECK(*r.bond_leg.currency == "EUR");
-    REQUIRE(r.bond_leg.day_counter);
-    CHECK(*r.bond_leg.day_counter == "ACT/ACT");
-    REQUIRE(r.bond_leg.payment_convention);
-    CHECK(*r.bond_leg.payment_convention == "F");
-    REQUIRE(r.bond_leg.payer);
-    CHECK(!*r.bond_leg.payer);
+    REQUIRE(r.bond_legs.front().leg_type);
+    CHECK(*r.bond_legs.front().leg_type == "Fixed");
+    REQUIRE(r.bond_legs.front().currency);
+    CHECK(*r.bond_legs.front().currency == "EUR");
+    REQUIRE(r.bond_legs.front().day_counter);
+    CHECK(*r.bond_legs.front().day_counter == "ACT/ACT");
+    REQUIRE(r.bond_legs.front().payment_convention);
+    CHECK(*r.bond_legs.front().payment_convention == "F");
+    REQUIRE(r.bond_legs.front().payer);
+    CHECK(!*r.bond_legs.front().payer);
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -214,8 +214,8 @@ TEST_CASE("an_empty_schedule_element_survives_the_round_trip", tags) {
 </Portfolio>
 )";
     const auto r = map_inline(xml);
-    REQUIRE(r.bond_leg.schedule.rules.size() == 1);
-    const auto& carried = r.bond_leg.schedule.rules.front();
+    REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
+    const auto& carried = r.bond_legs.front().schedule.rules.front();
     REQUIRE(carried.first_date);
     CHECK(carried.first_date->empty());
     REQUIRE(carried.last_date);
@@ -273,26 +273,26 @@ TEST_CASE("a_legs_payment_terms_survive_the_round_trip", tags) {
 </Portfolio>
 )";
     const auto r = map_inline(xml);
-    REQUIRE(r.bond_leg.leg_type);
-    CHECK(*r.bond_leg.leg_type == "Floating");
-    REQUIRE(r.bond_leg.payer);
-    CHECK(*r.bond_leg.payer);
-    REQUIRE(r.bond_leg.currency);
-    CHECK(*r.bond_leg.currency == "GBP");
-    REQUIRE(r.bond_leg.payment_convention);
-    CHECK(*r.bond_leg.payment_convention == "MF");
-    REQUIRE(r.bond_leg.payment_lag);
-    CHECK(*r.bond_leg.payment_lag == "2D");
-    REQUIRE(r.bond_leg.notional_payment_lag);
-    CHECK(*r.bond_leg.notional_payment_lag == 3);
-    REQUIRE(r.bond_leg.payment_calendar);
-    CHECK(*r.bond_leg.payment_calendar == "GBP");
-    REQUIRE(r.bond_leg.day_counter);
-    CHECK(*r.bond_leg.day_counter == "A365");
-    REQUIRE(r.bond_leg.last_period_day_counter);
-    CHECK(*r.bond_leg.last_period_day_counter == "ACT/ACT");
-    REQUIRE(r.bond_leg.strict_notional_dates);
-    CHECK(*r.bond_leg.strict_notional_dates);
+    REQUIRE(r.bond_legs.front().leg_type);
+    CHECK(*r.bond_legs.front().leg_type == "Floating");
+    REQUIRE(r.bond_legs.front().payer);
+    CHECK(*r.bond_legs.front().payer);
+    REQUIRE(r.bond_legs.front().currency);
+    CHECK(*r.bond_legs.front().currency == "GBP");
+    REQUIRE(r.bond_legs.front().payment_convention);
+    CHECK(*r.bond_legs.front().payment_convention == "MF");
+    REQUIRE(r.bond_legs.front().payment_lag);
+    CHECK(*r.bond_legs.front().payment_lag == "2D");
+    REQUIRE(r.bond_legs.front().notional_payment_lag);
+    CHECK(*r.bond_legs.front().notional_payment_lag == 3);
+    REQUIRE(r.bond_legs.front().payment_calendar);
+    CHECK(*r.bond_legs.front().payment_calendar == "GBP");
+    REQUIRE(r.bond_legs.front().day_counter);
+    CHECK(*r.bond_legs.front().day_counter == "A365");
+    REQUIRE(r.bond_legs.front().last_period_day_counter);
+    CHECK(*r.bond_legs.front().last_period_day_counter == "ACT/ACT");
+    REQUIRE(r.bond_legs.front().strict_notional_dates);
+    CHECK(*r.bond_legs.front().strict_notional_dates);
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -343,13 +343,13 @@ TEST_CASE("the_issue_row_stands_in_for_a_leg_a_row_set_holds", tags) {
 </Portfolio>
 )";
     const auto r = map_inline(xml);
-    REQUIRE(r.bond_leg.currency);
-    CHECK(*r.bond_leg.currency == "SEK");
-    REQUIRE(r.bond_leg.day_counter);
-    CHECK(*r.bond_leg.day_counter == "A365");
+    REQUIRE(r.bond_legs.front().currency);
+    CHECK(*r.bond_legs.front().currency == "SEK");
+    REQUIRE(r.bond_legs.front().day_counter);
+    CHECK(*r.bond_legs.front().day_counter == "A365");
 
     auto from_row = r;
-    from_row.bond_leg = {};
+    from_row.bond_legs.clear();
 
     const auto rt = bond_instrument_mapper::reverse_bond(from_row);
     REQUIRE(rt.BondData);
@@ -361,6 +361,277 @@ TEST_CASE("the_issue_row_stands_in_for_a_leg_a_row_set_holds", tags) {
     CHECK(to_string(*leg.DayCounter) == "A365");
 
     BOOST_LOG_SEV(lg, info) << "The issue row stands in for a leg a row set holds.";
+}
+
+// =============================================================================
+// The leg groups the fact rows do not hold
+// =============================================================================
+
+TEST_CASE("an_amortization_block_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The nine tables carry one face value and no amortization block, so
+    // the leg is the only home for the schedule that steps it down.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Amortizing">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Amortizations>
+          <AmortizationData>
+            <Type>RelativeToInitialNotional</Type>
+            <Value>0.25</Value>
+            <StartDate>2027-01-01</StartDate>
+            <EndDate>2030-01-01</EndDate>
+            <Frequency>1Y</Frequency>
+            <Underflow>true</Underflow>
+          </AmortizationData>
+          <AmortizationData>
+            <Type>Annuity</Type>
+            <Value>500000</Value>
+          </AmortizationData>
+        </Amortizations>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 1);
+    const auto& mapped = r.bond_legs.front().amortizations;
+    REQUIRE(mapped.size() == 2);
+    CHECK(mapped.front().type == "RelativeToInitialNotional");
+    REQUIRE(mapped.front().value);
+    CHECK(*mapped.front().value == Approx(0.25));
+    REQUIRE(mapped.front().start_date);
+    CHECK(*mapped.front().start_date == "2027-01-01");
+    REQUIRE(mapped.front().end_date);
+    CHECK(*mapped.front().end_date == "2030-01-01");
+    REQUIRE(mapped.front().frequency);
+    CHECK(*mapped.front().frequency == "1Y");
+    REQUIRE(mapped.front().underflow);
+    CHECK(*mapped.front().underflow);
+    CHECK(mapped.back().type == "Annuity");
+    CHECK(!mapped.back().start_date);
+    CHECK(!mapped.back().underflow);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().Amortizations);
+    const auto& rows = rt.BondData->LegData.front().Amortizations->AmortizationData;
+    REQUIRE(rows.size() == 2);
+    CHECK(to_string(rows.front().Type) == "RelativeToInitialNotional");
+    REQUIRE(rows.front().Value);
+    CHECK(static_cast<double>(*rows.front().Value) == Approx(0.25));
+    REQUIRE(rows.front().StartDate);
+    CHECK(std::string(*rows.front().StartDate) == "2027-01-01");
+    REQUIRE(rows.front().EndDate);
+    CHECK(std::string(*rows.front().EndDate) == "2030-01-01");
+    REQUIRE(rows.front().Frequency);
+    CHECK(std::string(*rows.front().Frequency) == "1Y");
+    REQUIRE(rows.front().Underflow);
+    CHECK(*rows.front().Underflow);
+    CHECK(to_string(rows.back().Type) == "Annuity");
+    CHECK(!rows.back().StartDate);
+
+    BOOST_LOG_SEV(lg, info) << "An amortization block survives the round trip.";
+}
+
+TEST_CASE("a_floating_legs_rate_group_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The TRS and the repo rows carry one index or one rate. The rest of
+    // the rate group has no column anywhere, so the leg carries it.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Floating_Leg">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Payer>true</Payer>
+        <Currency>EUR</Currency>
+        <FloatingLegData>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>true</IsInArrears>
+          <FixingDays>2</FixingDays>
+          <Spreads>
+            <Spread>0.02</Spread>
+          </Spreads>
+          <Floors>
+            <Floor>0.001</Floor>
+          </Floors>
+        </FloatingLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 1);
+    REQUIRE(r.bond_legs.front().rate);
+    REQUIRE(r.bond_legs.front().rate->floating);
+    const auto& mapped = *r.bond_legs.front().rate->floating;
+    CHECK(mapped.index == "EUR-EURIBOR-6M");
+    REQUIRE(mapped.is_in_arrears);
+    CHECK(*mapped.is_in_arrears);
+    REQUIRE(mapped.fixing_days);
+    CHECK(*mapped.fixing_days == 2);
+    REQUIRE(mapped.spreads.size() == 1);
+    CHECK(mapped.spreads.front().value == Approx(0.02));
+    REQUIRE(mapped.floors.size() == 1);
+    CHECK(mapped.floors.front().value == Approx(0.001));
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().legDataType);
+    REQUIRE(rt.BondData->LegData.front().legDataType->FloatingLegData);
+    const auto& f = *rt.BondData->LegData.front().legDataType->FloatingLegData;
+    CHECK(std::string(f.Index) == "EUR-EURIBOR-6M");
+    REQUIRE(f.IsInArrears);
+    CHECK(*f.IsInArrears);
+    REQUIRE(f.FixingDays);
+    CHECK(*f.FixingDays == 2);
+    REQUIRE(f.Spreads);
+    REQUIRE(f.Spreads->Spread.size() == 1);
+    CHECK(static_cast<double>(f.Spreads->Spread.front()) == Approx(0.02));
+    REQUIRE(f.Floors);
+    REQUIRE(f.Floors->Floor.size() == 1);
+    CHECK(static_cast<double>(f.Floors->Floor.front()) == Approx(0.001));
+
+    BOOST_LOG_SEV(lg, info) << "A floating leg's rate group survives the round trip.";
+}
+
+TEST_CASE("a_fixed_legs_rate_and_notional_lists_survive_the_round_trip", tags) {
+    auto log(make_logger(test_suite));
+
+    // The issue row holds one coupon rate and one face value, so a leg
+    // that states a list loses all but the first without the container.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Rate_List">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>1000000</Notional>
+          <Notional>500000</Notional>
+        </Notionals>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.03</Rate>
+            <Rate>0.04</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 1);
+    REQUIRE(r.bond_legs.front().notionals.size() == 2);
+    CHECK(r.bond_legs.front().notionals.front().value == Approx(1000000.0));
+    CHECK(r.bond_legs.front().notionals.back().value == Approx(500000.0));
+    REQUIRE(r.bond_legs.front().rate);
+    REQUIRE(r.bond_legs.front().rate->fixed);
+    REQUIRE(r.bond_legs.front().rate->fixed->rates.size() == 2);
+    CHECK(r.bond_legs.front().rate->fixed->rates.front().value == Approx(0.03));
+    CHECK(r.bond_legs.front().rate->fixed->rates.back().value == Approx(0.04));
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    const auto& ld = rt.BondData->LegData.front();
+    REQUIRE(ld.Notionals);
+    REQUIRE(ld.Notionals->Notional.size() == 2);
+    CHECK(static_cast<double>(ld.Notionals->Notional.front()) == Approx(1000000.0));
+    CHECK(static_cast<double>(ld.Notionals->Notional.back()) == Approx(500000.0));
+    REQUIRE(ld.legDataType);
+    REQUIRE(ld.legDataType->FixedLegData);
+    REQUIRE(ld.legDataType->FixedLegData->Rates.Rate.size() == 2);
+    CHECK(static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front()) == Approx(0.03));
+    CHECK(static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.back()) == Approx(0.04));
+
+    BOOST_LOG_SEV(log, info) << "A fixed leg's rate and notional lists survive.";
+}
+
+TEST_CASE("a_bonds_second_leg_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema declares LegData unbounded and three documents in the
+    // corpus state two legs. The issue row mirrors the first leg only,
+    // so a container that holds one leg drops the second whole.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Two_Legs">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>1000000</Notional>
+        </Notionals>
+        <DayCounter>A360</DayCounter>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.03</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Payer>true</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>250000</Notional>
+        </Notionals>
+        <DayCounter>A365</DayCounter>
+        <FloatingLegData>
+          <Index>EUR-EURIBOR-6M</Index>
+        </FloatingLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 2);
+    CHECK(r.issue.currency == "EUR");
+    CHECK(r.issue.face_value == Approx(1000000.0));
+    CHECK(r.issue.coupon_rate == Approx(0.03));
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 2);
+    const auto& second = rt.BondData->LegData.back();
+    CHECK(second.LegType == ores::ore::domain::legType::Floating);
+    CHECK(second.Payer);
+    REQUIRE(second.Notionals);
+    REQUIRE(second.Notionals->Notional.size() == 1);
+    CHECK(static_cast<double>(second.Notionals->Notional.front()) == Approx(250000.0));
+    REQUIRE(second.DayCounter);
+    CHECK(to_string(*second.DayCounter) == "A365");
+    REQUIRE(second.legDataType);
+    REQUIRE(second.legDataType->FloatingLegData);
+    CHECK(std::string(second.legDataType->FloatingLegData->Index) == "EUR-EURIBOR-6M");
+
+    BOOST_LOG_SEV(lg, info) << "A bond's second leg survives the round trip.";
 }
 
 TEST_CASE("a_forward_bonds_coupon_leg_keeps_its_own_schedule", tags) {

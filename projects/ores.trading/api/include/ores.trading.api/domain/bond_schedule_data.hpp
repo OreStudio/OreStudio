@@ -85,6 +85,113 @@ struct bond_schedule_data final {
 };
 
 /**
+ * @brief A number the document states with an optional start date.
+ *
+ * The fixed rates, the spreads, the caps, the floors and the gearings all
+ * carry this shape, and so does a notional. The value is required in the
+ * schema, so an unengaged start date is the only presence question here.
+ */
+struct bond_float_data final {
+    double value{};
+    std::optional<std::string> start_date;
+};
+
+/**
+ * @brief One row of an amortization block.
+ */
+struct bond_amortization_data final {
+    std::string type;
+    std::optional<double> value;
+    std::optional<std::string> start_date;
+    std::optional<std::string> end_date;
+    std::optional<std::string> frequency;
+    std::optional<bool> underflow;
+};
+
+/**
+ * @brief The leg's settlement block: the index and the date it fixes on.
+ */
+struct bond_settlement_data final {
+    std::string fx_index;
+    std::optional<std::string> fixing_date;
+};
+
+/**
+ * @brief The two indices a stub interpolates between, and the rounding.
+ */
+struct bond_stub_interpolation final {
+    std::string short_index;
+    std::string long_index;
+    std::optional<std::string> rounding_type;
+    std::optional<std::int64_t> rounding_precision;
+};
+
+/**
+ * @brief A floating leg's rate terms.
+ *
+ * The three lists of numbers (spreads, caps, floors, gearings) all carry
+ * the bond_float_data shape. The two schedules are schedules the document
+ * states on the leg itself rather than on the leg's outer block.
+ */
+struct bond_floating_leg_data final {
+    std::string index;
+    std::optional<bool> is_in_arrears;
+    std::optional<std::string> last_recent_period;
+    std::optional<std::string> last_recent_period_calendar;
+    std::optional<std::uint64_t> fixing_days;
+    std::optional<std::string> lookback;
+    std::optional<std::int64_t> rate_cutoff;
+    std::optional<bool> is_averaged;
+    std::optional<bool> has_sub_periods;
+    std::optional<bool> include_spread;
+    std::optional<bool> is_not_resetting_xccy;
+    std::vector<bond_float_data> spreads;
+    std::vector<bond_float_data> caps;
+    std::vector<bond_float_data> floors;
+    std::vector<bond_float_data> gearings;
+    std::optional<bool> naked_option;
+    std::optional<bool> local_cap_floor;
+    bond_schedule_data fixing_schedule;
+    bond_schedule_data reset_schedule;
+    std::optional<bond_stub_interpolation> front_stub_interpolation;
+    std::optional<bond_stub_interpolation> back_stub_interpolation;
+    std::optional<bool> stub_use_original_curve;
+    std::optional<bool> observation_shift;
+};
+
+/**
+ * @brief A fixed leg's rate terms.
+ */
+struct bond_fixed_leg_data final {
+    std::vector<bond_float_data> rates;
+};
+
+/**
+ * @brief A formula-based leg's rate terms.
+ */
+struct bond_formula_based_leg_data final {
+    std::string index;
+    std::optional<bool> is_in_arrears;
+    std::int64_t fixing_days{};
+    std::optional<std::string> fixing_calendar;
+};
+
+/**
+ * @brief The rate group of a leg, one alternative per leg type.
+ *
+ * The ORE schema states the group as a choice of eighteen alternatives.
+ * A bond leg carries a coupon, and the corpus states three of them:
+ * fixed, floating and formula-based. The other fifteen are a recorded
+ * boundary, and the alternative a document states is the engaged member
+ * here.
+ */
+struct bond_leg_rate_data final {
+    std::optional<bond_fixed_leg_data> fixed;
+    std::optional<bond_floating_leg_data> floating;
+    std::optional<bond_formula_based_leg_data> formula_based;
+};
+
+/**
  * @brief A leg as the document states it, member by member.
  *
  * The fact rows hold the leg's rate and its index. Everything else the
@@ -99,13 +206,16 @@ struct bond_schedule_data final {
  *   the leg type are document flags, and the payment terms, the payment
  *   calendar and the two lag members are the destination of the shared
  *   instrument-keyed tables the parent story describes.
- * - the schedule goes to those same tables.
+ * - the schedules and the three lists of rows go to those same tables.
  *
  * Every member is an optional, so a member the document states and this
  * container does not hold stays distinguishable from one the document
  * omits. A member the schema declares required is engaged by every
  * document, and an unengaged one then means the container came from a
  * row set.
+ *
+ * A bond states one leg per coupon, and the schema declares the element
+ * unbounded, so the instrument holds a list of these and not one.
  */
 struct bond_leg_data final {
     std::optional<bool> payer;
@@ -119,6 +229,13 @@ struct bond_leg_data final {
     std::optional<std::int64_t> notional_payment_lag;
     std::optional<bool> strict_notional_dates;
     bond_schedule_data schedule;
+    std::vector<bond_amortization_data> amortizations;
+    std::vector<bond_float_data> notionals;
+    std::vector<std::string> payment_dates;
+    std::optional<bool> indexings_from_asset_leg;
+    std::optional<bond_leg_rate_data> rate;
+    bond_schedule_data payment_schedule;
+    std::optional<bond_settlement_data> settlement;
 
     /**
      * @brief True when the leg carries nothing, so a writer can skip it.
@@ -130,8 +247,11 @@ struct bond_leg_data final {
     bool is_empty() const {
         return !payer && !leg_type && !currency && !payment_convention && !payment_lag &&
                !payment_calendar && !day_counter && !last_period_day_counter &&
-               !notional_payment_lag && !strict_notional_dates && schedule.rules.empty() &&
-               schedule.dates.empty();
+               !notional_payment_lag && !strict_notional_dates && !rate &&
+               !indexings_from_asset_leg && !settlement && schedule.rules.empty() &&
+               schedule.dates.empty() && amortizations.empty() && notionals.empty() &&
+               payment_dates.empty() && payment_schedule.rules.empty() &&
+               payment_schedule.dates.empty();
     }
 };
 

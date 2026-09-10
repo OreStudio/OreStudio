@@ -228,6 +228,88 @@ The other three leg slots stay single. The schema declares one
 mapper and the test suite. =projects/ores.ore/core/src/domain/domain.cpp=
 and every other xsdcpp output are untouched.
 
+** Wave A.2b, the leg groups
+
+*** The container takes the leg list
+
+=bond_instrument_data= held one =bond_leg_data=. It now holds
+=std::vector<bond_leg_data> bond_legs=, because the schema declares
+=LegData= unbounded and three documents state two legs.
+
+The issue row mirrors the first leg only. One row cannot hold two
+coupons, so =reverse_bond_data= writes one leg per element of the list,
+and falls back to the issue terms for a payload that came from a row set
+rather than from a document.
+
+That fallback also fixed two defects. The issue's face value and coupon
+rate were written over the leg's own notionals and rates, so a document
+that stated a list of either lost all but the first. Both now apply only
+when the leg is silent.
+
+The three other leg slots stay single, because the schema declares one
+each: =FundingData/LegData=, =RepoData/LegData= and
+=ReferenceSwapData/LegData=.
+
+*** The nested groups the leg states
+
+The scope rule mirrors a group whole when the corpus exercises it and
+its members are scalars or lists of scalars. A member that is itself a
+structured group is mirrored only when the corpus exercises it.
+
+=legData= gained these members, each with its own selectable type:
+=amortizations= (a list of =bond_amortization_data=), =notionals=,
+=payment_dates=, =indexings_from_asset_leg=, =payment_schedule=,
+=settlement= and =rate=. The =rate= member is a
+=bond_leg_rate_data=, a choice of three alternatives: fixed, floating and
+formula-based. The floating alternative carries the two stub
+interpolations, the two inner schedules and the four number lists.
+
+=is_empty= grew the new members in the same change, so a writer that
+skips an empty leg still sees the whole of what the leg holds.
+
+*** What A.2b does not carry
+
+Four bounds stay open, and the corpus exercises none of them:
+
+- The fifteen =legDataType= alternatives other than fixed, floating and
+  formula-based. A bond leg carries a coupon, and the corpus states
+  three of the eighteen.
+- =legData_Notionals_t/FXReset= and =Exchanges=. The corpus states
+  =Notional= only.
+- =legData_Indexings_t/Indexing=. The container carries =FromAssetLeg=
+  only. An =indexingData= row names a quantity and a fixing calendar that
+  the leg has no other home for.
+- =_FloatingLegData_t/HistoricalFixings=. Its date member is named
+  =fixingDate= and not =startDate=, so the shared number mapping does not
+  fit it. A container field would need its own name and its own mapper.
+
+One more case stays open by construction: an element the document states
+bare, as =<ScheduleData/>= with no =Rules= and no =Dates=. The container
+holds two lists and no presence flag, so it cannot tell that document
+from one that omits the element. No corpus document does this.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over =external/ore/examples=.
+
+| Measure | A.2a | A.2b |
+|---------+------+------|
+| In-scope lost pairs | 8,333 | 7,751 |
+| In-scope unexplained pairs | 44 | 44 |
+| In-scope lost paths | 152 | 65 |
+
+582 pairs came back and 87 paths left the list whole. No path got worse:
+the path diff holds removals only.
+
+Every =LegData= path left the list, for every product. What remains is
+the bond-level residue of A.3 and the trade envelope of A.4.
+
+*** No generated code was touched
+
+=git status= lists four hand-written files: the two container headers,
+the mapper and the test suite. =projects/ores.ore/core/src/domain/domain.cpp=
+and every other xsdcpp output are untouched.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

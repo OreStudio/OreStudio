@@ -122,18 +122,20 @@ struct bond_instrument_data final {
     std::string trs_price_type;
 
     /**
-     * @brief The bond's own coupon leg, re-emitted whole.
+     * @brief The bond's own coupon legs, re-emitted whole and in order.
      *
-     * The issue row carries the coupon rate, the frequency and the
-     * maturity, so export rebuilds the leg from those when this member
-     * is empty. The issue cannot carry the schedule: its start date is
-     * the leg's own datum and differs from the issue date, and the
-     * rules block names a calendar, a term convention and date rules
-     * the nine tables have no column for. Export writes the leg from
-     * here, and the issue terms stay the fallback for a container that
-     * did not come from a document.
+     * A bond states one leg per coupon and the schema declares the
+     * element unbounded, so three documents in the corpus carry two. The
+     * issue row carries the first leg's rate, frequency and maturity, so
+     * export rebuilds a leg from those when this list is empty or short.
+     * The issue cannot carry the schedule: its start date is the leg's
+     * own datum and differs from the issue date, and the rules block
+     * names a calendar, a term convention and date rules the nine tables
+     * have no column for. Export writes the legs from here, and the
+     * issue terms stay the fallback for a container that did not come
+     * from a document.
      */
-    bond_leg_data bond_leg;
+    std::vector<bond_leg_data> bond_legs;
 
     /**
      * @brief The TRS funding leg's payer flag and schedule, re-emitted whole.

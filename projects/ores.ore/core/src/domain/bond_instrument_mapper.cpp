@@ -27,17 +27,25 @@ namespace ores::ore::domain {
 
 using namespace ores::logging;
 using ores::trading::domain::ascot;
+using ores::trading::domain::bond_amortization_data;
+using ores::trading::domain::bond_fixed_leg_data;
+using ores::trading::domain::bond_float_data;
+using ores::trading::domain::bond_floating_leg_data;
+using ores::trading::domain::bond_formula_based_leg_data;
 using ores::trading::domain::bond_future;
 using ores::trading::domain::bond_instrument_data;
 using ores::trading::domain::bond_issue;
 using ores::trading::domain::bond_issue_call_date;
 using ores::trading::domain::bond_issue_conversion_target;
 using ores::trading::domain::bond_leg_data;
+using ores::trading::domain::bond_leg_rate_data;
 using ores::trading::domain::bond_option;
 using ores::trading::domain::bond_repo;
 using ores::trading::domain::bond_schedule_data;
 using ores::trading::domain::bond_schedule_dates;
 using ores::trading::domain::bond_schedule_rules;
+using ores::trading::domain::bond_settlement_data;
+using ores::trading::domain::bond_stub_interpolation;
 using ores::trading::domain::bond_trs;
 
 namespace {
@@ -95,11 +103,13 @@ Enum parse_code(const std::string& text, int count, Enum fallback) {
     return fallback;
 }
 
+constexpr int amortization_type_count = 5;
 constexpr int business_day_convention_count = 27;
 constexpr int date_rule_count = 16;
 constexpr int currency_code_count = 191;
 constexpr int day_counter_count = 71;
 constexpr int leg_type_count = 18;
+constexpr int rounding_type_count = 5;
 
 // The schema states the future's price and lag fields as strings. A
 // value the parser cannot read leaves the column at its default rather
@@ -274,6 +284,272 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
     return result;
 }
 
+// The fixed rates, the spreads, the caps, the floors, the gearings and the
+// notionals all carry one number and an optional start date, and the
+// generated types differ only in the name of the wrapper.
+template <typename Row>
+bond_float_data map_number(const Row& row) {
+    bond_float_data result;
+    result.value = static_cast<double>(row);
+    if (row.startDate)
+        result.start_date = std::string(*row.startDate);
+    return result;
+}
+
+template <typename Row>
+Row reverse_number(const bond_float_data& row) {
+    Row result;
+    static_cast<float&>(result) = static_cast<float>(row.value);
+    if (row.start_date)
+        result.startDate = *row.start_date;
+    return result;
+}
+
+template <typename Row>
+xsd::vector<Row> reverse_numbers(const std::vector<bond_float_data>& rows) {
+    xsd::vector<Row> result;
+    for (const auto& row : rows)
+        result.push_back(reverse_number<Row>(row));
+    return result;
+}
+
+bond_amortization_data map_amortization(const amortizationData& a) {
+    bond_amortization_data result;
+    result.type = to_string(a.Type);
+    if (a.Value)
+        result.value = static_cast<double>(*a.Value);
+    if (a.StartDate)
+        result.start_date = std::string(*a.StartDate);
+    if (a.EndDate)
+        result.end_date = std::string(*a.EndDate);
+    if (a.Frequency)
+        result.frequency = std::string(*a.Frequency);
+    if (a.Underflow)
+        result.underflow = *a.Underflow;
+    return result;
+}
+
+amortizationData reverse_amortization(const bond_amortization_data& row) {
+    amortizationData result;
+    result.Type =
+        parse_code(row.type, amortization_type_count, amortizationType::FixedAmount);
+    if (row.value)
+        result.Value = static_cast<float>(*row.value);
+    set_present_text(result.StartDate, row.start_date);
+    set_present_text(result.EndDate, row.end_date);
+    set_present_text(result.Frequency, row.frequency);
+    if (row.underflow)
+        result.Underflow = *row.underflow;
+    return result;
+}
+
+bond_stub_interpolation map_stub(const stubInterpolation& s) {
+    bond_stub_interpolation result;
+    result.short_index = std::string(s.ShortIndex);
+    result.long_index = std::string(s.LongIndex);
+    if (s.RoundingType)
+        result.rounding_type = to_string(*s.RoundingType);
+    if (s.RoundingPrecision)
+        result.rounding_precision = *s.RoundingPrecision;
+    return result;
+}
+
+stubInterpolation reverse_stub(const bond_stub_interpolation& s) {
+    stubInterpolation result;
+    static_cast<std::string&>(result.ShortIndex) = s.short_index;
+    static_cast<std::string&>(result.LongIndex) = s.long_index;
+    if (s.rounding_type)
+        result.RoundingType =
+            parse_code(*s.rounding_type, rounding_type_count, roundingType::Closest);
+    if (s.rounding_precision)
+        result.RoundingPrecision = *s.rounding_precision;
+    return result;
+}
+
+bond_settlement_data map_settlement(const legData_SettlementData_t& s) {
+    bond_settlement_data result;
+    result.fx_index = std::string(s.FXIndex);
+    if (s.FixingDate)
+        result.fixing_date = std::string(*s.FixingDate);
+    return result;
+}
+
+legData_SettlementData_t reverse_settlement(const bond_settlement_data& s) {
+    legData_SettlementData_t result;
+    static_cast<std::string&>(result.FXIndex) = s.fx_index;
+    set_present_text(result.FixingDate, s.fixing_date);
+    return result;
+}
+
+bond_floating_leg_data map_floating_leg(const _FloatingLegData_t& f) {
+    bond_floating_leg_data result;
+    result.index = std::string(f.Index);
+    if (f.IsInArrears)
+        result.is_in_arrears = *f.IsInArrears;
+    if (f.LastRecentPeriod)
+        result.last_recent_period = std::string(*f.LastRecentPeriod);
+    if (f.LastRecentPeriodCalendar)
+        result.last_recent_period_calendar = std::string(*f.LastRecentPeriodCalendar);
+    if (f.FixingDays)
+        result.fixing_days = *f.FixingDays;
+    if (f.Lookback)
+        result.lookback = std::string(*f.Lookback);
+    if (f.RateCutoff)
+        result.rate_cutoff = *f.RateCutoff;
+    if (f.IsAveraged)
+        result.is_averaged = *f.IsAveraged;
+    if (f.HasSubPeriods)
+        result.has_sub_periods = *f.HasSubPeriods;
+    if (f.IncludeSpread)
+        result.include_spread = *f.IncludeSpread;
+    if (f.IsNotResettingXCCY)
+        result.is_not_resetting_xccy = *f.IsNotResettingXCCY;
+    if (f.Spreads)
+        for (const auto& s : f.Spreads->Spread)
+            result.spreads.push_back(map_number(s));
+    if (f.Caps)
+        for (const auto& c : f.Caps->Cap)
+            result.caps.push_back(map_number(c));
+    if (f.Floors)
+        for (const auto& c : f.Floors->Floor)
+            result.floors.push_back(map_number(c));
+    if (f.Gearings)
+        for (const auto& g : f.Gearings->Gearing)
+            result.gearings.push_back(map_number(g));
+    if (f.NakedOption)
+        result.naked_option = *f.NakedOption;
+    if (f.LocalCapFloor)
+        result.local_cap_floor = *f.LocalCapFloor;
+    if (f.FixingSchedule)
+        result.fixing_schedule = map_schedule(*f.FixingSchedule);
+    if (f.ResetSchedule)
+        result.reset_schedule = map_schedule(*f.ResetSchedule);
+    if (f.FrontStubInterpolation)
+        result.front_stub_interpolation = map_stub(*f.FrontStubInterpolation);
+    if (f.BackStubInterpolation)
+        result.back_stub_interpolation = map_stub(*f.BackStubInterpolation);
+    if (f.StubUseOriginalCurve)
+        result.stub_use_original_curve = *f.StubUseOriginalCurve;
+    if (f.ObservationShift)
+        result.observation_shift = *f.ObservationShift;
+    return result;
+}
+
+_FloatingLegData_t reverse_floating_leg(const bond_floating_leg_data& leg) {
+    _FloatingLegData_t result;
+    static_cast<std::string&>(result.Index) = leg.index;
+    if (leg.is_in_arrears)
+        result.IsInArrears = *leg.is_in_arrears;
+    set_present_text(result.LastRecentPeriod, leg.last_recent_period);
+    set_present_text(result.LastRecentPeriodCalendar, leg.last_recent_period_calendar);
+    if (leg.fixing_days)
+        result.FixingDays = *leg.fixing_days;
+    set_present_text(result.Lookback, leg.lookback);
+    if (leg.rate_cutoff)
+        result.RateCutoff = *leg.rate_cutoff;
+    if (leg.is_averaged)
+        result.IsAveraged = *leg.is_averaged;
+    if (leg.has_sub_periods)
+        result.HasSubPeriods = *leg.has_sub_periods;
+    if (leg.include_spread)
+        result.IncludeSpread = *leg.include_spread;
+    if (leg.is_not_resetting_xccy)
+        result.IsNotResettingXCCY = *leg.is_not_resetting_xccy;
+    if (!leg.spreads.empty()) {
+        spreads group;
+        group.Spread = reverse_numbers<floatWithAttribute>(leg.spreads);
+        result.Spreads = std::move(group);
+    }
+    if (!leg.caps.empty()) {
+        caps group;
+        group.Cap = reverse_numbers<floatWithAttribute>(leg.caps);
+        result.Caps = std::move(group);
+    }
+    if (!leg.floors.empty()) {
+        floors group;
+        group.Floor = reverse_numbers<floatWithAttribute>(leg.floors);
+        result.Floors = std::move(group);
+    }
+    if (!leg.gearings.empty()) {
+        gearings group;
+        group.Gearing = reverse_numbers<floatWithAttribute>(leg.gearings);
+        result.Gearings = std::move(group);
+    }
+    if (leg.naked_option)
+        result.NakedOption = *leg.naked_option;
+    if (leg.local_cap_floor)
+        result.LocalCapFloor = *leg.local_cap_floor;
+    if (!leg.fixing_schedule.rules.empty() || !leg.fixing_schedule.dates.empty())
+        result.FixingSchedule = reverse_schedule(leg.fixing_schedule);
+    if (!leg.reset_schedule.rules.empty() || !leg.reset_schedule.dates.empty())
+        result.ResetSchedule = reverse_schedule(leg.reset_schedule);
+    if (leg.front_stub_interpolation)
+        result.FrontStubInterpolation = reverse_stub(*leg.front_stub_interpolation);
+    if (leg.back_stub_interpolation)
+        result.BackStubInterpolation = reverse_stub(*leg.back_stub_interpolation);
+    if (leg.stub_use_original_curve)
+        result.StubUseOriginalCurve = *leg.stub_use_original_curve;
+    if (leg.observation_shift)
+        result.ObservationShift = *leg.observation_shift;
+    return result;
+}
+
+bond_fixed_leg_data map_fixed_leg(const _FixedLegData_t& f) {
+    bond_fixed_leg_data result;
+    for (const auto& r : f.Rates.Rate)
+        result.rates.push_back(map_number(r));
+    return result;
+}
+
+_FixedLegData_t reverse_fixed_leg(const bond_fixed_leg_data& leg) {
+    _FixedLegData_t result;
+    result.Rates.Rate = reverse_numbers<_FixedLegData_t_Rates_t_Rate_t>(leg.rates);
+    return result;
+}
+
+bond_formula_based_leg_data map_formula_leg(const _FormulaBasedLegData_t& f) {
+    bond_formula_based_leg_data result;
+    result.index = std::string(f.Index);
+    if (f.IsInArrears)
+        result.is_in_arrears = *f.IsInArrears;
+    result.fixing_days = f.FixingDays;
+    if (f.FixingCalendar)
+        result.fixing_calendar = std::string(*f.FixingCalendar);
+    return result;
+}
+
+_FormulaBasedLegData_t reverse_formula_leg(const bond_formula_based_leg_data& leg) {
+    _FormulaBasedLegData_t result;
+    static_cast<std::string&>(result.Index) = leg.index;
+    if (leg.is_in_arrears)
+        result.IsInArrears = *leg.is_in_arrears;
+    result.FixingDays = leg.fixing_days;
+    set_present_text(result.FixingCalendar, leg.fixing_calendar);
+    return result;
+}
+
+bond_leg_rate_data map_rate_group(const legDataType_group_t& g) {
+    bond_leg_rate_data result;
+    if (g.FixedLegData)
+        result.fixed = map_fixed_leg(*g.FixedLegData);
+    if (g.FloatingLegData)
+        result.floating = map_floating_leg(*g.FloatingLegData);
+    if (g.FormulaBasedLegData)
+        result.formula_based = map_formula_leg(*g.FormulaBasedLegData);
+    return result;
+}
+
+legDataType_group_t reverse_rate_group(const bond_leg_rate_data& r) {
+    legDataType_group_t result;
+    if (r.fixed)
+        result.FixedLegData = reverse_fixed_leg(*r.fixed);
+    if (r.floating)
+        result.FloatingLegData = reverse_floating_leg(*r.floating);
+    if (r.formula_based)
+        result.FormulaBasedLegData = reverse_formula_leg(*r.formula_based);
+    return result;
+}
+
 bond_leg_data map_leg(const legData& ld) {
     bond_leg_data result;
     result.payer = ld.Payer;
@@ -296,6 +572,23 @@ bond_leg_data map_leg(const legData& ld) {
         result.strict_notional_dates = *ld.StrictNotionalDates;
     if (ld.ScheduleData)
         result.schedule = map_schedule(*ld.ScheduleData);
+    if (ld.Amortizations)
+        for (const auto& a : ld.Amortizations->AmortizationData)
+            result.amortizations.push_back(map_amortization(a));
+    if (ld.Notionals)
+        for (const auto& n : ld.Notionals->Notional)
+            result.notionals.push_back(map_number(n));
+    if (ld.PaymentDates)
+        for (const auto& d : ld.PaymentDates->PaymentDate)
+            result.payment_dates.push_back(d);
+    if (ld.Indexings && ld.Indexings->FromAssetLeg)
+        result.indexings_from_asset_leg = *ld.Indexings->FromAssetLeg;
+    if (ld.legDataType)
+        result.rate = map_rate_group(*ld.legDataType);
+    if (ld.PaymentSchedule)
+        result.payment_schedule = map_schedule(*ld.PaymentSchedule);
+    if (ld.SettlementData)
+        result.settlement = map_settlement(*ld.SettlementData);
     return result;
 }
 
@@ -329,6 +622,34 @@ void reverse_leg(const bond_leg_data& leg, legData& ld) {
         ld.StrictNotionalDates = *leg.strict_notional_dates;
     if (!leg.schedule.rules.empty() || !leg.schedule.dates.empty())
         ld.ScheduleData = reverse_schedule(leg.schedule);
+    if (!leg.amortizations.empty()) {
+        legData_Amortizations_t group;
+        for (const auto& row : leg.amortizations)
+            group.AmortizationData.push_back(reverse_amortization(row));
+        ld.Amortizations = std::move(group);
+    }
+    if (!leg.notionals.empty()) {
+        legData_Notionals_t group;
+        group.Notional = reverse_numbers<legData_Notionals_t_Notional_t>(leg.notionals);
+        ld.Notionals = std::move(group);
+    }
+    if (!leg.payment_dates.empty()) {
+        legData_PaymentDates_t group;
+        for (const auto& d : leg.payment_dates)
+            group.PaymentDate.push_back(d);
+        ld.PaymentDates = std::move(group);
+    }
+    if (leg.indexings_from_asset_leg) {
+        legData_Indexings_t group;
+        group.FromAssetLeg = *leg.indexings_from_asset_leg;
+        ld.Indexings = std::move(group);
+    }
+    if (leg.rate)
+        ld.legDataType = reverse_rate_group(*leg.rate);
+    if (!leg.payment_schedule.rules.empty() || !leg.payment_schedule.dates.empty())
+        ld.PaymentSchedule = reverse_schedule(leg.payment_schedule);
+    if (leg.settlement)
+        ld.SettlementData = reverse_settlement(*leg.settlement);
 }
 
 void map_exercise_dates(const optionData& od, std::vector<std::string>& dates) {
@@ -363,9 +684,15 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
             issue.settlement_days = std::stoi(settlement_days_str);
     }
 
+    // Every leg the document states is carried, in document order.
+    for (const auto& ld : bd.LegData)
+        data.bond_legs.push_back(map_leg(ld));
+
+    // The issue row mirrors the first leg: one row cannot hold two
+    // coupons, and the row is the fallback for a payload that came from a
+    // row set rather than from the document's own statement.
     if (!bd.LegData.empty()) {
         const auto& ld = bd.LegData.front();
-        data.bond_leg = map_leg(ld);
         if (ld.Currency)
             issue.currency = std::string(*ld.Currency);
         if (ld.Notionals && !ld.Notionals->Notional.empty())
@@ -408,64 +735,73 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
         bd.SettlementDays = std::move(sd);
     }
 
-    // The leg is emitted when the document held one, whether or not the
-    // columns that mirror it hold a value: Currency and Notionals are
-    // optional in the schema, so a leg the document carries with neither
-    // still has to come back out.
-    if (!data.bond_leg.is_empty() || !issue.currency.empty() || issue.face_value != 0.0) {
-        legData ld;
-        reverse_leg(data.bond_leg, ld);
+    // The legs are emitted when the document held any, whether or not the
+    // columns that mirror the first hold a value: Currency and Notionals
+    // are optional in the schema, so a leg the document carries with
+    // neither still has to come back out.
+    if (!data.bond_legs.empty() || !issue.currency.empty() || issue.face_value != 0.0) {
+        const std::size_t leg_count = data.bond_legs.empty() ? 1 : data.bond_legs.size();
+        for (std::size_t i = 0; i < leg_count; ++i) {
+            const bond_leg_data absent;
+            const bond_leg_data& source = data.bond_legs.empty() ? absent : data.bond_legs[i];
+            legData ld;
+            reverse_leg(source, ld);
 
-        // The issue row mirrors the leg's currency and day counter, so it
-        // supplies them only when the container came from a row set. A
-        // document's own statement is already on the leg.
-        if (!ld.Currency && !issue.currency.empty())
-            ld.Currency = issue.currency;
-        if (!ld.DayCounter && !issue.day_count_code.empty())
-            ld.DayCounter = parse_code(issue.day_count_code,
-                                       day_counter_count,
-                                       dayCounter::A360);
+            // The issue row mirrors the first leg's currency, day counter,
+            // notional, rate and schedule, so it supplies them only when the
+            // container came from a row set. A document's own statement is
+            // already on the leg, and a later leg has no row at all.
+            if (i == 0) {
+                if (!ld.Currency && !issue.currency.empty())
+                    ld.Currency = issue.currency;
+                if (!ld.DayCounter && !issue.day_count_code.empty())
+                    ld.DayCounter = parse_code(issue.day_count_code,
+                                               day_counter_count,
+                                               dayCounter::A360);
 
-        if (issue.face_value != 0.0) {
-            legData_Notionals_t n;
-            legData_Notionals_t_Notional_t nv;
-            static_cast<float&>(nv) = static_cast<float>(issue.face_value);
-            n.Notional.push_back(nv);
-            ld.Notionals = std::move(n);
-        }
+                if (!ld.Notionals && issue.face_value != 0.0) {
+                    legData_Notionals_t n;
+                    legData_Notionals_t_Notional_t nv;
+                    static_cast<float&>(nv) = static_cast<float>(issue.face_value);
+                    n.Notional.push_back(nv);
+                    ld.Notionals = std::move(n);
+                }
 
-        // A container that came from a document carries the leg whole, so
-        // this rebuild runs only for a row set with no remainder: the issue
-        // terms are then the whole of what is known, and the issue date is
-        // the closest stand-in the row holds for a schedule start.
-        if (!ld.ScheduleData &&
-            (!issue.maturity_date.empty() || !issue.coupon_frequency_code.empty())) {
-            scheduleData_Rules_t rule;
-            if (!issue.maturity_date.empty()) {
-                domain::date d;
-                static_cast<std::string&>(d) = issue.maturity_date;
-                rule.EndDate = xsd::optional<domain::date>(d);
+                // A container that came from a document carries the leg
+                // whole, so this rebuild runs only for a row set with no
+                // remainder: the issue terms are then the whole of what is
+                // known, and the issue date is the closest stand-in the row
+                // holds for a schedule start.
+                if (!ld.ScheduleData &&
+                    (!issue.maturity_date.empty() || !issue.coupon_frequency_code.empty())) {
+                    scheduleData_Rules_t rule;
+                    if (!issue.maturity_date.empty()) {
+                        domain::date d;
+                        static_cast<std::string&>(d) = issue.maturity_date;
+                        rule.EndDate = xsd::optional<domain::date>(d);
+                    }
+                    if (!issue.coupon_frequency_code.empty())
+                        static_cast<std::string&>(rule.Tenor) = issue.coupon_frequency_code;
+                    if (!issue.issue_date.empty())
+                        rule.StartDate = issue.issue_date;
+                    scheduleData sched;
+                    sched.Rules.push_back(std::move(rule));
+                    ld.ScheduleData = std::move(sched);
+                }
+
+                if (!ld.legDataType && issue.coupon_rate != 0.0) {
+                    _FixedLegData_t fld;
+                    _FixedLegData_t_Rates_t_Rate_t rate;
+                    static_cast<float&>(rate) = static_cast<float>(issue.coupon_rate);
+                    fld.Rates.Rate.push_back(rate);
+                    legDataType_group_t ldt;
+                    ldt.FixedLegData = std::move(fld);
+                    ld.legDataType = std::move(ldt);
+                }
             }
-            if (!issue.coupon_frequency_code.empty())
-                static_cast<std::string&>(rule.Tenor) = issue.coupon_frequency_code;
-            if (!issue.issue_date.empty())
-                rule.StartDate = issue.issue_date;
-            scheduleData sched;
-            sched.Rules.push_back(std::move(rule));
-            ld.ScheduleData = std::move(sched);
-        }
 
-        if (issue.coupon_rate != 0.0) {
-            _FixedLegData_t fld;
-            _FixedLegData_t_Rates_t_Rate_t rate;
-            static_cast<float&>(rate) = static_cast<float>(issue.coupon_rate);
-            fld.Rates.Rate.push_back(rate);
-            legDataType_group_t ldt;
-            ldt.FixedLegData = std::move(fld);
-            ld.legDataType = std::move(ldt);
+            bd.LegData.push_back(std::move(ld));
         }
-
-        bd.LegData.push_back(std::move(ld));
     }
 
     return bd;

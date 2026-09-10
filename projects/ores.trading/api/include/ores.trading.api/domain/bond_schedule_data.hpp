@@ -92,9 +92,15 @@ struct bond_schedule_data final {
  *
  * Export writes both back, so a leg whose payer the document states
  * as true no longer exports as false.
+ *
+ * A leg with a fact row leaves leg_type empty, because the fact row
+ * holds the type. A bond's own coupon leg has no fact row: the issue's
+ * terms are its only other home, and they carry the coupon rate and the
+ * maturity but not the leg type, so the type rides here.
  */
 struct bond_leg_data final {
     bool payer = false;
+    std::string leg_type;
     bond_schedule_data schedule;
 };
 

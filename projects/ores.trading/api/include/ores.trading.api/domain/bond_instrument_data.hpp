@@ -55,7 +55,7 @@ namespace ores::trading::domain {
  *
  * The remainder members carry what the nine tables cannot store, so
  * that export re-emits what the document held. Each one is a recorded
- * scope limit of task D7943D7E wave 1.3. The exercise dates, the three
+ * scope limit of task D7943D7E wave 1.3. The exercise dates, the four
  * leg schedules and the delivery basket go to the parent story's shared
  * instrument-keyed schedule and underlyings tables; the leg payer flags
  * and the total return price type have no column anywhere.
@@ -120,6 +120,20 @@ struct bond_instrument_data final {
      * @brief The total return price type the document states (Dirty or Clean).
      */
     std::string trs_price_type;
+
+    /**
+     * @brief The bond's own coupon leg, re-emitted whole.
+     *
+     * The issue row carries the coupon rate, the frequency and the
+     * maturity, so export rebuilds the leg from those when this member
+     * is empty. The issue cannot carry the schedule: its start date is
+     * the leg's own datum and differs from the issue date, and the
+     * rules block names a calendar, a term convention and date rules
+     * the nine tables have no column for. Export writes the leg from
+     * here, and the issue terms stay the fallback for a container that
+     * did not come from a document.
+     */
+    bond_leg_data bond_leg;
 
     /**
      * @brief The TRS funding leg's payer flag and schedule, re-emitted whole.

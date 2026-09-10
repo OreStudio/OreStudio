@@ -24,7 +24,6 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
-#include "ores.trading.api/domain/bond_issue.hpp"
 #include <functional>
 #include <optional>
 #include <string>
@@ -69,9 +68,10 @@ private:
         return instance;
     }
 
-    static void map_bond_data(const bondData& bd, ores::trading::domain::bond_issue& issue);
+    static void map_bond_data(const bondData& bd,
+                              ores::trading::domain::bond_instrument_data& data);
 
-    static bondData reverse_bond_data(const ores::trading::domain::bond_issue& issue);
+    static bondData reverse_bond_data(const ores::trading::domain::bond_instrument_data& data);
 
     static void map_call_dates(const callableBondCallData& call_data,
                                boost::uuids::uuid issue_id,

@@ -82,6 +82,165 @@ bond_instrument_data map_inline(const std::string& xml) {
 } // namespace
 
 // =============================================================================
+// The coupon leg keeps its own schedule
+// =============================================================================
+
+TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The issue date and the leg's schedule start are two data, and the
+    // corpus holds documents where they differ. Export used to rebuild
+    // the schedule from the issue terms, which wrote the issue date as
+    // the schedule start. An xsd::optional assigned to the plain date
+    // member made that worse: it compiles as operator=(char) and stores
+    // a control byte. The dates here differ, so a rebuild shows up.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Schedule_Mirror">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <IssueDate>2025-02-01</IssueDate>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>1000000</Notional>
+        </Notionals>
+        <DayCounter>ACT/ACT</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-02-03</StartDate>
+            <EndDate>2035-02-03</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>EUR</Calendar>
+            <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
+            <EndOfMonth>true</EndOfMonth>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.05</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    CHECK(r.issue.issue_date == "2025-02-01");
+    CHECK(r.issue.maturity_date == "2035-02-03");
+    CHECK(r.issue.coupon_frequency_code == "1Y");
+
+    REQUIRE(r.bond_leg.schedule.rules.size() == 1);
+    const auto& carried = r.bond_leg.schedule.rules.front();
+    CHECK(carried.start_date == "2025-02-03");
+    CHECK(carried.calendar == "EUR");
+    CHECK(carried.term_convention == "MF");
+    CHECK(carried.rule == "Forward");
+    CHECK(carried.end_of_month);
+    CHECK(r.bond_leg.leg_type == "Fixed");
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData->Rules.size() == 1);
+    const auto& rule = rt.BondData->LegData.front().ScheduleData->Rules.front();
+    CHECK(rule.StartDate == "2025-02-03");
+    REQUIRE(rule.EndDate);
+    CHECK(std::string(*rule.EndDate) == "2035-02-03");
+    CHECK(std::string(rule.Tenor) == "1Y");
+    REQUIRE(rule.Calendar);
+    CHECK(std::string(*rule.Calendar) == "EUR");
+    REQUIRE(rule.TermConvention);
+    CHECK(to_string(*rule.TermConvention) == "MF");
+    REQUIRE(rule.Rule);
+    CHECK(to_string(*rule.Rule) == "Forward");
+    CHECK(rt.BondData->LegData.front().LegType == ores::ore::domain::legType::Fixed);
+
+    BOOST_LOG_SEV(lg, info)
+        << "The coupon leg keeps a start date the issue date does not hold.";
+}
+
+TEST_CASE("a_forward_bonds_coupon_leg_keeps_its_own_schedule", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Every forward bond in the corpus states an issue date and a
+    // schedule start that differ, so this product is where the rebuild
+    // showed. The forward path assembles the same container. The
+    // schema requires LongInForward, and the forward bond's settlement
+    // block and that flag ride nowhere yet, so the fixture states them
+    // and the test asserts only on the schedule.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="FwdBond_Schedule">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <IssuerId>CPTY_C</IssuerId>
+        <SecurityId>SECURITY_1</SecurityId>
+        <IssueDate>2025-02-01</IssueDate>
+        <LegData>
+          <LegType>Fixed</LegType>
+          <Payer>false</Payer>
+          <Currency>EUR</Currency>
+          <Notionals>
+            <Notional>10000000</Notional>
+          </Notionals>
+          <DayCounter>ACT/ACT</DayCounter>
+          <PaymentConvention>F</PaymentConvention>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-02-03</StartDate>
+              <EndDate>2035-02-03</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>20160808</ForwardMaturityDate>
+        <Amount>6300000.00</Amount>
+        <SettlementDirty>true</SettlementDirty>
+      </SettlementData>
+      <LongInForward>true</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    CHECK(r.instrument.identity.trade_type_code == "ForwardBond");
+    CHECK(r.issue.issue_date == "2025-02-01");
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    REQUIRE(rt.ForwardBondData->BondData.LegData.size() == 1);
+    REQUIRE(rt.ForwardBondData->BondData.LegData.front().ScheduleData);
+    REQUIRE(rt.ForwardBondData->BondData.LegData.front().ScheduleData->Rules.size() == 1);
+    const auto& rule = rt.ForwardBondData->BondData.LegData.front().ScheduleData->Rules.front();
+    CHECK(rule.StartDate == "2025-02-03");
+    REQUIRE(rule.Calendar);
+    CHECK(std::string(*rule.Calendar) == "TARGET");
+
+    BOOST_LOG_SEV(lg, info) << "A forward bond's coupon leg keeps its own schedule.";
+}
+
+// =============================================================================
 // The repo leg and the coupon frequency repair
 // =============================================================================
 

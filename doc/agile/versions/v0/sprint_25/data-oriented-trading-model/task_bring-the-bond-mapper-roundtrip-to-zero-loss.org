@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rework-bond-ores-mapping
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
 #+updated: 2026-09-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ The bond products and the trade envelope round trip at zero loss on the mapper p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
@@ -79,6 +79,86 @@ Unit 3 of the story, the qt bridge, stays BACKLOG until this task
 closes.
 
 * Notes
+
+** Wave A.1, the presence pass
+
+*** The container carries =std::optional=
+
+Every member the schema declares optional is now an =std::optional=, so
+an element the document states empty stays distinct from one it omits.
+The reverse mappers emit on presence rather than on content, and a flag
+emits the canonical =Y= or =N= because the bool type has no empty
+spelling to hand back.
+
+The measured effect over =external/ore/examples=, both trees read with
+the same classifier:
+
+| Measure | Before | After |
+|---------+--------+-------|
+| In-scope lost pairs | 9,593 | 8,979 |
+| In-scope unexplained pairs | 47 | 47 |
+| =BondData/LegData/ScheduleData/Rules/FirstDate= | 278 | 3 |
+| =BondData/.../LastDate= | 278 | 3 |
+| =ForwardBondData/BondData/.../FirstDate= | 34 | 3 |
+| =ForwardBondData/BondData/.../LastDate= | 34 | 3 |
+
+The full by-path comparison shows no path got worse. Every other path
+holds the same count in both trees.
+
+*** A bool element the document states empty reads as on
+
+The generated reader pre-fills the value:
+=domain.cpp= =_get_scheduleData_Rules_t_EndOfMonth= emplaces
+=domain::bool_()=, whose value is index 0, =bool_::Y=. So an empty
+=EndOfMonth= already read as on before this wave, and the 307 pairs the
+classifier tolerates are correct. =flag_of(bool_)= now reads the empty
+spelling as on as well, so the two agree whatever the default becomes.
+The suite asserts the mechanism directly, in
+=an_empty_schedule_element_survives_the_round_trip=.
+
+=EndOfMonth= is the only =bool=-typed element the corpus exercises:
+3,442 empty, 103 =false=, 12 =true= across all documents. The other two
+(=AdjustEndDateToPreviousMonthEnd=, =IncludeDuplicateDates=) appear in
+no document.
+
+*** A leg with neither currency nor notional is a document the schema allows
+
+=Currency= and =Notionals= are =minOccurs="0"=, and the reverse mapper
+emitted the whole =LegData= only when one of them, or the issue's face
+value, was present. A leg the document carries with neither came back as
+no leg at all. The guard now asks the container whether it holds a leg,
+through =bond_leg_data::is_empty()=, so a member added to the leg
+reaches the guard in one place. The new test found this.
+
+*** Finding for A.2: the second leg of a bond
+
+Nine =BondData= blocks in three documents carry two =LegData= elements:
+=Cash_Bonds.xml=, =Legacy/Example_18/Input/portfolio.xml= and
+=Products/Input/portfolio.xml=. The container holds one leg and the
+issue row holds one leg's terms, so the second leg is dropped whole.
+The residual 3 lost pairs at each of the four schedule paths above are
+this class, and they are the visible tip: the second leg's other pairs
+match pairs other trades in the same document state, so the multiset
+comparison hides them.
+
+A "Fixed then Floating" bond is the shape: leg 0 is =Fixed= with a
+=EUR= notional to 2035, leg 1 is =Floating= from 2035 to 2040 with its
+own =FloatingLegData=. Giving the container a leg list is not enough;
+the nine tables have no home for a second leg's rate and currency, so
+the model needs a decision in Unit B.
+
+*** Latent bound: an empty convention, term convention or rule
+
+=Convention=, =TermConvention= and =Rule= are parsed into canonical
+enumeration spellings through =parse_code=, so a document that states
+one of them empty would still lose it. No document in the corpus does,
+and all 1,566 were checked.
+
+*** No generated code was touched
+
+=git status= lists three hand-written files: the container header, the
+mapper and the test suite. =projects/ores.ore/core/src/domain/domain.cpp=
+and every other xsdcpp output are untouched.
 
 * Test Scenarios
 

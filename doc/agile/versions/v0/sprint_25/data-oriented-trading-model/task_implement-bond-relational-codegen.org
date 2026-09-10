@@ -7,7 +7,7 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch: feature/implement-bond-relational-codegen
+#+branch: feature/bond-shell-system-test
 #+pr: 2047
 #+blocked_on:
 #+blocked_since:
@@ -1055,6 +1055,13 @@ open, issues 15 and 15 open, options 1, TRS 2, and repos, futures,
 ascots, call dates and conversion targets at 0. The fifteen issues
 stay open because the verb surface has no issue delete: the
 instrument delete soft-closes the instrument row alone.
+
+Wave 1.7 rode two pull requests. PR #2046 went up first, against the
+wave 1.6 branch. Merging wave 1.6 in PR #2045 deleted that base
+branch, and GitHub closed #2046 with it, because a closed pull
+request cannot take a new base. The same commit set went up again
+against main as PR #2047, carrying the review fix, and that is the
+one that lands.
 
 * Test Scenarios
 

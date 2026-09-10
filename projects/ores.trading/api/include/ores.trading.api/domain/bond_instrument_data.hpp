@@ -17,8 +17,8 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
-#ifndef ORES_TRADING_DOMAIN_BOND_INSTRUMENT_DATA_HPP
-#define ORES_TRADING_DOMAIN_BOND_INSTRUMENT_DATA_HPP
+#ifndef ORES_TRADING_API_DOMAIN_BOND_INSTRUMENT_DATA_HPP
+#define ORES_TRADING_API_DOMAIN_BOND_INSTRUMENT_DATA_HPP
 
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"

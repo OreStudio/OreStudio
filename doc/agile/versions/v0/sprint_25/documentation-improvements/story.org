@@ -47,6 +47,7 @@ come up rather than scoping the whole story up front.
 | [[id:00289422-24F1-4124-B3D1-1261B52ABCE7][Add a quickstart CLI snippet to the homepage]] | BACKLOG | | | A short terminal install/quickstart command block on the homepage for fast developer onboarding, per external review. Scope: what the snippet actually shows (git clone + build? a hosted install script?) needs deciding before implementation. |
 | [[id:CBE53221-9F38-4C94-8AE5-AA86867965C8][Add compass-code-review-comments skill]] | DONE | 2026-08-11 | 2026-08-11 | New Claude Code skill that reviews and cleans code comments, wired into CLAUDE.md so it applies to all code we create or edit. |
 | [[id:374CFD96-B8B0-4812-9870-FF91168EE828][Document Skew Stickiness Ratio knowledge page]] | DONE | | 2026-08-25 | Add a knowledge page on how implied volatility surfaces move when spot moves: sticky strike vs sticky delta, the Skew Stickiness Ratio (SSR) that measures ATM-vol response against the ATM skew, and its effect on delta and gamma. |
+| [[id:A572C320-A132-477B-9170-6CB5A0466D2D][Expand the Random Walk knowledge page]] | DONE | | 2026-09-10 | Fold the stationarity, unit-root and first-passage material into the Random Walk knowledge page, with the source attributed. |
 
 * Decisions
 

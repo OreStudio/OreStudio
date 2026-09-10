@@ -1,0 +1,98 @@
+:PROPERTIES:
+:ID: A572C320-A132-477B-9170-6CB5A0466D2D
+:END:
+#+title: Task: Expand the Random Walk knowledge page
+#+description: Fold the stationarity, unit-root and first-passage material into the Random Walk knowledge page, with the source attributed.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch: feature/update-random-walk-knowledge
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+#+environment: clever_dijkstra
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The [[id:F07B50E2-0B51-4230-8D0D-F0587663BC9F][Random Walk]] page covers the
+definition, the Markov property and the Wiener-process limit. An
+external write-up on random walks passes through five themes, three of
+which the page does not carry: stationary increments against a
+non-stationary level, unit-root persistence, and first-passage
+questions. Add those three sections, tie each to the ORE Studio
+process it bears on, and attribute the source.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
+
+* Acceptance
+
+- The page states that the increments are stationary while the level is
+  not, with the variance growing with the horizon.
+- The page states the unit-root property and contrasts it with a
+  mean-reverting process.
+- The page covers first-passage times and names an ORE Studio product
+  family that asks the question.
+- Each new section links to the related knowledge pages by id.
+- The source is attributed in Further reading, with author,
+  publication and retrieval date.
+- The site build publishes the page without error.
+
+* Plan
+
+Fold the three missing themes into the existing page rather than
+creating a second page, because the page already exists and the new
+material is the same subject. Sit the new sections between the
+definition and the Markov section, so the page runs definition,
+stationarity, unit root, Markov property, continuous-time limit, first
+passage. Grade the page against the code review checklist; the
+class check for a doc-only change is the site build.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Citation used square brackets, which org renders as literal text and which read as a malformed link. | doc/knowledge/domain/random_walk.org | Accepted | Quoted the post's opening line as the title, matching the Pearson and Donsker entries. |
+| 2 | Attribution sits in Further reading, not in a top-level =* Source= block as in =lightyear_pnl_approach.org=. | doc/knowledge/domain/random_walk.org | Declined | That convention is for pages that are /about/ external material; here the post is one of five references. |
+| 3 | =#+description= was not extended to mention first passage. | doc/knowledge/domain/random_walk.org | Declined | Still accurate at the granularity that descriptions work at. |
+
+* Result
+
+Added three sections to the Random Walk page — stationarity of the
+increments against the non-stationarity of the level, the unit root
+and its contrast with mean reversion, and first-passage times — plus
+the source in Further reading. Every new section links to the related
+knowledge pages by id. The site build publishes the page clean.

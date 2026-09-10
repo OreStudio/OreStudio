@@ -334,11 +334,17 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
         domain::bond_trs trs_row;
         trs_row.instrument_id = instrument_id;
         trs_row.return_type = std::move(trs_return_type);
-        trs_row.funding_index =
+        // The migration derives the same way: a 'Fixed' code is a fixed
+        // leg with no index, any other code is a floating leg carrying
+        // the code as the funding index.
+        const std::string funding_leg_code =
             (trs_funding_leg_code == "-") ? "" : std::move(trs_funding_leg_code);
-        // The verb carries no funding-rate or leg-type argument; the
-        // rate column has no generated default, so the unset value is
-        // explicit here rather than an indeterminate double on the wire.
+        const bool fixed_leg = (funding_leg_code == "Fixed");
+        trs_row.funding_leg_type = fixed_leg ? "Fixed" : "Floating";
+        trs_row.funding_index = fixed_leg ? "" : funding_leg_code;
+        // The verb carries no funding-rate argument; the rate column
+        // has no generated default, so the unset value is explicit
+        // here rather than an indeterminate double on the wire.
         trs_row.funding_rate = 0.0;
         if (session_tenant)
             trs_row.tenant_id = *session_tenant;

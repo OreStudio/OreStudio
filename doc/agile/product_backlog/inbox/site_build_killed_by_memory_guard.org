@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: CA00B484-7F1B-4FC3-BC55-30F15820A00C
+:END:
+#+title: Site build unrunnable: killed by the low-memory guard
+#+description: compass build --direct site is killed by the harness low-memory guard on bright_faraday, in background and foreground alike, leaving doc changes shipping without their main verification.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=compass build --direct site= cannot complete on this worktree. It was
+killed four times on 2026-09-10 by the harness low-memory guard: twice as
+a background task, once after a foreground run was moved to the
+background at its 600s timeout, and once more on merged main with nothing
+else running.
+
+The machine reported 19G of 31G available on every attempt, and the
+largest resident consumers were Postgres and SQL Server rather than the
+build. So the guard is firing on something other than a genuine shortage,
+or the emacs export spikes far above its steady state.
+
+
+(One paragraph: the idea.)
+
+* Why
+
+The site build is the only check that renders the pages. =compass lint=
+covers dangling id-links and the skills build covers the org export for
+=doc/llm/skills=, but neither proves a published page reads correctly,
+and nothing covers documents outside that tree.
+
+Four doc-heavy changes shipped tonight. The last one, PR #2057, shipped
+with the limitation stated rather than closed, and the same will happen
+to every doc change until this is fixed. A verification that cannot be
+run stops being a verification and becomes a paragraph in a PR body.
+
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+- PR #2057, whose testing limitations record the first time a change shipped without it.
+- =/tmp/bright_faraday_site_build.log= holds the partial output of the last attempt.
+
+Worth checking first: whether the guard's threshold accounts for
+=buff/cache=, and whether the emacs export can be given a heap ceiling so
+its peak is predictable.
+
+
+-
+
+* See also
+
+-

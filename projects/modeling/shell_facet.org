@@ -65,6 +65,6 @@ corresponding =process_*= method.  Call =register_commands= once from
 
 * See also
 
-- [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] — skill that drives this workflow.
+- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] — skill that drives this workflow.
 - [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]] — recipe walkthrough.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

@@ -77,7 +77,7 @@ Tasks are listed in intended execution order.
 | [[id:9388A184-1EFA-4855-8C0B-7FDFE93C3647][Decide the disposition of every external skill]] | DONE | 2026-08-26 | 2026-08-26 | Read every pstack and Matt Pocock skill in full and record a per-skill disposition against the skill architecture: adopt, adapt, harvest or reject, with the reason. |
 | [[id:F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF][Land the skill architecture into policy]] | DONE | 2026-09-10 | 2026-09-10 | Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword. |
 | [[id:1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE][Define the upstream attribution contract for imported skills]] | ABANDONED | | 2026-09-04 | Superseded by the reference approach. Upstream skills are referenced rather than copied, so no fork exists to attribute or drift-check; the classification table in The pstack Collection replaces it. 
-| [[id:629B48C7-BC7E-44A8-8979-3E05D6DA5BFE][Collapse the uniform verbs into polymorphic actions]] | BACKLOG | | | Shrink the execution function before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table. |
+| [[id:629B48C7-BC7E-44A8-8979-3E05D6DA5BFE][Collapse the uniform verbs into polymorphic actions]] | DONE | 2026-09-10 | 2026-09-10 | Shrink the execution function before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table. |
 | [[id:7DFA4343-E553-4D3A-B71F-057329821EE5][Rename every skill into the compass- namespace]] | BACKLOG | | | Mechanical rename of every skill, with every incoming link, catalogue row, runbook, memory and settings entry updated. |
 | [[id:3969C185-48DE-47F0-A00D-FD28CD58C1B0][Tag every skill with its cybernetic level]] | BACKLOG | | | Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees. |
 | [[id:F4EF0C2D-B32E-4705-AE0F-AAC3E027FF59][Separate skill judgement from recipe commands]] | BACKLOG | | | Make every action delegate its commands to a recipe and keep only the judgement, so each has one source of truth. |
@@ -121,6 +121,14 @@ Tasks are listed in intended execution order.
   because one word per concept governs every document. Where the design and
   the architecture disagreed, the architecture won: a session's role is a
   *System*, and /function/ is reserved for a regulatory function.
+- A verb collapses when the /procedure/ is the same, not when the artefact
+  differs. Showing, adding a document and exposing an entity on a surface
+  each turned out to be one procedure over many targets; closing a task did
+  not. The catalogue went from 82 skills to 69 on that test alone.
+- A collapsed skill's table is derived from the thing it describes, so a new
+  document type joins the table by existing rather than by being remembered.
+- The catalogue carries the current set and no ledger of what was removed.
+  What a skill used to be called is in git.
 
 * Out of scope
 

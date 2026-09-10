@@ -6,8 +6,8 @@ title, and description, groups them by domain prefix per the skill
 naming conventions, and rewrites the generated region of
 doc/llm/skills/claude_code_skills.org (between the BEGIN/END
 generated-catalogue markers). Everything outside the markers is
-preserved, so the prose, naming note, retired-skills section, and
-see-also survive regeneration.
+preserved, so the prose, the naming note, and the see-also survive
+regeneration.
 
 The catalogue is derived data: never edit the generated region by
 hand — fix the SKILL.org sources (or this script) and re-run.

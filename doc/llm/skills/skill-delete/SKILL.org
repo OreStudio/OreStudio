@@ -44,19 +44,15 @@ subsumes an old one.
    - no successor → downgrade =[[id:...][name]]= to plain =name=
      text. Never leave a dead id-link.
 
-3. /Record the disposition/. Add the skill to the catalogue's
-   =* Retired skills= section with a one-line reason (superseded by
-   X / dissolved into Y / demoted to Z).
+3. /Remove the source/: =git rm -r doc/llm/skills/<name>/=.
 
-4. /Remove the source/: =git rm -r doc/llm/skills/<name>/=.
-
-5. /Regenerate the catalogue/:
+4. /Regenerate the catalogue/:
 
    #+begin_src sh :results verbatim
    python3 build/scripts/generate_skills_catalogue.py
    #+end_src
 
-6. /Rebuild the bundle and purge the deployed copy/ — deployment
+5. /Rebuild the bundle and purge the deployed copy/ — deployment
    does not remove stale directories:
 
    #+begin_src sh :results verbatim
@@ -64,7 +60,7 @@ subsumes an old one.
    rm -rf .claude/skills/<name>
    #+end_src
 
-7. /Verify the graph/: build the site locally and confirm no broken
+6. /Verify the graph/: build the site locally and confirm no broken
    id-links:
 
    #+begin_src sh :results verbatim
@@ -79,7 +75,7 @@ subsumes an old one.
 
 - [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]] — the policy; deletions follow from its
   structural rules (roles dissolved, reference-only demoted).
-- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — the inventory and its Retired section.
+- [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills catalogue]] — the inventory, which carries the current set and nothing else. What a skill used to be called is in git.
 
 * Artefacts                                                        :noexport:
 

@@ -38,10 +38,7 @@ Stories, tasks, sprints, backlog, journal, orientation.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:E767A313-2E08-4682-8586-39138529385C][agile-add-capture]] | Agile Add Capture | File a single idea or observation into the product backlog inbox as a well-structured capture. |
 | [[id:DD7857D9-068E-D724-5C63-A67BD5F1C009][agile-add-release-notes]] | Agile Add Release Notes | Generate ORE Studio release notes from merged PRs and the closing sprint backlog, then tag main and open a... |
-| [[id:A11D7893-53FB-40BF-B1F1-A760D24D86BC][agile-add-story]] | Agile Add Story | Create a story with docs only — no branch, no journal; backlog refinement and sprint planning use this. |
-| [[id:DBBBE507-E750-40DF-B9EF-06E829836087][agile-add-task]] | Agile Add Task | Add a task to an existing story, docs only — no branch side effects. |
 | [[id:1B837DB5-B27A-451B-A0D0-DD17142476E4][agile-add-timeline-snapshot]] | Agile Add Timeline Snapshot | Create a 20-minute timeline snapshot of recent agile activity; write it to the current sprint's timeline/ f... |
 | [[id:460C89DA-50D2-40C3-88B2-BE52E430D170][agile-brainstorm-idea]] | Agile Brainstorm Idea | Explore user intent and design through collaborative dialogue — one question at a time, alternatives with t... |
 | [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]] | Agile Close Task | Close a task's bookkeeping before raising its PR (not after review): DONE, Result, story and sprint sync; c... |
@@ -51,11 +48,6 @@ Stories, tasks, sprints, backlog, journal, orientation.
 | [[id:FB451B15-9674-4B61-A9F8-7DAEEB4B365A][agile-plan-sprint]] | Agile Plan Sprint | Run a sprint planning session: read the sprint mission, score next-backlog captures against sprint goals, p... |
 | [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] | Agile Refine Backlog | / |
 | [[id:A7B3C241-D8E9-4F0A-B1C2-D3E4F5061728][agile-review-sprint]] | Agile Review Sprint | / |
-| [[id:3D5955A1-008F-4108-AB81-4AE996D96257][agile-show-backlog]] | Agile Show Backlog | Show the product backlog buckets: inbox, next, deferred, discarded. |
-| [[id:618B9D09-7DF7-4928-97DF-2A17F8F50871][agile-show-fleet]] | Agile Show Fleet | Show what every git worktree is doing: branch, story, task, open PR. |
-| [[id:40244FA8-F057-4106-92B6-95EE8B9E1A05][agile-show-journal]] | Agile Show Journal | Show the session journal: where we have been, story and task journeys per worktree. |
-| [[id:6DE89A80-FAD5-4963-B13D-285A0E404930][agile-show-sprint]] | Agile Show Sprint | Show the current sprint's stories grouped by state, and audit for drift. |
-| [[id:B2E5E38E-B2CD-4EFC-99D4-079B6CEC9A16][agile-show-status]] | Agile Show Status | Show where we are: current version, sprint, and in-flight stories and tasks. |
 | [[id:764FFF86-CB1B-4F9B-90B2-5AA2675EEF75][agile-start-hotfix]] | Agile Start Hotfix | Start a hotfix: scaffold story and task on a hotfix/ branch from the production error. |
 | [[id:498C9F9E-2699-47E5-8934-ED3F55CD7E22][agile-start-story]] | Agile Start Story | Pick up a story: fetch main, create the feature branch, mark STARTED, stamp the journal. |
 | [[id:B8A12E7B-0FB0-4871-A132-EA0AA3CBE5E9][agile-start-task]] | Agile Start Task | Pick up a task: switch or create its branch, mark it STARTED, stamp the journal. |
@@ -69,7 +61,6 @@ PR lifecycle.
 | [[id:38ACE767-95D6-4A6E-88A8-EC93BB350292][pr-address-review]] | PR Address Review | Handle one complete PR review round: sync, read comments, decide, fix, push, reply, resolve, record. |
 | [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][pr-merge]] | PR Merge | Merge a PR with guard rails: threads resolved, CI green, task bookkeeping already closed. |
 | [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][pr-raise]] | PR Raise | Run the local code review, then open a pull request with compass pr create and post an @claude comment to t... |
-| [[id:25EDDA60-36D2-4F7C-9D99-D75B43705D08][pr-show-checks]] | PR Show Checks | Show CI check status for a PR, optionally watching until completion. |
 | [[id:D3CF614D-4889-409F-B938-22C877189B07][pr-sync-branch]] | PR Sync Branch | Rebase the current feature branch on origin/main and report divergence; never work on a stale branch. |
 
 * Documentation (=doc-=)
@@ -78,19 +69,19 @@ Recipes, knowledge, manual, memory, diagrams, search.
 
 | Name | Title | Description |
 |------+-------+-------------|
+| [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][doc-add]] | Doc Add | Create a document of any type — story, task, capture, knowledge, recipe, memory and the rest. Scaffold it,... |
 | [[id:E8629813-4F4A-4165-85AA-27BE7F38E32C][doc-add-chart]] | Doc Add Chart | / |
 | [[id:D6D86317-4961-6754-A6DB-9C12B5FAC997][doc-add-class-diagram]] | Doc Add Class Diagram | Author or update a PlantUML class diagram for an ORE Studio component, or the system-level architecture dia... |
 | [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][doc-add-component-model]] | Doc Add Component Model | Create or update component_overview.org and the PlantUML class diagram for an ORE Studio component. |
 | [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]] | Doc Add Entity Chapter | Author a complete user-manual chapter for a reference-data entity, from domain grounding through screenshot... |
 | [[id:8777ABEB-35B6-4216-B2BA-7E3E575A2986][doc-add-er-diagram]] | Doc Add ER Diagram | Author or update the PlantUML ER diagram for the ORE Studio SQL schema — tables, relationships, temporal pa... |
-| [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][doc-add-knowledge]] | Doc Add Knowledge | Create a knowledge document: scaffold, fill Summary and Detail, tag, and wire the knowledge index. |
 | [[id:7357C672-A49F-4974-9399-A166F761D222][doc-add-memory]] | Doc Add Memory | When the user gives feedback worth remembering, or asks "remember this", write or update a memory under doc... |
 | [[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][doc-add-recipe]] | Doc Add Recipe | Add new how-do-I recipes to ORE Studio under doc/recipes/<topic>/. Pick the right topic, scaffold via the c... |
 | [[id:D4B099D0-FF9B-4029-96ED-6EE77439DF41][doc-find]] | Doc Find | Search every document in the repository: full-text search and structured filters over the org-roam graph. |
 | [[id:180D0EB5-C08A-4C96-B266-3DF593E8F5E3][doc-review-academic]] | Review and write academic prose | Layered review of argumentative documentation: claim, spine, paragraph, sentence, term, evidence, honesty. |
 | [[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] | Review and rewrite agent output using ASD-STE100 Simplified Technical English | Rewrites ambiguous English into ASD-STE100 style — one meaning per word, active voice, simple tense, short... |
 | [[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]] | Doc Run Manual Screenshots | Turn a manual chapter's [SCREENSHOT NEEDED] placeholders into real, cropped screenshots -- confirm a build... |
-| [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][doc-show]] | Doc Show | Show one document by UUID or prefix: metadata, blurb, incoming and outgoing links. |
+| [[id:0F8DE59C-9CD1-463A-9148-0B452A985C23][doc-show]] | Doc Show | Show the current state of anything — a document, the sprint, the fleet, the journal, services, CI checks, a... |
 | [[id:4A986B6B-1678-453E-8357-C086E78C0698][doc-sync-index]] | Doc Sync Index | Rebuild the compass search index and org-roam database when they are stale. |
 | [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] | Doc Sync Recipes | Compare a recipe topic's source-of-truth (CLI parsers, HTTP routes, shell commands, SQL scripts, ...) again... |
 | [[id:00F85A2F-547A-4F11-99EB-A46A7DE5AB1C][doc-update-manual]] | Doc Update Manual | When to update the user manual and how: find the right chapter, update prose, add screenshot placeholders,... |
@@ -118,14 +109,11 @@ Entities, components, and schemas produced by ores.codegen.
 
 | Name | Title | Description |
 |------+-------+-------------|
-| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-cli-entity]] | Codegen Add CLI Entity | Create CLI commands for domain entities in ores.cli including import, export, list, delete, and add operati... |
 | [[id:59D662B0-D4E4-6A34-9EAB-EAC6E98F6BC9][codegen-add-component]] | Codegen Add Component | Scaffold a new ORE Studio component (api/core/service) via codegen profiles. |
 | [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] | Codegen Add Entity | Create a complete full-stack ORE Studio entity across all layers via codegen — the orchestrator skill. |
-| [[id:BDCC47D4-B050-409E-8C50-3D179843A274][codegen-add-http-entity]] | Codegen Add HTTP Entity | Create HTTP REST API endpoints for domain entities in ores.http.server including CRUD operations and history. |
 | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]] | Codegen Add QT Entity | Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and co... |
-| [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][codegen-add-shell-entity]] | Codegen Add Shell Entity | Create shell commands for domain entities in ores.shell including list, add, history, and other operations. |
 | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][codegen-add-sql-schema]] | Codegen Add SQL Schema | Guide for creating SQL table definitions, triggers, and population scripts for ORE Studio. |
-| [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][codegen-add-wt-entity]] | Codegen Add WT Entity | Create Wt web UI components for domain entities including list widgets, detail dialogs, and application int... |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | Codegen Add Surface Entity | Add an entity to a user-facing surface — the CLI, the HTTP API, the shell REPL, or the Wt web UI. One three... |
 | [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]] | Codegen Fix Drift | Run one component through the codegen drift-elimination method — baseline regen, survey, profile binding, b... |
 | [[id:B45805F2-BAD4-4879-A571-3C962C79670B][codegen-sync-cmake-sources]] | codegen-sync-cmake-sources | Regenerate CMake component file lists (component_files.cmake) after adding/removing a source file, or after... |
 
@@ -147,7 +135,6 @@ Environment, database, services, shell, client, site.
 | [[id:40DE3AD0-7A32-45FF-9DFA-5F9492187F2A][devops-run-shell]] | Devops Run Shell | Launch ores.shell with NATS and login defaults from .env, interactively or scripted with -f. |
 | [[id:29075D79-6152-4C3A-B9E0-4E97010D8E0B][devops-run-sql]] | Devops Run SQL | Run SQL in the environment via compass with credentials and connection from .env. |
 | [[id:C35F1575-4894-46B9-9356-E68F275CFD3B][devops-setup-environment]] | Devops Setup Environment | Set up a working environment end-to-end: sync indexes, deploy skills and settings, init env, recreate the DB. |
-| [[id:DBAE601D-183D-4B61-85ED-2823E2AF0EEC][devops-show-services]] | Devops Show Services | Show service fleet status: running, stopped, missing. |
 | [[id:96EBB175-83BD-4DD3-B35C-769C86CB3075][devops-start-services]] | Devops Start Services | Start the service fleet and verify everything came up. |
 | [[id:74D7BEDE-5FEC-45AE-9977-CC9A6C5D47A0][devops-stop-services]] | Devops Stop Services | Stop the service fleet cleanly. |
 | [[id:4FA1791F-6E6C-4376-A3B9-3BF913F55ACF][devops-update-environment]] | Update a worktree to latest main | Bring a worktree fully up to date with main: fetch, detached checkout of the latest commit, sync submodules... |
@@ -164,16 +151,6 @@ The skills themselves.
 | [[id:52DA0E52-ABB6-4AC3-A586-BA6336F08FDA][skill-show-catalogue]] | Skill Show Catalogue | Show the skills catalogue nicely grouped by domain prefix, with each skill's name, title, and description —... |
 
 # END generated catalogue
-
-* Retired skills
-
-Removed by the /Action-oriented skill cleanup/ story (sprint 20):
-=run-runbook= (one skill per runbook instead), =pr-manager= and
-=pr-shepherd= (dissolved into the =pr-= set), =feature-branch-manager=
-(dissolved into the lifecycle skills plus =code-start-branch=),
-=agile-product-owner=, =system-architect=, =semi-autonomous-developer=
-(roles dissolved into actions), =design-principles= and
-=icon-guidelines= (demoted to the knowledge docs they fronted).
 
 * Rebuilding skills
 

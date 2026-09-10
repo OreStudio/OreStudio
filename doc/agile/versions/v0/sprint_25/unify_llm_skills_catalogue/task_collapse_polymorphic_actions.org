@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:skills:refactor:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/collapse-polymorphic-actions
+#+pr: 2050
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The catalogue is an N-by-M table written out by hand. Seven add skills are one v
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -44,11 +44,56 @@ The catalogue is an N-by-M table written out by hand. Seven add skills are one v
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The test the goal states is whether the /procedure/ differs, not whether the
+artefact does. Applying it to the catalogue sorted every verb into three
+uniform families and a remainder that survives on its own merits.
+
+Showing is one procedure over many targets. Eight skills held one or two
+steps each: run a compass read command, read its output. They collapse into
+=doc-show=, whose table is the read-only commands, generated from compass's
+own subparser registry.
+
+Adding a document is four beats over every type: scaffold, fill, wire the
+parent index, commit. Four skills held that shape. They collapse into
+=doc-add=, whose table is generated from the =doc_*.org.mustache= templates —
+the document types themselves — so a new type appears in the table by
+existing, with the sections its template declares and the parent-dir default
+compass applies.
+
+Exposing an entity on a surface is one three-phase procedure over four
+surfaces. The four skills differed only in file locations, build target and
+phase contents. They collapse into =codegen-add-surface-entity=.
+
+The remainder survives because the procedure genuinely differs, and each says
+why in its own text: a memory is mostly the judgement of whether to write one,
+a recipe carries a testable script, a skill has registers to parse and a
+bundle to rebuild, the Qt surface generates before it writes.
 
 * Notes
+
+The dangling-link check added earlier in this story caught 22 links left by
+the retirements, in documents the manual survey had missed. The check paid
+for itself on the first refactor that could break the graph.
+
+The surface table is written by hand rather than generated: its four rows
+carry a build target, a patterns document and a walkthrough recipe that live
+in four documents with no common schema to read, and C++ surfaces do not
+churn the way document types do. The document-type table is the generated
+one, which is what the acceptance asks for.
+
+=READ_ONLY= in the generator is the one hand-maintained input, because
+compass has no machine-readable read-only flag. Everything else in a row —
+the command name and its blurb — comes from the parser itself.
+
+Retirement left no ledger. The catalogue's list of removed skills is gone and
+=skill-delete= no longer writes one: the catalogue carries the current set,
+and what a skill used to be called is in git. Two stale deployed documents
+from earlier renames were purged in the same pass.
+
+Closed sprint documents still name the collapsed skills in their own records.
+Those are accounts of what happened at the time rather than descriptions of
+how the system works, so rewriting them would falsify the record. Every live
+document was re-pointed.
 
 * Test Scenarios
 
@@ -65,7 +110,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2050][#2050]] | [doc] Collapse the uniform verbs into polymorphic actions |
 
 * Review
 
@@ -74,3 +119,20 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All six acceptance criteria are met. The catalogue goes from 82 skills to 69.
+
+Every verb is classified. Three families were uniform and are collapsed:
+showing (8 skills into =doc-show=), adding a document (4 into =doc-add=), and
+exposing an entity on a surface (4 into =codegen-add-surface-entity=). Each
+survivor states why its procedure differs rather than merely its artefact.
+
+The document-type table is generated from the =doc_*.org.mustache= templates
+and compass's own parent-dir registries, by
+=build/scripts/generate_skill_type_tables.py=, which carries a =--check= mode
+for CI. The read-only target table is generated from compass's subparser
+registry by the same script.
+
+Every retired skill went through the =skill-delete= procedure: incoming links
+re-pointed, source removed, catalogue regenerated, bundle rebuilt, deployed
+copy purged. =compass lint= confirms no dangling id link remains.

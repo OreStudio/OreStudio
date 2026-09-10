@@ -16,7 +16,7 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *next
 Make *shell entity commands* a top-level story (with one task per component /
 entity group), rather than an "implement shell commands" task buried in each
 =commission_*= story. =ores.shell= has *no codegen profile* (confirmed in the
-=codegen-add-shell-entity= skill's "Codegen gap" section) — every entity's REPL
+=codegen-add-surface-entity= skill's "Codegen gap" section) — every entity's REPL
 commands are hand-written as =<entity>_commands.{hpp,cpp}= under
 =projects/ores.shell/src/app/commands/= (e.g. =currencies_commands.cpp=,
 =countries_commands.cpp=, =parties_commands.cpp=), each defining a submenu and
@@ -63,7 +63,7 @@ separate sibling story.
 
 * References
 
-- Codegen gap: =.claude/skills/codegen-add-shell-entity/SKILL.md= ("Codegen gap"
+- Codegen gap: =.claude/skills/codegen-add-surface-entity/SKILL.md= ("Codegen gap"
   section) and =projects/modeling/shell_facet.org= (class layout, registration,
   operation shapes, file locations).
 - Hand-written exemplars: =projects/ores.shell/src/app/commands/currencies_commands.cpp=,

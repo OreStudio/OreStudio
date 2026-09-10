@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:skills:measurement:instrumentation:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-selection-instrumentation
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ We know skill mis-selection is a real problem because it has been corrected by h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -44,11 +44,43 @@ We know skill mis-selection is a real problem because it has been corrected by h
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The instrument splits along what is knowable at the moment of choosing.
+
+A =PreToolUse= hook on the =Skill= tool records the selection: the skill
+chosen, the session, the environment, how many skills were visible, and
+the attenuation level from =ORES_SKILL_LEVEL=. The hook is the only
+place the selection is observable as it happens, which is what satisfies
+"runs without the agent having to remember": an instrument you have to
+remember measures your memory, not your skill choice.
+
+Whether a selection was *wrong* is not knowable then, so a correction is
+a second, explicit event: =compass skills correct --cause <cause>=,
+against the fixed vocabulary the acceptance names. The log is
+append-only, so a correction never rewrites the selection it judges.
+
+The log is JSONL in the git common directory. Every worktree in the
+fleet shares that directory, so the baseline accrues project-wide
+instead of restarting on each =env provision=.
+
+=compass skills report= reads a window and prints the correction rate,
+the causes ranked, the level split, and the most corrected and most
+chosen skills. The level split is what lets the attenuation axis be
+judged on evidence rather than argued.
 
 * Notes
+
+The hook returns 0 on every path, including a malformed payload and an
+unwritable log. Claude Code treats a failing hook command as a hard
+block of its tool, and blocking every skill invocation to protect a
+metric would be a poor trade.
+
+The catalogue count spans the project, user and plugin skill roots, so
+it reflects what the agent could actually choose from. It read 188 in
+this worktree.
+
+The first report is the zero baseline: the log starts empty and accrues
+from the moment the settings are tangled into a session. The gate that
+wants a populated report is the sequencing function's, not this task's.
 
 * Test Scenarios
 
@@ -71,6 +103,24 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The correction rate divided all corrections by selections, so two corrections on one selection could report over 100% | src/compass_skills.py | Accept | Rate now counts distinct corrected selections; the raw correction count is still shown, and a test pins it |
+| 2 | The durable settings document linked to this task, which =compass lint --strict-links= flags | doc/llm/claude_code_settings.org | Accept | Replaced the link with prose; the lint advisory count is back at its pre-existing 160 |
 
 * Result
+
+Five of the six acceptance criteria are met, and the sixth is a gate on
+a later task.
+
+Every =Skill= invocation records the skills visible, the one chosen, the
+session and the environment, through the =PreToolUse= hook in
+=doc/llm/claude_code_settings.org=. A correction records one word from
+=description=, =catalogue-size=, =level= or =none=. =compass skills
+report= reports the correction rate and the causes ranked over a window.
+The hook needs no cooperation from the agent. The report splits
+selections by attenuation level, so the level axis can be judged on
+evidence.
+
+The first report ran clean against the empty log, which is the zero
+baseline. The reviewed report the acceptance asks for is the gate before
+the sequencing function lands; the instrument that produces it exists
+now.

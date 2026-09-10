@@ -774,6 +774,137 @@ def test_malformed_json_does_not_crash(monkeypatch):
     assert hook.main() == 0
 #+end_src
 
+** Record every skill selection
+
+The selection instrument needs an
+event for every skill the agent picks, and it must not depend on the
+agent remembering to write one: an instrument you have to remember is an
+instrument that measures how good your memory is. A =PreToolUse= hook on
+the =Skill= tool is the only place the selection is observable at the
+moment it happens, so that is where the event is recorded.
+
+The hook records the skill chosen, the session, the environment, how
+many skills were visible to choose from, and the attenuation level. It
+records no judgement: whether a selection was wrong is not knowable at
+the moment of choosing, so a correction is a separate event, written by
+hand with =compass skills correct --cause <cause>=. A cause is one word
+from a fixed set: =description=, =catalogue-size=, =level= or =none=.
+
+The log is append-only JSONL in the git common directory, which every
+worktree in the fleet shares. A per-worktree log would restart the
+baseline on every =env provision=, which defeats the point of a
+measurement that accrues.
+
+*The hook never blocks the tool.* It exists to observe, so every failure
+path returns 0: malformed payload, unreadable log, missing module. It is
+wrapped in the same =if=/=then=/=else= file guard as the piping hook
+above, and for the same reason — a hook command that cannot execute
+blocks its tool outright, and blocking every skill invocation to protect
+a metric would be a poor trade.
+
+#+begin_src python :tangle ../../projects/ores.compass/src/record_skill_selection_hook.py :mkdirp yes :shebang "#!/usr/bin/env python3"
+"""PreToolUse hook: record which skill the agent chose.
+
+Feeds 'compass skills report'. See doc/llm/claude_code_settings.org's
+Hooks section. Observing only: this hook never blocks the Skill tool,
+so every failure path returns 0.
+"""
+import json
+import os
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+
+def main() -> int:
+    try:
+        data = json.load(sys.stdin)
+    except (ValueError, json.JSONDecodeError):
+        return 0
+    if not isinstance(data, dict) or data.get("tool_name") != "Skill":
+        return 0
+    skill = data.get("tool_input", {}).get("skill")
+    if not skill:
+        return 0
+    try:
+        import compass_skills
+        compass_skills.record_selection(
+            data.get("cwd") or os.getcwd(), skill, data.get("session_id"))
+    except Exception:
+        return 0
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+#+end_src
+
+#+begin_src python :tangle ../../projects/ores.compass/tests/test_record_skill_selection_hook.py :mkdirp yes
+"""
+Tests for the skill-selection PreToolUse hook.
+
+Run with:  python -m pytest projects/ores.compass/tests/test_record_skill_selection_hook.py -v
+No live database required.
+"""
+
+import io
+import json
+import sys
+from pathlib import Path
+
+# Allow importing from the src directory without installing the package.
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+import compass_skills
+import record_skill_selection_hook as hook
+
+
+def run(payload, monkeypatch, tmp_path):
+    monkeypatch.setattr(compass_skills, "log_path",
+                        lambda _root: tmp_path / "skill_selections.jsonl")
+    monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(payload)))
+    return hook.main()
+
+
+def events(tmp_path):
+    path = tmp_path / "skill_selections.jsonl"
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line]
+
+
+def test_skill_call_is_recorded(monkeypatch, tmp_path):
+    assert run({"tool_name": "Skill", "session_id": "s1", "cwd": str(tmp_path),
+                "tool_input": {"skill": "pr-merge"}}, monkeypatch, tmp_path) == 0
+    recorded = events(tmp_path)
+    assert len(recorded) == 1
+    assert recorded[0]["kind"] == "selection"
+    assert recorded[0]["skill"] == "pr-merge"
+    assert recorded[0]["session"] == "s1"
+
+
+def test_other_tools_are_ignored(monkeypatch, tmp_path):
+    assert run({"tool_name": "Bash", "tool_input": {"command": "ls"}},
+               monkeypatch, tmp_path) == 0
+    assert events(tmp_path) == []
+
+
+def test_malformed_payload_does_not_crash(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "stdin", io.StringIO("not json"))
+    assert hook.main() == 0
+
+
+def test_recording_failure_never_blocks_the_tool(monkeypatch, tmp_path):
+    def explode(*_args, **_kwargs):
+        raise OSError("log is unwritable")
+    monkeypatch.setattr(compass_skills, "record_selection", explode)
+    monkeypatch.setattr(sys, "stdin", io.StringIO(json.dumps(
+        {"tool_name": "Skill", "cwd": str(tmp_path),
+         "tool_input": {"skill": "pr-merge"}})))
+    assert hook.main() == 0
+#+end_src
+
 #+begin_src json :tangle no :noweb-ref hooks-pretooluse
     "PreToolUse": [
       {
@@ -782,6 +913,15 @@ def test_malformed_json_does_not_crash(monkeypatch):
           {
             "type": "command",
             "command": "sh -c 'f=projects/ores.compass/src/deny_piped_compass_hook.py; if [ -f \"$f\" ]; then python3 \"$f\"; else exit 0; fi'"
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'f=projects/ores.compass/src/record_skill_selection_hook.py; if [ -f \"$f\" ]; then python3 \"$f\"; else exit 0; fi'"
           }
         ]
       }

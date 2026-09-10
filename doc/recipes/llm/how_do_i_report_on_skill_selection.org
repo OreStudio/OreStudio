@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: 7742AC84-C722-4CFA-8D70-8AB1C6DFD45A
+:END:
+#+title: How do I report on skill selection?
+#+description: Read the skill-selection instrument: what compass skills report shows, and how to record a correction.
+#+type: recipe
+#+level: cross
+#+filetags: :llm:skills:measurement:compass:recipe:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+The instrument records every skill the agent chooses, through a
+=PreToolUse= hook on the =Skill= tool. The hook and its rationale live in
+[[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]]; this recipe is how you read what it collected.
+
+* Question
+
+How good is our skill selection, and how do I record that a skill was
+chosen wrongly?
+
+* Answer
+
+** Read the report
+
+#+begin_src sh :results verbatim
+./compass.sh skills report
+#+end_src
+
+The window defaults to 14 days. Pass =--since 6h=, =--since 30d= or
+=--since all=.
+
+The report shows the number of selections, the correction rate, the
+range of catalogue sizes the agent chose from, the causes ranked, the
+split between attenuated and unattenuated sessions, and the most
+corrected and most chosen skills.
+
+** Record a correction
+
+Selection is recorded automatically; whether it was *wrong* is a
+judgement, so it is recorded by hand, right after the correction
+happens:
+
+#+begin_src sh :results verbatim
+./compass.sh skills correct --cause description --chose pr-merge
+#+end_src
+
+This marks the most recent selection. Pass =--selection <id>= to correct
+an earlier one. The cause is one word from a fixed set:
+
+| Cause            | Meaning                                                       |
+|------------------+---------------------------------------------------------------|
+| =description=    | The chosen skill's description misled; another skill fit better |
+| =catalogue-size= | Too many skills were visible to pick well                     |
+| =level=          | The skill was wrong for the acting System                     |
+| =none=           | Corrected, with no cause worth naming                         |
+
+** Where the log lives
+
+Append-only JSONL in the git common directory, so every worktree in the
+fleet appends to one file and the baseline accrues across checkouts
+rather than restarting on each =env provision=. =compass skills report=
+prints the path when the log is empty.
+
+* Script
+
+[[proj:projects/ores.compass/src/compass_skills.py][=projects/ores.compass/src/compass_skills.py=]] holds the command and the
+event shapes. [[proj:projects/ores.compass/src/record_skill_selection_hook.py][=record_skill_selection_hook.py=]] is the hook, tangled from
+[[proj:doc/llm/claude_code_settings.org][=doc/llm/claude_code_settings.org=]].
+
+* Tested by
+
+=projects/ores.compass/tests/test_compass_skills.py= and
+=projects/ores.compass/tests/test_record_skill_selection_hook.py=.
+
+* See also
+
+- [[id:2D83251F-0E24-4B97-B736-08F710316634][Claude Code Settings]] — the hook, and why it records no judgement.
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] — the hook reaches a session only once the settings are tangled.

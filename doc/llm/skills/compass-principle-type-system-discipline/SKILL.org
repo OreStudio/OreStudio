@@ -61,17 +61,27 @@ codebase.
 | Derive from the schema | Regenerate from the entity model. A hand-written type that duplicates a generated shape is drift with a delay on it |
 | Strengthen only where partiality appears | Same rule, and the same stopping point: if nothing would otherwise throw, leave the plain type |
 
-** Exhaustive matching, which C++ does not enforce
+** Exhaustive matching, which nothing here enforces yet
 
 Upstream can rely on the compiler failing when a variant is added. We
-cannot. A =switch= over an =enum class= warns under =-Wswitch= only when
-there is no =default:= label, and a =default:= is exactly what an agent
-adds to silence the warning. That turns a compile error into a silent
-wrong answer the day someone adds a state.
+cannot, and the gap is wider than the language alone makes it.
 
-So: no =default:= on a switch over a closed enum. Handle every enumerator
-explicitly and let the warning do its job. For =std::variant=, an overload
-set with no catch-all gives the same guarantee.
+C++ would warn: =-Wswitch= fires on a =switch= over an =enum class= that
+misses an enumerator, provided there is no =default:= label. This build
+does not enable it. The only warning flag we set is =-Werror=, which
+escalates whatever is already on and does not turn =-Wswitch= on, since
+that arrives with =-Wall=. A non-exhaustive switch therefore compiles
+clean today, with or without a =default:=.
+
+So this is advice with no backstop behind it: handle every enumerator
+explicitly, and do not reach for =default:= on a closed enum, because the
+day the flags are enabled that label is what will hide the missing case.
+For =std::variant=, an overload set with no catch-all fails to compile on
+its own and needs no flag.
+
+Enabling the warning is tracked work rather than a thing to fix in
+passing: 174 files carry a =default:= in a switch, so the flag and the
+sweep arrive together.
 
 ** Branding, which costs more here
 

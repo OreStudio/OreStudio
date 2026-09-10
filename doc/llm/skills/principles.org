@@ -36,7 +36,10 @@ would add variety the agent already commands.
 
 ** Before writing anything
 
-Cited when the shape of the work is still open.
+Cited when the shape of the work is still open. Sequencing belongs here
+rather than at the gate: how the work splits is decided when it is
+planned, and a split settled only as the pull request is opened has
+already cost whatever it was going to cost.
 
 | Principle | Cite it when |
 |-----------+--------------|
@@ -44,6 +47,7 @@ Cited when the shape of the work is still open.
 | =principle-subtract-before-you-add= | Sequencing an addition: what comes out before anything goes in |
 | =principle-redesign-from-first-principles= | Integrating a new requirement into a design that predates it |
 | =principle-build-the-lever= | The work is repetitive: write the script that does it, and hand the reviewer the script |
+| =principle-sequence-verifiable-units= | Splitting the work, and ordering the commits and pull requests it becomes |
 
 ** While designing
 
@@ -72,7 +76,6 @@ Cited at the gate.
 | Principle | Cite it when |
 |-----------+--------------|
 | =principle-prove-it-works= | About to say it is finished: verify against the real artefact |
-| =principle-sequence-verifiable-units= | Splitting work, and ordering the commits and PRs it becomes |
 
 ** After the fact
 

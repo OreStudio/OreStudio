@@ -226,6 +226,10 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                         xsd_t = bond_instrument_mapper::reverse_bond_trs(r);
                     else if (tt == "BondRepo")
                         xsd_t = bond_instrument_mapper::reverse_bond_repo(r);
+                    else if (tt == "BondFuture")
+                        xsd_t = bond_instrument_mapper::reverse_bond_future(r);
+                    else if (tt == "Ascot")
+                        xsd_t = bond_instrument_mapper::reverse_ascot(r);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for bond type: " << tt;
                         return;

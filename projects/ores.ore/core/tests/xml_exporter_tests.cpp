@@ -18,12 +18,15 @@
  *
  */
 #include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/xml/exporter.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -41,6 +44,7 @@ std::filesystem::path example_path(const std::string& filename) {
 
 }
 
+using ores::ore::domain::trade_mapper;
 using ores::ore::xml::exporter;
 using ores::ore::xml::importer;
 using ores::refdata::domain::currency;
@@ -247,6 +251,70 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     CHECK(!xml.empty());
     CHECK(xml.contains("<FxForwardData>"));
     CHECK(xml.contains(imported.front().trade.identity.external_id));
+}
+
+TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto f = example_path("Cash_Ascot.xml");
+    const auto imported = importer::import_portfolio_with_context(f);
+    REQUIRE(imported.size() == 3);
+
+    std::vector<trade_export_item> items;
+    for (const auto& src : imported) {
+        trade_export_item item;
+        item.trade = src.trade;
+        item.instrument = src.instrument;
+        items.push_back(std::move(item));
+    }
+
+    const auto xml = exporter::export_portfolio(items);
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(!xml.empty());
+    CHECK(xml.contains("<AscotData>"));
+    CHECK(xml.contains(imported.front().trade.identity.external_id));
+}
+
+TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
+    auto lg(make_logger(test_suite));
+
+    const std::string doc = R"(
+<Portfolio>
+  <Trade id="RoundtripBondFuture001">
+    <TradeType>BondFuture</TradeType>
+    <BondFutureData>
+      <ContractName>Euro-Bund-Future</ContractName>
+      <ContractNotional>100000</ContractNotional>
+      <LongShort>Long</LongShort>
+      <Currency>EUR</Currency>
+      <ContractMonth>2026-03</ContractMonth>
+      <DeliveryBasket>
+        <Id>DE0001102325</Id>
+      </DeliveryBasket>
+    </BondFutureData>
+  </Trade>
+</Portfolio>
+)";
+    ores::ore::domain::portfolio p;
+    ores::ore::domain::load_data(doc, p);
+    REQUIRE(p.Trade.size() == 1);
+
+    const auto r = trade_mapper::map_bond_instrument(p.Trade.front());
+    REQUIRE(r.has_value());
+
+    trade_export_item item;
+    item.trade.identity.external_id = "RoundtripBondFuture001";
+    item.trade.classification.trade_type = "BondFuture";
+    item.instrument = *r;
+
+    const auto xml = exporter::export_portfolio({item});
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    CHECK(!xml.empty());
+    CHECK(xml.contains("<BondFutureData>"));
+    CHECK(xml.contains("RoundtripBondFuture001"));
+    CHECK(xml.contains("Euro-Bund-Future"));
 }
 
 TEST_CASE("export_portfolio_monostate_items_are_skipped", tags) {

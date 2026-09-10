@@ -106,6 +106,12 @@ TEST_CASE("golden_roundtrip_bond_credit_bond_trs", tags) {
     BOOST_LOG_SEV(lg, info) << "Credit_Bond_TRS golden roundtrip passed";
 }
 
+TEST_CASE("golden_roundtrip_bond_credit_callable_bond", tags) {
+    auto lg(make_logger(test_suite));
+    run_golden_test("Credit_CallableBond.xml");
+    BOOST_LOG_SEV(lg, info) << "Credit_CallableBond golden roundtrip passed";
+}
+
 TEST_CASE("golden_roundtrip_bond_credit_bond_trs_indexings", tags) {
     auto lg(make_logger(test_suite));
     run_golden_test("Credit_Bond_TRS_with_Indexings.xml");

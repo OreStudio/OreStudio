@@ -424,6 +424,82 @@ the export side, where the value is real document data. The import
 side keeps a constant that the schema justifies, and the note here is
 the record of why.
 
+** Wave 2.4, the suites
+
+Three suites carry the wave's assertions.
+=xml_bond_fact_mapper_roundtrip_tests= is new and holds the per-product
+facts: the repo leg and the coupon frequency repair, the TRS price
+type and funding schedule, the future's seventeen columns and its
+delivery basket, the ascot row and its reference swap leg, the whole
+option exercise date list, the callable bond's call dates as child
+rows, the convertible bond's conversion ratios as child rows, and the
+ten-code coverage table.
+
+=xml_bond_source_fidelity_tests= is new and answers a different
+question. The golden suite compares our output to a stored copy of our
+own output, so it catches drift and nothing else. This suite reads the
+ORE documents themselves, canonicalises each one, reads the canonical
+form and canonicalises it again, and requires the two canonical forms
+to be identical. Eleven source documents state a bond trade and all
+eleven are stable. The suite reads the whole examples directory to
+find them, so the count is 132 documents scanned.
+
+The golden suite gains =Credit_CallableBond.xml=, the ninth bond
+product with a stored golden.
+
+** The exporter lost two products
+
+Wave 2.3 added the =BondFuture= and =Ascot= arms to the importer and
+left the exporter's reverse dispatch at seven bond types. A future or
+an ascot therefore counted in =trades_mapped= and never reached the
+output document, because the dispatch logged "No reverse mapper for
+bond type" and returned. No test covered it: the two products have no
+suite-level roundtrip case.
+
+Two exporter cases now cover them. =export_portfolio_ascot_roundtrip=
+drives =Cash_Ascot.xml= through the importer and the exporter and
+requires =AscotData= in the output.
+=export_portfolio_bond_future_roundtrip= builds the trade the tree
+cannot supply, maps it, exports it and requires =BondFutureData=.
+
+** What the diff against the source documents shows
+
+The acceptance asks for the written document to differ from the source
+only in ordering and representation. =scripts/ore_mapper_roundtrip_diff.py=
+is the check. It compares our output to the source document as a
+multiset of (element path, value) pairs, so ordering is invisible by
+construction, and it classifies every remaining pair.
+
+The comparison below runs the stored goldens against the sources they
+came from, which is the domain path
+(=save_data(load_data(document))=). The mapper path is a different
+pair of functions, and its diff belongs to wave 2.5, which runs
+=exporter::roundtrip= over the tree. What follows is the domain
+result, and it sets the baseline the mapper path has to meet.
+
+Over the 132 documents of the examples tree:
+
+- 543 pairs differ in numeric spelling only, with a worst relative
+  error of 5.15e-8. The ORE schema types these fields as =xs:float=
+  and the example documents state more digits than that type holds, so
+  the source over-specifies its own schema and our output is the
+  correctly typed value.
+- 25 pairs differ in boolean spelling only. The schema's =bool= type
+  enumerates =Y=, =YES=, =TRUE=, =True=, =true= and =1=; the examples
+  spell true as an empty element, which is not one of them. Our output
+  writes =Y=.
+- No pair is lost. No pair is unexplained.
+
+** Two inline fixtures were not schema valid
+
+The first run of the new suites failed two cases, both on the
+fixtures the suite authors rather than on the mapper. =CallData=
+requires =IncludeAccruals=, and =totalReturnData= requires
+=ScheduleData=. Both documents now carry them. The failures are worth
+recording because they show the generated parser enforces the
+schema's minimum occurrence rules, which is the property the fixtures
+rely on.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

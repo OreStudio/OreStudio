@@ -1205,6 +1205,96 @@ TEST_CASE("convertible_conversion_ratios_become_rows", tags) {
 }
 
 // =============================================================================
+// The bond members the issue row has no column for
+// =============================================================================
+
+TEST_CASE("a_bonds_calendar_curves_and_notional_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The issue row holds the security, the issuer, the dates, the
+    // coupon terms and the settlement days, and none of these four. The
+    // corpus states all four on every bond, so the container carries
+    // them.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Level_Residue">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <ReferenceCurveId>BENCHMARK_EUR</ReferenceCurveId>
+      <CreditCurveId>CRV_EUR_ISSUER</CreditCurveId>
+      <Calendar>TARGET</Calendar>
+      <BondNotional>8000000</BondNotional>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.calendar);
+    CHECK(*r.calendar == "TARGET");
+    REQUIRE(r.credit_curve_id);
+    CHECK(*r.credit_curve_id == "CRV_EUR_ISSUER");
+    REQUIRE(r.reference_curve_id);
+    CHECK(*r.reference_curve_id == "BENCHMARK_EUR");
+    REQUIRE(r.bond_notional);
+    CHECK(*r.bond_notional == "8000000");
+    CHECK(!r.income_curve_id);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->Calendar);
+    CHECK(std::string(*rt.BondData->Calendar) == "TARGET");
+    REQUIRE(rt.BondData->CreditCurveId);
+    CHECK(std::string(*rt.BondData->CreditCurveId) == "CRV_EUR_ISSUER");
+    REQUIRE(rt.BondData->ReferenceCurveId);
+    CHECK(std::string(*rt.BondData->ReferenceCurveId) == "BENCHMARK_EUR");
+    REQUIRE(rt.BondData->BondNotional);
+    CHECK(std::string(*rt.BondData->BondNotional) == "8000000");
+    CHECK(!rt.BondData->IncomeCurveId);
+
+    BOOST_LOG_SEV(lg, info) << "Bond calendar, curve identifiers and notional survived.";
+}
+
+TEST_CASE("a_forward_bonds_income_curve_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // IncomeCurveId is the one of the four that only a ForwardBond
+    // states, and the forward arm builds its own bondData.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Forward_Bond_Income_Curve">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:XS1234567890</SecurityId>
+        <IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>
+        <Calendar>TARGET</Calendar>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>2025-12-20</ForwardMaturityDate>
+      </SettlementData>
+      <LongInForward>true</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.income_curve_id);
+    CHECK(*r.income_curve_id == "EUR-EURIBOR-6M");
+    REQUIRE(r.calendar);
+    CHECK(*r.calendar == "TARGET");
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    REQUIRE(rt.ForwardBondData->BondData.IncomeCurveId);
+    CHECK(std::string(*rt.ForwardBondData->BondData.IncomeCurveId) == "EUR-EURIBOR-6M");
+    REQUIRE(rt.ForwardBondData->BondData.Calendar);
+    CHECK(std::string(*rt.ForwardBondData->BondData.Calendar) == "TARGET");
+
+    BOOST_LOG_SEV(lg, info) << "Forward bond income curve survived.";
+}
+
+// =============================================================================
 // Product coverage
 // =============================================================================
 

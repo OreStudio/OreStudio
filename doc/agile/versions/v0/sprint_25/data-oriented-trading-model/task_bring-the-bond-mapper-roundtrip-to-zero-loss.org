@@ -310,6 +310,86 @@ the bond-level residue of A.3 and the trade envelope of A.4.
 the mapper and the test suite. =projects/ores.ore/core/src/domain/domain.cpp=
 and every other xsdcpp output are untouched.
 
+** Wave A.3a, the bond members the issue row has no column for
+
+=bondData= states eighteen members. The nine trading tables hold the
+terms =map_bond_data= reads. Five members had no home at all:
+=Calendar=, =CreditCurveId=, =ReferenceCurveId=, =IncomeCurveId= and
+=BondNotional=. The corpus states four of them on every bond product.
+
+*** The container carries the five whole
+
+=bond_instrument_data= grew five =std::optional<std::string>= members:
+=calendar=, =credit_curve_id=, =reference_curve_id=, =income_curve_id=
+and =bond_notional=. An unengaged member means the document omitted the
+element. That is the presence rule wave A.1 set.
+
+The five are =xsd::string= wrappers in the binding, so the map direction
+reads them as =std::string(*bd.Calendar)=. The reverse direction calls
+=set_present_text=, which emits on presence. It keeps the difference
+between an element the document states empty and one it omits.
+
+=BondNotional= is a string on both sides, not a number. The binding
+declares it =xsd:string= and the corpus spells it =8000000=.
+
+=bond_issue= holds no calendar, no curve identifier and no notional
+column, so the container is the only home for the five. Unit B adds
+those columns.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over =external/ore/examples=.
+
+| Measure | A.2b | A.3a |
+|---------+------+------|
+| In-scope lost pairs | 7,751 | 6,761 |
+| In-scope unexplained pairs | 44 | 44 |
+| In-scope lost paths | 65 | 50 |
+
+990 pairs came back and 15 paths left the list whole. No path got worse:
+the path diff holds removals only.
+
+Every =bondData= residue path left the list, for every product that
+carries one: =BondData=, =ForwardBondData/BondData=,
+=AscotData/ConvertibleBondData=, =BondOptionData=, =BondRepoData=,
+=BondTRSData=, =CallableBondData= and =ConvertibleBondData=. One
+=Calendar= path remains, =BondTRSData/TotalReturnData/ScheduleData/Dates/Calendar=,
+and that one belongs to wave A.3b.
+
+*** A defect in the gate, found while measuring
+
+=scripts/ore_mapper_roundtrip_diff.py= classifies a lost pair as a
+boolean spelling when either side is empty and the other side is one of
+the ORE bool spellings:
+
+#+begin_src python
+def is_boolean_pair(left: str, right: str) -> bool:        # lines 143-144
+    return (left == "" and right in ORE_TRUE) or (right == "" and left in ORE_TRUE)
+#+end_src
+
+The docstring gives the reason for one direction only: "the examples
+spell true as an empty element". The second clause is broader than that
+reason. It swallows a real loss whenever a string element happens to
+hold the text =true= and our output states it empty.
+
+Two such paths are in the corpus today, and the gate hides both:
+
+- =/Portfolio/Trade/ForwardBondData/LongInForward=, 35 pairs. The
+  schema declares it =xs:string= and required, and the corpus states
+  =true=.
+- =/Portfolio/Trade/BondTRSData/TotalReturnData/Payer=, 4 pairs. The
+  schema declares it a required string.
+
+A strict classifier, with the second clause removed, reports 39 more
+lost pairs and 39 more unexplained pairs on the same tree: 6,800 and 83
+in place of 6,761 and 44. The boolean class falls from 352 pairs to 313,
+which is the same 39.
+
+The gate now holds the one-directional rule. Re-running it over the same
+tree gives exactly those numbers, so the rule change moves the 39 pairs
+and nothing else. Wave A.3b carries both paths and restores 6,761 and
+44.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

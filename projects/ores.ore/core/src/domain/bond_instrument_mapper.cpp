@@ -684,6 +684,17 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
             issue.settlement_days = std::stoi(settlement_days_str);
     }
 
+    if (bd.Calendar)
+        data.calendar = std::string(*bd.Calendar);
+    if (bd.CreditCurveId)
+        data.credit_curve_id = std::string(*bd.CreditCurveId);
+    if (bd.ReferenceCurveId)
+        data.reference_curve_id = std::string(*bd.ReferenceCurveId);
+    if (bd.IncomeCurveId)
+        data.income_curve_id = std::string(*bd.IncomeCurveId);
+    if (bd.BondNotional)
+        data.bond_notional = std::string(*bd.BondNotional);
+
     // Every leg the document states is carried, in document order.
     for (const auto& ld : bd.LegData)
         data.bond_legs.push_back(map_leg(ld));
@@ -734,6 +745,12 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
         static_cast<std::string&>(sd) = std::to_string(issue.settlement_days);
         bd.SettlementDays = std::move(sd);
     }
+
+    set_present_text(bd.Calendar, data.calendar);
+    set_present_text(bd.CreditCurveId, data.credit_curve_id);
+    set_present_text(bd.ReferenceCurveId, data.reference_curve_id);
+    set_present_text(bd.IncomeCurveId, data.income_curve_id);
+    set_present_text(bd.BondNotional, data.bond_notional);
 
     // The legs are emitted when the document held any, whether or not the
     // columns that mirror the first hold a value: Currency and Notionals

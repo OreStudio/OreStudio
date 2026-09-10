@@ -55,7 +55,7 @@ namespace ores::trading::domain {
  *
  * The remainder members carry what the nine tables cannot store, so
  * that export re-emits what the document held. Each one is a recorded
- * scope limit of task D7943D7E wave 1.3. The exercise dates, the four
+ * scope limit of the fidelity work. The exercise dates, the four
  * leg schedules and the delivery basket go to the parent story's shared
  * instrument-keyed schedule and underlyings tables; the leg payer flags
  * and the total return price type have no column anywhere.
@@ -70,6 +70,22 @@ struct bond_instrument_data final {
      * @brief The issue row holding the bond terms of this trade's security.
      */
     bond_issue issue;
+
+    /**
+     * @brief The bond members the issue row has no column for.
+     *
+     * The reference calendar, the credit, reference and income curve
+     * identifiers, and the stated notional. The corpus states four of
+     * them on every bond product, and the issue row holds none. Unit B
+     * adds them as columns on the issue table; until then the container
+     * is their only home, so export re-emits them from here and an
+     * unengaged member means the document omitted the element.
+     */
+    std::optional<std::string> calendar;
+    std::optional<std::string> credit_curve_id;
+    std::optional<std::string> reference_curve_id;
+    std::optional<std::string> income_curve_id;
+    std::optional<std::string> bond_notional;
 
     /**
      * @brief The issue's call dates, one row per date the call schedule names.

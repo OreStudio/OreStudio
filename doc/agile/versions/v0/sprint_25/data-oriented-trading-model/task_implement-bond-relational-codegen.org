@@ -28,7 +28,7 @@ Bond is the pilot for the relational target model of the trading analysis (dfe15
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave 1.6 done. The loader ran at 1000, 10000 and 20000 rows on a database recreated from HEAD (schema 0.0.25, commit ba0eee6234) with zero findings and clean cleanup at every size. The nine family tables carry 8864 to 10155 rows/sec at 20000 rows, about four times the deliverable's 2200 rows/sec baseline; the aggregate moves between 1419 and 6147 rows/sec across six samples and the movement sits in the legacy tables, not in the new shape. All nine family entities regenerate with zero diff. The numbers and the attribution are in the Notes and the Result. |
+| Now          | Wave 1.6 done. The loader ran at 1000, 10000 and 20000 rows on a database recreated from HEAD (schema 0.0.25, commit ba0eee6234) with zero findings and clean cleanup at every size. The eight family tables carry 8864 to 10155 rows/sec at 20000 rows, about four times the deliverable's 2200 rows/sec baseline; the aggregate moves between 1419 and 6147 rows/sec across six samples and the movement sits in the legacy tables, not in the new shape. All nine family entities regenerate with zero diff. The numbers and the attribution are in the Notes and the Result. |
 | Waiting on   | Nothing.                               |
 | Next         | Wave 1.7, the shell system test: live add, get, history and delete round trips per bond code against the environment, with DB-row and changed-event verification, per the generic-batch protocol on task C36A4ECA of the shell-trading-management story. |
 | Last touched | 2026-09-10                               |
@@ -989,6 +989,8 @@ via its "Verifies task" field.
 | 16 | The draft read a 1.5% notify cost from the =trade_types= attribution, but disabling that trigger moved the reading the wrong way by 5% (and by 1.9% for =bond_instruments=) | task org, the wave 1.6 note | Fixed | Restated as no measurable cost at that resolution, which agrees with the deliverable's 1.5%. |
 | 17 | The draft called five legacy tables "the slowest tables in every run"; in the first 20000 run they are not the top five | task org, the wave 1.6 note | Fixed | Restated: the slowest five in three of the four runs, and inside the slow cluster in the fourth. |
 | 18 | The wave 1.6 record is written while the task stays STARTED, so the Result carries a wave record rather than a closing statement | task org, the Result | Recorded, not changed | The plan asks for the loading-exercise numbers in the task Result. The Result is marked as the wave 1.6 record and the task closes with wave 1.7. |
+| 19 | "The nine family tables carry 8864 to 10155 rows/sec" counts a table the quoted range does not span | task org, the front matter =Now= and the Result | Fixed | "Family tables" in a loader rows/sec context means the eight child and fact tables, per wave 1.5's own sentence and their 2000-rows-each load. =bond_instruments= is reported apart at 7948 to 8423 rows/sec. Both occurrences now read "eight". |
+| 20 | Table cells group thousands with commas while the prose around them does not | task org, the loading-exercise table | Recorded, not changed | The split is the doc's existing convention and predates this wave: tables group, prose does not, as in wave 1.5's "7123 rows/sec". |
 
 * Result
 
@@ -1008,7 +1010,7 @@ every run with zero findings and clean cleanup:
 |    20000 | 836,000 |  589.10 |              1,419 |
 |    20000 | 836,000 |  306.06 |              2,731 |
 
-The nine family tables carry 8864 to 10155 rows/sec at 20000 rows
+The eight family tables carry 8864 to 10155 rows/sec at 20000 rows
 (2000 rows each), about four times the deliverable's 2200 rows/sec
 baseline on the deployed schema and above its 2000 rows/sec sizing
 guidance for a bulk path. =bond_instruments= carries 7948 to 8423

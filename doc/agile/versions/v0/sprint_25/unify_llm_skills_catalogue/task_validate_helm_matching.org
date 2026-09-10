@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 4302B38D-B857-464E-97C1-A7E54A2DE70C
+:END:
+#+title: Task: Validate the matching rule and the decline path in use
+#+description: The matching rule and the mode's refusal are specified and each has at most one run behind it; gather evidence from real uses and amend what the cases break.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Two parts of =compass-helm= are specified and barely used.
+
+The matching rule has one run behind it, on work that matched question 2
+cleanly. A rule validated by a single use has not met the case that
+breaks it, and one such case already surfaced in review before the mode
+shipped: a requirement changing retroactively reads as observably wrong
+while having nothing to root-cause. That produced the /contract already
+in force/ clause, which is itself unvalidated.
+
+The decline path has no runs at all. Step 1 says the mode can refuse
+work that does not earn its cost, and two independent routes reach that
+exit, but nothing has yet gone through it. A refusal nobody has
+exercised is a refusal nobody knows fires.
+
+Gather the evidence from real uses rather than from constructed
+examples, and amend the rule where a case breaks it.
+
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Discovered in review of PR #2059.       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-10                               |
+
+* Acceptance
+
+- At least six real uses of the mode are recorded, with the question that matched and the method chosen.
+- At least one recorded use declines, and the reason it declined is stated.
+- At least one recorded use hits the two-methods case, and which arbitration applied.
+- Every case where the rule gave the wrong answer is recorded, with what the rule was amended to.
+- The /contract already in force/ clause is either confirmed by a case or removed as unnecessary.
+- Where a question never fires across the sample, it is challenged: an unused question is either missing its cases or is not discriminating.
+
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

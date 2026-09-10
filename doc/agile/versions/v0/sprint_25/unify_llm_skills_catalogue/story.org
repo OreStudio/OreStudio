@@ -101,6 +101,7 @@ Tasks are listed in intended execution order.
 | [[id:86F4C1E0-6F35-4AA7-9C95-3991D4F5F831][Delegate the remaining skill commands to recipes]] | DISCOVERED | | | Multi-step skills still carry commands their recipes own; sweep the 105 remaining shell blocks so the command lives in exactly one place. |
 | [[id:A849F82C-0AE6-4217-90FC-F17443B3C168][Enable the compiler warnings the code assumes]] | DISCOVERED | | | The build sets -Werror and nothing else, so -Wall and -Wextra diagnostics never fire; enable them and clear what they surface. |
 | [[id:6D872794-2934-49EA-80EC-F1E64D23AC10][Make a generated marker name a generator that writes it]] | DONE | | | Four documents carry a BEGIN generated marker naming a script that never writes them, so the region reads as derived and is hand-maintained or empty. |
+| [[id:4302B38D-B857-464E-97C1-A7E54A2DE70C][Validate the matching rule and the decline path in use]] | DISCOVERED | | | The matching rule and the mode's refusal are specified and each has at most one run behind it; gather evidence from real uses and amend what the cases break. |
 
 * Decisions
 
@@ -189,6 +190,10 @@ Tasks are listed in intended execution order.
   that carries the discipline. The failure it prevents is reading a
   method and then writing a bespoke plan that drops the inconvenient
   phases.
+- A rule about what counts as wrong must name the contract it is wrong
+  against. Without that anchor, any change of mind about what is correct
+  can be phrased as a symptom and borrow the defect machinery for work
+  that has nothing to root-cause.
 
 * Out of scope
 

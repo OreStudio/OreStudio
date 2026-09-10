@@ -86,8 +86,10 @@ by how sharply they discriminate, not by how common they are.
 
 1. *Does the work change nothing?* The deliverable is an answer, a
    diagnosis, a recommendation. → =compass-method-investigation=.
-2. *Is something already behaving wrongly, observably?* There is a
-   symptom someone could be shown. → =compass-method-bug-fix=.
+2. *Is something already behaving wrongly, observably, against a
+   contract already in force?* There is a symptom someone could be
+   shown, and the behaviour was wrong when it happened rather than made
+   wrong afterwards. → =compass-method-bug-fix=.
 3. *Does behaviour stay the same while structure changes?* A rename, an
    extraction, a collapse, a move. → =compass-method-refactoring=.
 4. *Does the next decision hinge on something observable that nobody has
@@ -98,7 +100,19 @@ by how sharply they discriminate, not by how common they are.
 
 Question 2 outranks question 5 deliberately. Work that adds a capability
 because the current one misbehaves is a defect first: fixing it without
-reproducing it is how a symptom gets papered over with a feature.
+reproducing it is how a symptom gets papered over with a feature. A crash
+under load and an unhandled input both reproduce, root-cause and get
+fixed by adding what was missing, so bug fix is right even though the fix
+adds something.
+
+The clause about a contract already in force is what stops question 2
+swallowing everything. A requirement can change and recast behaviour
+nobody complained about as wrong: an endpoint that has returned 200 for a
+partial success since it shipped, and a new client that needs 207. That
+reads as observably wrong and is not a defect — nothing misbehaved, the
+requirement is what is new, and there is nothing to root-cause. It is
+question 5. Without the clause, any change of mind about what is correct
+could be phrased as a symptom and borrow the bug-fix machinery.
 
 *** When two match
 

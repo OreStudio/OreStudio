@@ -110,7 +110,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Question 2 does not anchor /wrongly/ to an existing contract, so a requirement changing retroactively reads as a defect with nothing to root-cause: an endpoint returning 200 since it shipped, and a new client needing 207 | doc/llm/skills/skill_methods.org | Accept | A case I did not construct and could not have, having written the rule. Q2 now requires the behaviour to have been wrong against a contract already in force, with the counter-example stated so the clause is not later read as pedantry |
+| 2 | Declining is more real than decorative — two independent routes reach it — but no run has exercised it | — | Accept | Folded into the validation task with the matching rule, since both are specified and unproven for the same reason |
+| 3 | Every step binds; the attenuation is live rather than aspirational, evidenced by the regenerated level counts moving | — | Accept | No change. The one thing the reviewer could not check, that the harness loads the skill, this session can: it appeared in the catalogue after the bundle rebuild |
+| 4 | Two tasks in one PR is the right call, because the exercise is the acceptance rather than a stand-in; the cost is that the lint fix cannot now be reverted alone | — | Accept | No change. The cost is real and worth naming, which is why it is recorded here rather than only agreed |
 
 * Result
 

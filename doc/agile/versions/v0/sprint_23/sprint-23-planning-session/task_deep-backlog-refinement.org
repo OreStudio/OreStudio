@@ -2,7 +2,7 @@
 :ID: BF5F062F-49DB-490C-B1B0-89B55A550173
 :END:
 #+title: Task: Deep backlog refinement
-#+description: Run the agile-refine-backlog skill's deep mode: audit every capture in inbox/next/deferred against the live codebase, merge duplicates, and re-score bucket fit against sprint 23's mission.
+#+description: Run the compass-agile-refine-backlog skill's deep mode: audit every capture in inbox/next/deferred against the live codebase, merge duplicates, and re-score bucket fit against sprint 23's mission.
 #+type: task
 #+level: s1
 #+filetags: :sprint-23-planning-session:sprint_23:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Run the =agile-refine-backlog= skill's new deep refinement mode
+Run the =compass-agile-refine-backlog= skill's new deep refinement mode
 (added this same session) end to end: a full audit of every capture
 in =inbox=, =next=, and =deferred=, each one verified against the live
 codebase, duplicates merged, and every bucket re-scored against
@@ -41,7 +41,7 @@ along the way, not just backlog issues.
 
 * Acceptance
 
-- The =agile-refine-backlog= skill's deep mode is run to completion
+- The =compass-agile-refine-backlog= skill's deep mode is run to completion
   across all three buckets.
 - Its report task (=backlog_deep_refinement/task_deep_refinement_1=)
   exists with a filled-in =* Result= per the skill's Step 8 template.
@@ -85,7 +85,7 @@ via its "Verifies task" field.
 
 ** Run on 2026-07-11
 
-First real exercise of the =agile-refine-backlog= skill's new deep
+First real exercise of the =compass-agile-refine-backlog= skill's new deep
 refinement mode (added this same session). Ran as a workflow: a
 discovery agent listed every item in =inbox=/=next=/=deferred=, then
 28 parallel batch agents (20 items each) verified each one against
@@ -167,7 +167,7 @@ carries the complete evidence in its own discard note):
 | [[id:4478AD9B-CD18-4531-BADB-B72ABC7E1050][compass list needs sort and filter: ability to sort results …]] | projects/ores.compass/src/doc_list.py already implements --sort (choices title/updated/path, so date-based recency sort exists) plus --regex... |
 | [[id:706390BA-C55C-48E9-BA41-9D2C19302A26][Compass search: bucketed results by dimension]] | projects/ores.compass/src/compass.py cmd_search (line 406) already implements bucketed output with per-bucket labels, independent --limit fe... |
 | [[id:0CF906C6-E7B9-4298-838D-FE5CFE0DDF31][compass story: add a 'done' verb to close a story]] | projects/ores.compass/src/compass.py:3771 registers a 'done' subparser under cmd_story ('Close a story: flip DONE, update sprint row, stamp ... |
-| [[id:847B0AE4-B857-4B9D-AC8B-A8C2D8D5D667][Create a skill to find bearings]] | doc/llm/skills already contains an 'agile-find-bearings' skill ('Initialise a session — compass-first operation, recipe search for command i... |
+| [[id:847B0AE4-B857-4B9D-AC8B-A8C2D8D5D667][Create a skill to find bearings]] | doc/llm/skills already contains an 'compass-agile-find-bearings' skill ('Initialise a session — compass-first operation, recipe search for command i... |
 | [[id:9239D31D-A4A1-4B43-BFD9-E38957DCDC68][Enforce task result written before PR merge]] | projects/ores.compass/src/compass_pr.py lines ~355-381 already implement a guard: 'Guard: * Result section must have substantive prose' and ... |
 | [[id:900F8BB7-15F6-4DB4-A49A-DAFF4F7E7D4D][Fix operational-party association bug in tenant provisioning]] | Capture's own Update section documents root cause and fix; verified stamp_account_party() exists in projects/ores.iam/core/include/ores.iam.... |
 | [[id:367D0D5F-24BB-4AA1-B784-D79E95C15A16][Fix rfl complexity failure in ClientManagerTradeDetail (Windows + macOS)]] | projects/ores.qt.api/src/ClientManagerTradeDetail.cpp no longer exists (find returned nothing); get_trade_detail_instrument_wrapper is not f... |
@@ -193,7 +193,7 @@ carries the complete evidence in its own discard note):
 | [[id:2B6ADBAA-D57E-4FDF-856A-38FE756E596B][Change reason and categories need permissions]] | iam_permissions_populate.sql already defines dq::change_reasons:read/write/delete and dq::change_reason_categories:read/write/delete permiss... |
 | [[id:BCA7EFA9-B9DA-43FC-8D70-45B315FC24C2][Implement recursive CTE in compute_visible_party_ids]] | projects/ores.sql/create/refdata/refdata_party_functions_create.sql lines 100-120 define ores_refdata_visible_party_ids_fn with a `WITH RECU... |
 | [[id:CCCE264F-BE1F-4D97-BBC2-D4267FD0A9AF][Fix country combo box sizing in tenant wizard]] | projects/ores.qt/api/include/ores.qt/WidgetUtils.hpp:133-138 defines setupComboBoxes() which calls combo->setMaxVisibleItems(10) and install... |
-| [[id:5F6CC067-6836-460F-9B19-83CFA75EF9E9][Create basic manual]] | A user manual already exists and is actively maintained: doc-add-entity-chapter and doc-update-manual skills exist, devops-deploy-manual ski... |
+| [[id:5F6CC067-6836-460F-9B19-83CFA75EF9E9][Create basic manual]] | A user manual already exists and is actively maintained: compass-doc-add-entity-chapter and compass-doc-update-manual skills exist, compass-devops-deploy-manual ski... |
 | [[id:45F696E5-34EE-4DCF-8F8F-76CB19ACA855][Currencies: Currency Taxonomy Enrichment]] | ores_refdata_currencies_tbl already has both requested fields: 'monetary_nature' (projects/ores.sql/create/refdata/refdata_currencies_create... |
 | [[id:6F7F7D67-2815-47C8-B91D-C50F15A6970A][Expand repository test coverage and infrastructure]] | projects/ores.dq/core/tests/repository_change_reason_repository_tests.cpp and repository_change_reason_category_repository_tests.cpp already... |
 | [[id:636F5860-F6A6-439E-8257-A442E2D471FF][Extend login flow with party selection]] | Fully implemented: login_protocol.hpp has available_parties/selected_party_id fields (projects/ores.iam/api/include/ores.iam.api/messaging/l... |
@@ -215,8 +215,8 @@ carries the complete evidence in its own discard note):
 | [[id:57060FAB-8DA3-4B00-A156-CCC56125BFD7][Update currency details to use tabs]] | CurrencyDetailDialog.ui already implements a QTabWidget with tabs: General (incl. Icon), Formatting, Rounding, Provenance -- the Provenance ... |
 | [[id:556F7392-1B01-406A-BC4B-80394633C12F][Use exponential backoff for database problems]] | projects/ores.database/src/service/postgres_listener_service.cpp already implements exponential backoff (min_backoff=1s, max_backoff=5s, bac... |
 | [[id:A9B0EE8B-CD11-4524-9A94-7DD65E153E21][Work units should use a combo box]] | ores.compute already has a full WorkunitDetailDialog (projects/ores.qt/compute/src/WorkunitDetailDialog.cpp, ui/WorkunitDetailDialog.ui) wit... |
-| [[id:0EA51F00-4A5D-4358-A0F9-13E90CB23A5A][Add claude continuous learning skill]] | The repo already has an extensive, actively maintained skill system under doc/llm/skills (skill-add, skill-review, skill-delete, skill-show-... |
-| [[id:6A0950D7-BE0B-4775-B244-9F57779CD067][Add skill to review product backlog]] | doc/llm/skills/agile-refine-backlog exists: 'Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull... |
+| [[id:0EA51F00-4A5D-4358-A0F9-13E90CB23A5A][Add claude continuous learning skill]] | The repo already has an extensive, actively maintained skill system under doc/llm/skills (compass-skill-add, compass-skill-review, compass-skill-delete, skill-show-... |
+| [[id:6A0950D7-BE0B-4775-B244-9F57779CD067][Add skill to review product backlog]] | doc/llm/skills/compass-agile-refine-backlog exists: 'Run a backlog housekeeping session: scan the next/deferred captures, clarify descriptions, cull... |
 | [[id:5B0BF2A0-912D-4501-8CA0-ED4E0F6ACCE3][Consider adding "global search" via typesense]] | grep -rli typesense across the repo only turns up this capture and doc mentioning it; but the same functional need (searching across docs) i... |
 | [[id:5F669F9A-526A-4A74-A97F-ADD161DE2BB6][Consider adding otel support]] | projects/ores.telemetry/core exists with exporting/log_exporter.hpp, file_log_exporter, hybrid_log_exporter and ores.logging integrates tele... |
 | [[id:8FF2DF33-C51B-4D82-85EB-337216FEF402][Design and implement instrument/trade integration]] | Design and implementation already completed: doc/plans/2026-03-31-instrument-trade-model-and-export.org (ID D4D975DB-A525-45E3-B383-581E51AE... |

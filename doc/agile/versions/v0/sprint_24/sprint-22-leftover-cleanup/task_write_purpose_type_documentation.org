@@ -71,9 +71,9 @@ while writing the section — filed as two backlog captures
 them.
 
 Manual PDF builds cleanly with the two =[SCREENSHOT NEEDED]=
-placeholders in place. Per [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]]'s scope, this task
+placeholders in place. Per [[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][compass-doc-add-entity-chapter]]'s scope, this task
 stops at content-complete; screenshot capture
-([[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][doc-run-manual-screenshots]]) and human prose/factual review are still
+([[id:9CCEF67E-1BCF-440B-8112-093B40085A7C][compass-doc-run-manual-screenshots]]) and human prose/factual review are still
 needed before DONE.
 
 Screenshots captured via [[id:AAD9755F-88E1-4A1C-B927-DA94A2492438][the test scenario]] (PASSED); while working the

@@ -23,7 +23,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 Produce the release notes for Sprint 21, now that it is closed:
 summarise merged PRs and the closed sprint 21 backlog into release
 notes, tag =main=, and open a draft GitHub release. Use the
-=agile-add-release-notes= skill.
+=compass-agile-add-release-notes= skill.
 
 * Status
 

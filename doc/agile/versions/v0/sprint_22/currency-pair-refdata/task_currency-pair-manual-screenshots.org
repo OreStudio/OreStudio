@@ -54,7 +54,7 @@ the =[SCREENSHOT NEEDED]= markers — the same close-out pattern used by
 
 ** Environment setup
 
-1. Ready up the environment (=devops-run-environment= skill), default
+1. Ready up the environment (=compass-devops-run-environment= skill), default
    Barclays Plc (GLEIF) provisioner — this seeds a realistic spread of
    currency pairs and conventions, including at least one JPY cross.
 2. Confirm the Barclays seed includes both a major (e.g. =EUR/USD=)
@@ -63,7 +63,7 @@ the =[SCREENSHOT NEEDED]= markers — the same close-out pattern used by
    Conventions-window screenshot's decimal-places contrast. If not
    present, create them by hand via the Currency Pairs / Currency Pair
    Conventions detail dialogs before capturing.
-3. Start the Qt client (=devops-run-client= skill) and log in as
+3. Start the Qt client (=compass-devops-run-client= skill) and log in as
    =tenant_admin@barclays_plc=, party BARCLAYS PLC.
 
 ** Capture checklist

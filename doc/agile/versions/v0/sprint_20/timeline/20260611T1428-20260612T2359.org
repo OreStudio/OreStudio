@@ -45,9 +45,9 @@
 | [[id:938FAA5F-78A3-473E-BACA-362E659BF457][Take timeline snapshot for sprint 20 session — 2026-06-11]] | updated | [local3] |
 | [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | BACKLOG → STARTED | [local4] |
 | [[id:F0BD9872-7F7C-4CC3-B420-4D20280F1F4D][Brainstorm and design the codegen model dashboard]] | updated ×3 | [local4] |
-| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | updated ×2 | [local2] |
-| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | STARTED → DONE | [local2] |
-| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add agile-find-heading skill wrapping compass heading]] | created (STARTED) | [local2] |
+| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add compass-agile-find-heading skill wrapping compass heading]] | updated ×2 | [local2] |
+| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add compass-agile-find-heading skill wrapping compass heading]] | STARTED → DONE | [local2] |
+| [[id:5F7B9EDB-EE92-499E-B1A3-7C9A9AE173E0][Add compass-agile-find-heading skill wrapping compass heading]] | created (STARTED) | [local2] |
 | [[id:4765F8D9-6E5E-41A2-8B90-BCD28D2E4EAF][Add PR count badges to readme.org]] | updated | [local3] |
 | [[id:8D0D9CDF-F772-4783-B582-2610ED36D1BE][Fix ORES_SITE_PORT to use env base port]] | updated ×2 | [local1] |
 | [[id:8D0D9CDF-F772-4783-B582-2610ED36D1BE][Fix ORES_SITE_PORT to use env base port]] | created (DONE) | [local1] |
@@ -110,9 +110,9 @@
 |----+-------+-------|
 | #1262 | opened | [agile,site] Sprint health: timeline snapshot + README PR badges |
 | #1260 | merged | [compass] Fix ORES_SITE_PORT to use env base port range |
-| #1263 | opened | [llm] Add agile-find-heading skill wrapping compass heading |
+| #1263 | opened | [llm] Add compass-agile-find-heading skill wrapping compass heading |
 | #1264 | opened | [agile] Brainstorm and design the Codegen Model Dashboard |
-| #1263 | merged | [llm] Add agile-find-heading skill wrapping compass heading |
+| #1263 | merged | [llm] Add compass-agile-find-heading skill wrapping compass heading |
 | #1262 | merged | [agile,site] Sprint health: timeline snapshot + README PR badges |
 | #1265 | opened | [site] Hotfix: bare symbol for ores/site-preamble in project alist |
 | #1264 | merged | [agile] Brainstorm and design the Codegen Model Dashboard |

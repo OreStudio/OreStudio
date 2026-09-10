@@ -2,7 +2,7 @@
 :ID: 9A548F0C-659A-4DE9-A44D-97DA0365309F
 :END:
 #+title: Task: Gate the PR review round on unaddressed comments
-#+description: pr-address-review and its runbook synced/rebased before checking whether a round existed, churning CI and force-pushing for nothing.
+#+description: compass-pr-address-review and its runbook synced/rebased before checking whether a round existed, churning CI and force-pushing for nothing.
 #+type: task
 #+level: s1
 #+filetags: :llm:runbook:pr:compass_quality_of_life:sprint_20:v0:
@@ -19,7 +19,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a step-0 gate to the handle-PR-review-round runbook and the pr-address-review skill: read the comments first; stop (without syncing) when no comments exist yet, the reviewer is still running, or every comment is already replied and resolved. Sync/rebase only when there is an actual round to handle.
+Add a step-0 gate to the handle-PR-review-round runbook and the compass-pr-address-review skill: read the comments first; stop (without syncing) when no comments exist yet, the reviewer is still running, or every comment is already replied and resolved. Sync/rebase only when there is an actual round to handle.
 
 * Status
 
@@ -61,6 +61,6 @@ plan itself stays — it is the historical record of what we did.)
 * Result
 
 Gate added as step 0 of the handle-PR-review-round runbook and step 1
-of the pr-address-review skill; skills rebuilt. Trigger: review
+of the compass-pr-address-review skill; skills rebuilt. Trigger: review
 rounds run on PR #1163 synced and force-pushed before discovering the
 reviewers had not even posted yet.

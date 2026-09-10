@@ -107,7 +107,7 @@ first, mirroring
 =ores.synthetic.fx_spot_generation_config.org='s own
 =price_source=/=vintage_source=/=vintage_date= sections and Checks
 table entries, then regenerate (=codegen-add-domain-type= /
-=code-run-build= codegen step) rather than hand-editing generated
+=compass-code-run-build= codegen step) rather than hand-editing generated
 output:
 
 - =price_source= (text, default ="fixed"=, not ="vintage"= — IR curve

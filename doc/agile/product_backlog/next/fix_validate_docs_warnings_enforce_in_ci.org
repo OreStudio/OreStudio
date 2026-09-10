@@ -28,7 +28,7 @@ SQL schema.
 
 * Why
 
-The check exists and is runnable locally (=doc-add-component-model=
+The check exists and is runnable locally (=compass-doc-add-component-model=
 skill references it) but nothing enforces it — component documentation
 has drifted silently across most of the codebase with no CI signal.
 =validate_schemas.sh= proves the pattern works well for SQL; the same

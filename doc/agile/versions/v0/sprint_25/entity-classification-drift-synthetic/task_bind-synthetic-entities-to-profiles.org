@@ -2,7 +2,7 @@
 :ID: EF070701-8ABF-43AE-B235-C77B9C4473A4
 :END:
 #+title: Task: Bind ores.synthetic entities to profiles; verify zero-diff regen
-#+description: Implement profile binding for the synthetic catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the codegen-fix-drift skill.
+#+description: Implement profile binding for the synthetic catalogue entry, rebind every matching entity, regenerate, and confirm byte-identical output, following the compass-codegen-fix-drift skill.
 #+type: task
 #+level: s1
 #+filetags: :codegen:drift:tooling:sprint_25:v0:entity-classification-drift-synthetic:
@@ -44,7 +44,7 @@ Survey every ores.synthetic entity against the profile catalogue, rebind matches
 * Plan
 
 Unit plan, written at start on 2026-09-07. The canonical method is the
-codegen-fix-drift skill (steps 1-8); the byproduct-sweep and two-mode
+compass-codegen-fix-drift skill (steps 1-8); the byproduct-sweep and two-mode
 drift rules of the regen-byproduct-hygiene memory are in force
 throughout.
 
@@ -142,7 +142,7 @@ refused - environmental. Second run (NATS up): 67/71.
 - =ores.iam.core.tests= / =ores.refdata.core.tests=: failed with no
   detail captured in the run excerpt; their publish tests ran very
   slowly (10-30s each) - investigate with the
-  code-investigate-test-failure loop.
+  compass-code-investigate-test-failure loop.
 
 Next: investigate the four suites (enable logging, per-test logs),
 fix at source, rerun to 71/71, then skill step 8 (KNOWN_DRIFT_FREE

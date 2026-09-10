@@ -68,11 +68,11 @@ Three separate failures, and they compound.
 *** The catalogue is an N-by-M table written out by hand
 
 =agile-add-story=, =agile-add-task=, =agile-add-capture=,
-=doc-add-knowledge=, =doc-add-recipe=, =doc-add-memory=,
-=codegen-add-component= are seven skills that are the same verb applied
+=doc-add-knowledge=, =compass-doc-add-recipe=, =compass-doc-add-memory=,
+=compass-codegen-add-component= are seven skills that are the same verb applied
 to seven artefact types. =agile-show-sprint=, =agile-show-backlog=,
 =agile-show-journal=, =agile-show-fleet=, =agile-show-status=,
-=doc-show= are one verb applied to six. Adding an eighth artefact type
+=compass-doc-show= are one verb applied to six. Adding an eighth artefact type
 means writing another row of cells by hand, and every row we forget to
 write is a capability the agent cannot find.
 
@@ -233,13 +233,13 @@ next method inherits. That makes the sequencing function accumulate capability
 instead of re-deriving it, and it means every method step is
 reproducible by a human running the same recipe.
 
-It also fixes a boundary we currently blur. =pr-merge= the skill and
+It also fixes a boundary we currently blur. =compass-pr-merge= the skill and
 /How do I merge a PR?/ the recipe both carry the command today. Under
 this architecture the skill delegates the command to the recipe and
 keeps only the judgement: when to reach for it, what must hold first,
 what to do when the guard rails refuse. One source of truth for the
 command, one for when to run it. This shrinks skills further, and it
-gives the existing [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][doc-sync-recipes]] audit exactly one place to detect
+gives the existing [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][compass-doc-sync-recipes]] audit exactly one place to detect
 drift.
 
 **** Domain grounding: knowledge is the model, and the model must cover the domain
@@ -524,7 +524,7 @@ Two companions complete the model:
   that payload, per the export rule above.
 
 Note the division of labour against an existing skill:
-=agile-find-heading= answers /which work should I pick up?/.
+=compass-agile-find-heading= answers /which work should I pick up?/.
 =compass-act= answers /what verb applies to this noun?/. They are
 different questions and both are needed.
 
@@ -547,12 +547,12 @@ The helm is where a vessel is steered from, and taking the helm is
 exactly what this skill does: the session adopts a standing posture for
 how work will be done. It also sits correctly beside the nautical terms
 we already use — bearings, heading, fleet, journey — and against
-=agile-find-heading= specifically. *Heading is which way we are going;
+=compass-agile-find-heading= specifically. *Heading is which way we are going;
 helm is how we steer.* Those are different questions and the names now
 say so.
 
 The name is a bare noun, which the naming policy admits only for rare
-domain verbs with no object, as with =pr-merge=. This is a deliberate
+domain verbs with no object, as with =compass-pr-merge=. This is a deliberate
 register extension and belongs in the decision log. The plain
 alternative is =compass-mode=, which is accurate, forgettable, and
 carries no relationship to anything else we have named.
@@ -642,7 +642,7 @@ One consequence to accept deliberately. Because the name carries no
 origin, the frontmatter and the manifest become the *only* record that
 a skill was imported. If either is skipped, the provenance is simply
 gone. That is why the attribution contract must be enforced by
-=skill-add= at authoring time rather than left to discipline.
+=compass-skill-add= at authoring time rather than left to discipline.
 
 ** The single-model constraint
 
@@ -776,15 +776,15 @@ to carry the ideas worth having.
 #+ATTR_HTML: :class hug-leading
 | Item | First pass | After reading | Why it changed |
 |------+------------+---------------+----------------|
-| =writing-for-agents= | "Fold into skill-add" | *Adopt whole; it supersedes skill-add* | It is a theory of agent-facing documentation, not a style guide. Nothing we have is close |
+| =writing-for-agents= | "Fold into compass-skill-add" | *Adopt whole; it supersedes compass-skill-add* | It is a theory of agent-facing documentation, not a style guide. Nothing we have is close |
 | =diagnosing-bugs= | Adopt | *Adopt, and treat as the model for every method* | "Phase 1 is the skill. Everything else is mechanical" |
 | =wayfinder= | Adopt | Adopt, and take the *fog of war* model | Its "map is an index, not a store" rule is our story-as-hub rule, reached independently |
 | =tdd= | Prefer over pstack's | Adopt, for two parts I had not seen | Pre-agreed seams, and the tautological-test anti-pattern |
-| =code-review= | "Fold into code-review-pr" | *Keep the two-axis separation* | Standards and Spec must not be reranked against each other |
+| =code-review= | "Fold into compass-code-review-pr" | *Keep the two-axis separation* | Standards and Spec must not be reranked against each other |
 | =visual-parity= | Reject, UI-specific | *Harvest the anti-shortcut clauses* | They generalise to every gate we own, including drift |
 | =hillclimb= | Nearly rejected | Harvest the harness discipline | Prove the ruler's sensitivity, then freeze it |
-| =babysit= | "Maps to pr-address-review" | Harvest two rules | The fix order, and review text as untrusted data |
-| =shipping= | "Maps to pr-merge" | Harvest the verdict model | Green is not safe; a verdict expires when the SHA changes |
+| =babysit= | "Maps to compass-pr-address-review" | Harvest two rules | The fix order, and review text as untrusted data |
+| =shipping= | "Maps to compass-pr-merge" | Harvest the verdict model | Green is not safe; a verdict expires when the SHA changes |
 | =perf-issue= | Adopt as a method | *Split*: the method is thin, the eight strategy families are knowledge | They are hypothesis generators, and belong in the grounding regulatory function |
 
 *** The single most valuable thing in either catalogue
@@ -1005,7 +1005,7 @@ section rather than the file.
 
 Some artefacts carry their own conventions and take none of the three.
 Commit messages follow the project's git conventions, code comments
-follow [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][code-review-comments]], and frontmatter, tables and generated
+follow [[id:5A95BE6A-2B11-402F-A427-71F93FA06A25][compass-code-review-comments]], and frontmatter, tables and generated
 blocks follow their document type's contract. This exclusion already
 exists in embryo: CLAUDE.md mandates ASD-STE100 for user-facing prose
 and exempts structured output. Making the list explicit is part of the
@@ -1013,7 +1013,7 @@ work.
 
 **** The consequence for our existing skill
 
-[[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][doc-review-ste100]] currently claims all user-facing agent prose. Under
+[[id:ADDFBA8F-EAE3-47DD-9FFA-A171DA47ABA3][compass-doc-review-ste100]] currently claims all user-facing agent prose. Under
 this division that is nearly right but stated too broadly: its subject
 is the agent's conversational output, and applying it to a knowledge
 document would flatten the argued structure that makes the document

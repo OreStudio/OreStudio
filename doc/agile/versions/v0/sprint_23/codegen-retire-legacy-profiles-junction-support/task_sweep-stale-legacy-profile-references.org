@@ -29,10 +29,10 @@ trusting this list alone:
   Model for the theory") — likely describes the Profile Metamodel in
   terms of the now-deleted system; needs correcting or re-pointing at
   the physical-space model instead.
-- =doc/llm/skills/code-add-domain-type/SKILL.org= — already flagged and
+- =doc/llm/skills/compass-code-add-domain-type/SKILL.org= — already flagged and
   partially fixed earlier this sprint for a different stale-JSON-model
   issue (see commit history around "Fix stale codegen-model instructions
-  in code-add-domain-type"); re-check it doesn't also reference
+  in compass-code-add-domain-type"); re-check it doesn't also reference
   =--profile=/=facet_catalogue.org=.
 - =projects/ores.codegen/docs/codegen_input_org_schema.org= — the
   authoritative schema reference for model files; check its framing of
@@ -117,7 +117,7 @@ rewrite — it referenced the deleted =src/generator.py= module layout,
 not just the profile system), all =doc/recipes/codegen/*.org=,
 =doc/recipes/qt/how_do_i_create_entity_ui.org=,
 =doc/recipes/sql/how_do_i_create_entity_schema.org=, the
-=codegen-add-*=/=code-add-domain-type= skills, the
+=codegen-add-*=/=compass-code-add-domain-type= skills, the
 =create_a_new_component= runbook, =doc/llm/claude_code_settings.org=
 (permission allowlist), the =projects/modeling/*.org= physical-space
 design docs (=applied_masd.org=, =variability_model.org=, per-facet

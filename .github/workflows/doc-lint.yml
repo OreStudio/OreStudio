@@ -46,6 +46,12 @@ jobs:
         # traversal, and nothing else reports it.
         run: ./projects/ores.compass/compass.sh --no-deps lint
 
+      - name: Check every skill is in the compass- namespace
+        # The prefix separates the skills this project owns from every
+        # plugin skill the harness also loads.
+        run: |
+          python3 build/scripts/rename_skills_to_compass_namespace.py --check
+
       - name: Check the catalogue is current
         # Derived from the SKILL.org sources it lists.
         run: python3 build/scripts/generate_skills_catalogue.py --check

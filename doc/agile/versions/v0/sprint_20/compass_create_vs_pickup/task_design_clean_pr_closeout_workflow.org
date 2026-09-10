@@ -47,14 +47,14 @@ decisions validated explicitly.
   the real first task can no longer be wrongly closed by a PR that
   contains no work on it. Honest noise: +1 task per story for work
   that genuinely happens.
-- /Merge never touches task state./ =agile-close-task= is the
+- /Merge never touches task state./ =compass-agile-close-task= is the
   explicit final step of the review round: it writes DONE + Result +
   story/sprint sync and the commit rides the PR before merge — no
-  bookkeeping PR ever again. =pr-merge= only merges, keeping its
+  bookkeeping PR ever again. =compass-pr-merge= only merges, keeping its
   thread/CI guards plus a warning when the branch's task is still
   STARTED. Tasks legitimately spanning several PRs work naturally.
-- Canonical lifecycle: =agile-start-task= -> work ->
-  =pr-address-review= (rounds) -> =agile-close-task= -> =pr-merge=.
+- Canonical lifecycle: =compass-agile-start-task= -> work ->
+  =compass-pr-address-review= (rounds) -> =compass-agile-close-task= -> =compass-pr-merge=.
   The scaffold task follows the identical path — no special cases.
 - Rejected: opt-in scaffold-task flag (relies on remembering),
   taskless scaffold PRs (breaks PR-task traceability), close-on-merge

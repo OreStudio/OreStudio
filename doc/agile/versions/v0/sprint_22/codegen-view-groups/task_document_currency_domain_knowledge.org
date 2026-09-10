@@ -64,7 +64,7 @@ all.
 * Plan
 
 1. Marked all four Currency Details screenshot captions per the
-   =doc-update-manual= skill's convention (=[SCREENSHOT OUTDATED —
+   =compass-doc-update-manual= skill's convention (=[SCREENSHOT OUTDATED —
    retake needed]=), including newly embedding the previously-unused
    Rounding screenshot asset.
 

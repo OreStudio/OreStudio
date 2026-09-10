@@ -162,7 +162,7 @@ None caused by this run. Pre-existing (from sprint audit):
 
 *** Skill bug found and fixed
 
-The [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][agile-refine-backlog]] skill's Step 7a scaffolded the deep-refinement
+The [[id:5358EC5A-F7FD-473A-A8AB-AF77E4D83A58][compass-agile-refine-backlog]] skill's Step 7a scaffolded the deep-refinement
 story into =doc/agile/product_backlog/= as a "standing home" — but
 stories being worked on belong in a sprint, not the product backlog.
 Fixed the skill to scaffold into the current sprint instead, matching

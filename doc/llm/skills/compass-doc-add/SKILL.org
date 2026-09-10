@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: D3767A34-DC32-4366-ADAB-534D6FC4C607
+:END:
+#+title: Doc Add
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: cross
+#+filetags: :llm:skill:skills:claude_code:compass:
+#+created: 2026-06-06
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-doc-add
+description: Create a document of any type — story, task, capture, knowledge, recipe, memory and the rest. Scaffold it, fill its sections, wire its parent index, commit. One verb over every document type.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Creating a document. Every type follows the same four beats — scaffold, fill,
+wire, commit — so this is one skill and a table, and the table says what
+differs per type.
+
+This verb creates the artefact and nothing else. Picking up a unit of work is
+=compass-agile-start-task=: that one branches, stamps the journal, and moves state.
+
+* How to use this skill
+
+1. /Pick the type/. Unsure which document a thing is? Take the first match in
+   the placement procedure in
+   [[id:7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85][Skill naming conventions]].
+   Then find its row in the table below.
+
+2. /Scaffold it/ with the row's command. Compass fills the frontmatter and
+   generates the =:ID:=, so never hand-write either.
+
+   #+begin_src sh :results verbatim
+   ./projects/ores.compass/compass.sh add knowledge --slug my_topic --title "My topic"
+   #+end_src
+
+   The row's /Lands in/ column says where it goes. Where that column names a
+   default, compass derives the parent from where you are, and =--parent-dir=
+   overrides it.
+
+3. /Fill every section/ the row names. A scaffold left with its placeholder
+   prose is worse than no document: it reads as content and says nothing.
+   Use the real generated =:ID:= values in any links you add.
+
+4. /Wire the parent index/. A document nothing links to is invisible to
+   search and to the graph, whatever its content. A story wires into the
+   sprint's =* Stories= table, a task into its story's =* Tasks= table,
+   knowledge into its topic index, a recipe into its topic page.
+
+5. /Commit/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]], with the component
+   bracket the type calls for: =[agile]= for a story or task, the bucket name
+   for a capture, =[doc]= for the rest.
+
+** Types
+
+# BEGIN generated types (build/scripts/generate_skill_type_tables.py)
+
+One row per document type. The scaffold command, where it lands, and the sections the template leaves for you to fill.
+
+#+ATTR_HTML: :class hug-leading
+| Type | Scaffold | Lands in | Sections to fill |
+|------+----------+----------+------------------|
+| =archetype= | =compass add archetype= | =--parent-dir= | =Summary=, =The {{slug}} archetype=, =See also= |
+| =capture= | =compass add capture= | =doc/agile/product_backlog/inbox= | =What=, =Why=, =References=, =See also= |
+| =component= | =compass add component= | =--parent-dir= | =Diagram=, =Summary=, =Inputs=, =Outputs=, =Entry points=, =Dependencies=, =See also= |
+| =dataset= | =compass add dataset= | =projects/ores.seeder/datasets/<name>/= | =Summary=, =Contents=, =Why this dataset=, =See also= |
+| =entity_org= | =compass add entity_org= | =projects/ores.<component>/modeling/= | =Flags=, =Primary key=, =Natural keys=, =Columns=, =SQL=, =Foreign keys=, =Insert trigger=, =C++=, =See also= |
+| =facet= | =compass add facet= | =projects/ores.codegen/library/templates= | =Summary=, =The {{slug}} facet=, =Mustache incantations=, =Templates=, =See also= |
+| =facet_group= | =compass add facet_group= | =projects/ores.codegen/library/templates= | =Summary=, =Facets=, =Shared conventions=, =See also= |
+| =feature= | =compass add feature= | =projects/modeling/= | =Identity=, =Effect=, =Structural consequence=, =Used by=, =See also= |
+| =field_group= | =compass add field_group= | =projects/ores.<component>/modeling/= | =Includes=, =Fields= |
+| =investigation= | =compass add investigation= | =--parent-dir= | =Context=, =Methodology=, =Paths taken=, =Conclusions=, =Recommendations=, =See also= |
+| =junction= | =compass add junction= | =--parent-dir= | =Left=, =Right=, =Columns=, =SQL=, =Repository=, =C++=, =See also= |
+| =knowledge= | =compass add knowledge= | =--parent-dir= | =Summary=, =Detail=, =See also= |
+| =lookup_entity= | =compass add lookup_entity= | =--parent-dir= | =Primary key=, =Columns=, =Artefact indexes=, =See also= |
+| =manual= | =compass add manual= | =doc/manual/user_guide= | — |
+| =memory= | =compass add memory= | =doc/llm/memory= | — |
+| =product_identity= | =compass add product_identity= | =--parent-dir= | =Vision=, =Out of scope=, =Relationship to versions= |
+| =profile= | =compass add profile= | =projects/modeling/= | =Purpose=, =Reference entity=, =Assignments=, =See also= |
+| =recipe= | =compass add recipe= | =--parent-dir= | =Question=, =Answer=, =Script=, =Tested by=, =See also= |
+| =release_notes= | =compass add release_notes= | =--parent-dir= | =🎬 Demo=, =✅ Highlights=, =🛠️ Key Improvements=, =⚠️ Known Issues & Postponed=, =📈 Sprint Charts=, =📊 Time Summary= |
+| =runbook= | =compass add runbook= | =--parent-dir= | =Goal=, =Preconditions=, =Steps=, =Postconditions=, =See also= |
+| =service_registry= | =compass add service_registry= | =--parent-dir= | =ores.example.service= |
+| =skill= | =compass add skill= | =doc/llm/skills= | =When to use this skill=, =How to use this skill=, =Recipes=, =Reference= |
+| =sprint= | =compass add sprint= | =the current version= | =Mission=, =Status=, =Stories=, =Achievements=, =Captures=, =Health Review=, =Charts=, =Retrospective= |
+| =story= | =compass add story= | =the current sprint= | =Goal=, =Status=, =Acceptance=, =Tasks=, =Decisions=, =Out of scope= |
+| =task= | =compass add task= | =--parent-dir= | =Goal=, =Status=, =Acceptance=, =Plan=, =Notes=, =Test Scenarios=, =PRs=, =Review=, =Result= |
+| =technical_space= | =compass add technical_space= | =--parent-dir= | =Summary=, =Facets=, =See also= |
+| =test_scenario= | =compass add test_scenario= | =--parent-dir= | =Before you start=, =Scenario Info=, =Steps=, =Results=, =Notes= |
+| =version= | =compass add version= | =--parent-dir= | =Identity=, =Mission=, =Definition of done=, =Status=, =Sprints=, =Release scope= |
+
+# END generated types
+
+Some types are worth their own skill because their procedure genuinely
+differs, not because their artefact does: writing a memory is mostly the
+judgement of whether to write one at all
+([[id:7357C672-A49F-4974-9399-A166F761D222][compass-doc-add-memory]]), a recipe
+carries a testable script ([[id:28AAF9A6-B1E4-402A-83BB-289090990FB8][compass-doc-add-recipe]]),
+and a skill has registers to parse and a bundle to rebuild
+([[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][compass-skill-add]]).
+
+* Recipes
+
+- [[id:3153AA4B-23D4-4111-9710-5A4971102EDC][How do I create a new doc?]]
+- [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]
+
+* Reference
+
+- [[id:8B29A8D8-E004-4E87-B81D-ABEAF68F2B98][Document types]] — the contract each type in the table above must meet.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — why a uniform verb is one skill plus a type table.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

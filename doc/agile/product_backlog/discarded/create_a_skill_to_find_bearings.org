@@ -11,7 +11,7 @@
 
 This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *discarded* bucket of the product backlog.
 
-*Resolved (deep backlog refinement, 2026-07-11)*: doc/llm/skills already contains an 'agile-find-bearings' skill ('Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary and suggested next action'), which is exactly the skill requested.
+*Resolved (deep backlog refinement, 2026-07-11)*: doc/llm/skills already contains an 'compass-agile-find-bearings' skill ('Initialise a session — compass-first operation, recipe search for command info, bearings, then a summary and suggested next action'), which is exactly the skill requested.
 
 * What
 

@@ -26,20 +26,23 @@ CATALOGUE = SKILLS_DIR / "claude_code_skills.org"
 BEGIN = "# BEGIN generated catalogue (build/scripts/generate_skills_catalogue.py)"
 END = "# END generated catalogue"
 
-# Prefix -> (section heading, blurb). Order defines section order.
+NAMESPACE = "compass-"
+
+# Domain -> (section heading, blurb). Order defines section order. The
+# domain is the segment after the namespace prefix.
 DOMAINS = {
-    "agile": ("Agile (=agile-=)",
+    "agile": ("Agile (=compass-agile-=)",
               "Stories, tasks, sprints, backlog, journal, orientation."),
-    "pr": ("Pull requests (=pr-=)", "PR lifecycle."),
-    "doc": ("Documentation (=doc-=)",
+    "pr": ("Pull requests (=compass-pr-=)", "PR lifecycle."),
+    "doc": ("Documentation (=compass-doc-=)",
             "Recipes, knowledge, manual, memory, diagrams, search."),
-    "code": ("Hand-written code (=code-=)",
+    "code": ("Hand-written code (=compass-code-=)",
              "Build, tests, review, investigation — code written by hand."),
-    "codegen": ("Generated code (=codegen-=)",
+    "codegen": ("Generated code (=compass-codegen-=)",
                 "Entities, components, and schemas produced by ores.codegen."),
-    "devops": ("DevOps (=devops-=)",
+    "devops": ("DevOps (=compass-devops-=)",
                "Environment, database, services, shell, client, site."),
-    "skill": ("Skills (=skill-=)", "The skills themselves."),
+    "skill": ("Skills (=compass-skill-=)", "The skills themselves."),
 }
 
 # Planned-but-not-yet-created skills, shown as prose under each section.
@@ -75,7 +78,10 @@ def generate():
     for d in sorted(SKILLS_DIR.iterdir()):
         if not d.is_dir() or not (d / "SKILL.org").is_file():
             continue
-        prefix = d.name.split("-", 1)[0]
+        # Every skill we own is compass-<domain>-..., so the domain that
+        # groups the catalogue is the second segment.
+        name = d.name[len(NAMESPACE):] if d.name.startswith(NAMESPACE) else d.name
+        prefix = name.split("-", 1)[0]
         if prefix in groups:
             groups[prefix].append(d)
         else:

@@ -71,4 +71,4 @@ via its "Verifies task" field.
 * Result
 
 Scaffolded the story/task docs and sprint wiring for this hotfix via
-=agile-start-hotfix=; the implementation task carried the actual PR (#1482).
+=compass-agile-start-hotfix=; the implementation task carried the actual PR (#1482).

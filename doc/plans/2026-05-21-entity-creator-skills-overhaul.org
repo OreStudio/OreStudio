@@ -109,10 +109,10 @@ skipping any layer is not permitted without explicit user approval.
 | 1 | Domain + SQL + repository + service + protocol | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | =--profile all= |
 | 2 | Qt UI | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | =--profile qt= |
 | 3 | Qt plugin wiring | =qt-menu-toolbar= | (manual; see [[id:E44891DC-234C-42DB-90E1-9421400ABD1A][Qt menu and toolbar patterns]]) |
-| 4 | HTTP endpoints | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | ❌ GAP — implement profile first |
+| 4 | HTTP endpoints | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP — implement profile first |
 | 5 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | ❌ GAP — implement profile first |
-| 6 | Shell commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | ❌ GAP — implement profile first |
-| 7 | Wt UI | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | ❌ GAP — implement profile first |
+| 6 | Shell commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP — implement profile first |
+| 7 | Wt UI | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | ❌ GAP — implement profile first |
 
 3. *Gap protocol*: when a layer is marked ❌ GAP, stop, raise a sprint
    story to create the missing codegen profile, and link it here before
@@ -262,10 +262,10 @@ new knowledge doc once it has an ID.
 | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][Domain Type Creator Skill]] | Add Templates section |
 | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][SQL Schema Creator Skill]] | Add Templates section |
 | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][Qt Entity Creator Skill]] | Add Templates section |
-| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | Add Codegen gap section |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Add Codegen gap section |
 | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][CLI Entity Creator Skill]] | Add Codegen gap section |
-| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | Add Codegen gap section |
-| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | Add Codegen gap section |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Add Codegen gap section |
+| [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] | Add Codegen gap section |
 
 * Verification
 

@@ -94,20 +94,20 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-| [[https://github.com/OreStudio/OreStudio/pull/2003][#2003]] | [skills] Add codegen-fix-drift drift-elimination skill |
+| [[https://github.com/OreStudio/OreStudio/pull/2003][#2003]] | [skills] Add compass-codegen-fix-drift drift-elimination skill |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-| 5534510135 | Typo: "Work arounds are not a fix." | codegen-fix-drift/SKILL.org | Fixed | One word: "Workarounds". |
-| 5534510135 | Dangling id-link A57C28EA has no defining :ID: | codegen-fix-drift/SKILL.org | Declined | The :ID: is defined at projects/modeling/variability_profiles.org:2, the real Variability Profiles doc; the reviewer's id search missed the projects/modeling tree. |
-| 5534510135 | Skill is 187 lines against the 50-80 thin-index contract; Recipes empty | codegen-fix-drift/SKILL.org | Noted, no change | Matches actual catalogue practice (agile-refine-backlog 346, code-review-comments 408); contract-vs-norm divergence is a separate question, not this PR's defect. |
+| 5534510135 | Typo: "Work arounds are not a fix." | compass-codegen-fix-drift/SKILL.org | Fixed | One word: "Workarounds". |
+| 5534510135 | Dangling id-link A57C28EA has no defining :ID: | compass-codegen-fix-drift/SKILL.org | Declined | The :ID: is defined at projects/modeling/variability_profiles.org:2, the real Variability Profiles doc; the reviewer's id search missed the projects/modeling tree. |
+| 5534510135 | Skill is 187 lines against the 50-80 thin-index contract; Recipes empty | compass-codegen-fix-drift/SKILL.org | Noted, no change | Matches actual catalogue practice (compass-agile-refine-backlog 346, compass-code-review-comments 408); contract-vs-norm divergence is a separate question, not this PR's defect. |
 
 * Result
 
-Closed 2026-09-04. The canonical method ships as the =codegen-fix-drift=
-skill (=doc/llm/skills/codegen-fix-drift/SKILL.org=, ID
+Closed 2026-09-04. The canonical method ships as the =compass-codegen-fix-drift=
+skill (=doc/llm/skills/compass-codegen-fix-drift/SKILL.org=, ID
 7908E2AF-E196-443F-8FB7-0047553D8EFE) in this PR (c5f51aeb9f,
 62cbd692d7, 400620bbf0, a4e2bd8fc5). The name extends the skill naming
 verb register with =fix-=, recorded in that document's decision log.

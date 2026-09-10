@@ -18,7 +18,7 @@ analytics) where layout decides cache and vectorisation performance,
 and /persisted domain data/ (entities, reference data, trades) where
 the value-semantics and shape of the C++ types decide cost. A third
 regime, the wire format, applies the same axioms to NATS messages and
-JSON. The [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] skill reviews a
+JSON. The [[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] skill reviews a
 component's data model against the criteria below; this page is the
 canonical statement of those criteria.
 
@@ -146,7 +146,7 @@ which one it applies to:
   Codegen cannot emit a =shared_ptr= or a hand-rolled codec. Walking
   a guarantee per entity rubber-stamps it. Spot-check each invariant
   once per component on the generated output, or rely on the codegen
-  drift check (the [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][codegen-fix-drift]] skill owns drift). Hand-written
+  drift check (the [[id:7908E2AF-E196-443F-8FB7-0047553D8EFE][compass-codegen-fix-drift]] skill owns drift). Hand-written
   domain types in the =core= facet have no generator; walk both
   tables in full on them.
 
@@ -214,6 +214,6 @@ component's regime is a review error, not a finding.
 
 - [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] — the sibling criteria set for general
   component and PR review.
-- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][code-review-component]] — the broad whole-component audit this lens
+- [[id:DADF4117-757A-4EEF-A137-CC2EE8023C73][compass-code-review-component]] — the broad whole-component audit this lens
   complements.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this page belongs to.

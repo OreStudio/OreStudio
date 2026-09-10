@@ -48,7 +48,7 @@ compass already has.
   cleanly — no crash, a clear "unresolved" result.
 - [X] No new index is built or maintained by =ores.orgmode= — it only
   reads the existing database =compass index= produces.
-- [X] A minimal =ores.shell= command (=doc-show <path>=) demonstrates
+- [X] A minimal =ores.shell= command (=compass-doc-show <path>=) demonstrates
   parsing a doc and following at least one resolved link, proving the
   component works end-to-end outside Qt.
 
@@ -94,7 +94,7 @@ their own translation units. Opens with =SQLITE_OPEN_READONLY=
 explicitly — this class must never write to compass's index.
 
 Demonstrated end-to-end via a new, NATS-free =ores.shell= command,
-=doc-show <path>=: parses the file, prints its id/type/title/heading
+=compass-doc-show <path>=: parses the file, prints its id/type/title/heading
 count, depth-first-searches for the first =id:= link in the document,
 and resolves it. Tried it against two real docs from the shell
 (without logging in, confirming no NATS dependency): the parser
@@ -129,7 +129,7 @@ target file rather than the unrelated =CATEGORY= column, and never
 writes to the index. 4 new Catch2 test cases (fixture-DB unit tests
 plus a real-=.org-roam.db= integration test) — 47 assertions / 12
 cases total in the component now, all passing. Demonstrated end-to-end
-via a new NATS-free =ores.shell doc-show <path>= command: verified live
+via a new NATS-free =ores.shell compass-doc-show <path>= command: verified live
 against two real task docs, correctly resolving one real link
 (task → parent story) and correctly reporting one non-link-shaped
 =[[id:...][...]]= example string as unresolved.

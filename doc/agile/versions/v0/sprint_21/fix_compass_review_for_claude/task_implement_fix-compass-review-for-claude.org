@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-compass review list, reply and resolve all work correctly when the automated reviewer is the Claude bot (issue-level comments) rather than a human reviewer (GitHub review threads). The pr-address-review skill and runbook reflect the updated behaviour.
+compass review list, reply and resolve all work correctly when the automated reviewer is the Claude bot (issue-level comments) rather than a human reviewer (GitHub review threads). The compass-pr-address-review skill and runbook reflect the updated behaviour.
 
 * Status
 

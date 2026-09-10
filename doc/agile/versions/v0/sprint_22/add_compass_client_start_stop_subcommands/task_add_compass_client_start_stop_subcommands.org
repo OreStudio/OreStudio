@@ -2,7 +2,7 @@
 :ID: 22B3B8D4-3937-47BB-B378-847D72F95D12
 :END:
 #+title: Task: Implement compass client start/stop subcommands
-#+description: Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation.
+#+description: Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the compass-devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation.
 #+type: task
 #+level: s1
 #+filetags: :compass:cli:devx:sprint_22:v0:add_compass_client_start_stop_subcommands:
@@ -89,7 +89,7 @@ PID file name.
 =cmd_client= → =cmd_client_start=, reworked =run_client()= to use
 =start=/=stop= subparsers like =run()= (services). Updated
 =projects/ores.compass/src/compass.py='s top-level help text, the
-=devops-run-client= skill, and =doc/manual/user_guide/chapter_2_connecting.org=.
+=compass-devops-run-client= skill, and =doc/manual/user_guide/chapter_2_connecting.org=.
 Verified live: =compass client start --colour green ...= launched
 =ores.qt=, =compass client stop --colour green= terminated it cleanly
 (SIGTERM, exited within grace period); =compass client stop --colour

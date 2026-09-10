@@ -46,7 +46,7 @@ real task is born BACKLOG with no branch.
 - =compass story new= creates a scaffold task that owns the branch
   and is clocked on (STARTED + journal); the first real task is
   BACKLOG with no branch.
-- The start-unit-of-work recipe and the agile-start-task skill
+- The start-unit-of-work recipe and the compass-agile-start-task skill
   describe the new behaviour.
 
 * Plan
@@ -77,4 +77,4 @@ scaffolds a "Scaffold story" task that owns the branch and is clocked
 on automatically, while the first real task is born BACKLOG and
 unbranched — the scaffold PR can no longer close a task whose work
 has not happened. Dry-run plan updated to show all three documents.
-Recipe and agile-start-task skill updated.
+Recipe and compass-agile-start-task skill updated.

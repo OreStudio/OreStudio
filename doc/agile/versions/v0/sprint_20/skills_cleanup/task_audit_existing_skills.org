@@ -2,7 +2,7 @@
 :ID: 7ED9E952-5AFF-4061-A327-BA3F8A42D6DC
 :END:
 #+title: Task: Audit existing skills: rename or delete per convention
-#+description: Review all ~40 existing skills in .claude/skills against the naming convention and the compass command map. Rename skills to action-oriented names (e.g. sprint-planner becomes agile-plan-sprint), delete or merge skills that overlap with the new compass workflow skills, and update all cross-references.
+#+description: Review all ~40 existing skills in .claude/skills against the naming convention and the compass command map. Rename skills to action-oriented names (e.g. sprint-planner becomes compass-agile-plan-sprint), delete or merge skills that overlap with the new compass workflow skills, and update all cross-references.
 #+type: task
 #+level: s1
 #+filetags: :skills:cleanup:audit:skills_cleanup:sprint_20:v0:
@@ -61,35 +61,35 @@ audit-time rename, 3 kept as-is):
 
 | Old | Fate |
 |-----+------|
-| sprint-planner | agile-plan-sprint |
-| sprint-reviewer | agile-review-sprint |
-| new-sprint | agile-open-sprint |
-| backlog-refiner | agile-refine-backlog |
+| sprint-planner | compass-agile-plan-sprint |
+| sprint-reviewer | compass-agile-review-sprint |
+| new-sprint | compass-agile-open-sprint |
+| backlog-refiner | compass-agile-refine-backlog |
 | capture | agile-add-capture |
-| brainstorming | agile-brainstorm-idea |
-| relese-notes-generator | agile-add-release-notes (typo fixed) |
-| init-session | agile-find-bearings (already implemented the action) |
-| recipe-author | doc-add-recipe |
-| manual-updater | doc-update-manual |
-| ores-memory | doc-add-memory |
-| ores-recipe-sync | doc-sync-recipes |
-| plantuml-class-modeler | doc-add-class-diagram |
-| plantuml-er-modeler | doc-add-er-diagram |
-| component-model-creator | doc-add-component-model |
-| tufte-viz | doc-add-chart |
-| cmake-runner | code-run-build |
-| unit-test-writer | code-add-tests |
-| test-failure-investigator | code-investigate-test-failure |
-| domain-type-creator | code-add-domain-type |
-| entity-creator | codegen-add-entity |
+| brainstorming | compass-agile-brainstorm-idea |
+| relese-notes-generator | compass-agile-add-release-notes (typo fixed) |
+| init-session | compass-agile-find-bearings (already implemented the action) |
+| recipe-author | compass-doc-add-recipe |
+| manual-updater | compass-doc-update-manual |
+| ores-memory | compass-doc-add-memory |
+| ores-recipe-sync | compass-doc-sync-recipes |
+| plantuml-class-modeler | compass-doc-add-class-diagram |
+| plantuml-er-modeler | compass-doc-add-er-diagram |
+| component-model-creator | compass-doc-add-component-model |
+| tufte-viz | compass-doc-add-chart |
+| cmake-runner | compass-code-run-build |
+| unit-test-writer | compass-code-add-tests |
+| test-failure-investigator | compass-code-investigate-test-failure |
+| domain-type-creator | compass-code-add-domain-type |
+| entity-creator | compass-codegen-add-entity |
 | qt/cli/http/shell/wt-entity-creator | codegen-add-{qt,cli,http,shell,wt}-entity |
-| component-creator | codegen-add-component |
-| sql-schema-creator | codegen-add-sql-schema |
-| skill-manager | skill-add |
-| code-review-pr, code-review-component, skill-review | kept (already conformant) |
+| component-creator | compass-codegen-add-component |
+| sql-schema-creator | compass-codegen-add-sql-schema |
+| skill-manager | compass-skill-add |
+| compass-code-review-pr, compass-code-review-component, compass-skill-review | kept (already conformant) |
 | run-runbook | deleted — one skill per runbook |
 | pr-manager, pr-shepherd | deleted — dissolved into the pr- set |
-| feature-branch-manager | deleted — lifecycle skills + code-start-branch |
+| feature-branch-manager | deleted — lifecycle skills + compass-code-start-branch |
 | agile-product-owner, system-architect, semi-autonomous-developer | deleted — roles dissolved into actions |
 | design-principles, icon-guidelines | deleted — demoted to their knowledge docs |
 
@@ -120,7 +120,7 @@ standalone scripts into compass/ story.
 
 All 41 pre-existing skills audited and dispositioned: 29 renamed to
 register-conformant action names (including init-session →
-agile-find-bearings), 9 retired (4 dissolved roles/managers, 2
+compass-agile-find-bearings), 9 retired (4 dissolved roles/managers, 2
 demoted to knowledge, run-runbook + pr-manager + pr-shepherd
 superseded), 3 already conformant. Verb register extended with
 review/update/open/investigate/brainstorm. Living docs (functions,

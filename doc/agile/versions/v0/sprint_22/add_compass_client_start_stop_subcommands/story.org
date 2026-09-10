@@ -40,7 +40,7 @@ compass.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:22B3B8D4-3937-47BB-B378-847D72F95D12][Implement compass client start/stop subcommands]] | DONE | | 2026-07-03 | Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation. |
+| [[id:22B3B8D4-3937-47BB-B378-847D72F95D12][Implement compass client start/stop subcommands]] | DONE | | 2026-07-03 | Rework run_client() in compass_services.py to use argparse subparsers matching compass services; rename cmd_client to cmd_client_start; extract the PID-terminate logic from cmd_stop's closure into a shared _terminate() helper and add cmd_client_stop. Update the compass-devops-run-client skill and user-manual chapter_2_connecting references from the old flat compass client invocation. |
 
 * Decisions
 

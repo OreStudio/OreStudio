@@ -71,6 +71,6 @@ editable field.
 
 * See also
 
-- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] — skill that drives this workflow.
+- [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][compass-codegen-add-surface-entity]] — skill that drives this workflow.
 - [[id:6FDB2F56-789F-4AD4-879E-BA5A1621F807][How do I create Wt widgets for a new entity?]] — recipe walkthrough.
 - [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering overview.

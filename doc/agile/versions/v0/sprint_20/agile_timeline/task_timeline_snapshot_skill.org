@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-Add a =compass timeline snapshot= command and an =agile-add-timeline-snapshot=
+Add a =compass timeline snapshot= command and an =compass-agile-add-timeline-snapshot=
 skill so the LLM can produce structured 20-minute activity buckets and store
 them in the sprint's =timeline/= folder.  Each snapshot is a scan-first org
 file with Stories, Tasks, Captures, PRs, Problems/suspicious-decisions, and
@@ -82,7 +82,7 @@ plan itself stays — it is the historical record of what we did.)
   generates a UUID per snapshot, and writes the structured org file.
 - Event-count cap of 20 per bucket enforced with a warning on overflow.
 - Audit section auto-flags items closed without =#+environment:= stamp.
-- Created =doc/llm/skills/agile-add-timeline-snapshot/SKILL.org= and deployed
+- Created =doc/llm/skills/compass-agile-add-timeline-snapshot/SKILL.org= and deployed
   via =compass build skills=.
 - Created =doc/recipes/compass/how_do_i_create_a_timeline_snapshot.org=.
 - Added skill to =doc/llm/skills/claude_code_skills.org=.

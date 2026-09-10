@@ -39,7 +39,7 @@ We import skills from two repositories that keep moving. Without a recorded orig
 - A manifest document lists every imported skill with its upstream repository, path and commit.
 - A compass command reports which imported skills are behind their upstream.
 - The MIT licence of each source repository ships with the imported skills, alongside ours.
-- The skill-add skill enforces the contract when the new skill is an import.
+- The compass-skill-add skill enforces the contract when the new skill is an import.
 
 * Plan
 

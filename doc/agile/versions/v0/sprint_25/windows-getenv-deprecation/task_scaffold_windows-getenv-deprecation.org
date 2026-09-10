@@ -72,7 +72,7 @@ via its "Verifies task" field.
 
 Story and task docs scaffolded on =hotfix/windows-getenv-deprecation=
 (off origin/main), sprint Hotfixes wiring updated, story STARTED with
-the implement task in BACKLOG. The doc-add-memory flow also ran in
+the implement task in BACKLOG. The compass-doc-add-memory flow also ran in
 this session: memory =Use ores.platform for cross-platform
 functionality= recorded and wired into the Project memory inventory.
 Scaffold PR opened from this branch.

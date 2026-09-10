@@ -90,7 +90,7 @@ provisioners data-driven against it:
    and marked =[SCREENSHOT OUTDATED — retake needed]= (the 4th,
    report-definitions-page screenshot, removed outright along with
    its section since that page no longer exists) — recapturing needs
-   the =doc-run-manual-screenshots= skill against a live app, out of
+   the =compass-doc-run-manual-screenshots= skill against a live app, out of
    scope for this pass. Also removed the now-orphaned
    =party_provisioner_report_definitions.png= asset.
 7. Superseded task B9410C52 ("Party re-provisioning fails on

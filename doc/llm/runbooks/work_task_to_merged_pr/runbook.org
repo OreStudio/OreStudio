@@ -76,7 +76,7 @@ In execution order:
 
 5a. /Run the local code review./ The automatic GitHub review
    (=claude-code-review.yml=) is retired; the local review is the
-   review coverage now. Run the [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][code-review-pr]] skill on the
+   review coverage now. Run the [[id:04CA6BD9-7739-4213-A9DC-17AAACE43252][compass-code-review-pr]] skill on the
    change, record its findings in the task's =* Review= table with
    their decisions, and address the accepted ones before raising the
    PR. The misspell check (=misspell-fixer .=; exit 0 = clean) is part
@@ -139,7 +139,7 @@ In execution order:
 
     The guards refuse while threads are unresolved or CI is not
     green; merge never touches task state (a STARTED task is a hard
-    stop, not a warning — see [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][pr-merge]]), retries GitHub's transient
+    stop, not a warning — see [[id:D36BCA19-8926-4E06-8C0B-7F607BD3D4EC][compass-pr-merge]]), retries GitHub's transient
     base-branch-modified race, and deletes the remote branch. See
     [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].
 

@@ -2,7 +2,7 @@
 :ID: F8C1211F-475F-430F-9729-11725CC71354
 :END:
 #+title: Task: Delete set_ssh_agent.sh now compass self-heals SSH_AUTH_SOCK
-#+description: compass.sh adopts the agent socket from ORES_SSH_AGENT_DIR when SSH_AUTH_SOCK is unset or dead (QoL task, DONE), so the standalone script is residue. Delete it and update every referer: the SSH memory, the pr-sync-branch skill, claude_code_settings.org (permission allowlist + prose) with a settings rebuild, and the script inventory rows.
+#+description: compass.sh adopts the agent socket from ORES_SSH_AGENT_DIR when SSH_AUTH_SOCK is unset or dead (QoL task, DONE), so the standalone script is residue. Delete it and update every referer: the SSH memory, the compass-pr-sync-branch skill, claude_code_settings.org (permission allowlist + prose) with a settings rebuild, and the script inventory rows.
 #+type: task
 #+level: s1
 #+filetags: :consolidate_scripts_into_compass:inbox:product_backlog:
@@ -64,7 +64,7 @@ plan itself stays — it is the historical record of what we did.)
 * Result
 
 Script deleted. Memory rewritten (compass self-heals; raw git uses
-the export one-liner), pr-sync-branch skill re-pointed,
+the export one-liner), compass-pr-sync-branch skill re-pointed,
 claude_code_settings.org permission and prose removed with
 settings.json retangled, skills bundle redeployed, and the
 consolidate-scripts inventory rows annotated. Only historical sprint

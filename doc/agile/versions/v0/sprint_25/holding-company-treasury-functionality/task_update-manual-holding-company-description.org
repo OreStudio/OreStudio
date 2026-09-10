@@ -108,7 +108,7 @@ plan itself stays — it is the historical record of what we did.)
      (pre-dated this edit). Found and ran the actual PDF-generation
      target, =deploy_manual= (driven by
      =projects/ores.lisp/src/ores-build-manual.el=, per the
-     =doc-update-manual= skill), directly. It completed with "Manual
+     =compass-doc-update-manual= skill), directly. It completed with "Manual
      PDF build succeeded" -- 189 pages, correct file size, no fatal
      LaTeX errors (no =!=-prefixed error lines in
      =user_manual.log=); the one warning ("There were

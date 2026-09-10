@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The catalogue is an N-by-M table written out by hand. Seven add skills are one verb over seven artefact types; six show skills are one verb over six. Embark's lesson is that actions register against the type, not against a source command, so a verb that behaves uniformly becomes one skill plus a type table. Do this before the imports land, or we will port cells we are about to delete. The test is whether the procedure differs, not whether the artefact differs: agile-close-task earns its own skill because closing a task is genuinely its own procedure; doc-show and agile-show-sprint do not.
+The catalogue is an N-by-M table written out by hand. Seven add skills are one verb over seven artefact types; six show skills are one verb over six. Embark's lesson is that actions register against the type, not against a source command, so a verb that behaves uniformly becomes one skill plus a type table. Do this before the imports land, or we will port cells we are about to delete. The test is whether the procedure differs, not whether the artefact differs: compass-agile-close-task earns its own skill because closing a task is genuinely its own procedure; compass-doc-show and agile-show-sprint do not.
 
 * Status
 
@@ -39,7 +39,7 @@ The catalogue is an N-by-M table written out by hand. Seven add skills are one v
 - Uniform verbs are collapsed into one polymorphic skill each, driven by a type table rather than by prose.
 - The type table is generated from the document types rather than hand-maintained.
 - Type-specific skills that survive state why their procedure differs.
-- Retired skills go through skill-delete so incoming links are re-pointed and deployed copies purged.
+- Retired skills go through compass-skill-delete so incoming links are re-pointed and deployed copies purged.
 - The catalogue count before and after is recorded.
 
 * Plan
@@ -50,19 +50,19 @@ uniform families and a remainder that survives on its own merits.
 
 Showing is one procedure over many targets. Eight skills held one or two
 steps each: run a compass read command, read its output. They collapse into
-=doc-show=, whose table is the read-only commands, generated from compass's
+=compass-doc-show=, whose table is the read-only commands, generated from compass's
 own subparser registry.
 
 Adding a document is four beats over every type: scaffold, fill, wire the
 parent index, commit. Four skills held that shape. They collapse into
-=doc-add=, whose table is generated from the =doc_*.org.mustache= templates —
+=compass-doc-add=, whose table is generated from the =doc_*.org.mustache= templates —
 the document types themselves — so a new type appears in the table by
 existing, with the sections its template declares and the parent-dir default
 compass applies.
 
 Exposing an entity on a surface is one three-phase procedure over four
 surfaces. The four skills differed only in file locations, build target and
-phase contents. They collapse into =codegen-add-surface-entity=.
+phase contents. They collapse into =compass-codegen-add-surface-entity=.
 
 The remainder survives because the procedure genuinely differs, and each says
 why in its own text: a memory is mostly the judgement of whether to write one,
@@ -86,7 +86,7 @@ compass has no machine-readable read-only flag. Everything else in a row —
 the command name and its blurb — comes from the parser itself.
 
 Retirement left no ledger. The catalogue's list of removed skills is gone and
-=skill-delete= no longer writes one: the catalogue carries the current set,
+=compass-skill-delete= no longer writes one: the catalogue carries the current set,
 and what a skill used to be called is in git. Two stale deployed documents
 from earlier renames were purged in the same pass.
 
@@ -123,8 +123,8 @@ via its "Verifies task" field.
 All six acceptance criteria are met. The catalogue goes from 82 skills to 69.
 
 Every verb is classified. Three families were uniform and are collapsed:
-showing (8 skills into =doc-show=), adding a document (4 into =doc-add=), and
-exposing an entity on a surface (4 into =codegen-add-surface-entity=). Each
+showing (8 skills into =compass-doc-show=), adding a document (4 into =compass-doc-add=), and
+exposing an entity on a surface (4 into =compass-codegen-add-surface-entity=). Each
 survivor states why its procedure differs rather than merely its artefact.
 
 The document-type table is generated from the =doc_*.org.mustache= templates
@@ -133,6 +133,6 @@ and compass's own parent-dir registries, by
 for CI. The read-only target table is generated from compass's subparser
 registry by the same script.
 
-Every retired skill went through the =skill-delete= procedure: incoming links
+Every retired skill went through the =compass-skill-delete= procedure: incoming links
 re-pointed, source removed, catalogue regenerated, bundle rebuilt, deployed
 copy purged. =compass lint= confirms no dangling id link remains.

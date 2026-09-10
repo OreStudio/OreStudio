@@ -103,6 +103,6 @@ captured and wired in (see [[id:78BEBD36-0A8A-43B7-B62C-934A78542CC5][the siblin
 and Qt-embedded HTML help both rebuild cleanly. Along the way, this
 work also generalised the authoring process into two recipes
 ([[id:B0BD4EAC-1ECF-45F4-9D62-B590955D93DE][How do I document an entity?]], [[id:43A1EE0A-374D-4EA1-BC72-BADDDC525D20][How do I capture screenshots for a manual
-chapter?]]) and a skill ([[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][doc-add-entity-chapter]]) chaining them, and fixed
+chapter?]]) and a skill ([[id:E8E892B8-184D-474A-839F-FFCA1A5148EF][compass-doc-add-entity-chapter]]) chaining them, and fixed
 an unrelated NATS port-collision bug in the dev environment scheme
 discovered while readying up the environment for screenshot capture.

@@ -163,7 +163,7 @@ action:
 
 ** Skill work
 
-Extended =agile-refine-backlog= with a deep refinement mode (see
+Extended =compass-agile-refine-backlog= with a deep refinement mode (see
 [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]], the sibling task that will exercise it) —
 added to the existing skill rather than creating a new one, per
 explicit instruction to avoid skill proliferation.

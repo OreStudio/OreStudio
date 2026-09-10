@@ -81,8 +81,8 @@ guard logic itself can be written:
 1. Add =vintage_source= and =vintage_date= columns to
    =fx_spot_generation_config= (SQL schema, domain struct, JSON I/O,
    table I/O — via codegen, see
-   [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]-adjacent =codegen-add-sql-schema=/
-   =code-add-domain-type= conventions) so each feed declares which
+   [[id:5B670808-D28B-4818-A2FA-EA5220D35E8D][How do I add a doc with compass?]]-adjacent =compass-codegen-add-sql-schema=/
+   =compass-code-add-domain-type= conventions) so each feed declares which
    vintage it depends on. Populate them for any existing configs (none
    yet — =Seed Basic and Realistic dataset bundles= is still BACKLOG
    and depends on this task).

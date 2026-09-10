@@ -2,7 +2,7 @@
 :ID: 40DA4D49-C608-4AC0-9F69-B7D3DF75E3C7
 :END:
 #+title: Task: Analyse the ores.trading data model against the data-oriented criteria
-#+description: Run the code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow.
+#+description: Run the compass-code-review-data-model review over the entire ores.trading data model: classify the component into the design regimes, walk the decision and invariant checks per entity family, and produce the in-depth analysis of current state, the divergences and their causes, and the proposed data-oriented target model with the service-layer shape changes it requires. Deliverable is the analysis document only; implementation PRs follow.
 #+type: task
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-A single in-depth analysis document that reviews the whole ores.trading data model with the code-review-data-model skill and the data_oriented_design criteria, accounts for all prior analysis (the codegen gap investigation 2548EE95, the C1202 complexity doc, the Sep-8 drift inventory, the temporal/versioning and composite architecture docs), and proposes the correct data-oriented target model: a normalised relational model in the DOP reading — atomised entities with keys and foreign keys, no object graph — with every persisted family modeled in the org grammar, the wire and the domain as codegen projections, composite and versioning semantics preserved as per-table facts and temporal joins, and the service-layer changes to deliver it, sequenced across PRs.
+A single in-depth analysis document that reviews the whole ores.trading data model with the compass-code-review-data-model skill and the data_oriented_design criteria, accounts for all prior analysis (the codegen gap investigation 2548EE95, the C1202 complexity doc, the Sep-8 drift inventory, the temporal/versioning and composite architecture docs), and proposes the correct data-oriented target model: a normalised relational model in the DOP reading — atomised entities with keys and foreign keys, no object graph — with every persisted family modeled in the org grammar, the wire and the domain as codegen projections, composite and versioning semantics preserved as per-table facts and temporal joins, and the service-layer changes to deliver it, sequenced across PRs.
 
 * Status
 
@@ -77,7 +77,7 @@ via its "Verifies task" field.
 Delivered the analysis as the knowledge doc
 =doc/knowledge/architecture/trading_data_oriented_model.org= (ID
 dfe15809-ab5a-4eb7-8afb-251bf5d0b911), using the
-[[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] skill against the data-oriented criteria of
+[[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] skill against the data-oriented criteria of
 [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][BBD43BF2]].
 
 What the analysis contains:

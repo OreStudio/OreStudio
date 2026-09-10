@@ -679,7 +679,7 @@ the systemd-managed agent (see Step 0), not the old =~/crap.sh= env
 snapshot.
 
 PostgreSQL cluster once, created fresh into the =nodatacow= subvolume
-(see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][devops-provision-environment]] for the scripted form). The Debian
+(see [[id:B0A8E259-5B88-40AE-BA27-BBC3679186E7][compass-devops-provision-environment]] for the scripted form). The Debian
 cluster definition at =/etc/postgresql/18/main= survives the reformat
 but points at a data directory that no longer exists, so drop and
 recreate it rather than trying to repair it:

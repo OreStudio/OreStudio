@@ -2,7 +2,7 @@
 :ID: 1014DD4F-B011-4102-8C60-983364E9BFBE
 :END:
 #+title: Story: Sprint 23 planning session
-#+description: Promote and pull in backlog captures/stories into sprint 23, clean up misfiled/mislabeled sprint-22 and sprint-19 stories, resolve conflicts, and extend the agile-refine-backlog skill with a deep refinement mode.
+#+description: Promote and pull in backlog captures/stories into sprint 23, clean up misfiled/mislabeled sprint-22 and sprint-19 stories, resolve conflicts, and extend the compass-agile-refine-backlog skill with a deep refinement mode.
 #+type: story
 #+level: s2
 #+filetags: :sprint_23:v0:
@@ -21,7 +21,7 @@ captures into sprint 23 stories and pulling in stories that were
 misfiled (wrong bucket/sprint folder) or mislabeled (marked ABANDONED
 in a sprint table with no corresponding decision recorded), verifying
 each one's premise against the live codebase rather than trusting its
-own text. Also extend the =agile-refine-backlog= skill with a deep
+own text. Also extend the =compass-agile-refine-backlog= skill with a deep
 mode, so future backlog audits of this kind are a repeatable,
 reported procedure rather than one-off manual work.
 
@@ -48,7 +48,7 @@ reported procedure rather than one-off manual work.
   resolved elsewhere).
 - Duplicate captures are merged with no content loss, not silently
   deleted.
-- =agile-refine-backlog= gains a deep mode covering inbox/next/deferred
+- =compass-agile-refine-backlog= gains a deep mode covering inbox/next/deferred
   with a written report, so this kind of audit doesn't require
   re-deriving the process each time.
 
@@ -57,7 +57,7 @@ reported procedure rather than one-off manual work.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:6E41F1C5-8B1E-450E-BFB2-993F687DE197][Promote and pull in sprint 23 stories from the backlog]] | DONE | 2026-07-11 | 2026-07-11 | Promote well-specified backlog captures into sprint 23 stories and pull in misfiled/mislabeled sprint-22/sprint-19 stories, verifying each against the live codebase before acting. |
-| [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]] | DONE | 2026-07-11 | 2026-07-11 | Ran the agile-refine-backlog skill's deep mode: audited all 559 items in inbox/next/deferred against the live codebase, discarded/relocated 71, merged 1 duplicate pair. Next→deferred rescoring flagged as a follow-on run. |
+| [[id:BF5F062F-49DB-490C-B1B0-89B55A550173][Deep backlog refinement]] | DONE | 2026-07-11 | 2026-07-11 | Ran the compass-agile-refine-backlog skill's deep mode: audited all 559 items in inbox/next/deferred against the live codebase, discarded/relocated 71, merged 1 duplicate pair. Next→deferred rescoring flagged as a follow-on run. |
 | [[id:AC95FC60-B2FE-4ADE-9671-0EAF2CD56285][Bucket rescoring against sprint 23's mission]] | DONE | 2026-07-11 | 2026-07-11 | Scored all 488 surviving items against sprint 23's mission; moved 310, emptied inbox (208→0), next 224→273, deferred 56→215. |
 
 * Decisions

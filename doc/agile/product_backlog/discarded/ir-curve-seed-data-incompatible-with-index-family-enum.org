@@ -39,7 +39,7 @@ producers of IR curve data were missed:
 This blocks =provision party ... --dataset-size small= end-to-end: the
 =synthetic.themes.realistic_2026= publish step fails with a Postgres
 "column does not exist" error, aborting the whole provisioning script
-(surfaced while running =devops-setup-environment= against a fresh
+(surfaced while running =compass-devops-setup-environment= against a fresh
 =main= checkout, commit =1bd30c704=).
 
 * Why

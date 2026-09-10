@@ -78,8 +78,8 @@ green check without starting a new cycle.
 
 10. /If this was the final round and the PR delivers the task, merge
     immediately./ Task/story bookkeeping should already be in place
-    from *before* the PR was raised (see [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][agile-close-task]] — it runs
-    ahead of [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][pr-raise]], not after review). Do not push a bookkeeping
+    from *before* the PR was raised (see [[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]] — it runs
+    ahead of [[id:CC928252-E0C5-4C3C-A7A8-D613593E4E37][compass-pr-raise]], not after review). Do not push a bookkeeping
     commit now: that would force a fresh CI cycle for a change with no
     code content, on a PR that was already green and approved. Go
     straight to [[id:95D560C6-3551-4810-9D11-55F9F82B483C][How do I merge a PR?]].

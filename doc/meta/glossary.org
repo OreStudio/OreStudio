@@ -236,7 +236,7 @@ someone does, listing the skills that role draws on.
 |-----------------+--------------------------------------------|
 | Owner           | cross-cutting                              |
 | How to generate | [[id:6054CC20-5F41-482F-A587-759512577B1D][New Claude Code skill]] in the codegen recipe |
-| Example         | [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][skill-add]]                  |
+| Example         | [[id:4B6536DF-56B6-A634-C7FB-FA3CF51E916D][compass-skill-add]]                  |
 | Inventory       | [[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]]                                     |
 
 * Recipe

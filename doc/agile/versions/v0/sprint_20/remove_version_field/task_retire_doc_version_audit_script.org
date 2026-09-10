@@ -27,7 +27,7 @@ nothing left to audit.
 Remove every remaining reference to it so nothing points at a deleted file:
 
 - =doc/functions/s3_star_audit.org= (lists it as an audit tool, lines ~35, ~80).
-- =doc/llm/skills/doc-sync-recipes/SKILL.org= (runs =--check=).
+- =doc/llm/skills/compass-doc-sync-recipes/SKILL.org= (runs =--check=).
 - =doc/recipes/github/how_do_i_fix_a_failing_ci_check.org= (names =--check=).
 - Confirm it is *not* wired into any =.github/workflows/= file or
   =projects/ores.codegen/validate_docs.sh= (current grep says it is not — verify
@@ -80,7 +80,7 @@ plan itself stays — it is the historical record of what we did.)
 
 Deleted =projects/ores.codegen/scripts/doc_version_audit.py= and removed its
 references from =doc/functions/s3_star_audit.org=,
-=doc/llm/skills/doc-sync-recipes/SKILL.org=, and
+=doc/llm/skills/compass-doc-sync-recipes/SKILL.org=, and
 =doc/recipes/github/how_do_i_fix_a_failing_ci_check.org=. Confirmed it was not
 wired into any =.github/workflows/= file or =validate_docs.sh=. Remaining
 mentions live only in historical sprint-18 / plan records.

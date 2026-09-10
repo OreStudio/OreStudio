@@ -125,7 +125,7 @@ helper is new code here, not reuse.
    =market_observation= rows land tagged =source = "ore.reference"=.
 
 6. *Document*: add a recipe under
-   =doc/recipes/shell/marketdata/= via the =doc-add-recipe= skill,
+   =doc/recipes/shell/marketdata/= via the =compass-doc-add-recipe= skill,
    following the existing =ores.shell= recipe convention (org
    metadata drawer, =ores-shell= babel block with the literal REPL
    session, =#+RESULTS:=).

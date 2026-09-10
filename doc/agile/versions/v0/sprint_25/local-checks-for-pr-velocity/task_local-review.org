@@ -22,8 +22,8 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 The review runs on GitHub today: =claude-code-review.yml= auto-reviews
 every PR event, and =misspell.yml= opens typo-fix PRs on every push.
-Run the code review locally as a skill instead: =pr-raise= runs the
-=code-review-pr= skill on the change before submit, records its
+Run the code review locally as a skill instead: =compass-pr-raise= runs the
+=compass-code-review-pr= skill on the change before submit, records its
 findings in the task's =* Review= table, and addresses them in the
 round. When the local skill is the review coverage, delete
 =claude-code-review.yml= (auto review on PR events) and =misspell.yml=
@@ -43,7 +43,7 @@ stays.
 
 * Acceptance
 
-- =pr-raise= runs the local code review before raising the PR; its
+- =compass-pr-raise= runs the local code review before raising the PR; its
   findings are recorded in the task's =* Review= table and addressed
   in the round.
 - =claude-code-review.yml= is deleted; no automatic review runs on PR
@@ -60,12 +60,12 @@ stays.
   (Debian forky/sid carries 0.6-1). Check-only is the default without
   =-r=; exit 0 = clean, 1-5 = typos found; the repo's
   =.misspell-fixer.ignore= is auto-respected.
-- Wire the local review into =pr-raise=: run the =code-review-pr=
+- Wire the local review into =compass-pr-raise=: run the =compass-code-review-pr=
   skill on the change before raising, record its findings in the
   task's =* Review= table, and address them in the round. Update step
   4 (the =@claude= comment) to reflect that it now triggers the
   on-demand =claude.yml= only — the automatic review is gone.
-- Fold the misspell check into the local review pass (=code-review-pr=
+- Fold the misspell check into the local review pass (=compass-code-review-pr=
   skill).
 - Delete =.github/workflows/claude-code-review.yml= and
   =.github/workflows/misspell.yml=.
@@ -101,10 +101,10 @@ via its "Verifies task" field.
 
 * Result
 
-The local code review is the review coverage now: =pr-raise= runs the
-=code-review-pr= skill on the change before raising the PR, records
+The local code review is the review coverage now: =compass-pr-raise= runs the
+=compass-code-review-pr= skill on the change before raising the PR, records
 its findings in the task's =* Review= table with their decisions, and
-addresses the accepted ones in the round. The =code-review-pr= review
+addresses the accepted ones in the round. The =compass-code-review-pr= review
 pass includes the misspell check (=misspell-fixer ., check-only; the
 repo's =.misspell-fixer.ignore= is respected — extended with
 =^./.packages= and =^./projects/ores.compass/venv= so vendored trees

@@ -266,7 +266,7 @@ finished wiring "Browse Holidays" onto Calendar's UI:
 
 ** Bugs found and fixed during manual QA
 
-Manual testing (=doc-run-manual-screenshots=-style live verification,
+Manual testing (=compass-doc-run-manual-screenshots=-style live verification,
 not just =--diff=) surfaced two real, pre-existing defects unrelated
 to this task's own code, both fixed properly rather than patched
 around:

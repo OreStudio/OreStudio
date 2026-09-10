@@ -2,7 +2,7 @@
 :ID: 55FD445F-EA4F-4961-A578-9D9C78B17CF3
 :END:
 #+title: New lookup entity: two undocumented manual wiring steps (NATS handler registrar, tenant-provisioning copy block)
-#+description: Adding a new codegen'd lookup entity (e.g. book_purpose_type) requires two hand-edits the codegen workflow doesn't cover or document: (1) registering the generated NATS CRUD handlers in projects/ores.refdata/core/src/messaging/registrar.cpp (only the eventing registrar, event_registrar.cpp, gets proactively wired -- the request/response handler registrar is a separate hand-maintained dispatch list); (2) adding a copy block to projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql so the new entity's system-tenant seed rows get copied into newly (or already-)provisioned tenants, matching book_statuses/regulatory_book_types/purpose_types. Both gaps were silent -- no build/test failure, only a runtime 'Failed to fetch ... from server' (gap 1) or an empty list for a real tenant (gap 2), caught only via manual QA. Codify as codegen steps or document explicitly in the entity-creation runbook (codegen-add-entity skill / entity_lifecycle.md).
+#+description: Adding a new codegen'd lookup entity (e.g. book_purpose_type) requires two hand-edits the codegen workflow doesn't cover or document: (1) registering the generated NATS CRUD handlers in projects/ores.refdata/core/src/messaging/registrar.cpp (only the eventing registrar, event_registrar.cpp, gets proactively wired -- the request/response handler registrar is a separate hand-maintained dispatch list); (2) adding a copy block to projects/ores.sql/create/iam/iam_tenant_provisioner_create.sql so the new entity's system-tenant seed rows get copied into newly (or already-)provisioned tenants, matching book_statuses/regulatory_book_types/purpose_types. Both gaps were silent -- no build/test failure, only a runtime 'Failed to fetch ... from server' (gap 1) or an empty list for a real tenant (gap 2), caught only via manual QA. Codify as codegen steps or document explicitly in the entity-creation runbook (compass-codegen-add-entity skill / entity_lifecycle.md).
 #+type: capture
 #+level: cross
 #+filetags: :codegen:book_data_model_cleanup:
@@ -27,7 +27,7 @@ already-) provisioned tenants, matching the existing
 book_statuses/regulatory_book_types/purpose_types blocks. Either fix
 the codegen profile to generate these two wiring points automatically,
 or document them explicitly as required manual steps in the
-entity-creation runbook (=codegen-add-entity= skill /
+entity-creation runbook (=compass-codegen-add-entity= skill /
 =entity_lifecycle.md=).
 
 * Why

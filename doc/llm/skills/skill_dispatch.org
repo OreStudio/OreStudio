@@ -76,7 +76,7 @@ sprint, and a pairing that cannot be reproduced by automated means is one the
 framework does not hold: if the table cannot be generated, the dispatcher is not
 built.
 
-=agile-find-heading= and =compass-act= answer different questions.
+=compass-agile-find-heading= and =compass-act= answer different questions.
 Heading picks *which work to do*; act picks *which verb applies to this
 noun*.
 

@@ -2,7 +2,7 @@
 :ID: dfe15809-ab5a-4eb7-8afb-251bf5d0b911
 :END:
 #+title: A data-oriented data model for ores.trading
-#+description: The code-review-data-model review of the whole ores.trading data model: regime classification, per-family decision and invariant checks, the findings with causes, anchored scores, and the proposed data-oriented target model — a normalised relational model of atomised entities with keys and foreign keys and no object graph, the domain and the wire as projections, composite and versioning semantics preserved as per-table facts and temporal joins, container messages at the boundary, with the service-layer changes and PR sequencing.
+#+description: The compass-code-review-data-model review of the whole ores.trading data model: regime classification, per-family decision and invariant checks, the findings with causes, anchored scores, and the proposed data-oriented target model — a normalised relational model of atomised entities with keys and foreign keys and no object graph, the domain and the wire as projections, composite and versioning semantics preserved as per-table facts and temporal joins, container messages at the boundary, with the service-layer changes and PR sequencing.
 #+type: knowledge
 #+level: cross
 #+filetags: :knowledge:architecture:trading:data_model:data_oriented_design:codegen:
@@ -54,7 +54,7 @@ from the generated part types.
 
 ** Scope, method, and evidence
 
-This analysis applies the [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] skill to the
+This analysis applies the [[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] skill to the
 whole ores.trading data model, against the criteria of
 [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]]. It classifies the component
 into regimes, walks the decision checks per entity family, spot-checks
@@ -815,7 +815,7 @@ handcrafted (PRs 5-6) and move to codegen as the grammar absorbs them
 - https://www.dataorienteddesign.com/dodmain/node5.html — the DOD book, section 5.4 =There is no entity=: the entity is its components, not an object graph.
 - https://www.dataorienteddesign.com/dodmain/node11.html — the DOD book relational-model chapter: keys, normalisation, no sparse tables.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the criteria this review applies.
-- [[id:AE72D444-02B1-4428-B56C-062B849ED568][code-review-data-model]] — the review skill.
+- [[id:AE72D444-02B1-4428-B56C-062B849ED568][compass-code-review-data-model]] — the review skill.
 - [[id:2548EE95-7C62-4C48-BA11-2146604B2082][2548EE95]] — the codegen-gap investigation and Sep-8 drift oracle.
 - [[id:BE4698B1-56B1-4686-AD68-C16D4611A1FD][Bond probe org]] — the regeneration probe against the bond tree stack.
 - file:doc/investigations/msvc_c1202_rfl_complexity.org — the C1202 field-count ceiling and layout rationale.

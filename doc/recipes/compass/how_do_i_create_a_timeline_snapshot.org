@@ -45,4 +45,4 @@ file, =compass timeline show= renders it.
 
 * See also
 
-- [[id:1B837DB5-B27A-451B-A0D0-DD17142476E4][agile-add-timeline-snapshot]] — the skill that orchestrates this recipe.
+- [[id:1B837DB5-B27A-451B-A0D0-DD17142476E4][compass-agile-add-timeline-snapshot]] — the skill that orchestrates this recipe.

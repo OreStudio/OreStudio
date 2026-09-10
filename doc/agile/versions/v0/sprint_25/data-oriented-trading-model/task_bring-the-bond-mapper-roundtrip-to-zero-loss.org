@@ -1,0 +1,106 @@
+:PROPERTIES:
+:ID: B753AD00-86B2-4B04-822A-620B344DD2BB
+:END:
+#+title: Task: Bring the bond mapper roundtrip to zero loss
+#+description: No bond document round trips at zero loss on the mapper path: 5183 pairs are lost under the bond products and the trade envelope (3404 with a source-stated value, 1779 where the source stated an empty element) plus 47 unexplained. Fix both classes in the hand-written container and mappers, make the diff check product-aware, and deliver the shared schedule and underlyings tables so the database can hold what the container carries, per the user's answer to scope.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The bond products and the trade envelope round trip at zero loss on the mapper path, and everything the container carries has a home in the database so the full XML to database to XML round trip can be lossless.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-10                               |
+
+* Acceptance
+
+- =scripts/ore_mapper_roundtrip_diff.py= reports zero lost pairs and
+  zero unexplained pairs under the bond products and the trade
+  envelope, over every document in =external/ore/examples=.
+- The script reports the other instrument families as counted debt.
+  It does not fail the run for them.
+- The container carries every member the mapper needs, so the mapper
+  path loses nothing. The generated binding stays untouched.
+- Every member the container carries has a column or a keyed child
+  row, so the database can hold what the container holds.
+
+* Plan
+
+Four waves of container and mapper work, then the tables. Each wave
+ends green, and each wave is a commit.
+
+The mapper path is in-memory: =exporter::roundtrip= reads a document
+and maps it straight back out, with no database anywhere on the path.
+The container alone can therefore make the mapper path lossless.
+
+Two root causes hold the losses. The container flattens
+=xsd::optional<T>= into a plain member and tests =.empty()=, so an
+element the document states empty collapses into an absent element.
+And the container never held most of =legData=, so the reverse mappers
+rebuild a leg from the issue row and lose everything the row has no
+column for.
+
+| Wave | Scope | Pairs |
+|------+-------+-------|
+| A.1 | Presence pass: the container carries =std::optional=, the mappers emit on presence | 1,779 |
+| A.2 | =bond_leg_data= grows to mirror =legData=: the scalars, then the nested groups | ~780 |
+| A.3 | The bond-level residue: calendar, curve identifiers, =BondNotional= | ~990 |
+| A.4 | The trade envelope: =CounterParty=, =AdditionalFields=, =party_id=, =valuation_date= | 6,510 |
+| A.5 | The diff script separates the bond scope from the other families | gate |
+
+The container is the specification for the tables. Unit B authors the
+shared instrument-keyed schedule tables and the tables for the rest of
+the residue, as modeling orgs under =projects/ores.trading/modeling/=
+and generated, never hand-written. Unit B lands after the whole of the
+container growth, so one pass adds every table the container needs.
+
+Unit 3 of the story, the qt bridge, stays BACKLOG until this task
+closes.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

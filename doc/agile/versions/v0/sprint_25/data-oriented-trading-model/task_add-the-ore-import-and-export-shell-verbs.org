@@ -1,0 +1,87 @@
+:PROPERTIES:
+:ID: EE79ACE9-3848-4CE0-940A-D0D0B9F12AD4
+:END:
+#+title: Task: Add the ORE import and export verbs to the shell
+#+description: None of the three steps of the XML to database to XML path has a shell verb today: upload the import tarball to the ore-imports bucket, start the ore_import_workflow via workflow.v1.ore.import, and reconstruct the portfolio XML from trading.v1.trades.portfolio.export items. Add the verbs so the full round trip test drives the service layer through ores.shell rather than ores.cli.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The shell can upload an ORE import tarball, start the import workflow, and export a portfolio back to XML on disk, so a script can drive the whole XML to database to XML path through the service layer.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-10                               |
+
+* Acceptance
+
+- =ores.shell= can upload a file to the =ore-imports= bucket.
+- =ores.shell= can start the ORE import workflow for an uploaded
+  tarball and report the outcome.
+- =ores.shell= can request a portfolio export and write the
+  reconstructed XML to a file.
+- The three verbs drive the existing services. No new service, subject
+  or protocol member is needed.
+
+* Plan
+
+The XML to database to XML path already exists end to end in the
+services. It has no shell verb at any of its three steps, so this task
+adds the verbs and nothing else.
+
+| Step | Service | Subject |
+|------+---------+---------|
+| Upload the tarball | object storage, bucket =ore-imports=, key ={request_id}.tar.gz= | =ores::ore::net::ore_storage= |
+| XML into the database | =ore_import_workflow= step 0 | =workflow.v1.ore.import= |
+| Database back to XML | =export_portfolio_request=, then =exporter::export_portfolio(items)= | =trading.v1.trades.portfolio.export= |
+
+Each verb follows the shape of the existing shell command units under
+=projects/ores.shell/src/app/commands/=, and each registers in
+=trading_commands.cpp= or the workflow menu.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

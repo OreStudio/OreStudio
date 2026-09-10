@@ -60,10 +60,12 @@ unless decommissioning the machine — all other worktrees depend on it.
 * Recipes
 
 - [[file:../../../recipes/compass/how_do_i_deprovision_an_environment_with_compass.org][How do I deprovision an environment with compass?]]
+- [[id:429671CA-2960-4560-84FD-6C1DE80A1BA6][How do I deprovision an environment with compass?]] — stops the services and removes the worktree.
 
 * Reference
 
 - [[file:../../../recipes/compass/how_do_i_provision_an_environment_with_compass.org][How do I provision a new environment with compass?]] — the symmetric operation
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the tool every one of these commands runs through.
 
 * Artefacts                                                        :noexport:
 

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 4B8BB864-AEA3-4720-9BB3-DCF4397000D2
+:END:
+#+title: How do I rebase my branch on main?
+#+description: Bring a feature branch up to date with origin/main, and what to do when the rebase conflicts.
+#+type: recipe
+#+level: cross
+#+filetags: :git:compass:branch:rebase:recipe:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+Working on a stale branch wastes a review round: the diff carries changes
+main already has, and CI runs against a base nobody else is on.
+
+* Question
+
+How do I bring my feature branch up to date with =origin/main=, and what do
+I do when the rebase stops on a conflict?
+
+* Answer
+
+** Rebase
+
+#+begin_src sh :results verbatim
+./compass.sh pr sync
+#+end_src
+
+Compass fetches =origin/main= and rebases the current branch on it, then
+reports how far ahead the branch now is. An up-to-date branch is reported as
+such and nothing is rewritten.
+
+** Push the rebased branch
+
+A rebase rewrites the branch's commits, so an ordinary push is refused.
+
+#+begin_src sh :results verbatim
+./compass.sh pr sync --push
+#+end_src
+
+This pushes with =--force-with-lease=, which refuses if someone else has
+pushed to the branch in the meantime. Prefer it to =--force=, which does
+not check.
+
+** When the rebase conflicts
+
+Compass stops where git stops, lists the conflicted files, and names the
+ways out. Resolve them in place, then continue:
+
+#+begin_src sh :results verbatim
+git add <resolved-files>
+git rebase --continue
+#+end_src
+
+To back out and leave the branch as it was:
+
+#+begin_src sh :results verbatim
+git rebase --abort
+#+end_src
+
+For an unattended run, =./compass.sh pr sync --abort-on-conflict= aborts
+rather than leaving the worktree mid-rebase for a human to find.
+
+* Script
+
+[[proj:projects/ores.compass/src/compass_pr.py][=projects/ores.compass/src/compass_pr.py=]] implements =pr sync=.
+
+* Tested by
+
+Manual. Exercised on every feature branch before its PR is raised.
+
+* See also
+
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — starting from a fresh main instead.
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — where syncing sits in the lifecycle.

@@ -42,6 +42,8 @@ The schema drifted (bearings warns), migrations need a clean slate, or the datab
 
 * Recipes
 
+- [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]] — the database rebuild and the service restart around it.
+
 * Reference
 
 - [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — surfaces schema drift.

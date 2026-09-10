@@ -58,6 +58,8 @@ routine review feedback as reopening the task by default.
 
 * Recipes
 
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — the state transitions and the story and sprint sync.
+
 * Reference
 
 - [[id:2EA7FF1B-CC23-4275-9ADA-8C43103E3103][Work a task through to merged PR]] — steps 8–9.

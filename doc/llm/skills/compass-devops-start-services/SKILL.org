@@ -25,16 +25,24 @@ Bringing the service fleet up — NATS and the ores services.
 
 * How to use this skill
 
-1. /Start and verify/:
+1. /Check the database is up and current/ before starting anything. The
+   services fail their first query against a missing or stale schema, and
+   the failure surfaces as a service crash rather than a database error.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh services start && ./projects/ores.compass/compass.sh services status
-   #+end_src
+2. /Start the fleet/ with the recipe below, then verify. Starting is
+   asynchronous: the command returns before the services are ready.
 
+3. /Read the status, do not assume it/. =running= is the only state that
+   means ready; =starting= means the health check has not passed yet, and
+   =missing= means the unit is not installed in this worktree at all.
 
 * Recipes
 
+- [[id:D8663EF2-5626-462E-AADC-AB2717F49C0D][How do I start the ORE Studio services?]] — starting the fleet and verifying it.
+
 * Reference
+
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the tool every one of these commands runs through.
 
 * Artefacts                                                        :noexport:
 

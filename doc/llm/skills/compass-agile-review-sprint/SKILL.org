@@ -314,8 +314,18 @@ New sprints scaffolded with =compass add sprint= include an empty
 | # | Date | Day | Overall | Task |
 |---+------+-----+---------+------|
 
-(Run =sprint-reviewer= to populate this table.)
+(Run =compass-agile-review-sprint= to populate this table.)
 #+end_example
 
 This placeholder is present from day one. Each run of this skill
 adds one row; the full analysis lives in the task linked from that row.
+
+* Recipes
+
+- [[id:A7D3C1E5-9F2B-4A8D-B6E4-3C7F1D9A2E5B][How do I get a sprint or story status?]] — the status and audit commands the review reads.
+
+* Reference
+
+- [[id:46DFE47F-967B-4C24-95BF-3E21F97CFD20][Agile process]] — the sprint lifecycle this review reports against.
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the tool every one of these commands runs through.
+

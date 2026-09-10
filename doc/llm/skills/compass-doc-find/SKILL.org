@@ -50,6 +50,8 @@ Finding documents: full-text search or structured filters across the whole org-r
 
 * Reference
 
+- [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — the graph the index is built from.
+
 * Artefacts                                                        :noexport:
 
 ** Licence

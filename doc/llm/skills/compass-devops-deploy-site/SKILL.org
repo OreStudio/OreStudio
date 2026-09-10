@@ -25,17 +25,24 @@ Building and publishing the documentation website from the org-roam graph — al
 
 * How to use this skill
 
-1. /Build/:
+1. /Build before you publish/. The site build is where a broken id-link
+   surfaces, and publishing a build you have not read means the broken
+   link ships.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build --direct site
-   #+end_src
+2. /Run the target/ from the recipe below. It prints its own log path;
+   follow that file rather than piping the command.
 
-   A broken id-link aborts the export naming the unresolvable UUID — fix every one; deletions must heal the graph (see =compass-skill-delete=).
+3. /Read the tail, not the exit code alone/. The build reports success
+   while still naming files it skipped, and a skipped file is a page that
+   silently did not update.
 
 * Recipes
 
+- [[id:6930472B-222C-4621-AB37-CFEE3070A8BD][How do I deploy the site?]] — building and publishing the site.
+
 * Reference
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — the preset names and the output layout the targets write to.
 
 * Artefacts                                                        :noexport:
 

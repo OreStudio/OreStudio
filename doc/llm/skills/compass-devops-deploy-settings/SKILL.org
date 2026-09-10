@@ -25,16 +25,23 @@ Claude Code settings.json is older than its org source (compass bearings warns):
 
 * How to use this skill
 
-1. /Build/:
+1. /Edit the org source, never the JSON/. =.claude/settings.json= is
+   generated; an edit there is lost on the next tangle without warning.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build --direct settings
-   #+end_src
+2. /Tangle it/ through the recipe below. It must run outside the sandbox,
+   because the tangle needs a full environment.
 
+3. /Reload before trusting it/. A running session holds the settings it
+   started with, so a new hook or permission reaches only sessions started
+   afterwards.
 
 * Recipes
 
+- [[id:3DDB2AFA-9CAA-44A0-A91A-645A95320A5F][How do I deploy the settings?]] — tangling settings.json from its org source.
+
 * Reference
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — the preset names and the output layout the targets write to.
 
 * Artefacts                                                        :noexport:
 

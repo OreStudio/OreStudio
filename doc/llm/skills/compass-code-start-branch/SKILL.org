@@ -36,6 +36,8 @@ Out-of-band work with no task attached: experiments, throwaway spikes, one-off f
 
 * Recipes
 
+- [[id:479E7E27-4060-4BFD-AC38-F11EFA3BB306][How do I start a new feature branch phase?]] — branching off a fresh main.
+
 * Reference
 
 - [[id:C1813B64-1647-4B49-B856-A8345850001C][Clean up the compass work lifecycle]] — the traceability invariant this escape hatch bends.

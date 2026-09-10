@@ -118,6 +118,12 @@ group + 3 subs).
 - [[id:B0B99088-D88E-4980-A4EE-7D6A9A8E96A5][component-model-creator]] — write the architecture docs once scaffold is working.
 - [[id:654D4A70-E63D-4C18-B5A5-886066E36314][cmake-runner]] — build and test commands.
 
+* Recipes
+
+- [[id:0806C8FB-43D2-497E-900D-5F2E0B3472FD][How do I create a component overview?]] — the overview every new component needs.
+
+* Reference
+
 * Artefacts                                                        :noexport:
 
 ** Licence

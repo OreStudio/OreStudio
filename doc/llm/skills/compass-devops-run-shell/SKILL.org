@@ -41,7 +41,11 @@ Launching ores.shell with NATS and login defaults from .env — interactive, or 
 
 * Recipes
 
+- [[id:C210CB09-291B-4B2A-8C90-22EB4364DCA3][How do I run the ores shell?]] — interactive and scripted invocations.
+
 * Reference
+
+- [[id:D0876A24-69BA-F484-ED9B-71CD3AA8710C][ores.shell]] — the REPL this launches, and what it can do once up.
 
 * Artefacts                                                        :noexport:
 

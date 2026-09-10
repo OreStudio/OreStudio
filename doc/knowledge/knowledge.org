@@ -20,6 +20,26 @@ are looking for. The [[id:CF2C4F3A-9C5C-4E7A-9E16-2A3A8C1D4C11][external/]] subf
 about systems and concepts ORE Studio does not own. For user-facing
 documentation see [[id:914738C6-7C77-41CD-A949-55DBBE0B6908][ORE Studio Manuals]].
 
+* Where to start
+
+This index says which pages exist. A
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][structure note]] says which to
+read, in what order, and why that order — the judgement search cannot
+supply. If your subject has one, start there rather than here.
+
+#+ATTR_HTML: :class hug-leading
+| Cluster | Read it to be competent at |
+|---------+----------------------------|
+| [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] | How a logical need for market data becomes concrete items |
+| [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] | Discounting, bootstrapping, and the multi-curve family |
+| [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] | Realised against implied, the surface, and what trades on it |
+| [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] | Who an actor is, and where each layer enforces it |
+| [[id:338DCC6D-4913-4FDC-9078-1F0B0486A9E5][MASD]] | The methodology the code generator implements |
+| [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] | The order an entity's layers must be built in |
+
+Every structure note carries the =structure_note= tag, so listing that tag
+returns the complete set.
+
 * Domain
 
 Finance concepts the codebase relies on, grouped by topic.

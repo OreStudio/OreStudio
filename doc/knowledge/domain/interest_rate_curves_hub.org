@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: FA45D3D1-C3D9-4FDB-B03B-8AB724D71092
+:END:
+#+title: Interest Rate Curves
+#+description: Structure note for the interest rate curve cluster: what a curve is, how one is built from pillars, why one curve became many, and how the family is stored and namespaced.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:structure_note:rates:curves:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+* Summary
+
+A discount curve answers one question — what is a future cashflow worth
+today — and everything else in this cluster exists because that question
+turned out to be harder than it looks. The curve is not observed. It is
+*bootstrapped* from a handful of quoted instruments, which fixes its value
+at a few tenors and leaves every point between them to *interpolation*. The
+2008 crisis then broke the assumption that one curve could both discount a
+cashflow and project the rate that cashflow depends on, so a single curve
+became a *family*, and the family needs an order to build it in, a way to
+be stored, and a way to be namespaced when the same currency has more than
+one.
+
+Read the cluster in that sequence: what a curve is, what it is made of, why
+there are several, and how the several are held. Each step creates the
+problem the next one answers, which is why this order and not the
+alphabet.
+
+* Reading order
+
+** 1. What a curve is, and how one is built
+
+[[id:E808F432-2FDA-47E8-B003-1E8B908870FE][Interest Rate Curves]] — start
+here. Day-count conventions, discount factors, and bootstrapping from
+deposits, FRAs, swaps and OIS. Everything downstream assumes this
+vocabulary, and the bootstrap is where the cluster's central fact appears:
+the curve is constructed from a small set of quotes rather than observed.
+
+** 2. What it is made of, and what fills the gaps
+
+[[id:D5FAFA10-333D-44BC-B993-4B5C4C4D803F][Pillar]] — the tenor points that
+are genuinely quoted inputs, as against the continuum the curve pretends to
+be. Read it immediately after the bootstrap, because it names what the
+bootstrap actually produces.
+
+[[id:85B48CF7-3858-44C8-97AA-91D21C634A9D][Interpolation]] — what happens
+between pillars, and the local versus non-local method families. This
+follows pillars necessarily: interpolation is only a question once you know
+the curve is defined at finitely many points.
+
+** 3. Why there is more than one curve
+
+[[id:7CB0024B-84FB-4AE0-ADF2-763079E888D5][Multi-Curve Construction]] — the
+history and the build order: one curve served both discounting and
+projection until basis spreads made that untenable; now the Funding Curve
+is built first and each Projection Curve is discounted off it. Read the
+history before the taxonomy, because the taxonomy is a response to it.
+
+[[id:6EA42D11-94F4-4D3A-9A51-024EC56EFC44][Funding and Projection Curves]] —
+the resulting family: one funding curve for discounting, one projection
+curve per floating index tenor, and why curve identity is a discrete label
+rather than a continuous axis. That last point is the one most often got
+wrong when modelling curves as data.
+
+** 4. How the family is held
+
+[[id:29F0F3B1-91A6-42BD-A53F-97F1E72A4FB9][Interest Rate Curve Bundles]] —
+how a currency's curves compose above the level of a single curve.
+
+[[id:71E4EB7A-20EA-46E1-8832-05D103C330EF][Curve Sets Storage]] — the
+storage-only grouping of several small related curve time series into one
+composite. Storage-only is the load-bearing word: it is a persistence
+concern and carries no pricing meaning, and conflating it with a bundle is
+a recurring mistake.
+
+[[id:D1A196C0-DD73-4B0E-B7C3-9768FCA2CCE7][Onshore/Offshore Curve
+Namespacing]] — when one currency has parallel discount curves selected by
+booking jurisdiction. Read last: it is a refinement of identity, and only
+makes sense once curve identity is understood as a discrete label.
+
+** Alongside, when the question is provenance
+# aside
+
+[[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — where
+a curve point came from and why market data needs lineage at all. Not part
+of the construction story, so it does not sit in the sequence; reach for it
+when the question is trust rather than shape.
+
+* What this cluster does not cover
+
+Volatility surfaces are a separate cluster with their own structure note,
+even though both are term structures built from quoted pillars. The
+resolution of a logical market data need into the physical identifiers a
+curve is built from belongs to
+[[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and
+Resolution]].
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and why the order is authored rather than computed.

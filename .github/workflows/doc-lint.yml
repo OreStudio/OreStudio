@@ -71,3 +71,8 @@ jobs:
         # The recipe holds the command and the skill holds the judgement,
         # so drift has one place to be detected rather than two.
         run: python3 build/scripts/link_skill_recipes.py --check
+
+      - name: Check structure notes are reachable from what they order
+        # A hub only helps readers who already found it, unless every page
+        # it orders points back at it.
+        run: python3 build/scripts/link_structure_notes.py --check

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:knowledge:zettelkasten:documentation:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/add-knowledge-structure-notes
+#+pr: 2055
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Luhmann's slip-box had structure notes, the entry points that list a cluster's n
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -43,11 +43,45 @@ Luhmann's slip-box had structure notes, the entry points that list a cluster's n
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two of the six clusters already had their entry point, which changed the
+work from writing six notes to writing four and adopting a convention.
+=Market Data Requirements and Resolution= was already a full structure note
+under the name /hub note/, with a pipeline and an argued order.
+=Entity Lifecycle= already carried the layer ordering with its skills,
+pattern documents and recipes per row, and needed only the reason for the
+order stated and the tag applied.
+
+The four written from scratch are interest rate curves, volatility,
+identity and access, and MASD. Each argues its order from what the pages
+make possible for each other rather than from any taxonomy: pillars before
+interpolation because interpolation is only a question once the curve is
+known to be defined at finitely many points; realised volatility before
+implied because the surface is priced rather than measured; logical space
+before physical because a file layout reads as arbitrary without the model
+it projects.
+
+Reachability is mechanical, through
+=build/scripts/link_structure_notes.py=. The hubs are the source of truth
+for cluster membership, and every page a hub orders gains a back-link. The
+=structure_note= tag makes the set listable, which is what lets the
+grounding phase name a cluster and get a path.
 
 * Notes
+
+The first run of the back-link script treated every outbound link in a
+hub as a cluster member, so it wrote back-links into pages the hubs merely
+cross-reference — the neighbouring cluster named under /what this cluster
+does not cover/, and the index every hub cites. Four pages were wrongly
+claimed before the diff showed it. The scan now stops at those sections,
+which is why hubs carry them as headings rather than as prose.
+
+Each of the four new notes says what it excludes and where that material
+lives instead. The reader who arrived at the wrong hub needs pointing at
+the right one more than the reader at the right hub needs reassurance.
+
+=Interpolation= is ordered by two hubs, curves and market data, and carries
+a back-link to each. A page belonging to two clusters is expected in a
+Zettelkasten rather than a fault to resolve.
 
 * Test Scenarios
 
@@ -64,12 +98,37 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2055][#2055]] | [doc] Add structure notes to the knowledge Zettelkasten |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The back-link script swept the aside sections into the ordered set, so three pages carried a back-link claiming an order the hub's own prose denies | build/scripts/link_structure_notes.py | Accept | A real bug. Aside sections now mark themselves with =# aside= and aside pages get their own wording. Marking beats matching on heading text, which would ask a script to interpret prose |
+| 2 | The GARCH placement overreached: realised volatility clustering is a real-world-measure time-series property and the surface's shape is a risk-neutral cross-sectional one | doc/knowledge/domain/volatility_hub.org | Accept | Narrowed to the leverage asymmetry, which is the connection that holds, with the limit stated so the next reader does not re-widen it. GARCH stays second |
+| 3 | The =entity_lifecycle= skill-name updates read as an unrelated rename swept into this PR | projects/modeling/entity_lifecycle.org | Accept | Fair. They are stale labels from a naming era before the compass rename, caught while tagging the page as a structure note; the PR description now says so |
+| 4 | Interest rate curves, identity and access, MASD, and the SSR ordering all check out against the source pages, and none of the four reads as a table of contents | — | Accept | No change. Recorded because a challenge that finds nothing is the evidence the rest of the review is worth trusting |
 
 * Result
+
+All five acceptance criteria are met.
+
+Six clusters have a structure note: market data resolution and the entity
+lifecycle, which existed and are now named and tagged as such, plus
+interest rate curves, volatility, identity and access, and MASD, written
+here. Each gives an argued reading order, and each argues it: no note is a
+bare list, and every section says what the previous one makes possible.
+
+All six are reachable from
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][the knowledge index]], which now
+opens with them, and from the pages they order: 33 back-links were added,
+and =link_structure_notes.py --check= holds that in CI.
+
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] documented the
+theory and said we had none. It now describes the convention we hold them
+under, with the three rules that keep them honest.
+
+The grounding phase reads a cluster's structure note first where one
+exists, which is stated in
+[[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]. Listing
+the =structure_note= tag returns the six.

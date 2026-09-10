@@ -267,6 +267,8 @@ this method and is not covered by the paper.
 
 * See also
 
+
+- [[id:576D0E28-E783-44D4-9C0F-C7ADD307539E][Volatility]] — the structure note for this cluster; this page sits alongside its sequence rather than in it.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — catalogue of ORE vol surface quote types this method applies to.
 - [[id:84E7CEA8-9654-431C-A8D1-C8B97E35B6D5][Paper summary: Gaussian GenAI — Synthetic Market Data Generation]] — GMM-based P-measure generation; this paper is the Q-measure arbitrage-free layer on top.
 - [[id:3F849D36-022B-49CC-AD71-791481F36581][Paper summary: GJR-GARCH neural-network option pricing]] — alternative route to risk-neutral densities via a neural surrogate.

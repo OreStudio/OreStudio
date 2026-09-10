@@ -101,11 +101,33 @@ before doing work has the reader's problem in an acute form: it knows
 the subject and not the identifiers, and the cost of reading the wrong
 five pages is paid in context it cannot recover.
 
-ORE Studio does not yet have them. [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][The knowledge index]] is a flat list
-of topics, which tells a reader that a page exists without telling them
-where to start or in what order to continue. Writing one structure note
-per domain cluster is tracked work, and the links it would order already
-exist — what is missing is the argued sequence.
+ORE Studio holds them under the =structure_note= tag, and
+[[id:7474935C-95D1-3034-B833-83DCD9FB3A09][the knowledge index]] opens with
+the set. One exists per domain cluster: market data resolution, interest
+rate curves, volatility, identity and access, MASD, and the entity
+lifecycle.
+
+Three conventions keep them honest. A structure note *argues* its order
+rather than listing one, saying what each page makes possible for the
+next; an order with no reason is a table of contents, which the index
+already provides. It *gists and links*, holding no content its cluster
+does not, so there is nothing in it to drift. And it *says what it
+excludes*, naming the neighbouring cluster and why the boundary falls
+where it does, because the reader who arrived at the wrong hub needs
+pointing at the right one more than the reader at the right hub needs
+reassurance.
+
+A cluster earns a structure note when reading its pages in the wrong
+order costs something real. Where the order does not matter, the index
+entry is enough.
+
+Some pages belong to a cluster without belonging to its sequence: a
+provenance note, a research paper, anything reached when the question
+changes rather than when the subject advances. A note holds these in a
+section marked =# aside=, and the marker is what the tooling reads. The
+alternative was to recognise such sections by their wording, which asks a
+script to interpret prose and gets it wrong the first time a note is
+phrased differently.
 
 * See also
 

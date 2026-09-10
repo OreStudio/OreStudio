@@ -546,6 +546,7 @@ as the fitness function.
 
 * See also
 
+- [[id:338DCC6D-4913-4FDC-9078-1F0B0486A9E5][MASD]] — the structure note that orders this cluster, and where to read this page in it.
 ** MASD methodology (knowledge)
 
 - [[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — the methodology and conceptual model this document applies.

@@ -152,6 +152,7 @@ around the service boundary.
 
 * See also
 
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:8ECCBD02-21F5-455C-B520-193E4631092F][Anatomy of a Service]] — "Calling another service: mint or delegate", the
   mechanics this doc names and expands on.
 - [[id:4B02695C-7C59-487A-8450-4240EC836685][Service-to-Service JWT Delegation]] — the original delegation design plan.

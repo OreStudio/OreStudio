@@ -47,6 +47,7 @@ their assignments live in [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.co
 
 * See also
 
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access Management]] — the security subsystem that
   applies this model.
 - [[id:D00BEA0D-E501-C534-A013-E6F40C1A6097][ores.iam.core]] — where the role/permission entities live.

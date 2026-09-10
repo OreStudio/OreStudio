@@ -161,6 +161,7 @@ construction left in that handler.
 
 * See also
 
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth: Client Credentials vs. On-Behalf-Of Delegation]]
   — the other two service-to-service auth flows this pattern sits
   alongside.

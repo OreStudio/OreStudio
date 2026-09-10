@@ -5,7 +5,7 @@
 #+description: Hub note for how a logical need for market data (a requirement) resolves into concrete items drawn from the market data universe: requirements, identifiers, the universe, configuration/resolution, dependency closure, snapshotting, and filtering.
 #+type: knowledge
 #+level: cross
-#+filetags: :knowledge:domain:marketdata:requirements:resolution:
+#+filetags: :knowledge:domain:structure_note:marketdata:requirements:resolution:
 #+created: 2026-07-23
 #+updated: 2026-07-30
 

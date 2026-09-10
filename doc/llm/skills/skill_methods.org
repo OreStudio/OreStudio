@@ -105,7 +105,12 @@ It then enters =compass-helm=, which matches the work to a *method* and
 copies that method's phases in. The method opens by
 grounding itself in the domain, resolving each concept it touches to a
 knowledge document and treating an unresolved one as the first task
-([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). It states
+([[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]). Where
+the concept belongs to a cluster with a
+[[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][structure note]], grounding reads
+that note first and follows its order: it names which pages are
+load-bearing and which can wait, which a search ranking cannot. Listing the
+=structure_note= tag returns the clusters that have one. It states
 a finish condition, backed by a *specification* where behaviour is involved.
 
 The method's phases cite *principles* for judgement calls and call

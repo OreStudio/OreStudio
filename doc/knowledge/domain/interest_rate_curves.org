@@ -226,3 +226,7 @@ takes place. The interpolation method for each curve is set in =curveconfig.xml=
 ORE Studio exposes these configurations through the reference data domain
 (=ores.refdata=) and will eventually surface them as editable entities in the
 UI.
+
+* See also
+
+- [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] — the structure note that orders this cluster, and where to read this page in it.

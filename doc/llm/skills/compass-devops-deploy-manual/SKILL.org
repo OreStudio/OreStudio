@@ -25,16 +25,21 @@ Building the user manual PDF after manual content changes.
 
 * How to use this skill
 
-1. /Build/:
+1. /Confirm the chapters build before publishing/. The manual is assembled
+   from many org files, and one malformed chapter fails the whole PDF.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build --direct manual
-   #+end_src
+2. /Run the target/ from the recipe below.
 
+3. /Check the screenshots came through/. A chapter carrying a
+   =[SCREENSHOT NEEDED]= placeholder builds cleanly and ships a gap.
 
 * Recipes
 
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — the deploy_manual target.
+
 * Reference
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — the preset names and the output layout the targets write to.
 
 * Artefacts                                                        :noexport:
 

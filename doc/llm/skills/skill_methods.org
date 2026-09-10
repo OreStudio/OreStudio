@@ -117,6 +117,15 @@ rather than its output ([[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated
 artefacts]]). At a fork the evidence cannot settle, the method convenes
 *deliberation* and records the verdict on the task.
 
+*A missing effector becomes a recipe, never an inline command.* When a
+phase needs a command no recipe carries, the command is written as a
+recipe and the phase reaches for it. Improvising it inline buys one
+session and costs every later one: the command is untested, it is invisible
+to [[id:B5766B0E-24F0-45C3-B35D-E762BBAB5206][compass-doc-sync-recipes]], and
+the next method that needs the same effector improvises its own. The recipe
+holds the command and the skill holds the judgement, so drift has exactly
+one place to be detected.
+
 Verification climbs the ladder as far as the work requires, routing
 first to the checkers that do not share the session model's priors
 ([[id:DEE49C55-1626-470D-BB0F-D58A11D35769][Verification]]). The session closes

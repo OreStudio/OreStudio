@@ -25,17 +25,24 @@ Running SQL in the environment — queries or scripts, with credentials and conn
 
 * How to use this skill
 
-1. /One-liner/:
+1. /Know which database you are about to touch/. The connection comes from
+   this worktree's =.env=, so the same command hits a different database in
+   another worktree. Check =compass where= if unsure.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh sql -- -c "<sql>"
-   #+end_src
+2. /Run the query/ through the recipe below, which supplies the credentials
+   and connection rather than having you retype them.
 
-   Everything after =--= goes to psql; =-f file.sql= runs a script.
+3. /Prefer a read before a write/. A =SELECT= that returns the rows a
+   =DELETE= would remove costs one command and prevents the mistake that
+   needs a database rebuild.
 
 * Recipes
 
+- [[id:ABFC1EB5-5314-43C6-80B8-E2967254F867][How do I run SQL in the environment?]] — credentials and connection come from the .env.
+
 * Reference
+
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the tool every one of these commands runs through.
 
 * Artefacts                                                        :noexport:
 

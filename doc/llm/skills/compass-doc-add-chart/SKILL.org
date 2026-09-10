@@ -70,3 +70,14 @@ code and when reviewing existing displays for clarity or integrity.
 - [ ] Reveals multiple levels of detail (micro + macro).
 - [ ] Layering: primary data dominates, secondary recedes.
 - [ ] Appropriate data density.
+
+* Recipes
+
+This skill runs no commands: it is judgement applied to a chart someone
+else renders.
+
+* Reference
+
+- [[id:F322DD08-D114-4B9E-8B89-E392ED5C591E][Tufte principles]] — data-ink, chartjunk, graphical integrity, the lie factor.
+- [[id:613C09B0-D516-417F-9627-2349D46A3645][Analytical design]] — comparison, causality, multivariate display, evidence.
+

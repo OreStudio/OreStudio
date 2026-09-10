@@ -25,22 +25,25 @@ Skill sources changed and the deployed bundle is stale (compass bearings warns):
 
 * How to use this skill
 
-1. /Rebuild the bundle/:
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh build --direct skills
-   #+end_src
+1. /Deploy after every skill edit/. The harness reads the deployed bundle,
+   not the org sources, so an unbuilt edit changes nothing for any session.
 
+2. /Purge what the deploy leaves behind/. Deployment writes but never
+   deletes, so a renamed or retired skill keeps loading under its old name
+   until its deployed directory is removed.
 
-2. /Purge stale deployed directories/ — deployment does not remove them: delete any =.claude/skills/<dir>= with no matching =doc/llm/skills/<dir>=.
-
-3. /Remind the user/ to =/reload-skills= in their Claude Code session.
+3. /Tell the user to run =/reload-skills=/. A running session holds the
+   bundle it started with, so until it reloads, the edit is live on disk
+   and invisible to the very session that made it.
 
 * Recipes
 
 - [[id:B5F231A9-5403-482C-8F2A-12D6917C58CD][How do I deploy the skills?]]
 
 * Reference
+
+- [[id:5AAE6900-8488-4E22-9F31-A1B9D5320EFB][CMake setup]] — the preset names and the output layout the targets write to.
 
 * Artefacts                                                        :noexport:
 

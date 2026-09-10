@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 86F4C1E0-6F35-4AA7-9C95-3991D4F5F831
+:END:
+#+title: Task: Delegate the remaining skill commands to recipes
+#+description: Multi-step skills still carry commands their recipes own; sweep the 105 remaining shell blocks so the command lives in exactly one place.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The boundary sweep delegated the commands in the skills that were nothing
+but a command, and pointed every skill at the recipe that owns its
+commands. It did not finish the harder half: 105 shell blocks remain across
+the catalogue, in skills where the command sits inside a judged sequence.
+
+=compass-devops-setup-environment= is the shape of what is left. Its ten
+commands each have a recipe elsewhere — indexing, deploying the skills,
+deploying the settings, recreating the database, provisioning the tenant —
+and what the skill actually contributes is the /order/. Delegating each
+step leaves the ordering, which is the judgement, and removes the second
+copy of every command.
+
+Sweep the remainder on that test: if a recipe carries the command, the
+skill links it and states why the step is where it is in the sequence.
+
+Not every one of the 105 is a judged sequence, and the sweep should not
+assume it. =compass-agile-refine-backlog= already links the recipe that owns
+its commands and still restates them, =git mv= and =git commit= invocations
+included, adding no ordering judgement of its own. Cases of that shape are
+mechanical: delete the duplicate and keep the link. Sort the 105 into the
+two kinds before writing any prose, because the mechanical half needs none.
+
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Discovered while separating the boundaries. |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-10                               |
+
+* Acceptance
+
+- Every skill command that a recipe already carries is replaced by a link to that recipe.
+- A skill that is a sequence keeps the ordering and the reason for it, and delegates each step.
+- =compass-doc-sync-recipes= detects command drift in exactly one place afterwards.
+- A skill left with no judgement after delegation is reported, not silently kept.
+
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -65,10 +65,12 @@ worktree", "set up a new dev env".
 * Recipes
 
 - [[file:../../../recipes/compass/how_do_i_provision_an_environment_with_compass.org][How do I provision a new environment with compass?]]
+- [[id:E9297D15-F053-4B76-92DF-ED87E7205020][How do I provision a new environment with compass?]] — creates the worktree, assigns ports, writes the .env.
 
 * Reference
 
 - [[file:../../../recipes/compass/how_do_i_manage_the_environment_with_compass.org][How do I manage the checkout environment with compass?]] — =env configure=
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the tool every one of these commands runs through.
 
 * Artefacts                                                        :noexport:
 

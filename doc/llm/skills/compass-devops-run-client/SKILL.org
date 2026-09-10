@@ -25,48 +25,36 @@ Launching the Qt client, detached so the terminal stays free; colour keeps paral
 
 * How to use this skill
 
-1. /Launch/:
+1. /Give the client a colour when more than one runs/. Parallel worktrees
+   each start their own client, and the colour is what tells them apart on
+   screen and in the window title. The stop verb takes the same colour, so
+   stopping without it interrupts another environment's run.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh client start --colour <colour>
-   #+end_src
+2. /Ready the system before opening the client, and verify it yourself/.
+   Confirm or recreate the database and provision it, and record what you
+   did in the scenario's =* Before you start= section. Never hand a tester
+   a scenario against a system you have not already checked.
 
-2. /Launch with a test scenario pre-loaded/ — whenever there's UI testing to do, always supply this instead of a bare launch. =--open-scenario= must be an *absolute* path — the client's working directory is not the repo root, so a relative path (even one that's correct from your own shell) fails with a filesystem error:
+3. /Pass an absolute path to =--open-scenario=/. The client's working
+   directory is not the repository root, so a relative path that is correct
+   in your own shell fails with a filesystem error. Opening the scenario
+   this way lands the tester in the Scenario Runner with the document
+   loaded, rather than hunting for it.
 
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh client start --colour <colour> --open-scenario /absolute/path/to/scenario_*.org
-   #+end_src
-
-   Opens the Scenario Runner (System > Testing) with that =test_scenario=
-   doc already loaded, so the tester can start working through steps
-   immediately instead of using Scenario Runner's own Open button.
-
-3. /Ensure the system is actually ready before opening the client/ —
-   confirm/recreate the database and provision it yourself (see
-   [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]]), recorded in the scenario's own
-   =* Before you start= section, not left for the tester to sort out.
-   Never hand the tester a scenario against a system you haven't
-   already verified is in the right state.
-
-4. /Always include a connect/login step in the scenario itself/ — every
-   =test_scenario= doc opened this way must have, as its *first =* Steps=
-   entry* (not just prose in =* Context=, which the Scenario Runner
-   panel doesn't track pass/fail for), a step naming the specific
-   persona to log in as: the exact account and its password (e.g.
-   =tenant_admin@acme_corporation= / =Secure-Password-123=). This step
-   is pure tester mechanics — it assumes the readiness work from step 3
-   above, not a conditional the tester has to evaluate. Never leave the
-   tester to guess credentials.
-
-4. /Stop/ (pass the same =--colour= the instance was started with):
-
-   #+begin_src sh :results verbatim
-   ./projects/ores.compass/compass.sh client stop --colour <colour>
-   #+end_src
+4. /Put the login in the scenario's first step/, naming the persona and its
+   password. It has to be a =* Steps= entry rather than prose in
+   =* Context=, because the Scenario Runner tracks pass and fail per step
+   and ignores the prose. A tester left to guess credentials stops there.
 
 * Recipes
 
+
+- [[id:0A22B752-D5CF-4B36-8429-2950130AAABD][How do I ready up an environment?]] — the readiness the client assumes, and the launch with a scenario.
+- [[id:BE325E3E-1BAB-4D9D-964E-78333CDB97D7][How do I test a feature after implementation?]] — handing a readied client to a tester.
+
 * Reference
+
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the tool every one of these commands runs through.
 
 * Artefacts                                                        :noexport:
 

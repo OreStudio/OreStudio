@@ -97,6 +97,7 @@ sequences, and defined domain terms.
   (Issue 9, Jan 2025) for word-by-word dictionary checks.
 - [[https://github.com/danyuchn/asd-ste100-skill][Upstream repo]] — original skill by Dustin Yuchen Teng
   (MIT license), adapted for ORE Studio.
+- [[id:47341FC6-B8FB-499E-AAE0-F4EE0ABFDA05][Glossary]] — one word per concept, which the rewrite must preserve.
 
 * Artefacts                                                        :noexport:
 

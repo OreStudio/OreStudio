@@ -66,3 +66,8 @@ jobs:
         # the attenuation. A skill missing from the table is an error
         # rather than a default, so a new skill needs a considered level.
         run: python3 build/scripts/apply_skill_levels.py --check
+
+      - name: Check every skill links the recipes that own its commands
+        # The recipe holds the command and the skill holds the judgement,
+        # so drift has one place to be detected rather than two.
+        run: python3 build/scripts/link_skill_recipes.py --check

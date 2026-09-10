@@ -37,7 +37,11 @@ The branch is stale relative to origin/main — rebase before doing anything els
 
 * Recipes
 
+- [[id:4B8BB864-AEA3-4720-9BB3-DCF4397000D2][How do I rebase my branch on main?]] — the rebase and what to do when it conflicts.
+
 * Reference
+
+- [[id:6F7A122F-BC0F-4F3E-BA46-8B793FF15D10][ores.compass]] — the tool every one of these commands runs through.
 
 * Artefacts                                                        :noexport:
 

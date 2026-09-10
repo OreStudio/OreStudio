@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:skills:mode:pstack:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-helm-mode-skill
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ pstack's most valuable structural idea is that one skill is sticky: entered once
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -50,11 +50,44 @@ pstack's most valuable structural idea is that one skill is sticky: entered once
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The blocking criterion came first, because the mode cannot ship without
+it. The matching rule is five ordered questions, taking the first that
+answers yes, ordered by how sharply they discriminate rather than by how
+common they are. Two matching the same work is resolved by that ordering;
+two matching different parts is not a tie at all, and
+=compass-method-figure-it-out= sequences them. Nothing matching sends the
+reader to the limits first, because most unmatched requests are unmatched
+for being too small.
+
+Question 2 outranks question 5 deliberately, and the ordering is the
+substance of the rule rather than an implementation detail: work that
+adds a capability because the current one misbehaves is a defect first,
+and fixing it without reproducing it is how a symptom gets papered over
+with a feature.
+
+Then the mode. Eight steps: decline if the work does not earn it, declare
+the System, read the principles index, match, copy the phases in
+verbatim, run them routing outward, delegate as this same mode, close.
 
 * Notes
+
+The verbatim copy is step 5 rather than something the phases mention in
+passing, because the acceptance is right that it is the part most easily
+lost. The failure is not refusing a phase; it is reading a method,
+forming a private understanding of it, and writing a plan that quietly
+drops what was inconvenient. Copying first makes the drop visible,
+because the phase is sitting in the list with nothing next to it.
+
+Declining is step 1 for the same reason it is worth having at all. A mode
+that fires on everything trains people to route around it, and a mode
+that cannot say /this is not worth my cost/ is one that will be
+disabled rather than used.
+
+=compass-helm= is a bare noun, which the naming registers did not admit.
+The register gains the noun rather than bending the verb rule around it,
+recorded in the decision log with =compass-mode= noted as the rejected
+alternative: accurate, and forgettable.
+
 
 * Test Scenarios
 
@@ -80,3 +113,36 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All twelve acceptance criteria are met, including the blocking one.
+
+Blocking, first: the matching predicate is specified in
+[[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] —
+the ordered rule, the arbitration for two matches of each shape, and the
+null case — before the mode shipped.
+
+The mode is sticky and can be stood down at any turn. Entering it
+declares the System, which attenuates the catalogue. It reads the
+principles index at task start. It copies a matched method's phases in
+verbatim before task-specific reasoning, and a skipped phase stays in the
+list with its reason, silent skipping refused. It can decline, and says
+when the heavy path is not worth its cost. The request shape is
+documented. A delegate is spawned as this same mode rather than a generic
+agent, and an existing one is resumed rather than a sibling spawned
+beside it.
+
+The name is in the decision log as a bare-noun extension with
+=compass-mode= as the rejected alternative.
+
+Exercised end to end on real work, which is why the stale-marker task
+lands in this pull request rather than its own. The mode declined
+nothing, declared s1, read the principles, matched the work to
+=compass-method-bug-fix= on question 2, copied the seven phases in, and
+ran them: reproduced four markers naming a script that never writes them,
+found the cause in =compass lint= checking only BEGIN/END pairing, fixed
+the cause with =_lint_marker_generators=, and proved it by the check
+failing on the four before and passing after.
+
+That run is the evidence for the mode, and it also closes
+[[id:6D872794-2934-49EA-80EC-F1E64D23AC10][the marker task]] it was run
+on.

@@ -172,6 +172,14 @@ How a kind of work is approached, from framing to a verified end.
 | [[id:9DDEE5BF-9B2E-49C4-BAF9-8A2CE87D295B][compass-method-prototype]] | Compass Method Prototype | The method for settling an empirical question by observing it — the smallest thing that produces the observ... |
 | [[id:AD238B8D-ADFE-488A-9536-AA7F0B5A5559][compass-method-refactoring]] | Compass Method Refactoring | The method for a behaviour-preserving change to structure — establish the evidence that behaviour is preser... |
 
+* The mode (=compass-helm=)
+
+The sticky posture a session enters, which matches work to a method and routes to everything else.
+
+| Name | Title | Description |
+|------+-------+-------------|
+| [[id:0CEA32ED-0F13-4F95-BE30-52506FCED156][compass-helm]] | Compass Helm | The sticky mode. Declares the session System, matches the work to a method, copies that method's phases int... |
+
 # END generated catalogue
 
 * Rebuilding skills

@@ -2446,6 +2446,43 @@ def _lint_generator_markers(files):
     return out
 
 
+_MARKER_SOURCE_RE = re.compile(
+    r"^#\s*BEGIN generated\s+\S+\s+\(([^)]+)\)\s*$", re.M)
+
+
+def _lint_marker_generators(files):
+    """Report a generated marker naming a script that never writes it.
+
+    A marker is an instruction: this region is derived, do not edit it,
+    the named script will rewrite it. A marker naming a script that does
+    not target the file is worse than no marker, because it tells a
+    reader to leave alone a region nothing maintains.
+
+    A generator names the file it writes, so the test is whether the
+    script's source mentions it. For a SKILL.org the name that identifies
+    it is its directory.
+    """
+    out = []
+    for rel, text in files:
+        for m in _MARKER_SOURCE_RE.finditer(text):
+            script = Path(PROJECT_ROOT) / m.group(1).strip()
+            lineno = text[:m.start()].count("\n") + 1
+            if not script.is_file():
+                out.append((str(rel), lineno,
+                            f"marker names {m.group(1)}, which does not exist"))
+                continue
+            try:
+                source = script.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            needle = rel.parent.name if rel.name == "SKILL.org" else rel.name
+            if needle not in source:
+                out.append((str(rel), lineno,
+                            f"marker names {m.group(1)}, which never writes "
+                            f"this file"))
+    return out
+
+
 def _lint_durable_links(files, id_types):
     """Report durable documents linking into agile content."""
     out = []
@@ -2496,7 +2533,8 @@ def cmd_lint(argv):
         description=(
             "Validate the org corpus. Checks filetags (every tag lowercase, "
             "matching [a-z][a-z0-9_-]*), generator markers (every BEGIN has a "
-            "matching END on its own line), dangling id links (every "
+            "matching END on its own line, naming a script that writes "
+            "this file), dangling id links (every "
             "[[id:...]] resolves), and links from durable documents "
             "into agile content. All but the last are enforced; the durable "
             "link check is advisory unless --strict-links is given."
@@ -2547,6 +2585,7 @@ def cmd_lint(argv):
             break
 
     markers = _lint_generator_markers(files)
+    marker_sources = _lint_marker_generators(files)
     id_types = _collect_org_types(files)
     links = _lint_durable_links(files, id_types)
     dangling = _lint_dangling_links(files, id_types)
@@ -2565,6 +2604,13 @@ def cmd_lint(argv):
         print(f"❌  generator markers: {len(markers)} violation(s):\n",
               file=sys.stderr)
         for path, lineno, msg in markers:
+            print(f"  {path}:{lineno}: {msg}", file=sys.stderr)
+
+    if marker_sources:
+        failed = True
+        print(f"\u274c  generated markers: {len(marker_sources)} name a "
+              f"script that does not write them:\n", file=sys.stderr)
+        for path, lineno, msg in marker_sources:
             print(f"  {path}:{lineno}: {msg}", file=sys.stderr)
 
     if dangling:

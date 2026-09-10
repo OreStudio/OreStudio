@@ -82,10 +82,10 @@ noun*.
 
 ** Inventory
 
-# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Target type against verb, with the source each type resolves from. Populated
-when the dispatcher lands.
-# END generated inventory
+Target type against verb, with the source each type resolves from.
+Not yet written: it is generated from the verb table, which arrives
+with the dispatcher. Until then the types and their operations are
+in [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]].
 
 * See also
 

@@ -245,10 +245,11 @@ it was used and the work landed.
 
 ** Inventory
 
-# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every independent checker, what it proves, and where it is enforced. Populated
-when the ladder lands.
-# END generated inventory
+Every independent checker, what it proves, and where it is enforced.
+Not yet written: it is generated from the workflow definitions, which
+needs the ladder settled first. The checks that exist today are listed
+in [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] under the
+rules a check carries.
 
 * See also
 

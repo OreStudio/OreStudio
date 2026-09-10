@@ -162,14 +162,14 @@ What each System sees by default, counted from the levels the skills carry. Atte
 #+ATTR_HTML: :class hug-leading
 | Level | System | Horizon | Sees | Attenuation |
 |-------+--------+---------+------+-------------|
-| =s1= | Agent | Hours | 65 skills | advisory |
-| =s2= | Orchestrator | Days | 18 skills | advisory |
-| =s3= | Sprint Planner | Weeks | 20 skills | advisory |
+| =s1= | Agent | Hours | 66 skills | advisory |
+| =s2= | Orchestrator | Days | 19 skills | advisory |
+| =s3= | Sprint Planner | Weeks | 21 skills | advisory |
 | =s3star= | Auditor | Continuous | 5 skills | binding |
-| =s4= | Version Planner | Months | 15 skills | advisory |
-| =s5= | Identity Steward | Indefinite | 15 skills | advisory |
+| =s4= | Version Planner | Months | 16 skills | advisory |
+| =s5= | Identity Steward | Indefinite | 16 skills | advisory |
 
-14 skills are tagged =cross= and appear in every advisory slice: the documents and the skills themselves, and the orientation any System starts from.
+15 skills are tagged =cross= and appear in every advisory slice: the documents and the skills themselves, and the orientation any System starts from.
 
 # END generated inventory
 

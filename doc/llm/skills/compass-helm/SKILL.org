@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 0CEA32ED-0F13-4F95-BE30-52506FCED156
+:END:
+#+title: Compass Helm
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: cross
+#+filetags: :llm:skill:skills:claude_code:mode:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-helm
+description: The sticky mode. Declares the session System, matches the work to a method, copies that method's phases into the todo list verbatim before any task-specific reasoning, and routes to actions, recipes and deliberation as the phases fire. Stays on across turns until stood down.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Enter it at the start of substantial work and leave it on. It is sticky:
+once entered it governs every turn until stood down, so a method is not
+something to remember reaching for.
+
+The request shape:
+
+#+begin_example
+compass-helm <what you observed, or what you want>
+Done means <something the agent can run or inspect>.
+Keep <the behaviour that must not change>.
+#+end_example
+
+State the goal and the constraints, not the skills to run. An agent
+handed both a goal and a step-list follows the step-list and drops the
+method's gates.
+
+*Stand it down* by saying so. The mode ends immediately and the session
+continues as an ordinary one.
+
+* How to use this skill
+
+** 1. Decline, if the work does not earn it
+
+Say so plainly and fall through to the plain action skills. Moving a
+date, fixing a sentence, changing one configuration value, answering a
+question: none of these want a declared System, a grounding phase and a
+decision trail, and a mode that fires on everything trains people to
+route around it.
+
+The mode earns its cost when a plausible diff is not enough: work that
+must be reproduced before it is fixed, a design decision expensive to
+reverse, a run long enough that a human reviews it afterwards, or a
+domain the agent has not grounded itself in.
+
+Declining is a normal outcome, not a failure to engage.
+
+** 2. Declare the System
+
+Name the level the session is acting at, which attenuates the catalogue
+to the slice in scope
+([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]). The
+narrowing is advisory everywhere except the audit channel: reach outside
+it by saying so.
+
+Declare it once, at the start, and say which. A session that never
+declares is acting at every level at once, which is the variety problem
+the levels exist to solve.
+
+** 3. Read the principles index
+
+Read [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] at task
+start, grouped by the moment each is cited. This is what makes a
+citation possible later: a rule the session has not loaded is a rule it
+will not think to cite at the judgement call.
+
+** 4. Match the work to a method
+
+Apply the matching rule in
+[[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]]: the
+ordered questions, the arbitration when two match, and the null case.
+Say which method matched and why, in one line. A match nobody can see is
+a match nobody can dispute.
+
+** 5. Copy the phases in verbatim
+
+Write the matched method's phases into the todo list *before* reasoning
+about the task, in the method's own words and order.
+
+This is the step that carries the value and the step most easily lost.
+The known failure is reading a method, forming a private understanding
+of it, and writing a bespoke plan that quietly drops the phases that
+were inconvenient. Copying first makes the drop visible, because the
+phase is sitting in the list.
+
+A phase deliberately skipped stays in the list with =skip:= and the
+reason. Silent skipping is refused: if the reason cannot be written down
+it is not a decision, it is an omission.
+
+** 6. Run the phases, routing outward
+
+Work the phases in order. As each fires:
+
+- anything touching an artefact calls an *action*;
+- any command comes from a *recipe*, and a missing effector becomes a
+  recipe rather than an inline command;
+- a judgement call cites a *principle* by name;
+- a fork the evidence cannot settle convenes *deliberation*, and the
+  verdict is recorded on the work.
+
+Re-check the match at each phase boundary. Discovering the shape was
+misjudged is a reason to re-match, not to push on through phases that no
+longer fit.
+
+** 7. Delegate as this same mode
+
+A delegate is spawned as a named System under this mode, never as a
+generic agent. It inherits none of the session's grounding, so the brief
+states what it must read first and what it may do
+([[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]).
+
+Resume an existing delegate rather than spawning a sibling beside it.
+Two delegates on one piece of work contend for the same files and
+produce two partial answers.
+
+** 8. Close the loop
+
+Finish through the actions:
+[[id:67FDB9A1-3EBE-45A5-97BD-5E5123661553][compass-agile-close-task]]
+then [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][compass-pr-raise]]. What
+generalises beyond this piece of work goes to a memory, a principle or a
+check, with approval rather than automatically.
+
+* Recipes
+
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — the lifecycle the mode drives.
+- [[id:FE388774-0714-4D93-AEB0-D6221314D4F9][How do I orient a new session?]] — what to run before declaring the System.
+
+* Reference
+
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — the matching rule, the request shape, and the limits.
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — read at task start, cited at the judgement calls.
+- [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] — what declaring a System attenuates.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the three entry points, of which this is the third.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

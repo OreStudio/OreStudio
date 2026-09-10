@@ -675,10 +675,11 @@ The placement procedure. Take the first match.
 
 ** Inventory
 
-# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every skill, grouped by the regulatory function it offers. Populated when the
-classification task lands.
-# END generated inventory
+Every skill grouped by the regulatory function it offers.
+Not yet written: the classification exists per skill but nothing
+derives the grouping. The catalogue in
+[[id:2003934B-ED05-D114-404B-08C0E0D844BB][Skills]] groups by domain
+in the meantime.
 
 * See also
 

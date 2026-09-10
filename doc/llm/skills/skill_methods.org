@@ -74,6 +74,63 @@ Do not list the skills you want run. State the goal and the constraints;
 the method owns the sequence. An agent handed both a goal and a
 step-list follows the step-list and drops the method's gates.
 
+** Matching a Request to a Method
+
+Matching is the first decision and the one no later phase recovers from,
+so it is a stated rule rather than a judgement made fresh each time.
+
+*** The rule
+
+Ask these in order and take the first that answers yes. They are ordered
+by how sharply they discriminate, not by how common they are.
+
+1. *Does the work change nothing?* The deliverable is an answer, a
+   diagnosis, a recommendation. → =compass-method-investigation=.
+2. *Is something already behaving wrongly, observably?* There is a
+   symptom someone could be shown. → =compass-method-bug-fix=.
+3. *Does behaviour stay the same while structure changes?* A rename, an
+   extraction, a collapse, a move. → =compass-method-refactoring=.
+4. *Does the next decision hinge on something observable that nobody has
+   observed?* → =compass-method-prototype=, then match again once the
+   fork is settled.
+5. *Otherwise, behaviour is new or changed.* →
+   =compass-method-feature=.
+
+Question 2 outranks question 5 deliberately. Work that adds a capability
+because the current one misbehaves is a defect first: fixing it without
+reproducing it is how a symptom gets papered over with a feature.
+
+*** When two match
+
+Two methods matching is nearly always one of two shapes, and they are
+handled differently.
+
+- *Two match the same work.* The earlier question wins, because the
+  ordering is by discrimination: a refactor that also fixes a defect is
+  a defect, and the refactor follows separately once the fix has landed
+  with its reproduction.
+- *Two match different parts of the work.* Neither wins.
+  =compass-method-figure-it-out= sequences them, and each part runs
+  under its own method inside that sequence. A migration across many
+  call sites is this shape: a series of refactors that needs a plan of
+  its own.
+
+The test that separates them is whether one predicate can describe the
+finished state. If it can, it is one piece of work with two candidate
+methods; if it takes two, it is two pieces of work.
+
+*** When none matches
+
+First check the limits below. Most unmatched requests are unmatched
+because they are too small for a method at all, and the answer is a
+plain action skill rather than a bespoke sequence.
+
+Where the work is substantial and genuinely fits no method, that is
+=compass-method-figure-it-out=, whose first phase is to say which
+methods were rejected and why. An unmatched request is a finding: if the
+same shape arrives twice, the second time it should be matching
+something.
+
 ** Limits of the Mode
 
 The machinery has a cost, and a mode that fires on everything trains

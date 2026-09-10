@@ -104,10 +104,9 @@ read the diff and decide whether it is plausible; it regenerates and compares.
 
 ** Inventory
 
-# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Model type, the profile it binds to, and the drift check guarding it. Populated
-when the drift checks are wired.
-# END generated inventory
+Model type, the profile it binds to, and the drift check guarding it.
+Not yet written: it is generated from the drift registry, which
+arrives when the codegen drift checks are wired into CI.
 
 * See also
 

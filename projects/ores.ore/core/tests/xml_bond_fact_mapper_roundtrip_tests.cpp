@@ -145,7 +145,16 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
     CHECK(carried.rule == "Forward");
     REQUIRE(carried.end_of_month);
     CHECK(*carried.end_of_month);
-    CHECK(r.bond_leg.leg_type == "Fixed");
+    REQUIRE(r.bond_leg.leg_type);
+    CHECK(*r.bond_leg.leg_type == "Fixed");
+    REQUIRE(r.bond_leg.currency);
+    CHECK(*r.bond_leg.currency == "EUR");
+    REQUIRE(r.bond_leg.day_counter);
+    CHECK(*r.bond_leg.day_counter == "ACT/ACT");
+    REQUIRE(r.bond_leg.payment_convention);
+    CHECK(*r.bond_leg.payment_convention == "F");
+    REQUIRE(r.bond_leg.payer);
+    CHECK(!*r.bond_leg.payer);
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -232,6 +241,126 @@ TEST_CASE("an_empty_schedule_element_survives_the_round_trip", tags) {
     CHECK(to_string(*rule.EndOfMonth) == "Y");
 
     BOOST_LOG_SEV(lg, info) << "An empty schedule element survives the round trip.";
+}
+
+TEST_CASE("a_legs_payment_terms_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The payment terms, the payment calendar and the two flags have no
+    // column in the nine tables, so the leg is their only home on the
+    // mapper path. LegType belongs to the same group: a leg that has no
+    // fact row used to come back as Fixed whatever the document said.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Leg_Terms">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Payer>true</Payer>
+        <Currency>GBP</Currency>
+        <PaymentConvention>MF</PaymentConvention>
+        <PaymentLag>2D</PaymentLag>
+        <NotionalPaymentLag>3</NotionalPaymentLag>
+        <PaymentCalendar>GBP</PaymentCalendar>
+        <DayCounter>A365</DayCounter>
+        <LastPeriodDayCounter>ACT/ACT</LastPeriodDayCounter>
+        <StrictNotionalDates>true</StrictNotionalDates>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_leg.leg_type);
+    CHECK(*r.bond_leg.leg_type == "Floating");
+    REQUIRE(r.bond_leg.payer);
+    CHECK(*r.bond_leg.payer);
+    REQUIRE(r.bond_leg.currency);
+    CHECK(*r.bond_leg.currency == "GBP");
+    REQUIRE(r.bond_leg.payment_convention);
+    CHECK(*r.bond_leg.payment_convention == "MF");
+    REQUIRE(r.bond_leg.payment_lag);
+    CHECK(*r.bond_leg.payment_lag == "2D");
+    REQUIRE(r.bond_leg.notional_payment_lag);
+    CHECK(*r.bond_leg.notional_payment_lag == 3);
+    REQUIRE(r.bond_leg.payment_calendar);
+    CHECK(*r.bond_leg.payment_calendar == "GBP");
+    REQUIRE(r.bond_leg.day_counter);
+    CHECK(*r.bond_leg.day_counter == "A365");
+    REQUIRE(r.bond_leg.last_period_day_counter);
+    CHECK(*r.bond_leg.last_period_day_counter == "ACT/ACT");
+    REQUIRE(r.bond_leg.strict_notional_dates);
+    CHECK(*r.bond_leg.strict_notional_dates);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    const auto& leg = rt.BondData->LegData.front();
+    CHECK(leg.LegType == ores::ore::domain::legType::Floating);
+    CHECK(leg.Payer);
+    REQUIRE(leg.Currency);
+    CHECK(std::string(*leg.Currency) == "GBP");
+    REQUIRE(leg.PaymentConvention);
+    CHECK(to_string(*leg.PaymentConvention) == "MF");
+    REQUIRE(leg.PaymentLag);
+    CHECK(std::string(*leg.PaymentLag) == "2D");
+    REQUIRE(leg.NotionalPaymentLag);
+    CHECK(*leg.NotionalPaymentLag == 3);
+    REQUIRE(leg.PaymentCalendar);
+    CHECK(std::string(*leg.PaymentCalendar) == "GBP");
+    REQUIRE(leg.DayCounter);
+    CHECK(to_string(*leg.DayCounter) == "A365");
+    REQUIRE(leg.LastPeriodDayCounter);
+    CHECK(to_string(*leg.LastPeriodDayCounter) == "ACT/ACT");
+    REQUIRE(leg.StrictNotionalDates);
+    CHECK(*leg.StrictNotionalDates);
+
+    BOOST_LOG_SEV(lg, info) << "A leg's payment terms survive the round trip.";
+}
+
+TEST_CASE("the_issue_row_stands_in_for_a_leg_a_row_set_holds", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The issue row mirrors the coupon leg's currency and day counter, and
+    // the document's own statement wins when there is one. A payload built
+    // from a row set holds no leg, so the row is all there is to go on.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_From_Row">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>SEK</Currency>
+        <DayCounter>A365</DayCounter>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_leg.currency);
+    CHECK(*r.bond_leg.currency == "SEK");
+    REQUIRE(r.bond_leg.day_counter);
+    CHECK(*r.bond_leg.day_counter == "A365");
+
+    auto from_row = r;
+    from_row.bond_leg = {};
+
+    const auto rt = bond_instrument_mapper::reverse_bond(from_row);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    const auto& leg = rt.BondData->LegData.front();
+    REQUIRE(leg.Currency);
+    CHECK(std::string(*leg.Currency) == "SEK");
+    REQUIRE(leg.DayCounter);
+    CHECK(to_string(*leg.DayCounter) == "A365");
+
+    BOOST_LOG_SEV(lg, info) << "The issue row stands in for a leg a row set holds.";
 }
 
 TEST_CASE("a_forward_bonds_coupon_leg_keeps_its_own_schedule", tags) {
@@ -329,7 +458,8 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     CHECK(r.repo->repo_type == "Fixed");
     CHECK(r.repo->repo_rate == Approx(0.0178).epsilon(0.0001));
 
-    CHECK(r.repo_leg.payer);
+    REQUIRE(r.repo_leg.payer);
+    CHECK(*r.repo_leg.payer);
     REQUIRE(r.repo_leg.schedule.rules.size() == 1);
     const auto& rule = r.repo_leg.schedule.rules.front();
     CHECK(rule.tenor == "1Y");
@@ -338,6 +468,15 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     CHECK(rule.calendar == "US");
     CHECK(rule.convention == "MF");
     CHECK(rule.rule == "Forward");
+
+    // A repo leg has no issue row to mirror these onto, so the leg itself
+    // is their only home.
+    REQUIRE(r.repo_leg.currency);
+    CHECK(*r.repo_leg.currency == "USD");
+    REQUIRE(r.repo_leg.day_counter);
+    CHECK(*r.repo_leg.day_counter == "A360");
+    REQUIRE(r.repo_leg.payment_convention);
+    CHECK(*r.repo_leg.payment_convention == "F");
 
     const auto rt = bond_instrument_mapper::reverse_bond_repo(r);
     REQUIRE(rt.BondRepoData);
@@ -348,6 +487,12 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     const auto& leg = rt.BondRepoData->RepoData.LegData;
     CHECK(leg.Payer);
     CHECK(leg.LegType == ores::ore::domain::legType::Fixed);
+    REQUIRE(leg.Currency);
+    CHECK(std::string(*leg.Currency) == "USD");
+    REQUIRE(leg.DayCounter);
+    CHECK(to_string(*leg.DayCounter) == "A360");
+    REQUIRE(leg.PaymentConvention);
+    CHECK(to_string(*leg.PaymentConvention) == "F");
     REQUIRE(leg.ScheduleData);
     REQUIRE(leg.ScheduleData->Rules.size() == 1);
     CHECK(std::string(leg.ScheduleData->Rules.front().Tenor) == "1Y");
@@ -379,7 +524,8 @@ TEST_CASE("bond_trs_carries_the_price_type_and_the_funding_schedule", tags) {
     CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
 
     CHECK(r.trs_price_type == "Dirty");
-    CHECK(!r.trs_funding_leg.payer);
+    REQUIRE(r.trs_funding_leg.payer);
+    CHECK(!*r.trs_funding_leg.payer);
     REQUIRE(r.trs_funding_leg.schedule.rules.size() == 1);
     const auto& rule = r.trs_funding_leg.schedule.rules.front();
     CHECK(rule.tenor == "3M");
@@ -462,7 +608,8 @@ TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
 
     CHECK(r.instrument.identity.trade_type_code == "BondTRS");
     CHECK(r.trs_price_type == "Clean");
-    CHECK(r.trs_funding_leg.payer);
+    REQUIRE(r.trs_funding_leg.payer);
+    CHECK(*r.trs_funding_leg.payer);
     REQUIRE(r.trs_funding_leg.schedule.rules.size() == 1);
     CHECK(r.trs_funding_leg.schedule.rules.front().tenor == "6M");
     REQUIRE(r.trs);
@@ -578,7 +725,8 @@ TEST_CASE("ascot_row_option_type_and_swap_leg_survive", tags) {
     // The document states no conversion terms, so no target rows exist.
     CHECK(r.conversion_targets.empty());
 
-    CHECK(!r.ascot_swap_leg.payer);
+    REQUIRE(r.ascot_swap_leg.payer);
+    CHECK(!*r.ascot_swap_leg.payer);
     REQUIRE(r.ascot_swap_leg.schedule.rules.size() == 1);
     const auto& rule = r.ascot_swap_leg.schedule.rules.front();
     CHECK(rule.tenor == "3M");

@@ -20,6 +20,7 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_SCHEDULE_DATA_HPP
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -84,25 +85,39 @@ struct bond_schedule_data final {
 };
 
 /**
- * @brief A leg whose terms the fact row does not carry.
+ * @brief A leg as the document states it, member by member.
  *
- * The fact rows hold the leg's type, its rate and its index. Two leg
- * members have no column: the payer direction, and the schedule the
- * leg's dates come from. The payer is a document flag with no table
- * destination; the schedule's destination is the same shared
- * instrument-keyed schedule tables the standalone schedules go to.
+ * The fact rows hold the leg's rate and its index. Everything else the
+ * leg states is either a member here or a term on the issue row, and
+ * the two directions are:
  *
- * Export writes both back, so a leg whose payer the document states
- * as true no longer exports as false.
+ * - currency and day_counter have issue columns, so the mapper mirrors
+ *   them there and this type carries the document's own statement. On
+ *   export the document wins and the row is the fallback, which matters
+ *   when the container came from a row set rather than a document.
+ * - payer, leg_type and the payment terms have no column: the payer and
+ *   the leg type are document flags, and the payment terms, the payment
+ *   calendar and the two lag members are the destination of the shared
+ *   instrument-keyed tables the parent story describes.
+ * - the schedule goes to those same tables.
  *
- * A leg with a fact row leaves leg_type empty, because the fact row
- * holds the type. A bond's own coupon leg has no fact row: the issue's
- * terms are its only other home, and they carry the coupon rate and the
- * maturity but not the leg type, so the type rides here.
+ * Every member is an optional, so a member the document states and this
+ * container does not hold stays distinguishable from one the document
+ * omits. A member the schema declares required is engaged by every
+ * document, and an unengaged one then means the container came from a
+ * row set.
  */
 struct bond_leg_data final {
-    bool payer = false;
-    std::string leg_type;
+    std::optional<bool> payer;
+    std::optional<std::string> leg_type;
+    std::optional<std::string> currency;
+    std::optional<std::string> payment_convention;
+    std::optional<std::string> payment_lag;
+    std::optional<std::string> payment_calendar;
+    std::optional<std::string> day_counter;
+    std::optional<std::string> last_period_day_counter;
+    std::optional<std::int64_t> notional_payment_lag;
+    std::optional<bool> strict_notional_dates;
     bond_schedule_data schedule;
 
     /**
@@ -113,7 +128,10 @@ struct bond_leg_data final {
      * beside the members, so a member added here reaches it in one place.
      */
     bool is_empty() const {
-        return !payer && leg_type.empty() && schedule.rules.empty() && schedule.dates.empty();
+        return !payer && !leg_type && !currency && !payment_convention && !payment_lag &&
+               !payment_calendar && !day_counter && !last_period_day_counter &&
+               !notional_payment_lag && !strict_notional_dates && schedule.rules.empty() &&
+               schedule.dates.empty();
     }
 };
 

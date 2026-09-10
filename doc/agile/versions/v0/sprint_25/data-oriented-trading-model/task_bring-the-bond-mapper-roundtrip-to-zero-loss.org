@@ -154,6 +154,74 @@ enumeration spellings through =parse_code=, so a document that states
 one of them empty would still lose it. No document in the corpus does,
 and all 1,566 were checked.
 
+** Wave A.2a, the leg scalars
+
+*** The container mirrors the scalars =legData= states
+
+=bond_leg_data= held three members: the payer, the leg type and the
+schedule. It now holds eleven. The payment convention, the payment lag,
+the notional payment lag, the payment calendar, the day counter, the
+last period day counter and the strict notional dates join them, and
+every member is an optional.
+
+Two of the new members, the currency and the day counter, already had an
+issue column. The mapper mirrors them onto the row and the leg holds the
+document's own statement. Export prefers the document's value and falls
+back to the row, which is the path a payload built from a row set takes.
+The other two legs, the repo leg and the TRS funding leg and the ascot
+swap leg, have no issue row at all, so the leg is their only home.
+
+*** =map_leg= carries the leg type
+
+The three legs with no fact row dropped their type: =reverse_leg= wrote
+a default and the reverse mappers for the repo and the TRS then
+overwrote it from the fact row. The Ascot swap leg had neither, so a
+=Floating= swap leg came back as =Fixed=. =map_leg= now carries the
+type, and the repo and TRS reverse mappers assign from the row only when
+the container holds no leg.
+
+*** The issue row writes the day counter back
+
+=map_bond_data= mirrored the coupon leg's day counter onto the issue row
+and =reverse_bond_data= never read it back, so all 314 pairs were lost
+at the write. The reverse now reads it, and the currency with it.
+
+*** The measured effect
+
+Both trees were read with the same classifier.
+
+| Measure | A.1 | A.2a |
+|---------+-----+------|
+| In-scope lost pairs | 8,979 | 8,333 |
+| In-scope unexplained pairs | 47 | 44 |
+| =BondData/LegData/DayCounter= | 280 | 3 |
+| =BondData/LegData/PaymentConvention= | 280 | 3 |
+| =ForwardBondData/BondData/LegData/DayCounter= | 34 | 3 |
+| =ForwardBondData/BondData/LegData/PaymentConvention= | 34 | 3 |
+| =BondTRSData/FundingData/LegData/Currency= | 4 | 0 |
+| =BondRepoData/RepoData/LegData/Currency= | 2 | 0 |
+| =AscotData/ReferenceSwapData/LegData/LegType= | 3 | 0 |
+
+646 pairs came back, no path got worse, and ten paths left the list
+whole. The three unexplained pairs that came back are the Ascot leg type
+pairs, which were both lost and unexplained.
+
+The residual 3 at each of the four schedule paths is the second-leg
+class the A.1 note describes.
+
+*** Decision for A.2b: the container takes the leg list
+
+Three documents carry two =LegData= elements in one =BondData=, and the
+schema declares =LegData= unbounded. A container that holds one leg
+cannot round trip those documents, so the list belongs in unit A and not
+in the recorded debt. It waits for A.2b because the second leg's rate and
+index live in =legDataType=, which A.2b adds: a list without it would
+lose the second leg's rate anyway.
+
+The other three leg slots stay single. The schema declares one
+=FundingData/LegData=, one =RepoData/LegData= and one
+=ReferenceSwapData/LegData=.
+
 *** No generated code was touched
 
 =git status= lists three hand-written files: the container header, the

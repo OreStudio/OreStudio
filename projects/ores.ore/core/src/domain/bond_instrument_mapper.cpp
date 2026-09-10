@@ -98,6 +98,7 @@ Enum parse_code(const std::string& text, int count, Enum fallback) {
 constexpr int business_day_convention_count = 27;
 constexpr int date_rule_count = 16;
 constexpr int currency_code_count = 191;
+constexpr int day_counter_count = 71;
 constexpr int leg_type_count = 18;
 
 // The schema states the future's price and lag fields as strings. A
@@ -276,13 +277,56 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
 bond_leg_data map_leg(const legData& ld) {
     bond_leg_data result;
     result.payer = ld.Payer;
+    result.leg_type = to_string(ld.LegType);
+    if (ld.Currency)
+        result.currency = std::string(*ld.Currency);
+    if (ld.PaymentConvention)
+        result.payment_convention = to_string(*ld.PaymentConvention);
+    if (ld.PaymentLag)
+        result.payment_lag = std::string(*ld.PaymentLag);
+    if (ld.PaymentCalendar)
+        result.payment_calendar = std::string(*ld.PaymentCalendar);
+    if (ld.DayCounter)
+        result.day_counter = to_string(*ld.DayCounter);
+    if (ld.LastPeriodDayCounter)
+        result.last_period_day_counter = to_string(*ld.LastPeriodDayCounter);
+    if (ld.NotionalPaymentLag)
+        result.notional_payment_lag = *ld.NotionalPaymentLag;
+    if (ld.StrictNotionalDates)
+        result.strict_notional_dates = *ld.StrictNotionalDates;
     if (ld.ScheduleData)
         result.schedule = map_schedule(*ld.ScheduleData);
     return result;
 }
 
+// Every scalar the container holds is written back, so a leg the
+// document stated comes back whole. The caller supplies the two members
+// the issue row also mirrors when the leg is silent, which is the case
+// for a payload built from a row set.
 void reverse_leg(const bond_leg_data& leg, legData& ld) {
-    ld.Payer = leg.payer;
+    ld.Payer = leg.payer.value_or(false);
+    ld.LegType = parse_code(leg.leg_type.value_or(std::string()), leg_type_count, legType::Fixed);
+    if (leg.currency)
+        ld.Currency = *leg.currency;
+    if (leg.payment_convention)
+        ld.PaymentConvention = parse_code(
+            *leg.payment_convention, business_day_convention_count, businessDayConvention::F);
+    if (leg.payment_lag)
+        ld.PaymentLag = *leg.payment_lag;
+    if (leg.payment_calendar) {
+        legData_PaymentCalendar_t calendar;
+        static_cast<std::string&>(calendar) = *leg.payment_calendar;
+        ld.PaymentCalendar = std::move(calendar);
+    }
+    if (leg.day_counter)
+        ld.DayCounter = parse_code(*leg.day_counter, day_counter_count, dayCounter::A360);
+    if (leg.last_period_day_counter)
+        ld.LastPeriodDayCounter =
+            parse_code(*leg.last_period_day_counter, day_counter_count, dayCounter::A360);
+    if (leg.notional_payment_lag)
+        ld.NotionalPaymentLag = *leg.notional_payment_lag;
+    if (leg.strict_notional_dates)
+        ld.StrictNotionalDates = *leg.strict_notional_dates;
     if (!leg.schedule.rules.empty() || !leg.schedule.dates.empty())
         ld.ScheduleData = reverse_schedule(leg.schedule);
 }
@@ -322,7 +366,6 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
     if (!bd.LegData.empty()) {
         const auto& ld = bd.LegData.front();
         data.bond_leg = map_leg(ld);
-        data.bond_leg.leg_type = to_string(ld.LegType);
         if (ld.Currency)
             issue.currency = std::string(*ld.Currency);
         if (ld.Notionals && !ld.Notionals->Notional.empty())
@@ -372,12 +415,16 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
     if (!data.bond_leg.is_empty() || !issue.currency.empty() || issue.face_value != 0.0) {
         legData ld;
         reverse_leg(data.bond_leg, ld);
-        ld.LegType = data.bond_leg.leg_type.empty()
-                         ? legType::Fixed
-                         : parse_code(data.bond_leg.leg_type, leg_type_count, legType::Fixed);
 
-        if (!issue.currency.empty())
+        // The issue row mirrors the leg's currency and day counter, so it
+        // supplies them only when the container came from a row set. A
+        // document's own statement is already on the leg.
+        if (!ld.Currency && !issue.currency.empty())
             ld.Currency = issue.currency;
+        if (!ld.DayCounter && !issue.day_count_code.empty())
+            ld.DayCounter = parse_code(issue.day_count_code,
+                                       day_counter_count,
+                                       dayCounter::A360);
 
         if (issue.face_value != 0.0) {
             legData_Notionals_t n;
@@ -810,10 +857,15 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
         d.TotalReturnData.PriceType = std::move(pt);
     }
     reverse_leg(data.trs_funding_leg, d.FundingData.LegData);
+    // The leg type comes from the container, which holds the document's
+    // own statement. The row's funding type stands in only when the
+    // payload was built from a row set and holds no leg.
+    const bool leg_type_from_row = !data.trs_funding_leg.leg_type;
     const bool fixed =
         !data.trs || data.trs->funding_leg_type.empty() || data.trs->funding_leg_type == "Fixed";
     if (fixed) {
-        d.FundingData.LegData.LegType = legType::Fixed;
+        if (leg_type_from_row)
+            d.FundingData.LegData.LegType = legType::Fixed;
         if (data.trs && data.trs->funding_rate != 0.0) {
             _FixedLegData_t fld;
             _FixedLegData_t_Rates_t_Rate_t rate;
@@ -824,7 +876,8 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
             d.FundingData.LegData.legDataType = std::move(ldt);
         }
     } else if (data.trs) {
-        d.FundingData.LegData.LegType = legType::Floating;
+        if (leg_type_from_row)
+            d.FundingData.LegData.LegType = legType::Floating;
         _FloatingLegData_t fld;
         static_cast<std::string&>(fld.Index) = data.trs->funding_index;
         legDataType_group_t ldt;
@@ -843,7 +896,8 @@ trade bond_instrument_mapper::reverse_bond_repo(const bond_instrument_data& data
     d.BondData = reverse_bond_data(data);
     reverse_leg(data.repo_leg, d.RepoData.LegData);
     const bool floating = data.repo && data.repo->repo_type == "Floating";
-    d.RepoData.LegData.LegType = floating ? legType::Floating : legType::Fixed;
+    if (!data.repo_leg.leg_type)
+        d.RepoData.LegData.LegType = floating ? legType::Floating : legType::Fixed;
     if (floating) {
         _FloatingLegData_t fld;
         static_cast<std::string&>(fld.Index) = data.repo->repo_index;

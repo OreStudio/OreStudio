@@ -1,0 +1,99 @@
+:PROPERTIES:
+:ID: A849F82C-0AE6-4217-90FC-F17443B3C168
+:END:
+#+title: Task: Enable the compiler warnings the code assumes
+#+description: The build sets -Werror and nothing else, so -Wall and -Wextra diagnostics never fire; enable them and clear what they surface.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The build escalates warnings to errors and enables almost none of them.
+=projects/CMakeLists.txt= sets =-Werror= for GCC and Clang and nothing
+else; =-Wall= and =-Wextra= are absent from every =CMakeLists.txt= and
+=.cmake= in the tree. =-Werror= only escalates what is already on, so the
+diagnostics that catch real defects never fire.
+
+The concrete case that surfaced this: a =switch= over an =enum class= that
+misses an enumerator compiles clean here. =-Wswitch= would catch it and
+arrives with =-Wall=, so today nothing does. Verified by compiling a
+non-exhaustive switch with =-Werror= alone, which succeeded.
+
+That makes a type-discipline rule this project relies on unenforceable,
+and it is why =compass-principle-type-system-discipline= currently has to
+describe exhaustive matching as advice rather than as a mechanism.
+
+The sweep is the work rather than the flag. 174 files carry a =default:=
+label in a switch, and each one has to be judged: a =default:= on a closed
+enum hides exactly the case the warning exists to find, while a
+=default:= over an open set is legitimate.
+
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Discovered in review of PR #2056.       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-10                               |
+
+* Acceptance
+
+- =-Wall= and =-Wextra= are enabled for GCC and Clang, with the MSVC equivalent alongside the existing =/WX=.
+- Everything the new warnings surface is fixed rather than suppressed; any suppression names the reason in place.
+- A =switch= over a closed enum that misses an enumerator fails the build, demonstrated by a case that fails before the fix and passes after.
+- =default:= labels over closed enums are removed where the enum is genuinely closed, and kept where the set is open.
+- The exhaustive-matching section of =compass-principle-type-system-discipline= is rewritten to describe a mechanism rather than an aspiration.
+
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

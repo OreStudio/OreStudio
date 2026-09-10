@@ -206,6 +206,7 @@ reader may arrive at independently.
 |-----------------------------+---------------------------------------------------------------------------|
 | [[id:87D41A08-0B37-41CE-8483-B59B36BA87FA][Skills in the framework]]     | What is a skill here, and why is the received notion deemed insufficient. |
 | [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]                | What kinds of artefact exist, and how do they differ.                     |
+| [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]]                  | Which rules are cited, grouped for use, and which a check carries instead. |
 | [[id:3018B7FE-2DF7-49E5-A57F-A75C02C4D498][Skill dispatch]]              | Given a thing in hand, what may be done to it.                            |
 | [[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]          | Who is acting, and what may they see and do.                              |
 | [[id:54AD5986-34A0-4B19-9F20-D9A024225036][Running agents]]              | How is an agent configured, isolated and left to run.                     |

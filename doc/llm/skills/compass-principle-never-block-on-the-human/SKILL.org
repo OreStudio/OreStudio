@@ -1,0 +1,105 @@
+:PROPERTIES:
+:ID: D1F13734-216D-47AA-BA00-28F3A20F97C1
+:END:
+#+title: Compass Principle Never Block On The Human
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: cross
+#+filetags: :llm:skill:skills:claude_code:principle:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-principle-never-block-on-the-human
+description: The local binding for never-block-on-the-human — proceed on reversible work and record the assumption; confirm what a record cannot repair, which here means irreversible and outward-facing actions.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Cite it with =principle-never-block-on-the-human= whenever you are about
+to ask permission. The upstream rule says proceed on reversible work
+rather than ask. Our conventions require confirmation for irreversible and
+outward-facing actions, and require grounding to stop when a concept
+resolves to no document.
+
+Those look opposed and are not, but the reconciliation has to be stated or
+an agent will pick whichever it prefers in the moment.
+
+* How to use this skill
+
+1. /Ask what a record would repair/. That is the whole test. The upstream
+   condition is reversibility, and a written assumption is what makes an
+   unforced choice reversible: someone reading the trail can see what was
+   assumed and undo it.
+
+2. /Proceed and record, where a record repairs it/. An unresolved concept,
+   an ambiguous requirement, a choice between two defensible designs.
+   State the assumption you proceeded on in the task's own =* Plan= or
+   =* Notes=, and keep going. Do not ask.
+
+3. /Confirm, where a record cannot repair it/. The cost is paid before
+   anyone reads the trail:
+   - a destructive command: dropping a database, force-pushing a shared
+     branch, deleting a worktree;
+   - anything leaving the project: a comment on a pull request outside it,
+     a message to a person, a published release;
+   - merging, and raising a pull request that was not asked for.
+
+4. /Do not confirm twice/. Approval for a class of action covers the
+   session unless the situation changes. Asking again after the operator
+   has said yes is the same failure as asking the first time, wearing
+   politeness as a disguise.
+
+5. /Where the answer is observable, observe it/. A question you could
+   settle by running something is not the operator's to answer. Run it.
+
+** Why this is not a weakening of the rule
+
+The upstream rule targets an agent that stalls to avoid responsibility.
+The exceptions above are not that: they are the cases where proceeding
+transfers a cost the operator cannot reverse. The rule and the exceptions
+share one criterion, which is whether the operator can still change their
+mind afterwards.
+
+Grounding is the case worth naming, because it looks like a third thing
+and is not. When a concept resolves to no knowledge document, the
+obligation is to notice, not to stop: an agent that proceeds on an
+unresolved concept and says which one it was has produced a reversible
+result and a lead on the missing page. An agent that proceeds silently has
+produced neither.
+
+* Recipes
+
+- [[id:1F41F21C-8D2A-46DA-8C6A-571564DF2C0E][How do I work a task?]] — where the assumption is recorded.
+
+* Reference
+
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the citation function, and why this binding exists.
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — the upstream rule and the fuller reconciliation argument.
+- [[id:0B1456B4-54D1-4DDA-9754-DEE653827D59][Grounding]] — the obligation this reconciles against.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

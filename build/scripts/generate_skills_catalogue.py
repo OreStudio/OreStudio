@@ -43,6 +43,11 @@ DOMAINS = {
     "devops": ("DevOps (=compass-devops-=)",
                "Environment, database, services, shell, client, site."),
     "skill": ("Skills (=compass-skill-=)", "The skills themselves."),
+    # Not a domain: the reserved second segment for a rule that is cited
+    # rather than run. See the naming conventions.
+    "principle": ("Principles (=compass-principle-=)",
+                  "Local bindings on an upstream principle, supplying the "
+                  "project detail the rule cannot know."),
 }
 
 # Planned-but-not-yet-created skills, shown as prose under each section.

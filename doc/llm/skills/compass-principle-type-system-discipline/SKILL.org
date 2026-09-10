@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: FAABB6FF-FA3A-4E5C-B0B7-FE3E2E661A6C
+:END:
+#+title: Compass Principle Type System Discipline
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: s1
+#+filetags: :llm:skill:skills:claude_code:principle:cpp:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: compass-principle-type-system-discipline
+description: The C++ binding for type-system-discipline — what each upstream pattern becomes in this codebase, which the language gives you free, and the two it does not.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Cite it with =principle-type-system-discipline= whenever you design a type
+or a signature here. The upstream rule is written for TypeScript. Its
+intent carries to C++ unchanged; several of its mechanisms do not, and two
+of its patterns are harder here than the original implies.
+
+Read the upstream skill for the rule. Read this for what it means in this
+codebase.
+
+* How to use this skill
+
+1. /Take the intent from upstream/. Illegal states unrepresentable,
+   semantic primitives branded, external data parsed at the boundary, no
+   lying to the compiler, matches exhaustive, types derived from the
+   authoritative schema, strengthened only where partiality appears.
+
+2. /Translate the mechanism/ using the table below. A pattern whose
+   TypeScript form has no C++ equivalent still has a C++ answer; it is
+   usually a different construct rather than an absent one.
+
+3. /Watch the two the language does not give you/. Exhaustive matching and
+   branding are both weaker here than upstream assumes, and both are worth
+   the extra ceremony.
+
+4. /Prefer the generator/. Where the shape is owned by an entity model,
+   deriving the type means regenerating it, not hand-writing a parallel
+   struct. This is the strongest form of "derive from the authoritative
+   schema" available to us, and it is enforced.
+
+** The translation
+
+| Upstream pattern | Here |
+|------------------+------|
+| Discriminated union | =std::variant= over per-state structs, or an enum class plus the payload the state carries. Not a struct of optionals with a comment saying which combinations are legal |
+| Branded primitive | A one-field struct with =explicit= construction. A type alias brands nothing: it is the same type to the compiler, so =using currency_code = std::string= buys documentation and no safety |
+| Parse at the boundary | The JSON and table I/O layers are the boundary. A domain type is constructed from parsed input, never handed a raw row |
+| Do not lie to the compiler | =const_cast=, =reinterpret_cast= and a C-style cast are the hazards. =static_cast= between numeric types is the quiet one: it compiles, truncates, and says nothing |
+| Exhaustive matching | The compiler will not tell you. See below |
+| Derive from the schema | Regenerate from the entity model. A hand-written type that duplicates a generated shape is drift with a delay on it |
+| Strengthen only where partiality appears | Same rule, and the same stopping point: if nothing would otherwise throw, leave the plain type |
+
+** Exhaustive matching, which nothing here enforces yet
+
+Upstream can rely on the compiler failing when a variant is added. We
+cannot, and the gap is wider than the language alone makes it.
+
+C++ would warn: =-Wswitch= fires on a =switch= over an =enum class= that
+misses an enumerator, provided there is no =default:= label. This build
+does not enable it. The only warning flag we set is =-Werror=, which
+escalates whatever is already on and does not turn =-Wswitch= on, since
+that arrives with =-Wall=. A non-exhaustive switch therefore compiles
+clean today, with or without a =default:=.
+
+So this is advice with no backstop behind it: handle every enumerator
+explicitly, and do not reach for =default:= on a closed enum, because the
+day the flags are enabled that label is what will hide the missing case.
+For =std::variant=, an overload set with no catch-all fails to compile on
+its own and needs no flag.
+
+Enabling the warning is tracked work rather than a thing to fix in
+passing: 174 files carry a =default:= in a switch, so the flag and the
+sweep arrive together.
+
+** Branding, which costs more here
+
+A branded type in C++ is a struct, which means writing the comparison
+operators, the hash, the stream operator and the serialisation the
+underlying primitive had for free. That cost is real and it is why the
+codebase has bare =std::string= where a brand belongs.
+
+The test is whether two arguments of the same primitive type mean
+different things and could be swapped at a call site without the compiler
+noticing. Where they can, the brand pays for itself the first time someone
+transposes them; where a type appears in one signature and never travels,
+it does not.
+
+* Recipes
+
+- [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]] — the warnings are only useful if the build is clean.
+
+* Reference
+
+- [[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] — the citation function, and why this binding exists.
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — the upstream rule, referenced rather than copied.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — the other axis on a type decision here: shape for the machine as well as for the compiler.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

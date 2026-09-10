@@ -89,8 +89,13 @@ project.
 | minimize-reader-load                     | Skip        | Already absorbed                                                   |
 | outcome-oriented-execution               | Skip        | Already our practice                                               |
 
-Eleven of 21 are adopted. The skipped ones are not judged wrong; they are judged
-already absorbed, which is the same verdict the rule reaches for a compiler.
+Thirteen of 21 are adopted. The skipped ones are not judged wrong; they are
+judged already absorbed, which is the same verdict the rule reaches for a
+compiler.
+
+[[id:9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3][Principles]] groups the thirteen for
+citation, records the two that needed a local binding, and lists the ones a
+check carries instead of prose.
 
 ** Playbooks and Workflow Skills
 

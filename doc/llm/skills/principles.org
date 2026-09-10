@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 9F3A6B21-0D74-4C58-A5E2-8C1B47E0D9F3
+:END:
+#+title: Principles
+#+description: The citation function: the thirteen adopted principles grouped for citation, the two that needed a local binding, and the rules a check carries instead of prose.
+#+type: knowledge
+#+level: cross
+#+filetags: :llm:skills:structure_note:principles:citation:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+* Summary
+
+A principle is a rule an agent *cites* at a judgement call and never runs.
+This page is the citation function's index: the set a method reads at task
+start, grouped so a phase can cite the two or three that bear on the
+decision in front of it rather than the whole list.
+
+The principles are [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][referenced
+upstream]] rather than copied, so what this page holds is the grouping, the
+reason each earns its place here, and the two local bindings where the
+upstream rule is right in shape and wrong in local detail.
+
+One test runs before any principle is cited at all. A rule that can be
+expressed as a lint, a metadata flag, a runtime check or a script is
+written that way instead: structure regulates where prose only advises, and
+a check that fails is worth more than a paragraph nobody re-reads. The
+citation function holds what genuinely cannot be checked. The rules that
+went the other way are listed at the end, with what checks them.
+
+* The set
+
+Thirteen of pstack's twenty-one principles are adopted. The other eight are
+not judged wrong; they are judged already absorbed, and importing them
+would add variety the agent already commands.
+
+** Before writing anything
+
+Cited when the shape of the work is still open. Sequencing belongs here
+rather than at the gate: how the work splits is decided when it is
+planned, and a split settled only as the pull request is opened has
+already cost whatever it was going to cost.
+
+| Principle | Cite it when |
+|-----------+--------------|
+| =principle-laziness-protocol= | Sizing a change, or tempted to add an abstraction, a layer or a config knob |
+| =principle-subtract-before-you-add= | Sequencing an addition: what comes out before anything goes in |
+| =principle-redesign-from-first-principles= | Integrating a new requirement into a design that predates it |
+| =principle-build-the-lever= | The work is repetitive: write the script that does it, and hand the reviewer the script |
+| =principle-sequence-verifiable-units= | Splitting the work, and ordering the commits and pull requests it becomes |
+
+** While designing
+
+Cited at the point the structure is chosen.
+
+| Principle | Cite it when |
+|-----------+--------------|
+| =principle-model-the-domain= | Branching a lot, or repeating a shape assumption across files |
+| =principle-type-system-discipline= | Designing a type or a signature. See the C++ binding below |
+| =principle-separate-before-serializing-shared-state= | Two agents might write the same file, branch or lock |
+
+** While working
+
+Cited during execution rather than planning.
+
+| Principle | Cite it when |
+|-----------+--------------|
+| =principle-fix-root-causes= | Debugging: trace the symptom to its cause before editing |
+| =principle-guard-the-context-window= | Reading widely: route bulk elsewhere and keep the summary |
+| =principle-never-block-on-the-human= | Tempted to ask permission for reversible work. See the binding below |
+
+** Before declaring done
+
+Cited at the gate.
+
+| Principle | Cite it when |
+|-----------+--------------|
+| =principle-prove-it-works= | About to say it is finished: verify against the real artefact |
+
+** After the fact
+
+| Principle | Cite it when |
+|-----------+--------------|
+| =principle-encode-lessons-in-structure= | Writing the same correction a second time: prefer a check to more prose |
+
+* The two bindings
+
+Most adopted principles are cited as written. Two are right in shape and
+wrong in local detail, so each has a thin local skill supplying only the
+difference.
+
+- =compass-principle-type-system-discipline= — the upstream rule is written
+  for TypeScript. The intent survives the move to C++; the mechanisms do
+  not.
+- =compass-principle-never-block-on-the-human= — the upstream rule argues
+  against asking. Our conventions require confirmation for irreversible and
+  outward-facing actions. The two are reconciled rather than ranked, and
+  the binding states where the line falls.
+
+* Encoded as a check instead
+
+These rules were tested against the encode-as-a-check rule and went the
+other way. They are recorded here because the reason they are absent from
+the list above is that something enforces them, and an agent should know
+what.
+
+#+ATTR_HTML: :class hug-leading
+| Rule | What carries it |
+|------+-----------------|
+| Never pipe or redirect a compass command | A =PreToolUse= hook denies the call and names the log file to tail instead |
+| Never use the shared stash stack bare | A =PreToolUse= hook denies bare =git stash= and =git stash pop=, which every worktree shares |
+| Every skill declares its level | =apply_skill_levels.py --check=, in the Doc Lint workflow |
+| Every skill is in the compass namespace | =rename_skills_to_compass_namespace.py --check= |
+| A skill's commands belong to a recipe | =link_skill_recipes.py --check= |
+| Every id link resolves | =compass lint=, on every push and pull request |
+| A generated region matches its source | The generator's own =--check= mode, for the catalogue, the type tables and the level inventory |
+
+The pattern is the point. Each of these began as a sentence someone had to
+remember, and each became a check the moment it was written down twice.
+=principle-encode-lessons-in-structure= is the rule that keeps this table
+growing, which is why it is the one principle whose job is to remove others
+from the list above.
+
+* Upstream
+
+The principles are referenced from the pstack collection, installed as a
+Claude Code plugin rather than forked into this repository.
+
+| Field | Value |
+|-------+-------|
+| Collection | pstack |
+| Distribution | =pstack-claude= marketplace, plugin =pstack=, version 0.9.18 |
+| Repository | [[https://github.com/michael-denyer/pstack-claude][github.com/michael-denyer/pstack-claude]] |
+| Port maintainer | Michael Denyer |
+| Original author | Lauren Tan (poteto) |
+
+[[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] carries
+the full classification, including the eight skipped principles and why,
+and the argument for referencing rather than forking.
+
+* See also
+
+- [[id:0203A855-EF0F-485F-BEDC-CB1EB6C0E9EC][The pstack Collection]] — the disposition of every upstream skill, and the reference-not-fork argument.
+- [[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]] — where citation sits among the seven.
+- [[id:E8311826-9900-4932-AFFB-A8AF663414DF][Methods and the mode]] — the phases that cite these.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the index into the cluster this page belongs to.

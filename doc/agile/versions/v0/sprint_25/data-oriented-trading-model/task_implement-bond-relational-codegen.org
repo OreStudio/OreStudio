@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-bond-relational-codegen
-#+pr: 2044
+#+pr: 2045
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-09
@@ -28,9 +28,9 @@ Bond is the pilot for the relational target model of the trading analysis (dfe15
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave 1.5 done and verified. The reshaped instrument table and the nine family tables are live on a recreated database (schema version 0.0.25, commit cc013f1589 stamped), the baseline population runs at the family premise with zero findings, and the verification cycle is green on the new shape: ctest 71 of 71, roundtrip exit 0, codegen drift and cmake lists clean. The migration script converts an old-shape database with its row counts and joins validated on a scratch copy. The wave records are in the Notes. PR #2044 carries the wave; its review round fixed three defects (the shell TRS leg type, the repo and TRS reverse legs, stale fact staging in the qt form) and two minor items, and declined the both-facts guard in favour of wave 1.7's code-vs-fact cross-check. |
+| Now          | Wave 1.6 done. The loader ran at 1000, 10000 and 20000 rows on a database recreated from HEAD (schema 0.0.25, commit ba0eee6234) with zero findings and clean cleanup at every size. The eight family tables carry 8864 to 10155 rows/sec at 20000 rows, about four times the deliverable's 2200 rows/sec baseline; the aggregate moves between 1419 and 6147 rows/sec across six samples and the movement sits in the legacy tables, not in the new shape. All nine family entities regenerate with zero diff. The numbers and the attribution are in the Notes and the Result. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave 1.6, the loading exercise and the family drift gate: run the population loader at --rows 1000, 10000 and 20000 with the per-table rows/sec and the aggregate recorded against the deliverable baseline of about 2200 rows/sec, then regenerate each of the nine family entities with --diff and show zero diff. |
+| Next         | Wave 1.7, the shell system test: live add, get, history and delete round trips per bond code against the environment, with DB-row and changed-event verification, per the generic-batch protocol on task C36A4ECA of the shell-trading-management story. |
 | Last touched | 2026-09-10                               |
 
 * Acceptance
@@ -847,6 +847,106 @@ The tree sits at cc013f1589 on
 tree and nothing pushed. The validation results of this wave land in
 the PR description at raise time, on user direction.
 
+Wave 1.6, the loading exercise and the family drift gate
+(2026-09-10).
+
+The database was rebuilt from HEAD before the exercise: =compass db
+recreate -y -k= exited 0 in 48 s, schema version 0.0.25, git commit
+ba0eee6234 stamped, and all nine family tables are present on the
+recreated schema. Every loader run in this wave reported zero
+findings and closed clean (=0 marked row(s) remain, 0 rule(s) left
+disabled=).
+
+The population loader ran at the three standard sizes. The same
+size does not repeat, so every sample is recorded.
+
+| =--rows= | Tables | Rows    | Seconds | Aggregate rows/sec |
+|----------+--------+---------+---------+--------------------|
+|     1000 |     49 |  41,800 |    6.80 |              6,147 |
+|     1000 |     49 |  41,800 |   23.47 |              1,781 |
+|    10000 |     49 | 418,000 |  127.09 |              3,289 |
+|    10000 |     49 | 418,000 |  202.16 |              2,068 |
+|    20000 |     49 | 836,000 |  589.10 |              1,419 |
+|    20000 |     49 | 836,000 |  306.06 |              2,731 |
+
+The other family tables are small by construction: =--rows= 1000,
+10000 and 20000 give each of them 100, 1000 and 2000 rows, and give
+=bond_instruments= 1000, 10000 and 20000. At 100 and
+1000 family rows the per-table figure is dominated by per-statement
+overhead and moves by a factor of two to four between runs (1k:
+979 to 2024 rows/sec, 10k: 2028 to 8182). Only the 20000 sample
+carries signal, and there the two runs agree within 2% to 7%:
+
+| Table                         | 20000 (a) | 20000 (b) |
+|-------------------------------+-----------+-----------|
+| bond_instruments              |      8423 |      7948 |
+| bond_issues                   |      8864 |      9046 |
+| bond_options                  |     10155 |      9712 |
+| bond_futures                  |      9731 |      9061 |
+| bond_trs                      |     10143 |      9432 |
+| bond_repos                    |      9855 |      9558 |
+| ascots                        |      9731 |      9401 |
+| bond_issue_call_dates         |      9881 |      9386 |
+| bond_issue_conversion_targets |      9329 |      9491 |
+
+Against the deliverable baseline (=design.org=: about 2200 rows/sec
+on the deployed schema, 56032 rows/sec on a triggerless clone,
+notify at 1.5%, and sizing guidance of about 2000 rows/sec for a
+bulk path): the family lands at 8864 to 10155 rows/sec, about four
+times the 2200 baseline and well above the guidance. The aggregate
+lands on both sides of the guidance across the six samples (four
+above it, two below), so the size alone does not predict which side
+a run falls on. That split is not a property of the new shape: the
+reshape's own table, =bond_instruments=, runs at 7948 to 8423
+rows/sec in the full run and 8908 isolated.
+
+The aggregate is dragged down by legacy tables. Five of them are
+slow in every run and are the slowest five in three of the four
+runs: =vanilla_swap_instruments=, =party_roles=,
+=party_role_types=, =trade_id_types= and =fpml_event_types=.
+=activity_types= usually joins them. At 20000 rows they ran at 930
+to 1098 rows/sec in the first run and 365 to 598 in the second. The
+attribution run isolates the contrast:
+
+- =trade_types= at 20000, loaded alone: 7530 rows/sec with all its
+  triggers, and 7149 with the notify trigger disabled. The reading
+  moved the wrong way by 5%, so notify is not a measurable cost at
+  this resolution, which agrees with the deliverable's 1.5%. In the
+  first full run the same table took 20.7 s at 966 rows/sec, a 7.8x
+  penalty against isolation.
+- =bond_instruments= at 20000, loaded alone: 8908 rows/sec, and 8741
+  with the notify trigger disabled. That reading also moved the
+  wrong way, by 1.9%. In the full run, 8423 rows/sec, about a 5%
+  penalty.
+- The insert trigger cannot be disabled on either table to measure
+  the rest of the cost. Its version management is what keeps the
+  bitemporal exclusion constraint satisfied; with the trigger off
+  the load fails with =conflicting key value violates exclusion
+  constraint=.
+
+So the in-run cost of a table is not a function of its own trigger
+pair. The slow set also moves between runs: 22 tables took over 18 s
+each in the first 20000 run, 6 took over 8 s in the second. The
+cause is not isolated in this wave. Per the plan the split is the
+recorded price of storing the truth, not a failure, and the
+diagnosis belongs with the parent analysis's performance work. This
+task records the dependency and does not pull it in.
+
+The family drift gate is clean. All nine entities regenerate with
+zero diff under =compass codegen entity generate <entity> --diff=,
+each reporting "No differences." at exit 0: =ascot=,
+=bond_future=, =bond_instrument=, =bond_issue=,
+=bond_issue_call_date=, =bond_issue_conversion_target=,
+=bond_option=, =bond_repo= and =bond_trs=. The accepted slugs are
+the bare entity names; the dotted form (=ores.trading.bond_instrument=)
+is not a match and reports "No entity found matching".
+=compass codegen entity list= prints the accepted slugs.
+
+Component-wide drift registration and the Sep-8 inventory
+reconciliation are not part of this gate. They belong to the port
+story and to the parent analysis's drift PR, per the parent story's
+record. The dependency is recorded here rather than pulled in.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -862,6 +962,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2045][#2045]] | [ores.trading] Bond relational model: loading exercise and family drift gate, wave 1.6 |
 | [[https://github.com/OreStudio/OreStudio/pull/2044][#2044]] | [ores.trading] Bond relational model: the reshape, wave 1.5 |
 | [[https://github.com/OreStudio/OreStudio/pull/2042][#2042]] | [ores.trading] Bond relational model: population loader wave 1.4 |
 | [[https://github.com/OreStudio/OreStudio/pull/2041][#2041]] | [ores.trading] Bond relational model: additive codegen waves 1.1 to 1.3 |
@@ -884,5 +985,46 @@ via its "Verifies task" field.
 | 12 | =reverse_bond_repo= hardcoded a fixed, non-payer leg and discarded the captured =repo_type=, =repo_rate= and =repo_index= | =bond_instrument_mapper.cpp= | Fixed | The reverse now reads the repo fact. The same class in =reverse_bond_trs= (the captured fixed funding rate was dropped) is fixed in the same commit; both round-trip tests assert the captured values survive. |
 | 13 | =ImportTradeDialog= stamped =instrument_id= and =trade_id= by hand instead of =stamp_ids()=, leaving the engaged fact rows unstamped | =ImportTradeDialog.cpp= | Fixed | The branch calls =trading::domain::stamp_ids()=, which stamps the fact rows too. |
 | 14 | The header guard =ORES_TRADING_DOMAIN_BOND_INSTRUMENT_DATA_HPP= breaks the =ORES_TRADING_API_DOMAIN_*= convention of its directory | =bond_instrument_data.hpp= | Fixed | Renamed to =ORES_TRADING_API_DOMAIN_BOND_INSTRUMENT_DATA_HPP=. |
+| 15 | The wave 1.6 draft claimed the aggregate "reaches the guidance only at 1000 rows", but four of the six samples are above the 2000 rows/sec guidance | task org, the wave 1.6 note and the Result | Fixed | Restated: the aggregate lands on both sides of the guidance, so the size alone does not predict which side a run falls on. |
+| 16 | The draft read a 1.5% notify cost from the =trade_types= attribution, but disabling that trigger moved the reading the wrong way by 5% (and by 1.9% for =bond_instruments=) | task org, the wave 1.6 note | Fixed | Restated as no measurable cost at that resolution, which agrees with the deliverable's 1.5%. |
+| 17 | The draft called five legacy tables "the slowest tables in every run"; in the first 20000 run they are not the top five | task org, the wave 1.6 note | Fixed | Restated: the slowest five in three of the four runs, and inside the slow cluster in the fourth. |
+| 18 | The wave 1.6 record is written while the task stays STARTED, so the Result carries a wave record rather than a closing statement | task org, the Result | Recorded, not changed | The plan asks for the loading-exercise numbers in the task Result. The Result is marked as the wave 1.6 record and the task closes with wave 1.7. |
+| 19 | "The nine family tables carry 8864 to 10155 rows/sec" counts a table the quoted range does not span | task org, the front matter =Now= and the Result | Fixed | "Family tables" in a loader rows/sec context means the eight child and fact tables, per wave 1.5's own sentence and their 2000-rows-each load. =bond_instruments= is reported apart at 7948 to 8423 rows/sec. Both occurrences now read "eight". |
+| 20 | Table cells group thousands with commas while the prose around them does not | task org, the loading-exercise table | Recorded, not changed | The split is the doc's existing convention and predates this wave: tables group, prose does not, as in wave 1.5's "7123 rows/sec". |
 
 * Result
+
+The wave 1.6 record. The task stays STARTED until wave 1.7, the
+shell system test, closes it.
+
+The loading exercise ran on a database recreated from HEAD (schema
+version 0.0.25, commit ba0eee6234) at the three standard sizes,
+every run with zero findings and clean cleanup:
+
+| =--rows= | Rows    | Seconds | Aggregate rows/sec |
+|----------+---------+---------+--------------------|
+|     1000 |  41,800 |    6.80 |              6,147 |
+|     1000 |  41,800 |   23.47 |              1,781 |
+|    10000 | 418,000 |  127.09 |              3,289 |
+|    10000 | 418,000 |  202.16 |              2,068 |
+|    20000 | 836,000 |  589.10 |              1,419 |
+|    20000 | 836,000 |  306.06 |              2,731 |
+
+The eight family tables carry 8864 to 10155 rows/sec at 20000 rows
+(2000 rows each), about four times the deliverable's 2200 rows/sec
+baseline on the deployed schema and above its 2000 rows/sec sizing
+guidance for a bulk path. =bond_instruments= carries 7948 to 8423
+rows/sec in the full run and 8908 isolated.
+
+The aggregate falls below the 2000 rows/sec guidance in two of the
+six samples (1781 rows/sec at 1000 rows and 1419 at 20000). Neither
+shortfall is a property of the new shape: five legacy tables run at
+365 to 1098 rows/sec at 20000 rows, and =trade_types= pays a 7.8x
+penalty in-run against its isolated 7530 rows/sec. That in-run
+penalty is not yet isolated; the diagnosis belongs with the parent
+analysis's performance work. Per the plan the split is the recorded
+price of storing the truth, not a failure.
+
+The family drift gate passes: all nine entities regenerate with zero
+diff. The per-table detail and the attribution evidence are in the
+Notes.

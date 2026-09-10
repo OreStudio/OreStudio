@@ -99,6 +99,11 @@ six new methods and the amended methods page. The two agile documents in
 this change are the only files without that check, and both are
 conventional edits to existing sections.
 
+What that leaves unverified is the rendered HTML for the six pages,
+which is narrower than "the site build passed" but is not nothing: the
+org export succeeding does not prove the published page reads correctly.
+Worth a look once the machine has memory to spare.
+
 
 * Test Scenarios
 
@@ -121,7 +126,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Two methods cite the bare =principle-never-block-on-the-human= rather than the local binding, at exactly the points about the operator boundary where the reconciliation matters | compass-method-prototype, compass-method-figure-it-out | Accept | Both now cite the binding. The bare name is the un-reconciled upstream rule and is not a skill in the tree; lint cannot see this because the citation is prose, not an id-link |
+| 2 | =skill_methods.org= carries a generated-inventory marker naming a script that never writes that file | doc/llm/skills/skill_methods.org | Accept | Removed. The hand-written table added by this task is the inventory. Four other documents make the same false promise, which is its own task with a check as acceptance |
+| 3 | Six is a closed graph rather than five buckets and a junk drawer: every /wrong method/ pointer resolves to another of the six | — | Accept | No change. This is the argument for the set that I could not make myself, since I chose them |
+| 4 | The skeleton is load-bearing, evidenced by the variation: refactoring inverts grounding and the invariant, and investigation and prototype drop the landing phase rather than leaving it empty | — | Accept | No change. Recorded because it answers the question I asked, with evidence I had not thought to look for |
+| 5 | Prototype has no usage evidence; watch rather than cut, and fold its advice into the never-block binding if it stays unused | — | Accept | No change now. Noted as the retirement criterion so the decision is not re-litigated from scratch |
+| 6 | The rendered HTML for the six pages is still unverified; narrower than the PR claims to close | — | Accept | Fair. The claim is that the org export and the link resolution are covered, not the render; the limitation now says so precisely |
 
 * Result
 

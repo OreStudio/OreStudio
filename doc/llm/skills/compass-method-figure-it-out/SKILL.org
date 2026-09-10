@@ -78,7 +78,7 @@ should have been a partition.
 Work the phases in order, recording as you go: what was decided, what was
 observed, what changed course. For anything the operator will review
 later rather than watch, that trail is the deliverable alongside the code
-(=principle-never-block-on-the-human=).
+(=compass-principle-never-block-on-the-human=).
 
 Re-check the plan at each phase boundary. A plan that survives contact
 unchanged for many phases is usually not being read.

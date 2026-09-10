@@ -29,7 +29,7 @@ deliverable is the observation, not the code that produced it.
 Reach for it especially when about to ask the operator a question the
 system could answer. A question about behaviour, timing, output or
 whether a mechanism fires is not theirs to answer
-(=principle-never-block-on-the-human=): building the smallest thing that
+(=compass-principle-never-block-on-the-human=): building the smallest thing that
 shows the answer is faster than the round trip, and it hands them a
 result to react to instead of a decision to make.
 

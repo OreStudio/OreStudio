@@ -1,0 +1,96 @@
+:PROPERTIES:
+:ID: 6D872794-2934-49EA-80EC-F1E64D23AC10
+:END:
+#+title: Task: Make a generated marker name a generator that writes it
+#+description: Four documents carry a BEGIN generated marker naming a script that never writes them, so the region reads as derived and is hand-maintained or empty.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+A =# BEGIN generated= marker is a promise: this region is derived, do not
+edit it by hand, and the named script will rewrite it. Four documents make
+that promise and nothing keeps it.
+
+=skill_regulatory_functions.org=, =skill_dispatch.org=,
+=skill_generated_artefacts.org= and =skill_verification.org= each name
+=build/scripts/generate_skills_catalogue.py=, which only ever writes
+=claude_code_skills.org=. Their regions hold placeholder text saying they
+will be populated when some other task lands. A reader cannot tell the
+difference between a region that is empty because it is generated and
+awaiting data, and one that is empty because nobody wrote it.
+
+=compass lint= does not catch this: it checks that every BEGIN has a
+matching END, not that the named generator targets the file. That gap is
+the reason four markers have sat stale.
+
+Fix the four, and add the check that makes the promise verifiable.
+
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Discovered in review of PR #2057.       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-10                               |
+
+* Acceptance
+
+- Every =# BEGIN generated= marker names a script that actually writes that file, verified by running it.
+- A marker whose content nobody will generate is removed, and the region is written as ordinary prose or deleted.
+- A check reports any marker naming a script that does not target its file, and it runs in the Doc Lint workflow.
+- The check fails on the current state before the fix and passes after, demonstrated rather than asserted.
+
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

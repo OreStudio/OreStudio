@@ -100,6 +100,7 @@ Tasks are listed in intended execution order.
 | [[id:39264768-EE92-4DB1-B048-3C960415B358][Specify the skills framework as a regulator]] | DONE | 2026-09-07 | 2026-09-07 | Respecify the framework as a regulator over an agent, deriving its scope and its seven classes of document from cybernetics rather than stipulating them, and classify the upstream pstack collection against that derivation. |
 | [[id:86F4C1E0-6F35-4AA7-9C95-3991D4F5F831][Delegate the remaining skill commands to recipes]] | DISCOVERED | | | Multi-step skills still carry commands their recipes own; sweep the 105 remaining shell blocks so the command lives in exactly one place. |
 | [[id:A849F82C-0AE6-4217-90FC-F17443B3C168][Enable the compiler warnings the code assumes]] | DISCOVERED | | | The build sets -Werror and nothing else, so -Wall and -Wextra diagnostics never fire; enable them and clear what they surface. |
+| [[id:6D872794-2934-49EA-80EC-F1E64D23AC10][Make a generated marker name a generator that writes it]] | DISCOVERED | | | Four documents carry a BEGIN generated marker naming a script that never writes them, so the region reads as derived and is hand-maintained or empty. |
 
 * Decisions
 
@@ -173,6 +174,14 @@ Tasks are listed in intended execution order.
 - Every method says when it is the wrong method. The failure a method
   exists to prevent is a misjudged shape, and no phase inside one recovers
   from having picked it.
+- A citation in prose is unchecked. =compass lint= verifies id-links; a
+  rule cited as =principle-x= is just text, so a method can cite the
+  un-reconciled upstream rule where the local binding was meant and
+  nothing notices.
+- A generated marker is a promise that a named script rewrites the region.
+  Four documents make that promise about a script that never writes them,
+  which is worse than no marker: it tells a reader not to edit a region
+  nothing maintains.
 
 * Out of scope
 

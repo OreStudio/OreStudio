@@ -158,12 +158,6 @@ getting right: a misjudged shape is the failure a method exists to
 prevent, and no phase recovers from it. Where two match different parts,
 =compass-method-figure-it-out= sequences them rather than replacing them.
 
-** Inventory
-
-# BEGIN generated inventory (build/scripts/generate_skills_catalogue.py)
-Every method, the shape of work it covers, and the verification rungs it must
-climb. Populated when the methods land.
-# END generated inventory
 
 * See also
 

@@ -8,7 +8,7 @@
 #+filetags: :llm:skills:naming:refactor:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/rename-skills-to-compass-namespace
-#+pr:
+#+pr: 2051
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-25
@@ -93,7 +93,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2051][#2051]] | [doc] Rename every skill into the compass- namespace |
 
 * Review
 

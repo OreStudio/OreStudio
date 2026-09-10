@@ -876,6 +876,7 @@ that every row in this document's comparison tables above draws from.
 
 * See also
 
+- [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][Open Source Risk Engine (ORE)]] — source of the canonical key format.
 - [[id:F9AE7F54-D995-476A-BA24-93698BF5029D][ORE market data catalogue]] — the authoritative, per-type quote-key dimension inventory (49 types) that every ORE quote key in this document's comparison tables is drawn from.
 - [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][Market Data Definition Language (MDDL)]] — the fourth scheme compared above: version history, content model, and where its retrieved specification files live.

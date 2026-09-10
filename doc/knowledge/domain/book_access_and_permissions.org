@@ -53,6 +53,7 @@ see risk concentration as a pie-chart-like breakdown.
 
 * See also
 
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:130A3261-E788-4222-9BD7-371AD92982FB][Book]] — hub note.
 - [[id:07CEDE6A-21B7-4F87-9745-708FDCA8C362][Book lifecycle]] — the opening workflow's access-review step.
 - [[id:D18DF500-2C6C-42FF-BBAE-D5A46D410910][Book groups and rates centres]] — centre ownership as trade-level

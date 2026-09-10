@@ -1,0 +1,80 @@
+:PROPERTIES:
+:ID: AF46793A-FF6C-4066-A059-279CE9936420
+:END:
+#+title: Identity and Access
+#+description: Structure note for the identity and access cluster: who an actor is, what roles grant them, how a service acts for a user, and where the database enforces the boundary.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:security:structure_note:identity:access:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+* Summary
+
+Access control in this system is decided in two places, and knowing which
+is which is the point of reading the cluster in order. The *application*
+decides what an authenticated actor is allowed to ask for, through roles
+and permissions. The *database* decides what rows that actor may see at
+all, through row-level security. The second is the backstop: a bug in the
+first is contained by it, which is why both exist.
+
+Between those two sits the awkward case that generates most of the
+subtlety here — a service acting on behalf of a user rather than as
+itself. Read the cluster as: what an identity is, what a role grants it,
+how a service borrows one, and what the database enforces regardless.
+
+* Reading order
+
+** 1. What an identity is
+
+[[id:8AEB87D6-0CE2-1434-E71B-60BEAE20ADF0][Identity and Access
+Management]] — start here. The identity lifecycle, authentication against
+authorisation, and the vocabulary the rest of the cluster uses. The
+authentication and authorisation distinction is worth slowing down on:
+almost every access bug is one being mistaken for the other.
+
+** 2. What a role grants
+
+[[id:3CAA394F-E84C-3434-331B-6E664F7E84D2][Role-Based Access Control]] —
+roles compose permissions, users are assigned roles. Read second, because
+it is the concrete model the abstract vocabulary above resolves to, and it
+is what the application layer actually consults.
+
+[[id:C84899BD-5EC8-4AA7-88D7-CE7ED19BC573][Book Access and Permissions]] —
+the same model applied to the entity where it matters most. Useful as the
+worked example: the allowed-currency set that constrains what may be
+booked shows permissions doing real domain work rather than guarding a
+screen.
+
+** 3. How a service acts for a user
+
+[[id:3E20C1A0-7BA1-4F31-8C34-1E5F13558890][Service-to-Service Auth
+Patterns]] — what happens when one service must call another, and the
+choice between a service acting as itself and acting for the caller.
+
+[[id:AAC60D20-8696-4455-9292-E8FAE1389CBC][Internal Actor Impersonation]] —
+the pattern we use: a service self-mints a short-lived token impersonating
+a specific end user. Read it straight after the patterns note, because it
+is the one we chose from among them, and read both before touching any
+service-to-service call.
+
+** 4. What the database enforces regardless
+
+[[id:B28747DF-A735-1C84-4E43-11ADFA8B05E3][PostgreSQL Row-Level Security]] —
+the database mechanism, described before any project-specific use of it.
+Deliberately last: it is the backstop, and it is easier to see why the
+backstop is shaped as it is once the application-level model above is
+clear. An agent changing a query that crosses a tenant boundary should
+have read this page first.
+
+* Reading it in reverse
+
+There is one case for inverting the order. If you are debugging a query
+that returns fewer rows than expected, start at row-level security and
+work upwards: the database is the layer most likely to be silently
+filtering, and it does so by design rather than by error.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and why the order is authored rather than computed.

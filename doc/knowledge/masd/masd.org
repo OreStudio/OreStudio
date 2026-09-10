@@ -272,6 +272,7 @@ MASD frames automation as a spectrum rather than a binary:
 
 * See also
 
+- [[id:338DCC6D-4913-4FDC-9078-1F0B0486A9E5][MASD]] — the structure note that orders this cluster, and where to read this page in it.
 ** MASD concept docs (this folder)
 
 - [[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the LMM: entity types, packages, abstraction levels, and

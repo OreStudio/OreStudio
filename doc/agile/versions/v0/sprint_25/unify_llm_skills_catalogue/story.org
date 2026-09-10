@@ -81,7 +81,7 @@ Tasks are listed in intended execution order.
 | [[id:7DFA4343-E553-4D3A-B71F-057329821EE5][Rename every skill into the compass- namespace]] | DONE | 2026-09-10 | 2026-09-10 | Mechanical rename of every skill, with every incoming link, catalogue row, runbook, memory and settings entry updated. |
 | [[id:3969C185-48DE-47F0-A00D-FD28CD58C1B0][Tag every skill with its cybernetic level]] | DONE | 2026-09-10 | 2026-09-10 | Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees. |
 | [[id:F4EF0C2D-B32E-4705-AE0F-AAC3E027FF59][Separate skill judgement from recipe commands]] | DONE | 2026-09-10 | 2026-09-10 | Make every action delegate its commands to a recipe and keep only the judgement, so each has one source of truth. |
-| [[id:6766A23C-0357-4873-B5BF-B5A71BF0B1D5][Add structure notes to the knowledge Zettelkasten]] | BACKLOG | | | Give each domain cluster an entry-point note listing its pages in an argued reading order, so grounding loads a model rather than a search result. |
+| [[id:6766A23C-0357-4873-B5BF-B5A71BF0B1D5][Add structure notes to the knowledge Zettelkasten]] | DONE | 2026-09-10 | 2026-09-10 | Give each domain cluster an entry-point note listing its pages in an argued reading order, so grounding loads a model rather than a search result. |
 | [[id:894E9BD8-6808-403A-9878-ABFA51710A74][Add a knowledge gap check for domain work]] | BACKLOG | | | A compass check that extracts the domain concepts a work item names and reports which have no resolving knowledge document. |
 | [[id:A7BCF024-9222-40C3-9151-AFE9C9B4BDBE][Cite the principles under the citation function]] | BACKLOG | | | Cite the eleven adopted pstack principles from our catalogue and write the thin local bindings; they are referenced upstream, not copied. |
 | [[id:08F7F925-49B2-40E0-A298-E300353CAE2E][Port the sequencing function and bind it to recipes and actions]] | BACKLOG | | | Import the adopted methods and interview skills as compass-method skills, with every step bound to one of our actions or recipes. |
@@ -149,6 +149,12 @@ Tasks are listed in intended execution order.
 - Most missing recipes were missing links. Survey before writing: of the 17
   skills carrying an unbacked command, 16 already had a recipe nobody had
   pointed at.
+- A structure note argues its order or it is a table of contents. What makes
+  it worth reading is the claim that each page makes the next one possible,
+  which search cannot supply and an index does not attempt.
+- A hub declares its own cluster membership, and the sections that point
+  outside it are headings so a script can tell the difference. The first
+  back-link sweep wrongly claimed four pages a hub merely cross-referenced.
 
 * Out of scope
 

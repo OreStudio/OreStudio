@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 338DCC6D-4913-4FDC-9078-1F0B0486A9E5
+:END:
+#+title: MASD
+#+description: Structure note for the MASD cluster: the methodology, its four spaces, the variability that shapes generated output, and how ORE Studio instantiates it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:masd:structure_note:codegen:modeling:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+* Summary
+
+MASD is the methodology the code generator implements, and the cluster is
+best read as one idea unfolded. The idea: describe a domain once, in a
+space that knows nothing about any programming language, then project that
+description into as many languages and file layouts as you need. Everything
+else is the machinery that makes the projection well defined.
+
+So the order is the projection itself. Start with the methodology and its
+metamodels. Then the *logical* space, which is what you author. Then the
+*technical* and *physical* spaces, which are what you project into. Then
+*facets*, which group the projected artefacts. Then *variability*, which
+is how one logical model yields different output without being forked.
+Finish with how this project actually instantiates all of it, which is
+where the abstractions acquire file paths.
+
+Reading the spaces out of order is the common mistake. Physical space
+looks approachable because it is just files, but its concepts are defined
+against the logical model they came from, and it reads as arbitrary
+without it.
+
+* Reading order
+
+** 1. The methodology
+
+[[id:BA0E3273-DC4B-7CD4-447B-06227B7D09A8][MASD]] — start here. The
+logical-physical split and the four metamodels. Read it as a map: it names
+every part the following pages treat in detail, and the names do not
+change afterwards.
+
+** 2. What you author
+
+[[id:4F24EEB9-58F1-42FD-BF4F-121D890F2D85][Logical Space]] — the Logical
+Metamodel, its packages, and its levels of abstraction. This is the space
+a modeller works in and the only one where a domain concept exists as
+itself rather than as a projection of itself.
+
+** 3. What you project into
+
+[[id:E7B74138-9ADA-4B4B-A983-23B3FDB55F44][Technical Space]] — a language
+or platform with its conventions. Read before physical space, because it
+is what makes a physical artefact meaningful: the same logical class is a
+different file in C++ than it is in SQL.
+
+[[id:787A7429-71D5-4295-829B-A9B56275B1F8][Physical Space]] — files,
+folders, file morphology, and the component structure. Now the file layout
+reads as a consequence rather than a convention.
+
+** 4. How the projected artefacts group
+
+[[id:B079DA67-8408-4BD0-A93C-D108AC780872][Facet]] — a container for
+related artefacts of one technical space. Facets are what the generator's
+templates are organised by, so this is the page that connects the
+methodology to the template library.
+
+** 5. How one model yields different output
+
+[[id:CE95C751-2125-4BA9-A78D-C30F9540FC5E][Variability]] — the Variability
+Metamodel: features, profiles, and non-structural variation. Read after
+facets, because variability is expressed as choices within a projection
+and there is nothing to vary until the projection exists.
+
+** 6. How this project does it
+
+[[id:43FF3591-AD18-4CE3-8239-A220862C9B5A][Applied MASD]] — the mapping
+from each MASD concept onto ORE Studio's own directories, models and
+templates. This is where the vocabulary acquires paths, and it is the page
+to return to when a concept is clear in theory and unclear in the tree.
+
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity Lifecycle]] — the
+cross-facet ordering: which layer of an entity is generated before which,
+and why. Read last, and read it before doing any entity work: it is the
+operational consequence of everything above, and the order it prescribes
+is not negotiable.
+
+* What this cluster does not cover
+
+The skills framework borrows MASD's shape — a target with a type, and
+operations registered against the type — but it is a separate cluster with
+its own entry point.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — the same dispatch shape, applied to skills rather than code.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and why the order is authored rather than computed.

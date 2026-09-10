@@ -66,6 +66,7 @@ through application bugs or direct database access.
 
 * See also
 
+- [[id:AF46793A-FF6C-4066-A059-279CE9936420][Identity and Access]] — the structure note that orders this cluster, and where to read this page in it.
 - [[id:B7E9F3A1-C8D2-4E6B-A1F5-9D3C7E8B2A4F][ores.sql]] — how this project applies RLS for tenant isolation
   and service-role separation.
 - [[id:81AB065B-E6EB-4CC2-BB18-F3FD2652EC47][PostgreSQL Architecture]] — broader database conventions: schema

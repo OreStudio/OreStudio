@@ -1,0 +1,97 @@
+:PROPERTIES:
+:ID: 576D0E28-E783-44D4-9C0F-C7ADD307539E
+:END:
+#+title: Volatility
+#+description: Structure note for the volatility cluster: the statistical concept, the implied surface built from it, the no-arbitrage conditions it must satisfy, how it moves, and what is traded on it.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:structure_note:volatility:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+* Summary
+
+Volatility is one word for two different things, and most confusion in
+this cluster comes from sliding between them. *Realised* volatility is a
+statistic: the dispersion of returns actually observed. *Implied*
+volatility is a price: the number that makes a pricing model reproduce a
+quoted option premium. The first is measured from history, the second is
+backed out of the market, and they agree only by coincidence.
+
+The cluster follows that split and then its consequences. Once implied
+volatility is understood as a price, it has a term structure and a strike
+structure — a *surface* — which must obey constraints or it admits
+arbitrage, which moves in a particular way when spot moves, and which can
+itself be traded. Read in that order: the concept, the surface, the
+constraints on the surface, its dynamics, and finally the instruments.
+
+* Reading order
+
+** 1. The concept
+
+[[id:0CD30407-D67D-499C-B9AB-F268D05F40E4][Volatility]] — start here.
+Dispersion of returns, standard deviation, annualisation, and the
+realised-versus-implied distinction the rest of the cluster depends on.
+
+[[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH Volatility Models]] — read
+second, while still on realised volatility. Volatility clusters rather than
+arriving independently each day, and GARCH is the standard way to model
+that. It belongs before the surface because it explains why volatility is
+not a constant, which is the reason a surface has shape at all.
+
+** 2. The surface
+
+[[id:5B513D53-5DF7-4540-99C0-60D909678873][FX Volatility Surface]] — the
+structure, construction and conventions: pillars in expiry and in delta,
+and the quoting conventions that make FX different from equities. This is
+the cluster's centre of gravity; everything after it is either a constraint
+on the surface or a consequence of it.
+
+** 3. What the surface must satisfy
+
+[[id:3F7A2C91-84BE-4E12-B5D0-1D6E5F08A432][Vol Surface No-Arbitrage
+Conditions]] — what arbitrage means for a surface and the conditions one
+must satisfy to be free of it. Read directly after the surface: these are
+the constraints any interpolation or fitting has to respect, and a surface
+that violates them prices a free lunch.
+
+** 4. How the surface moves
+
+[[id:96108D1A-6808-4D68-B226-FD03192C8009][Skew Stickiness Ratio]] — sticky
+strike against sticky delta, and what happens to the smile when spot moves.
+This is a dynamics question and only arises once the static shape is
+settled.
+
+[[id:0C37CE80-6795-4DEB-A318-975C53A21A0C][FX Vol Surface Driving]] — the
+driver and derived pattern applied to surfaces, for the case where one
+surface is generated deterministically from another rather than quoted in
+its own right.
+
+** 5. What is traded on it
+
+[[id:D3DF8CDD-2BD9-44BC-B805-D06C8A6C2074][Variance and Volatility
+Derivatives]] — variance and volatility swaps and options, with barriers,
+corridors and baskets. Last in the sequence because these instruments take
+the surface as an input: they are priced off it rather than contributing
+to it.
+
+** The papers, when the question is method
+
+Two research notes sit alongside rather than in the sequence. Reach for
+them when the question is how to do something rather than what it is.
+
+- [[id:EC220F01-1844-4EED-A61D-BCF9F01EE00C][Arbitrage-free surface interpolation]] — interpolating a surface without violating the conditions above.
+- [[id:3F849D36-022B-49CC-AD71-791481F36581][GJR-GARCH and neural option pricing]] — combining the realised-volatility model with a learned pricer.
+
+* What this cluster does not cover
+
+Interest rate curves are the other term structure and have their own
+structure note. They share the pillar-and-interpolation machinery, so the
+vocabulary carries over, but nothing else does: a curve discounts and a
+surface prices optionality.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the index this structure note hangs from.
+- [[id:FA45D3D1-C3D9-4FDB-B03B-8AB724D71092][Interest Rate Curves]] — the sibling term-structure cluster.
+- [[id:E3B70401-5142-4ACC-A61F-1BBF19F8470F][Zettelkasten]] — what a structure note is and why the order is authored rather than computed.

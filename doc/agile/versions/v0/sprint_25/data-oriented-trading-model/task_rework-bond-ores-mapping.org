@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rework-bond-ores-mapping
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-09
 #+updated: 2026-09-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The ores.ore mapping rides the codegen reshape of the bond family: once the inst
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Plan written; wave 2.1 (the survey) under way. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-09                               |
+| Next         | Wave 2.1: the per-product XSD field inventory and the coverage decision into Notes. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -47,7 +47,221 @@ The ores.ore mapping rides the codegen reshape of the bond family: once the inst
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** The starting point
+
+Wave 1.5 left the mapper in a deliberate halfway state. One file
+(=bond_instrument_mapper=) carries forward and reverse for seven of
+the ten product codes. It targets the generated rows already. The
+container it returns (=bond_instrument_data=) is a handcrafted
+carrier: the instrument header, the issue row, one engaged fact row,
+and a document remainder (=option_expiry_date=). Wave 1.5 fixed the
+fidelity rule at "reverse emits exactly what it emits today", so the
+flattening survived the reshape. This task delivers the depth.
+
+** What the XSD carries against what the tables carry
+
+The ORE schema (=external/ore/xsd/instruments.xsd=) declares nine
+bond product structures: =bondData=, =forwardBondData=,
+=callableBondData=, =convertibleBondData=, =bondOptionData=,
+=bondTRSData=, =bondRepoData=, =bondFutureData= and =ascotData=.
+The schema declares no =positionData=. BondPosition therefore has no
+product document in the XML at all.
+
+Nine of the ten codes are importable. Two of the nine have no mapper
+today: BondFuture and Ascot. Both have a fact table waiting
+(=ores_trading_bond_futures_tbl= with its full contract column set,
+=ores_trading_ascots_tbl= with =ascot_option_type=), so both gain a
+mapper pair. BondPosition is the recorded uncovered product: no
+product structure in the XML, no fact table in the family, and the
+deliverable already records that it has no mapper. Its absence is a
+decision with evidence, not an omission, and the suite asserts it.
+
+** The flattening inventory
+
+Five items flatten today. Three have a destination row. Two do not.
+The difference decides the wave shape.
+
+- The call schedule and the conversion terms have destinations now.
+  =bond_issue_call_dates= is keyed =(issue_id, sequence_number)= and
+  carries =call_date=; =bond_issue_conversion_targets= carries
+  =underlying_id= and =conversion_ratio=. Both land as child rows.
+  The XSD expresses each as a =scheduleData= plus a styles list, and
+  =scheduleData= is a choice: an explicit =Dates/Date= list, or a
+  =Rules= block. An explicit date list maps to a row per date. A
+  rule-based schedule does not, because expanding a tenor against a
+  calendar is schedule generation, not mapping.
+- The full exercise date list, the funding leg's schedule and the
+  repo leg's dates have no destination in the nine tables. This is
+  the recorded wave 1.3 scope limit, not an oversight. The shared
+  instrument-keyed schedule and underlyings tables belong to the
+  parent story and are not part of this family. A bond-local schedule
+  table would create the per-family duplication the program exists to
+  remove, and the parent story would have to generalise or delete it
+  on arrival.
+
+The plan splits the five. The child rows land now. The items with no
+row stop flattening at the mapping boundary: the container carries
+the whole structure the document holds (every exercise date, the
+funding schedule, the repo dates), reverse re-emits it whole, and the
+residue is recorded against the parent story's shared tables. What
+the tables cannot store, the document keeps.
+
+** The coupon frequency corruption and the hardcoded TRS values
+
+The acceptance names both. They are different kinds of defect. The
+corruption (=forward_bond_repo= overwriting the issue's real tenor
+with the leg type) is already gone as a mechanical consequence of the
+shared issue row. What this task owes is the test that asserts a repo
+product's issue keeps its own tenor while the repo row carries the
+leg type. The TRS hardcoding is live code: =forward_bond_trs= writes
+="TotalReturn"= unconditionally, so a PriceReturn document imports as
+TotalReturn. The mapper reads the return side off the document and
+asserts both directions.
+
+** The waves
+
+Each wave ends green and is a commit.
+
+- 2.1, the survey. The per-product XSD field inventory, the ten-code
+  coverage decision, and the flattening inventory, into Notes.
+  Checks: docs class.
+- 2.2, the issue side. A =bond_issue= mapper and the find-or-create
+  boundary. The container mints a fresh issue per trade today, with
+  a comment that finding an existing issue is the database boundary
+  of this task. The assembler gains an explicit resolver seam, so
+  "found or created" is a real lookup at the boundary and a mint on
+  the miss. The DB path supplies the lookup; unit tests supply a
+  stub. The two child mappers (call dates, conversion targets) land
+  here, with the issue they hang off.
+- 2.3, the fact mappers and the assembler. One mapper pair per fact
+  entity over the five products, the two missing products
+  (BondFuture, Ascot) added, the container grown to carry them and
+  the per-product remainder, and the assembler that composes one
+  document into issue, instrument, fact and children and joins them
+  back.
+- 2.4, the suites. The mapper and golden roundtrip suites extended
+  for the new products and for the assertions the acceptance names
+  (the repair, the hardcoding, the whole exercise date list, the
+  child rows), plus the coverage assertion that names BondPosition.
+- 2.5, validation. Full build and ctest, the ores.ore roundtrip
+  suite, and the file-level check through =ores.cli=
+  (=exporter::roundtrip=) with =trades_mapped= counting the covered
+  products. Checks: code class, full build and ctest, plus the
+  ores.ore roundtrip suite.
+
+** Boundaries
+
+No new verb surface. The DB-bound import path stays
+=workflow.v1.ore.import= with its existing drivers, and the resolver
+seam is internal to the mapper. The container's full rework (one view
+per product, the wire protocol, the qt form) belongs to unit 3, which
+the parent plan sequences over the container grammar work. This task
+grows the container only as far as the mapper needs to carry what it
+maps. The shared schedule and underlyings tables of the parent story
+remain the destination for the three residues.
+
 * Notes
+
+** Wave 2.1, the survey
+
+*** The product structures and their destinations
+
+The ORE schema (=external/ore/xsd/instruments.xsd=) declares nine bond
+product structures. Each one maps to one row set.
+
+| XSD structure | Codes | Row destination | Residue with no column |
+|---------------+-------+-----------------+------------------------|
+| =bondData= | Bond, BondPosition | the issue row | the curve and credit links (CreditCurveId, CreditGroup, ReferenceCurveId, IncomeCurveId, VolatilityCurveId, Calendar, PriceQuoteMethod, PriceQuoteBaseValue, BondNotional, PriceType, Payer, CreditRisk, SubType) |
+| =forwardBondData= | ForwardBond | the issue row | SettlementData and PremiumData |
+| =callableBondData= | CallableBond | the issue row plus call-date children | PutData |
+| =convertibleBondData= | ConvertibleBond | the issue row plus conversion-target children | DividendProtectionData, Detachable |
+| =bondOptionData= | BondOption | the issue row plus =bond_option= | optionData's exercise and payment data, Redemption, PriceType, KnocksOut |
+| =bondTRSData= | BondTRS | the issue row plus =bond_trs= | totalReturnData's schedule and payment dates |
+| =bondRepoData= | BondRepo | the issue row plus =bond_repo= | the repo leg's payment dates |
+| =bondFutureData= | BondFuture | the issue row plus =bond_futures= | DeliveryBasket |
+| =ascotData= | Ascot | the issue row plus =ascots= | the reference swap |
+| (none) | BondPosition | none | the whole product |
+
+=bondFutureData= matches =ores_trading_bond_futures_tbl= column for
+column: ContractName, ContractNotional, LongShort, Currency,
+ContractMonth, DeliverableGrade, FairPrice, Settlement,
+SettlementDirty, RootDate, ExpiryBasis, SettlementBasis, ExpiryLag,
+SettlementLag, LastTradingDate, LastDeliveryDate.
+
+*** The ten-code coverage decision
+
+Nine of the ten codes have a product structure and are covered by the
+import path. Three needed a decision.
+
+- *BondFuture and Ascot gain mappers.* Both have a structure and a
+  fact table waiting. Neither has one today.
+- *BondPosition stays uncovered, by decision.* The schema declares no
+  =positionData=, the family has no fact table, and the trade type
+  appears in no product document. The one example file that names it
+  (=Hybrid_GenericTRS_with_BondPosition.xml=) holds a single
+  =TotalReturnSwap= trade whose underlying is a bond, so it exercises
+  the TRS path, not a position. The trade type stays modelled and
+  persisted; only the XML import path is out of scope, and the
+  deliverable already records that it has no mapper.
+
+*** The flattening inventory
+
+Five items flatten today. Three have a destination row, two do not.
+
+Lands now, as child rows:
+
+- *The call schedule* (=callableBondData/CallData=,
+  =convertibleBondData/CallData=) to =bond_issue_call_dates=, keyed
+  =(issue_id, sequence_number)= with a =call_date= column.
+- *The conversion terms* (=convertibleBondData/ConversionData=) to
+  =bond_issue_conversion_targets=, which carries =underlying_id= and
+  =conversion_ratio=.
+
+The XSD expresses both as a =scheduleData= plus a styles list, and
+=scheduleData= (=external/ore/xsd/ore_types.xsd=) is a choice: an
+explicit =Dates/Date= list, or a =Rules= block. An explicit list maps
+one row per date. A rule-based schedule does not map, because
+expanding a tenor against a calendar is schedule generation, and the
+row shape the parent story stages is a rules row, not an expanded
+date list. The mapper maps the explicit form and records the rule
+form against the shared tables.
+
+Has no destination, records against the parent story:
+
+- *The full exercise date list* (optionData's exercise dates): the
+  option fact table carries =option_type= and =option_strike= only.
+  The exercise-schedule tables are the parent story's, recorded as a
+  wave 1.3 scope limit.
+- *The funding leg's schedule* (totalReturnData/ScheduleData): the
+  TRS fact table carries the leg type, the rate and the index.
+- *The repo leg's dates* (RepoData/LegData): the repo fact table
+  carries the type, the rate and the index.
+
+The container carries all three whole, so reverse re-emits what the
+document held. Nothing is dropped at the mapping boundary.
+
+*** The coverage vehicles
+
+The example documents under
+=external/ore/examples/Products/Example_Trades/= that exercise the
+family:
+
+| Code | Documents |
+|------+-----------|
+| Bond | Cash_Bonds.xml, Hybrid_GenericTRS_with_Bond.xml |
+| ForwardBond | Credit_Bond_Forward.xml, Hybrid_GenericTRS_with_BondForward_Futures.xml |
+| BondFuture | Hybrid_GenericTRS_with_BondForward_Futures.xml |
+| BondOption | BondOption_StrikePrice_StrikeYield.xml, Credit_BondOption.xml |
+| BondRepo | Cash_BondRepo_and_Bond.xml |
+| BondTRS | Credit_Bond_TRS.xml, Credit_Bond_TRS_with_Indexings.xml |
+| CallableBond | Credit_CallableBond.xml |
+| ConvertibleBond | Cash_ConvertibleBond.xml, Hybrid_GenericTRS_with_ConvertibleBond.xml |
+| Ascot | Cash_Ascot.xml |
+| BondPosition | (none) |
+
+The mapper and golden suites read these by path through
+=ores.testing::project_root=, and =ores.cli= walks a directory of them
+through =exporter::roundtrip=.
 
 * Test Scenarios
 

@@ -34,17 +34,24 @@ namespace ores::trading::domain {
  * rest) are the canonical spellings the ORE schema uses. A member the
  * schema declares optional is an optional here, so an element the
  * document states empty stays distinct from one it omits.
+ *
+ * Two of the members are flags the schema types as its own bool rather
+ * than as the XML boolean. That type enumerates thirteen spellings,
+ * including the empty one, and the generated writer emits the spelling
+ * the reader stored. Carrying the text keeps the spelling the document
+ * chose: the corpus writes these elements empty for the on state. The
+ * two remove flags are XML booleans and stay boolean here.
  */
 struct bond_schedule_rules final {
     std::string start_date;
     std::optional<std::string> end_date;
-    std::optional<bool> adjust_end_date_to_previous_month_end;
+    std::optional<std::string> adjust_end_date_to_previous_month_end;
     std::string tenor;
     std::optional<std::string> calendar;
     std::string convention;
     std::optional<std::string> term_convention;
     std::optional<std::string> rule;
-    std::optional<bool> end_of_month;
+    std::optional<std::string> end_of_month;
     std::optional<std::string> end_of_month_convention;
     std::optional<std::string> first_date;
     std::optional<std::string> last_date;
@@ -54,13 +61,16 @@ struct bond_schedule_rules final {
 
 /**
  * @brief A schedule the document states as an explicit date list.
+ *
+ * The two flags carry the document's spelling of the schema's own bool
+ * type, as the rule block above does.
  */
 struct bond_schedule_dates final {
     std::optional<std::string> calendar;
     std::optional<std::string> convention;
     std::optional<std::string> tenor;
-    std::optional<bool> end_of_month;
-    std::optional<bool> include_duplicate_dates;
+    std::optional<std::string> end_of_month;
+    std::optional<std::string> include_duplicate_dates;
     std::vector<std::string> dates;
 };
 
@@ -282,6 +292,132 @@ struct bond_forward_settlement final {
 struct bond_forward_premium final {
     std::string amount;
     std::string date;
+};
+
+/**
+ * @brief The settlement terms an option or a premium pays under.
+ *
+ * The pay currency and the FX index are required and the fixing date is
+ * optional. The schema spells the same three members twice, once under
+ * the option and once under each premium, so the container holds one
+ * type for both.
+ */
+struct bond_option_settlement final {
+    std::string pay_currency;
+    std::string fx_index;
+    std::optional<std::string> fixing_date;
+};
+
+/**
+ * @brief One entry of an option's premium list.
+ *
+ * The amount, the currency and the pay date are required, and the
+ * settlement block beside them is optional.
+ */
+struct bond_option_premium final {
+    double amount;
+    std::string currency;
+    std::string pay_date;
+    std::optional<bond_option_settlement> settlement;
+};
+
+/**
+ * @brief One exercise fee: an amount with three optional attributes.
+ *
+ * The schema states the amount as text with the attributes on the same
+ * element, so the container keeps the number and the attributes apart.
+ */
+struct bond_option_exercise_fee final {
+    double amount;
+    std::optional<std::string> type;
+    std::optional<std::string> start_date;
+    std::optional<std::string> currency;
+};
+
+/**
+ * @brief One exercise the document states outright: a date and a price.
+ */
+struct bond_option_exercise final {
+    std::string date;
+    std::optional<double> price;
+};
+
+/**
+ * @brief The rule an option's payment dates are derived from.
+ */
+struct bond_option_payment_rules final {
+    std::uint64_t lag = 0;
+    std::string calendar;
+    std::string convention;
+    std::optional<std::string> relative_to;
+};
+
+/**
+ * @brief An option's payment dates, stated either as a list or as a rule.
+ */
+struct bond_option_payment_data final {
+    std::vector<std::string> dates;
+    std::optional<bond_option_payment_rules> rules;
+};
+
+/**
+ * @brief The option block, shared by every product that states one.
+ *
+ * bondOptionData and AscotData hold the same optionData element, and the
+ * equity, FX and commodity products hold it too. The nine tables carry
+ * no option column beyond the type and the strike, so the container
+ * holds the block whole and export re-emits it.
+ *
+ * The schema requires the long and short flag and makes every other
+ * member optional, so a member the document omits stays absent. The
+ * premium amount and the exercise price list are text in the schema,
+ * not numbers, and stay text here, and the automatic exercise flag
+ * carries the document's own spelling of the schema's bool type.
+ */
+struct bond_option_data final {
+    std::string long_short;
+    std::optional<std::string> option_type;
+    std::optional<std::string> payoff_type;
+    std::optional<std::string> payoff_type_2;
+    std::optional<std::string> style;
+    std::optional<std::string> notice_period;
+    std::optional<std::string> notice_calendar;
+    std::optional<std::string> notice_convention;
+    std::optional<std::string> mid_coupon_exercise;
+    std::optional<std::string> settlement;
+    std::optional<std::string> settlement_method;
+    std::optional<std::string> pay_off_at_expiry;
+    std::optional<std::string> premium_amount;
+    std::optional<std::string> premium_currency;
+    std::optional<std::string> premium_pay_date;
+    std::vector<bond_option_premium> premiums;
+    std::optional<std::string> exercise_prices;
+    std::vector<bond_option_exercise_fee> exercise_fees;
+    std::optional<std::string> exercise_fee_settlement_period;
+    std::optional<std::string> exercise_fee_settlement_calendar;
+    std::optional<std::string> exercise_fee_settlement_convention;
+    std::optional<std::string> automatic_exercise;
+    std::optional<bond_option_exercise> exercise_data;
+    std::optional<bond_option_payment_data> payment_data;
+    std::optional<bond_option_settlement> settlement_data;
+};
+
+/**
+ * @brief The strike, stated as a price, as a yield or as a bare number.
+ *
+ * A strike the document states as a bare element reaches the option fact
+ * row. The schema states the element form as a choice of three: a price
+ * with its currency, a yield with its compounding, or a number with an
+ * optional currency. Each alternative is a pair here, and the three are
+ * mutually exclusive in a document.
+ */
+struct bond_strike_data final {
+    std::optional<double> price_value;
+    std::optional<std::string> price_currency;
+    std::optional<double> yield_value;
+    std::optional<std::string> yield_compounding;
+    std::optional<double> bare_value;
+    std::optional<std::string> bare_currency;
 };
 
 }

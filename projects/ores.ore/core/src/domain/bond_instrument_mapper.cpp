@@ -19,7 +19,10 @@
  */
 #include "ores.ore.core/domain/bond_instrument_mapper.hpp"
 #include <boost/uuid/random_generator.hpp>
+#include <charconv>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -42,11 +45,19 @@ using ores::trading::domain::bond_issue_conversion_target;
 using ores::trading::domain::bond_leg_data;
 using ores::trading::domain::bond_leg_rate_data;
 using ores::trading::domain::bond_option;
+using ores::trading::domain::bond_option_data;
+using ores::trading::domain::bond_option_exercise;
+using ores::trading::domain::bond_option_exercise_fee;
+using ores::trading::domain::bond_option_payment_data;
+using ores::trading::domain::bond_option_payment_rules;
+using ores::trading::domain::bond_option_premium;
+using ores::trading::domain::bond_option_settlement;
 using ores::trading::domain::bond_repo;
 using ores::trading::domain::bond_schedule_data;
 using ores::trading::domain::bond_schedule_dates;
 using ores::trading::domain::bond_schedule_rules;
 using ores::trading::domain::bond_settlement_data;
+using ores::trading::domain::bond_strike_data;
 using ores::trading::domain::bond_stub_interpolation;
 using ores::trading::domain::bond_trs;
 
@@ -106,12 +117,17 @@ Enum parse_code(const std::string& text, int count, Enum fallback) {
 }
 
 constexpr int amortization_type_count = 5;
+constexpr int bool__count = 13;
 constexpr int business_day_convention_count = 27;
+constexpr int compounding_count = 5;
 constexpr int date_rule_count = 16;
 constexpr int currency_code_count = 191;
 constexpr int day_counter_count = 71;
 constexpr int leg_type_count = 18;
+constexpr int option_pay_relative_to_count = 2;
 constexpr int rounding_type_count = 5;
+constexpr int settlement_method_count = 4;
+constexpr int settlement_type_count = 2;
 
 // The schema states the future's price and lag fields as strings. A
 // value the parser cannot read leaves the column at its default rather
@@ -137,15 +153,6 @@ int count_of(const std::string& text, int fallback) {
 bool flag_of(const std::string& text) {
     return text == "Y" || text == "YES" || text == "TRUE" || text == "True" || text == "true" ||
            text == "1";
-}
-
-// An empty string is the on spelling. The bool type enumerates thirteen
-// spellings and the corpus writes the empty one for the on state: EndOfMonth
-// is the only element any document types as bool, and the documents write it
-// empty 3,442 times, false 103 times and true 12 times.
-bool flag_of(const bool_& value) {
-    const std::string text = to_string(value);
-    return text.empty() || flag_of(text);
 }
 
 // A generated wrapper derives from the string type it carries, and a
@@ -176,6 +183,19 @@ void set_present_text(xsd::optional<Field>& field, const std::optional<std::stri
     field = std::move(wrapper);
 }
 
+// std::to_string writes six fixed decimals, so a value below 1e-6 comes
+// back as zero and anything past the sixth decimal is gone. The schema
+// states these as xs:float, and the documents write decimals the reader
+// has already rounded to fit, so the reverse direction writes the
+// shortest text that still reads back as the same number.
+std::string format_number(double value) {
+    char buffer[32];
+    const auto written = std::to_chars(buffer, buffer + sizeof(buffer), value);
+    if (written.ec != std::errc{})
+        return {};
+    return std::string(buffer, written.ptr);
+}
+
 bond_schedule_data map_schedule(const scheduleData& sd) {
     bond_schedule_data result;
     for (const auto& r : sd.Rules) {
@@ -184,7 +204,7 @@ bond_schedule_data map_schedule(const scheduleData& sd) {
         if (r.EndDate)
             row.end_date = *r.EndDate;
         if (r.AdjustEndDateToPreviousMonthEnd)
-            row.adjust_end_date_to_previous_month_end = flag_of(*r.AdjustEndDateToPreviousMonthEnd);
+            row.adjust_end_date_to_previous_month_end = to_string(*r.AdjustEndDateToPreviousMonthEnd);
         row.tenor = r.Tenor;
         if (r.Calendar)
             row.calendar = *r.Calendar;
@@ -194,7 +214,7 @@ bond_schedule_data map_schedule(const scheduleData& sd) {
         if (r.Rule)
             row.rule = to_string(*r.Rule);
         if (r.EndOfMonth)
-            row.end_of_month = flag_of(*r.EndOfMonth);
+            row.end_of_month = to_string(*r.EndOfMonth);
         if (r.EndOfMonthConvention)
             row.end_of_month_convention = to_string(*r.EndOfMonthConvention);
         if (r.FirstDate)
@@ -216,9 +236,9 @@ bond_schedule_data map_schedule(const scheduleData& sd) {
         if (d.Tenor)
             row.tenor = *d.Tenor;
         if (d.EndOfMonth)
-            row.end_of_month = flag_of(*d.EndOfMonth);
+            row.end_of_month = to_string(*d.EndOfMonth);
         if (d.IncludeDuplicateDates)
-            row.include_duplicate_dates = flag_of(*d.IncludeDuplicateDates);
+            row.include_duplicate_dates = to_string(*d.IncludeDuplicateDates);
         for (const auto& date : d.Dates.Date)
             row.dates.push_back(date);
         result.dates.push_back(std::move(row));
@@ -227,8 +247,9 @@ bond_schedule_data map_schedule(const scheduleData& sd) {
 }
 
 // Text members emit on presence, so an element the document states
-// empty is re-emitted rather than dropped. A flag has no empty
-// spelling to hand back, so it emits the canonical Y or N.
+// empty is re-emitted rather than dropped. The generated bool type is
+// written the same way: the container holds one of its spellings, the
+// empty one included, so the spelling the document chose comes back.
 scheduleData reverse_schedule(const bond_schedule_data& sd) {
     scheduleData result;
     for (const auto& row : sd.rules) {
@@ -238,7 +259,7 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
             r.EndDate = *row.end_date;
         if (row.adjust_end_date_to_previous_month_end)
             r.AdjustEndDateToPreviousMonthEnd =
-                *row.adjust_end_date_to_previous_month_end ? bool_::Y : bool_::N;
+                parse_code(*row.adjust_end_date_to_previous_month_end, bool__count, bool_::N);
         set_text(r.Tenor, row.tenor);
         if (row.calendar)
             r.Calendar = *row.calendar;
@@ -251,7 +272,7 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
         if (row.rule)
             r.Rule = parse_code(*row.rule, date_rule_count, dateRule::Backward);
         if (row.end_of_month)
-            r.EndOfMonth = *row.end_of_month ? bool_::Y : bool_::N;
+            r.EndOfMonth = parse_code(*row.end_of_month, bool__count, bool_::N);
         if (row.end_of_month_convention)
             r.EndOfMonthConvention = parse_code(*row.end_of_month_convention,
                                                 business_day_convention_count,
@@ -276,9 +297,10 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
                                       businessDayConvention::F);
         set_present_text(d.Tenor, row.tenor);
         if (row.end_of_month)
-            d.EndOfMonth = *row.end_of_month ? bool_::Y : bool_::N;
+            d.EndOfMonth = parse_code(*row.end_of_month, bool__count, bool_::N);
         if (row.include_duplicate_dates)
-            d.IncludeDuplicateDates = *row.include_duplicate_dates ? bool_::Y : bool_::N;
+            d.IncludeDuplicateDates =
+                parse_code(*row.include_duplicate_dates, bool__count, bool_::N);
         for (const auto& date : row.dates)
             d.Dates.Date.push_back(date);
         result.Dates.push_back(std::move(d));
@@ -704,21 +726,315 @@ void reverse_leg(const bond_leg_data& leg, legData& ld) {
         ld.SettlementData = reverse_settlement(*leg.settlement);
 }
 
+// The schema spells the settlement block twice, once under the option
+// and once under each premium, and the two copies carry the same three
+// members under different wrapper names.
+template <typename Settlement>
+bond_option_settlement map_option_settlement(const Settlement& s) {
+    bond_option_settlement result;
+    result.pay_currency = to_string(s.PayCurrency);
+    result.fx_index = s.FXIndex;
+    if (s.FixingDate)
+        result.fixing_date = std::string(*s.FixingDate);
+    return result;
+}
+
+template <typename Settlement>
+Settlement reverse_option_settlement(const bond_option_settlement& row) {
+    Settlement result;
+    result.PayCurrency = parse_code(row.pay_currency, currency_code_count, currencyCode::USD);
+    set_text(result.FXIndex, row.fx_index);
+    set_present_text(result.FixingDate, row.fixing_date);
+    return result;
+}
+
+bond_option_premium map_option_premium(const premiumData_Premium_t& p) {
+    bond_option_premium result;
+    result.amount = static_cast<double>(p.Amount);
+    result.currency = p.Currency;
+    result.pay_date = p.PayDate;
+    if (p.SettlementData)
+        result.settlement = map_option_settlement(*p.SettlementData);
+    return result;
+}
+
+premiumData_Premium_t reverse_option_premium(const bond_option_premium& row) {
+    premiumData_Premium_t result;
+    result.Amount = static_cast<float>(row.amount);
+    set_text(result.Currency, row.currency);
+    set_text(result.PayDate, row.pay_date);
+    if (row.settlement)
+        result.SettlementData =
+            reverse_option_settlement<premiumData_Premium_t_SettlementData_t>(*row.settlement);
+    return result;
+}
+
+bond_option_exercise_fee map_option_exercise_fee(const optionData_ExerciseFees_t_ExerciseFee_t& f) {
+    bond_option_exercise_fee result;
+    result.amount = static_cast<double>(f);
+    if (f.type)
+        result.type = std::string(*f.type);
+    if (f.startDate)
+        result.start_date = std::string(*f.startDate);
+    if (f.currency)
+        result.currency = std::string(*f.currency);
+    return result;
+}
+
+optionData_ExerciseFees_t_ExerciseFee_t
+reverse_option_exercise_fee(const bond_option_exercise_fee& row) {
+    optionData_ExerciseFees_t_ExerciseFee_t result;
+    static_cast<float&>(result) = static_cast<float>(row.amount);
+    if (row.type)
+        result.type = *row.type;
+    if (row.start_date)
+        result.startDate = *row.start_date;
+    if (row.currency)
+        result.currency = *row.currency;
+    return result;
+}
+
+bond_option_exercise map_option_exercise(const optionExerciseData& e) {
+    bond_option_exercise result;
+    result.date = e.Date;
+    if (e.Price)
+        result.price = *e.Price;
+    return result;
+}
+
+optionExerciseData reverse_option_exercise(const bond_option_exercise& row) {
+    optionExerciseData result;
+    set_text(result.Date, row.date);
+    if (row.price)
+        result.Price = *row.price;
+    return result;
+}
+
+bond_option_payment_rules map_option_payment_rules(const optionPaymentData_Rules_t& r) {
+    bond_option_payment_rules result;
+    result.lag = r.Lag;
+    result.calendar = r.Calendar;
+    result.convention = to_string(r.Convention);
+    if (r.RelativeTo)
+        result.relative_to = to_string(*r.RelativeTo);
+    return result;
+}
+
+optionPaymentData_Rules_t reverse_option_payment_rules(const bond_option_payment_rules& row) {
+    optionPaymentData_Rules_t result;
+    result.Lag = row.lag;
+    set_text(result.Calendar, row.calendar);
+    result.Convention =
+        parse_code(row.convention, business_day_convention_count, businessDayConvention::F);
+    if (row.relative_to)
+        result.RelativeTo = parse_code(*row.relative_to,
+                                       option_pay_relative_to_count,
+                                       optionPayRelativeTo::Expiry);
+    return result;
+}
+
+bond_option_payment_data map_option_payment_data(const optionPaymentData& p) {
+    bond_option_payment_data result;
+    if (p.Dates)
+        for (const auto& date : p.Dates->Date)
+            result.dates.push_back(date);
+    if (p.Rules)
+        result.rules = map_option_payment_rules(*p.Rules);
+    return result;
+}
+
+optionPaymentData reverse_option_payment_data(const bond_option_payment_data& row) {
+    optionPaymentData result;
+    if (!row.dates.empty()) {
+        optionPaymentData_Dates_t dates;
+        for (const auto& date : row.dates)
+            dates.Date.push_back(date);
+        result.Dates = std::move(dates);
+    }
+    if (row.rules)
+        result.Rules = reverse_option_payment_rules(*row.rules);
+    return result;
+}
+
+bond_option_data map_option_data(const optionData& od) {
+    bond_option_data result;
+    result.long_short = od.LongShort;
+    if (od.OptionType)
+        result.option_type = std::string(*od.OptionType);
+    if (od.PayoffType)
+        result.payoff_type = std::string(*od.PayoffType);
+    if (od.PayoffType2)
+        result.payoff_type_2 = std::string(*od.PayoffType2);
+    if (od.Style)
+        result.style = std::string(*od.Style);
+    if (od.NoticePeriod)
+        result.notice_period = std::string(*od.NoticePeriod);
+    if (od.NoticeCalendar)
+        result.notice_calendar = std::string(*od.NoticeCalendar);
+    if (od.NoticeConvention)
+        result.notice_convention = std::string(*od.NoticeConvention);
+    if (od.MidCouponExercise)
+        result.mid_coupon_exercise = std::string(*od.MidCouponExercise);
+    if (od.Settlement)
+        result.settlement = to_string(*od.Settlement);
+    if (od.SettlementMethod)
+        result.settlement_method = to_string(*od.SettlementMethod);
+    if (od.PayOffAtExpiry)
+        result.pay_off_at_expiry = std::string(*od.PayOffAtExpiry);
+    if (od.PremiumAmount)
+        result.premium_amount = std::string(*od.PremiumAmount);
+    if (od.PremiumCurrency)
+        result.premium_currency = std::string(*od.PremiumCurrency);
+    if (od.PremiumPayDate)
+        result.premium_pay_date = std::string(*od.PremiumPayDate);
+    if (od.Premiums)
+        for (const auto& p : od.Premiums->Premium)
+            result.premiums.push_back(map_option_premium(p));
+    if (od.ExercisePrices)
+        result.exercise_prices = std::string(*od.ExercisePrices);
+    if (od.ExerciseFees)
+        for (const auto& f : od.ExerciseFees->ExerciseFee)
+            result.exercise_fees.push_back(map_option_exercise_fee(f));
+    if (od.ExerciseFeeSettlementPeriod)
+        result.exercise_fee_settlement_period = std::string(*od.ExerciseFeeSettlementPeriod);
+    if (od.ExerciseFeeSettlementCalendar)
+        result.exercise_fee_settlement_calendar = std::string(*od.ExerciseFeeSettlementCalendar);
+    if (od.ExerciseFeeSettlementConvention)
+        result.exercise_fee_settlement_convention =
+            std::string(*od.ExerciseFeeSettlementConvention);
+    if (od.AutomaticExercise)
+        result.automatic_exercise = to_string(*od.AutomaticExercise);
+    if (od.ExerciseData)
+        result.exercise_data = map_option_exercise(*od.ExerciseData);
+    if (od.PaymentData)
+        result.payment_data = map_option_payment_data(*od.PaymentData);
+    if (od.SettlementData)
+        result.settlement_data = map_option_settlement(*od.SettlementData);
+    return result;
+}
+
+void reverse_option_data(const bond_option_data& row, optionData& od) {
+    set_text(od.LongShort, row.long_short);
+    set_present_text(od.OptionType, row.option_type);
+    set_present_text(od.PayoffType, row.payoff_type);
+    set_present_text(od.PayoffType2, row.payoff_type_2);
+    set_present_text(od.Style, row.style);
+    set_present_text(od.NoticePeriod, row.notice_period);
+    set_present_text(od.NoticeCalendar, row.notice_calendar);
+    set_present_text(od.NoticeConvention, row.notice_convention);
+    set_present_text(od.MidCouponExercise, row.mid_coupon_exercise);
+    if (row.settlement)
+        od.Settlement = parse_code(*row.settlement, settlement_type_count, settlementType::Cash);
+    if (row.settlement_method)
+        od.SettlementMethod = parse_code(*row.settlement_method,
+                                         settlement_method_count,
+                                         settlementMethod::PhysicalOTC);
+    set_present_text(od.PayOffAtExpiry, row.pay_off_at_expiry);
+    set_present_text(od.PremiumAmount, row.premium_amount);
+    set_present_text(od.PremiumCurrency, row.premium_currency);
+    set_present_text(od.PremiumPayDate, row.premium_pay_date);
+    if (!row.premiums.empty()) {
+        premiumData premiums;
+        for (const auto& p : row.premiums)
+            premiums.Premium.push_back(reverse_option_premium(p));
+        od.Premiums = std::move(premiums);
+    }
+    set_present_text(od.ExercisePrices, row.exercise_prices);
+    if (!row.exercise_fees.empty()) {
+        optionData_ExerciseFees_t fees;
+        for (const auto& f : row.exercise_fees)
+            fees.ExerciseFee.push_back(reverse_option_exercise_fee(f));
+        od.ExerciseFees = std::move(fees);
+    }
+    set_present_text(od.ExerciseFeeSettlementPeriod, row.exercise_fee_settlement_period);
+    set_present_text(od.ExerciseFeeSettlementCalendar, row.exercise_fee_settlement_calendar);
+    set_present_text(od.ExerciseFeeSettlementConvention, row.exercise_fee_settlement_convention);
+    if (row.automatic_exercise)
+        od.AutomaticExercise =
+            parse_code(*row.automatic_exercise, bool__count, bool_::N);
+    if (row.exercise_data)
+        od.ExerciseData = reverse_option_exercise(*row.exercise_data);
+    if (row.payment_data)
+        od.PaymentData = reverse_option_payment_data(*row.payment_data);
+    if (row.settlement_data)
+        od.SettlementData =
+            reverse_option_settlement<optionData_SettlementData_t>(*row.settlement_data);
+}
+
+bond_strike_data map_strike_data(const _StrikeData_t& sd) {
+    bond_strike_data result;
+    if (sd.StrikePrice) {
+        result.price_value = static_cast<double>(sd.StrikePrice->Value);
+        if (sd.StrikePrice->Currency)
+            result.price_currency = std::string(*sd.StrikePrice->Currency);
+    }
+    if (sd.StrikeYield) {
+        result.yield_value = static_cast<double>(sd.StrikeYield->Yield);
+        if (sd.StrikeYield->Compounding)
+            result.yield_compounding = to_string(*sd.StrikeYield->Compounding);
+    }
+    if (sd.Value)
+        result.bare_value = static_cast<double>(*sd.Value);
+    if (sd.Currency)
+        result.bare_currency = std::string(*sd.Currency);
+    return result;
+}
+
+_StrikeData_t reverse_strike_data(const bond_strike_data& row) {
+    _StrikeData_t result;
+    if (row.price_value || row.price_currency) {
+        strikePriceData price;
+        if (row.price_value)
+            price.Value = static_cast<float>(*row.price_value);
+        if (row.price_currency)
+            price.Currency = *row.price_currency;
+        result.StrikePrice = std::move(price);
+    }
+    if (row.yield_value || row.yield_compounding) {
+        strikeYieldData yield;
+        if (row.yield_value)
+            yield.Yield = static_cast<float>(*row.yield_value);
+        if (row.yield_compounding)
+            yield.Compounding =
+                parse_code(*row.yield_compounding, compounding_count, compounding::Compounded);
+        result.StrikeYield = std::move(yield);
+    }
+    if (row.bare_value)
+        result.Value = static_cast<float>(*row.bare_value);
+    if (row.bare_currency)
+        result.Currency = *row.bare_currency;
+    return result;
+}
+
 void map_exercise_dates(const optionData& od, std::vector<std::string>& dates) {
     if (od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseDates)
         for (const auto& date : od.exerciseDatesGroup->ExerciseDates->ExerciseDate)
             dates.push_back(date);
 }
 
-void reverse_exercise_dates(const std::vector<std::string>& dates, optionData& od) {
-    if (dates.empty())
-        return;
-    _ExerciseDates_t exd;
-    for (const auto& value : dates)
-        exd.ExerciseDate.push_back(value);
-    exerciseDatesGroup_group_t eg;
-    eg.ExerciseDates = std::move(exd);
-    od.exerciseDatesGroup = std::move(eg);
+std::optional<bond_schedule_data> map_exercise_schedule(const optionData& od) {
+    if (od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseSchedule)
+        return map_schedule(*od.exerciseDatesGroup->ExerciseSchedule);
+    return {};
+}
+
+// The group is a choice between a date list and a schedule, so one writer
+// covers both alternatives.
+void reverse_exercise_dates(const std::vector<std::string>& dates,
+                            const std::optional<bond_schedule_data>& schedule,
+                            optionData& od) {
+    if (!dates.empty()) {
+        _ExerciseDates_t exd;
+        for (const auto& value : dates)
+            exd.ExerciseDate.push_back(value);
+        exerciseDatesGroup_group_t eg;
+        eg.ExerciseDates = std::move(exd);
+        od.exerciseDatesGroup = std::move(eg);
+    } else if (schedule) {
+        exerciseDatesGroup_group_t eg;
+        eg.ExerciseSchedule = reverse_schedule(*schedule);
+        od.exerciseDatesGroup = std::move(eg);
+    }
 }
 
 } // namespace
@@ -1037,6 +1353,16 @@ bond_instrument_data bond_instrument_mapper::forward_bond_option(
     result.option = option;
 
     map_exercise_dates(d.OptionData, result.option_exercise_dates);
+    result.option_exercise_schedule = map_exercise_schedule(d.OptionData);
+    result.option_data = map_option_data(d.OptionData);
+    if (d.strikeGroup.StrikeData)
+        result.strike_data = map_strike_data(*d.strikeGroup.StrikeData);
+    if (d.Redemption)
+        result.option_redemption = std::string(*d.Redemption);
+    if (d.PriceType)
+        result.option_price_type = std::string(*d.PriceType);
+    if (d.KnocksOut)
+        result.option_knocks_out = to_string(*d.KnocksOut);
 
     return result;
 }
@@ -1185,6 +1511,8 @@ bond_instrument_data bond_instrument_mapper::forward_ascot(const trade& t,
     result.ascot = row;
 
     map_exercise_dates(d.OptionData, result.option_exercise_dates);
+    result.option_exercise_schedule = map_exercise_schedule(d.OptionData);
+    result.option_data = map_option_data(d.OptionData);
     result.ascot_swap_leg = map_leg(d.ReferenceSwapData.LegData);
     return result;
 }
@@ -1249,19 +1577,32 @@ trade bond_instrument_mapper::reverse_bond_option(const bond_instrument_data& da
     t.TradeType = oreTradeType::BondOption;
     bondOptionData d;
     d.BondData = reverse_bond_data(data);
+    if (data.option_data)
+        reverse_option_data(*data.option_data, d.OptionData);
     if (data.option) {
-        if (!data.option->option_type.empty()) {
+        // The container holds the document's own statement, so the row is
+        // the fallback for a payload built from a row set.
+        if (!data.option_data && !data.option->option_type.empty()) {
             optionData_OptionType_t ot;
             static_cast<std::string&>(ot) = data.option->option_type;
             d.OptionData.OptionType = std::move(ot);
         }
-        if (data.option->option_strike != 0.0) {
+        if (data.option->option_strike != 0.0 && !data.strike_data) {
             _Strike_t s;
-            static_cast<std::string&>(s) = std::to_string(data.option->option_strike);
+            static_cast<std::string&>(s) = format_number(data.option->option_strike);
             d.strikeGroup.Strike = std::move(s);
         }
     }
-    reverse_exercise_dates(data.option_exercise_dates, d.OptionData);
+    if (data.strike_data)
+        d.strikeGroup.StrikeData = reverse_strike_data(*data.strike_data);
+    if (data.option_redemption)
+        set_present_text(d.Redemption, data.option_redemption);
+    if (data.option_price_type)
+        set_present_text(d.PriceType, data.option_price_type);
+    if (data.option_knocks_out)
+        d.KnocksOut = parse_code(*data.option_knocks_out, bool__count, bool_::N);
+    reverse_exercise_dates(
+        data.option_exercise_dates, data.option_exercise_schedule, d.OptionData);
     t.BondOptionData = std::move(d);
     return t;
 }
@@ -1351,14 +1692,14 @@ trade bond_instrument_mapper::reverse_bond_future(const bond_instrument_data& da
     if (data.future) {
         const auto& f = *data.future;
         set_text(d.ContractName, f.contract_name);
-        set_text(d.ContractNotional, std::to_string(f.contract_notional));
+        set_text(d.ContractNotional, format_number(f.contract_notional));
         set_text(d.LongShort, f.long_short);
         if (!f.currency.empty())
             d.Currency = parse_code(f.currency, currency_code_count, currencyCode::USD);
         set_optional_text(d.ContractMonth, f.contract_month);
         set_optional_text(d.DeliverableGrade, f.deliverable_grade);
         if (f.fair_price != 0.0)
-            set_optional_text(d.FairPrice, std::to_string(f.fair_price));
+            set_optional_text(d.FairPrice, format_number(f.fair_price));
         set_optional_text(d.Settlement, f.settlement);
         if (f.settlement_dirty)
             set_optional_text(d.SettlementDirty, "true");
@@ -1396,12 +1737,15 @@ trade bond_instrument_mapper::reverse_ascot(const bond_instrument_data& data) {
         reverse_conversion_targets(data.conversion_targets, conversion_data);
         d.ConvertibleBondData.ConversionData = std::move(conversion_data);
     }
-    if (data.ascot && !data.ascot->ascot_option_type.empty()) {
+    if (data.option_data)
+        reverse_option_data(*data.option_data, d.OptionData);
+    else if (data.ascot && !data.ascot->ascot_option_type.empty()) {
         optionData_OptionType_t ot;
         static_cast<std::string&>(ot) = data.ascot->ascot_option_type;
         d.OptionData.OptionType = std::move(ot);
     }
-    reverse_exercise_dates(data.option_exercise_dates, d.OptionData);
+    reverse_exercise_dates(
+        data.option_exercise_dates, data.option_exercise_schedule, d.OptionData);
     reverse_leg(data.ascot_swap_leg, d.ReferenceSwapData.LegData);
     t.AscotData = std::move(d);
     return t;

@@ -144,7 +144,7 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
     CHECK(carried.term_convention == "MF");
     CHECK(carried.rule == "Forward");
     REQUIRE(carried.end_of_month);
-    CHECK(*carried.end_of_month);
+    CHECK(*carried.end_of_month == "true");
     REQUIRE(r.bond_legs.front().leg_type);
     CHECK(*r.bond_legs.front().leg_type == "Fixed");
     REQUIRE(r.bond_legs.front().currency);
@@ -222,10 +222,11 @@ TEST_CASE("an_empty_schedule_element_survives_the_round_trip", tags) {
     CHECK(carried.last_date->empty());
     CHECK(!carried.end_date);
     CHECK(!carried.calendar);
-    // The generated reader pre-fills bool_::Y for a bool element it finds
-    // empty, so an empty EndOfMonth reads as on.
+    // The generated reader engages a bool element it finds empty with the
+    // default spelling and runs no text setter, so an empty EndOfMonth
+    // reads as on and the writer states it as "Y".
     REQUIRE(carried.end_of_month);
-    CHECK(*carried.end_of_month);
+    CHECK(*carried.end_of_month == "Y");
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -1099,6 +1100,484 @@ TEST_CASE("bond_option_keeps_every_exercise_date", tags) {
     CHECK(std::string(dates[2]) == "2028-01-15");
 
     BOOST_LOG_SEV(lg, info) << "BondOption exercise date list mapped whole.";
+}
+
+// =============================================================================
+// The option block
+// =============================================================================
+
+TEST_CASE("the_option_block_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // bondOptionData and AscotData hold the same optionData element, and
+    // the nine tables carry the option's type and its strike and nothing
+    // else the option states, so the container carries the block whole.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Full_Block">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
+        <PayoffType>Vanilla</PayoffType>
+        <PayoffType2>Digital</PayoffType2>
+        <Style>Bermudan</Style>
+        <NoticePeriod>5D</NoticePeriod>
+        <NoticeCalendar>TARGET</NoticeCalendar>
+        <NoticeConvention>MF</NoticeConvention>
+        <MidCouponExercise>true</MidCouponExercise>
+        <Settlement>Cash</Settlement>
+        <SettlementMethod>ParYieldCurve</SettlementMethod>
+        <PayOffAtExpiry>false</PayOffAtExpiry>
+        <PremiumAmount>12500</PremiumAmount>
+        <PremiumCurrency>USD</PremiumCurrency>
+        <PremiumPayDate>2025-03-01</PremiumPayDate>
+        <Premiums>
+          <Premium>
+            <Amount>12500</Amount>
+            <Currency>USD</Currency>
+            <PayDate>2025-03-01</PayDate>
+            <SettlementData>
+              <PayCurrency>USD</PayCurrency>
+              <FXIndex>FX-USD-EUR</FXIndex>
+              <FixingDate>2025-02-27</FixingDate>
+            </SettlementData>
+          </Premium>
+        </Premiums>
+        <ExercisePrices>100;105</ExercisePrices>
+        <ExerciseFees>
+          <ExerciseFee type="Percentage" startDate="2026-01-01" currency="USD">0.25</ExerciseFee>
+        </ExerciseFees>
+        <ExerciseFeeSettlementPeriod>2D</ExerciseFeeSettlementPeriod>
+        <ExerciseFeeSettlementCalendar>TARGET</ExerciseFeeSettlementCalendar>
+        <ExerciseFeeSettlementConvention>MF</ExerciseFeeSettlementConvention>
+        <AutomaticExercise>true</AutomaticExercise>
+        <ExerciseData>
+          <Date>2026-06-15</Date>
+          <Price>101.25</Price>
+        </ExerciseData>
+        <PaymentData>
+          <Rules>
+            <Lag>2</Lag>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <RelativeTo>Exercise</RelativeTo>
+          </Rules>
+        </PaymentData>
+        <SettlementData>
+          <PayCurrency>EUR</PayCurrency>
+          <FXIndex>FX-EUR-USD</FXIndex>
+        </SettlementData>
+      </OptionData>
+      <StrikeData>
+        <StrikePrice>
+          <Value>1</Value>
+          <Currency>EUR</Currency>
+        </StrikePrice>
+      </StrikeData>
+      <Redemption>100.00</Redemption>
+      <PriceType>Dirty</PriceType>
+      <KnocksOut>false</KnocksOut>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    REQUIRE(r.option_data);
+    const auto& o = *r.option_data;
+    CHECK(o.long_short == "Short");
+    CHECK(o.option_type == "Put");
+    CHECK(o.payoff_type == "Vanilla");
+    CHECK(o.payoff_type_2 == "Digital");
+    CHECK(o.style == "Bermudan");
+    CHECK(o.notice_period == "5D");
+    CHECK(o.notice_calendar == "TARGET");
+    CHECK(o.notice_convention == "MF");
+    CHECK(o.mid_coupon_exercise == "true");
+    CHECK(o.settlement == "Cash");
+    CHECK(o.settlement_method == "ParYieldCurve");
+    CHECK(o.pay_off_at_expiry == "false");
+    CHECK(o.premium_amount == "12500");
+    CHECK(o.premium_currency == "USD");
+    CHECK(o.premium_pay_date == "2025-03-01");
+    REQUIRE(o.premiums.size() == 1);
+    CHECK(o.premiums.front().amount == Approx(12500.0));
+    CHECK(o.premiums.front().currency == "USD");
+    CHECK(o.premiums.front().pay_date == "2025-03-01");
+    REQUIRE(o.premiums.front().settlement);
+    CHECK(o.premiums.front().settlement->pay_currency == "USD");
+    CHECK(o.premiums.front().settlement->fx_index == "FX-USD-EUR");
+    CHECK(o.premiums.front().settlement->fixing_date == "2025-02-27");
+    CHECK(o.exercise_prices == "100;105");
+    REQUIRE(o.exercise_fees.size() == 1);
+    CHECK(o.exercise_fees.front().amount == Approx(0.25));
+    CHECK(o.exercise_fees.front().type == "Percentage");
+    CHECK(o.exercise_fees.front().start_date == "2026-01-01");
+    CHECK(o.exercise_fees.front().currency == "USD");
+    CHECK(o.exercise_fee_settlement_period == "2D");
+    CHECK(o.exercise_fee_settlement_calendar == "TARGET");
+    CHECK(o.exercise_fee_settlement_convention == "MF");
+    REQUIRE(o.automatic_exercise);
+    CHECK(*o.automatic_exercise == "true");
+    REQUIRE(o.exercise_data);
+    CHECK(o.exercise_data->date == "2026-06-15");
+    REQUIRE(o.exercise_data->price);
+    CHECK(*o.exercise_data->price == Approx(101.25));
+    REQUIRE(o.payment_data);
+    CHECK(o.payment_data->dates.empty());
+    REQUIRE(o.payment_data->rules);
+    CHECK(o.payment_data->rules->lag == 2);
+    CHECK(o.payment_data->rules->calendar == "TARGET");
+    CHECK(o.payment_data->rules->convention == "MF");
+    CHECK(o.payment_data->rules->relative_to == "Exercise");
+    REQUIRE(o.settlement_data);
+    CHECK(o.settlement_data->pay_currency == "EUR");
+    CHECK(o.settlement_data->fx_index == "FX-EUR-USD");
+    CHECK_FALSE(o.settlement_data->fixing_date);
+    CHECK(r.option_redemption == "100.00");
+    CHECK(r.option_price_type == "Dirty");
+    REQUIRE(r.option_knocks_out);
+    CHECK(*r.option_knocks_out == "false");
+    CHECK(r.option->option_strike == Approx(0.0));
+
+    const auto rt = bond_instrument_mapper::reverse_bond_option(r);
+    REQUIRE(rt.BondOptionData);
+    const auto& ro = rt.BondOptionData->OptionData;
+    CHECK(std::string(ro.LongShort) == "Short");
+    REQUIRE(ro.OptionType);
+    CHECK(std::string(*ro.OptionType) == "Put");
+    REQUIRE(ro.PayoffType);
+    CHECK(std::string(*ro.PayoffType) == "Vanilla");
+    REQUIRE(ro.PayoffType2);
+    CHECK(std::string(*ro.PayoffType2) == "Digital");
+    REQUIRE(ro.Style);
+    CHECK(std::string(*ro.Style) == "Bermudan");
+    REQUIRE(ro.NoticePeriod);
+    CHECK(std::string(*ro.NoticePeriod) == "5D");
+    REQUIRE(ro.NoticeCalendar);
+    CHECK(std::string(*ro.NoticeCalendar) == "TARGET");
+    REQUIRE(ro.NoticeConvention);
+    CHECK(std::string(*ro.NoticeConvention) == "MF");
+    REQUIRE(ro.MidCouponExercise);
+    CHECK(std::string(*ro.MidCouponExercise) == "true");
+    REQUIRE(ro.Settlement);
+    CHECK(*ro.Settlement == ores::ore::domain::settlementType::Cash);
+    REQUIRE(ro.SettlementMethod);
+    CHECK(*ro.SettlementMethod == ores::ore::domain::settlementMethod::ParYieldCurve);
+    REQUIRE(ro.PayOffAtExpiry);
+    CHECK(std::string(*ro.PayOffAtExpiry) == "false");
+    REQUIRE(ro.PremiumAmount);
+    CHECK(std::string(*ro.PremiumAmount) == "12500");
+    REQUIRE(ro.PremiumCurrency);
+    CHECK(std::string(*ro.PremiumCurrency) == "USD");
+    REQUIRE(ro.PremiumPayDate);
+    CHECK(std::string(*ro.PremiumPayDate) == "2025-03-01");
+    REQUIRE(ro.Premiums);
+    REQUIRE(ro.Premiums->Premium.size() == 1);
+    CHECK(static_cast<double>(ro.Premiums->Premium.front().Amount) == Approx(12500.0));
+    CHECK(std::string(ro.Premiums->Premium.front().Currency) == "USD");
+    CHECK(std::string(ro.Premiums->Premium.front().PayDate) == "2025-03-01");
+    REQUIRE(ro.Premiums->Premium.front().SettlementData);
+    CHECK(ores::ore::domain::to_string(ro.Premiums->Premium.front().SettlementData->PayCurrency) ==
+          "USD");
+    CHECK(std::string(ro.Premiums->Premium.front().SettlementData->FXIndex) == "FX-USD-EUR");
+    REQUIRE(ro.ExercisePrices);
+    CHECK(std::string(*ro.ExercisePrices) == "100;105");
+    REQUIRE(ro.ExerciseFees);
+    REQUIRE(ro.ExerciseFees->ExerciseFee.size() == 1);
+    CHECK(static_cast<double>(ro.ExerciseFees->ExerciseFee.front()) == Approx(0.25));
+    REQUIRE(ro.ExerciseFees->ExerciseFee.front().type);
+    CHECK(std::string(*ro.ExerciseFees->ExerciseFee.front().type) == "Percentage");
+    REQUIRE(ro.ExerciseFees->ExerciseFee.front().startDate);
+    CHECK(std::string(*ro.ExerciseFees->ExerciseFee.front().startDate) == "2026-01-01");
+    REQUIRE(ro.ExerciseFees->ExerciseFee.front().currency);
+    CHECK(std::string(*ro.ExerciseFees->ExerciseFee.front().currency) == "USD");
+    REQUIRE(ro.ExerciseFeeSettlementPeriod);
+    CHECK(std::string(*ro.ExerciseFeeSettlementPeriod) == "2D");
+    REQUIRE(ro.ExerciseFeeSettlementCalendar);
+    CHECK(std::string(*ro.ExerciseFeeSettlementCalendar) == "TARGET");
+    REQUIRE(ro.ExerciseFeeSettlementConvention);
+    CHECK(std::string(*ro.ExerciseFeeSettlementConvention) == "MF");
+    REQUIRE(ro.AutomaticExercise);
+    CHECK(ores::ore::domain::to_string(*ro.AutomaticExercise) == "true");
+    REQUIRE(ro.ExerciseData);
+    CHECK(std::string(ro.ExerciseData->Date) == "2026-06-15");
+    REQUIRE(ro.ExerciseData->Price);
+    CHECK(*ro.ExerciseData->Price == Approx(101.25));
+    REQUIRE(ro.PaymentData);
+    CHECK_FALSE(ro.PaymentData->Dates);
+    REQUIRE(ro.PaymentData->Rules);
+    CHECK(ro.PaymentData->Rules->Lag == 2);
+    CHECK(std::string(ro.PaymentData->Rules->Calendar) == "TARGET");
+    CHECK(ro.PaymentData->Rules->Convention ==
+          ores::ore::domain::businessDayConvention::MF);
+    REQUIRE(ro.PaymentData->Rules->RelativeTo);
+    CHECK(*ro.PaymentData->Rules->RelativeTo == ores::ore::domain::optionPayRelativeTo::Exercise);
+    REQUIRE(ro.SettlementData);
+    CHECK(ores::ore::domain::to_string(ro.SettlementData->PayCurrency) == "EUR");
+    CHECK(std::string(ro.SettlementData->FXIndex) == "FX-EUR-USD");
+    CHECK_FALSE(ro.SettlementData->FixingDate);
+    REQUIRE(rt.BondOptionData->Redemption);
+    CHECK(std::string(*rt.BondOptionData->Redemption) == "100.00");
+    REQUIRE(rt.BondOptionData->PriceType);
+    CHECK(std::string(*rt.BondOptionData->PriceType) == "Dirty");
+    REQUIRE(rt.BondOptionData->KnocksOut);
+    CHECK(ores::ore::domain::to_string(*rt.BondOptionData->KnocksOut) == "false");
+
+    BOOST_LOG_SEV(lg, info) << "BondOption option block mapped whole.";
+}
+
+TEST_CASE("the_three_strike_spellings_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema states the element form as a choice of three: a price
+    // with its currency, a yield with its compounding, and a bare number
+    // with an optional currency.
+    const std::string yield_xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Yield_Strike">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StrikeData>
+        <StrikeYield>
+          <Yield>0.055</Yield>
+          <Compounding>SimpleThenCompounded</Compounding>
+        </StrikeYield>
+      </StrikeData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto y = map_inline(yield_xml);
+    REQUIRE(y.strike_data);
+    CHECK_FALSE(y.strike_data->price_value);
+    REQUIRE(y.strike_data->yield_value);
+    CHECK(*y.strike_data->yield_value == Approx(0.055).epsilon(1e-6));
+    CHECK(y.strike_data->yield_compounding == "SimpleThenCompounded");
+
+    const auto y_rt = bond_instrument_mapper::reverse_bond_option(y);
+    REQUIRE(y_rt.BondOptionData);
+    REQUIRE(y_rt.BondOptionData->strikeGroup.StrikeData);
+    const auto& ys = *y_rt.BondOptionData->strikeGroup.StrikeData;
+    CHECK_FALSE(ys.StrikePrice);
+    REQUIRE(ys.StrikeYield);
+    CHECK(static_cast<double>(ys.StrikeYield->Yield) == Approx(0.055).epsilon(1e-6));
+    REQUIRE(ys.StrikeYield->Compounding);
+    CHECK(*ys.StrikeYield->Compounding == ores::ore::domain::compounding::SimpleThenCompounded);
+
+    const std::string bare_xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Bare_Strike">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StrikeData>
+        <Value>98.75</Value>
+        <Currency>GBP</Currency>
+      </StrikeData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto b = map_inline(bare_xml);
+    REQUIRE(b.strike_data);
+    CHECK_FALSE(b.strike_data->price_value);
+    CHECK_FALSE(b.strike_data->yield_value);
+    REQUIRE(b.strike_data->bare_value);
+    CHECK(*b.strike_data->bare_value == Approx(98.75));
+    CHECK(b.strike_data->bare_currency == "GBP");
+
+    const auto b_rt = bond_instrument_mapper::reverse_bond_option(b);
+    REQUIRE(b_rt.BondOptionData);
+    REQUIRE(b_rt.BondOptionData->strikeGroup.StrikeData);
+    const auto& bs = *b_rt.BondOptionData->strikeGroup.StrikeData;
+    CHECK_FALSE(bs.StrikePrice);
+    CHECK_FALSE(bs.StrikeYield);
+    REQUIRE(bs.Value);
+    CHECK(static_cast<double>(*bs.Value) == Approx(98.75));
+    REQUIRE(bs.Currency);
+    CHECK(std::string(*bs.Currency) == "GBP");
+
+    BOOST_LOG_SEV(lg, info) << "All three strike spellings mapped whole.";
+}
+
+TEST_CASE("an_ascot_carries_the_option_block", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The corpus states the option terms on an Ascot as it does on a
+    // BondOption, and the ascot row carries only the option type, so the
+    // same block serves both products.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Ascot">
+    <TradeType>Ascot</TradeType>
+    <AscotData>
+      <ConvertibleBondData>
+        <BondData>
+          <SecurityId>ISIN:DE000A3H2WP2</SecurityId>
+        </BondData>
+      </ConvertibleBondData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <Settlement>Physical</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2030-10-08</ExerciseDate>
+        </ExerciseDates>
+        <Premiums>
+          <Premium>
+            <Amount>166000</Amount>
+            <Currency>EUR</Currency>
+            <PayDate>2021-10-10</PayDate>
+          </Premium>
+        </Premiums>
+      </OptionData>
+      <ReferenceSwapData>
+        <LegData>
+          <LegType>Floating</LegType>
+          <Payer>false</Payer>
+          <Currency>EUR</Currency>
+        </LegData>
+      </ReferenceSwapData>
+    </AscotData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    REQUIRE(r.option_data);
+    CHECK(r.option_data->long_short == "Long");
+    CHECK(r.option_data->option_type == "Call");
+    CHECK(r.option_data->style == "American");
+    CHECK(r.option_data->settlement == "Physical");
+    REQUIRE(r.option_data->premiums.size() == 1);
+    CHECK(r.option_data->premiums.front().amount == Approx(166000.0));
+    CHECK(r.option_data->premiums.front().currency == "EUR");
+    CHECK(r.option_data->premiums.front().pay_date == "2021-10-10");
+    CHECK(r.option_exercise_dates == std::vector<std::string>{"2030-10-08"});
+
+    const auto rt = bond_instrument_mapper::reverse_ascot(r);
+    REQUIRE(rt.AscotData);
+    const auto& ro = rt.AscotData->OptionData;
+    CHECK(std::string(ro.LongShort) == "Long");
+    REQUIRE(ro.OptionType);
+    CHECK(std::string(*ro.OptionType) == "Call");
+    REQUIRE(ro.Style);
+    CHECK(std::string(*ro.Style) == "American");
+    REQUIRE(ro.Settlement);
+    CHECK(*ro.Settlement == ores::ore::domain::settlementType::Physical);
+    REQUIRE(ro.Premiums);
+    REQUIRE(ro.Premiums->Premium.size() == 1);
+    CHECK(static_cast<double>(ro.Premiums->Premium.front().Amount) == Approx(166000.0));
+    CHECK(std::string(ro.Premiums->Premium.front().Currency) == "EUR");
+    CHECK(std::string(ro.Premiums->Premium.front().PayDate) == "2021-10-10");
+
+    BOOST_LOG_SEV(lg, info) << "Ascot option block mapped whole.";
+}
+
+TEST_CASE("the_option_exercise_schedule_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The group is a choice: a date list, which the member beside this
+    // one holds, or a schedule, which this one does.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Schedule">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseSchedule>
+          <Rules>
+            <StartDate>2026-01-01</StartDate>
+            <EndDate>2028-01-01</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+          </Rules>
+        </ExerciseSchedule>
+      </OptionData>
+      <Strike>102.5</Strike>
+      <BondData>
+        <SecurityId>ISIN:US912828X703</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    CHECK(r.option_exercise_dates.empty());
+    REQUIRE(r.option_exercise_schedule);
+    REQUIRE(r.option_exercise_schedule->rules.size() == 1);
+    CHECK(r.option_exercise_schedule->rules.front().start_date == "2026-01-01");
+    CHECK(r.option_exercise_schedule->rules.front().end_date == "2028-01-01");
+    CHECK(r.option_exercise_schedule->rules.front().tenor == "1Y");
+    CHECK(r.option_exercise_schedule->rules.front().calendar == "TARGET");
+    CHECK(r.option_exercise_schedule->rules.front().convention == "MF");
+
+    const auto rt = bond_instrument_mapper::reverse_bond_option(r);
+    REQUIRE(rt.BondOptionData);
+    REQUIRE(rt.BondOptionData->OptionData.exerciseDatesGroup);
+    const auto& group = *rt.BondOptionData->OptionData.exerciseDatesGroup;
+    CHECK_FALSE(group.ExerciseDates);
+    REQUIRE(group.ExerciseSchedule);
+    REQUIRE(group.ExerciseSchedule->Rules.size() == 1);
+    CHECK(std::string(group.ExerciseSchedule->Rules.front().StartDate) == "2026-01-01");
+    CHECK(std::string(*group.ExerciseSchedule->Rules.front().EndDate) == "2028-01-01");
+    CHECK(std::string(group.ExerciseSchedule->Rules.front().Tenor) == "1Y");
+
+    BOOST_LOG_SEV(lg, info) << "BondOption exercise schedule mapped whole.";
+}
+
+TEST_CASE("a_number_below_the_sixth_decimal_keeps_its_value", tags) {
+    auto lg(make_logger(test_suite));
+
+    // std::to_string writes six fixed decimals, so it turns this value
+    // into "0.000000" and the number is gone. The writer states the
+    // shortest text that reads back as the same value.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Future_Tiny_Notional">
+    <TradeType>BondFuture</TradeType>
+    <BondFutureData>
+      <ContractName>RX-2026-03</ContractName>
+      <ContractNotional>0.0000001</ContractNotional>
+      <LongShort>Long</LongShort>
+    </BondFutureData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    REQUIRE(r.future);
+    CHECK(r.future->contract_notional == Approx(1e-7));
+
+    const auto rt = bond_instrument_mapper::reverse_bond_future(r);
+    REQUIRE(rt.BondFutureData);
+    const std::string text(rt.BondFutureData->ContractNotional);
+    CHECK(text != "0.000000");
+    CHECK(std::stod(text) == Approx(1e-7));
+
+    BOOST_LOG_SEV(lg, info) << "Small number written as " << text;
 }
 
 // =============================================================================

@@ -128,6 +128,46 @@ struct bond_instrument_data final {
     std::vector<std::string> option_exercise_dates;
 
     /**
+     * @brief The option block no row holds.
+     *
+     * bondOptionData and AscotData both state it and the two fact rows
+     * carry only the option type, so the container holds the block whole
+     * and export re-emits it. The long and short flag is required, so a
+     * product that states an option always engages this member.
+     */
+    std::optional<bond_option_data> option_data;
+
+    /**
+     * @brief The strike group, when the document states a price or a yield.
+     *
+     * A bare strike reaches the option fact row instead. This holds the
+     * richer spellings, which the row has no column for.
+     */
+    std::optional<bond_strike_data> strike_data;
+
+    /**
+     * @brief The schedule the option's exercise dates are generated from.
+     *
+     * An option states its exercise dates either as a list, which the
+     * member above holds, or as a schedule, which this one does.
+     */
+    std::optional<bond_schedule_data> option_exercise_schedule;
+
+    /**
+     * @brief The three BondOption members that sit beside the option block.
+     *
+     * The redemption code, the price type and the knock-out flag belong
+     * to BondOptionData rather than to the shared option element, so an
+     * Ascot never states them. No row holds any of the three. The
+     * knock-out flag carries the document's own spelling of the schema's
+     * bool type, which is one of thirteen, so a writer re-emits the
+     * spelling the document chose rather than a canonical one.
+     */
+    std::optional<std::string> option_redemption;
+    std::optional<std::string> option_price_type;
+    std::optional<std::string> option_knocks_out;
+
+    /**
      * @brief Every delivery basket identifier the future's basket lists.
      */
     std::vector<std::string> future_delivery_basket;

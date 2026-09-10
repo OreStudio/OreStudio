@@ -85,7 +85,10 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option", tags) {
     REQUIRE(rt.BondOptionData->OptionData.OptionType);
     CHECK(std::string(*rt.BondOptionData->OptionData.OptionType) == "Call");
     REQUIRE(rt.BondOptionData->strikeGroup.Strike);
-    CHECK(std::string(*rt.BondOptionData->strikeGroup.Strike) == "1.000000");
+    // The document states the strike as "1", and the writer states the
+    // shortest text that reads back as the same number, so the six-decimal
+    // form std::to_string writes is not what comes back.
+    CHECK(std::string(*rt.BondOptionData->strikeGroup.Strike) == "1");
 
     BOOST_LOG_SEV(lg, info) << "BondOption roundtrip passed. SecurityId: " << r.issue.security_id;
 }

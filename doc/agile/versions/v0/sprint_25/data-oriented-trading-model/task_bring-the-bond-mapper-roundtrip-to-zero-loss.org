@@ -28,10 +28,10 @@ The bond products and the trade envelope round trip at zero loss on the mapper p
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Wave A.4, the trade envelope.          |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-10                               |
+| Next         | Carry the envelope members no table holds, then unit B's shared tables. |
+| Last touched | 2026-09-11                               |
 
 * Acceptance
 
@@ -116,10 +116,12 @@ spelling as on as well, so the two agree whatever the default becomes.
 The suite asserts the mechanism directly, in
 =an_empty_schedule_element_survives_the_round_trip=.
 
-=EndOfMonth= is the only =bool=-typed element the corpus exercises:
-3,442 empty, 103 =false=, 12 =true= across all documents. The other two
-(=AdjustEndDateToPreviousMonthEnd=, =IncludeDuplicateDates=) appear in
-no document.
+=EndOfMonth= is the only =bool=-typed element the corpus exercises, at
+3,753 empty, 103 =false=, 12 =true= and 2 =N= across all documents. The
+other two (=AdjustEndDateToPreviousMonthEnd=, =IncludeDuplicateDates=)
+appear in no document. Wave A.3c re-measured this and corrects the
+empty count, which A.1 recorded as 3,442. The =false= and =true= counts
+reproduce exactly, so the corpus has not moved between the two waves.
 
 *** A leg with neither currency nor notional is a document the schema allows
 
@@ -499,6 +501,140 @@ unreliable until someone does.
 
 The four files this wave changes are the two container headers, the
 mapper and the mapper's test suite. =domain.hpp= and =domain.cpp= are
+untouched.
+
+** Wave A.3c, the option block
+
+The option block was 72 pairs over 24 paths, shared by =BondOptionData=
+and =AscotData=, and it was the last bond-product residue in scope.
+This wave closes it: the in-scope reading now holds no bond path at all.
+
+*** The schema's bool type is not the XML boolean
+
+The generated header spells the schema's own bool =domain::bool_=, and
+the type enumerates thirteen spellings: =Y=, =YES=, =TRUE=, =True=,
+=true=, =1=, =N=, =NO=, =FALSE=, =False=, =false=, =0= and the empty
+string. The generated writer emits whichever spelling the reader
+stored.
+
+The container held a C++ =bool= instead, so the mapper could reach two
+of the thirteen and eleven could not survive a round trip. The corpus
+states six =<KnocksOut>false</KnocksOut>= and two
+=<AutomaticExercise>true</AutomaticExercise>=, so the loss was real and
+not theoretical, and the gate counted each one twice: once as a lost
+pair, because our output dropped the value, and once as unexplained,
+because our output stated the element empty against a document that
+states it.
+
+Two of the block's flags were already immune. =MidCouponExercise= and
+=PayOffAtExpiry= are =xsd::string= types in the generated header, so
+the container had always carried their text verbatim. This wave makes
+the other five match those two. That is the schema's own idiom rather
+than a new one.
+
+*** The empty spelling is unreachable, and that is worth recording
+
+The obvious reading of the generated table is wrong, so it goes on the
+record. =_bool__Values= carries a null terminator after the thirteen,
+and entry 12 is the empty string, so =toNumeric= would map =""= to
+index 12 if it were ever called with an empty string. It never is.
+
+The element reader runs the text setter only when the element held
+text. The guard is =if (context.pos.pos != start && ...addText)=, and
+=skipText= consumes nothing for an empty element, so =pos= is unchanged
+and =addText= does not run. The getter then engages the optional with a
+default-constructed value, =parent->EndOfMonth = domain::bool_()=,
+which is index 0, =Y=.
+
+So a stated-empty bool element reads as =Y= and writes back as =Y=, and
+=bool_::_= cannot be reached by parsing at all. The corpus states the
+element empty 3,753 times, as =<EndOfMonth/>= 3,734 times and as
+=<EndOfMonth />= with a space 19 times, and the gate's boolean rule
+accepts empty against any true spelling, which is why none of those
+pairs appeared as a loss.
+
+*** The rest of the block
+
+The bool type was the largest part but not all of it. The block's
+nested groups had no container type, so the mapper reached only the
+scalars it already knew. =bond_schedule_data.hpp= gained seven types:
+
+- =bond_option_settlement=, the pay currency, the FX index and the
+  fixing date. The schema spells the same three members twice, under
+  the option and under each premium, so one type serves both.
+- =bond_option_premium=, an amount, a currency, a pay date and an
+  optional settlement block.
+- =bond_option_exercise_fee=, an amount with three attributes on the
+  same element.
+- =bond_option_exercise=, a date and an optional price.
+- =bond_option_payment_rules=, a lag, a calendar, a convention and an
+  optional relative-to.
+- =bond_option_payment_data=, the payment dates as a list or as a rule.
+- =bond_option_data=, the block whole, at 25 members, and
+  =bond_strike_data=, the strike as a price, as a yield or as a bare
+  value.
+
+=bond_instrument_data= already carried =option_data= and =strike_data=
+from wave A.2b's container growth, so this wave fills them rather than
+adding them.
+
+*** Numbers the corpus states as text
+
+The strike values and the premium amount are =xs:float= in the schema,
+and the container holds them as =double=. Each direction needs its own
+rule. On the way in the mapper parses the text. On the way out it
+writes the shortest text that reads back as the same double, which is
+what =std::to_chars= produces and =std::to_string= does not: the latter
+writes six fixed decimals, so a corpus value below =1e-6= would come
+back as =0.000000=.
+
+The strike suite's expectation moved from a double comparison to a
+check on the text, because the value now has to survive as text.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over
+=external/ore/examples=.
+
+| Measure | A.3b | A.3c |
+|---------+------+------|
+| In-scope lost pairs | 6,582 | 6,510 |
+| In-scope unexplained pairs | 9 | 0 |
+| In-scope lost paths | 38 | 14 |
+
+The 72 pairs and the 24 paths are the option block exactly, which is
+what this wave set out to carry. No path got worse: the path diff holds
+removals only.
+
+The unexplained class is now empty. Every in-scope difference the
+classifier reports is a pair the source stated and our output did not,
+with nothing left over that the classifier cannot account for.
+
+*** What remains in scope
+
+The 6,510 lost pairs and the 14 lost paths all sit under
+=/Portfolio/Trade/Envelope=, and they are the enumeration wave A.4
+already carried.
+
+| Path | Pairs |
+|------+-------|
+| =Envelope/CounterParty= | 2,628 |
+| =Envelope/AdditionalFields= | 2,591 |
+| =Envelope/AdditionalFields/valuation_date= | 318 |
+| =Envelope/AdditionalFields/party_id= | 318 |
+| =Envelope/PortfolioIds= | 204 |
+| =Envelope/PortfolioIds/PortfolioId= | 160 |
+| =Envelope/NettingSetId= | 137 |
+| =Envelope= | 137 |
+| the six AdditionalFields extras | 17 |
+
+No bond product appears in that list. On the product paths the mapper
+is now lossless across the whole corpus.
+
+*** No generated code was touched
+
+The five files this wave changes are the two container headers, the
+mapper and two test suites. =domain.hpp= and =domain.cpp= are
 untouched.
 
 * Test Scenarios

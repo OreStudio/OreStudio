@@ -24,26 +24,40 @@
 #include "ores.ore.core/domain/domain.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/bond_instrument_data.hpp"
+#include "ores.trading.api/domain/bond_issue.hpp"
+#include <functional>
+#include <optional>
+#include <string>
 
 namespace ores::ore::domain {
 
 /**
+ * @brief Finds the issue row a security identifier already has.
+ *
+ * The mapper is pure: it cannot reach a database. The import path
+ * supplies this lookup so that a document whose security already has
+ * an issue row points at that row instead of minting a second one.
+ * An empty lookup mints a fresh issue for every mapped trade.
+ */
+using bond_issue_lookup = std::function<std::optional<ores::trading::domain::bond_issue>(
+    const std::string& security_id)>;
+
+/**
  * @brief Maps ORE XSD bond trade types to ORES domain rows and back.
  *
- * Handles the seven products the flattening mapper handled: Bond,
- * ForwardBond, CallableBond and ConvertibleBond over the plain
- * bondData; BondOption and BondTRS add their product's fact row on top
- * of the base bond fields; BondRepo stores the repo leg economics in
- * its fact row. BondFuture, BondPosition and Ascot keep no forward
- * mapper until the mapping task decides their coverage.
+ * One mapper per entity: the issue row and its call-date and
+ * conversion-target children, the instrument header, and a fact row
+ * per product. The forward_* and reverse_* entry points assemble those
+ * rows into a bond_instrument_data and join them back into the trade
+ * document.
  *
  * Forward mapping retargets the storage the flattening mapper filled
  * into the wide legacy struct: the bondData fields land in the issue
- * row of the assembled bond_instrument_data, the per-product economics
- * in the fact row of the product, and the option exercise date in the
- * container remainder. Reverse reconstruction emits what the flattening
- * mapper emitted for each product; fields a fact row cannot carry yet
- * ride the container remainder.
+ * row, the per-product economics in the fact row of the product, the
+ * convertible's ratios and the callable's dates in the issue's child
+ * rows, and what no row carries yet in the container remainder.
+ * Reverse reconstruction joins the rows back and emits what the
+ * flattening mapper emitted for each product.
  */
 class ORES_ORE_CORE_EXPORT bond_instrument_mapper {
 private:
@@ -59,14 +73,37 @@ private:
 
     static bondData reverse_bond_data(const ores::trading::domain::bond_issue& issue);
 
+    static void map_call_dates(const callableBondCallData& call_data,
+                               boost::uuids::uuid issue_id,
+                               std::vector<ores::trading::domain::bond_issue_call_date>& dates);
+
+    static void reverse_call_dates(const std::vector<ores::trading::domain::bond_issue_call_date>& dates,
+                                   callableBondCallData& call_data);
+
+    static void map_conversion_targets(
+        const cbConversionData& conversion_data,
+        boost::uuids::uuid issue_id,
+        std::vector<ores::trading::domain::bond_issue_conversion_target>& targets);
+
+    static void reverse_conversion_targets(
+        const std::vector<ores::trading::domain::bond_issue_conversion_target>& targets,
+        cbConversionData& conversion_data);
+
 public:
-    static trading::domain::bond_instrument_data forward_bond(const trade& t);
-    static trading::domain::bond_instrument_data forward_forward_bond(const trade& t);
-    static trading::domain::bond_instrument_data forward_callable_bond(const trade& t);
-    static trading::domain::bond_instrument_data forward_convertible_bond(const trade& t);
-    static trading::domain::bond_instrument_data forward_bond_option(const trade& t);
-    static trading::domain::bond_instrument_data forward_bond_trs(const trade& t);
-    static trading::domain::bond_instrument_data forward_bond_repo(const trade& t);
+    static trading::domain::bond_instrument_data forward_bond(
+        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_forward_bond(
+        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_callable_bond(
+        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_convertible_bond(
+        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_bond_option(
+        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_bond_trs(
+        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_bond_repo(
+        const trade& t, const bond_issue_lookup& lookup = {});
 
     static trade reverse_bond(const trading::domain::bond_instrument_data& data);
     static trade reverse_forward_bond(const trading::domain::bond_instrument_data& data);

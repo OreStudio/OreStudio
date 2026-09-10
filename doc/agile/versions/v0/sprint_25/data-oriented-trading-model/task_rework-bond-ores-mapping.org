@@ -28,9 +28,9 @@ The ores.ore mapping rides the codegen reshape of the bond family: once the inst
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Plan written; wave 2.1 (the survey) under way. |
+| Now          | Waves 2.1 and 2.2 are complete. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave 2.1: the per-product XSD field inventory and the coverage decision into Notes. |
+| Next         | Wave 2.3: the fact mappers, the two missing products, and the container growth. |
 | Last touched | 2026-09-10                               |
 
 * Acceptance
@@ -262,6 +262,64 @@ family:
 The mapper and golden suites read these by path through
 =ores.testing::project_root=, and =ores.cli= walks a directory of them
 through =exporter::roundtrip=.
+
+** Wave 2.2, the issue side
+
+The assembler gained the find-or-create seam the plan named. All seven
+forward entry points take a =bond_issue_lookup=, a function that
+answers one question: does this security identifier already have an
+issue row? A hit adopts the row the security already has. A miss mints
+a fresh issue identifier. The mapper stays pure, because the lookup is
+a parameter and not a database handle. The import path supplies the
+real lookup, and the unit tests supply a stub.
+
+The two child mappers landed with the issue they hang off.
+=map_call_dates= writes one =bond_issue_call_dates= row per explicit
+date in the =Dates= choice, numbered from one.
+=map_conversion_targets= writes one =bond_issue_conversion_targets=
+row per positive ratio, and carries the underlying name. Both reverse
+functions rebuild the document structure the rows came from.
+
+The rule-based form of each schedule stays in the document. An
+explicit date list maps a row per date; a =Rules= block does not map,
+because expanding a tenor needs a calendar. The container carries the
+structure whole, and the parent story's shared schedule tables are the
+recorded destination.
+
+** The TRS return type: the document cannot supply it
+
+The trs org tells the reworked mapper to read =return_type= from
+=TotalReturnData.PriceType=. The evidence contradicts that
+instruction.
+
+- The column check accepts two values.
+  =projects/ores.sql/create/trading/trading_bond_trs_create.sql= line
+  59 requires =return_type= to be =TotalReturn= or =PriceReturn=.
+- =PriceType= carries a different pair of values. The ORE User Guide
+  (=Docs/UserGuide/tradedata/bondTotalReturnSwap.tex= in the upstream
+  ORE repository) gives the allowable values as *Dirty* or *Clean*,
+  and states that the total return comprises the coupon, redemption
+  and amortisation payments of the bond plus a compensation payment
+  for the change of the clean bond value.
+- Every =BondTRS= document in the examples tree carries =Dirty=. So
+  does every =BondOption= document. =Dirty= names a price-quoting
+  convention, not a return type.
+
+An ORE =BondTRS= is a total return swap by construction, so no field
+in the document selects a return type. Two consequences follow.
+
+- Forward: =return_type= becomes a documented model default of
+  =TotalReturn=, with the User Guide as the evidence. The value is
+  correct for every document the schema can express.
+- Reverse: the real hardcoded value is =PriceType=, which
+  =reverse_bond_trs= writes as =Dirty= today. =PriceType= rides the
+  container remainder, so a document that carries =Clean= round trips
+  unchanged.
+
+The acceptance says the hardcoded TRS values disappear. They do, on
+the export side, where the value is real document data. The import
+side keeps a constant that the schema justifies, and the note here is
+the record of why.
 
 * Test Scenarios
 

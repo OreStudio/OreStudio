@@ -22,6 +22,8 @@
 
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/domain/bond_option.hpp"
 #include "ores.trading.api/domain/bond_repo.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
@@ -29,6 +31,7 @@
 #include <boost/uuid/uuid.hpp>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace ores::trading::domain {
 
@@ -42,15 +45,15 @@ namespace ores::trading::domain {
  * and export, so it must hold every row the export path needs: the
  * slim instrument header (identity with the ten-code trade_type_code,
  * issue_id), the issue row with the bond terms map_bond_data reads,
- * and the fact row of the product (option, trs or repo). The
- * instrument.issue_id member pins issue.issue_id: one container is one
- * mapped trade with its own minted issue, and deduplication over
- * security_id happens at the database boundary. option_expiry_date
- * rides as a document remainder: the exercise date has no row in the
- * nine tables (bond_option carries only option_type and option_strike;
- * the dates land in the shared schedule tables of the parent story,
- * recorded scope limit of task D7943D7E wave 1.3), and reverse_bond_option
- * must keep emitting it.
+ * the fact row of the product (option, trs or repo), and the issue's
+ * child rows (call dates, conversion targets). The instrument.issue_id
+ * member pins issue.issue_id: the mapper looks the issue up by
+ * security_id and mints one only when the lookup misses.
+ * option_expiry_date rides as a document remainder: the exercise date
+ * has no row in the nine tables (bond_option carries only option_type
+ * and option_strike; the dates land in the shared schedule tables of
+ * the parent story, recorded scope limit of task D7943D7E wave 1.3),
+ * and reverse_bond_option must keep emitting it.
  */
 struct bond_instrument_data final {
     /**
@@ -62,6 +65,16 @@ struct bond_instrument_data final {
      * @brief The issue row holding the bond terms of this trade's security.
      */
     bond_issue issue;
+
+    /**
+     * @brief The issue's call dates, one row per date the call schedule names.
+     */
+    std::vector<bond_issue_call_date> call_dates;
+
+    /**
+     * @brief The issue's conversion targets, one row per conversion ratio.
+     */
+    std::vector<bond_issue_conversion_target> conversion_targets;
 
     /**
      * @brief The bond_option fact row, engaged for BondOption products.

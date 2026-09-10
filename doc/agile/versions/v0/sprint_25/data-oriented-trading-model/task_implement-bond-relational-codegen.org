@@ -7,12 +7,12 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch: feature/implement-bond-relational-codegen
-#+pr: 2045
+#+branch: feature/bond-shell-system-test
+#+pr: 2047
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-09
-#+updated: 2026-09-09
+#+updated: 2026-09-10
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,11 +26,11 @@ Bond is the pilot for the relational target model of the trading analysis (dfe15
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave 1.6 done. The loader ran at 1000, 10000 and 20000 rows on a database recreated from HEAD (schema 0.0.25, commit ba0eee6234) with zero findings and clean cleanup at every size. The eight family tables carry 8864 to 10155 rows/sec at 20000 rows, about four times the deliverable's 2200 rows/sec baseline; the aggregate moves between 1419 and 6147 rows/sec across six samples and the movement sits in the legacy tables, not in the new shape. All nine family entities regenerate with zero diff. The numbers and the attribution are in the Notes and the Result. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave 1.7, the shell system test: live add, get, history and delete round trips per bond code against the environment, with DB-row and changed-event verification, per the generic-batch protocol on task C36A4ECA of the shell-trading-management story. |
+| Next         | Nothing. |
 | Last touched | 2026-09-10                               |
 
 * Acceptance
@@ -947,6 +947,122 @@ reconciliation are not part of this gate. They belong to the port
 story and to the parent analysis's drift PR, per the parent story's
 record. The dependency is recorded here rather than pulled in.
 
+Wave 1.7, the shell system test (2026-09-10).
+
+The environment was rebuilt from HEAD before the test: =compass db
+recreate --yes= exited 0 in 1 m 11 s at schema version 0.0.25 with
+git commit 0fe19dc0c7 stamped, and all nine family tables are
+present on the recreated schema. The fleet restarted from freshly
+built binaries and all 22 units reported "Service ready". The Acme
+tenant was provisioned with the standard script,
+=c195148f-d3aa-4cc1-9dd8-9023afee25ed= with the default party
+"Lloyds Wealth Management Ltd"
+=01a08ab2-189b-72e2-843f-8a1ad34e1955=. The subscriber ran on the
+prefixed subject =ores.dev.brave_hopper.ores.trading.>= for the
+whole test, per the generic-batch protocol recorded on task C36A4ECA
+of the shell-trading-management story.
+
+The protocol runs at eleven probes, so that every one of the ten
+trade type codes crosses the verb. =BondTRS= runs twice, once per
+funding-leg branch.
+
+| Probe | Code            | Fact arguments                  |
+|-------+-----------------+---------------------------------|
+| B01   | Bond            | none                            |
+| B02   | ForwardBond     | none                            |
+| B03   | BondFuture      | none                            |
+| B04   | BondOption      | Call, strike 1000               |
+| B05   | BondRepo        | none                            |
+| B06   | BondTRS         | TotalReturn, fixed leg          |
+| B07   | BondTRS         | PriceReturn, floating GBP-SONIA |
+| B08   | BondPosition    | none                            |
+| B09   | CallableBond    | none                            |
+| B10   | ConvertibleBond | none                            |
+| B11   | Ascot           | none                            |
+
+Every add printed its instrument id and issue id. The DB layer
+confirms all eleven: eleven open instrument rows with the matching
+=trade_type_code=, and eleven open issue rows joined on =issue_id=
+carrying the correct =security_id=, issuer, currency, =face_value=,
+=coupon_rate=, =coupon_frequency_code=, =day_count_code=,
+=issue_date=, =maturity_date=, =change_reason_code = 'system.test'=
+and the provisioned default party. The fact rows are one open option
+row (=Call=, strike 1000) and two open TRS rows (=TotalReturn= with
+a fixed leg and an empty index, =PriceReturn= with a floating leg
+and =GBP-SONIA=).
+
+The paginated =get= showed 11 of 11 with the matching type and issue
+id, and =history= showed version 1 for all eleven. The eleven deletes
+soft-closed every row: the live view returned to "Page 1 of 1 (0 of
+0 total)", and the DB showed 0 open, 11 soft-closed and no new rows.
+=history= after the deletes still shows the version 1 row for each
+id, so a closed row stays readable.
+
+The changed-event stream carried 28 deliveries on the prefixed
+subject, over 14 distinct instrument ids with exactly one save and
+one delete each:
+
+| Deliveries | Source                                       |
+|------------+----------------------------------------------|
+| 1 to 11    | the eleven probe saves                       |
+| 12 to 22   | the eleven probe deletes                     |
+| 23 to 25   | the three negative partial instrument saves  |
+| 26 to 28   | the three negative cleanup deletes           |
+
+Every payload carries the matching instrument id and tenant id. The
+trade-type negative emits no event, because the instrument save is
+the publisher and that save is the one that fails. Its issue row
+still lands and stays open, one of the four that the partial-state
+finding below counts.
+
+The CHECK gate closed the wave: four negative adds, each tripping
+its own constraint, with the name read off the live schema.
+
+| Negative | Argument                   | Constraint                                           |
+|----------+----------------------------+------------------------------------------------------|
+| N01      | =trade_type_code= FxOption | =ores_trading_bond_instruments_tbl_trade_type_code_check= |
+| N02      | =option_type= Straddle     | =ores_trading_bond_options_tbl_option_type_check=    |
+| N03      | =return_type= ExcessReturn | =ores_trading_bond_trs_tbl_return_type_check=        |
+| N04      | =option_strike= -50        | =ores_trading_bond_options_tbl_option_strike_check=  |
+
+Three findings came out of the run.
+
+The shell delete does not reach the fact row. After the eleven
+deletes one option row and two TRS rows stayed open, with no open
+instrument joining to them. The wire protocol already carries
+=trading.v1.bond_options.delete=, so the gap sits in the verb and
+not in the service. It is recorded for the parent story's
+service-layer work rather than fixed here, because the fact tables
+have no service of their own until that PR.
+
+=funding_rate= stores as NULL when the verb passes 0.0. The codegen
+0-to-NULL sentinel is the cause: a nullable numeric column with a
+non-optional C++ type maps =0= to unset on the write path and reads
+back through =value_or(0)=. The same rule governs
+=bond_repo.repo_rate= and =credit_instrument.index_series=, so this
+is a codegen-wide convention and not a bond defect. The verb
+documents the choice at the assignment.
+
+The add is not atomic. It writes the issue, then the instrument,
+then the fact row through three saves, so a later failure leaves the
+earlier rows. The four negatives left four issues and three
+instruments behind, and the cleanup deleted the three instruments.
+The verb names each partial state in its failure message, and row 7
+of the Review table records the boundary.
+
+The final tally on the recreated schema. Instruments 14 total and 0
+open, issues 15 and 15 open, options 1, TRS 2, and repos, futures,
+ascots, call dates and conversion targets at 0. The fifteen issues
+stay open because the verb surface has no issue delete: the
+instrument delete soft-closes the instrument row alone.
+
+Wave 1.7 rode two pull requests. PR #2046 went up first, against the
+wave 1.6 branch. Merging wave 1.6 in PR #2045 deleted that base
+branch, and GitHub closed #2046 with it, because a closed pull
+request cannot take a new base. The same commit set went up again
+against main as PR #2047, carrying the review fix, and that is the
+one that lands.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -962,6 +1078,8 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2047][#2047]] | [ores.trading] Bond relational model: the shell system test, wave 1.7 |
+| [[https://github.com/OreStudio/OreStudio/pull/2046][#2046]] | [ores.trading] Bond relational model: the shell system test, wave 1.7 |
 | [[https://github.com/OreStudio/OreStudio/pull/2045][#2045]] | [ores.trading] Bond relational model: loading exercise and family drift gate, wave 1.6 |
 | [[https://github.com/OreStudio/OreStudio/pull/2044][#2044]] | [ores.trading] Bond relational model: the reshape, wave 1.5 |
 | [[https://github.com/OreStudio/OreStudio/pull/2042][#2042]] | [ores.trading] Bond relational model: population loader wave 1.4 |
@@ -991,15 +1109,32 @@ via its "Verifies task" field.
 | 18 | The wave 1.6 record is written while the task stays STARTED, so the Result carries a wave record rather than a closing statement | task org, the Result | Recorded, not changed | The plan asks for the loading-exercise numbers in the task Result. The Result is marked as the wave 1.6 record and the task closes with wave 1.7. |
 | 19 | "The nine family tables carry 8864 to 10155 rows/sec" counts a table the quoted range does not span | task org, the front matter =Now= and the Result | Fixed | "Family tables" in a loader rows/sec context means the eight child and fact tables, per wave 1.5's own sentence and their 2000-rows-each load. =bond_instruments= is reported apart at 7948 to 8423 rows/sec. Both occurrences now read "eight". |
 | 20 | Table cells group thousands with commas while the prose around them does not | task org, the loading-exercise table | Recorded, not changed | The split is the doc's existing convention and predates this wave: tables group, prose does not, as in wave 1.5's "7123 rows/sec". |
+| 21 | "nine entities over ten tables" counts a table the family does not have | task org, the Result; story org, the front matter =Now= | Fixed | The family is nine tables: =bond_issues=, =bond_instruments=, the five fact tables and the two issue-keyed child tables, confirmed against the migration's own summary select and the live schema. =ores_trading_ascots_tbl= carries no =bond= prefix, which is what made the count read as ten. Both occurrences now read "nine". |
+| 22 | The trade-type negative "fails at the instrument insert before any row lands" contradicts the partial-state finding and the rows on the schema | task org, the wave 1.7 note | Fixed | The negative writes its issue first and fails on the instrument save, which is the publisher. =WT17-N01= is open with no instrument joining to it, one of the four issues the partial-state finding counts. |
+| 23 | "one of the four the partial-state finding below counts" is missing a relative pronoun | task org, the wave 1.7 note | Fixed | Reads "one of the four that the partial-state finding below counts". |
 
 * Result
 
-The wave 1.6 record. The task stays STARTED until wave 1.7, the
-shell system test, closes it.
+The task closes here with unit 1 complete. Every acceptance item at
+the top of this task is met, and the evidence for each is below or
+in the Notes.
 
-The loading exercise ran on a database recreated from HEAD (schema
-version 0.0.25, commit ba0eee6234) at the three standard sizes,
-every run with zero findings and clean cleanup:
+Every family entity has an org and codegen emits its C++ and SQL:
+the =bond_issue= parent, =bond_instrument= with the ten-code check
+and the =issue_id= FK, the five per-product fact tables and the two
+issue-keyed child tables, nine entities over nine tables, all on the
+SCD2 spine. The old bond shape and its hand-written stack are
+deleted. The tree builds and its tests pass at every merge point.
+
+The migration script in =projects/ores.sql/migration/= converts the
+old single-table bond shape into the new rows and is validated
+against an old-shape scratch copy: exit 0, instruments 1018, issues
+1014, options 1, trs 2, ascots 101, call dates 102, orphans 0, with
+the guards demoed on a pristine copy. The detail is in the Notes.
+
+The population loader loads the family at the three standard sizes.
+It ran on a database recreated from HEAD (schema version 0.0.25,
+commit ba0eee6234), every run with zero findings and clean cleanup:
 
 | =--rows= | Rows    | Seconds | Aggregate rows/sec |
 |----------+---------+---------+--------------------|
@@ -1026,5 +1161,21 @@ analysis's performance work. Per the plan the split is the recorded
 price of storing the truth, not a failure.
 
 The family drift gate passes: all nine entities regenerate with zero
-diff. The per-table detail and the attribution evidence are in the
-Notes.
+diff.
+
+The shell round trips pass for the family against the environment.
+Eleven adds covered all ten trade type codes and their fact branches,
+the paginated =get= and eleven =history= calls returned the right type
+and issue id, and the eleven deletes soft-closed every row out of the
+live view. The DB layer and the changed-event stream confirm each
+step: 28 events on the prefixed subject over 14 instrument ids, one
+save and one delete each. Four negatives on the CHECK gate each
+tripped their own constraint. Three findings are recorded and
+classified in the Notes: the shell delete leaves the fact row open,
+=funding_rate= stores as NULL through the codegen sentinel, and the
+add is not atomic. None of the three is fixed here; the first belongs
+to the parent story's service-layer work and the other two are
+recorded boundaries.
+
+The per-table detail, the attribution evidence and the finding
+classifications are in the Notes.

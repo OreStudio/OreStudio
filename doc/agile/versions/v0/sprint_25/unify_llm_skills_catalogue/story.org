@@ -75,7 +75,7 @@ Tasks are listed in intended execution order.
 | [[id:FE910755-16F8-4854-BA3D-D780BE5AFB64][Fix the invisible knowledge cluster and audit graph integrity]] | DONE | 2026-09-09 | 2026-09-09 | The whole doc/knowledge/external cluster does not resolve in the graph; diagnose, fix, and add a continuous S3-star check so it cannot recur. Unblocks domain grounding. |
 | [[id:37BC3547-4FE9-4D13-B3E7-5C071C5155B9][Instrument skill selection so the baseline accrues forward]] | DONE | 2026-09-10 | 2026-09-10 | Record selection events as they happen rather than scoring past tasks, so skill-choice quality becomes measurable and reportable from now on. |
 | [[id:9388A184-1EFA-4855-8C0B-7FDFE93C3647][Decide the disposition of every external skill]] | DONE | 2026-08-26 | 2026-08-26 | Read every pstack and Matt Pocock skill in full and record a per-skill disposition against the skill architecture: adopt, adapt, harvest or reject, with the reason. |
-| [[id:F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF][Land the skill architecture into policy]] | BACKLOG | | | Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword. |
+| [[id:F7B5BED7-AB0A-4ECD-A8E4-B31E7A77F2EF][Land the skill architecture into policy]] | DONE | 2026-09-10 | 2026-09-10 | Turn the skill architecture document into enforceable policy: amended naming conventions, the terminology table in the glossary, and the mandatory level keyword. |
 | [[id:1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE][Define the upstream attribution contract for imported skills]] | ABANDONED | | 2026-09-04 | Superseded by the reference approach. Upstream skills are referenced rather than copied, so no fork exists to attribute or drift-check; the classification table in The pstack Collection replaces it. 
 | [[id:629B48C7-BC7E-44A8-8979-3E05D6DA5BFE][Collapse the uniform verbs into polymorphic actions]] | BACKLOG | | | Shrink the execution function before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table. |
 | [[id:7DFA4343-E553-4D3A-B71F-057329821EE5][Rename every skill into the compass- namespace]] | BACKLOG | | | Mechanical rename of every skill, with every incoming link, catalogue row, runbook, memory and settings entry updated. |
@@ -114,6 +114,13 @@ Tasks are listed in intended execution order.
   against a fixed one-word vocabulary, and the log is append-only.
 - Instrument state lives in the git common directory, so the baseline accrues
   across the whole fleet rather than restarting on each =env provision=.
+- Policy binds where an author meets it. The naming document and the glossary
+  state the rules; =skill-add= carries the same rules as steps, so an author
+  naming a skill cannot miss them.
+- Terminology is settled in the glossary rather than the skills cluster,
+  because one word per concept governs every document. Where the design and
+  the architecture disagreed, the architecture won: a session's role is a
+  *System*, and /function/ is reserved for a regulatory function.
 
 * Out of scope
 

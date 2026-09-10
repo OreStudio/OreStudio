@@ -2,12 +2,12 @@
 :ID: 7D779BB3-BBEF-40D2-B6AC-E02BCA72AB85
 :END:
 #+title: Skill naming conventions
-#+description: The naming policy for Claude Code skills: action-oriented, domain-prefixed names of the form domain-verb-object, with the prefix register, verb register, structural rules, and the decision log behind them.
+#+description: The naming policy for Claude Code skills: compass-prefixed, action-oriented names, the prefix, verb and level registers, the placement procedure, the structural rules, and the decision log behind them.
 #+type: knowledge
 #+level: cross
 #+filetags: :llm:skills:claude_code:naming:convention:
 #+created: 2026-06-06
-#+updated: 2026-09-04
+#+updated: 2026-09-10
 
 * Summary
 
@@ -16,22 +16,34 @@ names before it reads anything else, so a predictable name is part of the
 attenuation the framework depends on rather than a matter of tidiness
 ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]).
 
-Every Claude Code skill this project authors is named
-=<domain>-<verb>[-<object>]=, in kebab-case, after /the thing we want to do/ —
-never after a role (=sprint-planner=), an artefact (=pr-manager=), or the
-compass command the skill happens to run. The domain prefix and the verb each
-come from a closed register defined below. Before adding a skill, check this
-document and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]]:
-the name must parse against both registers and must not duplicate an existing
-skill's action.
+Every Claude Code skill this project authors carries the =compass-=
+prefix and is named after /the thing we want to do/ — never after a role
+(=sprint-planner=), an artefact (=pr-manager=), or the compass command the
+skill happens to run. The domain prefix and the verb each come from a closed
+register defined below. Before adding a skill, check this document and the
+[[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills inventory]]: the name must
+parse against both registers and must not duplicate an existing skill's
+action.
 
 * Detail
 
 ** Form
 
+The =compass-= prefix marks a skill this project owns, and the second segment
+says which regulatory function it offers. Five shapes exhaust the catalogue.
+
 #+begin_example
-<domain>-<verb>[-<object>]
+compass-helm                                  the sticky mode
+compass-principle-<rule>                      stance, cited not run
+compass-method-<kind>                         a sequence of phases
+compass-<domain>-<verb>[-<object>]            an action on a typed target
+compass-act, compass-act-all, compass-export  dispatch
 #+end_example
+
+An action keeps the =<domain>-<verb>[-<object>]= form it has always had; the
+prefix is the only addition. =principle-= and =method-= are second segments
+rather than domains, because a principle names no artefact type and a method
+spans several.
 
 - kebab-case throughout; the name is the directory under
   [[proj:doc/llm/skills][=doc/llm/skills/=]], the deployed directory under
@@ -59,6 +71,36 @@ skill's action.
 by hand is =code-add-tests=; scaffolding a Qt entity from a model
 is =codegen-add-qt-entity=.
 
+Every entry above is preceded by =compass-=, so the domain is the *second*
+segment of an action's name: =compass-pr-merge=, =compass-agile-start-task=.
+Two further second segments are reserved, and they take no domain:
+
+| Segment      | Names                                                        |
+|--------------+--------------------------------------------------------------|
+| =principle-= | A rule that is cited rather than run, offering the citation function |
+| =method-=    | A sequence of phases ending in a verified state, offering the sequencing function |
+
+*** Which name shape offers which function
+
+A name says what a thing does, so it also says which regulatory function it
+offers. The seven functions and their bearers, from
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]]:
+
+#+ATTR_HTML: :class hug-leading
+| Function    | The agent...                          | Named as                                    |
+|-------------+---------------------------------------+---------------------------------------------|
+| loading     | consults it for what is so            | knowledge, recipe, memory, System, manual   |
+| citation    | cites it against a judgement          | a =principle-= skill                        |
+| sequencing  | follows its phases                    | a =method-= skill, runbook                  |
+| execution   | runs it against a target              | an action, recipe                           |
+| declaration | states behaviour it can then check    | specification, task, story                  |
+| convening   | convenes a deliberation over it       | the Council's own =/council=                |
+| recording   | writes state back against a lifecycle | task, story, sprint, capture, design        |
+
+A type may offer several: a recipe is both loaded for its command and executed
+for its script, which is why the classification is by function rather than by
+a hierarchy of kinds.
+
 ** Verb register
 
 | Verb     | Meaning                                                        |
@@ -78,7 +120,9 @@ is =codegen-add-qt-entity=.
 | =deploy-= | build an artefact and publish it to where it is consumed    |
 | =delete-= | retire an artefact and heal the graph: re-point incoming links, record disposition, purge deployed copies |
 | =fix-=    | repair a defect to a defined end state: drift elimination, template bugs, failing behaviour |
-| (bare)   | rare domain verbs with no object, e.g. =pr-merge=              |
+| =act-=   | dispatch on a target: resolve its type, offer the operations its regulatory functions declare |
+| =export-= | hand a result set to the artefact type that owns that shape   |
+| (bare)   | rare domain verbs with no object, e.g. =pr-merge=; also =compass-helm=, the mode |
 
 =add= versus =start= is the create-versus-pick-up distinction. Creating a story
 for backlog refinement must not create a branch; picking one up must.
@@ -88,15 +132,74 @@ for backlog refinement must not create a branch; picking one up must.
 - /No roles./ A skill is what we do, not who does it. Role skills are
   dissolved into their constituent actions (e.g. /agile product
   owner/ → =agile-refine-backlog=, =agile-plan-sprint=).
-- /No reference-only skills./ If the instructions contain no
-  executable steps, it is knowledge wearing a skill costume: demote
-  it to a knowledge doc and link it from the skills that act.
+- /Reference-only skills, except principles./ If the instructions
+  contain no executable steps, it is usually knowledge wearing a skill
+  costume: demote it to a knowledge doc and link it from the skills
+  that act. The citation function is exempt. A principle is *by
+  definition* a rule that is cited and never run, so requiring
+  executable steps of it would forbid the whole function; it earns its
+  place as a skill because a phase must be able to load it by name at
+  the moment of judgement.
+- /Every skill declares its level./ =#+level:= is mandatory. It is what
+  lets a declared System attenuate the catalogue, which is the whole
+  mechanism by which a session sees a set small enough to choose from
+  well.
 - /One skill per runbook./ Runbooks are skills' procedural twins;
   a generic runbook dispatcher hides the actions from discovery.
 - /Check before adding./ A new skill name must parse against the two
   registers, and the [[id:2003934B-ED05-D114-404B-08C0E0D844BB][skills
   inventory]] must be checked for an existing skill covering the same action.
   Extending a register is a deliberate act recorded in the decision log below.
+
+** The level register
+
+=#+level:= carries one of these values. The level sets the default slice of
+the catalogue a session sees; the full treatment is in
+[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]].
+
+#+ATTR_HTML: :class hug-leading
+| Level  | System           | Horizon    | Sees                                                        |
+|--------+------------------+------------+-------------------------------------------------------------|
+| =s1=   | Agent            | Hours      | Execution in full, sequencing, citation, declaration        |
+| =s2=   | Orchestrator     | Days       | Story and task actions, decomposition methods, deliberation |
+| =s3=   | Sprint Planner   | Weeks      | Sprint and backlog actions, planning and review methods     |
+| =s3star= | Auditor        | Continuous | Read-only and audit actions only                            |
+| =s4=   | Version Planner  | Months     | Version and release actions, strategy deliberation          |
+| =s5=   | Identity Steward | Indefinite | Identity and backlog-fit actions, deliberation              |
+| =cross= | —               | —          | Applies at every level                                      |
+
+Attenuation is *advisory* at S1, S2, S3, S4 and S5: a default small enough to
+choose from well, which an agent may reach outside by saying so. It is
+*binding* at S3*, because an audit channel that can be talked into editing what
+it observes is not an audit channel.
+
+** Where a new thing goes
+
+A name is only decidable once the artefact type is. This is the placement
+procedure from
+[[id:F5CB5A45-6557-410B-9E4F-542957561A16][Regulatory Functions]], reproduced
+where an author naming something will meet it. Take the first match.
+
+1. A durable fact about the domain goes to a *knowledge document*. If it is the
+   entry point to a cluster, a *structure note*.
+2. An account of how one operation is performed here, with a runnable script,
+   goes to a *recipe*. This is also where a method's missing effector goes.
+3. A correction that must not be repeated goes to a *memory*. Keep these scarce:
+   each is paid for by every session.
+4. A rule that is cited rather than run goes to a *principle*.
+5. Intended behaviour that should be checkable goes to a *specification*.
+6. A sequence of phases ending in a verified state, not tied to one artefact
+   type, goes to a *method*.
+7. A change to a *generated* artefact goes to its model or its template, never
+   to the output.
+8. An operation on one artefact type goes to an *action*, at the pairing of type
+   and verb. The action holds the judgement; the recipe holds the command.
+9. A contested judgement goes to *deliberation*, and its verdict is recorded
+   against the work.
+10. A role a session or a delegate acts as goes to a *System*, tagged by level,
+    stating what it must read first and what it may do.
+11. The argument for a change, spanning many tasks, goes to a *design* in the
+    story's own folder rather than to the durable tree.
 
 ** Decision log
 
@@ -116,6 +219,16 @@ for backlog refinement must not create a branch; picking one up must.
 | =deploy-= added | The build pillar's deploy_manual/skills/settings/site targets are publish actions, not plain runs |
 | =delete-= added | Retiring a skill is a graph operation, learned when nine deletions broke the site build; the procedure deserves a verb and a skill (=skill-delete=) |
 | =fix-= added | The drift-elimination method needs the plain repair verb: =add-= (create), =run-= (execute), and =update-= (align with a change elsewhere) each name a different action, and remediation is the load-bearing action of the 12 per-component stories (=codegen-fix-drift=) |
+| =compass-= prefix on every skill we own | Ownership is the thing a reader needs at a glance, because an upstream skill is referenced and cannot be edited here. The prefix also separates our catalogue from every plugin's in one keystroke |
+| =principle-= and =method-= as second segments, not domains | A principle names no artefact type and a method spans several, so neither parses as =<domain>-<verb>=. Making them segments keeps the action form untouched |
+| =#+level:= mandatory on every skill | Attenuation is the mechanism that keeps the offered set small enough to choose well. An unlevelled skill is visible at every level, which defeats it |
+| Citation function exempt from the reference-only rule | A principle is by definition cited and never run. Requiring executable steps of it would forbid the entire function; the exemption is narrow and names the one function it covers |
+| =act-= verb added | Dispatch is late binding of verb to noun: the target is known and the operation is not. No existing verb names it, and =find-= and =show-= both promise to change nothing, which dispatch cannot |
+| =export-= verb added | Handing a result set to the artefact type that owns that shape is neither a =run-= nor an =add-=; the destination type is chosen by the data |
+| =helm= as a bare name | The mode is a posture, not an operation on a target, so it takes no domain and no object. =compass-mode= was rejected as accurate and forgettable |
+| Level values spelled =s3star=, not =s3*= | The value is a filetag and a directory-safe token; =*= is neither |
+| Further verbs land with the ported methods | The port has not run, so the verbs its steps need are not yet knowable. Each arrives with its own entry here rather than being guessed now |
+| /System/ preferred over /function/ for the role a session adopts | The design's terminology table said /function/, which now collides with /regulatory function/. The architecture resolves it to /System/, and the glossary follows the architecture |
 
 * Upstream skills
 

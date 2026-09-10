@@ -18,10 +18,14 @@ a difference, and each one is classified:
               the relative tolerance. The ORE schema types these fields as
               xs:float and the example documents state more digits than that
               type holds.
-  boolean     the same path on both sides, one stating an empty element and
-              the other one of the ORE bool spellings. The schema's bool type
-              enumerates Y, YES, TRUE, True, true, 1 and their negatives, and
-              the examples spell true as an empty element.
+  boolean     the same path on both sides, the source stating an empty
+              element and our output one of the ORE bool spellings. The
+              schema's bool type enumerates Y, YES, TRUE, True, true, 1 and
+              their negatives, and the examples spell true as an empty
+              element. The reverse pairing is not tolerated: the classifier
+              reads text and not schema types, so a source that states a bool
+              spelling against an output that states the element empty is a
+              real loss.
   lost        a pair the source states that our output does not. Always a
               failure: the document we wrote is missing content.
   unexplained any other pair our output states that the source does not. A
@@ -141,7 +145,8 @@ def close_enough(left: str, right: str):
 
 
 def is_boolean_pair(left: str, right: str) -> bool:
-    return (left == "" and right in ORE_TRUE) or (right == "" and left in ORE_TRUE)
+    # One direction only, and deliberately so. See the module docstring.
+    return left == "" and right in ORE_TRUE
 
 
 def classify(source_pairs: Counter, output_pairs: Counter):

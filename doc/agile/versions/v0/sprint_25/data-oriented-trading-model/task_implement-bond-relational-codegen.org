@@ -1012,7 +1012,7 @@ one delete each:
 Every payload carries the matching instrument id and tenant id. The
 trade-type negative emits no event, because the instrument save is
 the publisher and that save is the one that fails. Its issue row
-still lands and stays open, one of the four the partial-state
+still lands and stays open, one of the four that the partial-state
 finding below counts.
 
 The CHECK gate closed the wave: four negative adds, each tripping
@@ -1103,6 +1103,7 @@ via its "Verifies task" field.
 | 20 | Table cells group thousands with commas while the prose around them does not | task org, the loading-exercise table | Recorded, not changed | The split is the doc's existing convention and predates this wave: tables group, prose does not, as in wave 1.5's "7123 rows/sec". |
 | 21 | "nine entities over ten tables" counts a table the family does not have | task org, the Result; story org, the front matter =Now= | Fixed | The family is nine tables: =bond_issues=, =bond_instruments=, the five fact tables and the two issue-keyed child tables, confirmed against the migration's own summary select and the live schema. =ores_trading_ascots_tbl= carries no =bond= prefix, which is what made the count read as ten. Both occurrences now read "nine". |
 | 22 | The trade-type negative "fails at the instrument insert before any row lands" contradicts the partial-state finding and the rows on the schema | task org, the wave 1.7 note | Fixed | The negative writes its issue first and fails on the instrument save, which is the publisher. =WT17-N01= is open with no instrument joining to it, one of the four issues the partial-state finding counts. |
+| 23 | "one of the four the partial-state finding below counts" is missing a relative pronoun | task org, the wave 1.7 note | Fixed | Reads "one of the four that the partial-state finding below counts". |
 
 * Result
 

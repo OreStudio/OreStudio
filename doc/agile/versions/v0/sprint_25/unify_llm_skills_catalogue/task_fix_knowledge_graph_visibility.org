@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:knowledge:zettelkasten:audit:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/fix-knowledge-graph-visibility
+#+pr: 2043
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The knowledge index carries eight id references that do not resolve, and all eig
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-09                               |
 
 * Acceptance
 
@@ -42,11 +42,34 @@ The knowledge index carries eight id references that do not resolve, and all eig
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The cause was diagnosed, not guessed. =doc_index.EXCLUDED_DIRS= held the
+bare name =external=, and the walker pruned any directory with that name at
+any depth. The entry exists to skip the vendored =./external= tree at the
+repository root. It also pruned =doc/knowledge/external=, so all twelve
+documents in that folder were absent from the corpus that =compass show=,
+=compass list= and =compass search= read.
+
+The fix splits the two intents. =EXCLUDED_DIRS= keeps the names that are
+noise at any depth (=.git=, =.claude=, =node_modules=, =__pycache__=).
+=EXCLUDED_ROOT_DIRS= holds the large repository-root trees (=build=,
+=.packages=, =vcpkg=, =external=), and the walker prunes those only at the
+root.
+
+The invariant then goes into =compass lint=, which is the enforced corpus
+channel: =_lint_dangling_links= reports every =[[id:...]]= whose target
+=:ID:= is in no document, and it fails the command. =cmd_lint= now walks
+through =doc_index.find_org_files=, so the lint and the graph share one
+definition of the corpus. The new =Doc Lint= workflow runs the command on
+every push and pull request that touches an =.org= file.
 
 * Notes
+
+=cmd_lint= used =rglob= and filtered afterwards, so every run descended into
+=build/=. The command took over two minutes. On the shared pruned walker it
+takes one second.
+
+The per-worktree =.journal.org= links to documents that live on other
+branches, so the lint skips dotfiles.
 
 * Test Scenarios
 
@@ -63,12 +86,35 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2043][#2043]] | [compass] Index doc/knowledge/external and lint dangling id links |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =compass lint --help= claimed only the first two checks are enforced | src/compass.py | Accept | Three checks are enforced now; reworded to name the durable-link check as the advisory one |
 
 * Result
+
+All four acceptance criteria are met.
+
+The cause is diagnosed and recorded in =* Plan=: =doc_index= pruned every
+directory named =external= at any depth, so it pruned the documentation
+folder along with the vendored tree at the repository root.
+
+All twelve documents under =doc/knowledge/external= resolve again. =compass
+show 0412444A-0A4C-4611-887C-09353A3CB253= returns QuantLib with ten inbound
+links, and =compass search quantlib= ranks it at 84%.
+
+=compass lint= reports every =[[id:...]]= that resolves to no =:ID:= in the
+corpus, and it exits non-zero. A probe document with a bogus link produced
+=dangling id links: 1 link(s)=.
+
+The =Doc Lint= workflow runs the command on every push and pull request that
+touches an =.org= file, so the check is continuous rather than on request.
+Its first full run over the corpus is clean: the only dangling links anywhere
+were eight in the untracked per-worktree =.journal.org=, which points at
+documents on other branches, so the lint skips dotfiles.
+
+=test_doc_graph_integrity.py= holds the regression test. It fails against the
+old exclusion list with =assert set() == {'quantlib.org'}=.

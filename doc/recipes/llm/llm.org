@@ -24,3 +24,8 @@ operating inside this repo.
 * Planning
 
 - [[id:6FE5A0E1-4C96-4B13-A2B9-64590AD6DB46][How do I ask an LLM to spec a new feature?]]
+
+* Agent configuration
+
+- [[id:5295951B-CD43-4FDC-B1E9-0FFF9BEEFE02][How do I update Claude Code permissions?]]
+- [[id:7742AC84-C722-4CFA-8D70-8AB1C6DFD45A][How do I report on skill selection?]]

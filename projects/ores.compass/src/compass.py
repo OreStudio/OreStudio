@@ -7322,6 +7322,9 @@ def main():
         sys.exit(cmd_shell(sys.argv[2:]))
     if len(sys.argv) >= 2 and sys.argv[1] == "review":
         sys.exit(cmd_review(sys.argv[2:]))
+    if len(sys.argv) >= 2 and sys.argv[1] == "skills":
+        import compass_skills
+        sys.exit(compass_skills.run(sys.argv[2:], PROJECT_ROOT))
     if len(sys.argv) >= 2 and sys.argv[1] == "timeline":
         import compass_timeline
         sys.exit(compass_timeline.run(sys.argv[2:], PROJECT_ROOT))
@@ -7360,6 +7363,7 @@ def main():
             "env", "image", "nats", "db", "sql", "services", "client", "claude", "test", "build",
             "site", "shell", "review", "pr", "release-notes", "bearings",
             "orient", "timeline", "capture", "lint", "codegen", "branches",
+            "skills",
             "inbox", "next", "deferred", "discarded", "backlog",
         ]
         cmd_given = sys.argv[1]
@@ -7391,6 +7395,7 @@ def main():
         "  Release:   release-notes create | charts | export | commit | draft\n"
         "  Bearings:  bearings (alias: orient)\n"
         "  Lint:      lint\n"
+        "  Skills:    skills report | skills correct\n"
         "\n"
         "Entity commands (sub-subcommands span pillars):\n"
         "  sprint:   status | audit (orient)\n"
@@ -7529,6 +7534,11 @@ def main():
                           help="PR: pull-request lifecycle verbs via gh — "
                                "'pr checks [--watch]', 'pr create', 'pr merge [--force]', "
                                "'pr record'; 'pr --help'")
+    subparsers.add_parser("skills",
+                          help="Skills: the selection instrument — "
+                               "'skills report [--since 14d]', "
+                               "'skills correct --cause <cause>'; "
+                               "'skills --help'")
     subparsers.add_parser("timeline",
                           help="Timeline: everyone × past — 'timeline generate [--since 20m]', "
                                "'timeline now', 'timeline snapshot [--since 20m]', "

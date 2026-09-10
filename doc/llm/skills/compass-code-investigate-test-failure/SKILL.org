@@ -4,7 +4,7 @@
 #+title: Code Investigate Test Failure
 #+description: Diagnose a failing Catch2 test in ORE Studio — enable logging, run the suite, parse results, drill into the per-test log, find the root cause.
 #+type: skill
-#+level: cross
+#+level: s1
 #+filetags: :llm:skill:skills:claude_code:tests:debugging:
 #+created: 2024-09-01
 #+updated: 2026-06-06

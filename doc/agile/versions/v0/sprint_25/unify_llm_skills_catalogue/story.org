@@ -79,7 +79,7 @@ Tasks are listed in intended execution order.
 | [[id:1EF24A09-F4D7-4DA7-BB54-1BC91F5CB8BE][Define the upstream attribution contract for imported skills]] | ABANDONED | | 2026-09-04 | Superseded by the reference approach. Upstream skills are referenced rather than copied, so no fork exists to attribute or drift-check; the classification table in The pstack Collection replaces it. 
 | [[id:629B48C7-BC7E-44A8-8979-3E05D6DA5BFE][Collapse the uniform verbs into polymorphic actions]] | DONE | 2026-09-10 | 2026-09-10 | Shrink the execution function before the imports land: one skill per verb that behaves uniformly across artefact types, driven by a type table. |
 | [[id:7DFA4343-E553-4D3A-B71F-057329821EE5][Rename every skill into the compass- namespace]] | DONE | 2026-09-10 | 2026-09-10 | Mechanical rename of every skill, with every incoming link, catalogue row, runbook, memory and settings entry updated. |
-| [[id:3969C185-48DE-47F0-A00D-FD28CD58C1B0][Tag every skill with its cybernetic level]] | BACKLOG | | | Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees. |
+| [[id:3969C185-48DE-47F0-A00D-FD28CD58C1B0][Tag every skill with its cybernetic level]] | DONE | 2026-09-10 | 2026-09-10 | Add the mandatory level keyword to every skill and make the declared System attenuate which skills a session sees. |
 | [[id:F4EF0C2D-B32E-4705-AE0F-AAC3E027FF59][Separate skill judgement from recipe commands]] | BACKLOG | | | Make every action delegate its commands to a recipe and keep only the judgement, so each has one source of truth. |
 | [[id:6766A23C-0357-4873-B5BF-B5A71BF0B1D5][Add structure notes to the knowledge Zettelkasten]] | BACKLOG | | | Give each domain cluster an entry-point note listing its pages in an argued reading order, so grounding loads a model rather than a search result. |
 | [[id:894E9BD8-6808-403A-9878-ABFA51710A74][Add a knowledge gap check for domain work]] | BACKLOG | | | A compass check that extracts the domain concepts a work item names and reports which have no resolving knowledge document. |
@@ -132,6 +132,15 @@ Tasks are listed in intended execution order.
 - A sweep across the corpus is a committed script with a =--check= mode, not
   a careful afternoon. The script is the artefact a reviewer re-runs, and the
   check is what stops the next skill landing outside the namespace.
+- A level is a judgement about which System a skill serves, so it is a
+  reviewed table rather than a rule over names. A skill absent from that
+  table is an error, which is what stops the next skill landing untagged.
+- Attenuation is enforced by what is deployed, not by what a prompt asks.
+  Pruning the tree makes it binding, which is what a read-only System wants;
+  deploying the full set is what keeps every other level advisory.
+- The audit channel's slice is derived from the verb register rather than
+  tagged. =show-= and =find-= promised to change nothing, and that promise is
+  now load-bearing rather than decorative.
 
 * Out of scope
 

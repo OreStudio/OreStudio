@@ -4,7 +4,7 @@
 #+title: Code Run Build
 #+description: Drive the ORE Studio CMake build — configure, build, test, deploy site, deploy skills, generate diagrams — by selecting the matching recipe.
 #+type: skill
-#+level: cross
+#+level: s1
 #+filetags: :llm:skill:skills:claude_code:cmake:build:
 #+created: 2024-09-01
 #+updated: 2026-07-17

@@ -6,6 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
+#+level: cross
 #+filetags: :llm:skill:skills:claude_code:ste100:writing:
 #+created: 2026-08-08
 #+updated: 2026-08-10

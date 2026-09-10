@@ -60,3 +60,9 @@ jobs:
         # The polymorphic skills dispatch on these. A stale table sends an
         # agent to a command or a document type that has moved.
         run: python3 build/scripts/generate_skill_type_tables.py --check
+
+      - name: Check every skill carries its level
+        # A skill with no level is visible at every level, which defeats
+        # the attenuation. A skill missing from the table is an error
+        # rather than a default, so a new skill needs a considered level.
+        run: python3 build/scripts/apply_skill_levels.py --check

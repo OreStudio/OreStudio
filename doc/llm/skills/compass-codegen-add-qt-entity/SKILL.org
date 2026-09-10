@@ -4,7 +4,7 @@
 #+title: Codegen Add QT Entity
 #+description: Create Qt UI components for domain entities including list windows, detail dialogs, history dialogs, and controllers.
 #+type: skill
-#+level: cross
+#+level: s1
 #+filetags: :llm:skill:skills:claude_code:qt:entity:ui:
 #+created: 2024-09-01
 #+updated: 2026-06-06

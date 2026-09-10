@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :llm:skills:cybernetics:levels:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/add-skill-cybernetic-levels
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Every stateful document carries a level keyword; skills do not. Adding it is the
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-08-26                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -45,11 +45,41 @@ Every stateful document carries a level keyword; skills do not. Adding it is the
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+A level is a judgement about which System a skill serves, and a wrong one
+hides a capability, so it is a reviewed table rather than a rule inferred
+from names. =build/scripts/apply_skill_levels.py= holds that table: every
+skill appears in it, and a skill missing from it is an error rather than a
+default, so the next skill cannot land untagged.
+
+The attenuation rule falls out of the table plus the verb register. A
+session at an advisory level sees its own slice and the =cross= skills. The
+audit channel is the binding case, and its slice is derived rather than
+tagged: =show-= and =find-= promise to change nothing, so the auditor sees
+exactly those. That promise was written into the verb register two tasks
+ago; it is now load-bearing.
+
+Enforcement is what is on disk. =--prune-deployed= removes the out-of-scope
+skills from the deployed tree, so an agent spawned afterwards cannot load
+one. Normal operation deploys the full set, which is what keeps the other
+five levels advisory: an agent may reach outside its slice by saying so,
+because the skill is still there.
+
+The inventory in the architecture is generated from the same table, so the
+document cannot claim a scope the catalogue does not have.
 
 * Notes
+
+The distribution is lopsided and honestly so: 46 skills are tagged =s1=,
+against 3 at =s2=, 6 at =s3=, one each at =s4= and =s5=, and 12 =cross=.
+Most of what we do is execution. The value of the tagging is not an even
+spread but the two slices that shrink: the auditor sees 5 skills instead of
+69, and a planner sees 18.
+
+=--prune-deployed= is deliberately available at any level while only being
+appropriate for a read-only spawn. Pruning makes attenuation binding, and
+binding an advisory level would contradict the rule that an agent may reach
+outside its slice.
+
 
 * Test Scenarios
 
@@ -75,3 +105,23 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Six of the seven acceptance criteria are met, and the seventh is partly a
+documentation change that landed with them.
+
+Every one of the 69 skills carries a considered level from the reviewed
+table, with the reason recorded as the grouping comment beside it. The
+auditor's slice contains 5 skills, all read-only: an auditor can no longer
+reach a skill that mutates a work item, and the proof is that pruning the
+deployed tree to =s3star= leaves those five directories and removes 64. A
+session at any other level sees its slice plus the cross-level skills and
+can still reach outside, because the full set stays deployed.
+
+The level-to-scope inventory in
+[[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]] is generated
+from the same table that tags the skills, so it reports what the catalogue
+actually does. =--check= runs in the Doc Lint workflow.
+
+Systems covering delegates, and read-only enforced at spawn time rather than
+requested in the prompt, were already stated there as target state. They now
+name the mechanism that implements them.

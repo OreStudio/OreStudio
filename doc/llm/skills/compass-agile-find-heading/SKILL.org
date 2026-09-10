@@ -6,6 +6,7 @@
 #+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
 #+startup: inlineimages
 #+export_exclude_tags: noexport
+#+level: s3
 #+filetags: :compass:agile:orientation:heading:llm:
 #+created: 2026-06-11
 #+updated: 2026-06-11

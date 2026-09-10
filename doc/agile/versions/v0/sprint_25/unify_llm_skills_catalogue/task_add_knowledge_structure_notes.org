@@ -104,7 +104,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The back-link script swept the aside sections into the ordered set, so three pages carried a back-link claiming an order the hub's own prose denies | build/scripts/link_structure_notes.py | Accept | A real bug. Aside sections now mark themselves with =# aside= and aside pages get their own wording. Marking beats matching on heading text, which would ask a script to interpret prose |
+| 2 | The GARCH placement overreached: realised volatility clustering is a real-world-measure time-series property and the surface's shape is a risk-neutral cross-sectional one | doc/knowledge/domain/volatility_hub.org | Accept | Narrowed to the leverage asymmetry, which is the connection that holds, with the limit stated so the next reader does not re-widen it. GARCH stays second |
+| 3 | The =entity_lifecycle= skill-name updates read as an unrelated rename swept into this PR | projects/modeling/entity_lifecycle.org | Accept | Fair. They are stale labels from a naming era before the compass rename, caught while tagging the page as a structure note; the PR description now says so |
+| 4 | Interest rate curves, identity and access, MASD, and the SSR ordering all check out against the source pages, and none of the four reads as a table of contents | — | Accept | No change. Recorded because a challenge that finds nothing is the evidence the rest of the review is worth trusting |
 
 * Result
 

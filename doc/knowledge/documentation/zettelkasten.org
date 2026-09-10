@@ -121,6 +121,14 @@ A cluster earns a structure note when reading its pages in the wrong
 order costs something real. Where the order does not matter, the index
 entry is enough.
 
+Some pages belong to a cluster without belonging to its sequence: a
+provenance note, a research paper, anything reached when the question
+changes rather than when the subject advances. A note holds these in a
+section marked =# aside=, and the marker is what the tooling reads. The
+alternative was to recognise such sections by their wording, which asks a
+script to interpret prose and gets it wrong the first time a note is
+phrased differently.
+
 * See also
 
 - [[id:C53486A1-54A3-4FD3-BC5F-15F4CE6BC4ED][org-roam]] — the Emacs package that implements Zettelkasten over =.org= files in ORE Studio.

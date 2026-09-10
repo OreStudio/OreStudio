@@ -36,8 +36,16 @@ realised-versus-implied distinction the rest of the cluster depends on.
 [[id:351CB816-28F5-428A-A289-414B6F4B9F36][GARCH Volatility Models]] — read
 second, while still on realised volatility. Volatility clusters rather than
 arriving independently each day, and GARCH is the standard way to model
-that. It belongs before the surface because it explains why volatility is
-not a constant, which is the reason a surface has shape at all.
+that. Read it here rather than later for one specific connection: the
+leverage asymmetry a GJR-GARCH captures produces qualitatively the same
+negative skew the surface shows, which makes the surface's shape legible
+when you meet it.
+
+Do not carry that further than it goes. Realised volatility is a
+time-series property under the real-world measure; the surface's shape
+across strike is a risk-neutral pricing phenomenon driven by the pricing
+density, jumps and tail risk. The two rhyme at the leverage effect and are
+not the same claim.
 
 ** 2. The surface
 
@@ -76,6 +84,7 @@ the surface as an input: they are priced off it rather than contributing
 to it.
 
 ** The papers, when the question is method
+# aside
 
 Two research notes sit alongside rather than in the sequence. Reach for
 them when the question is how to do something rather than what it is.

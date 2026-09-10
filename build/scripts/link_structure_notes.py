@@ -67,6 +67,15 @@ def hubs(docs):
 # of these headings.
 STOP_HEADINGS = ("* What this cluster does not cover", "* See also")
 
+# A hub may also carry a section for pages that belong to the cluster but
+# sit outside its sequence — reached when the question is provenance, or
+# method, rather than when working through the subject. The section marks
+# itself, because a heading's wording is not something a script should be
+# parsing for meaning.
+ASIDE_MARKER = "# aside"
+
+HEADING = re.compile(r"^\*+ .*$", re.M)
+
 
 def ordering_section(hub_text):
     """The part of a hub that names its cluster: everything before the
@@ -79,23 +88,41 @@ def ordering_section(hub_text):
     return hub_text[:end]
 
 
-def ordered_by(hub_text, docs, hub_id):
-    """The cluster pages a hub orders, read from its ordering sections."""
-    out = []
-    for m in LINK.finditer(ordering_section(hub_text)):
-        target = m.group(1).upper()
-        if target == hub_id or target not in docs:
-            continue
-        if target not in out:
-            out.append(target)
+def sections(text):
+    """(body,) per heading, plus whatever precedes the first heading."""
+    bounds = [m.start() for m in HEADING.finditer(text)]
+    if not bounds:
+        return [text]
+    out = [text[:bounds[0]]]
+    for i, start in enumerate(bounds):
+        end = bounds[i + 1] if i + 1 < len(bounds) else len(text)
+        out.append(text[start:end])
     return out
 
 
-def add_backlink(path, text, hub_id, hub_title):
+def cluster_pages(hub_text, docs, hub_id):
+    """The cluster's pages, split into the ones the hub orders and the ones
+    it deliberately leaves outside its sequence."""
+    ordered, aside = [], []
+    for body in sections(ordering_section(hub_text)):
+        bucket = aside if ASIDE_MARKER in body else ordered
+        for m in LINK.finditer(body):
+            target = m.group(1).upper()
+            if target == hub_id or target not in docs:
+                continue
+            if target not in ordered and target not in aside:
+                bucket.append(target)
+    return ordered, aside
+
+
+def add_backlink(path, text, hub_id, hub_title, ordered=True):
     if f"id:{hub_id}" in text or f"id:{hub_id.lower()}" in text:
         return None
-    line = (f"- [[id:{hub_id}][{hub_title}]] — the structure note that "
-            "orders this cluster, and where to read this page in it.")
+    why = ("the structure note that orders this cluster, and where to read "
+           "this page in it." if ordered else
+           "the structure note for this cluster; this page sits alongside "
+           "its sequence rather than in it.")
+    line = f"- [[id:{hub_id}][{hub_title}]] — {why}"
     m = re.search(r"^\* See also\s*$", text, re.M)
     if m:
         insert = m.end()
@@ -120,11 +147,13 @@ def main():
     missing = []
     for hub_id, (hub_path, hub_text) in sorted(found.items()):
         title = frontmatter(hub_text, "title")
-        for target in ordered_by(hub_text, docs, hub_id):
+        ordered, aside = cluster_pages(hub_text, docs, hub_id)
+        for target in ordered + aside:
             path, text = docs[target]
             if target in found:
                 continue
-            updated = add_backlink(path, text, hub_id, title)
+            updated = add_backlink(path, text, hub_id, title,
+                                   ordered=target in ordered)
             if updated is None:
                 continue
             missing.append(path.relative_to(ROOT))

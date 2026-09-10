@@ -80,6 +80,7 @@ booking jurisdiction. Read last: it is a refinement of identity, and only
 makes sense once curve identity is understood as a discrete label.
 
 ** Alongside, when the question is provenance
+# aside
 
 [[id:573F9165-C20B-463C-B0B3-F324AFE4E81F][Curve Point Provenance]] — where
 a curve point came from and why market data needs lineage at all. Not part

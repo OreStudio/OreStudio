@@ -594,7 +594,7 @@ have an
 enough to be ignored: closing a task targets that task and produces nothing new.
 For creation they diverge, and must.
 
-An agent adding a task executes =agile-add-task=. Its target is the *story*, not
+An agent adding a task executes =doc-add=. Its target is the *story*, not
 the task, which is why =compass add task= takes the parent as an argument. The
 regulatory function engaged is the story's recording: its table of tasks gains
 a row, which records that this work now exists. The new task document is the

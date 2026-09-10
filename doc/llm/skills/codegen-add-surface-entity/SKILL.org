@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 809AAE41-950C-4E0C-85B7-0D50BC4A775F
+:END:
+#+title: Codegen Add Surface Entity
+#+author: Marco Craveiro
+#+options: <:nil c:nil todo:nil ^:nil d:nil date:nil author:nil toc:t
+#+startup: inlineimages
+#+export_exclude_tags: noexport
+#+level: s1
+#+filetags: :llm:skill:skills:claude_code:codegen:entity:
+#+created: 2026-09-10
+#+updated: 2026-09-10
+
+#+begin_export markdown
+---
+name: codegen-add-surface-entity
+description: Add an entity to a user-facing surface — the CLI, the HTTP API, the shell REPL, or the Wt web UI. One three-phase procedure over every surface, driven by a surface table.
+license: Complete terms in LICENSE.txt
+---
+#+end_export
+
+* When to use this skill
+
+Exposing an existing entity through one of the user-facing surfaces: the CLI,
+the HTTP API, the shell REPL, or the Wt web UI. The procedure is the same for
+all four, so it is one skill and a table; only the file locations, the build
+target and the phase contents differ.
+
+Prerequisites, in order: the domain type exists
+([[id:B1450696-8C51-4CC5-8910-84912A411AB6][code-add-domain-type]]), and its
+repository and table I/O are implemented. See
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] for the full
+layer ordering.
+
+The Qt client is not in this table. It has a codegen profile and a
+generate-first flow of its own, which is a different procedure rather than a
+different surface: use
+[[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][codegen-add-qt-entity]].
+
+* How to use this skill
+
+1. /Pick the surface/ and read its row below. The row names the build target,
+   the patterns document holding its file locations and class shapes, and the
+   walkthrough recipe.
+
+2. /Gather requirements/: the entity name, the surface's own name for it
+   (a plural hyphenated command, a menu name, a route), the operations
+   needed, the key field, and the required and optional parameters.
+
+3. /Work the three phases/, one PR each. The phases differ per surface and
+   the row names them. Each phase ends in a building, reviewable state.
+
+4. /Build after every step/ through compass, so the host-wide build lock is
+   taken and a concurrent build in another worktree cannot corrupt this one
+   (see [[id:F176FCA1-68D5-420D-B076-75A65FEE5EBB][How do I build the system?]]).
+
+5. /Raise each phase's PR/ with [[id:4DF9BFE8-DC28-4220-AFF0-68E0A7CD5D2B][pr-raise]],
+   branching between phases with [[id:6EEA2ACE-BD40-4209-9CBE-6A86553AEEB7][code-start-branch]].
+
+** Surfaces
+
+#+ATTR_HTML: :class hug-leading
+| Surface | Build target | Phases | Patterns | Walkthrough |
+|---------+--------------+--------+----------+-------------|
+| CLI, =ores.cli= | =compass build ores.cli= | list + export, add + delete, recipe docs | [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] | [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]] |
+| HTTP, =ores.http.server= | =compass build ores.http.server.lib= | list + save, delete + history, recipe docs | [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]] | [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]] |
+| Shell, =ores.shell= | =compass build ores.shell= | list + add, history, recipe docs | [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] | [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]] |
+| Wt, =ores.wt.service= | =compass build ores.wt.service.lib= | list widget, detail dialog, application integration | [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]] | [[id:6FDB2F56-789F-4AD4-879E-BA5A1621F807][How do I create Wt widgets for a new entity?]] |
+
+* Codegen gap
+
+None of these four surfaces has a codegen profile, so the code in them is
+written by hand. That is a gap to close rather than a standing arrangement:
+generated structure is the target state for every surface
+([[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]]).
+
+When a surface is reached during entity work, raise a sprint story for its
+profile, link it to the entity task, and reference
+[[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]]§"Codegen gaps"
+for what the profile must cover. Once the profile lands, regenerate the
+surface and discard the hand-written code.
+
+* Recipes
+
+- [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]]
+- [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]]
+- [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]]
+- [[id:6FDB2F56-789F-4AD4-879E-BA5A1621F807][How do I create Wt widgets for a new entity?]]
+
+* Reference
+
+- [[id:608675E1-4284-4902-99AC-4DA565390AFB][Entity lifecycle]] — layer ordering across every surface.
+- [[id:0CBA2F23-7F5F-433D-921A-D9C056BD9CA8][codegen-add-entity]] — the orchestrator that reaches this layer.
+- [[id:AEBC2BC9-A854-4CEC-BA88-1602490AC762][Skill architecture]] — why a uniform verb is one skill plus a type table.
+
+* Artefacts                                                        :noexport:
+
+** Licence
+
+#+BEGIN_SRC fundamental :tangle LICENSE.txt
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+#+END_SRC

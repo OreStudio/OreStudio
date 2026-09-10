@@ -31,7 +31,7 @@ Out-of-band work with no task attached: experiments, throwaway spikes, one-off f
    #+end_src
 
 
-2. /If the work becomes real/, retrofit a task with =agile-add-task= and wire the branch with =compass task start <slug> --branch <branch>=.
+2. /If the work becomes real/, retrofit a task with =doc-add= and wire the branch with =compass task start <slug> --branch <branch>=.
 
 * Recipes
 

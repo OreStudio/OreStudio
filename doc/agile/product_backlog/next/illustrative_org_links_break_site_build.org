@@ -39,4 +39,4 @@ vulnerable to the same mistake.
 
 * See also
 
-- [[id:E767A313-2E08-4682-8586-39138529385C][Agile Add Capture]] — the skill whose illustrative link syntax in the runbook could trigger the same issue.
+- [[id:D3767A34-DC32-4366-ADAB-534D6FC4C607][Doc Add]] — the skill whose illustrative link syntax in the runbook could trigger the same issue.

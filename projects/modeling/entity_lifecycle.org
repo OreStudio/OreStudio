@@ -54,10 +54,10 @@ before its domain type and SQL schema are merged.
 |---|---|---|---|
 | Domain type | [[id:B1450696-8C51-4CC5-8910-84912A411AB6][domain-type-creator]] | (this doc §Type mappings) | — |
 | SQL schema | [[id:A08FC2A2-4E42-41EC-AC92-D1AF50DC61CB][sql-schema-creator]] | [[id:5CB31A0E-4E38-4521-B0EE-E4396C3E2936][SQL entity schema patterns]] | [[id:479F858E-AA31-4DB4-ABE9-A0ED7CEBF098][How do I create a new entity SQL schema?]] |
-| HTTP endpoints | [[id:BDCC47D4-B050-409E-8C50-3D179843A274][http-entity-creator]] | [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]] | [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]] |
+| HTTP endpoints | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | [[id:579910D3-89FF-4820-9A9B-57508FF39096][HTTP entity patterns]] | [[id:C9EEAAD1-1E78-4775-A05F-19573E669BD9][How do I create HTTP endpoints for a new entity?]] |
 | CLI commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][cli-entity-creator]] | [[id:05891220-2503-48A0-ADF5-13EC95B605D7][CLI entity patterns]] | [[id:662881DC-1371-4DAD-A868-72D8BAE0E919][How do I create CLI commands for a new entity?]] |
-| Shell commands | [[id:6A76FDFE-9AA7-4F73-8570-87A458C24553][shell-entity-creator]] | [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] | [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]] |
-| Wt UI | [[id:07135FEB-F6F6-4EDE-BB00-5B7621586662][wt-entity-creator]] | [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]] | [[id:6FDB2F56-789F-4AD4-879E-BA5A1621F807][How do I create Wt widgets for a new entity?]] |
+| Shell commands | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | [[id:E38360B6-99FF-4AF0-937F-58F31BD573F5][Shell entity patterns]] | [[id:083C1060-F952-4505-B066-FED5684CDD5D][How do I create shell commands for a new entity?]] |
+| Wt UI | [[id:809AAE41-950C-4E0C-85B7-0D50BC4A775F][codegen-add-surface-entity]] | [[id:ACF334D8-703B-4020-A48E-F8A8E5090E72][Wt entity patterns]] | [[id:6FDB2F56-789F-4AD4-879E-BA5A1621F807][How do I create Wt widgets for a new entity?]] |
 | Qt UI | [[id:C6ADAC80-F4E6-44E8-9525-3760CB98C41D][qt-entity-creator]] | [[id:2FDDC2F6-C510-4A86-8C50-D79C83EDDFFF][Qt entity patterns]] | [[id:25167ED8-6CCC-43AC-9978-026E6AD581FC][How do I create Qt UI for a new entity?]] |
 
 * Type mappings

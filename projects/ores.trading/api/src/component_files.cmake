@@ -256,6 +256,7 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_repo_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_repo_table.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_repo_table_io.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_schedule_data.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_trs.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_trs_json_io.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.trading.api/domain/bond_trs_table.hpp"

@@ -110,8 +110,8 @@ public:
      * @brief Dispatches a bond-family trade to bond_instrument_mapper.
      *
      * Returns a populated result for Bond, ForwardBond, CallableBond,
-     * ConvertibleBond, BondOption, BondTRS and BondRepo. Returns empty
-     * for all other types.
+     * ConvertibleBond, BondOption, BondTRS, BondRepo, BondFuture and
+     * Ascot. Returns empty for all other types.
      */
     static std::optional<trading::domain::bond_instrument_data> map_bond_instrument(const trade& v);
 

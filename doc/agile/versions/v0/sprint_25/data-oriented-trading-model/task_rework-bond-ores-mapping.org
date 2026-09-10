@@ -286,6 +286,109 @@ because expanding a tenor needs a calendar. The container carries the
 structure whole, and the parent story's shared schedule tables are the
 recorded destination.
 
+** Wave 2.3, the fact mappers and the assembler
+
+One mapper pair per fact entity now sits in the assembler, and the
+container grew to carry what the nine tables cannot store. The wave
+also added the two products the earlier waves left out, =BondFuture=
+and =Ascot=.
+
+The container gained the future and ascot fact rows,
+=option_exercise_dates= in place of the single =option_expiry_date=,
+=trs_price_type=, and three =bond_leg_data= members: the TRS funding
+leg, the repo leg and the ascot reference swap leg. A =bond_leg_data=
+holds the leg's payer flag and the schedule the leg's dates come from.
+
+The two legs of the round trip are now complete for every product.
+
+- =map_schedule= and =reverse_schedule= carry a =scheduleData= whole:
+  both the =Rules= blocks and the explicit =Dates= lists, with every
+  member of both.
+- =map_leg= and =reverse_leg= carry a leg's payer flag and schedule.
+- =map_exercise_dates= and =reverse_exercise_dates= carry the whole
+  exercise date list, not one date.
+- =parse_code= reads an enumeration spelling back. The generated
+  domain exports =to_string= for every enumeration but no parse, and
+  the generated =toNumber= helper is file-local to =domain.cpp=. The
+  scan over =to_string= keeps one source of truth: a spelling the
+  schema adds parses with no table here to keep aligned against.
+- =number_of=, =count_of= and =flag_of= read the fields the schema
+  states as strings. A value the parser cannot read leaves the column
+  at its default rather than failing the whole import.
+
+** The examples tree maps end to end
+
+Every =TradeType= in the examples tree now has a mapper. A sweep of
+all 115 =oreTradeType= enumerators against the dispatchers finds 45
+with no mapper, and no example document states any of them, so Ascot
+was the last uncovered document.
+
+That breaks =import_portfolio_with_context_unmapped_type_is_monostate=,
+which used =Cash_Ascot.xml= as its unmapped fixture. The guard still
+earns its place, so the test now builds the trade the tree cannot
+supply: a =BondPosition=, a sub-trade type that no document states on
+its own, checked straight against =trade_mapper::map_instrument=.
+
+** What the wave removed and what it did not
+
+The acceptance names two defects. Both are gone.
+
+- The coupon frequency corruption in =forward_bond_repo=. The old
+  mapper wrote the repo leg's schedule tenor into the issue's
+  =coupon_frequency_code= column, because no column held a leg
+  schedule. The leg's schedule now rides the container, and the issue
+  column keeps the bond's own frequency.
+- The hardcoded TRS values. =reverse_bond_trs= wrote =PriceType= as
+  =Dirty= and both legs wrote =Payer= as =false=, whatever the
+  document said. All three are gone: the price type and the payer
+  flags are carried and written back.
+
+Dropped fields remain dropped, and they are pre-existing scope limits
+rather than new losses. The =totalReturnData= fields other than
+=PriceType=, and the legs' currency, notional and day counter, were
+never mapped in either direction. Wave 2.4 records them as the
+remainder the parent story's tables take.
+
+Two normalisations are worth stating, because they change the bytes
+and not the meaning. A flag the document states as false and a flag
+the document omits carry the same value, so a false flag exports as
+an omitted element. A boolean re-exports in the canonical spelling
+(=Y=, =N=, =true=), so a document that spells it =TRUE= round trips
+value-equal and not spelling-equal.
+
+** BondFuture coverage: the plan's table is wrong
+
+The wave 2.1 coverage table named
+=Hybrid_GenericTRS_with_BondForward_Futures.xml= as the BondFuture
+vehicle. It is not one. A sweep of the whole examples tree found
+=bondFutureData= in zero documents; that file holds a
+=TotalReturnSwap= over a =ForwardBond= sub-trade. The schema still
+declares both =BondFutureData= (=instruments.xsd= line 48) and the
+=BondFuture= trade type (line 1381), and only
+=ORE-Python/ExampleScripts/portfolio2.py= mentions the type anywhere
+in the tree.
+
+The mapper is therefore written against the schema and unexercised by
+any example document. Wave 2.4 authors the fixture, as it does for
+the call dates and the conversion terms.
+
+** The future's issue row has no terms to find
+
+=instrument.issue_id= is NOT NULL, and =bondFutureData= carries no
+=bondData=. A future therefore mints an empty issue row, and the
+find-or-create lookup can never match one: there is no security
+identifier in the document to look up. The row is a placeholder that
+satisfies the foreign key. A future that later needs issue terms
+needs a schema field first.
+
+** The form carries one exercise date until unit 3
+
+=option_exercise_dates= is a list, and the container is right. The qt
+form has one =QDateEdit=, so =writeUiToInstrument= stages a
+single-element list and the load path shows =front()=. A document
+with three exercise dates round trips through the mapper intact and
+shows one date in the form. The reworked form is unit 3.
+
 ** The TRS return type: the document cannot supply it
 
 The trs org tells the reworked mapper to read =return_type= from

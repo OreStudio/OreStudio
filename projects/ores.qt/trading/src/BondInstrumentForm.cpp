@@ -185,7 +185,12 @@ void BondInstrumentForm::writeUiToInstrument() {
     data_.issue.maturity_date = ui_->maturityDateEdit->isoDate();
     data_.issue.settlement_days = ui_->settlementDaysSpinBox->value();
     data_.issue.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
-    data_.option_expiry_date = ui_->optionExpiryDateEdit->isoDate();
+    // The form carries one exercise date; the container carries the
+    // whole list a document can hold. The reworked form is unit 3.
+    const std::string option_expiry_date = ui_->optionExpiryDateEdit->isoDate();
+    data_.option_exercise_dates.clear();
+    if (!option_expiry_date.empty())
+        data_.option_exercise_dates.push_back(option_expiry_date);
 
     // The fact rows engage only when their combo carries a value, and an
     // emptied combo clears the staged fact so the container tracks the
@@ -257,7 +262,9 @@ void BondInstrumentForm::populateFromInstrument() {
     ui_->maturityDateEdit->setIsoDate(data_.issue.maturity_date);
     ui_->settlementDaysSpinBox->setValue(data_.issue.settlement_days);
     ui_->descriptionEdit->setPlainText(QString::fromStdString(data_.issue.description));
-    ui_->optionExpiryDateEdit->setIsoDate(data_.option_expiry_date);
+    ui_->optionExpiryDateEdit->setIsoDate(data_.option_exercise_dates.empty()
+                                              ? std::string()
+                                              : data_.option_exercise_dates.front());
     const bool has_option = data_.option.has_value();
     InstrumentFormUtils::setComboValue(ui_->optionTypeCombo,
                                        has_option ? data_.option->option_type : std::string());

@@ -26,12 +26,18 @@
 namespace ores::ore::domain {
 
 using namespace ores::logging;
+using ores::trading::domain::ascot;
+using ores::trading::domain::bond_future;
+using ores::trading::domain::bond_instrument_data;
 using ores::trading::domain::bond_issue;
 using ores::trading::domain::bond_issue_call_date;
 using ores::trading::domain::bond_issue_conversion_target;
-using ores::trading::domain::bond_instrument_data;
+using ores::trading::domain::bond_leg_data;
 using ores::trading::domain::bond_option;
 using ores::trading::domain::bond_repo;
+using ores::trading::domain::bond_schedule_data;
+using ores::trading::domain::bond_schedule_dates;
+using ores::trading::domain::bond_schedule_rules;
 using ores::trading::domain::bond_trs;
 
 namespace {
@@ -73,6 +79,211 @@ void resolve_issue(bond_instrument_data& result, const bond_issue_lookup& lookup
     const auto issue_id = boost::uuids::random_generator()();
     result.instrument.issue_id = issue_id;
     result.issue.issue_id = issue_id;
+}
+
+// The generated domain exports to_string for every enumeration but no
+// parse. Scanning the spellings back through to_string keeps one source
+// of truth: a spelling the schema adds is parsed with no table here to
+// keep aligned with the generated one.
+template <typename Enum>
+Enum parse_code(const std::string& text, int count, Enum fallback) {
+    for (int i = 0; i < count; ++i) {
+        const auto candidate = static_cast<Enum>(i);
+        if (to_string(candidate) == text)
+            return candidate;
+    }
+    return fallback;
+}
+
+constexpr int business_day_convention_count = 27;
+constexpr int date_rule_count = 16;
+constexpr int currency_code_count = 191;
+
+// The schema states the future's price and lag fields as strings. A
+// value the parser cannot read leaves the column at its default rather
+// than failing the whole import.
+double number_of(const std::string& text, double fallback) {
+    try {
+        return std::stod(text);
+    } catch (const std::exception&) {
+        return fallback;
+    }
+}
+
+int count_of(const std::string& text, int fallback) {
+    try {
+        return std::stoi(text);
+    } catch (const std::exception&) {
+        return fallback;
+    }
+}
+
+// The schema states a boolean as a string in several spellings. This is
+// the same set the generated bool_ enumeration carries.
+bool flag_of(const std::string& text) {
+    return text == "Y" || text == "YES" || text == "TRUE" || text == "True" || text == "true" ||
+           text == "1";
+}
+
+bool flag_of(const bool_& value) {
+    return flag_of(to_string(value));
+}
+
+// A generated wrapper derives from the string type it carries, and a
+// std::string does not convert to a derived type, so the reverse
+// direction writes through the base reference.
+template <typename Field>
+void set_text(Field& field, const std::string& value) {
+    static_cast<std::string&>(field) = value;
+}
+
+template <typename Field>
+void set_optional_text(xsd::optional<Field>& field, const std::string& value) {
+    if (value.empty())
+        return;
+    Field wrapper;
+    static_cast<std::string&>(wrapper) = value;
+    field = std::move(wrapper);
+}
+
+bond_schedule_data map_schedule(const scheduleData& sd) {
+    bond_schedule_data result;
+    for (const auto& r : sd.Rules) {
+        bond_schedule_rules row;
+        row.start_date = r.StartDate;
+        if (r.EndDate)
+            row.end_date = *r.EndDate;
+        if (r.AdjustEndDateToPreviousMonthEnd)
+            row.adjust_end_date_to_previous_month_end = flag_of(*r.AdjustEndDateToPreviousMonthEnd);
+        row.tenor = r.Tenor;
+        if (r.Calendar)
+            row.calendar = *r.Calendar;
+        row.convention = to_string(r.Convention);
+        if (r.TermConvention)
+            row.term_convention = to_string(*r.TermConvention);
+        if (r.Rule)
+            row.rule = to_string(*r.Rule);
+        if (r.EndOfMonth)
+            row.end_of_month = flag_of(*r.EndOfMonth);
+        if (r.EndOfMonthConvention)
+            row.end_of_month_convention = to_string(*r.EndOfMonthConvention);
+        if (r.FirstDate)
+            row.first_date = *r.FirstDate;
+        if (r.LastDate)
+            row.last_date = *r.LastDate;
+        if (r.RemoveFirstDate)
+            row.remove_first_date = *r.RemoveFirstDate;
+        if (r.RemoveLastDate)
+            row.remove_last_date = *r.RemoveLastDate;
+        result.rules.push_back(std::move(row));
+    }
+    for (const auto& d : sd.Dates) {
+        bond_schedule_dates row;
+        if (d.Calendar)
+            row.calendar = *d.Calendar;
+        if (d.Convention)
+            row.convention = to_string(*d.Convention);
+        if (d.Tenor)
+            row.tenor = *d.Tenor;
+        if (d.EndOfMonth)
+            row.end_of_month = flag_of(*d.EndOfMonth);
+        if (d.IncludeDuplicateDates)
+            row.include_duplicate_dates = flag_of(*d.IncludeDuplicateDates);
+        for (const auto& date : d.Dates.Date)
+            row.dates.push_back(date);
+        result.dates.push_back(std::move(row));
+    }
+    return result;
+}
+
+// A flag the document states as false and a flag the document omits are
+// the same value, so a false flag exports as an omitted element.
+scheduleData reverse_schedule(const bond_schedule_data& sd) {
+    scheduleData result;
+    for (const auto& row : sd.rules) {
+        scheduleData_Rules_t r;
+        r.StartDate = row.start_date;
+        if (!row.end_date.empty())
+            r.EndDate = row.end_date;
+        if (row.adjust_end_date_to_previous_month_end)
+            r.AdjustEndDateToPreviousMonthEnd = bool_::Y;
+        set_text(r.Tenor, row.tenor);
+        if (!row.calendar.empty())
+            r.Calendar = row.calendar;
+        r.Convention =
+            parse_code(row.convention, business_day_convention_count, businessDayConvention::F);
+        if (!row.term_convention.empty())
+            r.TermConvention = parse_code(row.term_convention,
+                                          business_day_convention_count,
+                                          businessDayConvention::F);
+        if (!row.rule.empty())
+            r.Rule = parse_code(row.rule, date_rule_count, dateRule::Backward);
+        if (row.end_of_month)
+            r.EndOfMonth = bool_::Y;
+        if (!row.end_of_month_convention.empty())
+            r.EndOfMonthConvention = parse_code(row.end_of_month_convention,
+                                                business_day_convention_count,
+                                                businessDayConvention::F);
+        if (!row.first_date.empty())
+            r.FirstDate = row.first_date;
+        if (!row.last_date.empty())
+            r.LastDate = row.last_date;
+        if (row.remove_first_date)
+            r.RemoveFirstDate = true;
+        if (row.remove_last_date)
+            r.RemoveLastDate = true;
+        result.Rules.push_back(std::move(r));
+    }
+    for (const auto& row : sd.dates) {
+        scheduleData_Dates_t d;
+        if (!row.calendar.empty())
+            d.Calendar = row.calendar;
+        if (!row.convention.empty())
+            d.Convention = parse_code(row.convention,
+                                      business_day_convention_count,
+                                      businessDayConvention::F);
+        if (!row.tenor.empty())
+            set_optional_text(d.Tenor, row.tenor);
+        if (row.end_of_month)
+            d.EndOfMonth = bool_::Y;
+        if (row.include_duplicate_dates)
+            d.IncludeDuplicateDates = bool_::Y;
+        for (const auto& date : row.dates)
+            d.Dates.Date.push_back(date);
+        result.Dates.push_back(std::move(d));
+    }
+    return result;
+}
+
+bond_leg_data map_leg(const legData& ld) {
+    bond_leg_data result;
+    result.payer = ld.Payer;
+    if (ld.ScheduleData)
+        result.schedule = map_schedule(*ld.ScheduleData);
+    return result;
+}
+
+void reverse_leg(const bond_leg_data& leg, legData& ld) {
+    ld.Payer = leg.payer;
+    if (!leg.schedule.rules.empty() || !leg.schedule.dates.empty())
+        ld.ScheduleData = reverse_schedule(leg.schedule);
+}
+
+void map_exercise_dates(const optionData& od, std::vector<std::string>& dates) {
+    if (od.exerciseDatesGroup && od.exerciseDatesGroup->ExerciseDates)
+        for (const auto& date : od.exerciseDatesGroup->ExerciseDates->ExerciseDate)
+            dates.push_back(date);
+}
+
+void reverse_exercise_dates(const std::vector<std::string>& dates, optionData& od) {
+    if (dates.empty())
+        return;
+    _ExerciseDates_t exd;
+    for (const auto& value : dates)
+        exd.ExerciseDate.push_back(value);
+    exerciseDatesGroup_group_t eg;
+    eg.ExerciseDates = std::move(exd);
+    od.exerciseDatesGroup = std::move(eg);
 }
 
 } // namespace
@@ -336,10 +547,7 @@ bond_instrument_data bond_instrument_mapper::forward_bond_option(
     stamp_audit(option);
     result.option = option;
 
-    if (d.OptionData.exerciseDatesGroup && d.OptionData.exerciseDatesGroup->ExerciseDates &&
-        !d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        result.option_expiry_date =
-            std::string(d.OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+    map_exercise_dates(d.OptionData, result.option_exercise_dates);
 
     return result;
 }
@@ -358,6 +566,11 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
     resolve_issue(result, lookup);
 
     bond_trs trs;
+    // An ORE BondTRS is a total return swap by construction: no field of
+    // the schema selects a return type, and PriceType names a
+    // price-quoting convention rather than a return type. TotalReturn is
+    // the model default the column check admits, with the ORE User Guide
+    // as the evidence.
     trs.return_type = "TotalReturn";
     const auto& ld = d.FundingData.LegData;
     if (ld.legDataType) {
@@ -373,6 +586,8 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
     }
     stamp_audit(trs);
     result.trs = trs;
+    result.trs_funding_leg = map_leg(ld);
+    result.trs_price_type = d.TotalReturnData.PriceType;
     return result;
 }
 
@@ -400,6 +615,84 @@ bond_instrument_data bond_instrument_mapper::forward_bond_repo(
     }
     stamp_audit(repo);
     result.repo = repo;
+    result.repo_leg = map_leg(d.RepoData.LegData);
+    return result;
+}
+
+bond_instrument_data bond_instrument_mapper::forward_bond_future(
+    const trade& t, const bond_issue_lookup& lookup) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondFuture: " << std::string(t.id);
+    bond_instrument_data result = make_base("BondFuture");
+    // A future carries no bond terms: the schema's bondFutureData holds
+    // no BondData, so the issue row that the instrument's NOT NULL
+    // issue_id points at is minted empty and no lookup can match it.
+    resolve_issue(result, lookup);
+    if (!t.BondFutureData)
+        return result;
+    const auto& d = *t.BondFutureData;
+
+    bond_future future;
+    future.contract_name = d.ContractName;
+    future.contract_notional = number_of(d.ContractNotional, 0.0);
+    future.long_short = d.LongShort;
+    if (d.Currency)
+        future.currency = to_string(*d.Currency);
+    if (d.ContractMonth)
+        future.contract_month = *d.ContractMonth;
+    if (d.DeliverableGrade)
+        future.deliverable_grade = *d.DeliverableGrade;
+    if (d.FairPrice)
+        future.fair_price = number_of(*d.FairPrice, 0.0);
+    if (d.Settlement)
+        future.settlement = *d.Settlement;
+    if (d.SettlementDirty)
+        future.settlement_dirty = flag_of(*d.SettlementDirty);
+    if (d.RootDate)
+        future.root_date = *d.RootDate;
+    if (d.ExpiryBasis)
+        future.expiry_basis = *d.ExpiryBasis;
+    if (d.SettlementBasis)
+        future.settlement_basis = *d.SettlementBasis;
+    if (d.ExpiryLag)
+        future.expiry_lag = count_of(*d.ExpiryLag, 0);
+    if (d.SettlementLag)
+        future.settlement_lag = count_of(*d.SettlementLag, 0);
+    if (d.LastTradingDate)
+        future.last_trading_date = *d.LastTradingDate;
+    if (d.LastDeliveryDate)
+        future.last_delivery_date = *d.LastDeliveryDate;
+    if (d.DeliveryBasket)
+        for (const auto& id : d.DeliveryBasket->Id)
+            result.future_delivery_basket.push_back(id);
+    stamp_audit(future);
+    result.future = future;
+    return result;
+}
+
+bond_instrument_data bond_instrument_mapper::forward_ascot(const trade& t,
+                                                           const bond_issue_lookup& lookup) {
+    BOOST_LOG_SEV(lg(), debug) << "Forward-mapping Ascot: " << std::string(t.id);
+    bond_instrument_data result = make_base("Ascot");
+    if (!t.AscotData) {
+        resolve_issue(result, lookup);
+        return result;
+    }
+    const auto& d = *t.AscotData;
+
+    map_bond_data(d.ConvertibleBondData.BondData, result.issue);
+    resolve_issue(result, lookup);
+    if (d.ConvertibleBondData.ConversionData)
+        map_conversion_targets(
+            *d.ConvertibleBondData.ConversionData, result.issue.issue_id, result.conversion_targets);
+
+    ascot row;
+    if (d.OptionData.OptionType)
+        row.ascot_option_type = *d.OptionData.OptionType;
+    stamp_audit(row);
+    result.ascot = row;
+
+    map_exercise_dates(d.OptionData, result.option_exercise_dates);
+    result.ascot_swap_leg = map_leg(d.ReferenceSwapData.LegData);
     return result;
 }
 
@@ -469,15 +762,7 @@ trade bond_instrument_mapper::reverse_bond_option(const bond_instrument_data& da
             d.strikeGroup.Strike = std::move(s);
         }
     }
-    if (!data.option_expiry_date.empty()) {
-        _ExerciseDates_t exd;
-        date ed;
-        static_cast<std::string&>(ed) = data.option_expiry_date;
-        exd.ExerciseDate.push_back(ed);
-        exerciseDatesGroup_group_t eg;
-        eg.ExerciseDates = std::move(exd);
-        d.OptionData.exerciseDatesGroup = std::move(eg);
-    }
+    reverse_exercise_dates(data.option_exercise_dates, d.OptionData);
     t.BondOptionData = std::move(d);
     return t;
 }
@@ -488,12 +773,12 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
     t.TradeType = oreTradeType::BondTRS;
     bondTRSData d;
     d.BondData = reverse_bond_data(data.issue);
-    // Minimal TotalReturnData — schedule required by XSD
-    totalReturnData_PriceType_t pt;
-    static_cast<std::string&>(pt) = "Dirty";
-    d.TotalReturnData.PriceType = std::move(pt);
-    // Reconstruct funding leg from the captured type, index and rate.
-    d.FundingData.LegData.Payer = false;
+    if (!data.trs_price_type.empty()) {
+        totalReturnData_PriceType_t pt;
+        static_cast<std::string&>(pt) = data.trs_price_type;
+        d.TotalReturnData.PriceType = std::move(pt);
+    }
+    reverse_leg(data.trs_funding_leg, d.FundingData.LegData);
     const bool fixed =
         !data.trs || data.trs->funding_leg_type.empty() || data.trs->funding_leg_type == "Fixed";
     if (fixed) {
@@ -525,9 +810,7 @@ trade bond_instrument_mapper::reverse_bond_repo(const bond_instrument_data& data
     t.TradeType = oreTradeType::BondRepo;
     bondRepoData d;
     d.BondData = reverse_bond_data(data.issue);
-    // Reconstruct the financing leg from the captured repo fact. The
-    // payer flag has no fact column; it stays false as before.
-    d.RepoData.LegData.Payer = false;
+    reverse_leg(data.repo_leg, d.RepoData.LegData);
     const bool floating = data.repo && data.repo->repo_type == "Floating";
     d.RepoData.LegData.LegType = floating ? legType::Floating : legType::Fixed;
     if (floating) {
@@ -546,6 +829,70 @@ trade bond_instrument_mapper::reverse_bond_repo(const bond_instrument_data& data
         d.RepoData.LegData.legDataType = std::move(ldt);
     }
     t.BondRepoData = std::move(d);
+    return t;
+}
+
+trade bond_instrument_mapper::reverse_bond_future(const bond_instrument_data& data) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping BondFuture";
+    trade t;
+    t.TradeType = oreTradeType::BondFuture;
+    bondFutureData d;
+    if (data.future) {
+        const auto& f = *data.future;
+        set_text(d.ContractName, f.contract_name);
+        set_text(d.ContractNotional, std::to_string(f.contract_notional));
+        set_text(d.LongShort, f.long_short);
+        if (!f.currency.empty())
+            d.Currency = parse_code(f.currency, currency_code_count, currencyCode::USD);
+        set_optional_text(d.ContractMonth, f.contract_month);
+        set_optional_text(d.DeliverableGrade, f.deliverable_grade);
+        if (f.fair_price != 0.0)
+            set_optional_text(d.FairPrice, std::to_string(f.fair_price));
+        set_optional_text(d.Settlement, f.settlement);
+        if (f.settlement_dirty)
+            set_optional_text(d.SettlementDirty, "true");
+        set_optional_text(d.RootDate, f.root_date);
+        set_optional_text(d.ExpiryBasis, f.expiry_basis);
+        set_optional_text(d.SettlementBasis, f.settlement_basis);
+        if (f.expiry_lag != 0)
+            set_optional_text(d.ExpiryLag, std::to_string(f.expiry_lag));
+        if (f.settlement_lag != 0)
+            set_optional_text(d.SettlementLag, std::to_string(f.settlement_lag));
+        set_optional_text(d.LastTradingDate, f.last_trading_date);
+        set_optional_text(d.LastDeliveryDate, f.last_delivery_date);
+    }
+    if (!data.future_delivery_basket.empty()) {
+        deliveryBasket basket;
+        for (const auto& id : data.future_delivery_basket) {
+            deliveryBasket_Id_t entry;
+            static_cast<std::string&>(entry) = id;
+            basket.Id.push_back(std::move(entry));
+        }
+        d.DeliveryBasket = std::move(basket);
+    }
+    t.BondFutureData = std::move(d);
+    return t;
+}
+
+trade bond_instrument_mapper::reverse_ascot(const bond_instrument_data& data) {
+    BOOST_LOG_SEV(lg(), debug) << "Reverse-mapping Ascot";
+    trade t;
+    t.TradeType = oreTradeType::Ascot;
+    ascotData d;
+    d.ConvertibleBondData.BondData = reverse_bond_data(data.issue);
+    if (!data.conversion_targets.empty()) {
+        cbConversionData conversion_data;
+        reverse_conversion_targets(data.conversion_targets, conversion_data);
+        d.ConvertibleBondData.ConversionData = std::move(conversion_data);
+    }
+    if (data.ascot && !data.ascot->ascot_option_type.empty()) {
+        optionData_OptionType_t ot;
+        static_cast<std::string&>(ot) = data.ascot->ascot_option_type;
+        d.OptionData.OptionType = std::move(ot);
+    }
+    reverse_exercise_dates(data.option_exercise_dates, d.OptionData);
+    reverse_leg(data.ascot_swap_leg, d.ReferenceSwapData.LegData);
+    t.AscotData = std::move(d);
     return t;
 }
 

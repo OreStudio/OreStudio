@@ -20,12 +20,15 @@
 #ifndef ORES_TRADING_API_DOMAIN_BOND_INSTRUMENT_DATA_HPP
 #define ORES_TRADING_API_DOMAIN_BOND_INSTRUMENT_DATA_HPP
 
+#include "ores.trading.api/domain/ascot.hpp"
+#include "ores.trading.api/domain/bond_future.hpp"
 #include "ores.trading.api/domain/bond_instrument.hpp"
 #include "ores.trading.api/domain/bond_issue.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/domain/bond_option.hpp"
 #include "ores.trading.api/domain/bond_repo.hpp"
+#include "ores.trading.api/domain/bond_schedule_data.hpp"
 #include "ores.trading.api/domain/bond_trs.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include <boost/uuid/uuid.hpp>
@@ -45,15 +48,17 @@ namespace ores::trading::domain {
  * and export, so it must hold every row the export path needs: the
  * slim instrument header (identity with the ten-code trade_type_code,
  * issue_id), the issue row with the bond terms map_bond_data reads,
- * the fact row of the product (option, trs or repo), and the issue's
- * child rows (call dates, conversion targets). The instrument.issue_id
- * member pins issue.issue_id: the mapper looks the issue up by
- * security_id and mints one only when the lookup misses.
- * option_expiry_date rides as a document remainder: the exercise date
- * has no row in the nine tables (bond_option carries only option_type
- * and option_strike; the dates land in the shared schedule tables of
- * the parent story, recorded scope limit of task D7943D7E wave 1.3),
- * and reverse_bond_option must keep emitting it.
+ * the fact row of the product (option, trs, repo, future or ascot),
+ * and the issue's child rows (call dates, conversion targets). The
+ * instrument.issue_id member pins issue.issue_id: the mapper looks the
+ * issue up by security_id and mints one only when the lookup misses.
+ *
+ * The remainder members carry what the nine tables cannot store, so
+ * that export re-emits what the document held. Each one is a recorded
+ * scope limit of task D7943D7E wave 1.3. The exercise dates, the three
+ * leg schedules and the delivery basket go to the parent story's shared
+ * instrument-keyed schedule and underlyings tables; the leg payer flags
+ * and the total return price type have no column anywhere.
  */
 struct bond_instrument_data final {
     /**
@@ -92,11 +97,44 @@ struct bond_instrument_data final {
     std::optional<bond_repo> repo;
 
     /**
-     * @brief Option expiry date (ISO 8601), the exercise date reverse_bond_option emits.
-     *
-     * Document remainder: no row carries this field yet.
+     * @brief The bond_future fact row, engaged for BondFuture products.
      */
-    std::string option_expiry_date;
+    std::optional<bond_future> future;
+
+    /**
+     * @brief The ascot fact row, engaged for Ascot products.
+     */
+    std::optional<ascot> ascot;
+
+    /**
+     * @brief Every exercise date the option's schedule lists, in document order.
+     */
+    std::vector<std::string> option_exercise_dates;
+
+    /**
+     * @brief Every delivery basket identifier the future's basket lists.
+     */
+    std::vector<std::string> future_delivery_basket;
+
+    /**
+     * @brief The total return price type the document states (Dirty or Clean).
+     */
+    std::string trs_price_type;
+
+    /**
+     * @brief The TRS funding leg's payer flag and schedule, re-emitted whole.
+     */
+    bond_leg_data trs_funding_leg;
+
+    /**
+     * @brief The repo leg's payer flag and schedule, re-emitted whole.
+     */
+    bond_leg_data repo_leg;
+
+    /**
+     * @brief The ascot reference swap's payer flag and schedule, re-emitted whole.
+     */
+    bond_leg_data ascot_swap_leg;
 };
 
 inline void stamp_ids(bond_instrument_data& data,
@@ -109,6 +147,10 @@ inline void stamp_ids(bond_instrument_data& data,
         data.trs->instrument_id = instrument_id;
     if (data.repo)
         data.repo->instrument_id = instrument_id;
+    if (data.future)
+        data.future->instrument_id = instrument_id;
+    if (data.ascot)
+        data.ascot->instrument_id = instrument_id;
 }
 
 }

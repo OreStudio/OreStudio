@@ -104,6 +104,10 @@ public:
         const trade& t, const bond_issue_lookup& lookup = {});
     static trading::domain::bond_instrument_data forward_bond_repo(
         const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_bond_future(
+        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_ascot(
+        const trade& t, const bond_issue_lookup& lookup = {});
 
     static trade reverse_bond(const trading::domain::bond_instrument_data& data);
     static trade reverse_forward_bond(const trading::domain::bond_instrument_data& data);
@@ -112,6 +116,8 @@ public:
     static trade reverse_bond_option(const trading::domain::bond_instrument_data& data);
     static trade reverse_bond_trs(const trading::domain::bond_instrument_data& data);
     static trade reverse_bond_repo(const trading::domain::bond_instrument_data& data);
+    static trade reverse_bond_future(const trading::domain::bond_instrument_data& data);
+    static trade reverse_ascot(const trading::domain::bond_instrument_data& data);
 };
 
 }

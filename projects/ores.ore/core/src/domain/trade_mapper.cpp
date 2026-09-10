@@ -158,6 +158,10 @@ trade_mapper::map_bond_instrument(const trade& v) {
         return bond_instrument_mapper::forward_bond_trs(v);
     if (type == "BondRepo")
         return bond_instrument_mapper::forward_bond_repo(v);
+    if (type == "BondFuture")
+        return bond_instrument_mapper::forward_bond_future(v);
+    if (type == "Ascot")
+        return bond_instrument_mapper::forward_ascot(v);
     return std::nullopt;
 }
 

@@ -17,7 +17,7 @@
 
 =ores.analytics= provides the pricing and analytics infrastructure for ORE Studio —
 pricing engine type registry, model configurations, product-to-engine mappings, and
-normalised parameters. Structured as a composite component with three sub-components.
+normalised parameters. Structured as a composite component with four sub-components.
 
 * Sub-components
 

@@ -81,7 +81,10 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The move-is-free claim is structurally true, not just true for the units compiled: the part's CMakeLists sets the target name as a literal and derives includes from =CMAKE_CURRENT_SOURCE_DIR=, so neither can change with the directory | — | Accept | No change. Stronger than my evidence: I showed it held for 61 units and one cross-component consumer, the reviewer showed it cannot fail |
+| 2 | The role description names the wrong consumers. =ores.analytics.core= does not link quant at all; the real consumers are =ores.refdata.core=, the =ores.synthetic= api and service, =ores.marketdata.service= and two =ores.qt= plugins | component_architecture.org | Accept | Verified against every =target_link_libraries= before changing it. I wrote "by =core=" from quant's own overview rather than from the build, and it reads as the sibling core in the same composite, which is exactly wrong. Corrected, and the sharper fact is now recorded: no part of =ores.analytics= links quant |
+| 3 | The overview still said three sub-components while its table listed four | component_overview.org | Accept | Corrected. A doc-drift instance of the kind the audit exists to catch, introduced by me in the same commit that added the fourth row |
+| 4 | Nothing else in =docs_exceptions.txt= hides a shape problem: =NAME_COLLISION= is the only code meaning the tree shape is wrong, and the deleted entry was the only one | — | Accept | No change. This answers the question I asked directly, and narrows the follow-up task to enforcement rather than a hunt |
 
 * Result
 
@@ -117,6 +120,16 @@ and none at the old one; a quant unit compiles, and so does a
 =ores.marketdata= consumer that includes quant headers across the
 component boundary, which is what proves the include prefix survived
 the move.
+
+Review turned up something the move itself does not settle. No part
+of =ores.analytics= links =quant=: every consumer is in another group
+(=ores.refdata.core=, the =ores.synthetic= api and service,
+=ores.marketdata.service=, and two =ores.qt= plugins). Nesting it here
+is still right — a dotted sibling claimed a parentage that did not
+exist, and this one is registered — but the placement records where
+the mathematics belongs by subject rather than an existing dependency,
+and the catalogue now says so rather than implying a link that is not
+there.
 
 One thing this task did not address, and it is why the gap existed.
 The component architecture audit is not wired into CI the way the

@@ -31,7 +31,7 @@ using ores::utility::generation::generation_keys;
 
 domain::pricing_model_config
 generate_synthetic_pricing_model_config(utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
     const auto tid_str =
         ctx.env().get_or(std::string(generation_keys::tenant_id), std::string("system"));

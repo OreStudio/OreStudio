@@ -17,8 +17,12 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 set(files
+    "messaging/pricing_engine_type_history_provider_registrar.cpp"
     "messaging/pricing_engine_type_registrar.cpp"
+    "messaging/pricing_model_config_history_provider_registrar.cpp"
     "messaging/pricing_model_config_registrar.cpp"
+    "messaging/pricing_model_product_history_provider_registrar.cpp"
+    "messaging/pricing_model_product_parameter_history_provider_registrar.cpp"
     "messaging/pricing_model_product_parameter_registrar.cpp"
     "messaging/pricing_model_product_registrar.cpp"
     "messaging/registrar.cpp"
@@ -48,11 +52,15 @@ set(files
 set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/export.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_engine_type_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_engine_type_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_engine_type_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_config_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_config_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_config_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_product_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_product_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_product_parameter_handler.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_product_parameter_history_provider_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_product_parameter_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/pricing_model_product_registrar.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.analytics.core/messaging/registrar.hpp"

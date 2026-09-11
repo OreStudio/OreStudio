@@ -84,9 +84,10 @@ void pricing_model_product_parameter_service::save_parameter(
 
 void pricing_model_product_parameter_service::save_parameters(
     const std::vector<domain::pricing_model_product_parameter>& parameters) {
-    for (const auto& e : parameters)
+    for (const auto& e : parameters) {
         if (e.id.is_nil())
             throw std::invalid_argument("Pricing Model Product Parameter id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << parameters.size()
                                << " pricing model product parameters";
     auto ts = parameters;

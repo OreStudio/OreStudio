@@ -18,6 +18,10 @@
 #
 set(files
     "main.cpp"
+    "pricing_engine_type_eventing_integration_tests.cpp"
+    "pricing_model_config_eventing_integration_tests.cpp"
+    "pricing_model_product_eventing_integration_tests.cpp"
+    "pricing_model_product_parameter_eventing_integration_tests.cpp"
     "repository_pricing_engine_type_repository_tests.cpp"
     "repository_pricing_model_config_repository_tests.cpp"
     "repository_pricing_model_product_parameter_repository_tests.cpp"

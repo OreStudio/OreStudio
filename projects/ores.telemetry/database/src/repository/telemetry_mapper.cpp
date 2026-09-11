@@ -35,13 +35,6 @@ using ores::platform::time::datetime;
 
 namespace {
 
-inline static std::string_view logger_name = "ores.telemetry.repository.telemetry_mapper";
-
-[[nodiscard]] auto& lg() {
-    static auto instance = make_logger(logger_name);
-    return instance;
-}
-
 /**
  * @brief Parses a timestamp string into a time_point.
  */

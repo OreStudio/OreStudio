@@ -34,7 +34,6 @@
 namespace {
 
 const std::string test_suite("ores.connections.tests");
-const std::string tags("[service]");
 
 class scoped_connection_manager {
 public:

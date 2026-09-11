@@ -237,7 +237,7 @@ void SubjectAreaController::showDetailWindow(const dq::domain::subject_area& sub
             &SubjectAreaDetailDialog::subjectAreaSaved,
             this,
             [self = QPointer<SubjectAreaController>(this)](const QString& name,
-                                                           const QString& domain_name) {
+                                                           const QString& /*domain_name*/) {
                 if (!self)
                     return;
                 BOOST_LOG_SEV(lg(), info) << "Subject area saved: " << name.toStdString();
@@ -247,7 +247,7 @@ void SubjectAreaController::showDetailWindow(const dq::domain::subject_area& sub
             &SubjectAreaDetailDialog::subjectAreaDeleted,
             this,
             [self = QPointer<SubjectAreaController>(this), key](const QString& name,
-                                                                const QString& domain_name) {
+                                                                const QString& /*domain_name*/) {
                 if (!self)
                     return;
                 BOOST_LOG_SEV(lg(), info) << "Subject area deleted: " << name.toStdString();
@@ -445,7 +445,7 @@ void SubjectAreaController::onRevertVersion(const dq::domain::subject_area& subj
             &SubjectAreaDetailDialog::subjectAreaSaved,
             this,
             [self = QPointer<SubjectAreaController>(this)](const QString& name,
-                                                           const QString& domain_name) {
+                                                           const QString& /*domain_name*/) {
                 if (!self)
                     return;
                 BOOST_LOG_SEV(lg(), info) << "Subject area reverted: " << name.toStdString();

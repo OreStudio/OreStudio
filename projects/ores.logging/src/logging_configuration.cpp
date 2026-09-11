@@ -34,7 +34,6 @@ const std::string logging_log_dir_arg("log-directory");
 const std::string logging_log_filename_arg("log-filename");
 const std::string logging_log_include_pid_arg("log-include-pid");
 const std::string logging_log_replica_index_arg("log-replica-index");
-const std::string logging_log_level_info("info");
 
 }
 

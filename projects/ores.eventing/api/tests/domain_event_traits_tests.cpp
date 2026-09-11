@@ -61,7 +61,7 @@ TEST_CASE("event_bus_with_domain_events", "[event_traits][event_bus]") {
     });
 
     auto sub2 = bus.subscribe<account_changed_event>(
-        [&](const account_changed_event& e) { account_received = true; });
+        [&](const account_changed_event&) { account_received = true; });
 
     auto now = std::chrono::system_clock::now();
     bus.publish(currency_changed_event{now});

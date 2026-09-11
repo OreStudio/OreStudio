@@ -214,7 +214,7 @@ void MethodologyDetailDialog::onDeleteClicked() {
     boost::uuids::uuid methodologyId = methodology_.id;
     std::string methodologyName = methodology_.name;
 
-    auto task = [self, methodologyId, methodologyName]() -> bool {
+    auto task = [self, methodologyName]() -> bool {
         if (!self || !self->clientManager_)
             return false;
 

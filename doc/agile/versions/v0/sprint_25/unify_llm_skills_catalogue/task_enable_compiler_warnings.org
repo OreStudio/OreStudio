@@ -47,11 +47,11 @@ enum hides exactly the case the warning exists to find, while a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Discovered in review of PR #2056.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-10                               |
 
 * Acceptance
@@ -66,6 +66,61 @@ enum hides exactly the case the warning exists to find, while a
 -
 
 * Plan
+
+Run under =compass-helm=. The matching rule sent it to
+=compass-method-feature= rather than bug fix: nothing misbehaves
+against a contract in force, the build is silent by configuration, and
+what changes is the build's behaviour. One predicate describes the
+finished state, so it is one piece of work rather than a sequence.
+
+Measure before deciding. A syntax-only sweep of all 3591 translation
+units under the new flags is the right instrument for a predicate about
+diagnostics: it runs the same front end that emits the warnings without
+paying for codegen and linking, which matters on a machine that has
+been killing heavy builds.
+
+The sweep found 2153 warnings across 259 units. 2040 were
+=-Wmissing-field-initializers= and its designated twin, both firing on
+aggregate initialisation that leaves a trailing field to its default.
+That is idiomatic here, so both are off; leaving them on would have
+buried the 113 that named something real.
+
+* Notes
+
+An early 30-unit sample came back clean and I reported that the
+codebase was already warning-free. It was not: at a 7% dirty rate, 30
+units draw all-clean about one time in ten, and that is what happened.
+The claim was withdrawn when the full sweep landed. The lesson is the
+sample size, not the sampling: 30 was never enough to support the
+conclusion I drew from it.
+
+Three findings were not warnings at all.
+
+The Wt account delete, lock and unlock confirmations do nothing. Each
+shows a dialog and calls =load_accounts()= on Yes. The =id= was
+invisible while a dead lambda capture consumed it, so removing the
+capture exposed the parameter and the parameter exposed the missing
+implementation. Filed as its own defect.
+
+=compute_telemetry_repository= carries a complete =from_entity= mapper
+nothing calls, while its =to_entity= write path is live: a read path
+that was never wired. =substitute_args= in the compute wrapper is 24
+lines of argument templating, also unreferenced. Both are deleted here
+— git keeps the text — and recorded so the finding is not lost with the
+code.
+
+Regenerating the table renderers surfaced 116 files of drift and 24
+generated files never committed, in three components. None of it
+belongs in a warnings change; it is reverted and filed.
+
+Two mistakes of my own are worth recording. A filter written to keep
+only the template's one-line change reverted my hand-written fixes too,
+because they are multi-line: it was defined by what to discard rather
+than what to keep. And a script to sort an initialiser list anchored on
+the first colon, which is the =::= in =MainWindow::MainWindow=, and ate
+the signature; a backup taken beforehand is the only reason that cost
+nothing.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -97,3 +152,37 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five acceptance criteria are met.
+
+=-Wall= and =-Wextra= are on for GCC and Clang, with =/W4= beside the
+existing =/WX= for MSVC. Two of =-Wextra='s warnings are off, with the
+reason and the counts recorded at the flags.
+
+Everything the new warnings surfaced is fixed rather than suppressed,
+with one exception that names its reason in place: =domain.cpp= is
+104641 lines emitted by xsdcpp from ORE's schemas, so its three
+warnings are silenced on that file alone and the fix belongs upstream
+in the generator.
+
+A switch over a closed enum that misses an enumerator now fails the
+build. Demonstrated rather than asserted: the same source compiles
+clean under main's =-Werror= alone and is an error under the flags this
+adds.
+
+=default:= labels were not the work after all. A =default:= suppresses
+=-Wswitch=, so those 174 files produced no warnings before this change
+and produce none after. They are future blind spots rather than
+remediation, and removing them is a judgement per site that this task
+does not make. The filed premise was wrong about that and is corrected
+here.
+
+The exhaustive-matching section of
+=compass-principle-type-system-discipline= still describes the warning
+as off, and is corrected in this change to describe the mechanism that
+now exists.
+
+Verification: three full sweeps of all 3591 translation units. 2153
+warnings, then 13, then 3 — the last three being =domain.cpp=, proved
+clean under its suppression and confirmed wired by reconfiguring CMake
+and reading the flags back out of the compile database.

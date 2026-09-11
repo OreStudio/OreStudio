@@ -112,6 +112,16 @@ MainWindow::MainWindow(QWidget* parent,
     : QMainWindow(parent)
     , ui_(new Ui::MainWindow)
     , mdiArea_(nullptr)
+    , userStatusWidget_(nullptr)
+    , userStatusNameLabel_(nullptr)
+    , serverStatusWidget_(nullptr)
+    , serverStatusNameLabel_(nullptr)
+    , tenantStatusWidget_(nullptr)
+    , tenantStatusNameLabel_(nullptr)
+    , partyStatusWidget_(nullptr)
+    , partyStatusNameLabel_(nullptr)
+    , envLabelWidget_(nullptr)
+    , envLabelNameLabel_(nullptr)
     , eventBus_(std::make_shared<eventing::service::event_bus>())
     , clientManager_(new ClientManager(eventBus_, this))
     , imageCache_(new ImageCache(clientManager_, this))
@@ -121,17 +131,7 @@ MainWindow::MainWindow(QWidget* parent,
     , trayContextMenu_(nullptr)
     , instanceColorIndicator_(nullptr)
     , eventViewerWindow_(nullptr)
-    , userStatusWidget_(nullptr)
-    , telemetryViewerWindow_(nullptr)
-    , userStatusNameLabel_(nullptr)
-    , serverStatusWidget_(nullptr)
-    , serverStatusNameLabel_(nullptr)
-    , tenantStatusWidget_(nullptr)
-    , tenantStatusNameLabel_(nullptr)
-    , partyStatusWidget_(nullptr)
-    , partyStatusNameLabel_(nullptr)
-    , envLabelWidget_(nullptr)
-    , envLabelNameLabel_(nullptr) {
+    , telemetryViewerWindow_(nullptr) {
     pendingScenarioPath_ = openScenarioPath;
     cliMasterPassword_ = cliMasterPassword;
 

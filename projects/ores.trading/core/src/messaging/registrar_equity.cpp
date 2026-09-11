@@ -35,7 +35,6 @@ register_equity_handlers(ores::nats::service::client& nats,
                          ores::database::context ctx,
                          std::optional<ores::security::jwt::jwt_authenticator> verifier) {
     std::vector<ores::nats::service::subscription> subs;
-    constexpr auto queue = queue_name;
 
     auto equity_accumulator_instrument_subs =
         register_equity_accumulator_instrument_handlers(nats, ctx, verifier);

@@ -77,11 +77,9 @@ const std::string trading_domain_desc(
 const std::string ore_domain_name("ore");
 const std::string ore_domain_desc("ORE: XML import/export utilities (roundtrip).");
 
-const std::string operation_arg("operation");
 
 const std::string help_arg("help");
 const std::string version_arg("version");
-const std::string command_arg("command");
 const std::string domain_arg("domain");
 
 using boost::program_options::value;

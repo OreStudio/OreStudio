@@ -100,7 +100,6 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
         if (decode<get_nats_server_samples_request>(msg)) {
             BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, get_nats_server_samples_response{.success = true});
@@ -214,7 +213,6 @@ public:
             error_reply(nats_, msg, ctx_expected.error());
             return;
         }
-        const auto& ctx = *ctx_expected;
         if (decode<get_nats_stream_samples_request>(msg)) {
             BOOST_LOG_SEV(telemetry_handler_lg(), debug) << "Completed " << msg.subject;
             reply(nats_, msg, get_nats_stream_samples_response{.success = true});

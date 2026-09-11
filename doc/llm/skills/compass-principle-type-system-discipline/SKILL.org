@@ -61,27 +61,24 @@ codebase.
 | Derive from the schema | Regenerate from the entity model. A hand-written type that duplicates a generated shape is drift with a delay on it |
 | Strengthen only where partiality appears | Same rule, and the same stopping point: if nothing would otherwise throw, leave the plain type |
 
-** Exhaustive matching, which nothing here enforces yet
+** Exhaustive matching, which the compiler now enforces
 
 Upstream can rely on the compiler failing when a variant is added. We
 cannot, and the gap is wider than the language alone makes it.
 
-C++ would warn: =-Wswitch= fires on a =switch= over an =enum class= that
-misses an enumerator, provided there is no =default:= label. This build
-does not enable it. The only warning flag we set is =-Werror=, which
-escalates whatever is already on and does not turn =-Wswitch= on, since
-that arrives with =-Wall=. A non-exhaustive switch therefore compiles
-clean today, with or without a =default:=.
+=-Wswitch= fires on a =switch= over an =enum class= that misses an
+enumerator, provided there is no =default:= label, and the build enables
+it through =-Wall= with =-Werror= behind it. A missing case is a build
+failure.
 
-So this is advice with no backstop behind it: handle every enumerator
-explicitly, and do not reach for =default:= on a closed enum, because the
-day the flags are enabled that label is what will hide the missing case.
-For =std::variant=, an overload set with no catch-all fails to compile on
-its own and needs no flag.
+The condition is the whole rule: a =default:= on a closed enum turns
+that error back into silence, and it is what an agent reaches for to
+quiet a warning. Handle every enumerator explicitly instead. Roughly 174
+files still carry a =default:= over a switch, so the backstop is real
+for new code and absent wherever one of those labels sits.
 
-Enabling the warning is tracked work rather than a thing to fix in
-passing: 174 files carry a =default:= in a switch, so the flag and the
-sweep arrive together.
+For =std::variant=, an overload set with no catch-all fails to compile
+on its own and needs no flag.
 
 ** Branding, which costs more here
 

@@ -1281,7 +1281,7 @@ void DataLibrarianWindow::showHeaderContextMenu(const QPoint& pos) {
         action->setCheckable(true);
         action->setChecked(!header->isSectionHidden(col));
 
-        connect(action, &QAction::toggled, this, [this, header, col](bool visible) {
+        connect(action, &QAction::toggled, this, [header, col](bool visible) {
             header->setSectionHidden(col, !visible);
 
             // Save settings

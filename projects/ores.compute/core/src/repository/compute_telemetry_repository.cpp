@@ -38,12 +38,6 @@ using ores::platform::time::datetime;
 
 namespace {
 
-auto& lg() {
-    static auto instance =
-        ores::logging::make_logger("ores.compute.repository.compute_telemetry_repository");
-    return instance;
-}
-
 grid_sample_entity to_entity(const domain::grid_sample& s, const std::string& tid) {
     grid_sample_entity e;
     e.sampled_at = datetime::to_db_string(s.sampled_at);
@@ -98,22 +92,6 @@ node_sample_entity to_entity(const domain::node_sample& s, const std::string& ti
     e.output_bytes_uploaded = s.output_bytes_uploaded;
     e.seconds_since_hb = s.seconds_since_hb;
     return e;
-}
-
-domain::node_sample from_entity(const node_sample_entity& e) {
-    domain::node_sample s;
-    s.sampled_at = timestamp_to_timepoint(e.sampled_at.value());
-    s.tenant_id = utility::uuid::tenant_id::from_string(e.tenant_id.value()).value();
-    s.host_id = boost::lexical_cast<boost::uuids::uuid>(e.host_id.value());
-    s.tasks_completed = e.tasks_completed;
-    s.tasks_failed = e.tasks_failed;
-    s.tasks_since_last = e.tasks_since_last;
-    s.avg_task_duration_ms = e.avg_task_duration_ms;
-    s.max_task_duration_ms = e.max_task_duration_ms;
-    s.input_bytes_fetched = e.input_bytes_fetched;
-    s.output_bytes_uploaded = e.output_bytes_uploaded;
-    s.seconds_since_hb = e.seconds_since_hb;
-    return s;
 }
 
 } // namespace

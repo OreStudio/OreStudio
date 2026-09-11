@@ -54,7 +54,6 @@ const std::string permissions_command_desc("Manage permissions (list, delete).")
 const std::string login_info_command_name("login-info");
 const std::string login_info_command_desc("View login tracking information (list).");
 
-const std::string domain_name("iam");
 const std::string domain_desc("iam: Identity and access management.");
 
 void print_domain_help(std::ostream& info) {

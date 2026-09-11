@@ -108,14 +108,6 @@ bool is_database_output_enabled() {
  * @return Reference to the current test's logger
  * @throws std::runtime_error if called outside of a test case context
  */
-inline auto& logger() {
-    if (!current_test_context.logger.has_value()) {
-        throw std::runtime_error("logger() called outside of test case context. "
-                                 "Ensure logging_listener.hpp is included in your test file.");
-    }
-    return current_test_context.logger.value();
-}
-
 }
 
 namespace ores::testing {
@@ -167,7 +159,7 @@ void logging_listener::testRunStarting(Catch::TestRunInfo const& /*testRunInfo*/
         std::make_shared<telemetry_lifecycle_manager>(std::optional<logging_options>{cfg});
 }
 
-void logging_listener::testRunEnded(Catch::TestRunStats const& testRunStats) {
+void logging_listener::testRunEnded(Catch::TestRunStats const& /*testRunStats*/) {
     // This is called once at the end of the test run, but logger is already
     // cleaned up, so we'll skip logging here
 }

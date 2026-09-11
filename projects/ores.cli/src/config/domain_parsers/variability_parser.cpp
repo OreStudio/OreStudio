@@ -42,7 +42,6 @@ namespace entity_parsers = ores::cli::config::entity_parsers;
 const std::string system_settings_command_name("system-settings");
 const std::string system_settings_command_desc("Manage system settings (list, delete, add).");
 
-const std::string domain_name("variability");
 const std::string domain_desc("variability: System settings and variability.");
 
 void print_domain_help(std::ostream& info) {

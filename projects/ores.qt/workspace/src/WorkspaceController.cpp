@@ -49,8 +49,8 @@ WorkspaceController::WorkspaceController(QMainWindow* mainWindow,
                                          QObject* parent)
     : EntityController(mainWindow, mdiArea, clientManager, username, std::string_view{}, parent)
     , listWindow_(nullptr)
-    , badgeCache_(badgeCache)
-    , listMdiSubWindow_(nullptr) {
+    , listMdiSubWindow_(nullptr)
+    , badgeCache_(badgeCache) {
 
     BOOST_LOG_SEV(lg(), debug) << "WorkspaceController created";
 

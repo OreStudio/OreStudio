@@ -348,7 +348,7 @@ domain::publication_result
 publication_service::call_populate_function(const domain::dataset& dataset,
                                             const domain::artefact_type& artefact_type,
                                             domain::publication_mode mode,
-                                            const std::string& published_by) {
+                                            const std::string& /*published_by*/) {
 
     domain::publication_result result;
     result.dataset_id = dataset.id;

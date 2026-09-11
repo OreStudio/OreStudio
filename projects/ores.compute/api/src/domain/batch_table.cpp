@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<batch>& v) {
     table << fort::header << "ID" << "External Ref" << "Status" << "Modified By" << "Recorded At"
           << fort::endr;
 
-    for (const auto& b : v) {
+    for ([[maybe_unused]] const auto& b : v) {
         table << b.id << b.external_ref << b.status << b.modified_by << b.recorded_at << fort::endr;
     }
     return table.to_string();

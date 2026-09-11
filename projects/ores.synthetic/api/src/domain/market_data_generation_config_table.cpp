@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<market_data_generation_config>& v
     table << fort::header << "Name" << "Scope" << "Binding" << "Enabled" << "Description"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& c : v) {
+    for ([[maybe_unused]] const auto& c : v) {
         table << c.name << c.scope << c.binding_mode << (c.enabled ? "true" : "false")
               << c.description << c.modified_by << c.version << fort::endr;
     }

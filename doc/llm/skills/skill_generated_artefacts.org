@@ -88,12 +88,32 @@ classified is one nobody can tell is broken.
 
 ** Drift
 
+Unlike the rest of this page, this section describes what runs today.
+All three checks exist and all three are enforced in CI.
+
 #+ATTR_HTML: :class hug-leading
-| Kind           | What happened                                               | Guarded by                 |
-|----------------+-------------------------------------------------------------+----------------------------|
-| Artefact drift | A generated file was hand-edited                            | =check_component_drift.py= |
-| Template drift | A =.mustache= was edited instead of its literate org source | =template-drift.yml=       |
-| Model drift    | An entity no longer matches its bound profile                | The model-drift check      |
+| Kind           | What happened                                                | Guarded by                                       | Enforced                       |
+|----------------+--------------------------------------------------------------+--------------------------------------------------+--------------------------------|
+| Template drift | A =.mustache= was edited instead of its literate org source  | =template-drift.yml=                             | Yes, on every push and PR      |
+| Artefact drift | A generated file was hand-edited, or a model or template changed and the code built from it was never regenerated | =check_component_drift.py=, run by =codegen-drift.yml= | Yes, over the drift-free registry |
+| Model drift    | An entity names a profile and then declares a feature the profile fixes to another value | =check_model_drift.py=, run by =codegen-drift.yml= | Yes, with named exceptions     |
+
+Artefact drift is the one whose second cause is easy to miss. Nobody has
+to hand-edit anything: change a template, regenerate the components you
+were thinking about, and every other component built from that template
+is now behind. Two template changes did exactly that and left 102
+generated files behind, both merged green because the check that would
+have caught them ran nowhere.
+
+Both enforced sets are deliberately partial, and the partiality is what
+makes them worth having. =check_component_drift.py= carries a registry
+of components verified to regenerate byte-identical, and a component
+joins only once it does; =check_model_drift.py= carries named
+exceptions for bindings that cannot yet be satisfied. A gate that
+reports a standing failure teaches people to ignore it, so each check
+enforces exactly what is known-clean and fails on anything new. Shrinking
+the exception lists is the work; neither list is a place to park a
+problem.
 
 These are S3* work: continuous, from outside, and binding
 ([[id:5365DE9F-E3F9-4B5F-ACC1-B347B5FCE2A9][Systems and levels]]). They are
@@ -105,8 +125,11 @@ read the diff and decide whether it is plausible; it regenerates and compares.
 ** Inventory
 
 Model type, the profile it binds to, and the drift check guarding it.
-Not yet written: it is generated from the drift registry, which
-arrives when the codegen drift checks are wired into CI.
+Not yet written. The registries it would be generated from now exist:
+=KNOWN_DRIFT_FREE= in =check_component_drift.py= names the components
+under artefact enforcement, and =check_model_drift.py --summary= reports
+how many models bind to a profile at all. 136 of 245 models carry a
+binding, so an inventory written today would be more gap than content.
 
 * See also
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :codegen:drift:ci:verification:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/wire-codegen-drift-checks
+#+pr: 2065
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
 #+updated: 2026-08-26
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Three kinds of codegen drift exist and only one is enforced. Template drift is g
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-26                               |
 
 * Acceptance
@@ -42,6 +42,26 @@ Three kinds of codegen drift exist and only one is enforced. Template drift is g
 - The three drift kinds are documented with which check guards each and whether it is enforced.
 
 * Plan
+
+Measure before wiring. Running =check_component_drift.py --all= on
+clean main before touching anything is what a gate is for, and it
+failed immediately: 102 generated files across the registry, left
+behind by the two template changes merged in the previous two tasks.
+Both had gone through review and CI. That is the argument for the task
+rather than a detour inside it, so the regeneration is its own commit.
+
+Model drift needed a checker built. Profiles already state their
+contract as a feature-to-value table, and a bound model states its own
+features in a property drawer, so the check is a comparison rather than
+an inference. Only features the model states itself are compared: a
+feature it leaves unstated is supplied by the profile and cannot
+contradict it.
+
+Both enforced sets are partial on purpose. =check_component_drift.py=
+already carried a registry of components verified byte-identical;
+=check_model_drift.py= gets named exceptions for the same reason. A
+gate that reports a standing failure is one people learn to ignore.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -64,12 +84,79 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2065][#2065]] | [ci] Wire both unguarded codegen drift checks into CI |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =model_flags()= reads only the =* Flags= drawer, but =has_uuid_primary_key=, =has_pagination= and =has_change_reason_cache= live in the nested =** Qt= drawer for every model, so three of the five features the profiles fix were never compared | check_model_drift.py | Accept | Correct, and the most important finding on the PR. The clean first run was mostly the parser not looking. Every property drawer is now read, keyed by its heading path, and a feature stated twice with different values is reported rather than resolved by ordering |
+| 2 | The blind spot means "0 drift, 1 exception" was not evidence that bound models agree on UUID-key shape, pagination or change-reason caching | — | Accept | Confirmed by fixing it: two further real findings appeared immediately, =compute.result= and =reporting.report_instance=, neither visible before |
+| 3 | =codegen-drift.yml= runs =apt-get update= before installing clang-format and =nightly-format.yml= does not, so the two could resolve to different point releases despite identical intent | nightly-format.yml | Accept | Added the refresh to =nightly-format.yml= so both resolve the same way, with the reason stated at the step. The invariant only holds if both sides hold it |
+| 4 | The clang-format reasoning otherwise holds: same distro package, same runner OS, neither pinned, so both move together | — | Accept | No change. CI confirms it empirically: the drift job passes under ubuntu's clang-format against a tree formatted by a different version locally |
+| 5 | The =report_definition= exception is honest rather than a shortcut: neither profile can hold both facts, so no re-bind removes the false promise | — | Accept | No change |
+
+A fourth finding came out of fixing the first, and is recorded here
+because it was not in the review. The =fk-scoped-child= profile fixes
+=parent_entity_singular= to a prose value stating that the feature must
+be set rather than which value it takes. Comparing that literally
+reported two correct models as drifted. Assignments beginning with
+=required= are now checked for presence only, which is what the profile
+says it means.
 
 * Result
+
+All five acceptance criteria are met.
+
+=codegen-drift.yml= runs =check_component_drift.py --all= on every push
+and pull request that touches a model or codegen, and fails on artefact
+drift. It installs clang-format from the distro deliberately: codegen
+formats its own C++ output, so without the formatter every generated
+file reads as drifted, and the distro package is the one
+=nightly-format.yml= uses to normalise the tree, so both agree on what
+formatted means.
+
+The nightly-includes body no longer claims a check that does not run.
+It now names =codegen-drift.yml= and what that check covers, so the
+claim and the mechanism match.
+
+=check_model_drift.py= is new and reports entities whose declared
+features contradict the profile they bind to. It also reports a model
+binding to two profiles that fix the same feature to different values,
+which is unsatisfiable either way. It runs as a second job in the same
+workflow, needing neither codegen nor a formatter because it reads only
+the models.
+
+The registry discipline is preserved on both checks. Components join
+the artefact registry only once verified byte-identical, and the model
+check carries named exceptions rather than a lowered bar.
+
+The three drift kinds are documented in
+[[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]], each with the check that guards it and whether
+it is enforced, and the section is marked as describing what runs
+rather than the target state the rest of that page describes.
+
+Verification is demonstrated rather than asserted. The artefact check
+failed on 102 real drifted files, then passed once they were
+regenerated. The model check was proved to fail by injecting a
+contradiction into a bound model, and to pass once it was restored —
+and after review, proved again on a feature in the =** Qt= drawer,
+which is the class the first version of the parser could not see.
+
+Three findings are filed rather than fixed, two of them visible only
+once the review's finding was addressed.
+
+=compute.result= states =has_change_reason_cache=false= and documents
+it as overriding the profile default. The profile offers no default:
+its assignments fix values. The two disagree about what binding means,
+which is a larger question than a binding correction, so it is filed
+alongside =report_instance=, which binds =fk-scoped-child= while
+declaring no parent at all.
+
+The remaining finding predates the review. =report_definition= is
+uuid-keyed and workspace-scoped, and no profile in the catalogue
+describes that combination: =uuid-identified-lookup= fixes
+=has_workspace_id=false= and =workspace-scoped-lookup= fixes
+=has_uuid_primary_key=false=. Re-binding would move the false promise
+rather than remove it, so it is a named exception with its reason and
+its own task.

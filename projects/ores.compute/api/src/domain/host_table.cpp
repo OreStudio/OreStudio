@@ -32,7 +32,7 @@ std::string convert_to_table(const std::vector<host>& v) {
           << "RAM (MB)" << "GPU Type" << "Last RPC Time" << "Credit Total" << "Modified By"
           << "Recorded At" << fort::endr;
 
-    for (const auto& h : v) {
+    for ([[maybe_unused]] const auto& h : v) {
         table << h.id << h.external_id << h.display_name << h.location << h.cpu_count << h.ram_mb
               << h.gpu_type << h.last_rpc_time << h.credit_total << h.modified_by << h.recorded_at
               << fort::endr;

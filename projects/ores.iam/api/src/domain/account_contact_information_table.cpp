@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<account_contact_information>& v) 
     table << fort::header << "Account" << "City" << "Country" << "Phone" << "Email" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& aci : v) {
+    for ([[maybe_unused]] const auto& aci : v) {
         table << boost::uuids::to_string(aci.account_id) << aci.city << aci.country_code
               << aci.phone << aci.email << aci.modified_by << aci.version << fort::endr;
     }

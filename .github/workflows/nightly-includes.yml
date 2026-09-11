@@ -88,9 +88,11 @@ jobs:
             header, which breaks the MSVC build), or include a header nothing
             uses. Review and merge to keep the tree clean.
 
-            Fixes to generated files should go into their codegen templates
-            instead — hand-edited generated output would fail the local
-            component drift check (check_component_drift.py). Reproduce locally:
+            Fixes to generated files should go into their codegen
+            templates instead. Hand-edited generated output fails the
+            Codegen drift check (codegen-drift.yml), which runs
+            check_component_drift.py over the components in its
+            drift-free registry. Reproduce locally:
 
             ```sh
             cmake --preset linux-clang-debug-ninja

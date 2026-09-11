@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<account_party>& v) {
 
     table << fort::header << "Account" << "Party" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& ap : v) {
+    for ([[maybe_unused]] const auto& ap : v) {
         table << boost::uuids::to_string(ap.account_id) << boost::uuids::to_string(ap.party_id)
               << ap.modified_by << ap.version << fort::endr;
     }

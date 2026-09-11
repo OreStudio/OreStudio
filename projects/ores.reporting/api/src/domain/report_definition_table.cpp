@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<report_definition>& v) {
 
     table << fort::header << "ID" << "Name" << "Type" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& rd : v) {
+    for ([[maybe_unused]] const auto& rd : v) {
         table << rd.id << rd.name << rd.report_type << rd.modified_by << rd.version << fort::endr;
     }
     return table.to_string();

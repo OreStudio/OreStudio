@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<app_version_platform>& v) {
     table << fort::header << "App Version" << "Platform" << "Package URI" << "SHA256"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& avp : v) {
+    for ([[maybe_unused]] const auto& avp : v) {
         table << boost::uuids::to_string(avp.app_version_id)
               << boost::uuids::to_string(avp.platform_id) << avp.package_uri << avp.sha256
               << avp.modified_by << avp.version << fort::endr;

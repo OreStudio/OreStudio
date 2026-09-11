@@ -1,0 +1,88 @@
+# Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 3 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+# Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+---
+name: Codegen drift
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+    paths:
+      - "projects/*/modeling/**"
+      - "projects/ores.codegen/**"
+
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "projects/*/modeling/**"
+      - "projects/ores.codegen/**"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # Artefact drift: a generated file was hand-edited, or a model or
+  # template changed and the components built from it were never
+  # regenerated. check_component_drift.py regenerates the components in
+  # its known-drift-free registry and fails if the tree moves.
+  #
+  # This guards a gap that template-drift.yml cannot see. That job
+  # proves the .mustache artefacts match their org sources; it says
+  # nothing about whether the code generated FROM those templates was
+  # regenerated afterwards. Two template changes merged green through
+  # review and CI while leaving 102 generated files behind, which is
+  # the case this job exists to fail on.
+  drift:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install codegen dependencies
+        run: |
+          pip install --quiet -r projects/ores.codegen/requirements.txt
+      # Regeneration runs clang-format over its C++ output, so the
+      # formatter has to be present or every generated C++ file reads as
+      # drifted. The distro package is deliberate: it is the same
+      # clang-format that nightly-format.yml uses to normalise the tree,
+      # so both agree on what formatted means.
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+      - name: Check generated output matches the models
+        run: |
+          python3 projects/ores.codegen/scripts/check_component_drift.py --all
+
+  # Model drift: an entity names a profile and then declares a feature
+  # the profile fixes to another value, so the binding promises a
+  # configuration the entity does not have. Reads the models only, so it
+  # needs neither codegen nor a formatter.
+  model:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check models agree with the profiles they bind to
+        run: |
+          python3 projects/ores.codegen/scripts/check_model_drift.py --summary

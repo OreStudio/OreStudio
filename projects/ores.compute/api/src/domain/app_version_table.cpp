@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<app_version>& v) {
     table << fort::header << "ID" << "App ID" << "Wrapper Version" << "Engine Version"
           << "Min RAM (MB)" << "Modified By" << "Recorded At" << fort::endr;
 
-    for (const auto& av : v) {
+    for ([[maybe_unused]] const auto& av : v) {
         table << av.id << boost::uuids::to_string(av.app_id) << av.wrapper_version
               << av.engine_version << av.min_ram_mb << av.modified_by << av.recorded_at
               << fort::endr;

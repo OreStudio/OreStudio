@@ -45,7 +45,7 @@ std::string convert_to_table(const std::vector<yield_curve_process_parameter_def
           << "Short Label" << "Description" << "Data Type" << "Default" << "Min" << "Max"
           << "Display Order" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& pd : v) {
+    for ([[maybe_unused]] const auto& pd : v) {
         table << pd.process_type_code << pd.parameter_name << pd.display_name << opt_str(pd.symbol)
               << pd.short_label << pd.description << pd.data_type << pd.default_value
               << opt_str(pd.min_value) << opt_str(pd.max_value) << pd.display_order

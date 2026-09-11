@@ -587,7 +587,7 @@ problems with keeping it as the live computation engine:
 
 *** New component: calendar rule evaluation in =ores.analytics.quant=
 
-=ores.analytics.quant= (=projects/ores.analytics.quant=) is an
+=ores.analytics.quant= (=projects/ores.analytics/quant=) is an
 existing, dependency-light quant-math library — no database,
 messaging, or refdata coupling, everything supplied as plain
 parameters by the caller (see its own

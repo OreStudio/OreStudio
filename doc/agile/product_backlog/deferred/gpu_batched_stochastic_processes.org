@@ -40,7 +40,7 @@ rates, hundreds of IR rates, and tens of vol surfaces generated per
 tick, with =ores.analytics.quant= deliberately kept dependency-light
 and free of database/messaging/refdata coupling specifically to
 leave room for this kind of optimisation later (see
-=projects/ores.analytics.quant/modeling/component_overview.org=).
+=projects/ores.analytics/quant/modeling/component_overview.org=).
 Sequential per-instance CPU generation is very unlikely to keep up
 once the instance count reaches that scale, especially once every IR
 curve family instance also has to evaluate a closed-form bond-price
@@ -52,7 +52,7 @@ process interfaces once performance becomes a blocker.
 
 * References
 
-- =projects/ores.analytics.quant/modeling/component_overview.org= --
+- =projects/ores.analytics/quant/modeling/component_overview.org= --
   the component's stated design rationale for staying dependency-light.
 - =doc/agile/versions/v0/sprint_23/ir-rates-synthetic-generation/story.org=
   -- the IR Rates synthetic data generation story whose short-rate

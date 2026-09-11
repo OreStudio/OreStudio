@@ -29,7 +29,3 @@ MISSING_PUML ores.qt.dq
 MISSING_PUML ores.qt.marketdata
 MISSING_PUML ores.qt.synthetic
 
-# ores.analytics.quant is a simple component named as a dotted sibling of
-# the ores.analytics composite. Resolve the shape (absorb it as a
-# sub-component of ores.analytics, or rename it) and remove the entry.
-NAME_COLLISION ores.analytics.quant

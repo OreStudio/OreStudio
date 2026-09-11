@@ -128,7 +128,8 @@ def composite_with_part_overviews(component_dir: Path) -> bool:
 def check_name_collisions(components: list[Path]) -> list[tuple[str, str, str]]:
     """
     Flag dotted top-level names that extend an existing component name.
-    Example: projects/ores.analytics.quant/ next to projects/ores.analytics/.
+    Example: projects/ores.<group>.<part>/ next to projects/ores.<group>/,
+    which claims a parentage the tree does not have.
     """
     names = {c.name for c in components}
     violations: list[tuple[str, str, str]] = []

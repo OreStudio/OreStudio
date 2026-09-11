@@ -193,7 +193,7 @@ a plain string, not a queryable typed field). Captured, not fixed here:
 - [[id:ADA913CE-E719-4B5D-9D8C-5C0186B788A0][ab-notebook: reproducible interest rate curve bootstrapping]] —
   Ballabio's replication of Ametrano & Bianchetti (2013), the
   reference case study for what a real bootstrap needs.
-- =projects/ores.analytics.quant/include/ores.analytics.quant/service/curve_instrument_pricer.hpp=
+- =projects/ores.analytics/quant/include/ores.analytics.quant/service/curve_instrument_pricer.hpp=
   — the pricer functions already deriving par rates from one
   short-rate draw's discount factors; a bootstrapper would consume
   the published ticks, not this pricer directly.

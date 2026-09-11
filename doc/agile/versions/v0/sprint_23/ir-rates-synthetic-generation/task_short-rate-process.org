@@ -22,11 +22,11 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 Add mean-reverting short-rate stochastic processes implementing
 =IYieldCurveProcess=
-(=projects/ores.analytics.quant/include/ores.analytics.quant/domain/i_yield_curve_process.hpp=,
+(=projects/ores.analytics/quant/include/ores.analytics.quant/domain/i_yield_curve_process.hpp=,
 a new interface extending =IStochasticProcess= with a
 =discount_factor()= method), wired into
 =process_factory::make_yield_curve_process()=
-(=projects/ores.analytics.quant/src/service/process_factory.cpp=).
+(=projects/ores.analytics/quant/src/service/process_factory.cpp=).
 Same shape as =ou_process=: pure closed-form math, no QuantLib.
 
 Revised from the original goal in two ways, both decided with the
@@ -57,7 +57,7 @@ remains a genuinely distinct third engine.
   =process_factory::make_yield_curve_process()=: =vasicek=, =cir=,
   =hull_white=.
 - No QuantLib dependency introduced anywhere in
-  =projects/ores.analytics.quant/=.
+  =projects/ores.analytics/quant/=.
 - Parameters (kappa, theta_path, sigma, initial_rate) are validated
   via the new
   =ores.analytics.quant::domain::validate_yield_curve_process_parameters=

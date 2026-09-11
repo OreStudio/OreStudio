@@ -78,7 +78,7 @@ is pure computation and must stay a small, freestanding library that can
 be linked from anywhere (analytics, a future pricing service, tests) with
 no service/database baggage.
 
-Proposed layout: =projects/ores.analytics.quant/{include,src,tests}=,
+Proposed layout: =projects/ores.analytics/quant/{include,src,tests}=,
 target =ores.analytics.quant.lib=, depending only on =Boost::graph=,
 =Boost::boost=, and =immer= (new vcpkg dependency -- =boost-graph= is
 already present in =vcpkg.json=, =immer= is not and needs adding).
@@ -192,7 +192,7 @@ via its "Verifies task" field.
 * Result
 
 Shipped a new component, =ores.analytics.quant= (flat library,
-=projects/ores.analytics.quant/=), depending only on =Boost::graph=/
+=projects/ores.analytics/quant/=), depending only on =Boost::graph=/
 =Boost::boost= (+ =immer=, added to =vcpkg.json= for the deferred
 rate-engine task) -- no database, service, messaging, or refdata linkage.
 

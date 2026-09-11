@@ -114,7 +114,7 @@ Any folder name outside it is a finding.
 | =tests/= | Simple; every part | C++ | Catch2 tests; the file name ends in =_tests.cpp= |
 | =modeling/= | Simple; parts; composite root | Codegen org models | Entity org models, =component_overview.org=, PlantUML sources. Not a CMake target. |
 | =api=, =core=, =service= | Composite children | C++ | Standard part roles |
-| =server=, =client=, =wrapper=, =database= | Composite children | C++ | Specialist part roles |
+| =server=, =client=, =wrapper=, =database=, =quant= | Composite children | C++ | Specialist part roles |
 | Domain-area names | =ores.qt= children | C++ / Qt | One Qt plugin per domain area |
 | =venv/= | Python tools only | Python | Local interpreter. Never committed; it is gitignored. |
 
@@ -151,10 +151,18 @@ both at once.
 
 The collision check automates the failure mode: a top-level
 =ores.<a>.<b>= next to an =ores.<a>= composite claims a parentage the
-tree does not have. The current example is =ores.analytics.quant= next
-to the =ores.analytics= composite. Resolve it by absorbing the simple
-component into the composite as a proper sub-component, or by renaming
-it. Use the sub-component catalogue names.
+tree does not have. Resolve it by absorbing the simple component into
+the composite as a proper sub-component, or by renaming it. Use the
+sub-component catalogue names, and add the name to the catalogue when
+the part is a role the catalogue does not yet carry — an unregistered
+folder name is a finding in its own right, so absorbing a component
+without registering its role trades one finding for another.
+
+=quant= arrived this way. It sat as =ores.analytics.quant= beside the
+=ores.analytics= composite, and is now the =quant= part of it. The
+move cost nothing at the call sites because a part's CMake target and
+include prefix are already the fully-qualified name, so only the
+directory and its registration in =projects/CMakeLists.txt= changed.
 
 *** 2. Sub-component structure
 

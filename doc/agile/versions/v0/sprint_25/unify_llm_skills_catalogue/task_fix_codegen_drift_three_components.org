@@ -1,0 +1,112 @@
+:PROPERTIES:
+:ID: A6DB4F4C-D4F5-4913-AFD3-CC791A921517
+:END:
+#+title: Task: Clear the codegen drift in analytics, refdata and scheduler
+#+description: Regenerating three components rewrites 116 checked-in files and creates 24 that were never committed; the generated tree and the generator disagree.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The checked-in generated code and the generator disagree, and nothing
+reports it.
+
+Found while fixing a compiler warning: the table renderers are generated
+from =cpp_domain_type_table.cpp.mustache=, so a one-line template change
+was the right fix. Regenerating =marketdata= produced exactly that one
+line in five files. Regenerating =analytics-cpp=, =refdata= and
+=scheduler-cpp= produced 116 changed files with 1112 insertions and 756
+deletions, and created 24 files that had never been committed —
+registrars, protocol headers, presentation and generator directories,
+eventing integration tests.
+
+None of that was the template change. It is the accumulated difference
+between what was committed at some point in the past and what the
+generator emits today, and it sat invisible because nothing regenerates
+those components in CI.
+
+The danger is specific rather than theoretical. Anyone making a
+legitimate template change to these components has to choose between
+shipping a 1100-line diff they did not author and not making the change
+at all. That is what happened here: the drift was reverted and the task
+it surfaced in shipped without it.
+
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Discovered while fixing compiler warnings. |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- Regenerating =analytics-cpp=, =refdata= and =scheduler-cpp= leaves the tree unchanged.
+- The 24 uncommitted generated files are either committed or the generator stops emitting them, and which it is, is stated per file.
+- Each substantive difference is understood before it is accepted: a diff taken because the generator is right is recorded as such, and one taken because the checked-in file was hand-edited is recorded as the hand-edit it overwrites.
+- The three components join the drift gate's registry, so the next divergence fails rather than accumulates.
+- The gate runs in CI, not only on request.
+
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Scope warning for whoever picks this up: 1112 insertions is not a
+mechanical accept. Some of it will be the generator having improved, and
+some will be hand-edits to generated files that regeneration is about to
+destroy. The second kind is why this is a task rather than a command,
+and the per-file judgement is the work.
+
+=marketdata= regenerates clean, so it is the control: whatever process
+kept it current is the one the other three need.
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

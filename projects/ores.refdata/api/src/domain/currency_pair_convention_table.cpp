@@ -45,7 +45,7 @@ std::string convert_to_table(const std::vector<currency_pair_convention>& v) {
           << "Business Day Convention" << "Spot Relative" << "End Of Month" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& cpv : v) {
+    for ([[maybe_unused]] const auto& cpv : v) {
         table << cpv.pair_code << cpv.pip_factor << cpv.tick_size << cpv.decimal_places
               << opt_str(cpv.business_day_convention) << opt_str(cpv.spot_relative)
               << opt_str(cpv.end_of_month) << cpv.modified_by << cpv.version << fort::endr;

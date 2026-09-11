@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<portfolio>& v) {
     table << fort::header << "Name" << "Purpose" << "Currency" << "Virtual" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& pf : v) {
+    for ([[maybe_unused]] const auto& pf : v) {
         table << pf.name << pf.purpose_type << pf.aggregation_ccy
               << (pf.is_virtual ? "true" : "false") << pf.modified_by << pf.version << fort::endr;
     }

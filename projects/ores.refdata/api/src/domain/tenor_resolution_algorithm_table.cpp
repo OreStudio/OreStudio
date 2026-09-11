@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<tenor_resolution_algorithm>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& tra : v) {
+    for ([[maybe_unused]] const auto& tra : v) {
         table << tra.code << tra.name << tra.description << tra.display_order << tra.modified_by
               << tra.version << fort::endr;
     }

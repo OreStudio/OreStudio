@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<derivation_kind>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& dk : v) {
+    for ([[maybe_unused]] const auto& dk : v) {
         table << dk.code << dk.name << dk.description << dk.display_order << dk.modified_by
               << dk.version << fort::endr;
     }

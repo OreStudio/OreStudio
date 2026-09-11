@@ -44,7 +44,7 @@ std::string convert_to_table(const std::vector<tenor_schedule>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Schedule Source" << "Calendar"
           << "Diary Entry" << "Order" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& ts : v) {
+    for ([[maybe_unused]] const auto& ts : v) {
         table << ts.code << ts.name << ts.description << ts.schedule_source
               << opt_str(ts.calendar_code) << opt_str(ts.diary_entry_type) << ts.display_order
               << ts.modified_by << ts.version << fort::endr;

@@ -33,7 +33,7 @@ std::string convert_to_table(const std::vector<currency>& v) {
           << "Market Tier" << "Spot Days" << "Day Basis" << "Base Precedence" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& c : v) {
+    for ([[maybe_unused]] const auto& c : v) {
         table << c.iso_code << c.name << c.numeric_code << c.symbol << c.fraction_symbol
               << c.fractions_per_unit << c.rounding_type << c.rounding_precision << c.format
               << c.monetary_nature << c.market_tier << c.spot_days << c.day_basis

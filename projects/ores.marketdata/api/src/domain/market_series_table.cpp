@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<market_series>& v) {
 
     table << fort::header << fort::endr;
 
-    for (const auto& s : v) {
+    for ([[maybe_unused]] const auto& s : v) {
         table << fort::endr;
     }
     return table.to_string();

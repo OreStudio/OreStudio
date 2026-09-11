@@ -44,7 +44,7 @@ std::string convert_to_table(const std::vector<payment_frequency>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Period Unit"
           << "Period Multiplier" << "Display Order" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& pf : v) {
+    for ([[maybe_unused]] const auto& pf : v) {
         table << pf.code << pf.name << pf.description << pf.period_unit
               << opt_str(pf.period_multiplier) << pf.display_order << pf.modified_by << pf.version
               << fort::endr;

@@ -32,8 +32,25 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_COMPILER_IS_CLANGXX)
     message(STATUS "C++ flags: ${CMAKE_CXX_FLAGS}")
 endif()
 
+# -Werror without -Wall only escalates the handful of diagnostics on by
+# default, which is how a non-exhaustive switch over an enum class
+# compiled clean here for years: -Wswitch arrives with -Wall.
+#
+# Two of -Wextra's warnings are switched back off. Both fire on
+# aggregate initialisation that leaves a trailing field to its default
+# value — reply(nats_, msg, get_images_response{false, e.what()}) and
+# the like — which is deliberate here and not a defect. They accounted
+# for 2040 of the 2153 warnings the first full sweep found, against 113
+# that named something real, so leaving them on would have buried the
+# signal rather than surfaced it. The designated-initializer variant is
+# Clang's alone, hence the separate guard.
 add_compile_options(
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall>
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wextra>
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wno-missing-field-initializers>
+    $<$<CXX_COMPILER_ID:Clang>:-Wno-missing-designated-field-initializers>
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
     $<$<CXX_COMPILER_ID:MSVC>:/WX>
     # /FS forces synchronous PDB writes so sccache can cache /Zi compilations.
     # Without it, parallel cl.exe invocations race on the shared .pdb file.

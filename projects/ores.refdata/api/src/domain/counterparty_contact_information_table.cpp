@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<counterparty_contact_information>
     table << fort::header << "Counterparty" << "Type" << "City" << "Country" << "Phone" << "Email"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& cci : v) {
+    for ([[maybe_unused]] const auto& cci : v) {
         table << boost::uuids::to_string(cci.counterparty_id) << cci.contact_type << cci.city
               << cci.country_code << cci.phone << cci.email << cci.modified_by << cci.version
               << fort::endr;

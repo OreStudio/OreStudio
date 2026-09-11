@@ -165,8 +165,8 @@ application::make_context(const std::optional<database::database_options>& db_op
 
 application::application(std::ostream& output_stream,
                          const std::optional<database::database_options>& db_opts)
-    : output_stream_(output_stream)
-    , context_(make_context(db_opts)) {
+    : context_(make_context(db_opts))
+    , output_stream_(output_stream) {
     BOOST_LOG_SEV(lg(), debug) << "Creating application.";
 
     // Set tenant context if provided

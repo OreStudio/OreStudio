@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<ois_convention>& v) {
     table << fort::header << "Id" << "Index" << "Spot Lag" << "Fixed DCF" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& oc : v) {
+    for ([[maybe_unused]] const auto& oc : v) {
         table << oc.id << oc.index << oc.spot_lag << oc.fixed_day_count_fraction << oc.modified_by
               << oc.version << fort::endr;
     }

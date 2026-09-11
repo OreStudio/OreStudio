@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<asset_class_code>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& ac : v) {
+    for ([[maybe_unused]] const auto& ac : v) {
         table << ac.code << ac.name << ac.description << ac.display_order << ac.modified_by
               << ac.version << fort::endr;
     }

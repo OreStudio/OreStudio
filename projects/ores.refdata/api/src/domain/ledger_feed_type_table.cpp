@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<ledger_feed_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& lft : v) {
+    for ([[maybe_unused]] const auto& lft : v) {
         table << lft.code << lft.name << lft.description << lft.display_order << lft.modified_by
               << lft.version << fort::endr;
     }

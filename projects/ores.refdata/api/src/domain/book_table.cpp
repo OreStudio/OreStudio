@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<book>& v) {
     table << fort::header << "Name" << "Party" << "Currency" << "Status" << "Regulatory Book Type"
           << "Sweepable" << "Rates Centre" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& bk : v) {
+    for ([[maybe_unused]] const auto& bk : v) {
         table << bk.name << boost::uuids::to_string(bk.party_id) << bk.functional_currency
               << bk.book_status << bk.regulatory_book_type << (bk.is_sweepable ? "true" : "false")
               << bk.rates_centre_code << bk.modified_by << bk.version << fort::endr;

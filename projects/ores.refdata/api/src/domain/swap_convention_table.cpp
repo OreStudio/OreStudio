@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<swap_convention>& v) {
     table << fort::header << "Id" << "Fixed Freq" << "Fixed DCF" << "Index" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& sc : v) {
+    for ([[maybe_unused]] const auto& sc : v) {
         table << sc.id << sc.fixed_frequency << sc.fixed_day_count_fraction << sc.index
               << sc.modified_by << sc.version << fort::endr;
     }

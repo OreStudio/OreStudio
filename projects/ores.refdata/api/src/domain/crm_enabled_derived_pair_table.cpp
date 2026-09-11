@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<crm_enabled_derived_pair>& v) {
 
     table << fort::header << fort::endr;
 
-    for (const auto& p : v) {
+    for ([[maybe_unused]] const auto& p : v) {
         table << fort::endr;
     }
     return table.to_string();

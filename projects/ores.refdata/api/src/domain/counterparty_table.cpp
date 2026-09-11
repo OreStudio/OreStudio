@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<counterparty>& v) {
     table << fort::header << "Code" << "Name" << "Type" << "Status" << "Business Center"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& cp : v) {
+    for ([[maybe_unused]] const auto& cp : v) {
         table << cp.short_code << cp.full_name << cp.party_type << cp.status
               << cp.business_center_code << cp.modified_by << cp.version << fort::endr;
     }

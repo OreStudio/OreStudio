@@ -8,7 +8,7 @@
 #+filetags: :documentation-improvements:sprint_25:v0:
 #+owner: marco
 #+branch: feature/document-structures-and-deal-composition
-#+pr:
+#+pr: 2063
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
@@ -91,7 +91,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2063][#2063]] | [doc] Add knowledge pages on trade structures and confirmations |
 
 * Review
 

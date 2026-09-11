@@ -38,16 +38,26 @@ programme does not own yet. They are counted and listed so the debt stays
 visible, and they do not fail the run unless --all-products asks for the whole
 corpus.
 
+Not every source document has an output to compare against. The exporter
+writes four kinds of ORE document, told apart by the root element in the file
+header: Portfolio, CurrencyConfig, CalendarAdjustments and Conventions. The
+example corpus also holds configuration documents with other roots, which the
+exporter skips by design. A skipped document is counted, not failed. A
+document the exporter does write, and which produced no output, is a failure:
+the write was attempted and did not happen.
+
 Usage:
   python3 scripts/ore_mapper_roundtrip_diff.py \\
       --source-dir <dir> --output-dir <dir> [--verbose] [--all-products]
 
 Exit codes:
   0 -- every in-scope document round trips with no lost or unexplained pair
-  1 -- an in-scope lost or unexplained pair, or a missing output file
+  1 -- an in-scope lost or unexplained pair, or a document the exporter
+       writes that produced no output file
 """
 
 import argparse
+import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import Counter
@@ -74,6 +84,42 @@ BOND_PRODUCTS = frozenset({
 
 TRADE_PREFIX = "/Portfolio/Trade/"
 ENVELOPE_PATH = TRADE_PREFIX + "Envelope"
+
+# The roots the roundtrip exporter writes, and the header length it peeks at
+# before deciding. Both mirror exporter.cpp, so the check below and the
+# exporter agree on which documents have an output to compare.
+EXPORTED_ROOTS = ("Portfolio", "CurrencyConfig", "CalendarAdjustments", "Conventions")
+HEADER_PEEK = 4096
+
+
+def root_element(source: Path) -> str:
+    """Reads the document's root element name, the way the exporter does."""
+    try:
+        header = source.open("rb").read(HEADER_PEEK).decode("utf-8", "replace")
+    except OSError:
+        return ""
+    at = header.find("<")
+    while at != -1:
+        if header.startswith("<!--", at):
+            end = header.find("-->", at + 4)
+            if end == -1:
+                return ""
+            at = header.find("<", end + 3)
+            continue
+        if header.startswith("<?", at) or header.startswith("<!", at):
+            end = header.find(">", at + 2)
+            if end == -1:
+                return ""
+            at = header.find("<", end + 1)
+            continue
+        match = re.match(r"<([A-Za-z_:][\w:.-]*)", header[at:])
+        return match.group(1) if match else ""
+    return ""
+
+
+def is_exported(source: Path) -> bool:
+    """True when the exporter is meant to write this document."""
+    return root_element(source) in EXPORTED_ROOTS
 
 
 def in_bond_scope(path: str) -> bool:
@@ -199,6 +245,7 @@ def main() -> int:
 
     failures = 0
     documents = 0
+    skipped = 0
     totals: Counter = Counter()
     scoped: Counter = Counter()
     outside: Counter = Counter()
@@ -211,8 +258,13 @@ def main() -> int:
         documents += 1
 
         if not target.exists():
-            print(f"MISSING     {relative}")
-            failures += 1
+            if is_exported(source):
+                print(f"MISSING     {relative}")
+                failures += 1
+            else:
+                skipped += 1
+                if args.verbose:
+                    print(f"SKIPPED     {relative}: no output by design")
             continue
 
         source_root, source_err = parse(source)
@@ -255,7 +307,7 @@ def main() -> int:
             print(f"OK          {relative}: numeric {len(found['numeric'])}, "
                   f"boolean {len(found['boolean'])}")
 
-    print(f"\nDocuments: {documents}  Failures: {failures}")
+    print(f"\nDocuments: {documents}  Failures: {failures}  Skipped: {skipped}")
     print(f"Classified: numeric {totals['numeric']}, boolean {totals['boolean']}")
     print(f"In scope, bond products and the trade envelope: "
           f"lost {scoped['lost']}, unexplained {scoped['unexplained']}")

@@ -34,6 +34,7 @@
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <cctype>
 #include <chrono>
 #include <fstream>
 #include <optional>
@@ -63,6 +64,42 @@ std::string read_header(const std::filesystem::path& file) {
     ifs.read(buf.data(), static_cast<std::streamsize>(kPeek));
     buf.resize(static_cast<std::size_t>(ifs.gcount()));
     return buf;
+}
+
+/**
+ * @brief Reads the name of a document's root element.
+ *
+ * The reader is chosen from the root element alone. Searching the header
+ * for a keyword instead would read a curve configuration that names a
+ * conventions block in its opening lines as a conventions document, and
+ * rewrite it as an empty one.
+ */
+std::string read_root_element(const std::filesystem::path& file) {
+    const auto header = read_header(file);
+    auto at = header.find('<');
+    while (at != std::string::npos) {
+        if (header.compare(at, 4, "<!--") == 0) {
+            const auto end = header.find("-->", at + 4);
+            if (end == std::string::npos)
+                return {};
+            at = header.find('<', end + 3);
+            continue;
+        }
+        if (header.compare(at, 2, "<?") == 0 || header.compare(at, 2, "<!") == 0) {
+            const auto end = header.find('>', at + 2);
+            if (end == std::string::npos)
+                return {};
+            at = header.find('<', end + 1);
+            continue;
+        }
+        auto end = at + 1;
+        while (end < header.size() &&
+               (std::isalpha(static_cast<unsigned char>(header[end])) ||
+                header[end] == '_' || header[end] == ':'))
+            ++end;
+        return header.substr(at + 1, end - at - 1);
+    }
+    return {};
 }
 
 void fill_envelope(domain::trade& t,
@@ -469,13 +506,11 @@ roundtrip_summary exporter::roundtrip(const std::filesystem::path& input_dir,
         const auto& file = entry.path();
         BOOST_LOG_SEV(lg(), trace) << "Processing: " << file;
 
-        const auto hdr = read_header(file);
-        const bool is_portfolio = hdr.find("<Portfolio>") != std::string::npos;
-        const bool is_currency = !is_portfolio && hdr.find("<CurrencyConfig>") != std::string::npos;
-        const bool is_calendar =
-            !is_portfolio && !is_currency && hdr.find("<CalendarAdjustments>") != std::string::npos;
-        const bool is_conventions = !is_portfolio && !is_currency && !is_calendar &&
-                                    hdr.find("<Conventions>") != std::string::npos;
+        const auto root = read_root_element(file);
+        const bool is_portfolio = root == "Portfolio";
+        const bool is_currency = root == "CurrencyConfig";
+        const bool is_calendar = root == "CalendarAdjustments";
+        const bool is_conventions = root == "Conventions";
 
         if (!is_portfolio && !is_currency && !is_calendar && !is_conventions) {
             BOOST_LOG_SEV(lg(), debug) << "Skipping unrecognised XML: " << file.filename();

@@ -22,14 +22,21 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.api/domain/bond_forward.hpp"
+#include "ores.trading.api/domain/bond_future_delivery_basket.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/domain/bond_leg.hpp"
 #include "ores.trading.api/domain/bond_leg_amortization.hpp"
 #include "ores.trading.api/domain/bond_leg_amount.hpp"
 #include "ores.trading.api/domain/bond_leg_rate.hpp"
+#include "ores.trading.api/domain/instrument_option.hpp"
+#include "ores.trading.api/domain/instrument_option_exercise_fee.hpp"
+#include "ores.trading.api/domain/instrument_option_payment_date.hpp"
+#include "ores.trading.api/domain/instrument_option_premium.hpp"
 #include "ores.trading.api/domain/instrument_schedule.hpp"
 #include "ores.trading.api/domain/instrument_schedule_date.hpp"
+#include "ores.trading.api/domain/instrument_strike.hpp"
 #include "ores.trading.api/domain/trade_envelope.hpp"
 #include "ores.trading.api/domain/trade_envelope_additional_field.hpp"
 #include "ores.trading.api/domain/trade_envelope_portfolio_id.hpp"
@@ -172,6 +179,81 @@ read_schedules_by_instrument_ids(context ctx, const std::vector<std::string>& in
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_schedule_date>
 read_schedule_dates_by_instrument_ids(context ctx,
                                       const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the option row of a set of instruments.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose option row to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option>
+read_options_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the premiums of a set of instruments' option rows.
+ *
+ * Rows come back in instrument order, then in ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose premiums to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_premium>
+read_option_premiums_by_instrument_ids(context ctx,
+                                       const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the exercise fees of a set of instruments' option rows.
+ *
+ * Rows come back in instrument order, then in ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose exercise fees to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_exercise_fee>
+read_option_exercise_fees_by_instrument_ids(context ctx,
+                                            const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the payment dates of a set of instruments' option rows.
+ *
+ * Rows come back in instrument order, then in ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose payment dates to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_payment_date>
+read_option_payment_dates_by_instrument_ids(context ctx,
+                                            const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the strike of a set of instruments.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose strike to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_strike>
+read_strikes_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the forward terms of a set of instruments.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose forward terms to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_forward>
+read_forwards_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the delivery basket of a set of instruments.
+ *
+ * Rows come back in instrument order, then in ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose delivery basket to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_future_delivery_basket>
+read_delivery_baskets_by_instrument_ids(context ctx,
+                                        const std::vector<std::string>& instrument_ids);
 
 /**@}*/
 

@@ -30,6 +30,8 @@
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
 #include "ores.trading.api/messaging/ascot_protocol.hpp"
+#include "ores.trading.api/messaging/bond_forward_protocol.hpp"
+#include "ores.trading.api/messaging/bond_future_delivery_basket_protocol.hpp"
 #include "ores.trading.api/messaging/bond_future_protocol.hpp"
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
@@ -58,9 +60,14 @@
 #include "ores.trading.api/messaging/fx_forward_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_option_exercise_fee_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_option_payment_date_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_option_premium_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_option_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_strike_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_portfolio_id_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
@@ -519,8 +526,249 @@ std::string save_leg(Nats& nats,
 }
 
 /**
+ * @brief Saves an option block: its row, its three child lists and the two
+ * spellings of its exercise dates.
+ *
+ * Every product that states an option block writes the row, not only the
+ * one whose fact row carries the type and the strike.
+ *
+ * The row carries a flag per optional sub-block, because a set of null
+ * columns cannot say whether the document stated the sub-block and left
+ * it bare or omitted it. An empty block writes nothing.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_option_block(Nats& nats,
+                              const boost::uuids::uuid& instrument_id,
+                              const ores::trading::domain::bond_instrument_data& data) {
+    using ores::trading::messaging::save_instrument_option_exercise_fee_request;
+    using ores::trading::messaging::save_instrument_option_payment_date_request;
+    using ores::trading::messaging::save_instrument_option_premium_request;
+    using ores::trading::messaging::save_instrument_option_request;
+
+    std::string error;
+    if (data.option_data) {
+        const auto& block = *data.option_data;
+        save_instrument_option_request req;
+        req.data.instrument_id = instrument_id;
+        req.data.long_short = block.long_short;
+        req.data.option_type = block.option_type;
+        req.data.payoff_type = block.payoff_type;
+        req.data.payoff_type_2 = block.payoff_type_2;
+        req.data.style = block.style;
+        req.data.notice_period = block.notice_period;
+        req.data.notice_calendar = block.notice_calendar;
+        req.data.notice_convention = block.notice_convention;
+        req.data.mid_coupon_exercise = block.mid_coupon_exercise;
+        req.data.settlement = block.settlement;
+        req.data.settlement_method = block.settlement_method;
+        req.data.pay_off_at_expiry = block.pay_off_at_expiry;
+        req.data.premium_amount = block.premium_amount;
+        req.data.premium_currency = block.premium_currency;
+        req.data.premium_pay_date = block.premium_pay_date;
+        req.data.exercise_prices = block.exercise_prices;
+        req.data.exercise_fee_settlement_period = block.exercise_fee_settlement_period;
+        req.data.exercise_fee_settlement_calendar = block.exercise_fee_settlement_calendar;
+        req.data.exercise_fee_settlement_convention = block.exercise_fee_settlement_convention;
+        req.data.automatic_exercise = block.automatic_exercise;
+
+        req.data.has_exercise_data = block.exercise_data.has_value();
+        if (block.exercise_data) {
+            req.data.exercise_date = block.exercise_data->date;
+            req.data.exercise_price = block.exercise_data->price;
+        }
+
+        req.data.has_payment_data = block.payment_data.has_value();
+        if (block.payment_data && block.payment_data->rules) {
+            const auto& rules = *block.payment_data->rules;
+            req.data.payment_lag = static_cast<std::int64_t>(rules.lag);
+            req.data.payment_calendar = rules.calendar;
+            req.data.payment_convention = rules.convention;
+            req.data.payment_relative_to = rules.relative_to;
+        }
+
+        req.data.has_settlement_data = block.settlement_data.has_value();
+        if (block.settlement_data) {
+            req.data.settlement_pay_currency = block.settlement_data->pay_currency;
+            req.data.settlement_fx_index = block.settlement_data->fx_index;
+            req.data.settlement_fixing_date = block.settlement_data->fixing_date;
+        }
+
+        auto resp = nats_call(nats, req, error);
+        if (!resp || !resp->success)
+            return error.empty() ? "save_instrument_option failed" : error;
+
+        int sequence_number = 0;
+        for (const auto& premium : block.premiums) {
+            save_instrument_option_premium_request child;
+            child.data.instrument_id = instrument_id;
+            child.data.sequence_number = ++sequence_number;
+            child.data.amount = premium.amount;
+            child.data.currency = premium.currency;
+            child.data.pay_date = premium.pay_date;
+            child.data.has_settlement = premium.settlement.has_value();
+            if (premium.settlement) {
+                child.data.settlement_pay_currency = premium.settlement->pay_currency;
+                child.data.settlement_fx_index = premium.settlement->fx_index;
+                child.data.settlement_fixing_date = premium.settlement->fixing_date;
+            }
+            auto child_resp = nats_call(nats, child, error);
+            if (!child_resp || !child_resp->success)
+                return error.empty() ? "save_instrument_option_premium failed" : error;
+        }
+
+        sequence_number = 0;
+        for (const auto& fee : block.exercise_fees) {
+            save_instrument_option_exercise_fee_request child;
+            child.data.instrument_id = instrument_id;
+            child.data.sequence_number = ++sequence_number;
+            child.data.amount = fee.amount;
+            child.data.type = fee.type;
+            child.data.start_date = fee.start_date;
+            child.data.currency = fee.currency;
+            auto child_resp = nats_call(nats, child, error);
+            if (!child_resp || !child_resp->success)
+                return error.empty() ? "save_instrument_option_exercise_fee failed" : error;
+        }
+
+        if (block.payment_data) {
+            int payment_number = 0;
+            for (const auto& date : block.payment_data->dates) {
+                save_instrument_option_payment_date_request child;
+                child.data.instrument_id = instrument_id;
+                child.data.sequence_number = ++payment_number;
+                child.data.payment_date = date;
+                auto child_resp = nats_call(nats, child, error);
+                if (!child_resp || !child_resp->success)
+                    return error.empty() ? "save_instrument_option_payment_date failed" : error;
+            }
+        }
+    }
+
+    if (!data.option_exercise_dates.empty()) {
+        ores::trading::domain::bond_schedule_data schedule;
+        ores::trading::domain::bond_schedule_dates dates;
+        dates.dates = data.option_exercise_dates;
+        schedule.dates.push_back(std::move(dates));
+        if (auto failure =
+                save_schedule(nats, instrument_id, "option", 1, "exercise_dates", schedule);
+            !failure.empty())
+            return failure;
+    }
+
+    if (data.option_exercise_schedule) {
+        if (auto failure = save_schedule(nats,
+                                         instrument_id,
+                                         "option",
+                                         1,
+                                         "exercise_schedule",
+                                         *data.option_exercise_schedule);
+            !failure.empty())
+            return failure;
+    }
+
+    return {};
+}
+
+/**
+ * @brief Saves the strike group, which the option row has no column for.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_strike(Nats& nats,
+                        const boost::uuids::uuid& instrument_id,
+                        const ores::trading::domain::bond_strike_data& strike) {
+    using ores::trading::messaging::save_instrument_strike_request;
+
+    save_instrument_strike_request req;
+    req.data.instrument_id = instrument_id;
+    req.data.price_value = strike.price_value;
+    req.data.price_currency = strike.price_currency;
+    req.data.yield_value = strike.yield_value;
+    req.data.yield_compounding = strike.yield_compounding;
+    req.data.bare_value = strike.bare_value;
+    req.data.bare_currency = strike.bare_currency;
+
+    std::string error;
+    auto resp = nats_call(nats, req, error);
+    if (!resp || !resp->success)
+        return error.empty() ? "save_instrument_strike failed" : error;
+    return {};
+}
+
+/**
+ * @brief Saves the forward terms the fact row has no column for.
+ *
+ * A container that states no forward member writes no row, which is what
+ * a container built from a row set holds.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_forward(Nats& nats,
+                         const boost::uuids::uuid& instrument_id,
+                         const ores::trading::domain::bond_instrument_data& data) {
+    using ores::trading::messaging::save_bond_forward_request;
+
+    if (!data.forward_long_in_forward && !data.forward_settlement && !data.forward_premium)
+        return {};
+
+    save_bond_forward_request req;
+    req.data.instrument_id = instrument_id;
+    req.data.long_in_forward = data.forward_long_in_forward;
+    if (data.forward_settlement) {
+        const auto& settlement = *data.forward_settlement;
+        req.data.forward_maturity_date = settlement.forward_maturity_date;
+        req.data.forward_settlement_date = settlement.forward_settlement_date;
+        req.data.settlement = settlement.settlement;
+        req.data.amount = settlement.amount;
+        req.data.lock_rate = settlement.lock_rate;
+        req.data.dv01 = settlement.dv01;
+        req.data.lock_rate_day_counter = settlement.lock_rate_day_counter;
+        req.data.settlement_dirty = settlement.settlement_dirty;
+    }
+    if (data.forward_premium) {
+        req.data.premium_amount = data.forward_premium->amount;
+        req.data.premium_date = data.forward_premium->date;
+    }
+
+    std::string error;
+    auto resp = nats_call(nats, req, error);
+    if (!resp || !resp->success)
+        return error.empty() ? "save_bond_forward failed" : error;
+    return {};
+}
+
+/**
+ * @brief Saves the delivery basket of a future, one row per identifier.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_delivery_basket(Nats& nats,
+                                 const boost::uuids::uuid& instrument_id,
+                                 const std::vector<std::string>& basket) {
+    using ores::trading::messaging::save_bond_future_delivery_basket_request;
+
+    std::string error;
+    int sequence_number = 0;
+    for (const auto& delivery_basket_id : basket) {
+        save_bond_future_delivery_basket_request req;
+        req.data.instrument_id = instrument_id;
+        req.data.sequence_number = ++sequence_number;
+        req.data.delivery_basket_id = delivery_basket_id;
+        auto resp = nats_call(nats, req, error);
+        if (!resp || !resp->success)
+            return error.empty() ? "save_bond_future_delivery_basket failed" : error;
+    }
+    return {};
+}
+
+/**
  * @brief Saves one bond instrument: its issue row, its header row, the
- * issue's child rows, its legs and the product's fact row.
+ * issue's child rows, its legs, its option block and the product's fact row.
  *
  * The issue row comes first because both the header and the child rows
  * reference it. A document that stated no call dates and no conversion
@@ -614,11 +862,34 @@ std::string save_bond_instrument(
         !failure.empty())
         return failure;
 
+    if (auto failure = save_option_block(nats, instrument_id, data); !failure.empty())
+        return failure;
+
+    if (data.strike_data) {
+        if (auto failure = save_strike(nats, instrument_id, *data.strike_data);
+            !failure.empty())
+            return failure;
+    }
+
+    if (auto failure = save_forward(nats, instrument_id, data); !failure.empty())
+        return failure;
+
+    if (auto failure = save_delivery_basket(nats, instrument_id, data.future_delivery_basket);
+        !failure.empty())
+        return failure;
+
+    if (auto failure = save_schedule(nats, instrument_id, "trs", 1, "schedule", data.trs_schedule);
+        !failure.empty())
+        return failure;
+
     const auto& ttc = instrument.identity.trade_type_code;
     if (ttc == "BondOption" && data.option) {
         save_bond_option_request fact_req;
         fact_req.data = *data.option;
         fact_req.data.instrument_id = instrument.identity.instrument_id;
+        fact_req.data.redemption = data.option_redemption;
+        fact_req.data.price_type = data.option_price_type;
+        fact_req.data.knocks_out = data.option_knocks_out;
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || !fact_resp->success)
             return error.empty() ? "save_bond_option failed" : error;
@@ -626,6 +897,10 @@ std::string save_bond_instrument(
         save_bond_trs_request fact_req;
         fact_req.data = *data.trs;
         fact_req.data.instrument_id = instrument.identity.instrument_id;
+        fact_req.data.payer = data.trs_payer;
+        fact_req.data.initial_price = data.trs_initial_price;
+        if (!data.trs_price_type.empty())
+            fact_req.data.price_type = data.trs_price_type;
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || !fact_resp->success)
             return error.empty() ? "save_bond_trs failed" : error;

@@ -27,6 +27,7 @@
 #include "ores.trading.core/service/bond_repo_service.hpp"
 #include "ores.trading.core/service/bond_trs_service.hpp"
 #include <boost/uuid/uuid_io.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <optional>
 #include <string>
@@ -42,11 +43,12 @@ using namespace ores::logging;
 namespace {
 
 /**
- * @brief The leg family rows of one instrument, as the six tables hold them.
+ * @brief The instrument's own rows, as the tables hold them.
  *
  * The rows stay in the order their query returned: by instrument, then by
- * the leg's role and number, then by the child's own ordinal. A leg
- * therefore walks its children in document order without sorting again.
+ * the owner's role and number, then by the child's own ordinal. A reader
+ * therefore walks a container's children in document order without
+ * sorting again.
  */
 struct instrument_rows final {
     std::vector<domain::bond_leg> legs;
@@ -55,6 +57,13 @@ struct instrument_rows final {
     std::vector<domain::bond_leg_amortization> amortizations;
     std::vector<domain::instrument_schedule> schedules;
     std::vector<domain::instrument_schedule_date> schedule_dates;
+    std::optional<domain::instrument_option> option;
+    std::vector<domain::instrument_option_premium> option_premiums;
+    std::vector<domain::instrument_option_exercise_fee> option_exercise_fees;
+    std::vector<domain::instrument_option_payment_date> option_payment_dates;
+    std::optional<domain::instrument_strike> strike;
+    std::optional<domain::bond_forward> forward;
+    std::vector<domain::bond_future_delivery_basket> delivery_basket;
 };
 
 /**
@@ -90,6 +99,29 @@ read_family_rows(ores::database::context ctx, const std::vector<std::string>& in
 
     for (auto& row : repository::read_schedule_dates_by_instrument_ids(ctx, instrument_ids))
         rows[boost::uuids::to_string(row.instrument_id)].schedule_dates.push_back(std::move(row));
+
+    for (auto& row : repository::read_options_by_instrument_ids(ctx, instrument_ids))
+        rows[boost::uuids::to_string(row.instrument_id)].option = std::move(row);
+
+    for (auto& row : repository::read_option_premiums_by_instrument_ids(ctx, instrument_ids))
+        rows[boost::uuids::to_string(row.instrument_id)].option_premiums.push_back(std::move(row));
+
+    for (auto& row : repository::read_option_exercise_fees_by_instrument_ids(ctx, instrument_ids))
+        rows[boost::uuids::to_string(row.instrument_id)].option_exercise_fees.push_back(
+            std::move(row));
+
+    for (auto& row : repository::read_option_payment_dates_by_instrument_ids(ctx, instrument_ids))
+        rows[boost::uuids::to_string(row.instrument_id)].option_payment_dates.push_back(
+            std::move(row));
+
+    for (auto& row : repository::read_strikes_by_instrument_ids(ctx, instrument_ids))
+        rows[boost::uuids::to_string(row.instrument_id)].strike = std::move(row);
+
+    for (auto& row : repository::read_forwards_by_instrument_ids(ctx, instrument_ids))
+        rows[boost::uuids::to_string(row.instrument_id)].forward = std::move(row);
+
+    for (auto& row : repository::read_delivery_baskets_by_instrument_ids(ctx, instrument_ids))
+        rows[boost::uuids::to_string(row.instrument_id)].delivery_basket.push_back(std::move(row));
 
     return rows;
 }
@@ -141,20 +173,21 @@ to_schedule_data(const std::vector<const domain::instrument_schedule*>& rows,
 }
 
 /**
- * @brief Reads one of a leg's schedules, which its role names.
+ * @brief Reads one of a container's schedules, which its owner and role name.
  */
 domain::bond_schedule_data schedule_for(const instrument_rows& rows,
-                                        const domain::bond_leg& leg,
+                                        std::string_view owner_role,
+                                        int owner_number,
                                         std::string_view role) {
     std::vector<const domain::instrument_schedule*> schedules;
     for (const auto& row : rows.schedules)
-        if (row.owner_role == leg.leg_role && row.owner_number == leg.leg_number &&
+        if (row.owner_role == owner_role && row.owner_number == owner_number &&
             row.schedule_role == role)
             schedules.push_back(&row);
 
     std::vector<const domain::instrument_schedule_date*> dates;
     for (const auto& row : rows.schedule_dates)
-        if (row.owner_role == leg.leg_role && row.owner_number == leg.leg_number &&
+        if (row.owner_role == owner_role && row.owner_number == owner_number &&
             row.schedule_role == role)
             dates.push_back(&row);
 
@@ -286,9 +319,10 @@ domain::bond_leg_data build_leg(const instrument_rows& rows, const domain::bond_
                                      amortization.underflow});
     }
 
-    leg.schedule = schedule_for(rows, row, "schedule");
-    leg.payment_schedule = schedule_for(rows, row, "payment_schedule");
-    const auto payment_dates = schedule_for(rows, row, "payment_dates");
+    leg.schedule = schedule_for(rows, row.leg_role, row.leg_number, "schedule");
+    leg.payment_schedule = schedule_for(rows, row.leg_role, row.leg_number, "payment_schedule");
+    const auto payment_dates =
+        schedule_for(rows, row.leg_role, row.leg_number, "payment_dates");
     for (const auto& block : payment_dates.dates)
         for (const auto& date : block.dates)
             leg.payment_dates.push_back(date);
@@ -298,8 +332,8 @@ domain::bond_leg_data build_leg(const instrument_rows& rows, const domain::bond_
             continue;
         leg.rate = to_rate_data(rate_row,
                                 amounts,
-                                schedule_for(rows, row, "fixing_schedule"),
-                                schedule_for(rows, row, "reset_schedule"));
+                                schedule_for(rows, row.leg_role, row.leg_number, "fixing_schedule"),
+                                schedule_for(rows, row.leg_role, row.leg_number, "reset_schedule"));
         break;
     }
     return leg;
@@ -318,6 +352,187 @@ void apply_leg_family(domain::bond_instrument_data& data, const instrument_rows&
         else if (row.leg_role == "ascot_swap")
             data.ascot_swap_leg = build_leg(rows, row);
     }
+}
+
+std::optional<domain::bond_schedule_data>
+optional_schedule(domain::bond_schedule_data schedule) {
+    if (schedule.rules.empty() && schedule.dates.empty())
+        return std::nullopt;
+    return schedule;
+}
+
+/**
+ * @brief Builds an option settlement block, which a flag on the row engages.
+ */
+std::optional<domain::bond_option_settlement>
+to_option_settlement(bool engaged,
+                     const std::optional<std::string>& pay_currency,
+                     const std::optional<std::string>& fx_index,
+                     const std::optional<std::string>& fixing_date) {
+    if (!engaged)
+        return std::nullopt;
+    return domain::bond_option_settlement{
+        pay_currency.value_or(""), fx_index.value_or(""), fixing_date};
+}
+
+/**
+ * @brief Builds the payment rule block, which the row states as three columns.
+ *
+ * The three are required members of the rule, so a document that stated
+ * the rule stated all three. A row with none of them set stated the date
+ * list instead, and the two arms exclude each other.
+ */
+std::optional<domain::bond_option_payment_rules>
+to_payment_rules(const domain::instrument_option& row) {
+    if (!row.payment_lag && !row.payment_calendar && !row.payment_convention)
+        return std::nullopt;
+    domain::bond_option_payment_rules rules;
+    rules.lag = static_cast<std::uint64_t>(std::max<std::int64_t>(row.payment_lag.value_or(0), 0));
+    rules.calendar = row.payment_calendar.value_or("");
+    rules.convention = row.payment_convention.value_or("");
+    rules.relative_to = row.payment_relative_to;
+    return rules;
+}
+
+void apply_option_block(domain::bond_instrument_data& data, const instrument_rows& rows) {
+    if (rows.option) {
+        const auto& row = *rows.option;
+
+        domain::bond_option_data block;
+        block.long_short = row.long_short;
+        block.option_type = row.option_type;
+        block.payoff_type = row.payoff_type;
+        block.payoff_type_2 = row.payoff_type_2;
+        block.style = row.style;
+        block.notice_period = row.notice_period;
+        block.notice_calendar = row.notice_calendar;
+        block.notice_convention = row.notice_convention;
+        block.mid_coupon_exercise = row.mid_coupon_exercise;
+        block.settlement = row.settlement;
+        block.settlement_method = row.settlement_method;
+        block.pay_off_at_expiry = row.pay_off_at_expiry;
+        block.premium_amount = row.premium_amount;
+        block.premium_currency = row.premium_currency;
+        block.premium_pay_date = row.premium_pay_date;
+
+        for (const auto& premium : rows.option_premiums)
+            block.premiums.push_back(
+                {premium.amount,
+                 premium.currency,
+                 premium.pay_date,
+                 to_option_settlement(premium.has_settlement,
+                                      premium.settlement_pay_currency,
+                                      premium.settlement_fx_index,
+                                      premium.settlement_fixing_date)});
+
+        block.exercise_prices = row.exercise_prices;
+        for (const auto& fee : rows.option_exercise_fees)
+            block.exercise_fees.push_back({fee.amount, fee.type, fee.start_date, fee.currency});
+
+        block.exercise_fee_settlement_period = row.exercise_fee_settlement_period;
+        block.exercise_fee_settlement_calendar = row.exercise_fee_settlement_calendar;
+        block.exercise_fee_settlement_convention = row.exercise_fee_settlement_convention;
+        block.automatic_exercise = row.automatic_exercise;
+
+        if (row.has_exercise_data)
+            block.exercise_data =
+                domain::bond_option_exercise{row.exercise_date.value_or(""), row.exercise_price};
+
+        if (row.has_payment_data) {
+            domain::bond_option_payment_data payment;
+            for (const auto& date : rows.option_payment_dates)
+                payment.dates.push_back(date.payment_date);
+            payment.rules = to_payment_rules(row);
+            block.payment_data = std::move(payment);
+        }
+
+        block.settlement_data = to_option_settlement(row.has_settlement_data,
+                                                     row.settlement_pay_currency,
+                                                     row.settlement_fx_index,
+                                                     row.settlement_fixing_date);
+
+        data.option_data = std::move(block);
+    }
+
+    const auto exercise_dates = schedule_for(rows, "option", 1, "exercise_dates");
+    for (const auto& block : exercise_dates.dates)
+        for (const auto& date : block.dates)
+            data.option_exercise_dates.push_back(date);
+
+    data.option_exercise_schedule =
+        optional_schedule(schedule_for(rows, "option", 1, "exercise_schedule"));
+}
+
+void apply_strike(domain::bond_instrument_data& data, const instrument_rows& rows) {
+    if (!rows.strike)
+        return;
+    const auto& row = *rows.strike;
+    data.strike_data = domain::bond_strike_data{row.price_value,
+                                                row.price_currency,
+                                                row.yield_value,
+                                                row.yield_compounding,
+                                                row.bare_value,
+                                                row.bare_currency};
+}
+
+void apply_forward(domain::bond_instrument_data& data, const instrument_rows& rows) {
+    if (!rows.forward)
+        return;
+    const auto& row = *rows.forward;
+    data.forward_long_in_forward = row.long_in_forward;
+
+    domain::bond_forward_settlement settlement;
+    settlement.forward_maturity_date = row.forward_maturity_date.value_or("");
+    settlement.forward_settlement_date = row.forward_settlement_date;
+    settlement.settlement = row.settlement;
+    settlement.amount = row.amount;
+    settlement.lock_rate = row.lock_rate;
+    settlement.dv01 = row.dv01;
+    settlement.lock_rate_day_counter = row.lock_rate_day_counter;
+    settlement.settlement_dirty = row.settlement_dirty;
+    data.forward_settlement = std::move(settlement);
+
+    if (row.premium_amount || row.premium_date)
+        data.forward_premium = domain::bond_forward_premium{row.premium_amount.value_or(""),
+                                                            row.premium_date.value_or("")};
+}
+
+void apply_delivery_basket(domain::bond_instrument_data& data, const instrument_rows& rows) {
+    for (const auto& row : rows.delivery_basket)
+        data.future_delivery_basket.push_back(row.delivery_basket_id);
+}
+
+/**
+ * @brief Copies the return-side members the fact row holds back into the container.
+ *
+ * The mapper leaves the payer, the price type and the initial price out
+ * of the fact row it builds, so a stored row carries them only because
+ * the writer put them there. The schedule is not a column and comes from
+ * the shared schedule tables under the owner the swap names.
+ */
+void apply_trs_residue(domain::bond_instrument_data& data, const instrument_rows& rows) {
+    if (data.trs) {
+        data.trs_payer = data.trs->payer;
+        data.trs_initial_price = data.trs->initial_price;
+        if (data.trs->price_type)
+            data.trs_price_type = *data.trs->price_type;
+    }
+    data.trs_schedule = schedule_for(rows, "trs", 1, "schedule");
+}
+
+/**
+ * @brief Copies the three option members the fact row holds back into the container.
+ *
+ * The mapper writes the option type and the strike to the fact row and
+ * leaves the other three members nowhere, so a stored row carries them
+ * only because the writer put them there.
+ */
+void apply_option_residue(domain::bond_instrument_data& data) {
+    if (!data.option)
+        return;
+    data.option_redemption = data.option->redemption;
+    data.option_price_type = data.option->price_type;
+    data.option_knocks_out = data.option->knocks_out;
 }
 
 }
@@ -377,8 +592,14 @@ bond_instrument_reader::read_instruments(
             data.call_dates = it->second;
         if (auto it = conversion_targets.find(issue_id); it != conversion_targets.end())
             data.conversion_targets = it->second;
-        if (auto it = leg_family.find(id); it != leg_family.end())
-            apply_leg_family(data, it->second);
+        const auto family = leg_family.find(id);
+        if (family != leg_family.end()) {
+            apply_leg_family(data, family->second);
+            apply_option_block(data, family->second);
+            apply_strike(data, family->second);
+            apply_forward(data, family->second);
+            apply_delivery_basket(data, family->second);
+        }
 
         const auto& ttc = data.instrument.identity.trade_type_code;
         if (ttc == "BondOption")
@@ -391,6 +612,10 @@ bond_instrument_reader::read_instruments(
             data.future = future_svc.get_future(id);
         else if (ttc == "Ascot")
             data.ascot = ascot_svc.get_ascot(id);
+
+        apply_option_residue(data);
+        if (family != leg_family.end())
+            apply_trs_residue(data, family->second);
 
         result.emplace(id, std::move(data));
     }

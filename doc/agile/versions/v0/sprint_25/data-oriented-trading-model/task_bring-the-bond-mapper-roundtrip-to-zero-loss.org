@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
-#+updated: 2026-09-10
+#+updated: 2026-09-11
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -28,9 +28,9 @@ The bond products and the trade envelope round trip at zero loss on the mapper p
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave B.5c landed: the leg family and the shared schedule tables are written and read. Only B.5d remains before unit C. |
+| Now          | Wave B.5d landed: the option block, the strike, the forward and the delivery basket are written and read, and all sixteen tables have a surface. The mapper gate reads zero lost and zero unexplained pairs in scope and exits 0. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave B.5d, the option block, the strike, the exercise schedule, the forward, the delivery basket and the three return-side members. Then unit C. |
+| Next         | Unit C: the shell verbs for storage upload, =ore import= and portfolio export, then the .ores script that drives one document through the database and back. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -1714,6 +1714,248 @@ Six of the seven files are hand written: the queries header and source,
 the reader's header and source, the import handler and the test file.
 The seventh, =trade_handler.hpp=, is the generated path already recorded
 as kept by hand, and this wave changes no call site in it.
+
+No file is added or removed, so no =component_files.cmake= list changes.
+
+** Wave B.5d, the option block, the forward and the residue
+
+B.5c wrote the legs and the shared schedules below them. This wave
+writes the last of what the container carries, and closes the two
+defects the gate surfaced while it was measured. The predicate this
+task was opened for is met: the in-scope counters read zero.
+
+*** The seven tables get a surface
+
+The sixteen tables B.1 to B.4 added have generated protocols, handlers
+and registrars, and no registrar was called, so no subject reached any
+of them. B.5a wired the three envelope tables and B.5c the six leg and
+schedule tables. This wave wires the seven that remain:
+=instrument_options=, =instrument_option_premiums=,
+=instrument_option_exercise_fees=, =instrument_option_payment_dates=,
+=instrument_strikes=, =bond_forwards= and
+=bond_future_delivery_baskets=.
+
+All sixteen now have a subject, so a running service can read and write
+every table this program added.
+
+*** The seven reads the generated repository does not offer
+
+=parent_scoped_queries= gains one batch read per table, on the pattern
+B.5b and B.5c set. Each filters on the instrument identifiers and the
+current bitemporal version, and orders by the columns the container's
+own member order needs, so the reader walks the rows in document order
+without sorting again.
+
+Three of the seven are one row per instrument rather than a list: the
+option row, the strike and the forward. Those read into a single
+optional, so a second row for one instrument would be dropped rather
+than appended. No key allows one.
+
+*** The reader rebuilds the option block and the residue
+
+=bond_instrument_reader= now returns the option block, its three child
+lists, the two spellings of its exercise schedule, the strike, the
+forward and the delivery basket.
+
+=schedule_for= no longer takes a leg. B.5c gave it the leg because the
+legs were its only caller. The option block states an exercise schedule
+and a list of exercise dates, and both are owned by =option= and not by
+a leg, so the lookup now takes an owner role and an owner number. The
+schedule role names the member in both cases, which is the rule
+B.5c recorded.
+
+The payment rule block is present exactly when the row states one of
+its three required members, because a document that stated the rule
+stated all three. The two arms of the payment data exclude each other,
+so a row with none of the three stated the date list instead.
+
+Real members and optional blocks share the option row, and the two
+cannot be told apart by a null test. A flag per optional sub-block says
+whether the document stated the block and left it bare or omitted it,
+which is the decision B.3 recorded on the row.
+
+*** Three members live on the fact row and nowhere else
+
+The mapper writes the option type and the strike to the product's fact
+row and leaves the redemption, the price type and the knock-out flag
+nowhere, so a stored row carries them only because the writer put them
+there. The same is true of the return side's payer, price type and
+initial price.
+
+Those six are copied back from the fact row rather than read from a
+column of their own table, which is why the reader applies them after
+the fact row is read rather than beside the option block. The option
+block itself is written for every product that states one, and not only
+for the product whose fact row carries the type and the strike.
+
+*** The writer saves them
+
+=save_option_block= writes the option row, the two child lists that
+carry an ordinal, the payment dates and the two spellings of the
+exercise dates. It writes nothing when the container holds no option
+block, which is the shape a container built from a row set has.
+
+=save_strike=, =save_forward= and =save_delivery_basket= follow it.
+The forward returns without a request when the container states none of
+its three members, so an absent forward writes no row and reads back as
+an absent forward.
+
+Each stops at the first failure with the response's own message, which
+is the shape B.5c set for the legs.
+
+*** The gate reads zero, and it exits zero
+
+Both trees were read with the same classifier, over
+=external/ore/examples=, after the two repairs below.
+
+#+begin_example
+Documents: 1566  Failures: 0  Skipped: 1113
+Classified: numeric 2330, boolean 313
+In scope, bond products and the trade envelope: lost 0, unexplained 0
+Out of scope, the other instrument families: lost 81432, unexplained 9917
+Worst relative error on a numeric pair: 5.660e-8 (tolerance 0.000001)
+EXIT=0
+#+end_example
+
+The in-scope counters are the acceptance line, and both read zero over
+every document in the corpus. The out-of-scope counters are the other
+instrument families, which this programme does not own, and they are
+counted rather than failed, which is the second acceptance line.
+
+The exit code is zero now as well. The A.4 section records why it was
+not: the script counted every source document with no output as a
+failure, and 1,023 of them are configuration documents the exporter
+skips by design. The script now applies the exporter's own rule.
+
+*** Finding: the check counted a document the exporter never writes
+
+=is_exported= reads the source's root element and fails only when the
+exporter is meant to write that document. The four roots are the ones
+the exporter handles: =Portfolio=, =CurrencyConfig=,
+=CalendarAdjustments= and =Conventions=. The rule is the exporter's own,
+expressed again in Python, so the two agree on which documents have an
+output to compare.
+
+A skipped document is counted and not failed. A document the exporter
+does write, and which produced no output, is still a failure: the write
+was attempted and did not happen.
+
+*** Finding: the currency maps were missing two codes
+
+Applying that rule left exactly one genuine MISSING:
+=ORE-Python/Notebooks/Dependencies/conventions.xml=. Bisection found the
+child that causes it, the FX pair =AUD-SKK=, whose target currency is
+=SKK=.
+
+=parse_currency_code= is a hand-written lookup in every =*_mapper.cpp=,
+and the generated =currencyCode= enumeration has 191 values. Five of the
+six maps held 189: =SKK= and =SSP= were absent from the commodity,
+composite, equity, fx and conventions mappers. The sixth, the swap
+instrument mapper, already held all 191.
+
+A currency the map does not name parses to nothing, so the pair is
+dropped and the document it sits in produces no output. Both codes are
+now in all six, in alphabetical position.
+
+This is a defect in hand-written code that mirrors generated code, and
+nothing enforces the mirror. The map is a lookup table duplicated six
+ways against an enumeration that is generated once, so a regeneration
+that adds a currency silently stops six files from parsing it. It is
+recorded as debt rather than repaired here.
+
+*** Finding: the exporter classified a document by substring
+
+With the maps complete, 91 documents were still written wrong. A
+=CurveConfiguration= document came back as an empty =<Conventions/>=.
+
+=read_header= peeks the first 4,096 bytes and =roundtrip()= chose an
+importer by looking for one of four markers in that window. A curve
+configuration is none of the four, so it fell through to the
+conventions branch whenever the word =<Conventions>= appeared in the
+window, which it does in every curve configuration that names a
+convention.
+
+=Academy/FC003_Reporting_Currency/Input/curveconfig.xml= is 21,505
+bytes and holds a curve configuration; its =<Conventions>= element sits
+at byte offset 457. The roundtrip read it as a conventions document and
+wrote 15 bytes to the same relative path. 89 curve configurations and 2
+sensitivity analyses were rewritten as empty conventions files.
+
+The A.4 section found this and recorded it as belonging to a task of its
+own, because the repair decides what the tool does with the documents it
+cannot name. The repair is in this wave, because the gate cannot read
+zero over the corpus while the exporter rewrites 91 documents the corpus
+contains. =read_root_element= skips comments, processing instructions
+and declarations, and returns the name of the first element. The reader
+is then chosen by that name alone, and a document whose root is none of
+the four is refused rather than filed under a branch it does not belong
+to.
+
+The drift check in the diff script mirrors the same parse, so the two
+agree by construction and not by coincidence.
+
+*** Finding: the exporter's classification has no test
+
+=exporter::roundtrip= has one caller, the =ores.cli= roundtrip command,
+and no test. =read_root_element= is in an anonymous namespace inside
+=exporter.cpp=, so no unit test can reach it, and the four-way choice it
+feeds is reachable only by walking a directory.
+
+The defect above therefore had two lives: one before this wave, when the
+substring rule rewrote 91 documents with no error raised, and one after,
+where it is repaired but still unguarded. What caught it was the corpus
+gate, because a misrouted document produces no output and the gate
+counts that as a failure once the document's root says the exporter
+should have written it.
+
+The gate is the system-level coverage and it does hold the behaviour.
+The gap is a case at the unit level, and it is recorded here rather than
+written now: =roundtrip()= writes to a directory, so the case needs a
+temporary corpus, an output tree and an assertion about which documents
+were written. That is a small test but not a free one, and the wave
+already carries the change it would guard.
+
+*** What the two repairs moved, and what they did not
+
+The repairs changed which documents are written and not what any
+document holds, so every pair count is unchanged. Only the file counts
+moved.
+
+| Measure            | Before | After |
+|--------------------+--------+-------|
+| Outputs written    |    544 |   453 |
+| Documents skipped  |  1,022 | 1,113 |
+| Convention files   |    157 |    66 |
+
+Every column closes: 544 - 91 = 453 written, 1,022 + 91 = 1,113
+skipped, 157 - 91 = 66 convention files. The 91 documents moved from
+written to skipped, and no other document moved.
+
+*** What B.5d does not carry
+
+Two bounds stay open on the read path, and both are recorded rather than
+repaired.
+
+A re-import writes new rows rather than updating the existing ones,
+because the generated save handler is a bitemporal insert. And a child
+row the second import no longer states keeps its row from the first,
+because nothing deletes a child row the new container omits. Neither is
+reachable from a document the mapper produced, and both are the shape
+B.5b and B.5c recorded across every child table this program added.
+
+The full XML to database to XML path is not yet exercised. This wave
+wires the write and read sides and covers the read side with cases, but
+no test drives a document through the database and back out. That is
+unit C, and it is the next unit of this task.
+
+*** No generated file was edited by hand
+
+Every file this wave changes is hand written: the queries header and
+source, the registrar, the reader's source, the import handler, the test
+file, the five currency maps, the exporter, and the diff script. Three
+of them sit under =projects/ores.ore/core/src/domain/=, which is
+hand-written code and not xsdcpp output; =domain.cpp= and =domain.hpp=
+are untouched.
 
 No file is added or removed, so no =component_files.cmake= list changes.
 

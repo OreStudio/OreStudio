@@ -123,27 +123,6 @@ currencyCode parse_currency_code(const std::string& s) {
     return it->second;
 }
 
-std::string option_type_from_vec(const xsd::vector<optionData>& v) {
-    if (v.empty())
-        return {};
-    if (v.front().OptionType)
-        return std::string(*v.front().OptionType);
-    return {};
-}
-
-std::string expiry_date_from_vec(const xsd::vector<optionData>& v) {
-    if (v.empty())
-        return {};
-    const auto& od = v.front();
-    if (!od.exerciseDatesGroup)
-        return {};
-    if (!od.exerciseDatesGroup->ExerciseDates)
-        return {};
-    if (od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
-        return {};
-    return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
-}
-
 std::string expiry_date_from_single(const optionData& od) {
     if (!od.exerciseDatesGroup)
         return {};
@@ -152,6 +131,27 @@ std::string expiry_date_from_single(const optionData& od) {
     if (od.exerciseDatesGroup->ExerciseDates->ExerciseDate.empty())
         return {};
     return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
+}
+
+std::string option_type_from_single(const optionData& od) {
+    if (od.OptionType)
+        return std::string(*od.OptionType);
+    return {};
+}
+
+// BarrierData carries one level for a single barrier and two for a
+// double barrier, lower first.
+template <typename Lower>
+void fill_barrier(const barrierData& bd,
+                  std::string& barrier_type,
+                  Lower& lower,
+                  std::optional<double>& upper) {
+    barrier_type = to_string(bd.Type);
+    const auto& levels = bd.Levels.Level;
+    if (!levels.empty())
+        lower = static_cast<double>(levels.front());
+    if (levels.size() > 1)
+        upper = static_cast<double>(levels[1]);
 }
 
 void validate_long_short(const std::string& v) {
@@ -222,6 +222,21 @@ barrierData fx_instrument_mapper::make_barrier(const std::string& type, double l
         throw std::runtime_error("make_barrier: unrecognized barrier type '" + type + "'");
     b.Type = it->second;
     b.Levels.Level.push_back(static_cast<float>(level));
+    return b;
+}
+
+// The reverse of fill_barrier. Barrier types with a plain double lower
+// level use zero to mean "no lower barrier", so a zero lower lets the
+// upper level start the group on its own.
+barrierData fx_instrument_mapper::make_barrier_group(const std::string& type,
+                                                     const std::optional<double>& lower,
+                                                     const std::optional<double>& upper) {
+    const bool has_lower = lower.has_value() && *lower != 0.0;
+    if (!has_lower && !upper.has_value())
+        return {};
+    barrierData b = make_barrier(type, has_lower ? *lower : *upper);
+    if (has_lower && upper.has_value())
+        b.Levels.Level.push_back(static_cast<float>(*upper));
     return b;
 }
 
@@ -299,7 +314,7 @@ trading::domain::fx_instrument_variant fx_instrument_mapper::forward_fx_option(c
     if (od.Settlement)
         r.settlement = to_string(*od.Settlement);
     r.exercise_style = "European"; // default; American not detected here
-    r.expiry_date = expiry_date_from_vec(xsd::vector<optionData>{od});
+    r.expiry_date = expiry_date_from_single(od);
 
     return r;
 }
@@ -322,16 +337,9 @@ fx_instrument_mapper::forward_fx_barrier_option(const trade& t) {
     r.bought_amount = static_cast<double>(d.BoughtAmount);
     r.sold_currency = to_string(d.SoldCurrency);
     r.sold_amount = static_cast<double>(d.SoldAmount);
-    r.option_type = option_type_from_vec(d.OptionData);
-    r.expiry_date = expiry_date_from_vec(d.OptionData);
-
-    if (!d.BarrierData.empty()) {
-        r.barrier_type = to_string(d.BarrierData.front().Type);
-        if (!d.BarrierData.front().Levels.Level.empty())
-            r.lower_barrier = static_cast<double>(d.BarrierData.front().Levels.Level.front());
-        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
-            r.upper_barrier = static_cast<double>(d.BarrierData[1].Levels.Level.front());
-    }
+    r.option_type = option_type_from_single(d.OptionData);
+    r.expiry_date = expiry_date_from_single(d.OptionData);
+    fill_barrier(d.BarrierData, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
@@ -353,16 +361,9 @@ fx_instrument_mapper::forward_fx_double_barrier_option(const trade& t) {
     r.bought_amount = static_cast<double>(d.BoughtAmount);
     r.sold_currency = to_string(d.SoldCurrency);
     r.sold_amount = static_cast<double>(d.SoldAmount);
-    r.option_type = option_type_from_vec(d.OptionData);
-    r.expiry_date = expiry_date_from_vec(d.OptionData);
-
-    if (!d.BarrierData.empty()) {
-        r.barrier_type = to_string(d.BarrierData.front().Type);
-        if (!d.BarrierData.front().Levels.Level.empty())
-            r.lower_barrier = static_cast<double>(d.BarrierData.front().Levels.Level.front());
-        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
-            r.upper_barrier = static_cast<double>(d.BarrierData[1].Levels.Level.front());
-    }
+    r.option_type = option_type_from_single(d.OptionData);
+    r.expiry_date = expiry_date_from_single(d.OptionData);
+    fill_barrier(d.BarrierData, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
@@ -384,16 +385,9 @@ fx_instrument_mapper::forward_fx_european_barrier_option(const trade& t) {
     r.bought_amount = static_cast<double>(d.BoughtAmount);
     r.sold_currency = to_string(d.SoldCurrency);
     r.sold_amount = static_cast<double>(d.SoldAmount);
-    r.option_type = option_type_from_vec(d.OptionData);
-    r.expiry_date = expiry_date_from_vec(d.OptionData);
-
-    if (!d.BarrierData.empty()) {
-        r.barrier_type = to_string(d.BarrierData.front().Type);
-        if (!d.BarrierData.front().Levels.Level.empty())
-            r.lower_barrier = static_cast<double>(d.BarrierData.front().Levels.Level.front());
-        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
-            r.upper_barrier = static_cast<double>(d.BarrierData[1].Levels.Level.front());
-    }
+    r.option_type = option_type_from_single(d.OptionData);
+    r.expiry_date = expiry_date_from_single(d.OptionData);
+    fill_barrier(d.BarrierData, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
@@ -485,8 +479,8 @@ fx_instrument_mapper::forward_fx_digital_option(const trade& t) {
     r.payoff_currency = to_string(d.ForeignCurrency); // defaults to foreign
     r.strike = static_cast<double>(d.Strike);
     r.payoff_amount = static_cast<double>(d.PayoffAmount);
-    r.option_type = option_type_from_vec(d.OptionData);
-    r.expiry_date = expiry_date_from_vec(d.OptionData);
+    r.option_type = option_type_from_single(d.OptionData);
+    r.expiry_date = expiry_date_from_single(d.OptionData);
     return r;
 }
 
@@ -510,13 +504,12 @@ fx_instrument_mapper::forward_fx_digital_barrier_option(const trade& t) {
     r.payoff_currency = to_string(d.ForeignCurrency);
     r.strike = static_cast<double>(d.Strike);
     r.payoff_amount = static_cast<double>(d.PayoffAmount);
-    r.option_type = option_type_from_vec(d.OptionData);
-    r.expiry_date = expiry_date_from_vec(d.OptionData);
+    r.option_type = option_type_from_single(d.OptionData);
+    r.expiry_date = expiry_date_from_single(d.OptionData);
 
-    if (!d.BarrierData.empty()) {
-        r.barrier_type = to_string(d.BarrierData.front().Type);
-        if (!d.BarrierData.front().Levels.Level.empty())
-            r.lower_barrier = static_cast<double>(d.BarrierData.front().Levels.Level.front());
+    if (!d.BarrierData.Levels.Level.empty()) {
+        r.barrier_type = to_string(d.BarrierData.Type);
+        r.lower_barrier = static_cast<double>(d.BarrierData.Levels.Level.front());
     }
     return r;
 }
@@ -547,15 +540,8 @@ fx_instrument_mapper::forward_fx_touch_option(const trade& t) {
     r.domestic_currency = to_string(d.DomesticCurrency);
     r.payoff_currency = to_string(d.PayoffCurrency);
     r.payoff_amount = static_cast<double>(d.PayoffAmount);
-    r.expiry_date = expiry_date_from_vec(d.OptionData);
-
-    if (!d.BarrierData.empty()) {
-        r.barrier_type = to_string(d.BarrierData.front().Type);
-        if (!d.BarrierData.front().Levels.Level.empty())
-            r.lower_barrier = static_cast<double>(d.BarrierData.front().Levels.Level.front());
-        if (d.BarrierData.size() > 1 && !d.BarrierData[1].Levels.Level.empty())
-            r.upper_barrier = static_cast<double>(d.BarrierData[1].Levels.Level.front());
-    }
+    r.expiry_date = expiry_date_from_single(d.OptionData);
+    fill_barrier(d.BarrierData, r.barrier_type, r.lower_barrier, r.upper_barrier);
     return r;
 }
 
@@ -766,12 +752,11 @@ trade fx_instrument_mapper::reverse_fx_barrier_option(const fx_barrier_option_in
     d.BoughtAmount = static_cast<float>(instr.bought_amount);
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
     d.SoldAmount = static_cast<float>(instr.sold_amount);
-    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date));
+    d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
 
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier.has_value())
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
+    if (!instr.barrier_type.empty())
+        d.BarrierData =
+            make_barrier_group(instr.barrier_type, instr.lower_barrier, instr.upper_barrier);
 
     t.FxBarrierOptionData = std::move(d);
     return t;
@@ -791,11 +776,10 @@ trade fx_instrument_mapper::reverse_fx_double_barrier_option(
     d.BoughtAmount = static_cast<float>(instr.bought_amount);
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
     d.SoldAmount = static_cast<float>(instr.sold_amount);
-    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date));
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier.has_value())
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
+    d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
+    if (!instr.barrier_type.empty())
+        d.BarrierData =
+            make_barrier_group(instr.barrier_type, instr.lower_barrier, instr.upper_barrier);
     t.FxDoubleBarrierOptionData = std::move(d);
     return t;
 }
@@ -814,11 +798,10 @@ trade fx_instrument_mapper::reverse_fx_european_barrier_option(
     d.BoughtAmount = static_cast<float>(instr.bought_amount);
     d.SoldCurrency = parse_currency_code(instr.sold_currency);
     d.SoldAmount = static_cast<float>(instr.sold_amount);
-    d.OptionData.push_back(make_option_entry(instr.option_type, instr.expiry_date));
-    if (!instr.barrier_type.empty() && instr.lower_barrier != 0.0)
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, instr.lower_barrier));
-    if (instr.upper_barrier.has_value())
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
+    d.OptionData = make_option_entry(instr.option_type, instr.expiry_date);
+    if (!instr.barrier_type.empty())
+        d.BarrierData =
+            make_barrier_group(instr.barrier_type, instr.lower_barrier, instr.upper_barrier);
     t.FxEuropeanBarrierOptionData = std::move(d);
     return t;
 }
@@ -885,8 +868,7 @@ trade fx_instrument_mapper::reverse_fx_digital_option(const fx_digital_option_in
     d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
     d.Strike = static_cast<float>(instr.strike.value_or(0.0));
     d.PayoffAmount = static_cast<float>(instr.payoff_amount);
-    d.OptionData.push_back(
-        make_option_entry(instr.option_type, instr.expiry_date, instr.long_short));
+    d.OptionData = make_option_entry(instr.option_type, instr.expiry_date, instr.long_short);
 
     t.FxDigitalOptionData = std::move(d);
     return t;
@@ -907,11 +889,11 @@ trade fx_instrument_mapper::reverse_fx_digital_barrier_option(
     d.DomesticCurrency = parse_currency_code(instr.domestic_currency);
     d.Strike = static_cast<float>(instr.strike.value_or(0.0));
     d.PayoffAmount = static_cast<float>(instr.payoff_amount);
-    d.OptionData.push_back(
-        make_option_entry(instr.option_type, instr.expiry_date, instr.long_short));
+    d.OptionData = make_option_entry(instr.option_type, instr.expiry_date, instr.long_short);
 
-    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
+    if (!instr.barrier_type.empty())
+        d.BarrierData =
+            make_barrier_group(instr.barrier_type, instr.lower_barrier, instr.upper_barrier);
 
     t.FxDigitalBarrierOptionData = std::move(d);
     return t;
@@ -936,12 +918,11 @@ trade fx_instrument_mapper::reverse_fx_touch_option(const fx_digital_option_inst
     if (!instr.payoff_currency.empty())
         d.PayoffCurrency = parse_currency_code(instr.payoff_currency);
     d.PayoffAmount = static_cast<float>(instr.payoff_amount);
-    d.OptionData.push_back(make_option_entry("", instr.expiry_date, instr.long_short));
+    d.OptionData = make_option_entry("", instr.expiry_date, instr.long_short);
 
-    if (!instr.barrier_type.empty() && instr.lower_barrier.has_value())
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.lower_barrier));
-    if (instr.upper_barrier.has_value())
-        d.BarrierData.push_back(make_barrier(instr.barrier_type, *instr.upper_barrier));
+    if (!instr.barrier_type.empty())
+        d.BarrierData =
+            make_barrier_group(instr.barrier_type, instr.lower_barrier, instr.upper_barrier);
 
     if (instr.identity.trade_type_code == "FxDoubleTouchOption")
         t.FxDoubleTouchOptionData = std::move(d);

@@ -151,6 +151,48 @@ def _reject_non_composite_container(
         f"emitted into the container")
 
 
+def _reject_incomplete_parts(
+    model_path: Path, comp: dict[str, Any],
+) -> None:
+    """Raise when a composite's ``#+parts:`` disagrees with the disk.
+
+    The composite root template renders one ``add_subdirectory`` per
+    declared part, so a part left out of ``#+parts:`` silently stops
+    being built. Nothing downstream notices: CMake never learns the
+    directory exists, so configure succeeds, and the drift check
+    compares generated output against the same wrong model. The
+    failure surfaces only as missing functionality in the binary.
+
+    A part naming a directory that is not a sub-component project is
+    allowed when it carries a ``CMakeLists.txt`` of its own -- that is
+    how a composite pulls in its group-level ``modeling/`` diagram
+    target.
+    """
+    if comp.get("kind") != "composite":
+        return
+    declared = [entry["part"] for entry in comp.get("parts", [])]
+    hosted = set(_hosted_subcomponents(model_path))
+    root = model_path.resolve().parent.parent
+
+    missing = sorted(hosted - set(declared))
+    unbuildable = sorted(
+        name for name in declared
+        if name not in hosted
+        and not (root / name / "CMakeLists.txt").is_file())
+
+    problems = []
+    if missing:
+        problems.append(
+            f"sub-component(s) {', '.join(missing)} exist on disk but are "
+            f"not in #+parts:, so they would stop being built")
+    if unbuildable:
+        problems.append(
+            f"#+parts: names {', '.join(unbuildable)}, which is neither a "
+            f"sub-component nor a directory with its own CMakeLists.txt")
+    if problems:
+        raise ValueError(f"{model_path.name}: " + "; ".join(problems))
+
+
 def resolve_targets(
     model_path: Path,
     base_dir: Path,
@@ -223,6 +265,11 @@ def resolve_targets(
         # scaffold (CMakeLists.txt, src/, tests/, include/) into the
         # container directory — the ores.compute incident.
         _reject_non_composite_container(model_path, comp)
+        # Second gate: the parts a composite declares are the only
+        # thing its root CMakeLists adds, so a part missing from
+        # #+parts: silently stops being built and no later check
+        # can see it.
+        _reject_incomplete_parts(model_path, comp)
         # Component root on disk relative to projects/ (the nested regrouped
         # layout, e.g. ores.refdata/api), used as {component_dir} so output goes
         # to the real location rather than the dotted name. The model lives at

@@ -8,7 +8,7 @@
 #+filetags: :codegen:drift:ci:verification:unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/wire-codegen-drift-checks
-#+pr:
+#+pr: 2065
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-08-26
@@ -84,7 +84,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2065][#2065]] | [ci] Wire both unguarded codegen drift checks into CI |
 
 * Review
 

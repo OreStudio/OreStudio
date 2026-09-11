@@ -31,7 +31,7 @@ domain::coding_scheme
 generate_synthetic_coding_scheme(utility::generation::generation_context& ctx) {
     static constexpr std::array<const char*, 3> authority_types = {
         "official", "industry", "internal"};
-    static std::atomic<int> counter{0};
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto idx = counter++;
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 

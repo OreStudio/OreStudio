@@ -26,7 +26,7 @@ namespace ores::iam::generators {
 using ores::utility::generation::generation_keys;
 
 domain::role generate_synthetic_role(utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto idx = ++counter;
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
     const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");

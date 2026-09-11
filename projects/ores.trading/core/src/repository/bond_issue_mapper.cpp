@@ -47,6 +47,11 @@ domain::bond_issue bond_issue_mapper::map(const bond_issue_entity& v) {
     r.maturity_date = v.maturity_date;
     r.settlement_days = v.settlement_days;
     r.description = v.description.value_or("");
+    r.calendar = v.calendar;
+    r.credit_curve_id = v.credit_curve_id;
+    r.reference_curve_id = v.reference_curve_id;
+    r.income_curve_id = v.income_curve_id;
+    r.bond_notional = v.bond_notional;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -76,6 +81,11 @@ bond_issue_entity bond_issue_mapper::map(const domain::bond_issue& v) {
     r.maturity_date = v.maturity_date;
     r.settlement_days = v.settlement_days;
     r.description = v.description.empty() ? std::nullopt : std::optional(v.description);
+    r.calendar = v.calendar;
+    r.credit_curve_id = v.credit_curve_id;
+    r.reference_curve_id = v.reference_curve_id;
+    r.income_curve_id = v.income_curve_id;
+    r.bond_notional = v.bond_notional;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

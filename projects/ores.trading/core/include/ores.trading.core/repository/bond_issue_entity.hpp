@@ -52,6 +52,11 @@ struct bond_issue_entity {
     std::string maturity_date;
     int settlement_days = 0;
     std::optional<std::string> description;
+    std::optional<std::string> calendar;
+    std::optional<std::string> credit_curve_id;
+    std::optional<std::string> reference_curve_id;
+    std::optional<std::string> income_curve_id;
+    std::optional<std::string> bond_notional;
     std::string modified_by;
     std::string performed_by;
     std::string change_reason_code;

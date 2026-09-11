@@ -126,6 +126,35 @@ struct bond_issue final {
     std::string description;
 
     /**
+     * @brief Calendar the issue's dates are adjusted against, when the document states one at the
+     * bond level rather than on a leg.
+     */
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Credit curve the document names for the issue.
+     */
+    std::optional<std::string> credit_curve_id;
+
+    /**
+     * @brief Reference curve the document names for the issue.
+     */
+    std::optional<std::string> reference_curve_id;
+
+    /**
+     * @brief Income curve the document names for the issue.
+     */
+    std::optional<std::string> income_curve_id;
+
+    /**
+     * @brief Notional the document states at the bond level, as the document spells it.
+     *
+     * The column is text so that export re-emits the document's own spelling rather than a
+     * reformatted number.
+     */
+    std::optional<std::string> bond_notional;
+
+    /**
      * @brief Username of the person who last modified this bond issue.
      */
     std::string modified_by;

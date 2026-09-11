@@ -195,6 +195,56 @@ Optional free-text description of the issue.
 std::string(faker::lorem::sentence())
 #+end_src
 
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the issue's dates are adjusted against, when the document
+states one at the bond level rather than on a leg.
+
+** credit_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Credit curve the document names for the issue.
+
+** reference_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Reference curve the document names for the issue.
+
+** income_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Income curve the document names for the issue.
+
+** bond_notional
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Notional the document states at the bond level, as the document spells
+it.
+
+The column is text so that export re-emits the document's own spelling
+rather than a reformatted number.
+
 * SQL
 
 ** Flags

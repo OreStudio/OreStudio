@@ -1,0 +1,166 @@
+:PROPERTIES:
+:ID: e28b86ac-11b6-43cd-8de6-658dfd5b9631
+:END:
+#+title: ores.trading.instrument_schedule_date
+#+description: Codegen entity model for the trading =instrument_schedule_date= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One date of an instrument schedule's date list, keyed to the schedule that holds it.
+#+entity_singular: instrument_schedule_date
+#+entity_plural: instrument_schedule_dates
+#+entity_title: Instrument Schedule Date
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per date of an instrument schedule's date list, family-owned
+by the schedule row that holds it.
+
+The ORE schema states a schedule as a choice, and this table holds the
+date arm: the explicit list a document writes out. The rule arm writes
+no row here, because a calendar expands its dates at read time rather
+than the document stating them.
+
+The owning schedule's key reaches this table whole. A schedule is
+keyed by the instrument, the leg and its role, so those three columns
+lead the key here and the ordinal follows them.
+
+A leg states four schedules, and one of them, the payment dates of a
+leg, is a bare date list with no rule arm at all. Such a list is a
+schedule of kind =dates= whose scalars stay unset, so it writes here
+without a table of its own.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument whose leg states the owning schedule.
+
+The instrument row carries the trade, the workspace and the party. The
+date rows are family-owned and ride the instrument's scope, so no
+workspace column rides them.
+
+** leg_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which leg list of the instrument the leg stating the owning schedule
+belongs to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within its list, counting from one.
+
+** schedule_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which of the leg's schedules the owning row is.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this date within the schedule's list.
+
+The schema declares the list unbounded, and a document's order is the
+order it stated. The ordinal preserves that order, so export re-emits
+the dates as the document held them.
+
+** schedule_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The date (ISO 8601 date string).
+
+#+begin_src cpp :name generator
+std::string("2029-01-15")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_schedule_dates_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_number" > 0                                            |
+| "sequence_number" > 0                                       |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instrument_schedule_date
+:entity_plural_short:   instrument_schedule_dates
+:entity_singular_words: instrument schedule date
+:entity_plural_words:   instrument schedule dates
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sched_date
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| schedule_date   | Date        |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

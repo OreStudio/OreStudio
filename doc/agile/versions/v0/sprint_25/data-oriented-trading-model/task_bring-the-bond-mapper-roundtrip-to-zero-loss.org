@@ -28,9 +28,9 @@ The bond products and the trade envelope round trip at zero loss on the mapper p
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Unit A is complete: the mapper path is at zero loss. Unit B, the tables that hold what the container carries. |
+| Now          | Wave B.1 and B.2 landed: the nine shared tables and the five columns on the issue row. Unit B continues. |
 | Waiting on   | Nothing.                               |
-| Next         | Unit B's shared tables, then unit C's shell verbs and the full round trip test. |
+| Next         | Wave B.3's schedule reshape and option block, then B.4, B.5 and unit C. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -951,6 +951,119 @@ The repair is to classify by root element and to refuse a document
 whose root is none of the four, rather than to trust a substring. That
 change belongs to a task of its own, since it decides what the tool
 does with the documents it cannot currently name at all.
+
+** Wave B.1 and B.2, the tables that hold what the container carries
+
+Unit A grew the container until it held every member a bond document
+states. Unit B builds the homes. This wave is the first half: nine
+tables and five columns.
+
+*** Three families, and each one is keyed for any instrument
+
+The nine tables are not nine unrelated shapes. They fall into three
+families, and every key is written so that a family other than the bond
+can use the table without a migration.
+
+| Family   | Tables                                                                                              | Key beyond the instrument or trade   |
+|----------+-----------------------------------------------------------------------------------------------------+--------------------------------------|
+| Leg      | =bond_legs=, =bond_leg_amounts=, =bond_leg_amortizations=, =bond_leg_rates=                         | =leg_role=, =leg_number=             |
+| Schedule | =instrument_schedules=, =instrument_schedule_dates=                                                 | =leg_role=, =leg_number=, =schedule_role= |
+| Envelope | =trade_envelopes=, =trade_envelope_portfolio_ids=, =trade_envelope_additional_fields=              | the trade, not the instrument        |
+
+The leg role is one of =bond=, =trs_funding=, =repo= or =ascot_swap=,
+stated as a set in the check rather than as a single value. Those four
+are the four the container carries: the =bond_legs= list and the three
+single legs =trs_funding_leg=, =repo_leg= and =ascot_swap_leg=.
+
+The amount table is one table and not six. =amount_role= names which of
+the container's six lists a row belongs to, and the six are =notional=,
+=rate=, =spread=, =cap=, =floor= and =gearing=. The check on that
+column says only that it is not empty, because the list is the
+container's shape and not the schema's.
+
+The envelope family is keyed by =trade_id= and not by =instrument_id=.
+The story's fourth decision gives the envelope to the trade, and the
+key follows the decision.
+
+*** The five columns on the issue row
+
+=BondData= states five things at the bond level that no row held:
+=Calendar=, =CreditCurveId=, =ReferenceCurveId=, =IncomeCurveId= and
+=BondNotional=. They are five nullable columns on
+=ores_trading_bond_issues_tbl=.
+
+Four of them name a thing the document spelled. The fifth is text for
+the same reason as the other four: export re-emits the document's own
+spelling, and a numeric column would give =10000000= back as
+=10000000.000000=.
+
+*** Finding: the schedule tables cannot yet hold what they were built for
+
+=scheduleData= is a choice of =Rules= and =Dates=, unbounded and
+interleaved. One =bond_schedule_data= can hold several rules entries
+and several dates entries, and the generated key allows one row per
+=(instrument_id, leg_role, leg_number, schedule_role)=. The dates arm
+also states five members (=Calendar=, =Convention=, =Tenor=,
+=EndOfMonth=, =IncludeDuplicateDates=) that no column anywhere holds.
+
+So the schedule tables ship in the shape the leg family needs, and not
+yet in the shape the schedule data needs. The reshape is small and it
+belongs to wave B.3: rename the owner columns to =owner_role= and
+=owner_number=, put =sequence_number= in the parent key, add the five
+flags to the parent, and put =schedule_sequence_number= in the child
+key ahead of the child's own ordinal.
+
+The tables still ship now because nothing writes a schedule row until
+B.5, so the rename costs no data and no caller.
+
+*** No generated file was edited by hand
+
+Every C++ file this wave changes is generated. The eight under
+=projects/ores.trading/= are a domain class, an entity header, two
+mappers, a history field mapper and three =component_files.cmake=
+files. The three cmake files came from
+=regenerate_cmake_component_files.py=; the rest came from the entity
+generator reading the modeling org.
+
+Written by hand: the ten modeling orgs and the two =ores.sql= aggregate
+scripts that list the new files in create and drop order. Nothing
+generated was opened in an editor.
+
+*** The tables are empty until B.5
+
+This wave gives the nine tables a home in the schema. It does not fill
+them. =trade_export_item= is still built from the trade row alone, and
+no code reads or writes a row of the nine. That switch-over is wave
+B.5, and the database path keeps losing what the mapper path keeps
+until it lands.
+
+*** Wave B.1 and B.2 landed
+
+The nine tables and the five columns on the issue row shipped, and the
+component builds and tests clean.
+
+| Check | Result |
+|-------+--------|
+| =compass build --preset linux-clang-debug-make= | green, reached 100% |
+| =compass test run --preset linux-clang-debug-make= | 70 of 71 suites passed |
+| =ores.trading.api.tests=, =ores.trading.core.tests=, =ores.trading.service.tests= | passed |
+| =ores.ore.core.tests=, =ores.ore.api.tests=, =ores.ore.service.tests= | passed |
+
+The one failing suite is =ores.refdata.core.tests=, and it is not this
+wave's. The test =write_book_publishes_nats_changed_event= raises
+=Invalid currency: X-0= from =ores_refdata_validate_currency_fn=. The
+book generator hardcodes =functional_currency = "X-0"=, a choice that
+landed in commit =38a60de6c9= and is already in =main=. The validator
+lists the writing tenant's active currencies, and that list held =X-1=
+through =X-17= but not =X-0=.
+
+The currency is not missing. =X-0= spans twelve tenants and twenty
+seven rows. The rows written during the failing run open and close
+inside 0.2 seconds and leave no open version for that tenant, which is
+what the validator saw. The suite passes in isolation with zero
+failures, so the defect is a temporal-validity race in the refdata
+eventing fixtures that test order and accumulated database state
+expose. It is recorded as its own task and does not gate this wave.
 
 * Test Scenarios
 

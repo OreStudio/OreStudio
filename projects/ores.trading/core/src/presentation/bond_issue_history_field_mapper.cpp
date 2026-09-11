@@ -40,6 +40,14 @@ std::vector<ores::diff::domain::field_value> render_bond_issue_fields(const doma
     fields.push_back({.name = "Maturity Date", .value = v.maturity_date});
     fields.push_back({.name = "Settlement Days", .value = std::to_string(v.settlement_days)});
     fields.push_back({.name = "Description", .value = v.description});
+    fields.push_back({.name = "Calendar", .value = v.calendar.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Credit Curve ID", .value = v.credit_curve_id.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Reference Curve ID", .value = v.reference_curve_id.value_or(std::string{})});
+    fields.push_back(
+        {.name = "Income Curve ID", .value = v.income_curve_id.value_or(std::string{})});
+    fields.push_back({.name = "Bond Notional", .value = v.bond_notional.value_or(std::string{})});
     using ores::history::domain::provenance_fields;
     fields.push_back({.name = provenance_fields::modified_by, .value = v.modified_by});
     fields.push_back({.name = provenance_fields::performed_by, .value = v.performed_by});

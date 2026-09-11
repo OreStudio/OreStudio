@@ -1,0 +1,344 @@
+:PROPERTIES:
+:ID: 8c1a468d-6278-476a-b8e9-e3281dfdeb8d
+:END:
+#+title: ores.trading.instrument_schedule
+#+description: Codegen entity model for the trading =instrument_schedule= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One schedule an instrument's leg states, either as a rule block or as a date list, keyed to the instrument, the leg and the schedule's role.
+#+entity_singular: instrument_schedule
+#+entity_plural: instrument_schedules
+#+entity_title: Instrument Schedule
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per schedule an instrument's leg states, keyed to the
+instrument, the leg that states it and the schedule's role.
+
+The ORE schema states a schedule as a choice: a rule block that a
+calendar expands, or an explicit list of dates. The generated code
+mirrors the choice as two lists on =bond_schedule_data=, and the
+mapping container carries both. This table holds the rule arm's
+scalars and the =schedule_kind= column records which arm the document
+chose, so a reader rebuilds the arm it read rather than guessing. The
+date arm's rows land in the keyed child table.
+
+A bond leg states four schedules: its own schedule, its payment
+schedule, and, when the leg is floating, the fixing and reset
+schedules. The role column names which one, so one table holds all
+four.
+
+The nine bond tables carry no schedule column, and the org models of
+the family record this table as the destination. It is keyed by the
+instrument rather than by a bond row, so any family whose product
+states a schedule writes here without a new table.
+
+Every scalar the schema declares optional is nullable here and an
+=std::optional= in C++, so a member the document states and the row
+cannot hold stays distinguishable from one the document omits.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument whose leg states this schedule.
+
+The instrument row carries the trade, the workspace and the party. The
+schedule rows are family-owned and ride the instrument's scope, so no
+workspace column rides them.
+
+** leg_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which leg list of the instrument the leg stating this schedule belongs
+to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within its list, counting from one.
+
+The schema declares the bond's leg list unbounded, and a bond states
+one leg per coupon. The number is the leg's position in the document,
+so a reader reassembles the legs in the order the document held them.
+
+** schedule_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which of the leg's schedules this row is.
+
+The container's member names are the values: =schedule=,
+=payment_schedule=, =fixing_schedule= and =reset_schedule=. The first
+two sit on the leg, the last two on its floating rate block.
+
+** schedule_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Which arm of the schema's choice the document stated: =rules= or
+=dates=.
+
+The arm decides which members are meaningful. A =rules= row carries
+the rule block's scalars and its dates are derived, so it has no child
+rows; a =dates= row carries the date list in the child table and
+states no rule scalars.
+
+#+begin_src cpp :name generator
+std::string("rules")
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+First date of the rule block (ISO 8601 date string).
+
+The schema requires this member on a rule block and states no
+equivalent on a date list, so the column is nullable and a =dates= row
+leaves it unset.
+
+** end_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Last date of the rule block, when the document states one.
+
+** adjust_end_date_to_previous_month_end
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The document's spelling of the flag that pulls the end date back to
+the previous month end.
+
+The schema types this member as its own bool, which enumerates
+thirteen spellings including the empty one. The column holds the
+spelling the document chose rather than a decoded boolean, so export
+re-emits the same text.
+
+** tenor
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Tenor the rule block expands, or the date list's own tenor.
+
+Both arms state this member and the schema requires it on neither
+alone, so one nullable column serves both.
+
+** calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the schedule's dates are adjusted against.
+
+Both arms state this member.
+
+** convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention the schedule's dates are adjusted by.
+
+Both arms state this member.
+
+** term_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention applied to the rule block's final date.
+
+** rule
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The rule block's date generation rule.
+
+** end_of_month
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The document's spelling of the flag that keeps generated dates at
+month ends.
+
+The schema types this member as its own bool, as it does
+=adjust_end_date_to_previous_month_end=, so the column holds the
+spelling.
+
+** end_of_month_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention applied when the end-of-month flag is on.
+
+** first_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+First date of the rule block, stated outright.
+
+** last_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Last date of the rule block, stated outright.
+
+** remove_first_date
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the rule block drops its first date.
+
+The schema types this member as the XML boolean, not as its own bool,
+so the column is a real boolean and carries no spelling.
+
+** remove_last_date
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the rule block drops its last date.
+
+** include_duplicate_dates
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The document's spelling of the flag that keeps repeated dates in the
+list.
+
+The schema types this member as its own bool, so the column holds the
+spelling.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_schedules_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "schedule_kind" in ('rules', 'dates')                       |
+| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_number" > 0                                            |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instrument_schedule
+:entity_plural_short:   instrument_schedules
+:entity_singular_words: instrument schedule
+:entity_plural_words:   instrument schedules
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: sched
+:END:
+
+** Table display
+
+| column        | header      |
+|---------------+-------------|
+| leg_role      | Leg Role    |
+| leg_number    | Leg         |
+| schedule_role | Role        |
+| schedule_kind | Kind        |
+| tenor         | Tenor       |
+| calendar      | Calendar    |
+| modified_by   | Modified By |
+| version       | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

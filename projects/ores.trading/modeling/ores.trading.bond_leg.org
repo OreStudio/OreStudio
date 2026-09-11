@@ -1,0 +1,286 @@
+:PROPERTIES:
+:ID: 5041fb8e-1e08-4b92-93f0-a04df88c6fdf
+:END:
+#+title: ores.trading.bond_leg
+#+description: Codegen entity model for the trading =bond_leg= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One leg of a bond instrument, keyed to the instrument and the leg's ordinal.
+#+entity_singular: bond_leg
+#+entity_plural: bond_legs
+#+entity_title: Bond Leg
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per leg an instrument states, keyed to the instrument, the list
+the leg belongs to and the leg's ordinal within that list.
+
+The ORE schema declares the bond's leg list unbounded and a bond states
+one leg per coupon. The total return swap, the repo and the ascot each
+state at most one leg of their own, and all four are the same leg
+shape. One table holds them and =leg_role= says which list the row
+belongs to.
+
+The row carries the leg's payment terms, its day counters, its
+settlement block and the two flags the schema states on the leg itself.
+Everything else the leg states lives in a table of its own: the
+schedules in =instrument_schedule=, the amortizations, the named
+amounts and the rate group below. Those tables key on =leg_role= as
+well, so a schedule or an amount reaches the leg that stated it.
+
+The leg's currency and day counter also reach the issue row, because
+the issue is where a reader looks for the coupon terms. The row here
+is the document's own statement and wins on export, so a leg whose
+terms differ from the issue's still round trips.
+
+Every member the schema declares optional is nullable here and an
+=std::optional= in C++, so a member the document states and the row
+cannot hold stays distinguishable from one the document omits.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument this leg belongs to.
+
+The instrument row carries the trade, the workspace and the party. The
+leg rows are family-owned and ride the instrument's scope, so no
+workspace column rides them.
+
+** leg_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which leg list of the instrument this row belongs to: =bond= for a leg
+of the bond itself, or =trs_funding=, =repo= or =ascot_swap= for the
+single leg of a total return swap, a repo or an ascot.
+
+A document states the bond's legs as a list and each of the other three
+as at most one leg. The four are the same leg shape, so one table holds
+them and the role says which member of the document a reader rebuilds.
+Without the role a leg numbered one would be ambiguous between them.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within its list, counting from one.
+
+The bond's leg list is unbounded and the other three roles carry one
+leg, which is always number one.
+
+** payer
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the leg's payer is the trade's counterparty rather than the
+party.
+
+** leg_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The leg's type as the document spells it, such as =Fixed= or
+=Floating=.
+
+The type is the document's own member and drives which arm of the rate
+group a document states. It is kept as text, not decoded, so export
+re-emits the spelling.
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+ISO 4217 currency code of the leg.
+
+** payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Business day convention the leg's payments are adjusted by.
+
+** payment_lag
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Number of business days between a payment's accrual end and its pay
+date.
+
+The column is text rather than a number because the container holds
+the document's text and export re-emits it unchanged.
+
+** payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the leg's payment dates are adjusted against.
+
+** day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Day count convention of the leg.
+
+** last_period_day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Day count convention the leg applies to its final coupon period.
+
+** notional_payment_lag
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+Number of business days between a notional exchange and its pay date.
+
+** strict_notional_dates
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the leg's notional exchanges fall on the schedule's dates
+without adjustment.
+
+** indexings_from_asset_leg
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the leg takes its indexings from the asset leg rather than
+stating them.
+
+** settlement_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+FX index the leg's settlement block fixes against.
+
+The block is present when this column is set. The schema requires the
+index on a settlement block, so a null column and an absent block are
+the same statement, and one column carries both.
+
+** settlement_fixing_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the settlement block's FX index fixes on (ISO 8601 date string).
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_legs_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_number" > 0                                            |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_leg
+:entity_plural_short:   bond_legs
+:entity_singular_words: bond leg
+:entity_plural_words:   bond legs
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: leg
+:END:
+
+** Table display
+
+| column          | header         |
+|-----------------+----------------|
+| leg_role        | Role           |
+| leg_number      | Leg            |
+| leg_type        | Type           |
+| currency        | Currency       |
+| day_counter     | Day Counter    |
+| payment_calendar | Calendar      |
+| modified_by     | Modified By    |
+| version         | Version        |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

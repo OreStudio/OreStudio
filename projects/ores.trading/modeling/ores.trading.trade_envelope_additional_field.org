@@ -1,0 +1,140 @@
+:PROPERTIES:
+:ID: b6f9974c-adef-443b-974b-96b5a3f2ea32
+:END:
+#+title: ores.trading.trade_envelope_additional_field
+#+description: Codegen entity model for the trading =trade_envelope_additional_field= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One name-and-value pair of a trade envelope's additional fields, keyed to the envelope and the pair's ordinal.
+#+entity_singular: trade_envelope_additional_field
+#+entity_plural: trade_envelope_additional_fields
+#+entity_title: Trade Envelope Additional Field
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per additional field a document stated in a trade's envelope,
+keyed to the envelope and the field's ordinal.
+
+The schema states the member as open content: any element name, in any
+namespace, with any content. A row here keeps the name and the text of
+one such element. The list is where a document carries the fields ORE
+Studio does not model, so nothing here is decoded.
+
+The name and the value are both text and neither is constrained. A
+document may state an empty name or an empty value, and both round trip
+because the columns hold the document's own text rather than a decoded
+form.
+
+The list order is the document's order and the ordinal preserves it.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the trade whose envelope stated this field.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this field within the envelope's list.
+
+** name
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Element name of the field, as the document spelled it.
+
+#+begin_src cpp :name generator
+std::string("MyField")
+#+end_src
+
+** value
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Text content of the field, as the document spelled it.
+
+#+begin_src cpp :name generator
+std::string("MyValue")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_envelope_additional_fields_tbl
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_envelope_additional_field
+:entity_plural_short:   trade_envelope_additional_fields
+:entity_singular_words: trade envelope additional field
+:entity_plural_words:   trade envelope additional fields
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: field
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| name            | Name        |
+| value           | Value       |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

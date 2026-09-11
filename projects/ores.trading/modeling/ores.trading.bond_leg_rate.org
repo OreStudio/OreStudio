@@ -1,0 +1,388 @@
+:PROPERTIES:
+:ID: 1e0785ab-ecea-4599-958c-1b075163290c
+:END:
+#+title: ores.trading.bond_leg_rate
+#+description: Codegen entity model for the trading =bond_leg_rate= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The rate terms of a bond leg, one arm of the schema's leg-data choice per row.
+#+entity_singular: bond_leg_rate
+#+entity_plural: bond_leg_rates
+#+entity_title: Bond Leg Rate
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per bond leg, carrying the arm of the rate group the document
+chose and the members that arm states.
+
+The ORE schema states the group as a choice of eighteen alternatives.
+A bond leg carries a coupon, and the corpus states three of them:
+fixed, floating and formula-based. The other fifteen are a recorded
+boundary, and a document that states one of them has no row here. The
+=rate_kind= column records which arm the document engaged.
+
+The three arms share members. All three lead with an index and all
+three state an arrears flag, and the floating and formula arms both
+state a fixing-days count. Those three members have one column each
+and the arm decides how a reader takes them, so a fixed leg's row
+leaves them unset.
+
+Each arm also has members the others lack, and they sit here as
+nullable columns rather than in a table per arm. The floating arm's
+sixteen members and the formula arm's fixing calendar are what remain
+after the shared three and the lists below are taken out.
+
+The three lists the floating arm states, its spreads, caps, floors and
+gearings, are not here: each is a numbered amount and lives in
+=bond_leg_amount= under its own role. Its two schedules live in
+=instrument_schedule=, under the =fixing_schedule= and
+=reset_schedule= roles.
+
+The two stub interpolation blocks are folded into columns here. Each
+is a pair of indices with an optional rounding, and the schema states
+the block at most once at each end of the leg.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument this rate block belongs to.
+
+** leg_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which leg list of the instrument the leg holding this rate block
+belongs to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within its list, counting from one.
+
+** rate_kind
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Which arm of the schema's rate group the document engaged: =fixed=,
+=floating= or =formula_based=.
+
+#+begin_src cpp :name generator
+std::string("floating")
+#+end_src
+
+** index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Index the arm's coupons accrue on.
+
+The floating and formula arms both require this member and the fixed
+arm states none, so the column is nullable and a fixed row leaves it
+unset.
+
+** is_in_arrears
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the arm's coupons accrue in arrears.
+
+** fixing_days
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+Number of days before a coupon period ends that its index fixes.
+
+The floating arm states this member optionally and the formula arm
+requires it. One column serves both, and the arm decides whether a
+reader treats a value as required.
+
+** fixing_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the formula arm's fixings are taken against.
+
+Only the formula arm states this member.
+
+** last_recent_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Tenor of the floating arm's last recent period.
+
+** last_recent_period_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the last recent period is measured against.
+
+** lookback
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Tenor the floating arm looks back over when it fixes.
+
+** rate_cutoff
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+Number of days before a period ends after which the floating arm stops
+fixing.
+
+** is_averaged
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm averages its fixings over the period.
+
+** has_sub_periods
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm divides a period into sub-periods.
+
+** include_spread
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm applies its spread to the fixings.
+
+** is_not_resetting_xccy
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm's cross-currency leg does not reset.
+
+** naked_option
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm's caps and floors are taken without the
+underlying.
+
+** local_cap_floor
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm's caps and floors apply to the local
+index rather than to the compounded rate.
+
+** stub_use_original_curve
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm prices its stubs from the original curve.
+
+** observation_shift
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the floating arm shifts its observations by the lookback.
+
+** front_stub_short_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Short index the floating arm's front stub interpolates between.
+
+** front_stub_long_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Long index the floating arm's front stub interpolates between.
+
+** front_stub_rounding_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Rounding the front stub's interpolated rate is rounded by.
+
+** front_stub_rounding_precision
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+Decimal places the front stub's rounding keeps.
+
+** back_stub_short_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Short index the floating arm's back stub interpolates between.
+
+** back_stub_long_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Long index the floating arm's back stub interpolates between.
+
+** back_stub_rounding_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Rounding the back stub's interpolated rate is rounded by.
+
+** back_stub_rounding_precision
+:PROPERTIES:
+:type:     bigint
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+Decimal places the back stub's rounding keeps.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_leg_rates_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "rate_kind" in ('fixed', 'floating', 'formula_based')       |
+| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_number" > 0                                            |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_leg_rate
+:entity_plural_short:   bond_leg_rates
+:entity_singular_words: bond leg rate
+:entity_plural_words:   bond leg rates
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: rate
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| leg_role        | Role        |
+| leg_number      | Leg         |
+| rate_kind       | Kind        |
+| index           | Index       |
+| fixing_days     | Fixing Days |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

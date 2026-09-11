@@ -88,6 +88,7 @@ via its "Verifies task" field.
 | 1 | Citation used square brackets, which org renders as literal text and which read as a malformed link. | doc/knowledge/domain/random_walk.org | Accepted | Quoted the post's opening line as the title, matching the Pearson and Donsker entries. |
 | 2 | Attribution sits in Further reading, not in a top-level =* Source= block as in =lightyear_pnl_approach.org=. | doc/knowledge/domain/random_walk.org | Declined | That convention is for pages that are /about/ external material; here the post is one of five references. |
 | 3 | =#+description= was not extended to mention first passage. | doc/knowledge/domain/random_walk.org | Declined | Still accurate at the granularity that descriptions work at. |
+| 4 | Bot review: line 152 runs to ~93 columns where the file wraps at ~72-76; move the Generic Barrier Option link to its own line. | doc/knowledge/domain/random_walk.org | Accepted | Rewrapped, so the link now sits on its own line as the Geometric Brownian Motion link does. |
 
 * Result
 

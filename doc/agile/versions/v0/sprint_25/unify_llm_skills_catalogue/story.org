@@ -106,6 +106,7 @@ Tasks are listed in intended execution order.
 | [[id:ADF5BBA5-4461-4CA9-9A01-B64A713D5110][Wt account delete, lock and unlock confirm then do nothing]] | DISCOVERED | | | Three confirmation dialogs in the Wt UI reload the account list on Yes and never perform the action; the id they are given is unused. |
 | [[id:4CB973CA-86B7-4476-85F2-0F11626BFB27][Apply the unique suffix that requires_unique_suffix asks for]] | ABANDONED | 2026-09-11 | 2026-09-11 | Filed on a false premise. requires_unique_suffix is applied correctly wherever it is set; the unused counter that prompted it is drift in trade, recorded on the codegen drift task. |
 | [[id:4D4CB55D-3455-4AB2-AA8D-12FEEDFCECDC][Give report_definition a profile that describes it]] | BACKLOG | | | report_definition is uuid-keyed and workspace-scoped, a combination no profile in the catalogue covers, so it binds to one that fixes the opposite value. |
+| [[id:D38BFC7E-FCE8-418E-BD4F-294E1AAD1456][Settle whether a profile fixes a feature or defaults it]] | BACKLOG | | | A model overrides a profile assignment and calls it a default, while the profile says it fixes the value; two bindings the model-drift check found need correcting either way. |
 
 * Decisions
 

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: D38BFC7E-FCE8-418E-BD4F-294E1AAD1456
+:END:
+#+title: Task: Settle whether a profile fixes a feature or defaults it
+#+description: A model overrides a profile assignment and calls it a default, while the profile says it fixes the value; two bindings the model-drift check found need correcting either way.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Profile binding has one stated meaning, and the two bindings that contradict it are corrected or re-bound.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The variability model states whether an assignment fixes a value or supplies an overridable default.
+- compute.result either stops binding uuid-identified-lookup or stops overriding has_change_reason_cache.
+- reporting.report_instance either declares parent_entity_singular or stops binding fk-scoped-child.
+- Both KNOWN_MODEL_DRIFT entries are removed.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

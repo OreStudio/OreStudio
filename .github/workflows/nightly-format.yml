@@ -37,7 +37,13 @@ jobs:
           ref: main
 
       - name: Install clang-format
-        run: sudo apt-get install -y clang-format
+        # Refreshes the index first so this resolves to the same package
+        # version as codegen-drift.yml, which regenerates and reformats
+        # the same tree. If the two ever disagree on what formatted
+        # means, every generated C++ file reads as drifted.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
 
       - name: Run clang-format in-place (twice)
         # clang-format is not idempotent in a single pass for some

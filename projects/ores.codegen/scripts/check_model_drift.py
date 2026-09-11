@@ -13,6 +13,11 @@ This is the third kind of codegen drift. Template drift is guarded by
 template-drift.yml and artefact drift by codegen-drift.yml; this guards
 the model against the profile it claims to instantiate.
 
+An assignment whose value begins with ``required`` fixes that the
+feature must be set rather than which value it takes — a parent entity
+name is necessarily specific to the entity adopting the profile. Those
+are checked for presence only.
+
 Only features the model states itself are compared. A feature the model
 leaves unstated is supplied by the profile and cannot contradict it, so
 silence is never drift.
@@ -50,9 +55,23 @@ PROFILE_DIR = REPO_ROOT / "projects" / "modeling"
 # profile in the catalogue describes it. Re-binding would move the false
 # promise rather than remove it; the combination needs either a profile
 # of its own or a decision that it should not exist.
+#
+# result states has_change_reason_cache=false and documents it as
+# "overriding the profile default". The profile does not offer a
+# default: its Assignments section says it fixes the value. The two
+# disagree about what binding means, which is a larger question than a
+# binding correction.
+#
+# report_instance binds fk-scoped-child and states no
+# parent_entity_singular, nor any parent foreign key. Either it is not
+# a child entity or the binding is incomplete.
 KNOWN_MODEL_DRIFT = {
     ("projects/ores.reporting/modeling/ores.reporting.report_definition.org",
      "has_workspace_id"),
+    ("projects/ores.compute/modeling/ores.compute.result.org",
+     "has_change_reason_cache"),
+    ("projects/ores.reporting/modeling/ores.reporting.report_instance.org",
+     "parent_entity_singular"),
 }
 
 # "| [[id:UUID][has_tenant_id]] | true |" and the plain "| feature | value |"
@@ -94,27 +113,62 @@ def load_profiles() -> dict:
     return profiles
 
 
-def model_flags(path: Path) -> dict:
-    """Read the properties of the model's * Flags drawer."""
-    text = path.read_text(encoding="utf-8")
-    flags, in_flags, in_drawer = {}, False, False
-    for line in text.splitlines():
-        if line.startswith("* "):
-            in_flags = line.strip() == "* Flags"
-            continue
-        if not in_flags:
-            continue
-        if line.strip() == ":PROPERTIES:":
-            in_drawer = True
-            continue
-        if line.strip() == ":END:":
+def model_flags(path: Path) -> tuple:
+    """Read every property drawer in the model, keyed by feature name.
+
+    A model states its features across several drawers rather than one.
+    The entity-level ones sit in ``* Flags``, but the Qt tier states
+    ``has_uuid_primary_key``, ``has_pagination`` and
+    ``has_change_reason_cache`` in the nested ``** Qt`` drawer under
+    ``* C++``. Reading only ``* Flags`` made the three features the
+    profiles most often fix invisible, so the check passed by not
+    looking. Every drawer is read instead, and the heading path is kept
+    so a disagreement between two of them can be reported rather than
+    silently resolved by ordering.
+    """
+    values, headings = {}, []
+    stack, in_drawer = [], False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if stripped.startswith("*") and " " in stripped:
+            stars = len(stripped) - len(stripped.lstrip("*"))
+            title = stripped[stars:].strip()
+            del stack[stars - 1:]
+            stack.append(title)
             in_drawer = False
             continue
-        if in_drawer:
-            m = PROPERTY_RE.match(line.strip())
-            if m:
-                flags[m.group(1)] = m.group(2).strip()
-    return flags
+        if stripped == ":PROPERTIES:":
+            in_drawer = True
+            continue
+        if stripped == ":END:":
+            in_drawer = False
+            continue
+        if not in_drawer:
+            continue
+        m = PROPERTY_RE.match(stripped)
+        if not m:
+            continue
+        key, value = m.group(1), m.group(2).strip()
+        where = " / ".join(stack) or "(top)"
+        values.setdefault(key, []).append((where, value))
+        headings.append(key)
+    return values, headings
+
+
+def stated(values: dict, feature: str):
+    """The value a model states for a feature, or None if it states none.
+
+    Returns the disagreement instead when the model states the same
+    feature twice with different values: that is a defect in the model
+    regardless of what any profile says.
+    """
+    entries = values.get(feature)
+    if not entries:
+        return None, None
+    distinct = {v for _, v in entries}
+    if len(distinct) > 1:
+        return None, entries
+    return entries[0][1], None
 
 
 def main() -> int:
@@ -129,11 +183,12 @@ def main() -> int:
         return 2
 
     models = sorted(REPO_ROOT.glob("projects/*/modeling/*.org"))
-    bound, unknown, drifted, conflicts, excepted = 0, [], [], [], []
+    bound, unknown, drifted, conflicts, excepted, internal, missing = (
+        0, [], [], [], [], [], [])
 
     for path in models:
-        flags = model_flags(path)
-        name = flags.get("profile")
+        values, _ = model_flags(path)
+        name, _ = stated(values, "profile")
         if not name:
             continue
         bound += 1
@@ -151,7 +206,17 @@ def main() -> int:
                          fixed_by[feature][1], expected))
                     continue
                 fixed_by[feature] = (one, expected)
-                actual = flags.get(feature)
+                actual, disagreement = stated(values, feature)
+                if disagreement:
+                    internal.append((rel, feature, disagreement))
+                    continue
+                if expected.startswith("required"):
+                    if not actual:
+                        if (str(rel), feature) in KNOWN_MODEL_DRIFT:
+                            excepted.append((rel, feature))
+                        else:
+                            missing.append((rel, one, feature))
+                    continue
                 if actual is not None and actual != expected:
                     if (str(rel), feature) in KNOWN_MODEL_DRIFT:
                         excepted.append((rel, feature))
@@ -167,6 +232,12 @@ def main() -> int:
         print(f"{rel}: profiles '{first}' and '{second}' disagree on "
               f"{feature} ({one} vs {other})")
 
+    for rel, name, feature in missing:
+        print(f"{rel}: profile '{name}' requires {feature} to be set, "
+              f"model states none")
+    for rel, feature, entries in internal:
+        where = "; ".join(f"{w}={v}" for w, v in entries)
+        print(f"{rel}: states {feature} twice with different values ({where})")
     for rel, feature in excepted:
         print(f"{rel}: {feature} contradicts its profile, allowed by "
               f"KNOWN_MODEL_DRIFT")
@@ -175,10 +246,11 @@ def main() -> int:
         print(f"\n{bound} of {len(models)} models bind to a profile; "
               f"{len(profiles)} profiles defined.")
 
-    if unknown or drifted or conflicts:
+    if unknown or drifted or conflicts or internal or missing:
         print(f"\nModel drift: {len(drifted)} contradicted assignment(s), "
-              f"{len(conflicts)} profile conflict(s), {len(unknown)} unknown "
-              f"profile(s). A model that names a profile must not redeclare "
+              f"{len(conflicts)} profile conflict(s), {len(internal)} "
+              f"self-contradicting model(s), {len(missing)} unset required "
+              f"feature(s), {len(unknown)} unknown profile(s). A model that names a profile must not redeclare "
               f"a feature the profile fixes to another value.")
         return 1
 

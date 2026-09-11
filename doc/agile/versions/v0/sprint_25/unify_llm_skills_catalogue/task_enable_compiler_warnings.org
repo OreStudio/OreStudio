@@ -186,7 +186,37 @@ The exhaustive-matching section of
 as off, and is corrected in this change to describe the mechanism that
 now exists.
 
-Verification: three full sweeps of all 3591 translation units. 2153
-warnings, then 13, then 3 — the last three being =domain.cpp=, proved
-clean under its suppression and confirmed wired by reconfiguring CMake
-and reading the flags back out of the compile database.
+Verification, and a correction to what earlier rounds of this task
+claimed.
+
+The sweep script decided whether a translation unit was clean by
+grepping its stderr for a =[-W...]= tag. A unit that failed to compile
+outright emits no such tag, so every broken compile was counted clean.
+The "2153, then 13, then 3 across 3591 units" figures recorded earlier
+therefore measured less than they appeared to. The checker now treats a
+non-zero exit as a failure in its own right.
+
+The corrected sweep covers 3949 translation units, the count having
+grown with =ores.synthetic=. It reports 73 units to look at:
+
+- 55 fail on a stale precompiled header in the clang build tree, which
+  a concurrent full build invalidated. An environment fault, not a
+  diagnostic.
+- 11 fail on Qt =ui_*.h= and moc outputs that only exist after a real
+  build step. The same kind of fault: syntax-only compilation cannot
+  synthesise them.
+- 3 are =domain.cpp=, reported because the sweep appends =-Wall= after
+  the compile database's own flags and so re-enables what the per-file
+  =-Wno-unused-const-variable= turned off. The suppression is confirmed
+  present in the database entry, so these are an artefact of the
+  instrument.
+- 6 are real: an anonymous-namespace =parse_flag= helper that nothing
+  calls, in six =ores.shell= synthetic command files. These are
+  hand-written rather than generated. The dead helper is removed, and
+  the two files left holding an empty anonymous namespace have that
+  removed too.
+
+No warning survives that names something real. The three classes of
+false positive above are properties of a syntax-only sweep run against
+a build tree, and a real build does not have them — which is why the
+full build is the check that settles this, not the sweep.

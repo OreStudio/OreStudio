@@ -1327,6 +1327,38 @@ Nothing generated was opened in an editor.
 
 ** Verification
 
+Each wave records its build and suite result here.
+
+*** Wave B.4, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the log ends at
+=[100%] Built target ores.qt.exe= with no error. The two new entities'
+generated files compiled and linked on that pass.
+
+All seventy one suites pass over those binaries, in eight ctest ranges.
+
+| range  | result | wall time |
+|--------+--------+-----------|
+| 1-24   | 24/24  | 203.40 s  |
+| 25-27  |  3/3   | 222.41 s  |
+| 28-31  |  4/4   | 263.49 s  |
+| 32-34  |  3/3   |  15.35 s  |
+| 35-37  |  3/3   |  31.09 s  |
+| 38-50  | 13/13  |  19.60 s  |
+| 51-56  |  6/6   |   9.59 s  |
+| 57-71  | 15/15  |  80.57 s  |
+
+The three trading suites are the wave's own, at 0.21, 14.50 and 0.62
+seconds. The three ore suites carry the mapper path, at 4.58, 0.70 and
+1.22 seconds.
+
+=projects/ores.sql/utility/validate_schemas.sh --strict= reads two
+hundred and ninety nine tables and exits 0 with no warning, after the
+row-level security fix recorded above.
+
+*** Wave B.3, the build and the sweep
+
 The build ran clean: =./compass.sh build --preset
 linux-clang-debug-make= finished with no error, and the log ends at
 =[100%] Built target ores.qt.exe=.

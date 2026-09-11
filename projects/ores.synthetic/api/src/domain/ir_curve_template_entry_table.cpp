@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<ir_curve_template_entry>& v) {
     table << fort::header << "Sequence" << "Start Tenor" << "End Tenor" << "Instrument"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& e : v) {
+    for ([[maybe_unused]] const auto& e : v) {
         table << e.sequence_index << e.start_tenor_code << e.end_tenor_code << e.instrument_code
               << e.modified_by << e.version << fort::endr;
     }

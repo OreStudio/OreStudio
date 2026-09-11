@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<account_type>& v) {
     table << fort::header << "Type" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& at : v) {
+    for ([[maybe_unused]] const auto& at : v) {
         table << at.type << at.name << at.description << at.display_order << at.modified_by
               << at.version << fort::endr;
     }

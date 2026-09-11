@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<workunit>& v) {
     table << fort::header << "ID" << "Batch ID" << "App Version ID" << "Input URI" << "Config URI"
           << "Priority" << "Target Redundancy" << "Modified By" << "Recorded At" << fort::endr;
 
-    for (const auto& wu : v) {
+    for ([[maybe_unused]] const auto& wu : v) {
         table << wu.id << boost::uuids::to_string(wu.batch_id)
               << boost::uuids::to_string(wu.app_version_id) << wu.input_uri << wu.config_uri
               << wu.priority << wu.target_redundancy << wu.modified_by << wu.recorded_at

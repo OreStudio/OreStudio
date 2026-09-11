@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<tenant>& v) {
     table << fort::header << "Code" << "Name" << "Type" << "Hostname" << "Status" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& t : v) {
+    for ([[maybe_unused]] const auto& t : v) {
         table << t.code << t.name << t.type << t.hostname << t.status << t.modified_by << t.version
               << fort::endr;
     }

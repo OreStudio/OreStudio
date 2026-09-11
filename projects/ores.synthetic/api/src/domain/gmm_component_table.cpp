@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<gmm_component>& v) {
     table << fort::header << "Component" << "Description" << "Mean" << "Stdev" << "Weight"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& c : v) {
+    for ([[maybe_unused]] const auto& c : v) {
         table << c.component_index << c.description << c.mean << c.stdev << c.weight
               << c.modified_by << c.version << fort::endr;
     }

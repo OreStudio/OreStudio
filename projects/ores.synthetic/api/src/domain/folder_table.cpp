@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<folder>& v) {
 
     table << fort::header << "Name" << "Kind" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& f : v) {
+    for ([[maybe_unused]] const auto& f : v) {
         table << f.name << f.kind << f.modified_by << f.version << fort::endr;
     }
     return table.to_string();

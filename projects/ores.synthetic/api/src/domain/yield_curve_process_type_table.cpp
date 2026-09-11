@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<yield_curve_process_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& pt : v) {
+    for ([[maybe_unused]] const auto& pt : v) {
         table << pt.code << pt.name << pt.description << pt.display_order << pt.modified_by
               << pt.version << fort::endr;
     }

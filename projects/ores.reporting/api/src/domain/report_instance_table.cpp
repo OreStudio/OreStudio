@@ -44,7 +44,7 @@ std::string convert_to_table(const std::vector<report_instance>& v) {
     table << fort::header << "Name" << "Definition" << "Trigger Run" << "Output" << "Started At"
           << "Completed" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& ri : v) {
+    for ([[maybe_unused]] const auto& ri : v) {
         table << ri.name << boost::uuids::to_string(ri.definition_id) << ri.trigger_run_id
               << ri.output_message << opt_str(ri.started_at) << opt_str(ri.completed_at)
               << ri.modified_by << ri.version << fort::endr;

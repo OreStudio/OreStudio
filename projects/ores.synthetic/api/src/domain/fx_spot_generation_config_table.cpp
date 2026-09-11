@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<fx_spot_generation_config>& v) {
     table << fort::header << "Base" << "Quote" << "Source" << "ORE Key" << "Price Source"
           << "Ticks/Hour" << "Enabled" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& c : v) {
+    for ([[maybe_unused]] const auto& c : v) {
         table << c.base_currency_code << c.quote_currency_code << c.source_name << c.ore_key
               << c.price_source << c.ticks_per_hour << (c.enabled ? "true" : "false")
               << c.modified_by << c.version << fort::endr;

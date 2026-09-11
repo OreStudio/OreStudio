@@ -2,7 +2,7 @@
 :ID: 8F20BEF0-EF21-4525-847A-316F30B67181
 :END:
 #+title: Cover the 43 ORE trade types that no example exercises
-#+description: 43 of the 122 oreTradeType values in the regenerated domain.hpp appear in no example under external/ore/examples/. The example-walking golden test added with the v17 sync covers only the 79 types that do have an example, and it cannot reach the rest. A hand-written fixture is the only route for those 43. Split: 12 types are referenced by hand-written code and need a fixture only (Autocallable_01, BondFuture, BondPosition, CommodityAccumulator, CommodityBasketOption, CommodityRainbowOption, CommoditySpreadOption, CommodityTaRF, CommodityWorstOfBasketSwap, EquityOptionPosition, EquityStrikeResettableOption). The other 31 have no example and no hand-written reference at all, so they need a mapper as well as a test; the seven new v17 types are a subset of that group and are tracked separately at task 64CB13D8. The 31 are: BondFutureOption, CashPosition, CommodityAsianOption, CommodityBasketVarianceSwap, CommodityBestEntryOption, CommodityDigitalAveragePriceOption, CommodityDigitalOption, CommodityForwardVolatilityAgreement, CommodityGenericBarrierOption, CommodityPairwiseVarianceSwap, CommodityPosition, CommodityStrikeResettableOption, CommodityWindowBarrierOption, EquityAutoDeltaHedgedOption, EquityBasketOption, EquityBasketVarianceSwap, EquityBestEntryOption, EquityDoubleTouchOption, EquityForwardVolatilityAgreement, EquityFutureOption, EquityGenericBarrierOption, EquityPairwiseVarianceSwap, EquityRainbowOption, EquityWindowBarrierOption, ForwardVolatilityAgreement, FxBasketOption, FxForwardVolatilityAgreement, FxPairwiseVarianceSwap, FxRainbowOption, RateDigitalOption, SwaptionStraddle.
+#+description: 43 of the 122 oreTradeType values in the regenerated domain.hpp appear in no XML under external/ore/examples/, so no example-derived test can ever reach them. The example-walking golden test added with the v17 sync cannot cover them: it derives its cases from the examples tree. Split by what is missing. Four types already have hand-written ores.ore code and need a fixture only: BondFuture and BondPosition have a mapper, BondPosition and EquityOptionPosition have a test reference, and Failed is the enum sentinel handled in exporter.cpp and importer.cpp. The other 39 have no example, no mapper, and no test, so each needs both. The seven v17 types are a subset of that 39 and are tracked separately at task 64CB13D8.
 #+type: capture
 #+level: cross
 #+filetags: :ore:trading:testing:coverage:
@@ -13,16 +13,70 @@ This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbo
 
 * What
 
-(One paragraph: the idea.)
+Bring every ORE trade type under a round-trip test. Add a hand-written
+fixture for each of the 43 types that no example exercises, and add a
+mapper for each one that has none.
 
 * Why
 
-(Motivation, problem being solved, related context.)
+=domain.hpp= declares 122 =oreTradeType= values. The examples tree under
+=external/ore/examples/= names 79 of them across 1623 XML files. The
+other 43 appear in no file, so no test that walks the examples tree can
+reach them.
+
+The coverage test added with the v17 sync walks that tree and nothing
+else. It compares the canonical serialization of each example to a
+committed golden. That design is cheap and it scales with upstream, but
+it is blind to any type upstream ships no example for. A mapper for one
+of those 43 types can rot with no test to notice.
+
+The v17 sync showed the risk. Five FX types changed =OptionData= and
+=BarrierData= from a repeated element to a single one. The compiler
+caught that class of break because the member type changed. A schema
+change that still compiles but maps to the wrong field would pass
+silently, and for these 43 types there is no test that would disagree.
+
+The work splits by what is missing:
+
+- *Four types have hand-written code already.* =BondFuture= and
+  =BondPosition= have a mapper. =BondPosition= and
+  =EquityOptionPosition= have a test reference. =Failed= is the enum
+  sentinel, not a product; =exporter.cpp= and =importer.cpp= handle it.
+  These four need a fixture only.
+- *Thirty-nine types have nothing.* No example, no mapper, no test. Each
+  one needs a mapper and a fixture. The six new v17 types that lack an
+  example — =BondFutureOption=,
+  =CommodityForwardVolatilityAgreement=, =EquityAutoDeltaHedgedOption=,
+  =EquityForwardVolatilityAgreement=, =ForwardVolatilityAgreement=, and
+  =FxForwardVolatilityAgreement= — are inside this group.
+  =IntradayPowerForward=, the seventh new type, has an example and is
+  therefore outside it.
+
+The 39 span four families, and a family shares most of its shape. An
+equity barrier option and a commodity barrier option differ in the
+underlying and little else. So the unit of work is a family, not a type.
+That argues for splitting this capture into several stories rather than
+one.
+
+* Open question
+
+Is a mapper for every type the goal, or is a round-trip test enough for
+the types that already have one? The two answers give very different
+sizes of work. A fixture per type is mechanical. A mapper per type is a
+design decision per family, and it touches =ores.trading=, not only
+=ores.ore=.
 
 * References
 
--
+- =projects/ores.ore/core/tests/xml_example_coverage_tests.cpp=, the
+  example-walking golden test. It walks
+  =external/ore/examples/Products/Example_Trades=.
+- =projects/ores.ore/core/include/ores.ore.core/domain/domain.hpp=, the
+  regenerated =oreTradeType= enum.
+- =projects/ores.ore/core/include/ores.ore.core/domain/bond_instrument_mapper.hpp=,
+  the only mapper that names any of the 43.
 
 * See also
 
--
+- [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]], the story that measured this.
+- [[id:64CB13D8-4848-4C66-8B6B-5946A4F4D8FF][Cover the seven new ORE v1.8.17.0 trade types]], the subset of this work that has a task already.

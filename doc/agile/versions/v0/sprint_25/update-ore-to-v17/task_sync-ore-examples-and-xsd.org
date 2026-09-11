@@ -31,7 +31,7 @@ upstream hand-patches must survive the sync. Report whether
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | Both compile breaks from the XSD regeneration are fixed, and every =ores.ore= source and test unit type-checks. Nothing has run yet. |
+| Now          | All three compile breaks from the XSD regeneration are fixed, and every =ores.ore= source and test unit type-checks. Nothing has run yet. |
 | Waiting on   | A free build-lock slot. Another worktree holds both with a full-repo build. |
 | Next         | Build and run =ores.ore.core.tests=, then bootstrap the missing golden for =Credit_CallableBond.xml=. |
 | Last touched | 2026-09-12                               |
@@ -94,7 +94,7 @@ written.
   already missing before the sync. The check is not run with =--strict= in
   CI, so none of this fails a build today.
 
-- The XSD regeneration broke the build in two places.
+- The XSD regeneration broke the build in three places.
   =commodityOptionData= replaced its inline =Strike= element with the
   =strikeGroup= substitution group, so =commodity_instrument_mapper=
   stopped compiling on =d.Strike=. Fixed by reading the strike from
@@ -110,6 +110,13 @@ written.
   compiling, in both directions, so the mapper carries one read helper
   and one write helper for each. A double barrier now keeps both levels
   in the one group, lower first, which is how upstream writes them.
+- The third break is small and it hid behind an unchanged member name.
+  =sensitivityanalysis.DiscountCurves= became
+  =xsd::optional<discountcurves>=, but it kept the name, so the name diff
+  did not flag it. =xml_sensitivityanalysis_roundtrip_tests= read through
+  it with =.DiscountCurve= and stopped compiling. Fixed by copying the
+  optional guard that the =IndexCurves= check on the next line already
+  used.
 - =fxKIKOBarrierOptionData= and =genericBarrierOptionData= keep their
   nested =Barriers/BarrierData= vector and were not touched.
 - Both breaks were found by the compile-database syntax check described
@@ -120,10 +127,22 @@ written.
   =stFreeStyleEventScheduleBase= replaced its members with
   =ScheduleData= and =DerivedSchedule=, and =IborIndexCurve= became
   =IndexCurve= on the bond curve config types.
-- The member-name diff found both breakages, which is worth repeating on
-  the next bump. Diff every complexType's member names between =HEAD= and
-  the regenerated =domain.hpp=, then grep for each removed name. That
-  finds every break before a build does.
+- A member-name diff found the first two breakages, which is worth
+  repeating on the next bump. Diff every complexType's member names
+  between the pre-regeneration commit and the regenerated =domain.hpp=,
+  then grep for each removed name. That finds a removed member before a
+  build does.
+- That diff misses the third break, because the member name did not
+  change. =sensitivityanalysis.DiscountCurves= went from a required
+  =discountcurves= to =xsd::optional<discountcurves>=, and
+  =xml_sensitivityanalysis_roundtrip_tests= kept calling
+  =.DiscountCurve= through the optional. Diff the member *types* as well
+  as the names, not only the names. Comparing types on the 844
+  complexTypes found 31 members that changed type or vanished, of which
+  13 are named by hand-written =ores.ore= code.
+- Cardinality is the break class to watch. Both the FX change (repeated
+  to single) and this one (required to optional) left the member name
+  alone and moved only the type.
 - A second lever checks the fixes without a build. Read the command for
   one source file out of
   =build/output/linux-clang-debug-make/compile_commands.json=, remove

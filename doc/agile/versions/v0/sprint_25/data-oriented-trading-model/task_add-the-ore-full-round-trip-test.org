@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rework-bond-ores-mapping
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
 #+updated: 2026-09-10
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,7 +26,7 @@ One command drives an ORE XML document through the database and back, and the ou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |

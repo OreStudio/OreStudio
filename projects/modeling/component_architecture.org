@@ -74,9 +74,13 @@ place. This reverses decision D5 (sprint 19, PR #997), which had the
 parent hold no =CMakeLists.txt= and every part registered at the
 projects level.
 
-The tree is part-way through that change. =ores.analytics= and
-=ores.eventing= are component-level; the other 18 composites still
-register each part in =projects/CMakeLists.txt=.
+Every composite now follows this shape, and codegen generates the
+file: the =ores.cmake.component.composite_root= archetype renders the
+parts a composite declares in =#+parts:=. The order is declared
+rather than derived, because dependency order is not alphabetical —
+=ores.qt= needs =headless= and =api= ahead of the plugins that link
+them, and =ores.eventing= lists =modeling= among its parts because its
+=modeling/= carries a diagram target.
 
 Sub-component names follow the conventions in [[* Sub-component catalogue]].
 Child CMake targets keep the fully-qualified name: =ores.<group>.api=,

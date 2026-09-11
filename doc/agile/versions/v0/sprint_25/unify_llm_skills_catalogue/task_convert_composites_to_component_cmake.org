@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/convert-composites-to-component-cmake
+#+pr: 2069
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
 #+updated: 2026-09-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Every composite registers its parts in its own CMakeLists.txt, and projects/CMak
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -41,6 +41,17 @@ Every composite registers its parts in its own CMakeLists.txt, and projects/CMak
 - Dependency order is preserved where a part was deliberately registered away from its siblings, such as ores.history api and core.
 
 * Plan
+
+Take a baseline first. A build-wiring change cannot be read for
+correctness, so the only useful evidence is that the configuration
+comes out the same afterwards. The target set and translation-unit
+count were captured before anything moved.
+
+Collapse mechanically rather than by hand. Each component takes the
+position of its first part and keeps the part order it had, which
+preserves any deliberate ordering without having to know why it was
+deliberate.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -63,12 +74,68 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2069][#2069]] | [build] Register every composite's parts in its own CMakeLists |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Nothing cross-checks =#+parts:= against the sub-components on disk, so a part left out silently stops being built: configure succeeds because CMake never learns the directory exists, and the drift check compares output against the same wrong model | generate.py | Accept | The finding I asked for and did not find myself. =resolve_targets= now raises when a composite's declared parts disagree with its hosted sub-components in either direction. Proved by injecting both failures into a real model rather than reasoning about them |
+| 2 | The gap is the shape flagged in the PR body — a target disappearing in a way neither check would see | — | Accept | Recorded as the reason the gate exists, in the docstring rather than only here |
+| 3 | The collapse is a straight substring merge and no part was dropped or reordered relative to its siblings, verified byte-for-byte on marketdata, iam and compute | — | Accept | No change. Independent confirmation of the claim the baseline comparison was making |
+| 4 | Declaring =#+parts:= rather than deriving it is the pragmatic choice; deriving from the link graph would be more correct but is real complexity for two components | — | Accept | No change. The cross-check narrows the cost of declaring it, since a wrong declaration now fails rather than quietly building less |
+| 5 | The eight hand-written roots are honestly filed rather than silently inconsistent, confirmed by their licence wrap style | — | Accept | No change |
+
+The kind-gate test asserted that a composite generates nothing. That
+was true while no archetype served the kind and is not true now, so it
+is updated rather than left passing for the wrong reason, and three
+tests are added for the new gate.
 
 * Result
+
+All four acceptance criteria are met, and the codegen half the
+operator asked for is done with them.
+
+=projects/CMakeLists.txt= adds components rather than parts: 91
+entries become 39, one per component. Each of the 19 remaining
+composites gained a root =CMakeLists.txt= that adds its parts and
+nothing else, joining =ores.analytics= and =ores.eventing=.
+
+The scatter this removes was real. =ores.history= registered =api= at
+line 5 and =core= at line 23; =ores.telemetry= spanned 37 lines.
+Ordering is preserved by construction: each component sits where its
+first part sat and keeps its internal order, so =ores.ore='s
+core-before-api survives.
+
+Codegen generates the file now. =ores.cmake.component.composite_root=
+declares =#+component_kind: composite=, the kind no archetype claimed
+— the loader described a composite as generating nothing from either
+facet by design, so the one file it does own had nowhere to come from.
+Part order is declared in =#+parts:= rather than derived, because
+alphabetical is wrong for =ores.qt=, which needs =headless= and =api=
+ahead of the plugins that link them, and for =ores.eventing=, which
+lists =modeling= among its parts.
+
+Verification is a comparison, not an inspection. CMake configures
+clean with no errors, and the target set is identical to the baseline:
+93 directories and 3957 translation units, none missing and none new.
+The generator reproduces all twelve declared composites' roots
+byte-identically, =check_component_drift.py --all= passes, the audit
+passes at 43 components, and the codegen suite passes at 180 tests.
+
+A composite's parts are checked against the disk. The root renders one
+=add_subdirectory= per declared part, so a part omitted from
+=#+parts:= would stop being built with nothing to report it —
+configure cannot fail over a directory it never hears about, and the
+drift check would compare against the same wrong model. Review found
+that gap and it is now a hard error.
+
+The drift gate earned its place during this task. My hand-written
+licence headers wrapped differently from the generated ones, and the
+gate failed on exactly that before anything was pushed.
+
+Eight composites — =ores.assets=, =ores.http=, =ores.marketdata=,
+=ores.ore=, =ores.qt=, =ores.synthetic=, =ores.telemetry= and
+=ores.variability= — have no group model, so codegen has nothing to
+generate their roots from and those stay hand-written. Filed as
+[[id:9747E4C5-734E-4F75-AD8B-CEB4C9089B76][Give every composite a group model]].

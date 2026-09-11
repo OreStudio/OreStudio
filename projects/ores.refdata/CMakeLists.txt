@@ -17,5 +17,6 @@
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/api)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/client)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/modeling)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/service)

@@ -2519,9 +2519,15 @@ def load_org_component_overview_model(path: Path | str) -> dict[str, Any]:
             c[k] = fm[k]
     # Component kind (flat | api | core | service | composite) selects the
     # scaffolding variant set via the graph's kind discriminator; defaults
-    # to "flat". "composite" is a pure aggregator with sub-components of
-    # its own and no code -- no archetype in ores.cpp.component/
-    # ores.cmake.component declares it, so a composite component
-    # generates nothing from either facet by design.
+    # to "flat". A composite has sub-components and no code of its own, so
+    # it generates none of the code-bearing archetypes; the one thing it
+    # does own is the CMakeLists that adds its parts.
     c["kind"] = fm.get("component_kind", "flat")
+    # Part order is declared rather than derived. Dependency order is not
+    # alphabetical -- ores.qt needs headless and api ahead of the plugins
+    # that link them -- so the model states the order and the template
+    # renders it.
+    parts = fm.get("parts", "").split()
+    c["parts"] = [{"part": name, "last": i == len(parts) - 1}
+                  for i, name in enumerate(parts)]
     return {"component": c}

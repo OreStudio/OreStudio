@@ -6,6 +6,7 @@
 #+type: ores.codegen.component
 #+level: cross
 #+component_kind: composite
+#+parts: api core service
 #+filetags: :reporting:component:
 #+created: 2026-06-02
 #+updated: 2026-08-09

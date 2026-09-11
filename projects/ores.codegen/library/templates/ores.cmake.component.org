@@ -19,10 +19,11 @@ table to them.
 
 * Summary
 
-Six templates generate the CMake build files for a component: the
-component root dispatcher, four =src= variants for the plain / api /
-core / service component flavours, the Catch2 test wiring, and the
-PlantUML diagram target.
+These templates generate the CMake build files for a component: the
+part root dispatcher, the composite root that adds a component's
+parts, four =src= variants for the plain / api / core / service
+component flavours, the Catch2 test wiring, and the PlantUML diagram
+target.
 
 * The ores.cmake.component facet
 
@@ -30,10 +31,15 @@ Projects a /component/ onto its CMake build files: which targets
 exist, what they link, and how tests and diagrams are wired into the
 global =run_all_tests= / =make_all_diagrams= aggregation targets. The
 facet's shape follows the api/core/service component split described
-in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]: every component gets the same root, tests,
+in [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][component architecture]]: every part gets the same root, tests,
 and modeling files, while =src/CMakeLists.txt= varies by component
 flavour — that is why there are four =*_src= variants but only one of
 each of the others.
+
+A composite is the exception, and =#+component_kind:= is what
+separates the two. It owns no code, so it generates none of the
+code-bearing archetypes; the one file it does own is the
+=CMakeLists.txt= that adds its parts.
 
 * Mustache incantations
 
@@ -56,6 +62,7 @@ each of the others.
 | [[id:BC5E95FA-651F-4AB6-B1B2-5F0B171DEF18][ores.cmake.component.api_src]] | =src/CMakeLists.txt= for an =.api= component (=component-api= profile): pure-types library linking only the eventing/platform public surface. Output =projects/{component_full}/src/CMakeLists.txt=. |
 | [[id:4D32964F-B890-4B12-8AD6-B3ADB0E79335][ores.cmake.component.core_src]] | =src/CMakeLists.txt= for a =.core= component (=component-core= profile): links its sibling api library (={{api_full_name}}.lib=) publicly plus the NATS/service stack privately. Output =projects/{component_full}/src/CMakeLists.txt=. |
 | [[id:B94DF8D9-3F0A-4F2F-8C50-FD7C6A43253B][ores.cmake.component.modeling]] | =modeling/CMakeLists.txt= for every component profile: the =generate_<name>_diagram= PlantUML target, wired into =make_all_diagrams=. Output =projects/{component_full}/modeling/CMakeLists.txt=. |
+| [[id:400B9A29-04EA-4B44-A416-EEBCFAC1EAA7][ores.cmake.component.composite_root]] | The composite root =CMakeLists.txt=: adds the component's parts and nothing else, in the order the model's =#+parts:= declares. Used by the =composite= kind alone; output =projects/{component_dir}/CMakeLists.txt=. |
 | [[id:9D61216E-4B20-4326-9547-FB93B34DB24B][ores.cmake.component.root]] | Tiny dispatcher: the component root =CMakeLists.txt= just descends into =src/=, =tests/= and =modeling/=. Used by every component profile (=component=, =component-api=, =component-core=, =component-service=); output =projects/{component_full}/CMakeLists.txt=. |
 | [[id:765067AA-65B0-43DD-8AE5-B9FFD3D506F6][ores.cmake.component.src]] | =src/CMakeLists.txt= for a plain library component (=component= profile): one shared library from all =*.cpp= under =src/=, with the database/utility/sqlgen dependency set. Output =projects/{component_full}/src/CMakeLists.txt=. |
 | [[id:61384181-B9B2-44C5-8E67-E7D71CB2BE3A][ores.cmake.component.tests]] | =tests/CMakeLists.txt= for every component profile: a Catch2 test executable from all =*.cpp= under =tests/=, the =test_<name>= custom target wired into =run_all_tests=, and the CTest registration with XML output. (The repeated boilerplate across the 65 per-component test files is the subject of the centralise-test-target capture.) Output =projects/{component_full}/tests/CMakeLists.txt=. |

@@ -74,11 +74,54 @@ def test_container_declaring_flat_kind_raises(tmp_path):
 
 
 def test_container_declaring_composite_passes(tmp_path):
-    base = _make_tree(tmp_path, kind_line="#+component_kind: composite", host_sub=True)
+    base = _make_tree(
+        tmp_path,
+        kind_line="#+component_kind: composite\n#+parts: api",
+        host_sub=True)
     model = tmp_path / "projects" / "testcomp" / "modeling/component_overview.org"
     units, model_type, _ = resolve_targets(model, base)
     assert model_type == "component"
-    assert units == []
+
+
+def test_composite_omitting_a_hosted_part_raises(tmp_path):
+    """A part left out of #+parts: stops being built and nothing else sees it.
+
+    The composite root renders one add_subdirectory per declared part,
+    so omitting one drops it from the build. CMake never learns the
+    directory exists, so configure still succeeds, and the drift check
+    compares output against the same wrong model.
+    """
+    base = _make_tree(
+        tmp_path,
+        kind_line="#+component_kind: composite\n#+parts:",
+        host_sub=True)
+    model = tmp_path / "projects" / "testcomp" / "modeling/component_overview.org"
+    with pytest.raises(ValueError, match="not in #\\+parts:"):
+        resolve_targets(model, base)
+
+
+def test_composite_naming_an_unbuildable_part_raises(tmp_path):
+    """A part that is neither a sub-component nor a directory that builds."""
+    base = _make_tree(
+        tmp_path,
+        kind_line="#+component_kind: composite\n#+parts: api typo",
+        host_sub=True)
+    model = tmp_path / "projects" / "testcomp" / "modeling/component_overview.org"
+    with pytest.raises(ValueError, match="neither a sub-component"):
+        resolve_targets(model, base)
+
+
+def test_composite_may_name_a_directory_that_builds(tmp_path):
+    """modeling/ is not a sub-component but carries its own CMakeLists."""
+    base = _make_tree(
+        tmp_path,
+        kind_line="#+component_kind: composite\n#+parts: api modeling",
+        host_sub=True)
+    comp_root = tmp_path / "projects" / "testcomp"
+    _write(comp_root / "modeling/CMakeLists.txt", "# diagram target\n")
+    model = comp_root / "modeling/component_overview.org"
+    units, model_type, _ = resolve_targets(model, base)
+    assert model_type == "component"
 
 
 def test_flat_component_without_kind_passes(tmp_path):

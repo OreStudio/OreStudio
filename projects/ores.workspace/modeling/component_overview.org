@@ -12,6 +12,7 @@
 #+full_name: ores.workspace
 #+brief: User workspace configuration component
 #+component_kind: composite
+#+parts: api core service
 
 * Summary
 

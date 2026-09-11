@@ -11,6 +11,7 @@
 #+name: dq
 #+full_name: ores.dq
 #+component_kind: composite
+#+parts: api core service
 #+brief: Data-quality domain component
 
 * Summary

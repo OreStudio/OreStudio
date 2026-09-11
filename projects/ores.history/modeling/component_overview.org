@@ -12,6 +12,7 @@
 #+full_name: ores.history
 #+brief: Generic history dispatch types and server-side registry
 #+component_kind: composite
+#+parts: api core
 
 * Summary
 

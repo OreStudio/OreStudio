@@ -228,7 +228,7 @@ one confirmation covers the lot. A scheduled netting under a hedging
 programme produces one confirmation per netting date. In both cases the
 confirmation follows the trade population, not the message flow.
 
-** The trade population**
+** The trade population
 
 A trade must be in the population before it can receive events. The
 population is a state machine, and the states track the confirmation
@@ -237,7 +237,7 @@ not decoration. Each one gates a different capability, and the useful
 implementation reads the gate rather than re-deriving the state at each
 call site.
 
-** What travels with the trade**
+** What travels with the trade
 
 Confirmation intent is a property of the trade, not of a separate
 workflow. A message that carries a trade therefore carries, alongside

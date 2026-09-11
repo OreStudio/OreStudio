@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 520A54D4-6B70-4217-9B90-4D1F3361DCE9
+:END:
+#+title: Task: Write knowledge pages on structures and deal composition
+#+description: Add knowledge pages under doc/knowledge/ covering trade structures and how ORE composes a deal from its parts.
+#+type: task
+#+level: s1
+#+filetags: :documentation-improvements:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Add knowledge pages under =doc/knowledge/= on trade structures and deal
+composition in ORE: how a deal is assembled from its parts, such as legs,
+components, and nested trades, and how ORE models the composed forms.
+
+The pages complement the product catalogue in =doc/knowledge/domain/=.
+That catalogue describes products one by one. The new pages explain the
+structural patterns the products share. The exact set of pages is
+settled with the requester when the work starts.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The knowledge pages on structures and deal composition exist under
+  =doc/knowledge/=, link to and from the knowledge hub, and publish on
+  the site.
+- =compass lint --path doc= passes and the site build succeeds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

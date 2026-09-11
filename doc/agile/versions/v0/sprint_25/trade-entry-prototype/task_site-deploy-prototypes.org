@@ -58,10 +58,15 @@ plan itself stays — it is the historical record of what we did.)
 
 On the frontier: no blockers, takeable now.
 
-Blocks [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]]
-and [[id:DD436803-DCB9-4774-8A77-133AA0614219][Build the pricing screen prototype and the Book handoff]],
-for review only. Both prototypes can be built before this lands; neither is
-reviewable by the user until it does.
+Neither prototype waits on this task. Both can be built before it lands.
+What waits is the user's review: both prototypes land under =doc/prototypes/=,
+so the user cannot view either one until this lands. This is not a blocking
+edge, and neither prototype carries it in =#+blocked_on:=.
+
+Related:
+[[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]]
+and
+[[id:DD436803-DCB9-4774-8A77-133AA0614219][Build the pricing screen prototype and the Book handoff]].
 
 Do not pipe or redirect a =compass= site or build command. Read the log file
 the command prints.

@@ -169,7 +169,11 @@ function renderStructEnvelope() {
         ['Book', structure.book],
         ['Trade date', structure.tradeDate]
     ];
-    document.getElementById('struct-envelope').innerHTML = fields.map(([k, v]) => `
+    document.getElementById('struct-envelope').innerHTML = `
+        <div class="env-label">
+            Envelope<span class="legend">Reference data</span>
+        </div>`
+        + fields.map(([k, v]) => `
         <div class="env-pair">
             <span class="env-key">${esc(k)}</span>
             <span class="env-val">${esc(v || '—')}</span>
@@ -347,8 +351,9 @@ function renderEditor() {
 function renderEnvelope(component) {
     document.getElementById('envelope').innerHTML = `
         <div class="envelope-title">
-            Trade header
-            <span class="legend">The same fields for every product type. The instrument is below.</span>
+            Envelope
+            <span class="legend">Reference data. The trade header, the same fields for every
+                product type. The instrument below carries the economics.</span>
         </div>
         <div class="env-board">
             ${envelopeOf(component).map(g => `

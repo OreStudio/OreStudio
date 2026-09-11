@@ -72,6 +72,21 @@ a { color: var(--accent); }
     border-top: 1px solid var(--line-soft);
 }
 
+.env-label {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding-right: 6px;
+    border-right: 1px solid var(--line-soft);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+}
+
+.env-label .legend { font-size: 10px; text-transform: none; letter-spacing: 0; }
+
 .env-pair { display: flex; flex-direction: column; gap: 1px; }
 
 .env-key {

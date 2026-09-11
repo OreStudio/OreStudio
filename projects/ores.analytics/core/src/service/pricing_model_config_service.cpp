@@ -90,9 +90,10 @@ void pricing_model_config_service::save_config(const domain::pricing_model_confi
 
 void pricing_model_config_service::save_configs(
     const std::vector<domain::pricing_model_config>& configs) {
-    for (const auto& e : configs)
+    for (const auto& e : configs) {
         if (e.id.is_nil())
             throw std::invalid_argument("Pricing Model Configuration id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << configs.size() << " pricing model configurations";
     auto ts = configs;
     for (auto& e : ts)

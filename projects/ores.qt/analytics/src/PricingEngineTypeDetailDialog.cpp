@@ -167,7 +167,7 @@ void PricingEngineTypeDetailDialog::populateInstrumentTypeCodeCombo() {
         "instrumentTypeCodeWatcher",
         [](const auto& t) { return QString::fromStdString(t.code); },
         [](const auto& t) { return QString::fromStdString(t.description); },
-        [](const auto&) { return 0; },
+        [](const auto& t) { return t.display_order; },
         [this]() { return QString::fromStdString(type_.instrument_type_code); },
         [this](const QString& error) {
             emit errorMessage(tr("Failed to load instrument types: %1").arg(error));

@@ -1,4 +1,4 @@
-/* -*- sql-product: postgres; tab-width: 4; indent-tabs-mode: nil -*-
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
  *
  * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
  *
@@ -17,8 +17,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#ifndef ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_HISTORY_PROVIDER_REGISTRAR_HPP
+#define ORES_ANALYTICS_CORE_MESSAGING_PRICING_MODEL_PRODUCT_PARAMETER_HISTORY_PROVIDER_REGISTRAR_HPP
 
-drop rule if exists ores_analytics_pricing_model_configs_delete_rule on "ores_analytics_pricing_model_configs_tbl";
-drop trigger if exists ores_analytics_pricing_model_configs_insert_trg on "ores_analytics_pricing_model_configs_tbl";
-drop function if exists ores_analytics_pricing_model_configs_insert_fn;
-drop table if exists "ores_analytics_pricing_model_configs_tbl";
+#include "ores.history.core/service/dispatch_registry.hpp"
+
+namespace ores::analytics::messaging {
+
+void register_pricing_model_product_parameter_history_provider(
+    ores::history::service::dispatch_registry& registry);
+
+} // namespace ores::analytics::messaging
+
+#endif

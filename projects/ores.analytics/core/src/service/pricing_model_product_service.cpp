@@ -82,9 +82,10 @@ void pricing_model_product_service::save_product(const domain::pricing_model_pro
 
 void pricing_model_product_service::save_products(
     const std::vector<domain::pricing_model_product>& products) {
-    for (const auto& e : products)
+    for (const auto& e : products) {
         if (e.id.is_nil())
             throw std::invalid_argument("Pricing Model Product id cannot be empty.");
+    }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << products.size() << " pricing model products";
     auto ts = products;
     for (auto& e : ts)

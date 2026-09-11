@@ -26,11 +26,11 @@ quant is a registered sub-component of ores.analytics, living at projects/ores.a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -42,6 +42,17 @@ quant is a registered sub-component of ores.analytics, living at projects/ores.a
 - The CMake target name and the include prefix ores.analytics.quant are unchanged, so no consumer include changes.
 
 * Plan
+
+Found by the operator while reviewing the codegen drift work, and the
+distinction it rests on is worth keeping. Clearing codegen drift says
+the generated tree matches the generator. It says nothing about
+whether the component has a legal shape, and analytics did not.
+
+Measure the move before fearing it. 229 references to the name look
+like a large refactor until you read the catalogue: a part's CMake
+target and include prefix are already the fully-qualified name, so
+almost none of them are path references.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -73,3 +84,42 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five acceptance criteria are met.
+
+=quant= is the =quant= part of the =ores.analytics= composite, at
+=projects/ores.analytics/quant=, beside =api=, =core= and =service=.
+The dotted sibling is gone.
+
+The move was almost free, which is the useful finding rather than the
+work. A part keeps the fully-qualified name for both its CMake target
+and its include prefix, so =ores.analytics.quant= remains both and
+none of the 120 files including it change. Git records a pure rename
+of 129 files with no content change, and the only build edit is the
+=add_subdirectory= path.
+
+Registering the role was the other half, and the audit is explicit
+that an unregistered folder name is a finding in its own right, so
+absorbing the component without it would have traded one finding for
+another. =quant= is now in the sub-component catalogue's specialist
+roles, in the signed-off folder catalogue, in the composite component
+registry row for =ores.analytics=, and in that group's component
+overview.
+
+The =NAME_COLLISION= exception is deleted, which the audit calls part
+of the fix rather than an afterthought. =validate_docs= passes with it
+gone, so the resolution is mechanical rather than asserted.
+
+Verification went past the doc checks, because they cannot see build
+wiring. CMake configures clean with no errors; all 61 quant
+translation units appear in the compile database at the nested path
+and none at the old one; a quant unit compiles, and so does a
+=ores.marketdata= consumer that includes quant headers across the
+component boundary, which is what proves the include prefix survived
+the move.
+
+One thing this task did not address, and it is why the gap existed.
+The component architecture audit is not wired into CI the way the
+codegen drift checks now are. It runs when someone runs it, and its
+exception file is what kept this finding quiet. Suppression that
+nothing re-reads is indistinguishable from a passing check.

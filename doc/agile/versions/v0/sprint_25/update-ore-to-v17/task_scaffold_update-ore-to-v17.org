@@ -8,7 +8,7 @@
 #+filetags: :update-ore-to-v17:sprint_25:v0:
 #+owner: marco
 #+branch: feature/update-ore-to-v17
-#+pr:
+#+pr: 2070
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
@@ -60,7 +60,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2070][#2070]] | [agile] Scaffold the ORE v17 update story |
 
 * Review
 

@@ -20,22 +20,25 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+Create the story that brings the vendored ORE engine up to v1.8.17.0.
+Scaffold its tasks and the branch, and wire them into Sprint 25.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | Review of PR #2070.                    |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
 
--
+- The story, its four tasks and the branch exist, and Sprint 25 lists
+  the story.
+- The local site build check passes.
 
 * Plan
 
@@ -69,3 +72,18 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story, its tasks and the branch are in place, and Sprint 25 lists
+the story.
+
+- =feature/update-ore-to-v17= was created off =origin/main=
+  (=e4c8cf984f=).
+- Four tasks were scaffolded: this one, the examples and XSD sync, the
+  package build and vendor, and the dual-version publish.
+- The local site build check passed. =compass build --direct site=
+  exited 0, and all five new pages published.
+
+Two reconnaissance findings are recorded in the story's =* Decisions=:
+=TA002_IR_Swap.tar.gz= is unchanged, and
+=external/ore/packages/manifest.json= is stale against the tracked
+tarball.

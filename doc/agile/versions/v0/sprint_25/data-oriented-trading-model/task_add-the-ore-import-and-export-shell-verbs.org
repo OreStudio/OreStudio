@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/rework-bond-ores-mapping
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
 #+updated: 2026-09-11
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ The shell can upload an ORE import tarball, start the import workflow, and expor
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -117,8 +117,10 @@ req.correlation_id = request_id;
 cm->process_authenticated_request(req, std::chrono::minutes(10));
 #+end_example
 
-=ores.shell= links no HTTP client and holds no base URL today, so this
-verb adds configuration the shell does not have, and not only a verb.
+Correction, after writing the verb: =ores.shell= does hold an HTTP base
+URL. =compute_commands.cpp= defines =default_http_base_url()= from
+=ORES_HTTP_PORT= and calls =storage_transfer= at three sites. The
+upload verb therefore adds no configuration, only the link.
 The three verbs need three new links: =ores.storage= and =ores.ore.api=
 for the upload and the import request, and =ores.ore.core= for the
 exporter, on top of the =ores.trading.api= and =ores.workflow.api=
@@ -156,3 +158,65 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The three verbs shipped in one =ore= menu: =upload=, =import= and
+=export=. They register from =trading_commands.cpp= and drive the
+existing services unchanged.
+
+Acceptance, item by item.
+
+- *ores.shell can upload a file to the ore-imports bucket.* Met.
+  =ore upload <src_dir> [--request-id <uuid>]= calls
+  =storage_transfer::pack_and_upload= against bucket =ore-imports= and
+  key ={request_id}.tar.gz=, the same two calls =OreImportWizard.cpp=
+  makes.
+- *ores.shell can start the ORE import workflow for an uploaded tarball
+  and report the outcome.* Met. =ore import <request_id> [--party-id]
+  [--choices-file] [--timeout]= sends the request on
+  =workflow.v1.ore.import= and then waits for the instance it names. The
+  wait is the point. The handler replies with the workflow instance id
+  before the work runs, and a =.ores= script cannot capture it, so the
+  verb waits itself and reports the terminal step state.
+- *ores.shell can request a portfolio export and write the reconstructed
+  XML to a file.* Met. =ore export <output_file> [--node-id] [--limit]=
+  sends =export_portfolio_request= on
+  =trading.v1.trades.portfolio.export=, maps the returned items through
+  =ores::ore::xml::exporter::export_portfolio= and writes the file.
+- *The three verbs drive the existing services. No new service, subject
+  or protocol member is needed.* Met. The diff adds two files and
+  changes three, and no subject, protocol struct or handler.
+
+Design questions the Notes left open, settled.
+
+=pack_and_upload= over =upload(bucket, key, src_file)=. The second fits
+a script that tars and gzips first, which puts tar and gzip into the
+=.ores= language. The first keeps them out and matches the wizard.
+
+One menu, not two. The Notes put the import verb with the workflow group
+because the script needed =workflow steps= and =workflow wait= to see
+the outcome. That reason dissolves once the verb waits itself, so all
+three live together under =ore= and register from
+=trading_commands.cpp=.
+
+One claim in the Notes was wrong and is corrected in place there.
+=ores.shell= does hold an HTTP base URL: =compute_commands.cpp= defines
+=default_http_base_url()= from =ORES_HTTP_PORT= and calls
+=storage_transfer= at three sites. The upload verb still adds the
+=ores.storage= link, because nothing else exposes that library to this
+translation unit.
+
+The request id is an input, not an output. The script language has no
+output capture, so =upload= takes an optional =--request-id= and prints
+the id it used, and the round trip script supplies the same value to
+=import= from the environment.
+
+Verified on linux-clang-debug-make. The build is clean, =ores.shell.tests=
+passes 1 of 1 in 24.68 sec, and the =component_files.cmake= drift check
+reports every file up to date. The published binary answers offline:
+=help= lists the =ore= menu, and each verb's usage and validation paths
+answer as written, including the directory guard on =upload=, the
+positive-seconds check on =import= and the unsigned-integer check on
+=export=.
+
+Not verified here: no live run against a serving environment. That is
+the full round trip task's job, which this task unblocks.

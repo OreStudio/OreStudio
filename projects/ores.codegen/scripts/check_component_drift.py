@@ -44,6 +44,7 @@ from codegen.logging_config import configure  # noqa: E402
 # when compass-codegen-fix-drift step 7 verifies its regeneration leaves the
 # tree fully clean.
 KNOWN_DRIFT_FREE = (
+    "analytics-cpp",
     "refdata",
     "reporting",
     "marketdata",

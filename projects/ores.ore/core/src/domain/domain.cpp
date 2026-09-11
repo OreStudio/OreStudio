@@ -1119,6 +1119,21 @@ extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Name_t_Info;
 extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_PricingDates_t_Info;
 extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Tag_t_Info;
 extern const xsdcpp::ElementInfo __CommodityFloatingLegData_t_FXIndex_t_Info;
+extern const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_Info;
+extern const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_Name_t_Info;
+extern const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t_Info;
+extern const xsdcpp::ElementInfo _powerLoadProfileDataType_Info;
+extern const xsdcpp::ElementInfo _explicitLoadProfileType_Info;
+extern const xsdcpp::ElementInfo _explicitLoadProfileType_LoadProfileDatum_t_Info;
+extern const xsdcpp::ElementInfo _loadFactorsType_Info;
+extern const xsdcpp::ElementInfo _loadFactorType_Info;
+extern const xsdcpp::ElementInfo _ruleBasedLoadProfileType_Info;
+extern const xsdcpp::ElementInfo _ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Info;
+extern const xsdcpp::ElementInfo
+    _ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t_Info;
+extern const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_FXIndex_t_Info;
+extern const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_Tag_t_Info;
+extern const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_QuantityMode_t_Info;
 extern const xsdcpp::ElementInfo __FormulaBasedLegData_t_Info;
 extern const xsdcpp::ElementInfo __FormulaBasedLegData_t_Index_t_Info;
 extern const xsdcpp::ElementInfo _legData_SettlementData_t_Info;
@@ -1162,12 +1177,6 @@ extern const xsdcpp::ElementInfo _stFreeStyleLongShort_Info;
 extern const xsdcpp::ElementInfo _stFreeStyleIndex_Info;
 extern const xsdcpp::ElementInfo _stFreeStyleEventSchedule_Info;
 extern const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_Info;
-extern const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Info;
-extern const xsdcpp::ElementInfo
-    _stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t_Info;
-extern const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t_Info;
-extern const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t_Info;
-extern const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t_Info;
 extern const xsdcpp::ElementInfo _stFreeStyleNumber_Info;
 extern const xsdcpp::ElementInfo _stFreeStyleEvent_Info;
 extern const xsdcpp::ElementInfo _stFreeStyleCurrency_Info;
@@ -1270,20 +1279,8 @@ extern const xsdcpp::ElementInfo _bondFutureData_Info;
 extern const xsdcpp::ElementInfo _bondFutureData_ContractName_t_Info;
 extern const xsdcpp::ElementInfo _bondFutureData_ContractNotional_t_Info;
 extern const xsdcpp::ElementInfo _bondFutureData_LongShort_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_ContractMonth_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_DeliverableGrade_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_FairPrice_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_Settlement_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_SettlementDirty_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_RootDate_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_ExpiryBasis_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_SettlementBasis_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_ExpiryLag_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_SettlementLag_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_LastTradingDate_t_Info;
-extern const xsdcpp::ElementInfo _bondFutureData_LastDeliveryDate_t_Info;
-extern const xsdcpp::ElementInfo _deliveryBasket_Info;
-extern const xsdcpp::ElementInfo _deliveryBasket_Id_t_Info;
+extern const xsdcpp::ElementInfo _bondFutureOptionData_Info;
+extern const xsdcpp::ElementInfo _bondFutureOptionData_ContractName_t_Info;
 extern const xsdcpp::ElementInfo _creditDefaultSwapData_Info;
 extern const xsdcpp::ElementInfo _creditDefaultSwapData_IssuerId_t_Info;
 extern const xsdcpp::ElementInfo __CreditCurveId_t_Info;
@@ -1300,6 +1297,8 @@ extern const xsdcpp::ElementInfo _commodityForwardData_FutureExpiryOffset_t_Info
 extern const xsdcpp::ElementInfo _commodityForwardData_FutureExpiryOffsetCalendar_t_Info;
 extern const xsdcpp::ElementInfo _commForwardSettlementData_Info;
 extern const xsdcpp::ElementInfo _commForwardSettlementData_FXIndex_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerForwardData_Info;
+extern const xsdcpp::ElementInfo _intradayPowerForwardData_Name_t_Info;
 extern const xsdcpp::ElementInfo _commodityOptionData_Info;
 extern const xsdcpp::ElementInfo _commodityOptionData_Name_t_Info;
 extern const xsdcpp::ElementInfo _commodityDigitalAveragePriceOptionData_Info;
@@ -1512,6 +1511,8 @@ extern const xsdcpp::ElementInfo _bestEntryOptionData_Info;
 extern const xsdcpp::ElementInfo _dualEuroBinaryOptionData_Info;
 extern const xsdcpp::ElementInfo _dualEuroBinaryOptionDoubleKOData_Info;
 extern const xsdcpp::ElementInfo _volBarrierOptionData_Info;
+extern const xsdcpp::ElementInfo _forwardVolatilityAgreementData2_Info;
+extern const xsdcpp::ElementInfo _forwardVolatilityAgreementData2_PayoffType_t_Info;
 extern const xsdcpp::ElementInfo _tarfData2_Info;
 extern const xsdcpp::ElementInfo _tarfData2_Strikes_t_Info;
 extern const xsdcpp::ElementInfo _tarfData2_Strikes_t_Strike_t_Info;
@@ -1606,14 +1607,6 @@ extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Index_t_Values_t_Valu
 extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_Info;
 extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_Name_t_Info;
 extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_Value_t_Info;
-extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Info;
-extern const xsdcpp::ElementInfo
-    _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t_Info;
-extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t_Info;
-extern const xsdcpp::ElementInfo
-    _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t_Info;
-extern const xsdcpp::ElementInfo
-    _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t_Info;
 extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Daycounter_t_Info;
 extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Daycounter_t_Name_t_Info;
 extern const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Daycounter_t_Value_t_Info;
@@ -1884,6 +1877,7 @@ extern const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_Strikes_t_Info;
 extern const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_DayCounters_t_Info;
 extern const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_DayCounters_t_DayCounter_t_Info;
 extern const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_SmileDynamics_t_Info;
+extern const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_SmileForwardInteraction_t_Info;
 extern const xsdcpp::ElementInfo _market_CDSVolatilities_t_Info;
 extern const xsdcpp::ElementInfo _market_CDSVolatilities_t_Names_t_Info;
 extern const xsdcpp::ElementInfo _market_CDSVolatilities_t_Names_t_Name_t_Info;
@@ -1946,9 +1940,15 @@ extern const xsdcpp::ElementInfo _market_YYCapFloorVolatilities_t_SmileDynamics_
 extern const xsdcpp::ElementInfo _market_Commodities_t_Info;
 extern const xsdcpp::ElementInfo _market_Commodities_t_Names_t_Info;
 extern const xsdcpp::ElementInfo _market_Commodities_t_Names_t_Name_t_Info;
+extern const xsdcpp::ElementInfo _market_Commodities_t_Interpolation_t_Info;
 extern const xsdcpp::ElementInfo _market_Commodities_t_Tenors_t_Info;
 extern const xsdcpp::ElementInfo _market_Commodities_t_DayCounters_t_Info;
 extern const xsdcpp::ElementInfo _market_Commodities_t_DayCounters_t_DayCounter_t_Info;
+extern const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Info;
+extern const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Names_t_Info;
+extern const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Names_t_Name_t_Info;
+extern const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Interpolation_t_Info;
+extern const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Tenors_t_Info;
 extern const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Info;
 extern const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Names_t_Info;
 extern const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Names_t_Name_t_Info;
@@ -1956,6 +1956,13 @@ extern const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Names_t_Name_t_
 extern const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t_Info;
 extern const xsdcpp::ElementInfo _market_CommodityVolatilities_t_DayCounter_t_Info;
 extern const xsdcpp::ElementInfo _market_CommodityVolatilities_t_SmileDynamics_t_Info;
+extern const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Info;
+extern const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Info;
+extern const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Info;
+extern const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t_Info;
+extern const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t_Info;
+extern const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_DayCounter_t_Info;
+extern const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_SmileDynamics_t_Info;
 extern const xsdcpp::ElementInfo _market_AggregationScenarioDataCurrencies_t_Info;
 extern const xsdcpp::ElementInfo _market_AggregationScenarioDataIndices_t_Info;
 extern const xsdcpp::ElementInfo _market_AggregationScenarioDataCreditStates_t_Info;
@@ -2016,6 +2023,7 @@ extern const xsdcpp::ElementInfo _globalReportConfiguration_YieldCurves_t_Info;
 extern const xsdcpp::ElementInfo _yieldCurveReport_Info;
 extern const xsdcpp::ElementInfo _yieldCurveReport_PillarDates_t_Info;
 extern const xsdcpp::ElementInfo _globalReportConfiguration_InflationCapFloorVolatilities_t_Info;
+extern const xsdcpp::ElementInfo _globalReportConfiguration_DefaultCurves_t_Info;
 extern const xsdcpp::ElementInfo _fxSpots_Info;
 extern const xsdcpp::ElementInfo _fxSpot_Info;
 extern const xsdcpp::ElementInfo _fxSpot_CurveId_t_Info;
@@ -2030,6 +2038,7 @@ extern const xsdcpp::ElementInfo _parametricSmileConfigParameter_Info;
 extern const xsdcpp::ElementInfo _parametricSmileConfigParameter_Name_t_Info;
 extern const xsdcpp::ElementInfo _parametricSmileConfigParameter_InitialValue_t_Info;
 extern const xsdcpp::ElementInfo _parametricSmileConfigCalibration_Info;
+extern const xsdcpp::ElementInfo _parametricSmileConfigResidualCorrection_Info;
 extern const xsdcpp::ElementInfo _fxVolatility_Deltas_t_Info;
 extern const xsdcpp::ElementInfo _fxVolatility_SmileDelta_t_Info;
 extern const xsdcpp::ElementInfo _fxVolatility_Conventions_t_Info;
@@ -2220,11 +2229,17 @@ extern const xsdcpp::ElementInfo _discountRatioCurveElement_Info;
 extern const xsdcpp::ElementInfo _fittedBondType_Info;
 extern const xsdcpp::ElementInfo _fittedBondType_Type_t_Info;
 extern const xsdcpp::ElementInfo _fittedBondType_PillarChoice_t_Info;
+extern const xsdcpp::ElementInfo _fittedBondType_IndexCurves_t_Info;
+extern const xsdcpp::ElementInfo _fittedBondType_IndexCurves_t_IndexCurve_t_Info;
 extern const xsdcpp::ElementInfo _fittedBondType_IborIndexCurves_t_Info;
 extern const xsdcpp::ElementInfo _fittedBondType_IborIndexCurves_t_IborIndexCurve_t_Info;
+extern const xsdcpp::ElementInfo _fittedBondType_InflationIndexCurves_t_Info;
+extern const xsdcpp::ElementInfo _fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t_Info;
 extern const xsdcpp::ElementInfo _BondYieldShiftedType_Info;
 extern const xsdcpp::ElementInfo _BondYieldShiftedType_Type_t_Info;
 extern const xsdcpp::ElementInfo _BondYieldShiftedType_ReferenceCurve_t_Info;
+extern const xsdcpp::ElementInfo _BondYieldShiftedType_IndexCurves_t_Info;
+extern const xsdcpp::ElementInfo _BondYieldShiftedType_IndexCurves_t_IndexCurve_t_Info;
 extern const xsdcpp::ElementInfo _BondYieldShiftedType_IborIndexCurves_t_Info;
 extern const xsdcpp::ElementInfo _BondYieldShiftedType_IborIndexCurves_t_IborIndexCurve_t_Info;
 extern const xsdcpp::ElementInfo _BondYieldShiftedType_Conventions_t_Info;
@@ -2373,6 +2388,19 @@ extern const xsdcpp::ElementInfo _correlation_Conventions_t_Info;
 extern const xsdcpp::ElementInfo _correlation_SwaptionVolatility_t_Info;
 extern const xsdcpp::ElementInfo _correlation_DiscountCurve_t_Info;
 extern const xsdcpp::ElementInfo _correlation_OptionTenors_t_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatilities_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatility_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatility_CurveId_t_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatility_CurveDescription_t_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatility_ContractName_t_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatility_YieldCurveId_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerCurves_Info;
+extern const xsdcpp::ElementInfo _intradayPowerCurve_Info;
+extern const xsdcpp::ElementInfo _intradayPowerCurve_CurveId_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerCurve_CurveDescription_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerCurve_DailyAveragePriceCurve_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerCurve_ShapeQuoteName_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerCurve_Convention_t_Info;
 extern const xsdcpp::ElementInfo _conventions_Info;
 extern const xsdcpp::ElementInfo _zeroType_Info;
 extern const xsdcpp::ElementInfo _zeroType_Id_t_Info;
@@ -2469,6 +2497,7 @@ extern const xsdcpp::ElementInfo _cmsSpreadOptionType_Calendar_t_Info;
 extern const xsdcpp::ElementInfo _commodityForwardType_Info;
 extern const xsdcpp::ElementInfo _commodityForwardType_Id_t_Info;
 extern const xsdcpp::ElementInfo _commodityForwardType_AdvanceCalendar_t_Info;
+extern const xsdcpp::ElementInfo _commodityForwardType_DeliveryLocation_t_Info;
 extern const xsdcpp::ElementInfo _commodityFutureType_Info;
 extern const xsdcpp::ElementInfo _commodityFutureType_Id_t_Info;
 extern const xsdcpp::ElementInfo _commodityFutureType_AnchorDay_t_Info;
@@ -2491,6 +2520,7 @@ extern const xsdcpp::ElementInfo _offPeakPowerIndexDataType_PeakIndex_t_Info;
 extern const xsdcpp::ElementInfo _offPeakPowerIndexDataType_PeakCalendar_t_Info;
 extern const xsdcpp::ElementInfo _commodityFutureType_IndexName_t_Info;
 extern const xsdcpp::ElementInfo _commodityFutureType_SavingsTime_t_Info;
+extern const xsdcpp::ElementInfo _commodityFutureType_DeliveryLocation_t_Info;
 extern const xsdcpp::ElementInfo _commodityFutureType_BalanceOfTheMonthPricingCalendar_t_Info;
 extern const xsdcpp::ElementInfo _commodityFutureType_OptionUnderlyingFutureConvention_t_Info;
 extern const xsdcpp::ElementInfo _fxOption_Info;
@@ -2520,10 +2550,14 @@ extern const xsdcpp::ElementInfo _zeroInflationIndexType_Id_t_Info;
 extern const xsdcpp::ElementInfo _zeroInflationIndexType_RegionName_t_Info;
 extern const xsdcpp::ElementInfo _zeroInflationIndexType_RegionCode_t_Info;
 extern const xsdcpp::ElementInfo _zeroInflationIndexType_AvailabilityLag_t_Info;
+extern const xsdcpp::ElementInfo _zeroInflationIndexType_RebasingEvents_t_Info;
+extern const xsdcpp::ElementInfo _zeroInflationIndexType_RebasingEvents_t_Event_t_Info;
 extern const xsdcpp::ElementInfo _bondYield_Info;
 extern const xsdcpp::ElementInfo _bondYield_Id_t_Info;
 extern const xsdcpp::ElementInfo _bondYield_Compounding_t_Info;
 extern const xsdcpp::ElementInfo _bondYield_PriceType_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerLoad_Info;
+extern const xsdcpp::ElementInfo _intradayPowerLoad_Id_t_Info;
 extern const xsdcpp::ElementInfo _collateralBalances_Info;
 extern const xsdcpp::ElementInfo _collateralBalances_CollateralBalance_t_Info;
 extern const xsdcpp::ElementInfo _nettingsetdefinitions_Info;
@@ -2578,6 +2612,8 @@ extern const xsdcpp::ElementInfo _configurationType_SecuritiesId_t_Info;
 extern const xsdcpp::ElementInfo _configurationType_CommodityCurvesId_t_Info;
 extern const xsdcpp::ElementInfo _configurationType_CommodityVolatilitiesId_t_Info;
 extern const xsdcpp::ElementInfo _configurationType_CorrelationsId_t_Info;
+extern const xsdcpp::ElementInfo _configurationType_BondFutureVolatilitiesId_t_Info;
+extern const xsdcpp::ElementInfo _configurationType_IntradayPowerPriceCurvesId_t_Info;
 extern const xsdcpp::ElementInfo _yieldCurvesType_Info;
 extern const xsdcpp::ElementInfo _yieldCurvesType_YieldCurve_t_Info;
 extern const xsdcpp::ElementInfo _discountCurvesType_Info;
@@ -2624,6 +2660,10 @@ extern const xsdcpp::ElementInfo _commodityVolatilitiesType_Info;
 extern const xsdcpp::ElementInfo _commodityVolatilitiesType_CommodityVolatility_t_Info;
 extern const xsdcpp::ElementInfo _correlationsType_Info;
 extern const xsdcpp::ElementInfo _correlationsType_Correlation_t_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatilitiesType_Info;
+extern const xsdcpp::ElementInfo _bondFutureVolatilitiesType_BondFutureVolatility_t_Info;
+extern const xsdcpp::ElementInfo _intradayPowerPriceCurvesType_Info;
+extern const xsdcpp::ElementInfo _intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t_Info;
 extern const xsdcpp::ElementInfo _sensitivityanalysis_Info;
 extern const xsdcpp::ElementInfo _parExcludes_Info;
 extern const xsdcpp::ElementInfo _parExcludes_Type_t_Info;
@@ -2726,6 +2766,10 @@ extern const xsdcpp::ElementInfo _commodityCurves_Info;
 extern const xsdcpp::ElementInfo _commodityCurve_Info;
 extern const xsdcpp::ElementInfo _commodityCurve_Shifts_t_Info;
 extern const xsdcpp::ElementInfo _commodityCurve_ShiftTenors_t_Info;
+extern const xsdcpp::ElementInfo _intradaypowercurves_Info;
+extern const xsdcpp::ElementInfo _intradaypowercurve_Info;
+extern const xsdcpp::ElementInfo _intradaypowercurve_Shifts_t_Info;
+extern const xsdcpp::ElementInfo _intradaypowercurve_ShiftTenors_t_Info;
 extern const xsdcpp::ElementInfo _commodityvolatilities_Info;
 extern const xsdcpp::ElementInfo _commodityvolatility_Info;
 extern const xsdcpp::ElementInfo _commodityvolatility_Shifts_t_Info;
@@ -2736,11 +2780,17 @@ extern const xsdcpp::ElementInfo _correlationcurve_Info;
 extern const xsdcpp::ElementInfo _correlationcurve_Shifts_t_Info;
 extern const xsdcpp::ElementInfo _correlationcurve_ShiftExpiries_t_Info;
 extern const xsdcpp::ElementInfo _correlationcurve_ShiftStrikes_t_Info;
+extern const xsdcpp::ElementInfo _sensiBondFutureVolatilities_Info;
+extern const xsdcpp::ElementInfo _sensiBondFutureVolatility_Info;
+extern const xsdcpp::ElementInfo _sensiBondFutureVolatility_Shifts_t_Info;
+extern const xsdcpp::ElementInfo _sensiBondFutureVolatility_ShiftExpiries_t_Info;
+extern const xsdcpp::ElementInfo _sensiBondFutureVolatility_ShiftStrikes_t_Info;
 extern const xsdcpp::ElementInfo _crossgammafilter_Info;
 extern const xsdcpp::ElementInfo _crossgammafilter_Pair_t_Info;
 extern const xsdcpp::ElementInfo _setRiskFactorKeyTypes_Info;
 extern const xsdcpp::ElementInfo _stresstesting_Info;
 extern const xsdcpp::ElementInfo _stresstest_Info;
+extern const xsdcpp::ElementInfo _stresstest_Date_t_Info;
 extern const xsdcpp::ElementInfo _stresstestparshifts_Info;
 extern const xsdcpp::ElementInfo _stressdiscountcurves_Info;
 extern const xsdcpp::ElementInfo _stressdiscountcurve_Info;
@@ -2765,6 +2815,12 @@ extern const xsdcpp::ElementInfo _stressfxvolatility_WeightedShifts_t_Shift_t_In
 extern const xsdcpp::ElementInfo _stressfxvolatility_WeightedShifts_t_Tenor_t_Info;
 extern const xsdcpp::ElementInfo _stressfxvolatility_WeightedShifts_t_ShiftWeights_t_Info;
 extern const xsdcpp::ElementInfo _stressfxvolatility_WeightedShifts_t_WeightTenors_t_Info;
+extern const xsdcpp::ElementInfo _stressswaptionvolatilities_Info;
+extern const xsdcpp::ElementInfo _stressswaptionvolatility_Info;
+extern const xsdcpp::ElementInfo _stressswaptionvolatility_Shifts_t_Info;
+extern const xsdcpp::ElementInfo _stressswaptionvolatility_Shifts_t_Shift_t_Info;
+extern const xsdcpp::ElementInfo _stressswaptionvolatility_ShiftExpiries_t_Info;
+extern const xsdcpp::ElementInfo _stressswaptionvolatility_ShiftTerms_t_Info;
 extern const xsdcpp::ElementInfo _stresscapfloorvolatilities_Info;
 extern const xsdcpp::ElementInfo _stresscapfloorvolatility_Info;
 extern const xsdcpp::ElementInfo _stresscapfloorvolatility_Shifts_t_Info;
@@ -2775,6 +2831,10 @@ extern const xsdcpp::ElementInfo _stresscommoditycurves_Info;
 extern const xsdcpp::ElementInfo _stresscommoditycurve_Info;
 extern const xsdcpp::ElementInfo _stresscommoditycurve_Shifts_t_Info;
 extern const xsdcpp::ElementInfo _stresscommoditycurve_ShiftTenors_t_Info;
+extern const xsdcpp::ElementInfo _stressintradaypowercurves_Info;
+extern const xsdcpp::ElementInfo _stressintradaypowercurve_Info;
+extern const xsdcpp::ElementInfo _stressintradaypowercurve_Shifts_t_Info;
+extern const xsdcpp::ElementInfo _stressintradaypowercurve_ShiftTenors_t_Info;
 extern const xsdcpp::ElementInfo _stresscommodityvolatilities_Info;
 extern const xsdcpp::ElementInfo _stresscommodityvolatility_Info;
 extern const xsdcpp::ElementInfo _stresscommodityvolatility_Shifts_t_Info;
@@ -2910,6 +2970,7 @@ const char* _oreTradeType_Values[] = {"CompositeTrade",
                                       "EquityVarianceSwap",
                                       "EquityCliquetOption",
                                       "CommodityForward",
+                                      "IntradayPowerForward",
                                       "CommodityOption",
                                       "CommodityDigitalAveragePriceOption",
                                       "CommodityDigitalOption",
@@ -2923,7 +2984,11 @@ const char* _oreTradeType_Values[] = {"CompositeTrade",
                                       "CommodityVarianceSwap",
                                       "Bond",
                                       "ForwardBond",
+                                      "FxForwardVolatilityAgreement",
+                                      "EquityForwardVolatilityAgreement",
+                                      "CommodityForwardVolatilityAgreement",
                                       "BondFuture",
+                                      "BondFutureOption",
                                       "CreditDefaultSwap",
                                       "CreditDefaultSwapOption",
                                       "Failed",
@@ -2967,12 +3032,14 @@ const char* _oreTradeType_Values[] = {"CompositeTrade",
                                       "FxRainbowOption",
                                       "EquityRainbowOption",
                                       "CommodityRainbowOption",
+                                      "ForwardVolatilityAgreement",
                                       "KnockOutSwap",
                                       "CashPosition",
                                       "RateDigitalOption",
                                       "CommodityStrikeResettableOption",
                                       "FxStrikeResettableOption",
                                       "EquityStrikeResettableOption",
+                                      "EquityAutoDeltaHedgedOption",
                                       nullptr};
 
 const char* _dayCounter_Values[] = {"A360",
@@ -3149,11 +3216,12 @@ const char* _dateRule_Values[] = {"Backward",
                                   "TuesdayAfterThirdFriday",
                                   "LastWednesday",
                                   "EveryThursday",
+                                  "EighthBusinessDay",
                                   "",
                                   nullptr};
 
 const char* _futureDateGenerationRule_Values[] = {
-    "IMM", "FirstDayOfMonth", "IMMAUD", "SecondThursday", "IMMNZD", "IMMCAD", nullptr};
+    "IMM", "FirstDayOfMonth", "IMMAUD", "SecondThursday", "IMMNZD", "IMMCAD", "IMMEUR", nullptr};
 
 const char* _overnightIndexFutureNettingType_Values[] = {"Averaging", "Compounding", nullptr};
 
@@ -3214,26 +3282,6 @@ const char* _longShort_Values[] = {"Long", "Short", nullptr};
 const char* _settlementMethod_Values[] = {
     "PhysicalOTC", "PhysicalCleared", "CollateralizedCashPrice", "ParYieldCurve", nullptr};
 
-const char* _legType_Values[] = {"Fixed",
-                                 "Floating",
-                                 "CPI",
-                                 "YY",
-                                 "CMS",
-                                 "CMB",
-                                 "DigitalCMS",
-                                 "CMSSpread",
-                                 "DigitalCMSSpread",
-                                 "Cashflow",
-                                 "Equity",
-                                 "FormulaBased",
-                                 "ZeroCouponFixed",
-                                 "CommodityFixed",
-                                 "CommodityFloating",
-                                 "EquityMargin",
-                                 "DurationAdjustedCMS",
-                                 "RangeAccrual",
-                                 nullptr};
-
 const char* _barrierType_Values[] = {"UpAndOut",
                                      "UpAndIn",
                                      "DownAndOut",
@@ -3251,6 +3299,31 @@ const char* _barrierCompare_Values[] = {"0", "1", "2", nullptr};
 const char* _barrierStyle_Values[] = {"American", "European", nullptr};
 
 const char* _barrierData_RebatePayTime_t_Values[] = {"atHit", "atExpiry", nullptr};
+
+const char* _legType_Values[] = {"Fixed",
+                                 "Floating",
+                                 "CPI",
+                                 "YY",
+                                 "CMS",
+                                 "CMB",
+                                 "DigitalCMS",
+                                 "CMSSpread",
+                                 "DigitalCMSSpread",
+                                 "Cashflow",
+                                 "Equity",
+                                 "FormulaBased",
+                                 "ZeroCouponFixed",
+                                 "IntradayPowerFloating",
+                                 "CommodityFixed",
+                                 "CommodityFloating",
+                                 "EquityMargin",
+                                 "DurationAdjustedCMS",
+                                 "RangeAccrual",
+                                 nullptr};
+
+const char* _dateDeltaUnit_Values[] = {"CalendarDays", "BusinessDays", nullptr};
+
+const char* _dateDeltaAnchor_Values[] = {"Adjusted", "Unadjusted", nullptr};
 
 const char* _optionType_Values[] = {"Call", "Put", nullptr};
 
@@ -3285,7 +3358,7 @@ const char* _genericBarrierOptionData_Barriers_t_KikoType_t_Values[] = {
 
 const char* _strikeResettableOptionData2_TriggerType_t_Values[] = {"Up", "Down", nullptr};
 
-const char* _ycInterpolation_Values[] = {"LogLinear", "LinearZero", nullptr};
+const char* _ycInterpolation_Values[] = {"LogLinear", "LinearZero", "LogCubic", nullptr};
 
 const char* _ycExtrapolation_Values[] = {"FlatFwd",
                                          "FlatZero",
@@ -3304,9 +3377,13 @@ const char* _ycExtrapolation_Values[] = {"FlatFwd",
                                          "",
                                          nullptr};
 
+const char* _ycRollDown_Values[] = {"ConstantDiscounts", "ForwardForward", nullptr};
+
 const char* _defaultCurveExtrapolation_Values[] = {"FlatFwd", "FlatZero", nullptr};
 
 const char* _timeDecayType_Values[] = {"ForwardVariance", "ConstantVariance", nullptr};
+
+const char* _priceRollDown_Values[] = {"Spot", "Forward", nullptr};
 
 const char* _dimensionType_Values[] = {"ATM", "ATMTriangulated", "Smile", "Constant", nullptr};
 
@@ -3401,13 +3478,11 @@ const char* _correlationType_Values[] = {"CMSSpread", "Generic", nullptr};
 
 const char* _correlationQuoteType_Values[] = {"RATE", "PRICE", "NULL", nullptr};
 
+const char* _bondFutureVolatility_UseOnlyPutCall_t_Values[] = {"C", "P", nullptr};
+
 const char* _averagingDataPeriodType_Values[] = {"PreviousMonth", "ExpiryToExpiry", nullptr};
 
 const char* _csaType_Values[] = {"Bilateral", "CallOnly", "PostOnly", nullptr};
-
-const char* _shiftType_Values[] = {"Relative", "Absolute", "EqualTo", nullptr};
-
-const char* _shiftScheme_Values[] = {"Forward", "Backward", "Central", nullptr};
 
 const char* _creditQualityType_Values[] = {"HY", "IG", "NR", nullptr};
 
@@ -3455,6 +3530,10 @@ const char* _strikeAtmType_Values[] = {
 
 const char* _independentAmountType_Values[] = {"FIXED", nullptr};
 
+const char* _shiftType_Values[] = {"Relative", "Absolute", "EqualTo", nullptr};
+
+const char* _shiftScheme_Values[] = {"Forward", "Backward", "Central", nullptr};
+
 const char* _optionPayRelativeTo_Values[] = {"Expiry", "Exercise", nullptr};
 
 const char* _amortizationType_Values[] = {"FixedAmount",
@@ -3468,6 +3547,9 @@ const char* _capFloor_Values[] = {"Cap", "Floor", nullptr};
 
 const char* _parametricVolatilityParameterCalibration_Values[] = {
     "Fixed", "Calibrated", "Implied", nullptr};
+
+const char* _parametricSmileConfigResidualCorrection_Dimension_t_Values[] = {
+    "AbsoluteStrike", "StrikeMinusForward", "StrikeOverForward", nullptr};
 
 const char* _priceSegmentTypeType_Values[] = {"Future",
                                               "AveragingFuture",
@@ -3570,6 +3652,11 @@ const xsdcpp::ElementInfo _parConversionMatrixRegularisation_Info = {
     (xsdcpp::set_value_t)&domain::_set_parConversionMatrixRegularisation};
 const xsdcpp::ElementInfo _bool_Info = {xsdcpp::ElementInfo::ReadTextFlag,
                                         (xsdcpp::set_value_t)&xsdcpp::set_bool};
+void _set_period(domain::period* obj, const xsdcpp::Position& pos, std::string&& val) {
+    xsdcpp::set_string(obj, pos, std::move(val));
+}
+const xsdcpp::ElementInfo _period_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                          (xsdcpp::set_value_t)&domain::_set_period};
 void _set_currencyDefinition_Name_t(domain::currencyDefinition_Name_t* obj,
                                     const xsdcpp::Position& pos,
                                     std::string&& val) {
@@ -3603,7 +3690,7 @@ void _set_roundingType(domain::roundingType* obj, const xsdcpp::Position& pos, s
 const xsdcpp::ElementInfo _roundingType_Info = {xsdcpp::ElementInfo::ReadTextFlag,
                                                 (xsdcpp::set_value_t)&domain::_set_roundingType};
 std::string to_string(oreTradeType val) {
-    return xsdcpp::to_string((size_t)val, 115, _oreTradeType_Values, "oreTradeType");
+    return xsdcpp::to_string((size_t)val, 122, _oreTradeType_Values, "oreTradeType");
 }
 void _set_oreTradeType(domain::oreTradeType* obj, const xsdcpp::Position& pos, std::string&& val) {
     *obj = (domain::oreTradeType)xsdcpp::toNumeric(pos, _oreTradeType_Values, val);
@@ -3840,7 +3927,7 @@ void _set_cdsConventionsType_Id_t(domain::cdsConventionsType_Id_t* obj,
     xsdcpp::set_string(&base, pos, std::move(val));
 }
 std::string to_string(dateRule val) {
-    return xsdcpp::to_string((size_t)val, 16, _dateRule_Values, "dateRule");
+    return xsdcpp::to_string((size_t)val, 17, _dateRule_Values, "dateRule");
 }
 void _set_dateRule(domain::dateRule* obj, const xsdcpp::Position& pos, std::string&& val) {
     *obj = (domain::dateRule)xsdcpp::toNumeric(pos, _dateRule_Values, val);
@@ -3867,7 +3954,7 @@ void _set_futureType_Index_t(domain::futureType_Index_t* obj,
 }
 std::string to_string(futureDateGenerationRule val) {
     return xsdcpp::to_string(
-        (size_t)val, 6, _futureDateGenerationRule_Values, "futureDateGenerationRule");
+        (size_t)val, 7, _futureDateGenerationRule_Values, "futureDateGenerationRule");
 }
 std::string to_string(overnightIndexFutureNettingType val) {
     return xsdcpp::to_string(
@@ -3974,11 +4061,6 @@ void _set_tenorBasisSwapType_Id_t(domain::tenorBasisSwapType_Id_t* obj,
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
-void _set_period(domain::period* obj, const xsdcpp::Position& pos, std::string&& val) {
-    xsdcpp::set_string(obj, pos, std::move(val));
-}
-const xsdcpp::ElementInfo _period_Info = {xsdcpp::ElementInfo::ReadTextFlag,
-                                          (xsdcpp::set_value_t)&domain::_set_period};
 void _set_tenorBasisTwoSwapType_Id_t(domain::tenorBasisTwoSwapType_Id_t* obj,
                                      const xsdcpp::Position& pos,
                                      std::string&& val) {
@@ -4270,6 +4352,12 @@ void _set_bondYield_Compounding_t(domain::bondYield_Compounding_t* obj,
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_intradayPowerLoad_Id_t(domain::intradayPowerLoad_Id_t* obj,
+                                 const xsdcpp::Position& pos,
+                                 std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_product_Model_t(domain::product_Model_t* obj,
                           const xsdcpp::Position& pos,
                           std::string&& val) {
@@ -4286,12 +4374,6 @@ void _set_sensitivityanalysis_ParSensiRemoveFixing_t(
     domain::sensitivityanalysis_ParSensiRemoveFixing_t* obj,
     const xsdcpp::Position& pos,
     std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_discountcurve_ShiftTenors_t(domain::discountcurve_ShiftTenors_t* obj,
-                                      const xsdcpp::Position& pos,
-                                      std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -4436,33 +4518,6 @@ void _set_premiumCurrencyCode(domain::premiumCurrencyCode* obj,
 }
 const xsdcpp::ElementInfo _premiumCurrencyCode_Info = {
     xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_premiumCurrencyCode};
-std::string to_string(legType val) {
-    return xsdcpp::to_string((size_t)val, 18, _legType_Values, "legType");
-}
-void _set_legType(domain::legType* obj, const xsdcpp::Position& pos, std::string&& val) {
-    *obj = (domain::legType)xsdcpp::toNumeric(pos, _legType_Values, val);
-}
-const xsdcpp::ElementInfo _legType_Info = {xsdcpp::ElementInfo::ReadTextFlag,
-                                           (xsdcpp::set_value_t)&domain::_set_legType};
-void _set_paymentLag(domain::paymentLag* obj, const xsdcpp::Position& pos, std::string&& val) {
-    xsdcpp::set_string(obj, pos, std::move(val));
-}
-const xsdcpp::ElementInfo _paymentLag_Info = {xsdcpp::ElementInfo::ReadTextFlag,
-                                              (xsdcpp::set_value_t)&domain::_set_paymentLag};
-void _set_indexNameType(domain::indexNameType* obj,
-                        const xsdcpp::Position& pos,
-                        std::string&& val) {
-    xsdcpp::set_string(obj, pos, std::move(val));
-}
-const xsdcpp::ElementInfo _indexNameType_Info = {xsdcpp::ElementInfo::ReadTextFlag,
-                                                 (xsdcpp::set_value_t)&domain::_set_indexNameType};
-void _set_extendedCurrencyCode(domain::extendedCurrencyCode* obj,
-                               const xsdcpp::Position& pos,
-                               std::string&& val) {
-    xsdcpp::set_string(obj, pos, std::move(val));
-}
-const xsdcpp::ElementInfo _extendedCurrencyCode_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_extendedCurrencyCode};
 std::string to_string(barrierType val) {
     return xsdcpp::to_string((size_t)val, 10, _barrierType_Values, "barrierType");
 }
@@ -4502,6 +4557,53 @@ void _set_barrierData_RebatePayTime_t(domain::barrierData_RebatePayTime_t* obj,
 const xsdcpp::ElementInfo _barrierData_RebatePayTime_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_barrierData_RebatePayTime_t};
+std::string to_string(legType val) {
+    return xsdcpp::to_string((size_t)val, 19, _legType_Values, "legType");
+}
+std::string to_string(dateDeltaUnit val) {
+    return xsdcpp::to_string((size_t)val, 2, _dateDeltaUnit_Values, "dateDeltaUnit");
+}
+std::string to_string(dateDeltaAnchor val) {
+    return xsdcpp::to_string((size_t)val, 2, _dateDeltaAnchor_Values, "dateDeltaAnchor");
+}
+void _set_legType(domain::legType* obj, const xsdcpp::Position& pos, std::string&& val) {
+    *obj = (domain::legType)xsdcpp::toNumeric(pos, _legType_Values, val);
+}
+const xsdcpp::ElementInfo _legType_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                           (xsdcpp::set_value_t)&domain::_set_legType};
+void _set_paymentLag(domain::paymentLag* obj, const xsdcpp::Position& pos, std::string&& val) {
+    xsdcpp::set_string(obj, pos, std::move(val));
+}
+const xsdcpp::ElementInfo _paymentLag_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                              (xsdcpp::set_value_t)&domain::_set_paymentLag};
+void _set_dateDeltaUnit(domain::dateDeltaUnit* obj,
+                        const xsdcpp::Position& pos,
+                        std::string&& val) {
+    *obj = (domain::dateDeltaUnit)xsdcpp::toNumeric(pos, _dateDeltaUnit_Values, val);
+}
+const xsdcpp::ElementInfo _dateDeltaUnit_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                                 (xsdcpp::set_value_t)&domain::_set_dateDeltaUnit};
+void _set_dateDeltaAnchor(domain::dateDeltaAnchor* obj,
+                          const xsdcpp::Position& pos,
+                          std::string&& val) {
+    *obj = (domain::dateDeltaAnchor)xsdcpp::toNumeric(pos, _dateDeltaAnchor_Values, val);
+}
+const xsdcpp::ElementInfo _dateDeltaAnchor_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_dateDeltaAnchor};
+void _set_indexNameType(domain::indexNameType* obj,
+                        const xsdcpp::Position& pos,
+                        std::string&& val) {
+    xsdcpp::set_string(obj, pos, std::move(val));
+}
+const xsdcpp::ElementInfo _indexNameType_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                                 (xsdcpp::set_value_t)&domain::_set_indexNameType};
+void _set_extendedCurrencyCode(domain::extendedCurrencyCode* obj,
+                               const xsdcpp::Position& pos,
+                               std::string&& val) {
+    xsdcpp::set_string(obj, pos, std::move(val));
+}
+const xsdcpp::ElementInfo _extendedCurrencyCode_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_extendedCurrencyCode};
 std::string to_string(optionType val) {
     return xsdcpp::to_string((size_t)val, 2, _optionType_Values, "optionType");
 }
@@ -4556,6 +4658,12 @@ void _set_bondFutureData_LongShort_t(domain::bondFutureData_LongShort_t* obj,
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_bondFutureOptionData_ContractName_t(domain::bondFutureOptionData_ContractName_t* obj,
+                                              const xsdcpp::Position& pos,
+                                              std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 std::string to_string(creditDefaultSwapOptionData_StrikeType_t val) {
     return xsdcpp::to_string((size_t)val,
                              1,
@@ -4575,6 +4683,12 @@ const xsdcpp::ElementInfo _creditDefaultSwapOptionData_StrikeType_t_Info = {
 void _set_commodityForwardData_Name_t(domain::commodityForwardData_Name_t* obj,
                                       const xsdcpp::Position& pos,
                                       std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_intradayPowerForwardData_Name_t(domain::intradayPowerForwardData_Name_t* obj,
+                                          const xsdcpp::Position& pos,
+                                          std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -4862,10 +4976,13 @@ void _set_market_YieldCurves_t_Configuration_t_Tenors_t(
     xsdcpp::set_string(&base, pos, std::move(val));
 }
 std::string to_string(ycInterpolation val) {
-    return xsdcpp::to_string((size_t)val, 2, _ycInterpolation_Values, "ycInterpolation");
+    return xsdcpp::to_string((size_t)val, 3, _ycInterpolation_Values, "ycInterpolation");
 }
 std::string to_string(ycExtrapolation val) {
     return xsdcpp::to_string((size_t)val, 15, _ycExtrapolation_Values, "ycExtrapolation");
+}
+std::string to_string(ycRollDown val) {
+    return xsdcpp::to_string((size_t)val, 2, _ycRollDown_Values, "ycRollDown");
 }
 void _set_ycInterpolation(domain::ycInterpolation* obj,
                           const xsdcpp::Position& pos,
@@ -4881,6 +4998,11 @@ void _set_ycExtrapolation(domain::ycExtrapolation* obj,
 }
 const xsdcpp::ElementInfo _ycExtrapolation_Info = {
     xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_ycExtrapolation};
+void _set_ycRollDown(domain::ycRollDown* obj, const xsdcpp::Position& pos, std::string&& val) {
+    *obj = (domain::ycRollDown)xsdcpp::toNumeric(pos, _ycRollDown_Values, val);
+}
+const xsdcpp::ElementInfo _ycRollDown_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                              (xsdcpp::set_value_t)&domain::_set_ycRollDown};
 void _set_market_DefaultCurves_t_Tenors_t(domain::market_DefaultCurves_t_Tenors_t* obj,
                                           const xsdcpp::Position& pos,
                                           std::string&& val) {
@@ -4989,6 +5111,16 @@ void _set_market_YYCapFloorVolatilities_t_Strikes_t(
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+std::string to_string(priceRollDown val) {
+    return xsdcpp::to_string((size_t)val, 2, _priceRollDown_Values, "priceRollDown");
+}
+void _set_priceRollDown(domain::priceRollDown* obj,
+                        const xsdcpp::Position& pos,
+                        std::string&& val) {
+    *obj = (domain::priceRollDown)xsdcpp::toNumeric(pos, _priceRollDown_Values, val);
+}
+const xsdcpp::ElementInfo _priceRollDown_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                                 (xsdcpp::set_value_t)&domain::_set_priceRollDown};
 void _set_market_Correlations_t_Expiries_t(domain::market_Correlations_t_Expiries_t* obj,
                                            const xsdcpp::Position& pos,
                                            std::string&& val) {
@@ -5830,6 +5962,71 @@ void _set_correlationQuoteType(domain::correlationQuoteType* obj,
 }
 const xsdcpp::ElementInfo _correlationQuoteType_Info = {
     xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_correlationQuoteType};
+void _set_bondFutureVolatility_CurveId_t(domain::bondFutureVolatility_CurveId_t* obj,
+                                         const xsdcpp::Position& pos,
+                                         std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_bondFutureVolatility_CurveDescription_t(
+    domain::bondFutureVolatility_CurveDescription_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_bondFutureVolatility_ContractName_t(domain::bondFutureVolatility_ContractName_t* obj,
+                                              const xsdcpp::Position& pos,
+                                              std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+std::string to_string(bondFutureVolatility_UseOnlyPutCall_t val) {
+    return xsdcpp::to_string((size_t)val,
+                             2,
+                             _bondFutureVolatility_UseOnlyPutCall_t_Values,
+                             "bondFutureVolatility_UseOnlyPutCall_t");
+}
+void _set_bondFutureVolatility_UseOnlyPutCall_t(domain::bondFutureVolatility_UseOnlyPutCall_t* obj,
+                                                const xsdcpp::Position& pos,
+                                                std::string&& val) {
+    *obj = (domain::bondFutureVolatility_UseOnlyPutCall_t)xsdcpp::toNumeric(
+        pos, _bondFutureVolatility_UseOnlyPutCall_t_Values, val);
+}
+const xsdcpp::ElementInfo _bondFutureVolatility_UseOnlyPutCall_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_bondFutureVolatility_UseOnlyPutCall_t};
+void _set_intradayPowerCurve_CurveId_t(domain::intradayPowerCurve_CurveId_t* obj,
+                                       const xsdcpp::Position& pos,
+                                       std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_intradayPowerCurve_CurveDescription_t(domain::intradayPowerCurve_CurveDescription_t* obj,
+                                                const xsdcpp::Position& pos,
+                                                std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_intradayPowerCurve_DailyAveragePriceCurve_t(
+    domain::intradayPowerCurve_DailyAveragePriceCurve_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_intradayPowerCurve_ShapeQuoteName_t(domain::intradayPowerCurve_ShapeQuoteName_t* obj,
+                                              const xsdcpp::Position& pos,
+                                              std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_intradayPowerCurve_Convention_t(domain::intradayPowerCurve_Convention_t* obj,
+                                          const xsdcpp::Position& pos,
+                                          std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_zeroType_TenorCalendar_t(domain::zeroType_TenorCalendar_t* obj,
                                    const xsdcpp::Position& pos,
                                    std::string&& val) {
@@ -5990,6 +6187,13 @@ void _set_commodityForwardType_AdvanceCalendar_t(
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_commodityForwardType_DeliveryLocation_t(
+    domain::commodityForwardType_DeliveryLocation_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_commodityFutureType_ExpiryCalendar_t(domain::commodityFutureType_ExpiryCalendar_t* obj,
                                                const xsdcpp::Position& pos,
                                                std::string&& val) {
@@ -6071,6 +6275,13 @@ void _set_commodityFutureType_IndexName_t(domain::commodityFutureType_IndexName_
 void _set_commodityFutureType_SavingsTime_t(domain::commodityFutureType_SavingsTime_t* obj,
                                             const xsdcpp::Position& pos,
                                             std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_commodityFutureType_DeliveryLocation_t(
+    domain::commodityFutureType_DeliveryLocation_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -6333,6 +6544,20 @@ void _set_configurationType_CorrelationsId_t(domain::configurationType_Correlati
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_configurationType_BondFutureVolatilitiesId_t(
+    domain::configurationType_BondFutureVolatilitiesId_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_configurationType_IntradayPowerPriceCurvesId_t(
+    domain::configurationType_IntradayPowerPriceCurvesId_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_yieldCurvesType_YieldCurve_t(domain::yieldCurvesType_YieldCurve_t* obj,
                                        const xsdcpp::Position& pos,
                                        std::string&& val) {
@@ -6472,47 +6697,31 @@ void _set_correlationsType_Correlation_t(domain::correlationsType_Correlation_t*
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_bondFutureVolatilitiesType_BondFutureVolatility_t(
+    domain::bondFutureVolatilitiesType_BondFutureVolatility_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t(
+    domain::intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_parExcludes_Type_t(domain::parExcludes_Type_t* obj,
                              const xsdcpp::Position& pos,
                              std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
-std::string to_string(shiftType val) {
-    return xsdcpp::to_string((size_t)val, 3, _shiftType_Values, "shiftType");
-}
-void _set_shiftType(domain::shiftType* obj, const xsdcpp::Position& pos, std::string&& val) {
-    *obj = (domain::shiftType)xsdcpp::toNumeric(pos, _shiftType_Values, val);
-}
-void _set_shiftTypeEntry(domain::shiftTypeEntry* obj,
-                         const xsdcpp::Position& pos,
-                         std::string&& val) {
-    domain::shiftType& base = *obj;
-    domain::_set_shiftType(&base, pos, std::move(val));
-}
-void _set_shiftSizeEntry(domain::shiftSizeEntry* obj,
-                         const xsdcpp::Position& pos,
-                         std::string&& val) {
-    float& base = *obj;
-    xsdcpp::set_float(&base, pos, std::move(val));
-}
-void _set_discountcurve_Shifts_t(domain::discountcurve_Shifts_t* obj,
-                                 const xsdcpp::Position& pos,
-                                 std::string&& val) {
+void _set_discountcurve_ShiftTenors_t(domain::discountcurve_ShiftTenors_t* obj,
+                                      const xsdcpp::Position& pos,
+                                      std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
-}
-std::string to_string(shiftScheme val) {
-    return xsdcpp::to_string((size_t)val, 3, _shiftScheme_Values, "shiftScheme");
-}
-void _set_shiftScheme(domain::shiftScheme* obj, const xsdcpp::Position& pos, std::string&& val) {
-    *obj = (domain::shiftScheme)xsdcpp::toNumeric(pos, _shiftScheme_Values, val);
-}
-void _set_shiftSchemeEntry(domain::shiftSchemeEntry* obj,
-                           const xsdcpp::Position& pos,
-                           std::string&& val) {
-    domain::shiftScheme& base = *obj;
-    domain::_set_shiftScheme(&base, pos, std::move(val));
 }
 void _set_indexcurve_ShiftTenors_t(domain::indexcurve_ShiftTenors_t* obj,
                                    const xsdcpp::Position& pos,
@@ -6628,6 +6837,12 @@ void _set_commodityCurve_ShiftTenors_t(domain::commodityCurve_ShiftTenors_t* obj
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_intradaypowercurve_ShiftTenors_t(domain::intradaypowercurve_ShiftTenors_t* obj,
+                                           const xsdcpp::Position& pos,
+                                           std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_commodityvolatility_ShiftExpiries_t(domain::commodityvolatility_ShiftExpiries_t* obj,
                                               const xsdcpp::Position& pos,
                                               std::string&& val) {
@@ -6640,9 +6855,22 @@ void _set_correlationcurve_ShiftExpiries_t(domain::correlationcurve_ShiftExpirie
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_sensiBondFutureVolatility_ShiftExpiries_t(
+    domain::sensiBondFutureVolatility_ShiftExpiries_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_crossgammafilter_Pair_t(domain::crossgammafilter_Pair_t* obj,
                                   const xsdcpp::Position& pos,
                                   std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_stresstest_Date_t(domain::stresstest_Date_t* obj,
+                            const xsdcpp::Position& pos,
+                            std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -6695,31 +6923,9 @@ void _set_tradeActionOwner(domain::tradeActionOwner* obj,
 }
 const xsdcpp::ElementInfo _tradeActionOwner_Info = {
     xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_tradeActionOwner};
-void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
+void _set_DerivedScheduleType_BaseSchedule_t(domain::DerivedScheduleType_BaseSchedule_t* obj,
+                                             const xsdcpp::Position& pos,
+                                             std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -6740,12 +6946,6 @@ void _set_scheduleData_Rules_t_Tenor_t(domain::scheduleData_Rules_t_Tenor_t* obj
     xsdcpp::set_string(&base, pos, std::move(val));
 }
 const xsdcpp::ElementInfo _DerivedScheduleGroup_group_t_Info = {0, nullptr};
-void _set_DerivedScheduleType_BaseSchedule_t(domain::DerivedScheduleType_BaseSchedule_t* obj,
-                                             const xsdcpp::Position& pos,
-                                             std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
 void _set_optionData_OptionType_t(domain::optionData_OptionType_t* obj,
                                   const xsdcpp::Position& pos,
                                   std::string&& val) {
@@ -6988,6 +7188,13 @@ void _set_pricingDateRuleType(domain::pricingDateRuleType* obj,
 }
 const xsdcpp::ElementInfo _pricingDateRuleType_Info = {
     xsdcpp::ElementInfo::ReadTextFlag, (xsdcpp::set_value_t)&domain::_set_pricingDateRuleType};
+void _set__IntradayPowerFloatingLegData_t_Name_t(
+    domain::_IntradayPowerFloatingLegData_t_Name_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set__FormulaBasedLegData_t_Index_t(domain::_FormulaBasedLegData_t_Index_t* obj,
                                          const xsdcpp::Position& pos,
                                          std::string&& val) {
@@ -7148,78 +7355,6 @@ void _set_forwardBondData_PremiumData_t_Amount_t(
 void _set_forwardBondData_PremiumData_t_Date_t(domain::forwardBondData_PremiumData_t_Date_t* obj,
                                                const xsdcpp::Position& pos,
                                                std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_ContractMonth_t(domain::bondFutureData_ContractMonth_t* obj,
-                                         const xsdcpp::Position& pos,
-                                         std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_DeliverableGrade_t(domain::bondFutureData_DeliverableGrade_t* obj,
-                                            const xsdcpp::Position& pos,
-                                            std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_FairPrice_t(domain::bondFutureData_FairPrice_t* obj,
-                                     const xsdcpp::Position& pos,
-                                     std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_Settlement_t(domain::bondFutureData_Settlement_t* obj,
-                                      const xsdcpp::Position& pos,
-                                      std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_SettlementDirty_t(domain::bondFutureData_SettlementDirty_t* obj,
-                                           const xsdcpp::Position& pos,
-                                           std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_RootDate_t(domain::bondFutureData_RootDate_t* obj,
-                                    const xsdcpp::Position& pos,
-                                    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_ExpiryBasis_t(domain::bondFutureData_ExpiryBasis_t* obj,
-                                       const xsdcpp::Position& pos,
-                                       std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_SettlementBasis_t(domain::bondFutureData_SettlementBasis_t* obj,
-                                           const xsdcpp::Position& pos,
-                                           std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_ExpiryLag_t(domain::bondFutureData_ExpiryLag_t* obj,
-                                     const xsdcpp::Position& pos,
-                                     std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_SettlementLag_t(domain::bondFutureData_SettlementLag_t* obj,
-                                         const xsdcpp::Position& pos,
-                                         std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_LastTradingDate_t(domain::bondFutureData_LastTradingDate_t* obj,
-                                           const xsdcpp::Position& pos,
-                                           std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_bondFutureData_LastDeliveryDate_t(domain::bondFutureData_LastDeliveryDate_t* obj,
-                                            const xsdcpp::Position& pos,
-                                            std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -7524,6 +7659,13 @@ void _set_tranche_SecurityId_t(domain::tranche_SecurityId_t* obj,
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_forwardVolatilityAgreementData2_PayoffType_t(
+    domain::forwardVolatilityAgreementData2_PayoffType_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_tarfData2_SettlementLag_t(domain::tarfData2_SettlementLag_t* obj,
                                     const xsdcpp::Position& pos,
                                     std::string&& val) {
@@ -7717,6 +7859,13 @@ void _set_market_CapFloorVolatilities_t_SmileDynamics_t(
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_market_CapFloorVolatilities_t_SmileForwardInteraction_t(
+    domain::market_CapFloorVolatilities_t_SmileForwardInteraction_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_market_CDSVolatilities_t_Names_t_Name_t(
     domain::market_CDSVolatilities_t_Names_t_Name_t* obj,
     const xsdcpp::Position& pos,
@@ -7826,9 +7975,35 @@ void _set_market_Commodities_t_Names_t_Name_t(domain::market_Commodities_t_Names
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_market_Commodities_t_Interpolation_t(domain::market_Commodities_t_Interpolation_t* obj,
+                                               const xsdcpp::Position& pos,
+                                               std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_market_Commodities_t_Tenors_t(domain::market_Commodities_t_Tenors_t* obj,
                                         const xsdcpp::Position& pos,
                                         std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_market_IntradayPowerCurves_t_Names_t_Name_t(
+    domain::market_IntradayPowerCurves_t_Names_t_Name_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_market_IntradayPowerCurves_t_Interpolation_t(
+    domain::market_IntradayPowerCurves_t_Interpolation_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_market_IntradayPowerCurves_t_Tenors_t(domain::market_IntradayPowerCurves_t_Tenors_t* obj,
+                                                const xsdcpp::Position& pos,
+                                                std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -7848,6 +8023,27 @@ void _set_market_CommodityVolatilities_t_DayCounter_t(
 }
 void _set_market_CommodityVolatilities_t_SmileDynamics_t(
     domain::market_CommodityVolatilities_t_SmileDynamics_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t(
+    domain::market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_market_BondFutureVolatilities_t_DayCounter_t(
+    domain::market_BondFutureVolatilities_t_DayCounter_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_market_BondFutureVolatilities_t_SmileDynamics_t(
+    domain::market_BondFutureVolatilities_t_SmileDynamics_t* obj,
     const xsdcpp::Position& pos,
     std::string&& val) {
     xsd::string& base = *obj;
@@ -8907,6 +9103,12 @@ void _set_correlation_OptionTenors_t(domain::correlation_OptionTenors_t* obj,
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_bondFutureVolatility_YieldCurveId_t(domain::bondFutureVolatility_YieldCurveId_t* obj,
+                                              const xsdcpp::Position& pos,
+                                              std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_prohibitedExpiriesBdcType(domain::prohibitedExpiriesBdcType* obj,
                                     const xsdcpp::Position& pos,
                                     std::string&& val) {
@@ -8917,6 +9119,13 @@ void _set_prohibitedExpiriesType_Dates_t_Date_t(domain::prohibitedExpiriesType_D
                                                 std::string&& val) {
     domain::date& base = *obj;
     domain::_set_date(&base, pos, std::move(val));
+}
+void _set_zeroInflationIndexType_RebasingEvents_t_Event_t(
+    domain::zeroInflationIndexType_RebasingEvents_t_Event_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    double& base = *obj;
+    xsdcpp::set_double(&base, pos, std::move(val));
 }
 void _set_nettingSetDetails_AgreementType_t(domain::nettingSetDetails_AgreementType_t* obj,
                                             const xsdcpp::Position& pos,
@@ -8991,23 +9200,41 @@ void _set_nettingsetdefinitions_NettingSet_t_CSADetails_t_NonExemptIMRegulations
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
-void _set_parconversion_Instruments_t(domain::parconversion_Instruments_t* obj,
-                                      const xsdcpp::Position& pos,
-                                      std::string&& val) {
+std::string to_string(shiftType val) {
+    return xsdcpp::to_string((size_t)val, 3, _shiftType_Values, "shiftType");
+}
+void _set_shiftType(domain::shiftType* obj, const xsdcpp::Position& pos, std::string&& val) {
+    *obj = (domain::shiftType)xsdcpp::toNumeric(pos, _shiftType_Values, val);
+}
+void _set_shiftTypeEntry(domain::shiftTypeEntry* obj,
+                         const xsdcpp::Position& pos,
+                         std::string&& val) {
+    domain::shiftType& base = *obj;
+    domain::_set_shiftType(&base, pos, std::move(val));
+}
+void _set_shiftSizeEntry(domain::shiftSizeEntry* obj,
+                         const xsdcpp::Position& pos,
+                         std::string&& val) {
+    float& base = *obj;
+    xsdcpp::set_float(&base, pos, std::move(val));
+}
+void _set_discountcurve_Shifts_t(domain::discountcurve_Shifts_t* obj,
+                                 const xsdcpp::Position& pos,
+                                 std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
-void _set_parconversion_DiscountCurve_t(domain::parconversion_DiscountCurve_t* obj,
-                                        const xsdcpp::Position& pos,
-                                        std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
+std::string to_string(shiftScheme val) {
+    return xsdcpp::to_string((size_t)val, 3, _shiftScheme_Values, "shiftScheme");
 }
-void _set_parconversion_RateComputationPeriod_t(domain::parconversion_RateComputationPeriod_t* obj,
-                                                const xsdcpp::Position& pos,
-                                                std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
+void _set_shiftScheme(domain::shiftScheme* obj, const xsdcpp::Position& pos, std::string&& val) {
+    *obj = (domain::shiftScheme)xsdcpp::toNumeric(pos, _shiftScheme_Values, val);
+}
+void _set_shiftSchemeEntry(domain::shiftSchemeEntry* obj,
+                           const xsdcpp::Position& pos,
+                           std::string&& val) {
+    domain::shiftScheme& base = *obj;
+    domain::_set_shiftScheme(&base, pos, std::move(val));
 }
 void _set_indexcurve_Shifts_t(domain::indexcurve_Shifts_t* obj,
                               const xsdcpp::Position& pos,
@@ -9153,6 +9380,12 @@ void _set_commodityCurve_Shifts_t(domain::commodityCurve_Shifts_t* obj,
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_intradaypowercurve_Shifts_t(domain::intradaypowercurve_Shifts_t* obj,
+                                      const xsdcpp::Position& pos,
+                                      std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_commodityvolatility_Shifts_t(domain::commodityvolatility_Shifts_t* obj,
                                        const xsdcpp::Position& pos,
                                        std::string&& val) {
@@ -9177,6 +9410,19 @@ void _set_correlationcurve_ShiftStrikes_t(domain::correlationcurve_ShiftStrikes_
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_sensiBondFutureVolatility_Shifts_t(domain::sensiBondFutureVolatility_Shifts_t* obj,
+                                             const xsdcpp::Position& pos,
+                                             std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_sensiBondFutureVolatility_ShiftStrikes_t(
+    domain::sensiBondFutureVolatility_ShiftStrikes_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_stressdiscountcurve_ShiftTenors_t(domain::stressdiscountcurve_ShiftTenors_t* obj,
                                             const xsdcpp::Position& pos,
                                             std::string&& val) {
@@ -9192,6 +9438,19 @@ void _set_stressindexcurve_ShiftTenors_t(domain::stressindexcurve_ShiftTenors_t*
 void _set_stressyieldcurve_ShiftTenors_t(domain::stressyieldcurve_ShiftTenors_t* obj,
                                          const xsdcpp::Position& pos,
                                          std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_stressswaptionvolatility_ShiftExpiries_t(
+    domain::stressswaptionvolatility_ShiftExpiries_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_stressswaptionvolatility_ShiftTerms_t(domain::stressswaptionvolatility_ShiftTerms_t* obj,
+                                                const xsdcpp::Position& pos,
+                                                std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -9211,6 +9470,19 @@ void _set_stresscommoditycurve_Shifts_t(domain::stresscommoditycurve_Shifts_t* o
 void _set_stresscommoditycurve_ShiftTenors_t(domain::stresscommoditycurve_ShiftTenors_t* obj,
                                              const xsdcpp::Position& pos,
                                              std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_stressintradaypowercurve_Shifts_t(domain::stressintradaypowercurve_Shifts_t* obj,
+                                            const xsdcpp::Position& pos,
+                                            std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_stressintradaypowercurve_ShiftTenors_t(
+    domain::stressintradaypowercurve_ShiftTenors_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -9246,6 +9518,12 @@ void _set_envelope_PortfolioIds_t_PortfolioId_t(domain::envelope_PortfolioIds_t_
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_DerivedScheduleType_Shift_t(domain::DerivedScheduleType_Shift_t* obj,
+                                      const xsdcpp::Position& pos,
+                                      std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_fxForwardSettlementData_FXIndex_t(domain::fxForwardSettlementData_FXIndex_t* obj,
                                             const xsdcpp::Position& pos,
                                             std::string&& val) {
@@ -9255,12 +9533,6 @@ void _set_fxForwardSettlementData_FXIndex_t(domain::fxForwardSettlementData_FXIn
 void _set_scheduleData_Dates_t_Tenor_t(domain::scheduleData_Dates_t_Tenor_t* obj,
                                        const xsdcpp::Position& pos,
                                        std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_DerivedScheduleType_Shift_t(domain::DerivedScheduleType_Shift_t* obj,
-                                      const xsdcpp::Position& pos,
-                                      std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -9424,6 +9696,33 @@ void _set__CommodityFloatingLegData_t_FXIndex_t(domain::_CommodityFloatingLegDat
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set__IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t(
+    domain::_IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set__IntradayPowerFloatingLegData_t_FXIndex_t(
+    domain::_IntradayPowerFloatingLegData_t_FXIndex_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set__IntradayPowerFloatingLegData_t_Tag_t(domain::_IntradayPowerFloatingLegData_t_Tag_t* obj,
+                                                const xsdcpp::Position& pos,
+                                                std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set__IntradayPowerFloatingLegData_t_QuantityMode_t(
+    domain::_IntradayPowerFloatingLegData_t_QuantityMode_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_capFloorData_Caps_t_Cap_t(domain::capFloorData_Caps_t_Cap_t* obj,
                                     const xsdcpp::Position& pos,
                                     std::string&& val) {
@@ -9439,12 +9738,6 @@ void _set_capFloorData_Floors_t_Floor_t(domain::capFloorData_Floors_t_Floor_t* o
 void _set_eqForwardSettlementData_FXIndex_t(domain::eqForwardSettlementData_FXIndex_t* obj,
                                             const xsdcpp::Position& pos,
                                             std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_deliveryBasket_Id_t(domain::deliveryBasket_Id_t* obj,
-                              const xsdcpp::Position& pos,
-                              std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -9663,34 +9956,6 @@ void _set_scriptedTradeData_Data_t_Event_t_Value_t(
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
-void _set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
-void _set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
 void _set_scriptedTradeData_Data_t_Daycounter_t_Value_t(
     domain::scriptedTradeData_Data_t_Daycounter_t_Value_t* obj,
     const xsdcpp::Position& pos,
@@ -9831,6 +10096,13 @@ void _set_market_Commodities_t_DayCounters_t_DayCounter_t(
 }
 void _set_market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t(
     domain::market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t(
+    domain::market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t* obj,
     const xsdcpp::Position& pos,
     std::string&& val) {
     xsd::string& base = *obj;
@@ -9978,13 +10250,6 @@ void _set_parametricSmileConfigParameter_Name_t(domain::parametricSmileConfigPar
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
-void _set_parametricSmileConfigParameter_InitialValue_t(
-    domain::parametricSmileConfigParameter_InitialValue_t* obj,
-    const xsdcpp::Position& pos,
-    std::string&& val) {
-    xsd::string& base = *obj;
-    xsdcpp::set_string(&base, pos, std::move(val));
-}
 std::string to_string(parametricVolatilityParameterCalibration val) {
     return xsdcpp::to_string((size_t)val,
                              3,
@@ -10001,6 +10266,22 @@ void _set_parametricVolatilityParameterCalibration(
 const xsdcpp::ElementInfo _parametricVolatilityParameterCalibration_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_parametricVolatilityParameterCalibration};
+std::string to_string(parametricSmileConfigResidualCorrection_Dimension_t val) {
+    return xsdcpp::to_string((size_t)val,
+                             3,
+                             _parametricSmileConfigResidualCorrection_Dimension_t_Values,
+                             "parametricSmileConfigResidualCorrection_Dimension_t");
+}
+void _set_parametricSmileConfigResidualCorrection_Dimension_t(
+    domain::parametricSmileConfigResidualCorrection_Dimension_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    *obj = (domain::parametricSmileConfigResidualCorrection_Dimension_t)xsdcpp::toNumeric(
+        pos, _parametricSmileConfigResidualCorrection_Dimension_t_Values, val);
+}
+const xsdcpp::ElementInfo _parametricSmileConfigResidualCorrection_Dimension_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_parametricSmileConfigResidualCorrection_Dimension_t};
 void _set_capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t(
     domain::capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t* obj,
     const xsdcpp::Position& pos,
@@ -10371,10 +10652,28 @@ void _set_volatilityApoFutureSurfaceConfig_MaxTenor_t(
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
-void _set_parconversion_Conventions_t_Convention_t(
-    domain::parconversion_Conventions_t_Convention_t* obj,
+void _set_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t(
+    domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t* obj,
     const xsdcpp::Position& pos,
     std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_parconversion_Instruments_t(domain::parconversion_Instruments_t* obj,
+                                      const xsdcpp::Position& pos,
+                                      std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_parconversion_DiscountCurve_t(domain::parconversion_DiscountCurve_t* obj,
+                                        const xsdcpp::Position& pos,
+                                        std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_parconversion_RateComputationPeriod_t(domain::parconversion_RateComputationPeriod_t* obj,
+                                                const xsdcpp::Position& pos,
+                                                std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -10442,6 +10741,13 @@ void _set_stressfxvolatility_WeightedShifts_t_Shift_t(
 }
 void _set_stressfxvolatility_WeightedShifts_t_Tenor_t(
     domain::stressfxvolatility_WeightedShifts_t_Tenor_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_stressswaptionvolatility_Shifts_t_Shift_t(
+    domain::stressswaptionvolatility_Shifts_t_Shift_t* obj,
     const xsdcpp::Position& pos,
     std::string&& val) {
     xsd::string& base = *obj;
@@ -10738,6 +11044,13 @@ void _set_curveAlgebraCurveOperation_Arguments_t_Argument_t(
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_parametricSmileConfigParameter_InitialValue_t(
+    domain::parametricSmileConfigParameter_InitialValue_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_cdsVolatility_Terms_t_Term_t_Maturity_t(
     domain::cdsVolatility_Terms_t_Term_t_Maturity_t* obj,
     const xsdcpp::Position& pos,
@@ -10815,8 +11128,29 @@ void _set_defaultCurve_Configurations_t_Configuration_t_IndexTerm_t(
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
+void _set_fittedBondType_IndexCurves_t_IndexCurve_t(
+    domain::fittedBondType_IndexCurves_t_IndexCurve_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
 void _set_fittedBondType_IborIndexCurves_t_IborIndexCurve_t(
     domain::fittedBondType_IborIndexCurves_t_IborIndexCurve_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t(
+    domain::fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_BondYieldShiftedType_IndexCurves_t_IndexCurve_t(
+    domain::BondYieldShiftedType_IndexCurves_t_IndexCurve_t* obj,
     const xsdcpp::Position& pos,
     std::string&& val) {
     xsd::string& base = *obj;
@@ -10838,6 +11172,19 @@ void _set_priceSegmentType_PeakPriceCurveId_t(domain::priceSegmentType_PeakPrice
 void _set_priceSegmentType_PeakPriceCalendar_t(domain::priceSegmentType_PeakPriceCalendar_t* obj,
                                                const xsdcpp::Position& pos,
                                                std::string&& val) {
+    xsd::string& base = *obj;
+    xsdcpp::set_string(&base, pos, std::move(val));
+}
+void _set_loadFactorType(domain::loadFactorType* obj,
+                         const xsdcpp::Position& pos,
+                         std::string&& val) {
+    double& base = *obj;
+    xsdcpp::set_double(&base, pos, std::move(val));
+}
+void _set_parconversion_Conventions_t_Convention_t(
+    domain::parconversion_Conventions_t_Convention_t* obj,
+    const xsdcpp::Position& pos,
+    std::string&& val) {
     xsd::string& base = *obj;
     xsdcpp::set_string(&base, pos, std::move(val));
 }
@@ -11357,6 +11704,12 @@ void* _get_curveconfiguration_CommodityVolatilities(domain::curveconfiguration* 
 void* _get_curveconfiguration_Correlations(domain::curveconfiguration* parent) {
     return &*(parent->Correlations = domain::correlations());
 }
+void* _get_curveconfiguration_BondFutureVolatilities(domain::curveconfiguration* parent) {
+    return &*(parent->BondFutureVolatilities = domain::bondFutureVolatilities());
+}
+void* _get_curveconfiguration_IntradayPowerCurves(domain::curveconfiguration* parent) {
+    return &*(parent->IntradayPowerCurves = domain::intradayPowerCurves());
+}
 xsdcpp::ChildElementInfo _curveconfiguration_Children[] = {
     {"ReportConfiguration",
      0,
@@ -11466,6 +11819,18 @@ xsdcpp::ChildElementInfo _curveconfiguration_Children[] = {
      &domain::_correlations_Info,
      0,
      1},
+    {"BondFutureVolatilities",
+     18,
+     (xsdcpp::get_field_t)&_get_curveconfiguration_BondFutureVolatilities,
+     &domain::_bondFutureVolatilities_Info,
+     0,
+     1},
+    {"IntradayPowerCurves",
+     19,
+     (xsdcpp::get_field_t)&_get_curveconfiguration_IntradayPowerCurves,
+     &domain::_intradayPowerCurves_Info,
+     0,
+     1},
     {nullptr}};
 void* _get_conventions_Zero(domain::conventions* parent) {
     return (parent->Zero.emplace_back(), &parent->Zero.back());
@@ -11541,6 +11906,9 @@ void* _get_conventions_ZeroInflationIndex(domain::conventions* parent) {
 }
 void* _get_conventions_BondYield(domain::conventions* parent) {
     return (parent->BondYield.emplace_back(), &parent->BondYield.back());
+}
+void* _get_conventions_IntradayPowerLoad(domain::conventions* parent) {
+    return (parent->IntradayPowerLoad.emplace_back(), &parent->IntradayPowerLoad.back());
 }
 xsdcpp::ChildElementInfo _conventions_Children[] = {
     {"Zero",
@@ -11678,6 +12046,12 @@ xsdcpp::ChildElementInfo _conventions_Children[] = {
      &domain::_bondYield_Info,
      0,
      4294967295},
+    {"IntradayPowerLoad",
+     25,
+     (xsdcpp::get_field_t)&_get_conventions_IntradayPowerLoad,
+     &domain::_intradayPowerLoad_Info,
+     0,
+     4294967295},
     {nullptr}};
 void* _get_collateralBalances_CollateralBalance(domain::collateralBalances* parent) {
     return (parent->CollateralBalance.emplace_back(), &parent->CollateralBalance.back());
@@ -11792,6 +12166,13 @@ void* _get_todaysmarket_CommodityVolatilities(domain::todaysmarket* parent) {
 }
 void* _get_todaysmarket_Correlations(domain::todaysmarket* parent) {
     return (parent->Correlations.emplace_back(), &parent->Correlations.back());
+}
+void* _get_todaysmarket_BondFutureVolatilities(domain::todaysmarket* parent) {
+    return (parent->BondFutureVolatilities.emplace_back(), &parent->BondFutureVolatilities.back());
+}
+void* _get_todaysmarket_IntradayPowerPriceCurves(domain::todaysmarket* parent) {
+    return (parent->IntradayPowerPriceCurves.emplace_back(),
+            &parent->IntradayPowerPriceCurves.back());
 }
 xsdcpp::ChildElementInfo _todaysmarket_Children[] = {
     {"Configuration",
@@ -11932,15 +12313,16 @@ xsdcpp::ChildElementInfo _todaysmarket_Children[] = {
      &domain::_correlationsType_Info,
      0,
      4294967295},
-    {nullptr}};
-void* _get_discountcurves_DiscountCurve(domain::discountcurves* parent) {
-    return (parent->DiscountCurve.emplace_back(), &parent->DiscountCurve.back());
-}
-xsdcpp::ChildElementInfo _discountcurves_Children[] = {
-    {"DiscountCurve",
+    {"BondFutureVolatilities",
+     23,
+     (xsdcpp::get_field_t)&_get_todaysmarket_BondFutureVolatilities,
+     &domain::_bondFutureVolatilitiesType_Info,
      0,
-     (xsdcpp::get_field_t)&_get_discountcurves_DiscountCurve,
-     &domain::_discountcurve_Info,
+     4294967295},
+    {"IntradayPowerPriceCurves",
+     24,
+     (xsdcpp::get_field_t)&_get_todaysmarket_IntradayPowerPriceCurves,
+     &domain::_intradayPowerPriceCurvesType_Info,
      0,
      4294967295},
     {nullptr}};
@@ -11959,7 +12341,7 @@ void* _get_sensitivityanalysis_ParConversion(domain::sensitivityanalysis* parent
     return &*(parent->ParConversion = bool());
 }
 void* _get_sensitivityanalysis_DiscountCurves(domain::sensitivityanalysis* parent) {
-    return &parent->DiscountCurves;
+    return &*(parent->DiscountCurves = domain::discountcurves());
 }
 void* _get_sensitivityanalysis_IndexCurves(domain::sensitivityanalysis* parent) {
     return &*(parent->IndexCurves = domain::indexcurves());
@@ -12018,17 +12400,26 @@ void* _get_sensitivityanalysis_SecuritySpreads(domain::sensitivityanalysis* pare
 void* _get_sensitivityanalysis_CommodityCurves(domain::sensitivityanalysis* parent) {
     return &*(parent->CommodityCurves = domain::commodityCurves());
 }
+void* _get_sensitivityanalysis_IntradayPowerCurves(domain::sensitivityanalysis* parent) {
+    return &*(parent->IntradayPowerCurves = domain::intradaypowercurves());
+}
 void* _get_sensitivityanalysis_CommodityVolatilities(domain::sensitivityanalysis* parent) {
     return &*(parent->CommodityVolatilities = domain::commodityvolatilities());
 }
 void* _get_sensitivityanalysis_Correlations(domain::sensitivityanalysis* parent) {
     return &*(parent->Correlations = domain::correlationcurves());
 }
+void* _get_sensitivityanalysis_BondFutureVolatilities(domain::sensitivityanalysis* parent) {
+    return &*(parent->BondFutureVolatilities = domain::sensiBondFutureVolatilities());
+}
 void* _get_sensitivityanalysis_CrossGammaFilter(domain::sensitivityanalysis* parent) {
     return &*(parent->CrossGammaFilter = domain::crossgammafilter());
 }
 void* _get_sensitivityanalysis_ComputeGamma(domain::sensitivityanalysis* parent) {
     return &*(parent->ComputeGamma = domain::bool_());
+}
+void* _get_sensitivityanalysis_ThetaPeriod(domain::sensitivityanalysis* parent) {
+    return &*(parent->ThetaPeriod = domain::period());
 }
 void* _get_sensitivityanalysis_UseSpreadedTermStructures(domain::sensitivityanalysis* parent) {
     return &*(parent->UseSpreadedTermStructures = domain::bool_());
@@ -12065,7 +12456,7 @@ xsdcpp::ChildElementInfo _sensitivityanalysis_Children[] = {
      4,
      (xsdcpp::get_field_t)&_get_sensitivityanalysis_DiscountCurves,
      &domain::_discountcurves_Info,
-     1,
+     0,
      1},
     {"IndexCurves",
      5,
@@ -12181,38 +12572,56 @@ xsdcpp::ChildElementInfo _sensitivityanalysis_Children[] = {
      &domain::_commodityCurves_Info,
      0,
      1},
-    {"CommodityVolatilities",
+    {"IntradayPowerCurves",
      24,
+     (xsdcpp::get_field_t)&_get_sensitivityanalysis_IntradayPowerCurves,
+     &domain::_intradaypowercurves_Info,
+     0,
+     1},
+    {"CommodityVolatilities",
+     25,
      (xsdcpp::get_field_t)&_get_sensitivityanalysis_CommodityVolatilities,
      &domain::_commodityvolatilities_Info,
      0,
      1},
     {"Correlations",
-     25,
+     26,
      (xsdcpp::get_field_t)&_get_sensitivityanalysis_Correlations,
      &domain::_correlationcurves_Info,
      0,
      1},
+    {"BondFutureVolatilities",
+     27,
+     (xsdcpp::get_field_t)&_get_sensitivityanalysis_BondFutureVolatilities,
+     &domain::_sensiBondFutureVolatilities_Info,
+     0,
+     1},
     {"CrossGammaFilter",
-     26,
+     28,
      (xsdcpp::get_field_t)&_get_sensitivityanalysis_CrossGammaFilter,
      &domain::_crossgammafilter_Info,
      0,
      1},
     {"ComputeGamma",
-     27,
+     29,
      (xsdcpp::get_field_t)&_get_sensitivityanalysis_ComputeGamma,
      &domain::_bool__Info,
      0,
      1},
+    {"ThetaPeriod",
+     30,
+     (xsdcpp::get_field_t)&_get_sensitivityanalysis_ThetaPeriod,
+     &domain::_period_Info,
+     0,
+     1},
     {"UseSpreadedTermStructures",
-     28,
+     31,
      (xsdcpp::get_field_t)&_get_sensitivityanalysis_UseSpreadedTermStructures,
      &domain::_bool__Info,
      0,
      1},
     {"TwoSidedDeltaKeyTypes",
-     29,
+     32,
      (xsdcpp::get_field_t)&_get_sensitivityanalysis_TwoSidedDeltaKeyTypes,
      &domain::_setRiskFactorKeyTypes_Info,
      0,
@@ -12272,11 +12681,15 @@ void* _get_ore_Markets(domain::ore* parent) {
 void* _get_ore_Analytics(domain::ore* parent) {
     return &parent->Analytics;
 }
+void* _get_ore_Restore(domain::ore* parent) {
+    return &*(parent->Restore = domain::parameterListType());
+}
 xsdcpp::ChildElementInfo _ore_Children[] = {
     {"Setup", 0, (xsdcpp::get_field_t)&_get_ore_Setup, &domain::_parameterListType_Info, 1, 1},
     {"Logging", 1, (xsdcpp::get_field_t)&_get_ore_Logging, &domain::_parameterListType_Info, 0, 1},
     {"Markets", 2, (xsdcpp::get_field_t)&_get_ore_Markets, &domain::_parameterListType_Info, 0, 1},
     {"Analytics", 3, (xsdcpp::get_field_t)&_get_ore_Analytics, &domain::_analyticsType_Info, 1, 1},
+    {"Restore", 4, (xsdcpp::get_field_t)&_get_ore_Restore, &domain::_parameterListType_Info, 0, 1},
     {nullptr}};
 void* _get_calendaradjustment_Calendar(domain::calendaradjustment* parent) {
     return (parent->Calendar.emplace_back(), &parent->Calendar.back());
@@ -12709,6 +13122,9 @@ void* _get_trade_ForwardBondData(domain::trade* parent) {
 void* _get_trade_BondFutureData(domain::trade* parent) {
     return &*(parent->BondFutureData = domain::bondFutureData());
 }
+void* _get_trade_BondFutureOptionData(domain::trade* parent) {
+    return &*(parent->BondFutureOptionData = domain::bondFutureOptionData());
+}
 void* _get_trade_CreditDefaultSwapData(domain::trade* parent) {
     return &*(parent->CreditDefaultSwapData = domain::creditDefaultSwapData());
 }
@@ -12717,6 +13133,9 @@ void* _get_trade_CreditDefaultSwapOptionData(domain::trade* parent) {
 }
 void* _get_trade_CommodityForwardData(domain::trade* parent) {
     return &*(parent->CommodityForwardData = domain::commodityForwardData());
+}
+void* _get_trade_IntradayPowerForwardData(domain::trade* parent) {
+    return &*(parent->IntradayPowerForwardData = domain::intradayPowerForwardData());
 }
 void* _get_trade_CommodityOptionData(domain::trade* parent) {
     return &*(parent->CommodityOptionData = domain::commodityOptionData());
@@ -12900,6 +13319,17 @@ void* _get_trade_DualEuroBinaryOptionDoubleKOData(domain::trade* parent) {
 }
 void* _get_trade_VolatilityBarrierOptionData(domain::trade* parent) {
     return &*(parent->VolatilityBarrierOptionData = domain::volBarrierOptionData());
+}
+void* _get_trade_FxForwardVolatilityAgreementData(domain::trade* parent) {
+    return &*(parent->FxForwardVolatilityAgreementData = domain::forwardVolatilityAgreementData2());
+}
+void* _get_trade_EquityForwardVolatilityAgreementData(domain::trade* parent) {
+    return &*(parent->EquityForwardVolatilityAgreementData =
+                  domain::forwardVolatilityAgreementData2());
+}
+void* _get_trade_CommodityForwardVolatilityAgreementData(domain::trade* parent) {
+    return &*(parent->CommodityForwardVolatilityAgreementData =
+                  domain::forwardVolatilityAgreementData2());
 }
 void* _get_trade_FxTaRFData(domain::trade* parent) {
     return &*(parent->FxTaRFData = domain::tarfData2());
@@ -13400,828 +13830,858 @@ xsdcpp::ChildElementInfo _trade_Children[] = {
      &domain::_bondFutureData_Info,
      0,
      1},
-    {"CreditDefaultSwapData",
+    {"BondFutureOptionData",
      44,
+     (xsdcpp::get_field_t)&_get_trade_BondFutureOptionData,
+     &domain::_bondFutureOptionData_Info,
+     0,
+     1},
+    {"CreditDefaultSwapData",
+     45,
      (xsdcpp::get_field_t)&_get_trade_CreditDefaultSwapData,
      &domain::_creditDefaultSwapData_Info,
      0,
      1},
     {"CreditDefaultSwapOptionData",
-     45,
+     46,
      (xsdcpp::get_field_t)&_get_trade_CreditDefaultSwapOptionData,
      &domain::_creditDefaultSwapOptionData_Info,
      0,
      1},
     {"CommodityForwardData",
-     46,
+     47,
      (xsdcpp::get_field_t)&_get_trade_CommodityForwardData,
      &domain::_commodityForwardData_Info,
      0,
      1},
+    {"IntradayPowerForwardData",
+     48,
+     (xsdcpp::get_field_t)&_get_trade_IntradayPowerForwardData,
+     &domain::_intradayPowerForwardData_Info,
+     0,
+     1},
     {"CommodityOptionData",
-     47,
+     49,
      (xsdcpp::get_field_t)&_get_trade_CommodityOptionData,
      &domain::_commodityOptionData_Info,
      0,
      1},
     {"CommodityDigitalAveragePriceOptionData",
-     48,
+     50,
      (xsdcpp::get_field_t)&_get_trade_CommodityDigitalAveragePriceOptionData,
      &domain::_commodityDigitalAveragePriceOptionData_Info,
      0,
      1},
     {"CommodityDigitalOptionData",
-     49,
+     51,
      (xsdcpp::get_field_t)&_get_trade_CommodityDigitalOptionData,
      &domain::_commodityDigitalOptionData_Info,
      0,
      1},
     {"CommoditySpreadOptionData",
-     50,
+     52,
      (xsdcpp::get_field_t)&_get_trade_CommoditySpreadOptionData,
      &domain::_commoditySpreadOptionData_Info,
      0,
      1},
     {"CommoditySwapData",
-     51,
+     53,
      (xsdcpp::get_field_t)&_get_trade_CommoditySwapData,
      &domain::_commoditySwapData_Info,
      0,
      1},
     {"CommoditySwaptionData",
-     52,
+     54,
      (xsdcpp::get_field_t)&_get_trade_CommoditySwaptionData,
      &domain::_commoditySwaptionData_Info,
      0,
      1},
     {"CommodityAveragePriceOptionData",
-     53,
+     55,
      (xsdcpp::get_field_t)&_get_trade_CommodityAveragePriceOptionData,
      &domain::_commodityAveragePriceOptionData_Info,
      0,
      1},
     {"CommodityOptionStripData",
-     54,
+     56,
      (xsdcpp::get_field_t)&_get_trade_CommodityOptionStripData,
      &domain::_commodityOptionStripData_Info,
      0,
      1},
     {"CommodityPositionData",
-     55,
+     57,
      (xsdcpp::get_field_t)&_get_trade_CommodityPositionData,
      &domain::_commodityPositionData_Info,
      0,
      1},
     {"EquityAsianOptionData",
-     56,
+     58,
      (xsdcpp::get_field_t)&_get_trade_EquityAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"FxAsianOptionData",
-     57,
+     59,
      (xsdcpp::get_field_t)&_get_trade_FxAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"CommodityAsianOptionData",
-     58,
+     60,
      (xsdcpp::get_field_t)&_get_trade_CommodityAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"BondOptionData",
-     59,
+     61,
      (xsdcpp::get_field_t)&_get_trade_BondOptionData,
      &domain::_bondOptionData_Info,
      0,
      1},
     {"BondRepoData",
-     60,
+     62,
      (xsdcpp::get_field_t)&_get_trade_BondRepoData,
      &domain::_bondRepoData_Info,
      0,
      1},
     {"BondTRSData",
-     61,
+     63,
      (xsdcpp::get_field_t)&_get_trade_BondTRSData,
      &domain::_bondTRSData_Info,
      0,
      1},
-    {"CdoData", 62, (xsdcpp::get_field_t)&_get_trade_CdoData, &domain::_cdoData_Info, 0, 1},
+    {"CdoData", 64, (xsdcpp::get_field_t)&_get_trade_CdoData, &domain::_cdoData_Info, 0, 1},
     {"CreditLinkedSwapData",
-     63,
+     65,
      (xsdcpp::get_field_t)&_get_trade_CreditLinkedSwapData,
      &domain::_creditLinkedSwapData_Info,
      0,
      1},
     {"IndexCreditDefaultSwapData",
-     64,
+     66,
      (xsdcpp::get_field_t)&_get_trade_IndexCreditDefaultSwapData,
      &domain::_indexCreditDefaultSwapData_Info,
      0,
      1},
     {"IndexCreditDefaultSwapOptionData",
-     65,
+     67,
      (xsdcpp::get_field_t)&_get_trade_IndexCreditDefaultSwapOptionData,
      &domain::_indexCreditDefaultSwapOptionData_Info,
      0,
      1},
-    {"AscotData", 66, (xsdcpp::get_field_t)&_get_trade_AscotData, &domain::_ascotData_Info, 0, 1},
+    {"AscotData", 68, (xsdcpp::get_field_t)&_get_trade_AscotData, &domain::_ascotData_Info, 0, 1},
     {"ConvertibleBondData",
-     67,
+     69,
      (xsdcpp::get_field_t)&_get_trade_ConvertibleBondData,
      &domain::_convertibleBondData_Info,
      0,
      1},
     {"CallableBondData",
-     68,
+     70,
      (xsdcpp::get_field_t)&_get_trade_CallableBondData,
      &domain::_callableBondData_Info,
      0,
      1},
     {"TreasuryLockData",
-     69,
+     71,
      (xsdcpp::get_field_t)&_get_trade_TreasuryLockData,
      &domain::_tlockData_Info,
      0,
      1},
     {"RiskParticipationAgreementData",
-     70,
+     72,
      (xsdcpp::get_field_t)&_get_trade_RiskParticipationAgreementData,
      &domain::_rpaData_Info,
      0,
      1},
-    {"CBOData", 71, (xsdcpp::get_field_t)&_get_trade_CBOData, &domain::_cbodata_Info, 0, 1},
+    {"CBOData", 73, (xsdcpp::get_field_t)&_get_trade_CBOData, &domain::_cbodata_Info, 0, 1},
     {"BondBasketData",
-     72,
+     74,
      (xsdcpp::get_field_t)&_get_trade_BondBasketData,
      &domain::_bondBasketData_Info,
      0,
      1},
     {"EquityPositionData",
-     73,
+     75,
      (xsdcpp::get_field_t)&_get_trade_EquityPositionData,
      &domain::_equityPositionData_Info,
      0,
      1},
     {"EquityOptionPositionData",
-     74,
+     76,
      (xsdcpp::get_field_t)&_get_trade_EquityOptionPositionData,
      &domain::_equityOptionPositionData_Info,
      0,
      1},
     {"TotalReturnSwapData",
-     75,
+     77,
      (xsdcpp::get_field_t)&_get_trade_TotalReturnSwapData,
      &domain::_totalReturnSwapData_Info,
      0,
      1},
     {"ContractForDifferenceData",
-     76,
+     78,
      (xsdcpp::get_field_t)&_get_trade_ContractForDifferenceData,
      &domain::_totalReturnSwapData_Info,
      0,
      1},
     {"CompositeTradeData",
-     77,
+     79,
      (xsdcpp::get_field_t)&_get_trade_CompositeTradeData,
      &domain::_compositeTradeData_Info,
      0,
      1},
     {"PairwiseVarianceSwapData",
-     78,
+     80,
      (xsdcpp::get_field_t)&_get_trade_PairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData1_Info,
      0,
      1},
     {"EquityPairwiseVarianceSwapData",
-     79,
+     81,
      (xsdcpp::get_field_t)&_get_trade_EquityPairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData2_Info,
      0,
      1},
     {"FxPairwiseVarianceSwapData",
-     80,
+     82,
      (xsdcpp::get_field_t)&_get_trade_FxPairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData2_Info,
      0,
      1},
     {"EquityOutperformanceOptionData",
-     81,
+     83,
      (xsdcpp::get_field_t)&_get_trade_EquityOutperformanceOptionData,
      &domain::_eqOutperformanceOptionData_Info,
      0,
      1},
     {"FlexiSwapData",
-     82,
+     84,
      (xsdcpp::get_field_t)&_get_trade_FlexiSwapData,
      &domain::_flexiSwapData_Info,
      0,
      1},
     {"BalanceGuaranteedSwapData",
-     83,
+     85,
      (xsdcpp::get_field_t)&_get_trade_BalanceGuaranteedSwapData,
      &domain::_bgSwapData_Info,
      0,
      1},
     {"CommodityRevenueOptionData",
-     84,
+     86,
      (xsdcpp::get_field_t)&_get_trade_CommodityRevenueOptionData,
      &domain::_commodityRevenueOptionData_Info,
      0,
      1},
     {"BasketVarianceSwapData",
-     85,
+     87,
      (xsdcpp::get_field_t)&_get_trade_BasketVarianceSwapData,
      &domain::_basketVarianceSwapData_Info,
      0,
      1},
     {"EquityBasketVarianceSwapData",
-     86,
+     88,
      (xsdcpp::get_field_t)&_get_trade_EquityBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"FxBasketVarianceSwapData",
-     87,
+     89,
      (xsdcpp::get_field_t)&_get_trade_FxBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"CommodityBasketVarianceSwapData",
-     88,
+     90,
      (xsdcpp::get_field_t)&_get_trade_CommodityBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"ExtendedAccumulatorData",
-     89,
+     91,
      (xsdcpp::get_field_t)&_get_trade_ExtendedAccumulatorData,
      &domain::_extendedAccumulatorData_Info,
      0,
      1},
     {"VarianceOptionData",
-     90,
+     92,
      (xsdcpp::get_field_t)&_get_trade_VarianceOptionData,
      &domain::_varianceOptionData_Info,
      0,
      1},
     {"VarianceDispersionSwapData",
-     91,
+     93,
      (xsdcpp::get_field_t)&_get_trade_VarianceDispersionSwapData,
      &domain::_varianceDispersionSwapData_Info,
      0,
      1},
     {"KIKOVarianceSwapData",
-     92,
+     94,
      (xsdcpp::get_field_t)&_get_trade_KIKOVarianceSwapData,
      &domain::_kikoVarianceSwapData_Info,
      0,
      1},
     {"CorridorVarianceSwapData",
-     93,
+     95,
      (xsdcpp::get_field_t)&_get_trade_CorridorVarianceSwapData,
      &domain::_corridorVarianceSwapData_Info,
      0,
      1},
     {"IndexedCorridorVarianceSwapData",
-     94,
+     96,
      (xsdcpp::get_field_t)&_get_trade_IndexedCorridorVarianceSwapData,
      &domain::_indexedCorridorVarianceSwapData_Info,
      0,
      1},
     {"KIKOCorridorVarianceSwapData",
-     95,
+     97,
      (xsdcpp::get_field_t)&_get_trade_KIKOCorridorVarianceSwapData,
      &domain::_kikoCorridorVarianceSwapData_Info,
      0,
      1},
     {"CorridorVarianceDispersionSwapData",
-     96,
+     98,
      (xsdcpp::get_field_t)&_get_trade_CorridorVarianceDispersionSwapData,
      &domain::_corridorVarianceDispersionSwapData_Info,
      0,
      1},
     {"KOCorridorVarianceDispersionSwapData",
-     97,
+     99,
      (xsdcpp::get_field_t)&_get_trade_KOCorridorVarianceDispersionSwapData,
      &domain::_koCorridorVarianceDispersionSwapData_Info,
      0,
      1},
     {"PairwiseGeometricVarianceDispersionSwapData",
-     98,
+     100,
      (xsdcpp::get_field_t)&_get_trade_PairwiseGeometricVarianceDispersionSwapData,
      &domain::_pairwiseGeometricVarianceDispersionSwapData_Info,
      0,
      1},
     {"ConditionalVarianceSwap01Data",
-     99,
+     101,
      (xsdcpp::get_field_t)&_get_trade_ConditionalVarianceSwap01Data,
      &domain::_conditionalVarianceSwap01Data_Info,
      0,
      1},
     {"ConditionalVarianceSwap02Data",
-     100,
+     102,
      (xsdcpp::get_field_t)&_get_trade_ConditionalVarianceSwap02Data,
      &domain::_conditionalVarianceSwap02Data_Info,
      0,
      1},
     {"GammaSwapData",
-     101,
+     103,
      (xsdcpp::get_field_t)&_get_trade_GammaSwapData,
      &domain::_gammaSwapData_Info,
      0,
      1},
     {"BestEntryOptionData",
-     102,
+     104,
      (xsdcpp::get_field_t)&_get_trade_BestEntryOptionData,
      &domain::_bestEntryOptionData_Info,
      0,
      1},
     {"DualEuroBinaryOptionData",
-     103,
+     105,
      (xsdcpp::get_field_t)&_get_trade_DualEuroBinaryOptionData,
      &domain::_dualEuroBinaryOptionData_Info,
      0,
      1},
     {"DualEuroBinaryOptionDoubleKOData",
-     104,
+     106,
      (xsdcpp::get_field_t)&_get_trade_DualEuroBinaryOptionDoubleKOData,
      &domain::_dualEuroBinaryOptionDoubleKOData_Info,
      0,
      1},
     {"VolatilityBarrierOptionData",
-     105,
+     107,
      (xsdcpp::get_field_t)&_get_trade_VolatilityBarrierOptionData,
      &domain::_volBarrierOptionData_Info,
      0,
      1},
+    {"FxForwardVolatilityAgreementData",
+     108,
+     (xsdcpp::get_field_t)&_get_trade_FxForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
+    {"EquityForwardVolatilityAgreementData",
+     109,
+     (xsdcpp::get_field_t)&_get_trade_EquityForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
+    {"CommodityForwardVolatilityAgreementData",
+     110,
+     (xsdcpp::get_field_t)&_get_trade_CommodityForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
     {"FxTaRFData",
-     106,
+     111,
      (xsdcpp::get_field_t)&_get_trade_FxTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"EquityTaRFData",
-     107,
+     112,
      (xsdcpp::get_field_t)&_get_trade_EquityTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"CommodityTaRFData",
-     108,
+     113,
      (xsdcpp::get_field_t)&_get_trade_CommodityTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"FxAccumulatorData",
-     109,
+     114,
      (xsdcpp::get_field_t)&_get_trade_FxAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"EquityAccumulatorData",
-     110,
+     115,
      (xsdcpp::get_field_t)&_get_trade_EquityAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"CommodityAccumulatorData",
-     111,
+     116,
      (xsdcpp::get_field_t)&_get_trade_CommodityAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"CallableRangeAccrualData",
-     112,
+     117,
      (xsdcpp::get_field_t)&_get_trade_CallableRangeAccrualData,
      &domain::_callableRangeAccrualData_Info,
      0,
      1},
     {"FxWindowBarrierOptionData",
-     113,
+     118,
      (xsdcpp::get_field_t)&_get_trade_FxWindowBarrierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"EquityWindowBarrierOptionData",
-     114,
+     119,
      (xsdcpp::get_field_t)&_get_trade_EquityWindowBarrierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"CommodityWindowBarierOptionData",
-     115,
+     120,
      (xsdcpp::get_field_t)&_get_trade_CommodityWindowBarierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"EquityBasketOptionData",
-     116,
+     121,
      (xsdcpp::get_field_t)&_get_trade_EquityBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"FxBasketOptionData",
-     117,
+     122,
      (xsdcpp::get_field_t)&_get_trade_FxBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"CommodityBasketOptionData",
-     118,
+     123,
      (xsdcpp::get_field_t)&_get_trade_CommodityBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"FxGenericBarrierOptionData",
-     119,
+     124,
      (xsdcpp::get_field_t)&_get_trade_FxGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"EquityGenericBarrierOptionData",
-     120,
+     125,
      (xsdcpp::get_field_t)&_get_trade_EquityGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"CommodityGenericBarrierOptionData",
-     121,
+     126,
      (xsdcpp::get_field_t)&_get_trade_CommodityGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"EquityRainbowOptionData",
-     122,
+     127,
      (xsdcpp::get_field_t)&_get_trade_EquityRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"FxRainbowOptionData",
-     123,
+     128,
      (xsdcpp::get_field_t)&_get_trade_FxRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"CommodityRainbowOptionData",
-     124,
+     129,
      (xsdcpp::get_field_t)&_get_trade_CommodityRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"Autocallable01Data",
-     125,
+     130,
      (xsdcpp::get_field_t)&_get_trade_Autocallable01Data,
      &domain::_autocallable01Data_Info,
      0,
      1},
     {"DoubleDigitalOptionData",
-     126,
+     131,
      (xsdcpp::get_field_t)&_get_trade_DoubleDigitalOptionData,
      &domain::_doubleDigitalOptionData_Info,
      0,
      1},
     {"PerformanceOption01Data",
-     127,
+     132,
      (xsdcpp::get_field_t)&_get_trade_PerformanceOption01Data,
      &domain::_performanceOption01Data_Info,
      0,
      1},
     {"ScriptedTradeData",
-     128,
+     133,
      (xsdcpp::get_field_t)&_get_trade_ScriptedTradeData,
      &domain::_scriptedTradeData_Info,
      0,
      1},
     {"VanillaBasketOptionData",
-     129,
+     134,
      (xsdcpp::get_field_t)&_get_trade_VanillaBasketOptionData,
      &domain::_vanillaBasketOptionData_Info,
      0,
      1},
     {"AsianBasketOptionData",
-     130,
+     135,
      (xsdcpp::get_field_t)&_get_trade_AsianBasketOptionData,
      &domain::_asianBasketOptionData_Info,
      0,
      1},
     {"AverageStrikeBasketOptionData",
-     131,
+     136,
      (xsdcpp::get_field_t)&_get_trade_AverageStrikeBasketOptionData,
      &domain::_averageStrikeBasketOptionData_Info,
      0,
      1},
     {"LookbackCallBasketOptionData",
-     132,
+     137,
      (xsdcpp::get_field_t)&_get_trade_LookbackCallBasketOptionData,
      &domain::_lookbackCallBasketOptionData_Info,
      0,
      1},
     {"LookbackPutBasketOptionData",
-     133,
+     138,
      (xsdcpp::get_field_t)&_get_trade_LookbackPutBasketOptionData,
      &domain::_lookbackPutBasketOptionData_Info,
      0,
      1},
     {"BestOfAirbagData",
-     134,
+     139,
      (xsdcpp::get_field_t)&_get_trade_BestOfAirbagData,
      &domain::_bestOfAirbagData_Info,
      0,
      1},
     {"WorstOfBasketSwapData",
-     135,
+     140,
      (xsdcpp::get_field_t)&_get_trade_WorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData_Info,
      0,
      1},
     {"FxWorstOfBasketSwapData",
-     136,
+     141,
      (xsdcpp::get_field_t)&_get_trade_FxWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"EquityWorstOfBasketSwapData",
-     137,
+     142,
      (xsdcpp::get_field_t)&_get_trade_EquityWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"CommodityWorstOfBasketSwapData",
-     138,
+     143,
      (xsdcpp::get_field_t)&_get_trade_CommodityWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption01Data",
-     139,
+     144,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption01Data,
      &domain::_worstPerformanceRainbowOption01Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption02Data",
-     140,
+     145,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption02Data,
      &domain::_worstPerformanceRainbowOption02Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption03Data",
-     141,
+     146,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption03Data,
      &domain::_worstPerformanceRainbowOption03Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption04Data",
-     142,
+     147,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption04Data,
      &domain::_worstPerformanceRainbowOption04Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption05Data",
-     143,
+     148,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption05Data,
      &domain::_worstPerformanceRainbowOption05Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption06Data",
-     144,
+     149,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption06Data,
      &domain::_worstPerformanceRainbowOption06Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption07Data",
-     145,
+     150,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption07Data,
      &domain::_worstPerformanceRainbowOption07Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption08Data",
-     146,
+     151,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption08Data,
      &domain::_worstPerformanceRainbowOption08Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption09Data",
-     147,
+     152,
      (xsdcpp::get_field_t)&_get_trade_WorstPerformanceRainbowOption09Data,
      &domain::_worstPerformanceRainbowOption09Data_Info,
      0,
      1},
     {"BestOfAssetOrCashRainbowOptionData",
-     148,
+     153,
      (xsdcpp::get_field_t)&_get_trade_BestOfAssetOrCashRainbowOptionData,
      &domain::_bestOfAssetOrCashRainbowOptionData_Info,
      0,
      1},
     {"WorstOfAssetOrCashRainbowOptionData",
-     149,
+     154,
      (xsdcpp::get_field_t)&_get_trade_WorstOfAssetOrCashRainbowOptionData,
      &domain::_worstOfAssetOrCashRainbowOptionData_Info,
      0,
      1},
     {"MinRainbowOptionData",
-     150,
+     155,
      (xsdcpp::get_field_t)&_get_trade_MinRainbowOptionData,
      &domain::_minRainbowOptionData_Info,
      0,
      1},
     {"MaxRainbowOptionData",
-     151,
+     156,
      (xsdcpp::get_field_t)&_get_trade_MaxRainbowOptionData,
      &domain::_maxRainbowOptionData_Info,
      0,
      1},
     {"WindowBarrierOptionData",
-     152,
+     157,
      (xsdcpp::get_field_t)&_get_trade_WindowBarrierOptionData,
      &domain::_windowBarrierOptionData_Info,
      0,
      1},
     {"Accumulator01Data",
-     153,
+     158,
      (xsdcpp::get_field_t)&_get_trade_Accumulator01Data,
      &domain::_accumulator01Data_Info,
      0,
      1},
     {"Accumulator02Data",
-     154,
+     159,
      (xsdcpp::get_field_t)&_get_trade_Accumulator02Data,
      &domain::_accumulator02Data_Info,
      0,
      1},
     {"EquityBestEntryOptionData",
-     155,
+     160,
      (xsdcpp::get_field_t)&_get_trade_EquityBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"FxBestEntryOptionData",
-     156,
+     161,
      (xsdcpp::get_field_t)&_get_trade_FxBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"CommodityBestEntryOptionData",
-     157,
+     162,
      (xsdcpp::get_field_t)&_get_trade_CommodityBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
-    {"TaRFData", 158, (xsdcpp::get_field_t)&_get_trade_TaRFData, &domain::_tarfData_Info, 0, 1},
+    {"TaRFData", 163, (xsdcpp::get_field_t)&_get_trade_TaRFData, &domain::_tarfData_Info, 0, 1},
     {"EuropeanRainbowCallSpreadOptionData",
-     159,
+     164,
      (xsdcpp::get_field_t)&_get_trade_EuropeanRainbowCallSpreadOptionData,
      &domain::_europeanRainbowCallSpreadOptionData_Info,
      0,
      1},
     {"RainbowCallSpreadBarrierOptionData",
-     160,
+     165,
      (xsdcpp::get_field_t)&_get_trade_RainbowCallSpreadBarrierOptionData,
      &domain::_rainbowCallSpreadBarrierOptionData_Info,
      0,
      1},
     {"AsianRainbowCallSpreadOptionData",
-     161,
+     166,
      (xsdcpp::get_field_t)&_get_trade_AsianRainbowCallSpreadOptionData,
      &domain::_asianRainbowCallSpreadOptionData_Info,
      0,
      1},
     {"AsianIrCapFloorData",
-     162,
+     167,
      (xsdcpp::get_field_t)&_get_trade_AsianIrCapFloorData,
      &domain::_asianIrCapFloorData_Info,
      0,
      1},
     {"ForwardVolatilityAgreementData",
-     163,
+     168,
      (xsdcpp::get_field_t)&_get_trade_ForwardVolatilityAgreementData,
      &domain::_forwardVolatilityAgreementData_Info,
      0,
      1},
     {"CorrelationSwapData",
-     164,
+     169,
      (xsdcpp::get_field_t)&_get_trade_CorrelationSwapData,
      &domain::_correlationSwapData_Info,
      0,
      1},
     {"AssetLinkedCliquetOptionData",
-     165,
+     170,
      (xsdcpp::get_field_t)&_get_trade_AssetLinkedCliquetOptionData,
      &domain::_assetLinkedCliquetOptionData_Info,
      0,
      1},
     {"ConstantMaturityVolatilitySwapData",
-     166,
+     171,
      (xsdcpp::get_field_t)&_get_trade_ConstantMaturityVolatilitySwapData,
      &domain::_constantMaturityVolatilitySwapData_Info,
      0,
      1},
     {"CMSCapFloorBarrierData",
-     167,
+     172,
      (xsdcpp::get_field_t)&_get_trade_CMSCapFloorBarrierData,
      &domain::_cmsCapFloorBarrierData_Info,
      0,
      1},
     {"FixedStrikeForwardStartingOptionData",
-     168,
+     173,
      (xsdcpp::get_field_t)&_get_trade_FixedStrikeForwardStartingOptionData,
      &domain::_fixedStrikeForwardStartingOptionData_Info,
      0,
      1},
     {"FloatingStrikeForwardStartingOptionData",
-     169,
+     174,
      (xsdcpp::get_field_t)&_get_trade_FloatingStrikeForwardStartingOptionData,
      &domain::_floatingStrikeForwardStartingOptionData_Info,
      0,
      1},
     {"ForwardStartingSwaptionData",
-     170,
+     175,
      (xsdcpp::get_field_t)&_get_trade_ForwardStartingSwaptionData,
      &domain::_forwardStartingSwaptionData_Info,
      0,
      1},
     {"FlooredAverageCPIZCIISData",
-     171,
+     176,
      (xsdcpp::get_field_t)&_get_trade_FlooredAverageCPIZCIISData,
      &domain::_flooredAverageCPIZCIISData_Info,
      0,
      1},
     {"GenericBarrierOptionData",
-     172,
+     177,
      (xsdcpp::get_field_t)&_get_trade_GenericBarrierOptionData,
      &domain::_genericBarrierOptionDataRaw_Info,
      0,
      1},
     {"MovingMaxYYIISData",
-     173,
+     178,
      (xsdcpp::get_field_t)&_get_trade_MovingMaxYYIISData,
      &domain::_movingMaxYYIISData_Info,
      0,
      1},
     {"IrregularYYIISData",
-     174,
+     179,
      (xsdcpp::get_field_t)&_get_trade_IrregularYYIISData,
      &domain::_irregularYYIISData_Info,
      0,
      1},
     {"EuropeanOptionBarrierData",
-     175,
+     180,
      (xsdcpp::get_field_t)&_get_trade_EuropeanOptionBarrierData,
      &domain::_europeanOptionBarrierData_Info,
      0,
      1},
     {"LadderLockInOptionData",
-     176,
+     181,
      (xsdcpp::get_field_t)&_get_trade_LadderLockInOptionData,
      &domain::_ladderLockInOptionData_Info,
      0,
      1},
     {"LapseHedgeSwapData",
-     177,
+     182,
      (xsdcpp::get_field_t)&_get_trade_LapseHedgeSwapData,
      &domain::_lapseHedgeSwapData_Info,
      0,
      1},
     {"KnockOutSwapData",
-     178,
+     183,
      (xsdcpp::get_field_t)&_get_trade_KnockOutSwapData,
      &domain::_knockOutSwapData_Info,
      0,
      1},
     {"LPISwapData",
-     179,
+     184,
      (xsdcpp::get_field_t)&_get_trade_LPISwapData,
      &domain::_LPISwapData_Info,
      0,
      1},
     {"CashPositionData",
-     180,
+     185,
      (xsdcpp::get_field_t)&_get_trade_CashPositionData,
      &domain::_cashPositionData_Info,
      0,
      1},
     {"StrikeResettableOptionData",
-     181,
+     186,
      (xsdcpp::get_field_t)&_get_trade_StrikeResettableOptionData,
      &domain::_strikeResettableOptionData_Info,
      0,
      1},
     {"EquityStrikeResettableOptionData",
-     182,
+     187,
      (xsdcpp::get_field_t)&_get_trade_EquityStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
      1},
     {"FxStrikeResettableOptionData",
-     183,
+     188,
      (xsdcpp::get_field_t)&_get_trade_FxStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
      1},
     {"CommodityStrikeResettableOptionData",
-     184,
+     189,
      (xsdcpp::get_field_t)&_get_trade_CommodityStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
@@ -14433,8 +14893,14 @@ void* _get_market_YYCapFloorVolatilities(domain::market* parent) {
 void* _get_market_Commodities(domain::market* parent) {
     return &*(parent->Commodities = domain::market_Commodities_t());
 }
+void* _get_market_IntradayPowerCurves(domain::market* parent) {
+    return &*(parent->IntradayPowerCurves = domain::market_IntradayPowerCurves_t());
+}
 void* _get_market_CommodityVolatilities(domain::market* parent) {
     return &*(parent->CommodityVolatilities = domain::market_CommodityVolatilities_t());
+}
+void* _get_market_BondFutureVolatilities(domain::market* parent) {
+    return &*(parent->BondFutureVolatilities = domain::market_BondFutureVolatilities_t());
 }
 void* _get_market_AggregationScenarioDataCurrencies(domain::market* parent) {
     return &*(parent->AggregationScenarioDataCurrencies =
@@ -14598,56 +15064,68 @@ xsdcpp::ChildElementInfo _market_Children[] = {
      &domain::_market_Commodities_t_Info,
      0,
      1},
-    {"CommodityVolatilities",
+    {"IntradayPowerCurves",
      23,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves,
+     &domain::_market_IntradayPowerCurves_t_Info,
+     0,
+     1},
+    {"CommodityVolatilities",
+     24,
      (xsdcpp::get_field_t)&_get_market_CommodityVolatilities,
      &domain::_market_CommodityVolatilities_t_Info,
      0,
      1},
+    {"BondFutureVolatilities",
+     25,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities,
+     &domain::_market_BondFutureVolatilities_t_Info,
+     0,
+     1},
     {"AggregationScenarioDataCurrencies",
-     24,
+     26,
      (xsdcpp::get_field_t)&_get_market_AggregationScenarioDataCurrencies,
      &domain::_market_AggregationScenarioDataCurrencies_t_Info,
      0,
      1},
     {"AggregationScenarioDataIndices",
-     25,
+     27,
      (xsdcpp::get_field_t)&_get_market_AggregationScenarioDataIndices,
      &domain::_market_AggregationScenarioDataIndices_t_Info,
      0,
      1},
     {"AggregationScenarioDataCreditStates",
-     26,
+     28,
      (xsdcpp::get_field_t)&_get_market_AggregationScenarioDataCreditStates,
      &domain::_market_AggregationScenarioDataCreditStates_t_Info,
      0,
      1},
     {"AggregationScenarioDataSurvivalWeights",
-     27,
+     29,
      (xsdcpp::get_field_t)&_get_market_AggregationScenarioDataSurvivalWeights,
      &domain::_market_AggregationScenarioDataSurvivalWeights_t_Info,
      0,
      1},
     {"BaseCorrelations",
-     28,
+     30,
      (xsdcpp::get_field_t)&_get_market_BaseCorrelations,
      &domain::_market_BaseCorrelations_t_Info,
      0,
      1},
     {"Correlations",
-     29,
+     31,
      (xsdcpp::get_field_t)&_get_market_Correlations,
      &domain::_market_Correlations_t_Info,
      0,
      1},
     {"CreditStates",
-     30,
+     32,
      (xsdcpp::get_field_t)&_get_market_CreditStates,
      &domain::_market_CreditStates_t_Info,
      0,
      1},
     {"CurveAlgebra",
-     31,
+     33,
      (xsdcpp::get_field_t)&_get_market_CurveAlgebra,
      &domain::_curveAlgebra_Info,
      0,
@@ -15296,6 +15774,9 @@ void* _get_globalReportConfiguration_InflationCapFloorVolatilities(
     return &*(parent->InflationCapFloorVolatilities =
                   domain::globalReportConfiguration_InflationCapFloorVolatilities_t());
 }
+void* _get_globalReportConfiguration_DefaultCurves(domain::globalReportConfiguration* parent) {
+    return &*(parent->DefaultCurves = domain::globalReportConfiguration_DefaultCurves_t());
+}
 xsdcpp::ChildElementInfo _globalReportConfiguration_Children[] = {
     {"FXVolatilities",
      0,
@@ -15337,6 +15818,12 @@ xsdcpp::ChildElementInfo _globalReportConfiguration_Children[] = {
      6,
      (xsdcpp::get_field_t)&_get_globalReportConfiguration_InflationCapFloorVolatilities,
      &domain::_globalReportConfiguration_InflationCapFloorVolatilities_t_Info,
+     0,
+     1},
+    {"DefaultCurves",
+     7,
+     (xsdcpp::get_field_t)&_get_globalReportConfiguration_DefaultCurves,
+     &domain::_globalReportConfiguration_DefaultCurves_t_Info,
      0,
      1},
     {nullptr}};
@@ -15523,6 +16010,28 @@ xsdcpp::ChildElementInfo _correlations_Children[] = {
      0,
      4294967295},
     {nullptr}};
+void* _get_bondFutureVolatilities_BondFutureVolatility(domain::bondFutureVolatilities* parent) {
+    return (parent->BondFutureVolatility.emplace_back(), &parent->BondFutureVolatility.back());
+}
+xsdcpp::ChildElementInfo _bondFutureVolatilities_Children[] = {
+    {"BondFutureVolatility",
+     0,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatilities_BondFutureVolatility,
+     &domain::_bondFutureVolatility_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_intradayPowerCurves_IntradayPowerCurve(domain::intradayPowerCurves* parent) {
+    return (parent->IntradayPowerCurve.emplace_back(), &parent->IntradayPowerCurve.back());
+}
+xsdcpp::ChildElementInfo _intradayPowerCurves_Children[] = {
+    {"IntradayPowerCurve",
+     0,
+     (xsdcpp::get_field_t)&_get_intradayPowerCurves_IntradayPowerCurve,
+     &domain::_intradayPowerCurve_Info,
+     0,
+     4294967295},
+    {nullptr}};
 void* _get_zeroType_Id(domain::zeroType* parent) {
     return &parent->Id;
 }
@@ -15628,6 +16137,9 @@ void* _get_cdsConventionsType_PaysAtDefaultTime(domain::cdsConventionsType* pare
 void* _get_cdsConventionsType_LastPeriodDayCounter(domain::cdsConventionsType* parent) {
     return &*(parent->LastPeriodDayCounter = domain::dayCounter());
 }
+void* _get_cdsConventionsType_UsesReferenceData(domain::cdsConventionsType* parent) {
+    return &*(parent->UsesReferenceData = domain::bool_());
+}
 xsdcpp::ChildElementInfo _cdsConventionsType_Children[] = {
     {"Id",
      0,
@@ -15688,6 +16200,12 @@ xsdcpp::ChildElementInfo _cdsConventionsType_Children[] = {
      10,
      (xsdcpp::get_field_t)&_get_cdsConventionsType_LastPeriodDayCounter,
      &domain::_dayCounter_Info,
+     0,
+     1},
+    {"UsesReferenceData",
+     11,
+     (xsdcpp::get_field_t)&_get_cdsConventionsType_UsesReferenceData,
+     &domain::_bool__Info,
      0,
      1},
     {nullptr}};
@@ -16084,6 +16602,12 @@ void* _get_tenorBasisSwapType_IncludeSpread(domain::tenorBasisSwapType* parent) 
 void* _get_tenorBasisSwapType_SubPeriodsCouponType(domain::tenorBasisSwapType* parent) {
     return &*(parent->SubPeriodsCouponType = domain::subPeriodsCouponType());
 }
+void* _get_tenorBasisSwapType_PayIsAveraged(domain::tenorBasisSwapType* parent) {
+    return &*(parent->PayIsAveraged = domain::bool_());
+}
+void* _get_tenorBasisSwapType_RecIsAveraged(domain::tenorBasisSwapType* parent) {
+    return &*(parent->RecIsAveraged = domain::bool_());
+}
 void* _get_tenorBasisSwapType_LongIndex(domain::tenorBasisSwapType* parent) {
     return &*(parent->LongIndex = domain::tenorBasisSwapType_LongIndex_t());
 }
@@ -16148,32 +16672,44 @@ xsdcpp::ChildElementInfo _tenorBasisSwapType_Children[] = {
      &domain::_subPeriodsCouponType_Info,
      0,
      1},
-    {"LongIndex",
+    {"PayIsAveraged",
      8,
+     (xsdcpp::get_field_t)&_get_tenorBasisSwapType_PayIsAveraged,
+     &domain::_bool__Info,
+     0,
+     1},
+    {"RecIsAveraged",
+     9,
+     (xsdcpp::get_field_t)&_get_tenorBasisSwapType_RecIsAveraged,
+     &domain::_bool__Info,
+     0,
+     1},
+    {"LongIndex",
+     10,
      (xsdcpp::get_field_t)&_get_tenorBasisSwapType_LongIndex,
      &domain::_tenorBasisSwapType_LongIndex_t_Info,
      0,
      1},
     {"LongPayTenor",
-     9,
+     11,
      (xsdcpp::get_field_t)&_get_tenorBasisSwapType_LongPayTenor,
      &domain::_period_Info,
      0,
      1},
     {"ShortIndex",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_tenorBasisSwapType_ShortIndex,
      &domain::_tenorBasisSwapType_ShortIndex_t_Info,
      0,
      1},
     {"ShortPayTenor",
-     11,
+     13,
      (xsdcpp::get_field_t)&_get_tenorBasisSwapType_ShortPayTenor,
      &domain::_period_Info,
      0,
      1},
     {"SpreadOnShort",
-     12,
+     14,
      (xsdcpp::get_field_t)&_get_tenorBasisSwapType_SpreadOnShort,
      &domain::_bool__Info,
      0,
@@ -17171,6 +17707,9 @@ void* _get_commodityForwardType_AdvanceCalendar(domain::commodityForwardType* pa
 void* _get_commodityForwardType_SpotRelative(domain::commodityForwardType* parent) {
     return &*(parent->SpotRelative = domain::bool_());
 }
+void* _get_commodityForwardType_DeliveryLocation(domain::commodityForwardType* parent) {
+    return &*(parent->DeliveryLocation = domain::commodityForwardType_DeliveryLocation_t());
+}
 void* _get_commodityForwardType_BusinessDayConvention(domain::commodityForwardType* parent) {
     return &*(parent->BusinessDayConvention = domain::businessDayConvention());
 }
@@ -17208,14 +17747,20 @@ xsdcpp::ChildElementInfo _commodityForwardType_Children[] = {
      &domain::_bool__Info,
      0,
      1},
-    {"BusinessDayConvention",
+    {"DeliveryLocation",
      5,
+     (xsdcpp::get_field_t)&_get_commodityForwardType_DeliveryLocation,
+     &domain::_commodityForwardType_DeliveryLocation_t_Info,
+     0,
+     1},
+    {"BusinessDayConvention",
+     6,
      (xsdcpp::get_field_t)&_get_commodityForwardType_BusinessDayConvention,
      &domain::_businessDayConvention_Info,
      0,
      1},
     {"Outright",
-     6,
+     7,
      (xsdcpp::get_field_t)&_get_commodityForwardType_Outright,
      &domain::_bool__Info,
      0,
@@ -17310,6 +17855,9 @@ void* _get_commodityFutureType_IndexName(domain::commodityFutureType* parent) {
 }
 void* _get_commodityFutureType_SavingsTime(domain::commodityFutureType* parent) {
     return &*(parent->SavingsTime = domain::commodityFutureType_SavingsTime_t());
+}
+void* _get_commodityFutureType_DeliveryLocation(domain::commodityFutureType* parent) {
+    return &*(parent->DeliveryLocation = domain::commodityFutureType_DeliveryLocation_t());
 }
 void* _get_commodityFutureType_BalanceOfTheMonth(domain::commodityFutureType* parent) {
     return &*(parent->BalanceOfTheMonth = domain::bool_());
@@ -17505,20 +18053,26 @@ xsdcpp::ChildElementInfo _commodityFutureType_Children[] = {
      &domain::_commodityFutureType_SavingsTime_t_Info,
      0,
      1},
-    {"BalanceOfTheMonth",
+    {"DeliveryLocation",
      30,
+     (xsdcpp::get_field_t)&_get_commodityFutureType_DeliveryLocation,
+     &domain::_commodityFutureType_DeliveryLocation_t_Info,
+     0,
+     1},
+    {"BalanceOfTheMonth",
+     31,
      (xsdcpp::get_field_t)&_get_commodityFutureType_BalanceOfTheMonth,
      &domain::_bool__Info,
      0,
      1},
     {"BalanceOfTheMonthPricingCalendar",
-     31,
+     32,
      (xsdcpp::get_field_t)&_get_commodityFutureType_BalanceOfTheMonthPricingCalendar,
      &domain::_commodityFutureType_BalanceOfTheMonthPricingCalendar_t_Info,
      0,
      1},
     {"OptionUnderlyingFutureConvention",
-     32,
+     33,
      (xsdcpp::get_field_t)&_get_commodityFutureType_OptionUnderlyingFutureConvention,
      &domain::_commodityFutureType_OptionUnderlyingFutureConvention_t_Info,
      0,
@@ -17733,6 +18287,9 @@ void* _get_zeroInflationIndexType_AvailabilityLag(domain::zeroInflationIndexType
 void* _get_zeroInflationIndexType_Currency(domain::zeroInflationIndexType* parent) {
     return &parent->Currency;
 }
+void* _get_zeroInflationIndexType_RebasingEvents(domain::zeroInflationIndexType* parent) {
+    return &*(parent->RebasingEvents = domain::zeroInflationIndexType_RebasingEvents_t());
+}
 xsdcpp::ChildElementInfo _zeroInflationIndexType_Children[] = {
     {"Id",
      0,
@@ -17775,6 +18332,12 @@ xsdcpp::ChildElementInfo _zeroInflationIndexType_Children[] = {
      (xsdcpp::get_field_t)&_get_zeroInflationIndexType_Currency,
      &domain::_currencyCode_Info,
      1,
+     1},
+    {"RebasingEvents",
+     7,
+     (xsdcpp::get_field_t)&_get_zeroInflationIndexType_RebasingEvents,
+     &domain::_zeroInflationIndexType_RebasingEvents_t_Info,
+     0,
      1},
     {nullptr}};
 void* _get_bondYield_Id(domain::bondYield* parent) {
@@ -17826,6 +18389,26 @@ xsdcpp::ChildElementInfo _bondYield_Children[] = {
      0,
      1},
     {"Guess", 6, (xsdcpp::get_field_t)&_get_bondYield_Guess, &domain::_float_Info, 0, 1},
+    {nullptr}};
+void* _get_intradayPowerLoad_Id(domain::intradayPowerLoad* parent) {
+    return &parent->Id;
+}
+void* _get_intradayPowerLoad_PowerLoadProfileData(domain::intradayPowerLoad* parent) {
+    return &*(parent->PowerLoadProfileData = domain::powerLoadProfileDataType());
+}
+xsdcpp::ChildElementInfo _intradayPowerLoad_Children[] = {
+    {"Id",
+     0,
+     (xsdcpp::get_field_t)&_get_intradayPowerLoad_Id,
+     &domain::_intradayPowerLoad_Id_t_Info,
+     1,
+     1},
+    {"PowerLoadProfileData",
+     1,
+     (xsdcpp::get_field_t)&_get_intradayPowerLoad_PowerLoadProfileData,
+     &domain::_powerLoadProfileDataType_Info,
+     0,
+     1},
     {nullptr}};
 void* _get_collateralBalances_CollateralBalance_t_nettingSetGroup_NettingSetId(
     domain::collateralBalances_CollateralBalance_t* parent) {
@@ -18079,6 +18662,14 @@ void* _get_configurationType_CommodityVolatilitiesId(domain::configurationType* 
 void* _get_configurationType_CorrelationsId(domain::configurationType* parent) {
     return &*(parent->CorrelationsId = domain::configurationType_CorrelationsId_t());
 }
+void* _get_configurationType_BondFutureVolatilitiesId(domain::configurationType* parent) {
+    return &*(parent->BondFutureVolatilitiesId =
+                  domain::configurationType_BondFutureVolatilitiesId_t());
+}
+void* _get_configurationType_IntradayPowerPriceCurvesId(domain::configurationType* parent) {
+    return &*(parent->IntradayPowerPriceCurvesId =
+                  domain::configurationType_IntradayPowerPriceCurvesId_t());
+}
 xsdcpp::ChildElementInfo _configurationType_Children[] = {
     {"YieldCurvesId",
      0,
@@ -18210,6 +18801,18 @@ xsdcpp::ChildElementInfo _configurationType_Children[] = {
      21,
      (xsdcpp::get_field_t)&_get_configurationType_CorrelationsId,
      &domain::_configurationType_CorrelationsId_t_Info,
+     0,
+     1},
+    {"BondFutureVolatilitiesId",
+     22,
+     (xsdcpp::get_field_t)&_get_configurationType_BondFutureVolatilitiesId,
+     &domain::_configurationType_BondFutureVolatilitiesId_t_Info,
+     0,
+     1},
+    {"IntradayPowerPriceCurvesId",
+     23,
+     (xsdcpp::get_field_t)&_get_configurationType_IntradayPowerPriceCurvesId,
+     &domain::_configurationType_IntradayPowerPriceCurvesId_t_Info,
      0,
      1},
     {nullptr}};
@@ -18716,6 +19319,53 @@ xsdcpp::AttributeInfo _correlationsType_Attributes[] = {
      false,
      nullptr},
     {nullptr}};
+void* _get_bondFutureVolatilitiesType_BondFutureVolatility(
+    domain::bondFutureVolatilitiesType* parent) {
+    return (parent->BondFutureVolatility.emplace_back(), &parent->BondFutureVolatility.back());
+}
+xsdcpp::ChildElementInfo _bondFutureVolatilitiesType_Children[] = {
+    {"BondFutureVolatility",
+     0,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatilitiesType_BondFutureVolatility,
+     &domain::_bondFutureVolatilitiesType_BondFutureVolatility_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_bondFutureVolatilitiesType_id(domain::bondFutureVolatilitiesType* elem) {
+    return &*(elem->id = xsd::string());
+}
+xsdcpp::AttributeInfo _bondFutureVolatilitiesType_Attributes[] = {
+    {"id",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatilitiesType_id,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_intradayPowerPriceCurvesType_IntradayPowerPriceCurve(
+    domain::intradayPowerPriceCurvesType* parent) {
+    return (parent->IntradayPowerPriceCurve.emplace_back(),
+            &parent->IntradayPowerPriceCurve.back());
+}
+xsdcpp::ChildElementInfo _intradayPowerPriceCurvesType_Children[] = {
+    {"IntradayPowerPriceCurve",
+     0,
+     (xsdcpp::get_field_t)&_get_intradayPowerPriceCurvesType_IntradayPowerPriceCurve,
+     &domain::_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_intradayPowerPriceCurvesType_id(domain::intradayPowerPriceCurvesType* elem) {
+    return &*(elem->id = xsd::string());
+}
+xsdcpp::AttributeInfo _intradayPowerPriceCurvesType_Attributes[] = {
+    {"id",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_intradayPowerPriceCurvesType_id,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
 void* _get_parExcludes_Type(domain::parExcludes* parent) {
     return (parent->Type.emplace_back(), &parent->Type.back());
 }
@@ -18726,72 +19376,16 @@ xsdcpp::ChildElementInfo _parExcludes_Children[] = {{"Type",
                                                      0,
                                                      4294967295},
                                                     {nullptr}};
-void* _get_discountcurve_ShiftType(domain::discountcurve* parent) {
-    return (parent->ShiftType.emplace_back(), &parent->ShiftType.back());
+void* _get_discountcurves_DiscountCurve(domain::discountcurves* parent) {
+    return (parent->DiscountCurve.emplace_back(), &parent->DiscountCurve.back());
 }
-void* _get_discountcurve_ShiftSize(domain::discountcurve* parent) {
-    return (parent->ShiftSize.emplace_back(), &parent->ShiftSize.back());
-}
-void* _get_discountcurve_Shifts(domain::discountcurve* parent) {
-    return &*(parent->Shifts = domain::discountcurve_Shifts_t());
-}
-void* _get_discountcurve_ShiftScheme(domain::discountcurve* parent) {
-    return (parent->ShiftScheme.emplace_back(), &parent->ShiftScheme.back());
-}
-void* _get_discountcurve_ShiftTenors(domain::discountcurve* parent) {
-    return &parent->ShiftTenors;
-}
-void* _get_discountcurve_ParConversion(domain::discountcurve* parent) {
-    return &*(parent->ParConversion = domain::parconversion());
-}
-xsdcpp::ChildElementInfo _discountcurve_Children[] = {
-    {"ShiftType",
+xsdcpp::ChildElementInfo _discountcurves_Children[] = {
+    {"DiscountCurve",
      0,
-     (xsdcpp::get_field_t)&_get_discountcurve_ShiftType,
-     &domain::_shiftTypeEntry_Info,
-     1,
-     4294967295},
-    {"ShiftSize",
-     1,
-     (xsdcpp::get_field_t)&_get_discountcurve_ShiftSize,
-     &domain::_shiftSizeEntry_Info,
+     (xsdcpp::get_field_t)&_get_discountcurves_DiscountCurve,
+     &domain::_discountcurve_Info,
      0,
      4294967295},
-    {"Shifts",
-     2,
-     (xsdcpp::get_field_t)&_get_discountcurve_Shifts,
-     &domain::_discountcurve_Shifts_t_Info,
-     0,
-     1},
-    {"ShiftScheme",
-     3,
-     (xsdcpp::get_field_t)&_get_discountcurve_ShiftScheme,
-     &domain::_shiftSchemeEntry_Info,
-     0,
-     4294967295},
-    {"ShiftTenors",
-     4,
-     (xsdcpp::get_field_t)&_get_discountcurve_ShiftTenors,
-     &domain::_discountcurve_ShiftTenors_t_Info,
-     1,
-     1},
-    {"ParConversion",
-     5,
-     (xsdcpp::get_field_t)&_get_discountcurve_ParConversion,
-     &domain::_parconversion_Info,
-     0,
-     1},
-    {nullptr}};
-void* _get_discountcurve_ccy(domain::discountcurve* elem) {
-    return &elem->ccy;
-}
-xsdcpp::AttributeInfo _discountcurve_Attributes[] = {
-    {"ccy",
-     1ULL,
-     (xsdcpp::get_field_t)&_get_discountcurve_ccy,
-     (xsdcpp::set_value_t)&domain::_set_currencyCode,
-     true,
-     nullptr},
     {nullptr}};
 void* _get_indexcurves_IndexCurve(domain::indexcurves* parent) {
     return (parent->IndexCurve.emplace_back(), &parent->IndexCurve.back());
@@ -18999,6 +19593,17 @@ xsdcpp::ChildElementInfo _commodityCurves_Children[] = {
      0,
      4294967295},
     {nullptr}};
+void* _get_intradaypowercurves_IntradayPowerCurve(domain::intradaypowercurves* parent) {
+    return (parent->IntradayPowerCurve.emplace_back(), &parent->IntradayPowerCurve.back());
+}
+xsdcpp::ChildElementInfo _intradaypowercurves_Children[] = {
+    {"IntradayPowerCurve",
+     0,
+     (xsdcpp::get_field_t)&_get_intradaypowercurves_IntradayPowerCurve,
+     &domain::_intradaypowercurve_Info,
+     0,
+     4294967295},
+    {nullptr}};
 void* _get_commodityvolatilities_CommodityVolatility(domain::commodityvolatilities* parent) {
     return (parent->CommodityVolatility.emplace_back(), &parent->CommodityVolatility.back());
 }
@@ -19018,6 +19623,18 @@ xsdcpp::ChildElementInfo _correlationcurves_Children[] = {
      0,
      (xsdcpp::get_field_t)&_get_correlationcurves_Correlation,
      &domain::_correlationcurve_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_sensiBondFutureVolatilities_BondFutureVolatility(
+    domain::sensiBondFutureVolatilities* parent) {
+    return (parent->BondFutureVolatility.emplace_back(), &parent->BondFutureVolatility.back());
+}
+xsdcpp::ChildElementInfo _sensiBondFutureVolatilities_Children[] = {
+    {"BondFutureVolatility",
+     0,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatilities_BondFutureVolatility,
+     &domain::_sensiBondFutureVolatility_Info,
      0,
      4294967295},
     {nullptr}};
@@ -19043,6 +19660,9 @@ xsdcpp::ChildElementInfo _setRiskFactorKeyTypes_Children[] = {
      1,
      1},
     {nullptr}};
+void* _get_stresstest_Date(domain::stresstest* parent) {
+    return &*(parent->Date = domain::stresstest_Date_t());
+}
 void* _get_stresstest_ParShifts(domain::stresstest* parent) {
     return &*(parent->ParShifts = domain::stresstestparshifts());
 }
@@ -19062,7 +19682,7 @@ void* _get_stresstest_FxVolatilities(domain::stresstest* parent) {
     return &*(parent->FxVolatilities = domain::stressfxvolatilities());
 }
 void* _get_stresstest_SwaptionVolatilities(domain::stresstest* parent) {
-    return &*(parent->SwaptionVolatilities = domain::swaptionvolatilities());
+    return &*(parent->SwaptionVolatilities = domain::stressswaptionvolatilities());
 }
 void* _get_stresstest_CapFloorVolatilities(domain::stresstest* parent) {
     return &*(parent->CapFloorVolatilities = domain::stresscapfloorvolatilities());
@@ -19075,6 +19695,9 @@ void* _get_stresstest_EquityVolatilities(domain::stresstest* parent) {
 }
 void* _get_stresstest_CommodityCurves(domain::stresstest* parent) {
     return &*(parent->CommodityCurves = domain::stresscommoditycurves());
+}
+void* _get_stresstest_IntradayPowerCurves(domain::stresstest* parent) {
+    return &*(parent->IntradayPowerCurves = domain::stressintradaypowercurves());
 }
 void* _get_stresstest_CommodityVolatilities(domain::stresstest* parent) {
     return &*(parent->CommodityVolatilities = domain::stresscommodityvolatilities());
@@ -19089,87 +19712,94 @@ void* _get_stresstest_SurvivalProbabilities(domain::stresstest* parent) {
     return &*(parent->SurvivalProbabilities = domain::survivalprobabilities());
 }
 xsdcpp::ChildElementInfo _stresstest_Children[] = {
+    {"Date", 0, (xsdcpp::get_field_t)&_get_stresstest_Date, &domain::_stresstest_Date_t_Info, 0, 1},
     {"ParShifts",
-     0,
+     1,
      (xsdcpp::get_field_t)&_get_stresstest_ParShifts,
      &domain::_stresstestparshifts_Info,
      0,
      1},
     {"DiscountCurves",
-     1,
+     2,
      (xsdcpp::get_field_t)&_get_stresstest_DiscountCurves,
      &domain::_stressdiscountcurves_Info,
      0,
      1},
     {"IndexCurves",
-     2,
+     3,
      (xsdcpp::get_field_t)&_get_stresstest_IndexCurves,
      &domain::_stressindexcurves_Info,
      0,
      1},
     {"YieldCurves",
-     3,
+     4,
      (xsdcpp::get_field_t)&_get_stresstest_YieldCurves,
      &domain::_stressyieldcurves_Info,
      0,
      1},
-    {"FxSpots", 4, (xsdcpp::get_field_t)&_get_stresstest_FxSpots, &domain::_fxspots_Info, 0, 1},
+    {"FxSpots", 5, (xsdcpp::get_field_t)&_get_stresstest_FxSpots, &domain::_fxspots_Info, 0, 1},
     {"FxVolatilities",
-     5,
+     6,
      (xsdcpp::get_field_t)&_get_stresstest_FxVolatilities,
      &domain::_stressfxvolatilities_Info,
      0,
      1},
     {"SwaptionVolatilities",
-     6,
+     7,
      (xsdcpp::get_field_t)&_get_stresstest_SwaptionVolatilities,
-     &domain::_swaptionvolatilities_Info,
+     &domain::_stressswaptionvolatilities_Info,
      0,
      1},
     {"CapFloorVolatilities",
-     7,
+     8,
      (xsdcpp::get_field_t)&_get_stresstest_CapFloorVolatilities,
      &domain::_stresscapfloorvolatilities_Info,
      0,
      1},
     {"EquitySpots",
-     8,
+     9,
      (xsdcpp::get_field_t)&_get_stresstest_EquitySpots,
      &domain::_equityspots_Info,
      0,
      1},
     {"EquityVolatilities",
-     9,
+     10,
      (xsdcpp::get_field_t)&_get_stresstest_EquityVolatilities,
      &domain::_equityvolatilities_Info,
      0,
      1},
     {"CommodityCurves",
-     10,
+     11,
      (xsdcpp::get_field_t)&_get_stresstest_CommodityCurves,
      &domain::_stresscommoditycurves_Info,
      0,
      1},
+    {"IntradayPowerCurves",
+     12,
+     (xsdcpp::get_field_t)&_get_stresstest_IntradayPowerCurves,
+     &domain::_stressintradaypowercurves_Info,
+     0,
+     1},
     {"CommodityVolatilities",
-     11,
+     13,
      (xsdcpp::get_field_t)&_get_stresstest_CommodityVolatilities,
      &domain::_stresscommodityvolatilities_Info,
      0,
      1},
     {"SecuritySpreads",
-     12,
+     14,
      (xsdcpp::get_field_t)&_get_stresstest_SecuritySpreads,
      &domain::_securityspreads_Info,
      0,
      1},
     {"RecoveryRates",
-     13,
+     15,
      (xsdcpp::get_field_t)&_get_stresstest_RecoveryRates,
      &domain::_recoveryrates_Info,
      0,
      1},
     {"SurvivalProbabilities",
-     14,
+     16,
      (xsdcpp::get_field_t)&_get_stresstest_SurvivalProbabilities,
      &domain::_survivalprobabilities_Info,
      0,
@@ -19413,7 +20043,7 @@ void* _get_stFreeStyleEventScheduleBase_ScheduleData(domain::stFreeStyleEventSch
 }
 void* _get_stFreeStyleEventScheduleBase_DerivedSchedule(
     domain::stFreeStyleEventScheduleBase* parent) {
-    return &*(parent->DerivedSchedule = domain::stFreeStyleEventScheduleBase_DerivedSchedule_t());
+    return &*(parent->DerivedSchedule = domain::DerivedScheduleType());
 }
 xsdcpp::ChildElementInfo _stFreeStyleEventScheduleBase_Children[] = {
     {"ScheduleData",
@@ -19425,7 +20055,7 @@ xsdcpp::ChildElementInfo _stFreeStyleEventScheduleBase_Children[] = {
     {"DerivedSchedule",
      1,
      (xsdcpp::get_field_t)&_get_stFreeStyleEventScheduleBase_DerivedSchedule,
-     &domain::_stFreeStyleEventScheduleBase_DerivedSchedule_t_Info,
+     &domain::_DerivedScheduleType_Info,
      0,
      1},
     {nullptr}};
@@ -19889,6 +20519,16 @@ xsdcpp::ChildElementInfo _scheduleData_Children[] = {
      0,
      4294967295},
     {nullptr}};
+void* _get_scheduleData_name(domain::scheduleData* elem) {
+    return &*(elem->name = xsd::string());
+}
+xsdcpp::AttributeInfo _scheduleData_Attributes[] = {{"name",
+                                                     1ULL,
+                                                     (xsdcpp::get_field_t)&_get_scheduleData_name,
+                                                     (xsdcpp::set_value_t)&xsdcpp::set_string,
+                                                     false,
+                                                     nullptr},
+                                                    {nullptr}};
 void* _get_fxAverageForwardData_PaymentDate(domain::fxAverageForwardData* parent) {
     return &parent->PaymentDate;
 }
@@ -20283,11 +20923,81 @@ xsdcpp::ChildElementInfo _fxOptionData_Children[] = {
      0,
      1},
     {nullptr}};
+void* _get_barrierData_Levels_t_Level(domain::barrierData_Levels_t* parent) {
+    return (parent->Level.emplace_back(), &parent->Level.back());
+}
+xsdcpp::ChildElementInfo _barrierData_Levels_t_Children[] = {
+    {"Level",
+     0,
+     (xsdcpp::get_field_t)&_get_barrierData_Levels_t_Level,
+     &domain::_float_Info,
+     1,
+     4294967295},
+    {nullptr}};
+void* _get_barrierData_Type(domain::barrierData* parent) {
+    return &parent->Type;
+}
+void* _get_barrierData_StrictComparison(domain::barrierData* parent) {
+    return &*(parent->StrictComparison = domain::barrierCompare());
+}
+void* _get_barrierData_Style(domain::barrierData* parent) {
+    return &*(parent->Style = domain::barrierStyle());
+}
+void* _get_barrierData_Levels(domain::barrierData* parent) {
+    return &parent->Levels;
+}
+void* _get_barrierData_Rebate(domain::barrierData* parent) {
+    return &*(parent->Rebate = float());
+}
+void* _get_barrierData_RebateCurrency(domain::barrierData* parent) {
+    return &*(parent->RebateCurrency = domain::currencyCode());
+}
+void* _get_barrierData_RebatePayTime(domain::barrierData* parent) {
+    return &*(parent->RebatePayTime = domain::barrierData_RebatePayTime_t());
+}
+void* _get_barrierData_OverrideTriggered(domain::barrierData* parent) {
+    return &*(parent->OverrideTriggered = domain::bool_());
+}
+xsdcpp::ChildElementInfo _barrierData_Children[] = {
+    {"Type", 0, (xsdcpp::get_field_t)&_get_barrierData_Type, &domain::_barrierType_Info, 1, 1},
+    {"StrictComparison",
+     1,
+     (xsdcpp::get_field_t)&_get_barrierData_StrictComparison,
+     &domain::_barrierCompare_Info,
+     0,
+     1},
+    {"Style", 2, (xsdcpp::get_field_t)&_get_barrierData_Style, &domain::_barrierStyle_Info, 0, 1},
+    {"Levels",
+     3,
+     (xsdcpp::get_field_t)&_get_barrierData_Levels,
+     &domain::_barrierData_Levels_t_Info,
+     1,
+     1},
+    {"Rebate", 4, (xsdcpp::get_field_t)&_get_barrierData_Rebate, &domain::_float_Info, 0, 1},
+    {"RebateCurrency",
+     5,
+     (xsdcpp::get_field_t)&_get_barrierData_RebateCurrency,
+     &domain::_currencyCode_Info,
+     0,
+     1},
+    {"RebatePayTime",
+     6,
+     (xsdcpp::get_field_t)&_get_barrierData_RebatePayTime,
+     &domain::_barrierData_RebatePayTime_t_Info,
+     0,
+     1},
+    {"OverrideTriggered",
+     7,
+     (xsdcpp::get_field_t)&_get_barrierData_OverrideTriggered,
+     &domain::_bool__Info,
+     0,
+     1},
+    {nullptr}};
 void* _get_fxBarrierOptionData_OptionData(domain::fxBarrierOptionData* parent) {
-    return (parent->OptionData.emplace_back(), &parent->OptionData.back());
+    return &parent->OptionData;
 }
 void* _get_fxBarrierOptionData_BarrierData(domain::fxBarrierOptionData* parent) {
-    return (parent->BarrierData.emplace_back(), &parent->BarrierData.back());
+    return &parent->BarrierData;
 }
 void* _get_fxBarrierOptionData_StartDate(domain::fxBarrierOptionData* parent) {
     return &*(parent->StartDate = domain::date());
@@ -20322,13 +21032,13 @@ xsdcpp::ChildElementInfo _fxBarrierOptionData_Children[] = {
      (xsdcpp::get_field_t)&_get_fxBarrierOptionData_OptionData,
      &domain::_optionData_Info,
      1,
-     4294967295},
+     1},
     {"BarrierData",
      1,
      (xsdcpp::get_field_t)&_get_fxBarrierOptionData_BarrierData,
      &domain::_barrierData_Info,
      1,
-     4294967295},
+     1},
     {"StartDate",
      2,
      (xsdcpp::get_field_t)&_get_fxBarrierOptionData_StartDate,
@@ -20385,7 +21095,7 @@ xsdcpp::ChildElementInfo _fxBarrierOptionData_Children[] = {
      1},
     {nullptr}};
 void* _get_fxDigitalOptionData_OptionData(domain::fxDigitalOptionData* parent) {
-    return (parent->OptionData.emplace_back(), &parent->OptionData.back());
+    return &parent->OptionData;
 }
 void* _get_fxDigitalOptionData_Strike(domain::fxDigitalOptionData* parent) {
     return &parent->Strike;
@@ -20408,7 +21118,7 @@ xsdcpp::ChildElementInfo _fxDigitalOptionData_Children[] = {
      (xsdcpp::get_field_t)&_get_fxDigitalOptionData_OptionData,
      &domain::_optionData_Info,
      1,
-     4294967295},
+     1},
     {"Strike",
      1,
      (xsdcpp::get_field_t)&_get_fxDigitalOptionData_Strike,
@@ -20536,10 +21246,10 @@ xsdcpp::ChildElementInfo _fxKIKOBarrierOptionData_Children[] = {
      1},
     {nullptr}};
 void* _get_fxDigitalBarrierOptionData_OptionData(domain::fxDigitalBarrierOptionData* parent) {
-    return (parent->OptionData.emplace_back(), &parent->OptionData.back());
+    return &parent->OptionData;
 }
 void* _get_fxDigitalBarrierOptionData_BarrierData(domain::fxDigitalBarrierOptionData* parent) {
-    return (parent->BarrierData.emplace_back(), &parent->BarrierData.back());
+    return &parent->BarrierData;
 }
 void* _get_fxDigitalBarrierOptionData_StartDate(domain::fxDigitalBarrierOptionData* parent) {
     return &*(parent->StartDate = domain::date());
@@ -20578,13 +21288,13 @@ xsdcpp::ChildElementInfo _fxDigitalBarrierOptionData_Children[] = {
      (xsdcpp::get_field_t)&_get_fxDigitalBarrierOptionData_OptionData,
      &domain::_optionData_Info,
      1,
-     4294967295},
+     1},
     {"BarrierData",
      1,
      (xsdcpp::get_field_t)&_get_fxDigitalBarrierOptionData_BarrierData,
      &domain::_barrierData_Info,
      1,
-     4294967295},
+     1},
     {"StartDate",
      2,
      (xsdcpp::get_field_t)&_get_fxDigitalBarrierOptionData_StartDate,
@@ -20647,10 +21357,10 @@ xsdcpp::ChildElementInfo _fxDigitalBarrierOptionData_Children[] = {
      1},
     {nullptr}};
 void* _get_fxTouchOptionData_OptionData(domain::fxTouchOptionData* parent) {
-    return (parent->OptionData.emplace_back(), &parent->OptionData.back());
+    return &parent->OptionData;
 }
 void* _get_fxTouchOptionData_BarrierData(domain::fxTouchOptionData* parent) {
-    return (parent->BarrierData.emplace_back(), &parent->BarrierData.back());
+    return &parent->BarrierData;
 }
 void* _get_fxTouchOptionData_ForeignCurrency(domain::fxTouchOptionData* parent) {
     return &parent->ForeignCurrency;
@@ -20685,13 +21395,13 @@ xsdcpp::ChildElementInfo _fxTouchOptionData_Children[] = {
      (xsdcpp::get_field_t)&_get_fxTouchOptionData_OptionData,
      &domain::_optionData_Info,
      1,
-     4294967295},
+     1},
     {"BarrierData",
      1,
      (xsdcpp::get_field_t)&_get_fxTouchOptionData_BarrierData,
      &domain::_barrierData_Info,
      1,
-     4294967295},
+     1},
     {"ForeignCurrency",
      2,
      (xsdcpp::get_field_t)&_get_fxTouchOptionData_ForeignCurrency,
@@ -20867,6 +21577,12 @@ void* _get_legData_capfloor_PaymentConvention(domain::legData_capfloor* parent) 
 void* _get_legData_capfloor_PaymentLag(domain::legData_capfloor* parent) {
     return &*(parent->PaymentLag = domain::paymentLag());
 }
+void* _get_legData_capfloor_PaymentLagUnit(domain::legData_capfloor* parent) {
+    return &*(parent->PaymentLagUnit = domain::dateDeltaUnit());
+}
+void* _get_legData_capfloor_PaymentLagAnchor(domain::legData_capfloor* parent) {
+    return &*(parent->PaymentLagAnchor = domain::dateDeltaAnchor());
+}
 void* _get_legData_capfloor_PaymentCalendar(domain::legData_capfloor* parent) {
     return &*(parent->PaymentCalendar = domain::legData_capfloor_PaymentCalendar_t());
 }
@@ -20932,6 +21648,11 @@ void* _get_legData_capfloor_legDataType_CommodityFixedLegData(domain::legData_ca
 void* _get_legData_capfloor_legDataType_CommodityFloatingLegData(domain::legData_capfloor* parent) {
     return &*(parent->legDataType.CommodityFloatingLegData = domain::_CommodityFloatingLegData_t());
 }
+void* _get_legData_capfloor_legDataType_IntradayPowerFloatingLegData(
+    domain::legData_capfloor* parent) {
+    return &*(parent->legDataType.IntradayPowerFloatingLegData =
+                  domain::_IntradayPowerFloatingLegData_t());
+}
 void* _get_legData_capfloor_legDataType_FormulaBasedLegData(domain::legData_capfloor* parent) {
     return &*(parent->legDataType.FormulaBasedLegData = domain::_FormulaBasedLegData_t());
 }
@@ -20967,134 +21688,152 @@ xsdcpp::ChildElementInfo _legData_capfloor_Children[] = {
      &domain::_paymentLag_Info,
      0,
      1},
-    {"PaymentCalendar",
+    {"PaymentLagUnit",
      6,
+     (xsdcpp::get_field_t)&_get_legData_capfloor_PaymentLagUnit,
+     &domain::_dateDeltaUnit_Info,
+     0,
+     1},
+    {"PaymentLagAnchor",
+     7,
+     (xsdcpp::get_field_t)&_get_legData_capfloor_PaymentLagAnchor,
+     &domain::_dateDeltaAnchor_Info,
+     0,
+     1},
+    {"PaymentCalendar",
+     8,
      (xsdcpp::get_field_t)&_get_legData_capfloor_PaymentCalendar,
      &domain::_legData_capfloor_PaymentCalendar_t_Info,
      0,
      1},
     {"Notionals",
-     7,
+     9,
      (xsdcpp::get_field_t)&_get_legData_capfloor_Notionals,
      &domain::_legData_capfloor_Notionals_t_Info,
      1,
      1},
     {"ScheduleData",
-     8,
+     10,
      (xsdcpp::get_field_t)&_get_legData_capfloor_ScheduleData,
      &domain::_scheduleData_Info,
      1,
      1},
     {"PaymentDates",
-     9,
+     11,
      (xsdcpp::get_field_t)&_get_legData_capfloor_PaymentDates,
      &domain::_legData_capfloor_PaymentDates_t_Info,
      0,
      1},
     {"CashflowData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CashflowData,
      &domain::__CashflowData_t_Info,
      0,
      1},
     {"FixedLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_FixedLegData,
      &domain::__FixedLegData_t_Info,
      0,
      1},
     {"FloatingLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_FloatingLegData,
      &domain::__FloatingLegData_t_Info,
      0,
      1},
     {"RangeAccrualLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_RangeAccrualLegData,
      &domain::__RangeAccrualLegData_t_Info,
      0,
      1},
     {"CPILegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CPILegData,
      &domain::__CPILegData_t_Info,
      0,
      1},
     {"YYLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_YYLegData,
      &domain::__YYLegData_t_Info,
      0,
      1},
     {"CMSLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CMSLegData,
      &domain::__CMSLegData_t_Info,
      0,
      1},
     {"CMBLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CMBLegData,
      &domain::__CMBLegData_t_Info,
      0,
      1},
     {"DigitalCMSLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_DigitalCMSLegData,
      &domain::__DigitalCMSLegData_t_Info,
      0,
      1},
     {"DurationAdjustedCMSLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_DurationAdjustedCMSLegData,
      &domain::__DurationAdjustedCMSLegData_t_Info,
      0,
      1},
     {"CMSSpreadLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CMSSpreadLegData,
      &domain::__CMSSpreadLegData_t_Info,
      0,
      1},
     {"DigitalCMSSpreadLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_DigitalCMSSpreadLegData,
      &domain::__DigitalCMSSpreadLegData_t_Info,
      0,
      1},
     {"EquityLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_EquityLegData,
      &domain::__EquityLegData_t_Info,
      0,
      1},
     {"ZeroCouponFixedLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_ZeroCouponFixedLegData,
      &domain::__ZeroCouponFixedLegData_t_Info,
      0,
      1},
     {"EquityMarginLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_EquityMarginLegData,
      &domain::__EquityMarginLegData_t_Info,
      0,
      1},
     {"CommodityFixedLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CommodityFixedLegData,
      &domain::__CommodityFixedLegData_t_Info,
      0,
      1},
     {"CommodityFloatingLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_CommodityFloatingLegData,
      &domain::__CommodityFloatingLegData_t_Info,
      0,
      1},
+    {"IntradayPowerFloatingLegData",
+     12,
+     (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_IntradayPowerFloatingLegData,
+     &domain::__IntradayPowerFloatingLegData_t_Info,
+     0,
+     1},
     {"FormulaBasedLegData",
-     10,
+     12,
      (xsdcpp::get_field_t)&_get_legData_capfloor_legDataType_FormulaBasedLegData,
      &domain::__FormulaBasedLegData_t_Info,
      0,
@@ -21426,6 +22165,10 @@ void* _get_equityAutoDeltaHedgedOptionData_ObservationStartDate(
     domain::equityAutoDeltaHedgedOptionData* parent) {
     return &parent->ObservationStartDate;
 }
+void* _get_equityAutoDeltaHedgedOptionData_PaymentDate(
+    domain::equityAutoDeltaHedgedOptionData* parent) {
+    return &parent->PaymentDate;
+}
 xsdcpp::ChildElementInfo _equityAutoDeltaHedgedOptionData_Children[] = {
     {"Volatility",
      0,
@@ -21451,75 +22194,11 @@ xsdcpp::ChildElementInfo _equityAutoDeltaHedgedOptionData_Children[] = {
      &domain::_date_Info,
      1,
      1},
-    {nullptr}};
-void* _get_barrierData_Levels_t_Level(domain::barrierData_Levels_t* parent) {
-    return (parent->Level.emplace_back(), &parent->Level.back());
-}
-xsdcpp::ChildElementInfo _barrierData_Levels_t_Children[] = {
-    {"Level",
-     0,
-     (xsdcpp::get_field_t)&_get_barrierData_Levels_t_Level,
-     &domain::_float_Info,
+    {"PaymentDate",
+     4,
+     (xsdcpp::get_field_t)&_get_equityAutoDeltaHedgedOptionData_PaymentDate,
+     &domain::_date_Info,
      1,
-     4294967295},
-    {nullptr}};
-void* _get_barrierData_Type(domain::barrierData* parent) {
-    return &parent->Type;
-}
-void* _get_barrierData_StrictComparison(domain::barrierData* parent) {
-    return &*(parent->StrictComparison = domain::barrierCompare());
-}
-void* _get_barrierData_Style(domain::barrierData* parent) {
-    return &*(parent->Style = domain::barrierStyle());
-}
-void* _get_barrierData_Levels(domain::barrierData* parent) {
-    return &parent->Levels;
-}
-void* _get_barrierData_Rebate(domain::barrierData* parent) {
-    return &*(parent->Rebate = float());
-}
-void* _get_barrierData_RebateCurrency(domain::barrierData* parent) {
-    return &*(parent->RebateCurrency = domain::currencyCode());
-}
-void* _get_barrierData_RebatePayTime(domain::barrierData* parent) {
-    return &*(parent->RebatePayTime = domain::barrierData_RebatePayTime_t());
-}
-void* _get_barrierData_OverrideTriggered(domain::barrierData* parent) {
-    return &*(parent->OverrideTriggered = domain::bool_());
-}
-xsdcpp::ChildElementInfo _barrierData_Children[] = {
-    {"Type", 0, (xsdcpp::get_field_t)&_get_barrierData_Type, &domain::_barrierType_Info, 1, 1},
-    {"StrictComparison",
-     1,
-     (xsdcpp::get_field_t)&_get_barrierData_StrictComparison,
-     &domain::_barrierCompare_Info,
-     0,
-     1},
-    {"Style", 2, (xsdcpp::get_field_t)&_get_barrierData_Style, &domain::_barrierStyle_Info, 0, 1},
-    {"Levels",
-     3,
-     (xsdcpp::get_field_t)&_get_barrierData_Levels,
-     &domain::_barrierData_Levels_t_Info,
-     1,
-     1},
-    {"Rebate", 4, (xsdcpp::get_field_t)&_get_barrierData_Rebate, &domain::_float_Info, 0, 1},
-    {"RebateCurrency",
-     5,
-     (xsdcpp::get_field_t)&_get_barrierData_RebateCurrency,
-     &domain::_currencyCode_Info,
-     0,
-     1},
-    {"RebatePayTime",
-     6,
-     (xsdcpp::get_field_t)&_get_barrierData_RebatePayTime,
-     &domain::_barrierData_RebatePayTime_t_Info,
-     0,
-     1},
-    {"OverrideTriggered",
-     7,
-     (xsdcpp::get_field_t)&_get_barrierData_OverrideTriggered,
-     &domain::_bool__Info,
-     0,
      1},
     {nullptr}};
 void* _get_eqBarrierOptionData_OptionData(domain::eqBarrierOptionData* parent) {
@@ -22304,47 +22983,11 @@ void* _get_bondFutureData_ContractNotional(domain::bondFutureData* parent) {
 void* _get_bondFutureData_LongShort(domain::bondFutureData* parent) {
     return &parent->LongShort;
 }
-void* _get_bondFutureData_Currency(domain::bondFutureData* parent) {
-    return &*(parent->Currency = domain::currencyCode());
+void* _get_bondFutureData_ApplyConversionFactor(domain::bondFutureData* parent) {
+    return &*(parent->ApplyConversionFactor = bool());
 }
-void* _get_bondFutureData_ContractMonth(domain::bondFutureData* parent) {
-    return &*(parent->ContractMonth = domain::bondFutureData_ContractMonth_t());
-}
-void* _get_bondFutureData_DeliverableGrade(domain::bondFutureData* parent) {
-    return &*(parent->DeliverableGrade = domain::bondFutureData_DeliverableGrade_t());
-}
-void* _get_bondFutureData_FairPrice(domain::bondFutureData* parent) {
-    return &*(parent->FairPrice = domain::bondFutureData_FairPrice_t());
-}
-void* _get_bondFutureData_Settlement(domain::bondFutureData* parent) {
-    return &*(parent->Settlement = domain::bondFutureData_Settlement_t());
-}
-void* _get_bondFutureData_SettlementDirty(domain::bondFutureData* parent) {
-    return &*(parent->SettlementDirty = domain::bondFutureData_SettlementDirty_t());
-}
-void* _get_bondFutureData_RootDate(domain::bondFutureData* parent) {
-    return &*(parent->RootDate = domain::bondFutureData_RootDate_t());
-}
-void* _get_bondFutureData_ExpiryBasis(domain::bondFutureData* parent) {
-    return &*(parent->ExpiryBasis = domain::bondFutureData_ExpiryBasis_t());
-}
-void* _get_bondFutureData_SettlementBasis(domain::bondFutureData* parent) {
-    return &*(parent->SettlementBasis = domain::bondFutureData_SettlementBasis_t());
-}
-void* _get_bondFutureData_ExpiryLag(domain::bondFutureData* parent) {
-    return &*(parent->ExpiryLag = domain::bondFutureData_ExpiryLag_t());
-}
-void* _get_bondFutureData_SettlementLag(domain::bondFutureData* parent) {
-    return &*(parent->SettlementLag = domain::bondFutureData_SettlementLag_t());
-}
-void* _get_bondFutureData_LastTradingDate(domain::bondFutureData* parent) {
-    return &*(parent->LastTradingDate = domain::bondFutureData_LastTradingDate_t());
-}
-void* _get_bondFutureData_LastDeliveryDate(domain::bondFutureData* parent) {
-    return &*(parent->LastDeliveryDate = domain::bondFutureData_LastDeliveryDate_t());
-}
-void* _get_bondFutureData_DeliveryBasket(domain::bondFutureData* parent) {
-    return &*(parent->DeliveryBasket = domain::deliveryBasket());
+void* _get_bondFutureData_UseFuturePrice(domain::bondFutureData* parent) {
+    return &*(parent->UseFuturePrice = bool());
 }
 xsdcpp::ChildElementInfo _bondFutureData_Children[] = {
     {"ContractName",
@@ -22365,88 +23008,63 @@ xsdcpp::ChildElementInfo _bondFutureData_Children[] = {
      &domain::_bondFutureData_LongShort_t_Info,
      1,
      1},
-    {"Currency",
+    {"ApplyConversionFactor",
      3,
-     (xsdcpp::get_field_t)&_get_bondFutureData_Currency,
-     &domain::_currencyCode_Info,
+     (xsdcpp::get_field_t)&_get_bondFutureData_ApplyConversionFactor,
+     &domain::_bool_Info,
      0,
      1},
-    {"ContractMonth",
+    {"UseFuturePrice",
      4,
-     (xsdcpp::get_field_t)&_get_bondFutureData_ContractMonth,
-     &domain::_bondFutureData_ContractMonth_t_Info,
+     (xsdcpp::get_field_t)&_get_bondFutureData_UseFuturePrice,
+     &domain::_bool_Info,
      0,
      1},
-    {"DeliverableGrade",
-     5,
-     (xsdcpp::get_field_t)&_get_bondFutureData_DeliverableGrade,
-     &domain::_bondFutureData_DeliverableGrade_t_Info,
+    {nullptr}};
+void* _get_bondFutureOptionData_OptionData(domain::bondFutureOptionData* parent) {
+    return &parent->OptionData;
+}
+void* _get_bondFutureOptionData_ContractName(domain::bondFutureOptionData* parent) {
+    return &parent->ContractName;
+}
+void* _get_bondFutureOptionData_ContractNotional(domain::bondFutureOptionData* parent) {
+    return &parent->ContractNotional;
+}
+void* _get_bondFutureOptionData_strikeGroup_Strike(domain::bondFutureOptionData* parent) {
+    return &*(parent->strikeGroup.Strike = domain::_Strike_t());
+}
+void* _get_bondFutureOptionData_strikeGroup_StrikeData(domain::bondFutureOptionData* parent) {
+    return &*(parent->strikeGroup.StrikeData = domain::_StrikeData_t());
+}
+xsdcpp::ChildElementInfo _bondFutureOptionData_Children[] = {
+    {"OptionData",
+     0,
+     (xsdcpp::get_field_t)&_get_bondFutureOptionData_OptionData,
+     &domain::_optionData_Info,
+     1,
+     1},
+    {"ContractName",
+     1,
+     (xsdcpp::get_field_t)&_get_bondFutureOptionData_ContractName,
+     &domain::_bondFutureOptionData_ContractName_t_Info,
+     1,
+     1},
+    {"ContractNotional",
+     2,
+     (xsdcpp::get_field_t)&_get_bondFutureOptionData_ContractNotional,
+     &domain::_float_Info,
+     1,
+     1},
+    {"Strike",
+     3,
+     (xsdcpp::get_field_t)&_get_bondFutureOptionData_strikeGroup_Strike,
+     &domain::__Strike_t_Info,
      0,
      1},
-    {"FairPrice",
-     6,
-     (xsdcpp::get_field_t)&_get_bondFutureData_FairPrice,
-     &domain::_bondFutureData_FairPrice_t_Info,
-     0,
-     1},
-    {"Settlement",
-     7,
-     (xsdcpp::get_field_t)&_get_bondFutureData_Settlement,
-     &domain::_bondFutureData_Settlement_t_Info,
-     0,
-     1},
-    {"SettlementDirty",
-     8,
-     (xsdcpp::get_field_t)&_get_bondFutureData_SettlementDirty,
-     &domain::_bondFutureData_SettlementDirty_t_Info,
-     0,
-     1},
-    {"RootDate",
-     9,
-     (xsdcpp::get_field_t)&_get_bondFutureData_RootDate,
-     &domain::_bondFutureData_RootDate_t_Info,
-     0,
-     1},
-    {"ExpiryBasis",
-     10,
-     (xsdcpp::get_field_t)&_get_bondFutureData_ExpiryBasis,
-     &domain::_bondFutureData_ExpiryBasis_t_Info,
-     0,
-     1},
-    {"SettlementBasis",
-     11,
-     (xsdcpp::get_field_t)&_get_bondFutureData_SettlementBasis,
-     &domain::_bondFutureData_SettlementBasis_t_Info,
-     0,
-     1},
-    {"ExpiryLag",
-     12,
-     (xsdcpp::get_field_t)&_get_bondFutureData_ExpiryLag,
-     &domain::_bondFutureData_ExpiryLag_t_Info,
-     0,
-     1},
-    {"SettlementLag",
-     13,
-     (xsdcpp::get_field_t)&_get_bondFutureData_SettlementLag,
-     &domain::_bondFutureData_SettlementLag_t_Info,
-     0,
-     1},
-    {"LastTradingDate",
-     14,
-     (xsdcpp::get_field_t)&_get_bondFutureData_LastTradingDate,
-     &domain::_bondFutureData_LastTradingDate_t_Info,
-     0,
-     1},
-    {"LastDeliveryDate",
-     15,
-     (xsdcpp::get_field_t)&_get_bondFutureData_LastDeliveryDate,
-     &domain::_bondFutureData_LastDeliveryDate_t_Info,
-     0,
-     1},
-    {"DeliveryBasket",
-     16,
-     (xsdcpp::get_field_t)&_get_bondFutureData_DeliveryBasket,
-     &domain::_deliveryBasket_Info,
+    {"StrikeData",
+     3,
+     (xsdcpp::get_field_t)&_get_bondFutureOptionData_strikeGroup_StrikeData,
+     &domain::__StrikeData_t_Info,
      0,
      1},
     {nullptr}};
@@ -22465,8 +23083,20 @@ void* _get_legData_PaymentConvention(domain::legData* parent) {
 void* _get_legData_PaymentLag(domain::legData* parent) {
     return &*(parent->PaymentLag = domain::paymentLag());
 }
+void* _get_legData_PaymentLagUnit(domain::legData* parent) {
+    return &*(parent->PaymentLagUnit = domain::dateDeltaUnit());
+}
+void* _get_legData_PaymentLagAnchor(domain::legData* parent) {
+    return &*(parent->PaymentLagAnchor = domain::dateDeltaAnchor());
+}
 void* _get_legData_NotionalPaymentLag(domain::legData* parent) {
     return &*(parent->NotionalPaymentLag = int64_t());
+}
+void* _get_legData_NotionalPaymentLagUnit(domain::legData* parent) {
+    return &*(parent->NotionalPaymentLagUnit = domain::dateDeltaUnit());
+}
+void* _get_legData_NotionalPaymentLagAnchor(domain::legData* parent) {
+    return &*(parent->NotionalPaymentLagAnchor = domain::dateDeltaAnchor());
 }
 void* _get_legData_PaymentCalendar(domain::legData* parent) {
     return &*(parent->PaymentCalendar = domain::legData_PaymentCalendar_t());
@@ -22560,6 +23190,10 @@ void* _get_legData_legDataType_CommodityFloatingLegData(domain::legData* parent)
     return &*((parent->legDataType = domain::legDataType_group_t())->CommodityFloatingLegData =
                   domain::_CommodityFloatingLegData_t());
 }
+void* _get_legData_legDataType_IntradayPowerFloatingLegData(domain::legData* parent) {
+    return &*((parent->legDataType = domain::legDataType_group_t())->IntradayPowerFloatingLegData =
+                  domain::_IntradayPowerFloatingLegData_t());
+}
 void* _get_legData_legDataType_FormulaBasedLegData(domain::legData* parent) {
     return &*((parent->legDataType = domain::legDataType_group_t())->FormulaBasedLegData =
                   domain::_FormulaBasedLegData_t());
@@ -22594,182 +23228,212 @@ xsdcpp::ChildElementInfo _legData_Children[] = {
      &domain::_paymentLag_Info,
      0,
      1},
-    {"NotionalPaymentLag",
+    {"PaymentLagUnit",
      5,
+     (xsdcpp::get_field_t)&_get_legData_PaymentLagUnit,
+     &domain::_dateDeltaUnit_Info,
+     0,
+     1},
+    {"PaymentLagAnchor",
+     6,
+     (xsdcpp::get_field_t)&_get_legData_PaymentLagAnchor,
+     &domain::_dateDeltaAnchor_Info,
+     0,
+     1},
+    {"NotionalPaymentLag",
+     7,
      (xsdcpp::get_field_t)&_get_legData_NotionalPaymentLag,
      &domain::_int64_t_Info,
      0,
      1},
+    {"NotionalPaymentLagUnit",
+     8,
+     (xsdcpp::get_field_t)&_get_legData_NotionalPaymentLagUnit,
+     &domain::_dateDeltaUnit_Info,
+     0,
+     1},
+    {"NotionalPaymentLagAnchor",
+     9,
+     (xsdcpp::get_field_t)&_get_legData_NotionalPaymentLagAnchor,
+     &domain::_dateDeltaAnchor_Info,
+     0,
+     1},
     {"PaymentCalendar",
-     6,
+     10,
      (xsdcpp::get_field_t)&_get_legData_PaymentCalendar,
      &domain::_legData_PaymentCalendar_t_Info,
      0,
      1},
     {"DayCounter",
-     7,
+     11,
      (xsdcpp::get_field_t)&_get_legData_DayCounter,
      &domain::_dayCounter_Info,
      0,
      1},
     {"Amortizations",
-     8,
+     12,
      (xsdcpp::get_field_t)&_get_legData_Amortizations,
      &domain::_legData_Amortizations_t_Info,
      0,
      1},
     {"Notionals",
-     9,
+     13,
      (xsdcpp::get_field_t)&_get_legData_Notionals,
      &domain::_legData_Notionals_t_Info,
      0,
      1},
     {"ScheduleData",
-     10,
+     14,
      (xsdcpp::get_field_t)&_get_legData_ScheduleData,
      &domain::_scheduleData_Info,
      0,
      1},
     {"PaymentDates",
-     11,
+     15,
      (xsdcpp::get_field_t)&_get_legData_PaymentDates,
      &domain::_legData_PaymentDates_t_Info,
      0,
      1},
     {"Indexings",
-     12,
+     16,
      (xsdcpp::get_field_t)&_get_legData_Indexings,
      &domain::_legData_Indexings_t_Info,
      0,
      1},
     {"LastPeriodDayCounter",
-     13,
+     17,
      (xsdcpp::get_field_t)&_get_legData_LastPeriodDayCounter,
      &domain::_dayCounter_Info,
      0,
      1},
     {"CashflowData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_CashflowData,
      &domain::__CashflowData_t_Info,
      0,
      1},
     {"FixedLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_FixedLegData,
      &domain::__FixedLegData_t_Info,
      0,
      1},
     {"FloatingLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_FloatingLegData,
      &domain::__FloatingLegData_t_Info,
      0,
      1},
     {"RangeAccrualLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_RangeAccrualLegData,
      &domain::__RangeAccrualLegData_t_Info,
      0,
      1},
     {"CPILegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_CPILegData,
      &domain::__CPILegData_t_Info,
      0,
      1},
     {"YYLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_YYLegData,
      &domain::__YYLegData_t_Info,
      0,
      1},
     {"CMSLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_CMSLegData,
      &domain::__CMSLegData_t_Info,
      0,
      1},
     {"CMBLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_CMBLegData,
      &domain::__CMBLegData_t_Info,
      0,
      1},
     {"DigitalCMSLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_DigitalCMSLegData,
      &domain::__DigitalCMSLegData_t_Info,
      0,
      1},
     {"DurationAdjustedCMSLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_DurationAdjustedCMSLegData,
      &domain::__DurationAdjustedCMSLegData_t_Info,
      0,
      1},
     {"CMSSpreadLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_CMSSpreadLegData,
      &domain::__CMSSpreadLegData_t_Info,
      0,
      1},
     {"DigitalCMSSpreadLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_DigitalCMSSpreadLegData,
      &domain::__DigitalCMSSpreadLegData_t_Info,
      0,
      1},
     {"EquityLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_EquityLegData,
      &domain::__EquityLegData_t_Info,
      0,
      1},
     {"ZeroCouponFixedLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_ZeroCouponFixedLegData,
      &domain::__ZeroCouponFixedLegData_t_Info,
      0,
      1},
     {"EquityMarginLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_EquityMarginLegData,
      &domain::__EquityMarginLegData_t_Info,
      0,
      1},
     {"CommodityFixedLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_CommodityFixedLegData,
      &domain::__CommodityFixedLegData_t_Info,
      0,
      1},
     {"CommodityFloatingLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_CommodityFloatingLegData,
      &domain::__CommodityFloatingLegData_t_Info,
      0,
      1},
+    {"IntradayPowerFloatingLegData",
+     18,
+     (xsdcpp::get_field_t)&_get_legData_legDataType_IntradayPowerFloatingLegData,
+     &domain::__IntradayPowerFloatingLegData_t_Info,
+     0,
+     1},
     {"FormulaBasedLegData",
-     14,
+     18,
      (xsdcpp::get_field_t)&_get_legData_legDataType_FormulaBasedLegData,
      &domain::__FormulaBasedLegData_t_Info,
      0,
      1},
     {"StrictNotionalDates",
-     15,
+     19,
      (xsdcpp::get_field_t)&_get_legData_StrictNotionalDates,
      &domain::_bool_Info,
      0,
      1},
     {"PaymentSchedule",
-     16,
+     20,
      (xsdcpp::get_field_t)&_get_legData_PaymentSchedule,
      &domain::_scheduleData_Info,
      0,
      1},
     {"SettlementData",
-     17,
+     21,
      (xsdcpp::get_field_t)&_get_legData_SettlementData,
      &domain::_legData_SettlementData_t_Info,
      0,
@@ -23102,6 +23766,134 @@ xsdcpp::ChildElementInfo _commodityForwardData_Children[] = {
      0,
      1},
     {nullptr}};
+void* _get_intradayPowerForwardData_Position(domain::intradayPowerForwardData* parent) {
+    return &parent->Position;
+}
+void* _get_intradayPowerForwardData_Maturity(domain::intradayPowerForwardData* parent) {
+    return &parent->Maturity;
+}
+void* _get_intradayPowerForwardData_Name(domain::intradayPowerForwardData* parent) {
+    return &parent->Name;
+}
+void* _get_intradayPowerForwardData_Currency(domain::intradayPowerForwardData* parent) {
+    return &parent->Currency;
+}
+void* _get_intradayPowerForwardData_Strike(domain::intradayPowerForwardData* parent) {
+    return &parent->Strike;
+}
+void* _get_intradayPowerForwardData_Quantity(domain::intradayPowerForwardData* parent) {
+    return &parent->Quantity;
+}
+void* _get_intradayPowerForwardData_DeliveryDate(domain::intradayPowerForwardData* parent) {
+    return &parent->DeliveryDate;
+}
+void* _get_intradayPowerForwardData_DeliveryStart(domain::intradayPowerForwardData* parent) {
+    return &*(parent->DeliveryStart = int64_t());
+}
+void* _get_intradayPowerForwardData_DeliveryEnd(domain::intradayPowerForwardData* parent) {
+    return &*(parent->DeliveryEnd = int64_t());
+}
+void* _get_intradayPowerForwardData_IsDstHour(domain::intradayPowerForwardData* parent) {
+    return &*(parent->IsDstHour = bool());
+}
+void* _get_intradayPowerForwardData_PowerLoadProfileData(domain::intradayPowerForwardData* parent) {
+    return &*(parent->PowerLoadProfileData = domain::powerLoadProfileDataType());
+}
+void* _get_intradayPowerForwardData_PhysicallySettled(domain::intradayPowerForwardData* parent) {
+    return &*(parent->PhysicallySettled = domain::bool_());
+}
+void* _get_intradayPowerForwardData_PaymentDate(domain::intradayPowerForwardData* parent) {
+    return &*(parent->PaymentDate = domain::date());
+}
+void* _get_intradayPowerForwardData_SettlementData(domain::intradayPowerForwardData* parent) {
+    return &*(parent->SettlementData = domain::commForwardSettlementData());
+}
+xsdcpp::ChildElementInfo _intradayPowerForwardData_Children[] = {
+    {"Position",
+     0,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_Position,
+     &domain::_longShort_Info,
+     1,
+     1},
+    {"Maturity",
+     1,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_Maturity,
+     &domain::_date_Info,
+     1,
+     1},
+    {"Name",
+     2,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_Name,
+     &domain::_intradayPowerForwardData_Name_t_Info,
+     1,
+     1},
+    {"Currency",
+     3,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_Currency,
+     &domain::_currencyCode_Info,
+     1,
+     1},
+    {"Strike",
+     4,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_Strike,
+     &domain::_float_Info,
+     1,
+     1},
+    {"Quantity",
+     5,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_Quantity,
+     &domain::_float_Info,
+     1,
+     1},
+    {"DeliveryDate",
+     6,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_DeliveryDate,
+     &domain::_date_Info,
+     1,
+     1},
+    {"DeliveryStart",
+     7,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_DeliveryStart,
+     &domain::_int64_t_Info,
+     0,
+     1},
+    {"DeliveryEnd",
+     8,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_DeliveryEnd,
+     &domain::_int64_t_Info,
+     0,
+     1},
+    {"IsDstHour",
+     9,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_IsDstHour,
+     &domain::_bool_Info,
+     0,
+     1},
+    {"PowerLoadProfileData",
+     10,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_PowerLoadProfileData,
+     &domain::_powerLoadProfileDataType_Info,
+     0,
+     1},
+    {"PhysicallySettled",
+     11,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_PhysicallySettled,
+     &domain::_bool__Info,
+     0,
+     1},
+    {"PaymentDate",
+     12,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_PaymentDate,
+     &domain::_date_Info,
+     0,
+     1},
+    {"SettlementData",
+     13,
+     (xsdcpp::get_field_t)&_get_intradayPowerForwardData_SettlementData,
+     &domain::_commForwardSettlementData_Info,
+     0,
+     1},
+    {nullptr}};
 void* _get_commodityOptionData_OptionData(domain::commodityOptionData* parent) {
     return &parent->OptionData;
 }
@@ -23111,8 +23903,11 @@ void* _get_commodityOptionData_Name(domain::commodityOptionData* parent) {
 void* _get_commodityOptionData_Currency(domain::commodityOptionData* parent) {
     return &parent->Currency;
 }
-void* _get_commodityOptionData_Strike(domain::commodityOptionData* parent) {
-    return &parent->Strike;
+void* _get_commodityOptionData_strikeGroup_Strike(domain::commodityOptionData* parent) {
+    return &*(parent->strikeGroup.Strike = domain::_Strike_t());
+}
+void* _get_commodityOptionData_strikeGroup_StrikeData(domain::commodityOptionData* parent) {
+    return &*(parent->strikeGroup.StrikeData = domain::_StrikeData_t());
 }
 void* _get_commodityOptionData_Quantity(domain::commodityOptionData* parent) {
     return &parent->Quantity;
@@ -23144,9 +23939,15 @@ xsdcpp::ChildElementInfo _commodityOptionData_Children[] = {
      1},
     {"Strike",
      3,
-     (xsdcpp::get_field_t)&_get_commodityOptionData_Strike,
-     &domain::_float_Info,
-     1,
+     (xsdcpp::get_field_t)&_get_commodityOptionData_strikeGroup_Strike,
+     &domain::__Strike_t_Info,
+     0,
+     1},
+    {"StrikeData",
+     3,
+     (xsdcpp::get_field_t)&_get_commodityOptionData_strikeGroup_StrikeData,
+     &domain::__StrikeData_t_Info,
+     0,
      1},
     {"Quantity",
      4,
@@ -24102,6 +24903,12 @@ void* _get_totalReturnData_ScheduleData(domain::totalReturnData* parent) {
 void* _get_totalReturnData_PayBondCashFlowsImmediately(domain::totalReturnData* parent) {
     return &*(parent->PayBondCashFlowsImmediately = bool());
 }
+void* _get_totalReturnData_PaymentLagUnit(domain::totalReturnData* parent) {
+    return &*(parent->PaymentLagUnit = domain::dateDeltaUnit());
+}
+void* _get_totalReturnData_PaymentLagAnchor(domain::totalReturnData* parent) {
+    return &*(parent->PaymentLagAnchor = domain::dateDeltaAnchor());
+}
 xsdcpp::ChildElementInfo _totalReturnData_Children[] = {
     {"Payer",
      0,
@@ -24185,6 +24992,18 @@ xsdcpp::ChildElementInfo _totalReturnData_Children[] = {
      13,
      (xsdcpp::get_field_t)&_get_totalReturnData_PayBondCashFlowsImmediately,
      &domain::_bool_Info,
+     0,
+     1},
+    {"PaymentLagUnit",
+     14,
+     (xsdcpp::get_field_t)&_get_totalReturnData_PaymentLagUnit,
+     &domain::_dateDeltaUnit_Info,
+     0,
+     1},
+    {"PaymentLagAnchor",
+     15,
+     (xsdcpp::get_field_t)&_get_totalReturnData_PaymentLagAnchor,
+     &domain::_dateDeltaAnchor_Info,
      0,
      1},
     {nullptr}};
@@ -25097,6 +25916,12 @@ void* _get_trsReturnData_FXTerms(domain::trsReturnData* parent) {
 void* _get_trsReturnData_PayUnderlyingCashFlowsImmediately(domain::trsReturnData* parent) {
     return &*(parent->PayUnderlyingCashFlowsImmediately = bool());
 }
+void* _get_trsReturnData_PaymentLagUnit(domain::trsReturnData* parent) {
+    return &*(parent->PaymentLagUnit = domain::dateDeltaUnit());
+}
+void* _get_trsReturnData_PaymentLagAnchor(domain::trsReturnData* parent) {
+    return &*(parent->PaymentLagAnchor = domain::dateDeltaAnchor());
+}
 xsdcpp::ChildElementInfo _trsReturnData_Children[] = {
     {"Payer", 0, (xsdcpp::get_field_t)&_get_trsReturnData_Payer, &domain::_bool_Info, 1, 1},
     {"Currency",
@@ -25175,6 +26000,18 @@ xsdcpp::ChildElementInfo _trsReturnData_Children[] = {
      13,
      (xsdcpp::get_field_t)&_get_trsReturnData_PayUnderlyingCashFlowsImmediately,
      &domain::_bool_Info,
+     0,
+     1},
+    {"PaymentLagUnit",
+     14,
+     (xsdcpp::get_field_t)&_get_trsReturnData_PaymentLagUnit,
+     &domain::_dateDeltaUnit_Info,
+     0,
+     1},
+    {"PaymentLagAnchor",
+     15,
+     (xsdcpp::get_field_t)&_get_trsReturnData_PaymentLagAnchor,
+     &domain::_dateDeltaAnchor_Info,
      0,
      1},
     {nullptr}};
@@ -25595,7 +26432,7 @@ void* _get_underlying_IdentifierType(domain::underlying* parent) {
     return &*(parent->IdentifierType = domain::underlying_IdentifierType_t());
 }
 void* _get_underlying_Currency(domain::underlying* parent) {
-    return &*(parent->Currency = domain::currencyCode());
+    return &*(parent->Currency = domain::extendedCurrencyCode());
 }
 void* _get_underlying_Exchange(domain::underlying* parent) {
     return &*(parent->Exchange = domain::underlying_Exchange_t());
@@ -25639,7 +26476,7 @@ xsdcpp::ChildElementInfo _underlying_Children[] = {
     {"Currency",
      3,
      (xsdcpp::get_field_t)&_get_underlying_Currency,
-     &domain::_currencyCode_Info,
+     &domain::_extendedCurrencyCode_Info,
      0,
      1},
     {"Exchange",
@@ -28709,6 +29546,147 @@ xsdcpp::ChildElementInfo _volBarrierOptionData_Children[] = {
      (xsdcpp::get_field_t)&_get_volBarrierOptionData_PutCcy,
      &domain::_stFreeStyleCurrency_Info,
      1,
+     1},
+    {nullptr}};
+void* _get_forwardVolatilityAgreementData2_FvaDate(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->FvaDate;
+}
+void* _get_forwardVolatilityAgreementData2_OptionExpiry(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->OptionExpiry;
+}
+void* _get_forwardVolatilityAgreementData2_PremiumDate(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->PremiumDate;
+}
+void* _get_forwardVolatilityAgreementData2_Underlying(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->Underlying;
+}
+void* _get_forwardVolatilityAgreementData2_LongShort(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->LongShort;
+}
+void* _get_forwardVolatilityAgreementData2_ImpliedVolStrike(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->ImpliedVolStrike;
+}
+void* _get_forwardVolatilityAgreementData2_Quantity(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->Quantity;
+}
+void* _get_forwardVolatilityAgreementData2_PayCcy(domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->PayCcy;
+}
+void* _get_forwardVolatilityAgreementData2_SettlementDate(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &parent->SettlementDate;
+}
+void* _get_forwardVolatilityAgreementData2_UnderlyingStrike(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &*(parent->UnderlyingStrike = float());
+}
+void* _get_forwardVolatilityAgreementData2_DayCountFraction(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &*(parent->DayCountFraction = domain::dayCounter());
+}
+void* _get_forwardVolatilityAgreementData2_DividendYield(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &*(parent->DividendYield = float());
+}
+void* _get_forwardVolatilityAgreementData2_FixedRate(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &*(parent->FixedRate = float());
+}
+void* _get_forwardVolatilityAgreementData2_PayoffType(
+    domain::forwardVolatilityAgreementData2* parent) {
+    return &*(parent->PayoffType = domain::forwardVolatilityAgreementData2_PayoffType_t());
+}
+xsdcpp::ChildElementInfo _forwardVolatilityAgreementData2_Children[] = {
+    {"FvaDate",
+     0,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_FvaDate,
+     &domain::_date_Info,
+     1,
+     1},
+    {"OptionExpiry",
+     1,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_OptionExpiry,
+     &domain::_date_Info,
+     1,
+     1},
+    {"PremiumDate",
+     2,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_PremiumDate,
+     &domain::_date_Info,
+     1,
+     1},
+    {"Underlying",
+     3,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_Underlying,
+     &domain::_underlying_Info,
+     1,
+     1},
+    {"LongShort",
+     4,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_LongShort,
+     &domain::_longShort_Info,
+     1,
+     1},
+    {"ImpliedVolStrike",
+     5,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_ImpliedVolStrike,
+     &domain::_float_Info,
+     1,
+     1},
+    {"Quantity",
+     6,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_Quantity,
+     &domain::_float_Info,
+     1,
+     1},
+    {"PayCcy",
+     7,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_PayCcy,
+     &domain::_currencyCode_Info,
+     1,
+     1},
+    {"SettlementDate",
+     8,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_SettlementDate,
+     &domain::_date_Info,
+     1,
+     1},
+    {"UnderlyingStrike",
+     9,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_UnderlyingStrike,
+     &domain::_float_Info,
+     0,
+     1},
+    {"DayCountFraction",
+     10,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_DayCountFraction,
+     &domain::_dayCounter_Info,
+     0,
+     1},
+    {"DividendYield",
+     11,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_DividendYield,
+     &domain::_float_Info,
+     0,
+     1},
+    {"FixedRate",
+     12,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_FixedRate,
+     &domain::_float_Info,
+     0,
+     1},
+    {"PayoffType",
+     13,
+     (xsdcpp::get_field_t)&_get_forwardVolatilityAgreementData2_PayoffType,
+     &domain::_forwardVolatilityAgreementData2_PayoffType_t_Info,
+     0,
      1},
     {nullptr}};
 void* _get_tarfData2_Barriers_t_BarrierData(domain::tarfData2_Barriers_t* parent) {
@@ -36387,6 +37365,10 @@ void* _get_market_YieldCurves_t_Configuration_t_Extrapolation(
     domain::market_YieldCurves_t_Configuration_t* parent) {
     return &*(parent->Extrapolation = domain::ycExtrapolation());
 }
+void* _get_market_YieldCurves_t_Configuration_t_RollDown(
+    domain::market_YieldCurves_t_Configuration_t* parent) {
+    return &*(parent->RollDown = domain::ycRollDown());
+}
 void* _get_market_YieldCurves_t_Configuration_t_DayCounter(
     domain::market_YieldCurves_t_Configuration_t* parent) {
     return &*(parent->DayCounter = domain::dayCounter());
@@ -36410,8 +37392,14 @@ xsdcpp::ChildElementInfo _market_YieldCurves_t_Configuration_t_Children[] = {
      &domain::_ycExtrapolation_Info,
      0,
      1},
-    {"DayCounter",
+    {"RollDown",
      3,
+     (xsdcpp::get_field_t)&_get_market_YieldCurves_t_Configuration_t_RollDown,
+     &domain::_ycRollDown_Info,
+     0,
+     1},
+    {"DayCounter",
+     4,
      (xsdcpp::get_field_t)&_get_market_YieldCurves_t_Configuration_t_DayCounter,
      &domain::_dayCounter_Info,
      0,
@@ -36504,6 +37492,9 @@ void* _get_market_DefaultCurves_t_Calendars(domain::market_DefaultCurves_t* pare
 void* _get_market_DefaultCurves_t_Extrapolation(domain::market_DefaultCurves_t* parent) {
     return &*(parent->Extrapolation = domain::defaultCurveExtrapolation());
 }
+void* _get_market_DefaultCurves_t_RollDown(domain::market_DefaultCurves_t* parent) {
+    return &*(parent->RollDown = domain::ycRollDown());
+}
 xsdcpp::ChildElementInfo _market_DefaultCurves_t_Children[] = {
     {"Names",
      0,
@@ -36545,6 +37536,12 @@ xsdcpp::ChildElementInfo _market_DefaultCurves_t_Children[] = {
      6,
      (xsdcpp::get_field_t)&_get_market_DefaultCurves_t_Extrapolation,
      &domain::_defaultCurveExtrapolation_Info,
+     0,
+     1},
+    {"RollDown",
+     7,
+     (xsdcpp::get_field_t)&_get_market_DefaultCurves_t_RollDown,
+     &domain::_ycRollDown_Info,
      0,
      1},
     {nullptr}};
@@ -36868,6 +37865,11 @@ void* _get_market_CapFloorVolatilities_t_SmileDynamics(
     domain::market_CapFloorVolatilities_t* parent) {
     return (parent->SmileDynamics.emplace_back(), &parent->SmileDynamics.back());
 }
+void* _get_market_CapFloorVolatilities_t_SmileForwardInteraction(
+    domain::market_CapFloorVolatilities_t* parent) {
+    return (parent->SmileForwardInteraction.emplace_back(),
+            &parent->SmileForwardInteraction.back());
+}
 xsdcpp::ChildElementInfo _market_CapFloorVolatilities_t_Children[] = {
     {"Simulate",
      0,
@@ -36927,6 +37929,12 @@ xsdcpp::ChildElementInfo _market_CapFloorVolatilities_t_Children[] = {
      9,
      (xsdcpp::get_field_t)&_get_market_CapFloorVolatilities_t_SmileDynamics,
      &domain::_market_CapFloorVolatilities_t_SmileDynamics_t_Info,
+     0,
+     4294967295},
+    {"SmileForwardInteraction",
+     10,
+     (xsdcpp::get_field_t)&_get_market_CapFloorVolatilities_t_SmileForwardInteraction,
+     &domain::_market_CapFloorVolatilities_t_SmileForwardInteraction_t_Info,
      0,
      4294967295},
     {nullptr}};
@@ -37454,8 +38462,14 @@ xsdcpp::ChildElementInfo _market_Commodities_t_Names_t_Children[] = {
 void* _get_market_Commodities_t_Simulate(domain::market_Commodities_t* parent) {
     return &*(parent->Simulate = domain::bool_());
 }
+void* _get_market_Commodities_t_RollDown(domain::market_Commodities_t* parent) {
+    return &*(parent->RollDown = domain::priceRollDown());
+}
 void* _get_market_Commodities_t_Names(domain::market_Commodities_t* parent) {
     return &parent->Names;
+}
+void* _get_market_Commodities_t_Interpolation(domain::market_Commodities_t* parent) {
+    return (parent->Interpolation.emplace_back(), &parent->Interpolation.back());
 }
 void* _get_market_Commodities_t_Tenors(domain::market_Commodities_t* parent) {
     return (parent->Tenors.emplace_back(), &parent->Tenors.back());
@@ -37470,24 +38484,87 @@ xsdcpp::ChildElementInfo _market_Commodities_t_Children[] = {
      &domain::_bool__Info,
      0,
      1},
-    {"Names",
+    {"RollDown",
      1,
+     (xsdcpp::get_field_t)&_get_market_Commodities_t_RollDown,
+     &domain::_priceRollDown_Info,
+     0,
+     1},
+    {"Names",
+     2,
      (xsdcpp::get_field_t)&_get_market_Commodities_t_Names,
      &domain::_market_Commodities_t_Names_t_Info,
      1,
      1},
+    {"Interpolation",
+     3,
+     (xsdcpp::get_field_t)&_get_market_Commodities_t_Interpolation,
+     &domain::_market_Commodities_t_Interpolation_t_Info,
+     0,
+     4294967295},
     {"Tenors",
-     2,
+     4,
      (xsdcpp::get_field_t)&_get_market_Commodities_t_Tenors,
      &domain::_market_Commodities_t_Tenors_t_Info,
      1,
      4294967295},
     {"DayCounters",
-     3,
+     5,
      (xsdcpp::get_field_t)&_get_market_Commodities_t_DayCounters,
      &domain::_market_Commodities_t_DayCounters_t_Info,
      0,
      1},
+    {nullptr}};
+void* _get_market_IntradayPowerCurves_t_Names_t_Name(
+    domain::market_IntradayPowerCurves_t_Names_t* parent) {
+    return (parent->Name.emplace_back(), &parent->Name.back());
+}
+xsdcpp::ChildElementInfo _market_IntradayPowerCurves_t_Names_t_Children[] = {
+    {"Name",
+     0,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves_t_Names_t_Name,
+     &domain::_market_IntradayPowerCurves_t_Names_t_Name_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_market_IntradayPowerCurves_t_Simulate(domain::market_IntradayPowerCurves_t* parent) {
+    return &*(parent->Simulate = domain::bool_());
+}
+void* _get_market_IntradayPowerCurves_t_Names(domain::market_IntradayPowerCurves_t* parent) {
+    return &parent->Names;
+}
+void* _get_market_IntradayPowerCurves_t_Interpolation(
+    domain::market_IntradayPowerCurves_t* parent) {
+    return (parent->Interpolation.emplace_back(), &parent->Interpolation.back());
+}
+void* _get_market_IntradayPowerCurves_t_Tenors(domain::market_IntradayPowerCurves_t* parent) {
+    return (parent->Tenors.emplace_back(), &parent->Tenors.back());
+}
+xsdcpp::ChildElementInfo _market_IntradayPowerCurves_t_Children[] = {
+    {"Simulate",
+     0,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves_t_Simulate,
+     &domain::_bool__Info,
+     0,
+     1},
+    {"Names",
+     1,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves_t_Names,
+     &domain::_market_IntradayPowerCurves_t_Names_t_Info,
+     1,
+     1},
+    {"Interpolation",
+     2,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves_t_Interpolation,
+     &domain::_market_IntradayPowerCurves_t_Interpolation_t_Info,
+     0,
+     4294967295},
+    {"Tenors",
+     3,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves_t_Tenors,
+     &domain::_market_IntradayPowerCurves_t_Tenors_t_Info,
+     1,
+     4294967295},
     {nullptr}};
 void* _get_market_CommodityVolatilities_t_Names_t_Name(
     domain::market_CommodityVolatilities_t_Names_t* parent) {
@@ -37558,6 +38635,79 @@ xsdcpp::ChildElementInfo _market_CommodityVolatilities_t_Children[] = {
      5,
      (xsdcpp::get_field_t)&_get_market_CommodityVolatilities_t_SmileDynamics,
      &domain::_market_CommodityVolatilities_t_SmileDynamics_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_market_BondFutureVolatilities_t_Names_t_Name(
+    domain::market_BondFutureVolatilities_t_Names_t* parent) {
+    return (parent->Name.emplace_back(), &parent->Name.back());
+}
+xsdcpp::ChildElementInfo _market_BondFutureVolatilities_t_Names_t_Children[] = {
+    {"Name",
+     0,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_Names_t_Name,
+     &domain::_market_BondFutureVolatilities_t_Names_t_Name_t_Info,
+     1,
+     4294967295},
+    {nullptr}};
+void* _get_market_BondFutureVolatilities_t_Simulate(
+    domain::market_BondFutureVolatilities_t* parent) {
+    return &*(parent->Simulate = domain::bool_());
+}
+void* _get_market_BondFutureVolatilities_t_SimulateATMOnly(
+    domain::market_BondFutureVolatilities_t* parent) {
+    return &*(parent->SimulateATMOnly = bool());
+}
+void* _get_market_BondFutureVolatilities_t_ReactionToTimeDecay(
+    domain::market_BondFutureVolatilities_t* parent) {
+    return &parent->ReactionToTimeDecay;
+}
+void* _get_market_BondFutureVolatilities_t_Names(domain::market_BondFutureVolatilities_t* parent) {
+    return &parent->Names;
+}
+void* _get_market_BondFutureVolatilities_t_DayCounter(
+    domain::market_BondFutureVolatilities_t* parent) {
+    return &*(parent->DayCounter = domain::market_BondFutureVolatilities_t_DayCounter_t());
+}
+void* _get_market_BondFutureVolatilities_t_SmileDynamics(
+    domain::market_BondFutureVolatilities_t* parent) {
+    return (parent->SmileDynamics.emplace_back(), &parent->SmileDynamics.back());
+}
+xsdcpp::ChildElementInfo _market_BondFutureVolatilities_t_Children[] = {
+    {"Simulate",
+     0,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_Simulate,
+     &domain::_bool__Info,
+     0,
+     1},
+    {"SimulateATMOnly",
+     1,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_SimulateATMOnly,
+     &domain::_bool_Info,
+     0,
+     1},
+    {"ReactionToTimeDecay",
+     2,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_ReactionToTimeDecay,
+     &domain::_timeDecayType_Info,
+     1,
+     1},
+    {"Names",
+     3,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_Names,
+     &domain::_market_BondFutureVolatilities_t_Names_t_Info,
+     1,
+     1},
+    {"DayCounter",
+     4,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_DayCounter,
+     &domain::_market_BondFutureVolatilities_t_DayCounter_t_Info,
+     0,
+     1},
+    {"SmileDynamics",
+     5,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_SmileDynamics,
+     &domain::_market_BondFutureVolatilities_t_SmileDynamics_t_Info,
      0,
      4294967295},
     {nullptr}};
@@ -39046,6 +40196,18 @@ xsdcpp::ChildElementInfo _globalReportConfiguration_InflationCapFloorVolatilitie
      0,
      1},
     {nullptr}};
+void* _get_globalReportConfiguration_DefaultCurves_t_Report(
+    domain::globalReportConfiguration_DefaultCurves_t* parent) {
+    return &*(parent->Report = domain::reportConfiguration());
+}
+xsdcpp::ChildElementInfo _globalReportConfiguration_DefaultCurves_t_Children[] = {
+    {"Report",
+     0,
+     (xsdcpp::get_field_t)&_get_globalReportConfiguration_DefaultCurves_t_Report,
+     &domain::_reportConfiguration_Info,
+     0,
+     1},
+    {nullptr}};
 void* _get_fxSpot_CurveId(domain::fxSpot* parent) {
     return &parent->CurveId;
 }
@@ -39692,6 +40854,9 @@ void* _get_capFloorVolatility_BootstrapConfig(domain::capFloorVolatility* parent
 void* _get_capFloorVolatility_Report(domain::capFloorVolatility* parent) {
     return &*(parent->Report = domain::reportConfiguration());
 }
+void* _get_capFloorVolatility_UseEffectiveVolatility(domain::capFloorVolatility* parent) {
+    return &*(parent->UseEffectiveVolatility = domain::bool_());
+}
 xsdcpp::ChildElementInfo _capFloorVolatility_Children[] = {
     {"CurveId",
      0,
@@ -39889,6 +41054,12 @@ xsdcpp::ChildElementInfo _capFloorVolatility_Children[] = {
      32,
      (xsdcpp::get_field_t)&_get_capFloorVolatility_Report,
      &domain::_reportConfiguration_Info,
+     0,
+     1},
+    {"UseEffectiveVolatility",
+     33,
+     (xsdcpp::get_field_t)&_get_capFloorVolatility_UseEffectiveVolatility,
+     &domain::_bool__Info,
      0,
      1},
     {nullptr}};
@@ -40098,6 +41269,9 @@ void* _get_defaultCurve_InitialState(domain::defaultCurve* parent) {
 void* _get_defaultCurve_States(domain::defaultCurve* parent) {
     return &*(parent->States = domain::defaultCurve_States_t());
 }
+void* _get_defaultCurve_PriceIsUpfront(domain::defaultCurve* parent) {
+    return &*(parent->PriceIsUpfront = domain::bool_());
+}
 xsdcpp::ChildElementInfo _defaultCurve_Children[] = {
     {"CurveId",
      0,
@@ -40238,6 +41412,12 @@ xsdcpp::ChildElementInfo _defaultCurve_Children[] = {
      25,
      (xsdcpp::get_field_t)&_get_defaultCurve_States,
      &domain::_defaultCurve_States_t_Info,
+     0,
+     1},
+    {"PriceIsUpfront",
+     26,
+     (xsdcpp::get_field_t)&_get_defaultCurve_PriceIsUpfront,
+     &domain::_bool__Info,
      0,
      1},
     {nullptr}};
@@ -41899,6 +43079,181 @@ xsdcpp::ChildElementInfo _correlation_Children[] = {
      0,
      1},
     {nullptr}};
+void* _get_bondFutureVolatility_CurveId(domain::bondFutureVolatility* parent) {
+    return &parent->CurveId;
+}
+void* _get_bondFutureVolatility_CurveDescription(domain::bondFutureVolatility* parent) {
+    return &parent->CurveDescription;
+}
+void* _get_bondFutureVolatility_ContractName(domain::bondFutureVolatility* parent) {
+    return &parent->ContractName;
+}
+void* _get_bondFutureVolatility_VolatilityConfig(domain::bondFutureVolatility* parent) {
+    return &*(parent->VolatilityConfig = domain::volatilityConfig());
+}
+void* _get_bondFutureVolatility_StrikeSurface(domain::bondFutureVolatility* parent) {
+    return &*(parent->StrikeSurface = domain::volatilityStrikeSurfaceConfig());
+}
+void* _get_bondFutureVolatility_DayCounter(domain::bondFutureVolatility* parent) {
+    return &*(parent->DayCounter = domain::dayCounter());
+}
+void* _get_bondFutureVolatility_Calendar(domain::bondFutureVolatility* parent) {
+    return &*(parent->Calendar = domain::calendar());
+}
+void* _get_bondFutureVolatility_YieldCurveId(domain::bondFutureVolatility* parent) {
+    return &*(parent->YieldCurveId = domain::bondFutureVolatility_YieldCurveId_t());
+}
+void* _get_bondFutureVolatility_StrikeFactor(domain::bondFutureVolatility* parent) {
+    return &*(parent->StrikeFactor = domain::positiveDecimal());
+}
+void* _get_bondFutureVolatility_UseOnlyPutCall(domain::bondFutureVolatility* parent) {
+    return &*(parent->UseOnlyPutCall = domain::bondFutureVolatility_UseOnlyPutCall_t());
+}
+void* _get_bondFutureVolatility_OneDimSolverConfig(domain::bondFutureVolatility* parent) {
+    return &*(parent->OneDimSolverConfig = domain::oneDimSolverConfigType());
+}
+void* _get_bondFutureVolatility_PreferOutOfTheMoney(domain::bondFutureVolatility* parent) {
+    return &*(parent->PreferOutOfTheMoney = domain::bool_());
+}
+void* _get_bondFutureVolatility_TreatAsEuropean(domain::bondFutureVolatility* parent) {
+    return &*(parent->TreatAsEuropean = domain::bool_());
+}
+xsdcpp::ChildElementInfo _bondFutureVolatility_Children[] = {
+    {"CurveId",
+     0,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_CurveId,
+     &domain::_bondFutureVolatility_CurveId_t_Info,
+     1,
+     1},
+    {"CurveDescription",
+     1,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_CurveDescription,
+     &domain::_bondFutureVolatility_CurveDescription_t_Info,
+     1,
+     1},
+    {"ContractName",
+     2,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_ContractName,
+     &domain::_bondFutureVolatility_ContractName_t_Info,
+     1,
+     1},
+    {"VolatilityConfig",
+     3,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_VolatilityConfig,
+     &domain::_volatilityConfig_Info,
+     0,
+     1},
+    {"StrikeSurface",
+     4,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_StrikeSurface,
+     &domain::_volatilityStrikeSurfaceConfig_Info,
+     0,
+     1},
+    {"DayCounter",
+     5,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_DayCounter,
+     &domain::_dayCounter_Info,
+     0,
+     1},
+    {"Calendar",
+     6,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_Calendar,
+     &domain::_calendar_Info,
+     0,
+     1},
+    {"YieldCurveId",
+     7,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_YieldCurveId,
+     &domain::_bondFutureVolatility_YieldCurveId_t_Info,
+     0,
+     1},
+    {"StrikeFactor",
+     8,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_StrikeFactor,
+     &domain::_positiveDecimal_Info,
+     0,
+     1},
+    {"UseOnlyPutCall",
+     9,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_UseOnlyPutCall,
+     &domain::_bondFutureVolatility_UseOnlyPutCall_t_Info,
+     0,
+     1},
+    {"OneDimSolverConfig",
+     10,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_OneDimSolverConfig,
+     &domain::_oneDimSolverConfigType_Info,
+     0,
+     1},
+    {"PreferOutOfTheMoney",
+     11,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_PreferOutOfTheMoney,
+     &domain::_bool__Info,
+     0,
+     1},
+    {"TreatAsEuropean",
+     12,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatility_TreatAsEuropean,
+     &domain::_bool__Info,
+     0,
+     1},
+    {nullptr}};
+void* _get_intradayPowerCurve_CurveId(domain::intradayPowerCurve* parent) {
+    return &parent->CurveId;
+}
+void* _get_intradayPowerCurve_CurveDescription(domain::intradayPowerCurve* parent) {
+    return &parent->CurveDescription;
+}
+void* _get_intradayPowerCurve_Currency(domain::intradayPowerCurve* parent) {
+    return &parent->Currency;
+}
+void* _get_intradayPowerCurve_DailyAveragePriceCurve(domain::intradayPowerCurve* parent) {
+    return &parent->DailyAveragePriceCurve;
+}
+void* _get_intradayPowerCurve_ShapeQuoteName(domain::intradayPowerCurve* parent) {
+    return &parent->ShapeQuoteName;
+}
+void* _get_intradayPowerCurve_Convention(domain::intradayPowerCurve* parent) {
+    return &parent->Convention;
+}
+xsdcpp::ChildElementInfo _intradayPowerCurve_Children[] = {
+    {"CurveId",
+     0,
+     (xsdcpp::get_field_t)&_get_intradayPowerCurve_CurveId,
+     &domain::_intradayPowerCurve_CurveId_t_Info,
+     1,
+     1},
+    {"CurveDescription",
+     1,
+     (xsdcpp::get_field_t)&_get_intradayPowerCurve_CurveDescription,
+     &domain::_intradayPowerCurve_CurveDescription_t_Info,
+     1,
+     1},
+    {"Currency",
+     2,
+     (xsdcpp::get_field_t)&_get_intradayPowerCurve_Currency,
+     &domain::_currencyCode_Info,
+     1,
+     1},
+    {"DailyAveragePriceCurve",
+     3,
+     (xsdcpp::get_field_t)&_get_intradayPowerCurve_DailyAveragePriceCurve,
+     &domain::_intradayPowerCurve_DailyAveragePriceCurve_t_Info,
+     1,
+     1},
+    {"ShapeQuoteName",
+     4,
+     (xsdcpp::get_field_t)&_get_intradayPowerCurve_ShapeQuoteName,
+     &domain::_intradayPowerCurve_ShapeQuoteName_t_Info,
+     1,
+     1},
+    {"Convention",
+     5,
+     (xsdcpp::get_field_t)&_get_intradayPowerCurve_Convention,
+     &domain::_intradayPowerCurve_Convention_t_Info,
+     1,
+     1},
+    {nullptr}};
 void* _get_commodityFutureType_AnchorDay_t_NthWeekday(
     domain::commodityFutureType_AnchorDay_t* parent) {
     return &*(parent->NthWeekday = domain::nthWeekdayType());
@@ -42223,6 +43578,38 @@ xsdcpp::ChildElementInfo _fxOptionTimeWeighting_Events_t_Children[] = {
      (xsdcpp::get_field_t)&_get_fxOptionTimeWeighting_Events_t_Event,
      &domain::_fxOptionTimeWeighting_Events_t_Event_t_Info,
      1,
+     1},
+    {nullptr}};
+void* _get_zeroInflationIndexType_RebasingEvents_t_Event(
+    domain::zeroInflationIndexType_RebasingEvents_t* parent) {
+    return (parent->Event.emplace_back(), &parent->Event.back());
+}
+xsdcpp::ChildElementInfo _zeroInflationIndexType_RebasingEvents_t_Children[] = {
+    {"Event",
+     0,
+     (xsdcpp::get_field_t)&_get_zeroInflationIndexType_RebasingEvents_t_Event,
+     &domain::_zeroInflationIndexType_RebasingEvents_t_Event_t_Info,
+     1,
+     4294967295},
+    {nullptr}};
+void* _get_powerLoadProfileDataType_ExplicitDates(domain::powerLoadProfileDataType* parent) {
+    return &*(parent->ExplicitDates = domain::explicitLoadProfileType());
+}
+void* _get_powerLoadProfileDataType_BusinessDayRules(domain::powerLoadProfileDataType* parent) {
+    return &*(parent->BusinessDayRules = domain::ruleBasedLoadProfileType());
+}
+xsdcpp::ChildElementInfo _powerLoadProfileDataType_Children[] = {
+    {"ExplicitDates",
+     0,
+     (xsdcpp::get_field_t)&_get_powerLoadProfileDataType_ExplicitDates,
+     &domain::_explicitLoadProfileType_Info,
+     0,
+     1},
+    {"BusinessDayRules",
+     1,
+     (xsdcpp::get_field_t)&_get_powerLoadProfileDataType_BusinessDayRules,
+     &domain::_ruleBasedLoadProfileType_Info,
+     0,
      1},
     {nullptr}};
 void* _get_nettingSetDetails_NettingSetId(domain::nettingSetDetails* parent) {
@@ -42766,94 +44153,96 @@ xsdcpp::AttributeInfo _correlationsType_Correlation_t_Attributes[] = {
      true,
      nullptr},
     {nullptr}};
-void* _get_shiftTypeEntry_key(domain::shiftTypeEntry* elem) {
-    return &*(elem->key = xsd::string());
+void* _get_bondFutureVolatilitiesType_BondFutureVolatility_t_name(
+    domain::bondFutureVolatilitiesType_BondFutureVolatility_t* elem) {
+    return &elem->name;
 }
-xsdcpp::AttributeInfo _shiftTypeEntry_Attributes[] = {
-    {"key",
+xsdcpp::AttributeInfo _bondFutureVolatilitiesType_BondFutureVolatility_t_Attributes[] = {
+    {"name",
      1ULL,
-     (xsdcpp::get_field_t)&_get_shiftTypeEntry_key,
+     (xsdcpp::get_field_t)&_get_bondFutureVolatilitiesType_BondFutureVolatility_t_name,
      (xsdcpp::set_value_t)&xsdcpp::set_string,
-     false,
+     true,
      nullptr},
     {nullptr}};
-void* _get_shiftSizeEntry_key(domain::shiftSizeEntry* elem) {
-    return &*(elem->key = xsd::string());
+void* _get_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t_name(
+    domain::intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t* elem) {
+    return &elem->name;
 }
-xsdcpp::AttributeInfo _shiftSizeEntry_Attributes[] = {
-    {"key",
+xsdcpp::AttributeInfo _intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t_Attributes[] = {
+    {"name",
      1ULL,
-     (xsdcpp::get_field_t)&_get_shiftSizeEntry_key,
+     (xsdcpp::get_field_t)&_get_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t_name,
      (xsdcpp::set_value_t)&xsdcpp::set_string,
-     false,
+     true,
      nullptr},
     {nullptr}};
-void* _get_shiftSchemeEntry_key(domain::shiftSchemeEntry* elem) {
-    return &*(elem->key = xsd::string());
+void* _get_discountcurve_ShiftType(domain::discountcurve* parent) {
+    return (parent->ShiftType.emplace_back(), &parent->ShiftType.back());
 }
-xsdcpp::AttributeInfo _shiftSchemeEntry_Attributes[] = {
-    {"key",
-     1ULL,
-     (xsdcpp::get_field_t)&_get_shiftSchemeEntry_key,
-     (xsdcpp::set_value_t)&xsdcpp::set_string,
-     false,
-     nullptr},
-    {nullptr}};
-void* _get_parconversion_Instruments(domain::parconversion* parent) {
-    return (parent->Instruments.emplace_back(), &parent->Instruments.back());
+void* _get_discountcurve_ShiftSize(domain::discountcurve* parent) {
+    return (parent->ShiftSize.emplace_back(), &parent->ShiftSize.back());
 }
-void* _get_parconversion_SingleCurve(domain::parconversion* parent) {
-    return (parent->SingleCurve.emplace_back(), &parent->SingleCurve.back());
+void* _get_discountcurve_Shifts(domain::discountcurve* parent) {
+    return &*(parent->Shifts = domain::discountcurve_Shifts_t());
 }
-void* _get_parconversion_DiscountCurve(domain::parconversion* parent) {
-    return &*(parent->DiscountCurve = domain::parconversion_DiscountCurve_t());
+void* _get_discountcurve_ShiftScheme(domain::discountcurve* parent) {
+    return (parent->ShiftScheme.emplace_back(), &parent->ShiftScheme.back());
 }
-void* _get_parconversion_OtherCurrency(domain::parconversion* parent) {
-    return &*(parent->OtherCurrency = domain::currencyCode());
+void* _get_discountcurve_ShiftTenors(domain::discountcurve* parent) {
+    return &parent->ShiftTenors;
 }
-void* _get_parconversion_RateComputationPeriod(domain::parconversion* parent) {
-    return &*(parent->RateComputationPeriod = domain::parconversion_RateComputationPeriod_t());
+void* _get_discountcurve_ParConversion(domain::discountcurve* parent) {
+    return &*(parent->ParConversion = domain::parconversion());
 }
-void* _get_parconversion_Conventions(domain::parconversion* parent) {
-    return &*(parent->Conventions = domain::parconversion_Conventions_t());
-}
-xsdcpp::ChildElementInfo _parconversion_Children[] = {
-    {"Instruments",
+xsdcpp::ChildElementInfo _discountcurve_Children[] = {
+    {"ShiftType",
      0,
-     (xsdcpp::get_field_t)&_get_parconversion_Instruments,
-     &domain::_parconversion_Instruments_t_Info,
-     0,
-     4294967295},
-    {"SingleCurve",
+     (xsdcpp::get_field_t)&_get_discountcurve_ShiftType,
+     &domain::_shiftTypeEntry_Info,
      1,
-     (xsdcpp::get_field_t)&_get_parconversion_SingleCurve,
-     &domain::_bool_Info,
+     4294967295},
+    {"ShiftSize",
+     1,
+     (xsdcpp::get_field_t)&_get_discountcurve_ShiftSize,
+     &domain::_shiftSizeEntry_Info,
      0,
      4294967295},
-    {"DiscountCurve",
+    {"Shifts",
      2,
-     (xsdcpp::get_field_t)&_get_parconversion_DiscountCurve,
-     &domain::_parconversion_DiscountCurve_t_Info,
+     (xsdcpp::get_field_t)&_get_discountcurve_Shifts,
+     &domain::_discountcurve_Shifts_t_Info,
      0,
      1},
-    {"OtherCurrency",
+    {"ShiftScheme",
      3,
-     (xsdcpp::get_field_t)&_get_parconversion_OtherCurrency,
-     &domain::_currencyCode_Info,
+     (xsdcpp::get_field_t)&_get_discountcurve_ShiftScheme,
+     &domain::_shiftSchemeEntry_Info,
      0,
-     1},
-    {"RateComputationPeriod",
+     4294967295},
+    {"ShiftTenors",
      4,
-     (xsdcpp::get_field_t)&_get_parconversion_RateComputationPeriod,
-     &domain::_parconversion_RateComputationPeriod_t_Info,
-     0,
+     (xsdcpp::get_field_t)&_get_discountcurve_ShiftTenors,
+     &domain::_discountcurve_ShiftTenors_t_Info,
+     1,
      1},
-    {"Conventions",
+    {"ParConversion",
      5,
-     (xsdcpp::get_field_t)&_get_parconversion_Conventions,
-     &domain::_parconversion_Conventions_t_Info,
+     (xsdcpp::get_field_t)&_get_discountcurve_ParConversion,
+     &domain::_parconversion_Info,
      0,
      1},
+    {nullptr}};
+void* _get_discountcurve_ccy(domain::discountcurve* elem) {
+    return &elem->ccy;
+}
+xsdcpp::AttributeInfo _discountcurve_Attributes[] = {
+    {"ccy",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_discountcurve_ccy,
+     (xsdcpp::set_value_t)&domain::_set_currencyCode,
+     true,
+     nullptr},
     {nullptr}};
 void* _get_indexcurve_ShiftType(domain::indexcurve* parent) {
     return (parent->ShiftType.emplace_back(), &parent->ShiftType.back());
@@ -44071,6 +45460,12 @@ void* _get_commodityCurve_ShiftTenors(domain::commodityCurve* parent) {
 void* _get_commodityCurve_ParConversion(domain::commodityCurve* parent) {
     return &*(parent->ParConversion = domain::parconversion());
 }
+void* _get_commodityCurve_Calendar(domain::commodityCurve* parent) {
+    return &*(parent->Calendar = domain::calendar());
+}
+void* _get_commodityCurve_BusinessDayConvention(domain::commodityCurve* parent) {
+    return &*(parent->BusinessDayConvention = domain::businessDayConvention());
+}
 xsdcpp::ChildElementInfo _commodityCurve_Children[] = {
     {"Currency",
      0,
@@ -44114,6 +45509,18 @@ xsdcpp::ChildElementInfo _commodityCurve_Children[] = {
      &domain::_parconversion_Info,
      0,
      1},
+    {"Calendar",
+     7,
+     (xsdcpp::get_field_t)&_get_commodityCurve_Calendar,
+     &domain::_calendar_Info,
+     0,
+     1},
+    {"BusinessDayConvention",
+     8,
+     (xsdcpp::get_field_t)&_get_commodityCurve_BusinessDayConvention,
+     &domain::_businessDayConvention_Info,
+     0,
+     1},
     {nullptr}};
 void* _get_commodityCurve_name(domain::commodityCurve* elem) {
     return &elem->name;
@@ -44122,6 +45529,73 @@ xsdcpp::AttributeInfo _commodityCurve_Attributes[] = {
     {"name",
      1ULL,
      (xsdcpp::get_field_t)&_get_commodityCurve_name,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     true,
+     nullptr},
+    {nullptr}};
+void* _get_intradaypowercurve_ShiftType(domain::intradaypowercurve* parent) {
+    return (parent->ShiftType.emplace_back(), &parent->ShiftType.back());
+}
+void* _get_intradaypowercurve_ShiftSize(domain::intradaypowercurve* parent) {
+    return (parent->ShiftSize.emplace_back(), &parent->ShiftSize.back());
+}
+void* _get_intradaypowercurve_Shifts(domain::intradaypowercurve* parent) {
+    return &*(parent->Shifts = domain::intradaypowercurve_Shifts_t());
+}
+void* _get_intradaypowercurve_ShiftScheme(domain::intradaypowercurve* parent) {
+    return (parent->ShiftScheme.emplace_back(), &parent->ShiftScheme.back());
+}
+void* _get_intradaypowercurve_ShiftTenors(domain::intradaypowercurve* parent) {
+    return &parent->ShiftTenors;
+}
+void* _get_intradaypowercurve_ParConversion(domain::intradaypowercurve* parent) {
+    return &*(parent->ParConversion = domain::parconversion());
+}
+xsdcpp::ChildElementInfo _intradaypowercurve_Children[] = {
+    {"ShiftType",
+     0,
+     (xsdcpp::get_field_t)&_get_intradaypowercurve_ShiftType,
+     &domain::_shiftTypeEntry_Info,
+     1,
+     4294967295},
+    {"ShiftSize",
+     1,
+     (xsdcpp::get_field_t)&_get_intradaypowercurve_ShiftSize,
+     &domain::_shiftSizeEntry_Info,
+     0,
+     4294967295},
+    {"Shifts",
+     2,
+     (xsdcpp::get_field_t)&_get_intradaypowercurve_Shifts,
+     &domain::_intradaypowercurve_Shifts_t_Info,
+     0,
+     1},
+    {"ShiftScheme",
+     3,
+     (xsdcpp::get_field_t)&_get_intradaypowercurve_ShiftScheme,
+     &domain::_shiftSchemeEntry_Info,
+     0,
+     4294967295},
+    {"ShiftTenors",
+     4,
+     (xsdcpp::get_field_t)&_get_intradaypowercurve_ShiftTenors,
+     &domain::_intradaypowercurve_ShiftTenors_t_Info,
+     1,
+     1},
+    {"ParConversion",
+     5,
+     (xsdcpp::get_field_t)&_get_intradaypowercurve_ParConversion,
+     &domain::_parconversion_Info,
+     0,
+     1},
+    {nullptr}};
+void* _get_intradaypowercurve_name(domain::intradaypowercurve* elem) {
+    return &elem->name;
+}
+xsdcpp::AttributeInfo _intradaypowercurve_Attributes[] = {
+    {"name",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_intradaypowercurve_name,
      (xsdcpp::set_value_t)&xsdcpp::set_string,
      true,
      nullptr},
@@ -44269,6 +45743,73 @@ xsdcpp::AttributeInfo _correlationcurve_Attributes[] = {
      true,
      nullptr},
     {nullptr}};
+void* _get_sensiBondFutureVolatility_ShiftType(domain::sensiBondFutureVolatility* parent) {
+    return (parent->ShiftType.emplace_back(), &parent->ShiftType.back());
+}
+void* _get_sensiBondFutureVolatility_ShiftSize(domain::sensiBondFutureVolatility* parent) {
+    return (parent->ShiftSize.emplace_back(), &parent->ShiftSize.back());
+}
+void* _get_sensiBondFutureVolatility_Shifts(domain::sensiBondFutureVolatility* parent) {
+    return &*(parent->Shifts = domain::sensiBondFutureVolatility_Shifts_t());
+}
+void* _get_sensiBondFutureVolatility_ShiftScheme(domain::sensiBondFutureVolatility* parent) {
+    return (parent->ShiftScheme.emplace_back(), &parent->ShiftScheme.back());
+}
+void* _get_sensiBondFutureVolatility_ShiftExpiries(domain::sensiBondFutureVolatility* parent) {
+    return &parent->ShiftExpiries;
+}
+void* _get_sensiBondFutureVolatility_ShiftStrikes(domain::sensiBondFutureVolatility* parent) {
+    return &*(parent->ShiftStrikes = domain::sensiBondFutureVolatility_ShiftStrikes_t());
+}
+xsdcpp::ChildElementInfo _sensiBondFutureVolatility_Children[] = {
+    {"ShiftType",
+     0,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatility_ShiftType,
+     &domain::_shiftTypeEntry_Info,
+     1,
+     4294967295},
+    {"ShiftSize",
+     1,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatility_ShiftSize,
+     &domain::_shiftSizeEntry_Info,
+     0,
+     4294967295},
+    {"Shifts",
+     2,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatility_Shifts,
+     &domain::_sensiBondFutureVolatility_Shifts_t_Info,
+     0,
+     1},
+    {"ShiftScheme",
+     3,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatility_ShiftScheme,
+     &domain::_shiftSchemeEntry_Info,
+     0,
+     4294967295},
+    {"ShiftExpiries",
+     4,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatility_ShiftExpiries,
+     &domain::_sensiBondFutureVolatility_ShiftExpiries_t_Info,
+     1,
+     1},
+    {"ShiftStrikes",
+     5,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatility_ShiftStrikes,
+     &domain::_sensiBondFutureVolatility_ShiftStrikes_t_Info,
+     0,
+     1},
+    {nullptr}};
+void* _get_sensiBondFutureVolatility_name(domain::sensiBondFutureVolatility* elem) {
+    return &elem->name;
+}
+xsdcpp::AttributeInfo _sensiBondFutureVolatility_Attributes[] = {
+    {"name",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_sensiBondFutureVolatility_name,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     true,
+     nullptr},
+    {nullptr}};
 void* _get_stresstestparshifts_IRCurves(domain::stresstestparshifts* parent) {
     return &*(parent->IRCurves = domain::bool_());
 }
@@ -44342,6 +45883,18 @@ xsdcpp::ChildElementInfo _stressfxvolatilities_Children[] = {
      0,
      4294967295},
     {nullptr}};
+void* _get_stressswaptionvolatilities_SwaptionVolatility(
+    domain::stressswaptionvolatilities* parent) {
+    return (parent->SwaptionVolatility.emplace_back(), &parent->SwaptionVolatility.back());
+}
+xsdcpp::ChildElementInfo _stressswaptionvolatilities_Children[] = {
+    {"SwaptionVolatility",
+     0,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatilities_SwaptionVolatility,
+     &domain::_stressswaptionvolatility_Info,
+     0,
+     4294967295},
+    {nullptr}};
 void* _get_stresscapfloorvolatilities_CapFloorVolatility(
     domain::stresscapfloorvolatilities* parent) {
     return (parent->CapFloorVolatility.emplace_back(), &parent->CapFloorVolatility.back());
@@ -44362,6 +45915,17 @@ xsdcpp::ChildElementInfo _stresscommoditycurves_Children[] = {
      0,
      (xsdcpp::get_field_t)&_get_stresscommoditycurves_CommodityCurve,
      &domain::_stresscommoditycurve_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_stressintradaypowercurves_IntradayPowerCurve(domain::stressintradaypowercurves* parent) {
+    return (parent->IntradayPowerCurve.emplace_back(), &parent->IntradayPowerCurve.back());
+}
+xsdcpp::ChildElementInfo _stressintradaypowercurves_Children[] = {
+    {"IntradayPowerCurve",
+     0,
+     (xsdcpp::get_field_t)&_get_stressintradaypowercurves_IntradayPowerCurve,
+     &domain::_stressintradaypowercurve_Info,
      0,
      4294967295},
     {nullptr}};
@@ -44523,46 +46087,78 @@ xsdcpp::ChildElementInfo _tradeAction_Children[] = {
      1,
      1},
     {nullptr}};
-void* _get_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t* parent) {
+void* _get_DerivedScheduleType_BaseSchedule(domain::DerivedScheduleType* parent) {
     return &parent->BaseSchedule;
 }
-void* _get_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t* parent) {
-    return &parent->Shift;
+void* _get_DerivedScheduleType_Shift(domain::DerivedScheduleType* parent) {
+    return &*(parent->Shift = domain::DerivedScheduleType_Shift_t());
 }
-void* _get_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t* parent) {
-    return &parent->Calendar;
+void* _get_DerivedScheduleType_Calendar(domain::DerivedScheduleType* parent) {
+    return &*(parent->Calendar = domain::calendar());
 }
-void* _get_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention(
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t* parent) {
-    return &parent->Convention;
+void* _get_DerivedScheduleType_Convention(domain::DerivedScheduleType* parent) {
+    return &*(parent->Convention = domain::businessDayConvention());
 }
-xsdcpp::ChildElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Children[] = {
+void* _get_DerivedScheduleType_RemoveFirstDate(domain::DerivedScheduleType* parent) {
+    return &*(parent->RemoveFirstDate = bool());
+}
+void* _get_DerivedScheduleType_RemoveLastDate(domain::DerivedScheduleType* parent) {
+    return &*(parent->RemoveLastDate = bool());
+}
+void* _get_DerivedScheduleType_ShiftUnit(domain::DerivedScheduleType* parent) {
+    return &*(parent->ShiftUnit = domain::dateDeltaUnit());
+}
+void* _get_DerivedScheduleType_ShiftAnchor(domain::DerivedScheduleType* parent) {
+    return &*(parent->ShiftAnchor = domain::dateDeltaAnchor());
+}
+xsdcpp::ChildElementInfo _DerivedScheduleType_Children[] = {
     {"BaseSchedule",
      0,
-     (xsdcpp::get_field_t)&_get_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule,
-     &domain::_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t_Info,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_BaseSchedule,
+     &domain::_DerivedScheduleType_BaseSchedule_t_Info,
      1,
      1},
     {"Shift",
      1,
-     (xsdcpp::get_field_t)&_get_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift,
-     &domain::_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t_Info,
-     1,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_Shift,
+     &domain::_DerivedScheduleType_Shift_t_Info,
+     0,
      1},
     {"Calendar",
      2,
-     (xsdcpp::get_field_t)&_get_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar,
-     &domain::_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t_Info,
-     1,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_Calendar,
+     &domain::_calendar_Info,
+     0,
      1},
     {"Convention",
      3,
-     (xsdcpp::get_field_t)&_get_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention,
-     &domain::_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t_Info,
-     1,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_Convention,
+     &domain::_businessDayConvention_Info,
+     0,
+     1},
+    {"RemoveFirstDate",
+     4,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_RemoveFirstDate,
+     &domain::_bool_Info,
+     0,
+     1},
+    {"RemoveLastDate",
+     5,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_RemoveLastDate,
+     &domain::_bool_Info,
+     0,
+     1},
+    {"ShiftUnit",
+     6,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_ShiftUnit,
+     &domain::_dateDeltaUnit_Info,
+     0,
+     1},
+    {"ShiftAnchor",
+     7,
+     (xsdcpp::get_field_t)&_get_DerivedScheduleType_ShiftAnchor,
+     &domain::_dateDeltaAnchor_Info,
+     0,
      1},
     {nullptr}};
 void* _get_fxForwardSettlementData_Currency(domain::fxForwardSettlementData* parent) {
@@ -44792,62 +46388,6 @@ xsdcpp::ChildElementInfo _scheduleData_Dates_t_Children[] = {
      (xsdcpp::get_field_t)&_get_scheduleData_Dates_t_Dates,
      &domain::_scheduleData_Dates_t_Dates_t_Info,
      1,
-     1},
-    {nullptr}};
-void* _get_DerivedScheduleType_BaseSchedule(domain::DerivedScheduleType* parent) {
-    return &parent->BaseSchedule;
-}
-void* _get_DerivedScheduleType_Shift(domain::DerivedScheduleType* parent) {
-    return &*(parent->Shift = domain::DerivedScheduleType_Shift_t());
-}
-void* _get_DerivedScheduleType_Calendar(domain::DerivedScheduleType* parent) {
-    return &*(parent->Calendar = domain::calendar());
-}
-void* _get_DerivedScheduleType_Convention(domain::DerivedScheduleType* parent) {
-    return &*(parent->Convention = domain::businessDayConvention());
-}
-void* _get_DerivedScheduleType_RemoveFirstDate(domain::DerivedScheduleType* parent) {
-    return &*(parent->RemoveFirstDate = bool());
-}
-void* _get_DerivedScheduleType_RemoveLastDate(domain::DerivedScheduleType* parent) {
-    return &*(parent->RemoveLastDate = bool());
-}
-xsdcpp::ChildElementInfo _DerivedScheduleType_Children[] = {
-    {"BaseSchedule",
-     0,
-     (xsdcpp::get_field_t)&_get_DerivedScheduleType_BaseSchedule,
-     &domain::_DerivedScheduleType_BaseSchedule_t_Info,
-     1,
-     1},
-    {"Shift",
-     1,
-     (xsdcpp::get_field_t)&_get_DerivedScheduleType_Shift,
-     &domain::_DerivedScheduleType_Shift_t_Info,
-     0,
-     1},
-    {"Calendar",
-     2,
-     (xsdcpp::get_field_t)&_get_DerivedScheduleType_Calendar,
-     &domain::_calendar_Info,
-     0,
-     1},
-    {"Convention",
-     3,
-     (xsdcpp::get_field_t)&_get_DerivedScheduleType_Convention,
-     &domain::_businessDayConvention_Info,
-     0,
-     1},
-    {"RemoveFirstDate",
-     4,
-     (xsdcpp::get_field_t)&_get_DerivedScheduleType_RemoveFirstDate,
-     &domain::_bool_Info,
-     0,
-     1},
-    {"RemoveLastDate",
-     5,
-     (xsdcpp::get_field_t)&_get_DerivedScheduleType_RemoveLastDate,
-     &domain::_bool_Info,
-     0,
      1},
     {nullptr}};
 void* _get_premiumData_Premium(domain::premiumData* parent) {
@@ -45161,6 +46701,9 @@ void* _get__FloatingLegData_t_StubUseOriginalCurve(domain::_FloatingLegData_t* p
 void* _get__FloatingLegData_t_ObservationShift(domain::_FloatingLegData_t* parent) {
     return &*(parent->ObservationShift = bool());
 }
+void* _get__FloatingLegData_t_RoundingPrecision(domain::_FloatingLegData_t* parent) {
+    return &*(parent->RoundingPrecision = int64_t());
+}
 xsdcpp::ChildElementInfo __FloatingLegData_t_Children[] = {
     {"Index",
      0,
@@ -45299,6 +46842,12 @@ xsdcpp::ChildElementInfo __FloatingLegData_t_Children[] = {
      23,
      (xsdcpp::get_field_t)&_get__FloatingLegData_t_ObservationShift,
      &domain::_bool_Info,
+     0,
+     1},
+    {"RoundingPrecision",
+     24,
+     (xsdcpp::get_field_t)&_get__FloatingLegData_t_RoundingPrecision,
+     &domain::_int64_t_Info,
      0,
      1},
     {nullptr}};
@@ -46608,6 +48157,147 @@ xsdcpp::ChildElementInfo __CommodityFloatingLegData_t_Children[] = {
      0,
      1},
     {nullptr}};
+void* _get__IntradayPowerFloatingLegData_t_Name(domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &parent->Name;
+}
+void* _get__IntradayPowerFloatingLegData_t_Quantities(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &parent->Quantities;
+}
+void* _get__IntradayPowerFloatingLegData_t_Spreads(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->Spreads = domain::spreads());
+}
+void* _get__IntradayPowerFloatingLegData_t_Gearings(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->Gearings = domain::gearings());
+}
+void* _get__IntradayPowerFloatingLegData_t_PricingCalendar(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->PricingCalendar = domain::calendar());
+}
+void* _get__IntradayPowerFloatingLegData_t_IncludePeriodStart(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->IncludePeriodStart = bool());
+}
+void* _get__IntradayPowerFloatingLegData_t_IncludePeriodEnd(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->IncludePeriodEnd = bool());
+}
+void* _get__IntradayPowerFloatingLegData_t_BusinessDays(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->BusinessDays = bool());
+}
+void* _get__IntradayPowerFloatingLegData_t_PowerLoadProfileReference(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->PowerLoadProfileReference =
+                  domain::_IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t());
+}
+void* _get__IntradayPowerFloatingLegData_t_PowerLoadProfileData(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->PowerLoadProfileData = domain::powerLoadProfileDataType());
+}
+void* _get__IntradayPowerFloatingLegData_t_FXIndex(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->FXIndex = domain::_IntradayPowerFloatingLegData_t_FXIndex_t());
+}
+void* _get__IntradayPowerFloatingLegData_t_AvgPricePrecision(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->AvgPricePrecision = uint64_t());
+}
+void* _get__IntradayPowerFloatingLegData_t_Tag(domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->Tag = domain::_IntradayPowerFloatingLegData_t_Tag_t());
+}
+void* _get__IntradayPowerFloatingLegData_t_QuantityMode(
+    domain::_IntradayPowerFloatingLegData_t* parent) {
+    return &*(parent->QuantityMode = domain::_IntradayPowerFloatingLegData_t_QuantityMode_t());
+}
+xsdcpp::ChildElementInfo __IntradayPowerFloatingLegData_t_Children[] = {
+    {"Name",
+     0,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_Name,
+     &domain::__IntradayPowerFloatingLegData_t_Name_t_Info,
+     1,
+     1},
+    {"Quantities",
+     1,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_Quantities,
+     &domain::_quantitiesType_Info,
+     1,
+     1},
+    {"Spreads",
+     2,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_Spreads,
+     &domain::_spreads_Info,
+     0,
+     1},
+    {"Gearings",
+     3,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_Gearings,
+     &domain::_gearings_Info,
+     0,
+     1},
+    {"PricingCalendar",
+     4,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_PricingCalendar,
+     &domain::_calendar_Info,
+     0,
+     1},
+    {"IncludePeriodStart",
+     5,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_IncludePeriodStart,
+     &domain::_bool_Info,
+     0,
+     1},
+    {"IncludePeriodEnd",
+     6,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_IncludePeriodEnd,
+     &domain::_bool_Info,
+     0,
+     1},
+    {"BusinessDays",
+     7,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_BusinessDays,
+     &domain::_bool_Info,
+     0,
+     1},
+    {"PowerLoadProfileReference",
+     8,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_PowerLoadProfileReference,
+     &domain::__IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t_Info,
+     0,
+     1},
+    {"PowerLoadProfileData",
+     9,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_PowerLoadProfileData,
+     &domain::_powerLoadProfileDataType_Info,
+     0,
+     1},
+    {"FXIndex",
+     10,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_FXIndex,
+     &domain::__IntradayPowerFloatingLegData_t_FXIndex_t_Info,
+     0,
+     1},
+    {"AvgPricePrecision",
+     11,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_AvgPricePrecision,
+     &domain::_uint64_t_Info,
+     0,
+     1},
+    {"Tag",
+     12,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_Tag,
+     &domain::__IntradayPowerFloatingLegData_t_Tag_t_Info,
+     0,
+     1},
+    {"QuantityMode",
+     13,
+     (xsdcpp::get_field_t)&_get__IntradayPowerFloatingLegData_t_QuantityMode,
+     &domain::__IntradayPowerFloatingLegData_t_QuantityMode_t_Info,
+     0,
+     1},
+    {nullptr}};
 void* _get__FormulaBasedLegData_t_Index(domain::_FormulaBasedLegData_t* parent) {
     return &parent->Index;
 }
@@ -46816,17 +48506,6 @@ xsdcpp::ChildElementInfo _forwardBondData_PremiumData_t_Children[] = {
      &domain::_forwardBondData_PremiumData_t_Date_t_Info,
      1,
      1},
-    {nullptr}};
-void* _get_deliveryBasket_Id(domain::deliveryBasket* parent) {
-    return (parent->Id.emplace_back(), &parent->Id.back());
-}
-xsdcpp::ChildElementInfo _deliveryBasket_Children[] = {
-    {"Id",
-     0,
-     (xsdcpp::get_field_t)&_get_deliveryBasket_Id,
-     &domain::_deliveryBasket_Id_t_Info,
-     0,
-     4294967295},
     {nullptr}};
 void* _get__ReferenceInformation_t_ReferenceEntityId(domain::_ReferenceInformation_t* parent) {
     return &parent->ReferenceEntityId;
@@ -47775,6 +49454,10 @@ void* _get_trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity(
     return &*(parent->IndexQuantity =
                   domain::trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t());
 }
+void* _get_trsUnderlyingData_PortfolioIndexTradeData_t_PriceIsPerUnit(
+    domain::trsUnderlyingData_PortfolioIndexTradeData_t* parent) {
+    return &*(parent->PriceIsPerUnit = bool());
+}
 xsdcpp::ChildElementInfo _trsUnderlyingData_PortfolioIndexTradeData_t_Children[] = {
     {"BasketName",
      0,
@@ -47786,6 +49469,12 @@ xsdcpp::ChildElementInfo _trsUnderlyingData_PortfolioIndexTradeData_t_Children[]
      1,
      (xsdcpp::get_field_t)&_get_trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity,
      &domain::_trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t_Info,
+     0,
+     1},
+    {"PriceIsPerUnit",
+     2,
+     (xsdcpp::get_field_t)&_get_trsUnderlyingData_PortfolioIndexTradeData_t_PriceIsPerUnit,
+     &domain::_bool_Info,
      0,
      1},
     {nullptr}};
@@ -47921,6 +49610,9 @@ void* _get_componentTrade_ForwardBondData(domain::componentTrade* parent) {
 void* _get_componentTrade_BondFutureData(domain::componentTrade* parent) {
     return &*(parent->BondFutureData = domain::bondFutureData());
 }
+void* _get_componentTrade_BondFutureOptionData(domain::componentTrade* parent) {
+    return &*(parent->BondFutureOptionData = domain::bondFutureOptionData());
+}
 void* _get_componentTrade_CreditDefaultSwapData(domain::componentTrade* parent) {
     return &*(parent->CreditDefaultSwapData = domain::creditDefaultSwapData());
 }
@@ -47929,6 +49621,9 @@ void* _get_componentTrade_CreditDefaultSwapOptionData(domain::componentTrade* pa
 }
 void* _get_componentTrade_CommodityForwardData(domain::componentTrade* parent) {
     return &*(parent->CommodityForwardData = domain::commodityForwardData());
+}
+void* _get_componentTrade_IntradayPowerForwardData(domain::componentTrade* parent) {
+    return &*(parent->IntradayPowerForwardData = domain::intradayPowerForwardData());
 }
 void* _get_componentTrade_CommodityOptionData(domain::componentTrade* parent) {
     return &*(parent->CommodityOptionData = domain::commodityOptionData());
@@ -48113,6 +49808,17 @@ void* _get_componentTrade_DualEuroBinaryOptionDoubleKOData(domain::componentTrad
 }
 void* _get_componentTrade_VolatilityBarrierOptionData(domain::componentTrade* parent) {
     return &*(parent->VolatilityBarrierOptionData = domain::volBarrierOptionData());
+}
+void* _get_componentTrade_FxForwardVolatilityAgreementData(domain::componentTrade* parent) {
+    return &*(parent->FxForwardVolatilityAgreementData = domain::forwardVolatilityAgreementData2());
+}
+void* _get_componentTrade_EquityForwardVolatilityAgreementData(domain::componentTrade* parent) {
+    return &*(parent->EquityForwardVolatilityAgreementData =
+                  domain::forwardVolatilityAgreementData2());
+}
+void* _get_componentTrade_CommodityForwardVolatilityAgreementData(domain::componentTrade* parent) {
+    return &*(parent->CommodityForwardVolatilityAgreementData =
+                  domain::forwardVolatilityAgreementData2());
 }
 void* _get_componentTrade_FxTaRFData(domain::componentTrade* parent) {
     return &*(parent->FxTaRFData = domain::tarfData2());
@@ -48633,848 +50339,878 @@ xsdcpp::ChildElementInfo _componentTrade_Children[] = {
      &domain::_bondFutureData_Info,
      0,
      1},
-    {"CreditDefaultSwapData",
+    {"BondFutureOptionData",
      44,
+     (xsdcpp::get_field_t)&_get_componentTrade_BondFutureOptionData,
+     &domain::_bondFutureOptionData_Info,
+     0,
+     1},
+    {"CreditDefaultSwapData",
+     45,
      (xsdcpp::get_field_t)&_get_componentTrade_CreditDefaultSwapData,
      &domain::_creditDefaultSwapData_Info,
      0,
      1},
     {"CreditDefaultSwapOptionData",
-     45,
+     46,
      (xsdcpp::get_field_t)&_get_componentTrade_CreditDefaultSwapOptionData,
      &domain::_creditDefaultSwapOptionData_Info,
      0,
      1},
     {"CommodityForwardData",
-     46,
+     47,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityForwardData,
      &domain::_commodityForwardData_Info,
      0,
      1},
+    {"IntradayPowerForwardData",
+     48,
+     (xsdcpp::get_field_t)&_get_componentTrade_IntradayPowerForwardData,
+     &domain::_intradayPowerForwardData_Info,
+     0,
+     1},
     {"CommodityOptionData",
-     47,
+     49,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityOptionData,
      &domain::_commodityOptionData_Info,
      0,
      1},
     {"CommodityDigitalAveragePriceOptionData",
-     48,
+     50,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityDigitalAveragePriceOptionData,
      &domain::_commodityDigitalAveragePriceOptionData_Info,
      0,
      1},
     {"CommodityDigitalOptionData",
-     49,
+     51,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityDigitalOptionData,
      &domain::_commodityDigitalOptionData_Info,
      0,
      1},
     {"CommoditySpreadOptionData",
-     50,
+     52,
      (xsdcpp::get_field_t)&_get_componentTrade_CommoditySpreadOptionData,
      &domain::_commoditySpreadOptionData_Info,
      0,
      1},
     {"CommoditySwapData",
-     51,
+     53,
      (xsdcpp::get_field_t)&_get_componentTrade_CommoditySwapData,
      &domain::_commoditySwapData_Info,
      0,
      1},
     {"CommoditySwaptionData",
-     52,
+     54,
      (xsdcpp::get_field_t)&_get_componentTrade_CommoditySwaptionData,
      &domain::_commoditySwaptionData_Info,
      0,
      1},
     {"CommodityAveragePriceOptionData",
-     53,
+     55,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityAveragePriceOptionData,
      &domain::_commodityAveragePriceOptionData_Info,
      0,
      1},
     {"CommodityOptionStripData",
-     54,
+     56,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityOptionStripData,
      &domain::_commodityOptionStripData_Info,
      0,
      1},
     {"CommodityPositionData",
-     55,
+     57,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityPositionData,
      &domain::_commodityPositionData_Info,
      0,
      1},
     {"EquityAsianOptionData",
-     56,
+     58,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"FxAsianOptionData",
-     57,
+     59,
      (xsdcpp::get_field_t)&_get_componentTrade_FxAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"CommodityAsianOptionData",
-     58,
+     60,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"BondOptionData",
-     59,
+     61,
      (xsdcpp::get_field_t)&_get_componentTrade_BondOptionData,
      &domain::_bondOptionData_Info,
      0,
      1},
     {"BondRepoData",
-     60,
+     62,
      (xsdcpp::get_field_t)&_get_componentTrade_BondRepoData,
      &domain::_bondRepoData_Info,
      0,
      1},
     {"BondTRSData",
-     61,
+     63,
      (xsdcpp::get_field_t)&_get_componentTrade_BondTRSData,
      &domain::_bondTRSData_Info,
      0,
      1},
     {"CdoData",
-     62,
+     64,
      (xsdcpp::get_field_t)&_get_componentTrade_CdoData,
      &domain::_cdoData_Info,
      0,
      1},
     {"CreditLinkedSwapData",
-     63,
+     65,
      (xsdcpp::get_field_t)&_get_componentTrade_CreditLinkedSwapData,
      &domain::_creditLinkedSwapData_Info,
      0,
      1},
     {"IndexCreditDefaultSwapData",
-     64,
+     66,
      (xsdcpp::get_field_t)&_get_componentTrade_IndexCreditDefaultSwapData,
      &domain::_indexCreditDefaultSwapData_Info,
      0,
      1},
     {"IndexCreditDefaultSwapOptionData",
-     65,
+     67,
      (xsdcpp::get_field_t)&_get_componentTrade_IndexCreditDefaultSwapOptionData,
      &domain::_indexCreditDefaultSwapOptionData_Info,
      0,
      1},
     {"AscotData",
-     66,
+     68,
      (xsdcpp::get_field_t)&_get_componentTrade_AscotData,
      &domain::_ascotData_Info,
      0,
      1},
     {"ConvertibleBondData",
-     67,
+     69,
      (xsdcpp::get_field_t)&_get_componentTrade_ConvertibleBondData,
      &domain::_convertibleBondData_Info,
      0,
      1},
     {"CallableBondData",
-     68,
+     70,
      (xsdcpp::get_field_t)&_get_componentTrade_CallableBondData,
      &domain::_callableBondData_Info,
      0,
      1},
     {"TreasuryLockData",
-     69,
+     71,
      (xsdcpp::get_field_t)&_get_componentTrade_TreasuryLockData,
      &domain::_tlockData_Info,
      0,
      1},
     {"RiskParticipationAgreementData",
-     70,
+     72,
      (xsdcpp::get_field_t)&_get_componentTrade_RiskParticipationAgreementData,
      &domain::_rpaData_Info,
      0,
      1},
     {"CBOData",
-     71,
+     73,
      (xsdcpp::get_field_t)&_get_componentTrade_CBOData,
      &domain::_cbodata_Info,
      0,
      1},
     {"BondBasketData",
-     72,
+     74,
      (xsdcpp::get_field_t)&_get_componentTrade_BondBasketData,
      &domain::_bondBasketData_Info,
      0,
      1},
     {"EquityPositionData",
-     73,
+     75,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityPositionData,
      &domain::_equityPositionData_Info,
      0,
      1},
     {"EquityOptionPositionData",
-     74,
+     76,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityOptionPositionData,
      &domain::_equityOptionPositionData_Info,
      0,
      1},
     {"TotalReturnSwapData",
-     75,
+     77,
      (xsdcpp::get_field_t)&_get_componentTrade_TotalReturnSwapData,
      &domain::_totalReturnSwapData_Info,
      0,
      1},
     {"ContractForDifferenceData",
-     76,
+     78,
      (xsdcpp::get_field_t)&_get_componentTrade_ContractForDifferenceData,
      &domain::_totalReturnSwapData_Info,
      0,
      1},
     {"CompositeTradeData",
-     77,
+     79,
      (xsdcpp::get_field_t)&_get_componentTrade_CompositeTradeData,
      &domain::_compositeTradeData_Info,
      0,
      1},
     {"PairwiseVarianceSwapData",
-     78,
+     80,
      (xsdcpp::get_field_t)&_get_componentTrade_PairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData1_Info,
      0,
      1},
     {"EquityPairwiseVarianceSwapData",
-     79,
+     81,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityPairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData2_Info,
      0,
      1},
     {"FxPairwiseVarianceSwapData",
-     80,
+     82,
      (xsdcpp::get_field_t)&_get_componentTrade_FxPairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData2_Info,
      0,
      1},
     {"EquityOutperformanceOptionData",
-     81,
+     83,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityOutperformanceOptionData,
      &domain::_eqOutperformanceOptionData_Info,
      0,
      1},
     {"FlexiSwapData",
-     82,
+     84,
      (xsdcpp::get_field_t)&_get_componentTrade_FlexiSwapData,
      &domain::_flexiSwapData_Info,
      0,
      1},
     {"BalanceGuaranteedSwapData",
-     83,
+     85,
      (xsdcpp::get_field_t)&_get_componentTrade_BalanceGuaranteedSwapData,
      &domain::_bgSwapData_Info,
      0,
      1},
     {"CommodityRevenueOptionData",
-     84,
+     86,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityRevenueOptionData,
      &domain::_commodityRevenueOptionData_Info,
      0,
      1},
     {"BasketVarianceSwapData",
-     85,
+     87,
      (xsdcpp::get_field_t)&_get_componentTrade_BasketVarianceSwapData,
      &domain::_basketVarianceSwapData_Info,
      0,
      1},
     {"EquityBasketVarianceSwapData",
-     86,
+     88,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"FxBasketVarianceSwapData",
-     87,
+     89,
      (xsdcpp::get_field_t)&_get_componentTrade_FxBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"CommodityBasketVarianceSwapData",
-     88,
+     90,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"ExtendedAccumulatorData",
-     89,
+     91,
      (xsdcpp::get_field_t)&_get_componentTrade_ExtendedAccumulatorData,
      &domain::_extendedAccumulatorData_Info,
      0,
      1},
     {"VarianceOptionData",
-     90,
+     92,
      (xsdcpp::get_field_t)&_get_componentTrade_VarianceOptionData,
      &domain::_varianceOptionData_Info,
      0,
      1},
     {"VarianceDispersionSwapData",
-     91,
+     93,
      (xsdcpp::get_field_t)&_get_componentTrade_VarianceDispersionSwapData,
      &domain::_varianceDispersionSwapData_Info,
      0,
      1},
     {"KIKOVarianceSwapData",
-     92,
+     94,
      (xsdcpp::get_field_t)&_get_componentTrade_KIKOVarianceSwapData,
      &domain::_kikoVarianceSwapData_Info,
      0,
      1},
     {"CorridorVarianceSwapData",
-     93,
+     95,
      (xsdcpp::get_field_t)&_get_componentTrade_CorridorVarianceSwapData,
      &domain::_corridorVarianceSwapData_Info,
      0,
      1},
     {"IndexedCorridorVarianceSwapData",
-     94,
+     96,
      (xsdcpp::get_field_t)&_get_componentTrade_IndexedCorridorVarianceSwapData,
      &domain::_indexedCorridorVarianceSwapData_Info,
      0,
      1},
     {"KIKOCorridorVarianceSwapData",
-     95,
+     97,
      (xsdcpp::get_field_t)&_get_componentTrade_KIKOCorridorVarianceSwapData,
      &domain::_kikoCorridorVarianceSwapData_Info,
      0,
      1},
     {"CorridorVarianceDispersionSwapData",
-     96,
+     98,
      (xsdcpp::get_field_t)&_get_componentTrade_CorridorVarianceDispersionSwapData,
      &domain::_corridorVarianceDispersionSwapData_Info,
      0,
      1},
     {"KOCorridorVarianceDispersionSwapData",
-     97,
+     99,
      (xsdcpp::get_field_t)&_get_componentTrade_KOCorridorVarianceDispersionSwapData,
      &domain::_koCorridorVarianceDispersionSwapData_Info,
      0,
      1},
     {"PairwiseGeometricVarianceDispersionSwapData",
-     98,
+     100,
      (xsdcpp::get_field_t)&_get_componentTrade_PairwiseGeometricVarianceDispersionSwapData,
      &domain::_pairwiseGeometricVarianceDispersionSwapData_Info,
      0,
      1},
     {"ConditionalVarianceSwap01Data",
-     99,
+     101,
      (xsdcpp::get_field_t)&_get_componentTrade_ConditionalVarianceSwap01Data,
      &domain::_conditionalVarianceSwap01Data_Info,
      0,
      1},
     {"ConditionalVarianceSwap02Data",
-     100,
+     102,
      (xsdcpp::get_field_t)&_get_componentTrade_ConditionalVarianceSwap02Data,
      &domain::_conditionalVarianceSwap02Data_Info,
      0,
      1},
     {"GammaSwapData",
-     101,
+     103,
      (xsdcpp::get_field_t)&_get_componentTrade_GammaSwapData,
      &domain::_gammaSwapData_Info,
      0,
      1},
     {"BestEntryOptionData",
-     102,
+     104,
      (xsdcpp::get_field_t)&_get_componentTrade_BestEntryOptionData,
      &domain::_bestEntryOptionData_Info,
      0,
      1},
     {"DualEuroBinaryOptionData",
-     103,
+     105,
      (xsdcpp::get_field_t)&_get_componentTrade_DualEuroBinaryOptionData,
      &domain::_dualEuroBinaryOptionData_Info,
      0,
      1},
     {"DualEuroBinaryOptionDoubleKOData",
-     104,
+     106,
      (xsdcpp::get_field_t)&_get_componentTrade_DualEuroBinaryOptionDoubleKOData,
      &domain::_dualEuroBinaryOptionDoubleKOData_Info,
      0,
      1},
     {"VolatilityBarrierOptionData",
-     105,
+     107,
      (xsdcpp::get_field_t)&_get_componentTrade_VolatilityBarrierOptionData,
      &domain::_volBarrierOptionData_Info,
      0,
      1},
+    {"FxForwardVolatilityAgreementData",
+     108,
+     (xsdcpp::get_field_t)&_get_componentTrade_FxForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
+    {"EquityForwardVolatilityAgreementData",
+     109,
+     (xsdcpp::get_field_t)&_get_componentTrade_EquityForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
+    {"CommodityForwardVolatilityAgreementData",
+     110,
+     (xsdcpp::get_field_t)&_get_componentTrade_CommodityForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
     {"FxTaRFData",
-     106,
+     111,
      (xsdcpp::get_field_t)&_get_componentTrade_FxTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"EquityTaRFData",
-     107,
+     112,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"CommodityTaRFData",
-     108,
+     113,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"FxAccumulatorData",
-     109,
+     114,
      (xsdcpp::get_field_t)&_get_componentTrade_FxAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"EquityAccumulatorData",
-     110,
+     115,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"CommodityAccumulatorData",
-     111,
+     116,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"CallableRangeAccrualData",
-     112,
+     117,
      (xsdcpp::get_field_t)&_get_componentTrade_CallableRangeAccrualData,
      &domain::_callableRangeAccrualData_Info,
      0,
      1},
     {"FxWindowBarrierOptionData",
-     113,
+     118,
      (xsdcpp::get_field_t)&_get_componentTrade_FxWindowBarrierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"EquityWindowBarrierOptionData",
-     114,
+     119,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityWindowBarrierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"CommodityWindowBarierOptionData",
-     115,
+     120,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityWindowBarierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"EquityBasketOptionData",
-     116,
+     121,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"FxBasketOptionData",
-     117,
+     122,
      (xsdcpp::get_field_t)&_get_componentTrade_FxBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"CommodityBasketOptionData",
-     118,
+     123,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"FxGenericBarrierOptionData",
-     119,
+     124,
      (xsdcpp::get_field_t)&_get_componentTrade_FxGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"EquityGenericBarrierOptionData",
-     120,
+     125,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"CommodityGenericBarrierOptionData",
-     121,
+     126,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"EquityRainbowOptionData",
-     122,
+     127,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"FxRainbowOptionData",
-     123,
+     128,
      (xsdcpp::get_field_t)&_get_componentTrade_FxRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"CommodityRainbowOptionData",
-     124,
+     129,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"Autocallable01Data",
-     125,
+     130,
      (xsdcpp::get_field_t)&_get_componentTrade_Autocallable01Data,
      &domain::_autocallable01Data_Info,
      0,
      1},
     {"DoubleDigitalOptionData",
-     126,
+     131,
      (xsdcpp::get_field_t)&_get_componentTrade_DoubleDigitalOptionData,
      &domain::_doubleDigitalOptionData_Info,
      0,
      1},
     {"PerformanceOption01Data",
-     127,
+     132,
      (xsdcpp::get_field_t)&_get_componentTrade_PerformanceOption01Data,
      &domain::_performanceOption01Data_Info,
      0,
      1},
     {"ScriptedTradeData",
-     128,
+     133,
      (xsdcpp::get_field_t)&_get_componentTrade_ScriptedTradeData,
      &domain::_scriptedTradeData_Info,
      0,
      1},
     {"VanillaBasketOptionData",
-     129,
+     134,
      (xsdcpp::get_field_t)&_get_componentTrade_VanillaBasketOptionData,
      &domain::_vanillaBasketOptionData_Info,
      0,
      1},
     {"AsianBasketOptionData",
-     130,
+     135,
      (xsdcpp::get_field_t)&_get_componentTrade_AsianBasketOptionData,
      &domain::_asianBasketOptionData_Info,
      0,
      1},
     {"AverageStrikeBasketOptionData",
-     131,
+     136,
      (xsdcpp::get_field_t)&_get_componentTrade_AverageStrikeBasketOptionData,
      &domain::_averageStrikeBasketOptionData_Info,
      0,
      1},
     {"LookbackCallBasketOptionData",
-     132,
+     137,
      (xsdcpp::get_field_t)&_get_componentTrade_LookbackCallBasketOptionData,
      &domain::_lookbackCallBasketOptionData_Info,
      0,
      1},
     {"LookbackPutBasketOptionData",
-     133,
+     138,
      (xsdcpp::get_field_t)&_get_componentTrade_LookbackPutBasketOptionData,
      &domain::_lookbackPutBasketOptionData_Info,
      0,
      1},
     {"BestOfAirbagData",
-     134,
+     139,
      (xsdcpp::get_field_t)&_get_componentTrade_BestOfAirbagData,
      &domain::_bestOfAirbagData_Info,
      0,
      1},
     {"WorstOfBasketSwapData",
-     135,
+     140,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData_Info,
      0,
      1},
     {"FxWorstOfBasketSwapData",
-     136,
+     141,
      (xsdcpp::get_field_t)&_get_componentTrade_FxWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"EquityWorstOfBasketSwapData",
-     137,
+     142,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"CommodityWorstOfBasketSwapData",
-     138,
+     143,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption01Data",
-     139,
+     144,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption01Data,
      &domain::_worstPerformanceRainbowOption01Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption02Data",
-     140,
+     145,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption02Data,
      &domain::_worstPerformanceRainbowOption02Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption03Data",
-     141,
+     146,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption03Data,
      &domain::_worstPerformanceRainbowOption03Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption04Data",
-     142,
+     147,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption04Data,
      &domain::_worstPerformanceRainbowOption04Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption05Data",
-     143,
+     148,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption05Data,
      &domain::_worstPerformanceRainbowOption05Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption06Data",
-     144,
+     149,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption06Data,
      &domain::_worstPerformanceRainbowOption06Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption07Data",
-     145,
+     150,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption07Data,
      &domain::_worstPerformanceRainbowOption07Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption08Data",
-     146,
+     151,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption08Data,
      &domain::_worstPerformanceRainbowOption08Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption09Data",
-     147,
+     152,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstPerformanceRainbowOption09Data,
      &domain::_worstPerformanceRainbowOption09Data_Info,
      0,
      1},
     {"BestOfAssetOrCashRainbowOptionData",
-     148,
+     153,
      (xsdcpp::get_field_t)&_get_componentTrade_BestOfAssetOrCashRainbowOptionData,
      &domain::_bestOfAssetOrCashRainbowOptionData_Info,
      0,
      1},
     {"WorstOfAssetOrCashRainbowOptionData",
-     149,
+     154,
      (xsdcpp::get_field_t)&_get_componentTrade_WorstOfAssetOrCashRainbowOptionData,
      &domain::_worstOfAssetOrCashRainbowOptionData_Info,
      0,
      1},
     {"MinRainbowOptionData",
-     150,
+     155,
      (xsdcpp::get_field_t)&_get_componentTrade_MinRainbowOptionData,
      &domain::_minRainbowOptionData_Info,
      0,
      1},
     {"MaxRainbowOptionData",
-     151,
+     156,
      (xsdcpp::get_field_t)&_get_componentTrade_MaxRainbowOptionData,
      &domain::_maxRainbowOptionData_Info,
      0,
      1},
     {"WindowBarrierOptionData",
-     152,
+     157,
      (xsdcpp::get_field_t)&_get_componentTrade_WindowBarrierOptionData,
      &domain::_windowBarrierOptionData_Info,
      0,
      1},
     {"Accumulator01Data",
-     153,
+     158,
      (xsdcpp::get_field_t)&_get_componentTrade_Accumulator01Data,
      &domain::_accumulator01Data_Info,
      0,
      1},
     {"Accumulator02Data",
-     154,
+     159,
      (xsdcpp::get_field_t)&_get_componentTrade_Accumulator02Data,
      &domain::_accumulator02Data_Info,
      0,
      1},
     {"EquityBestEntryOptionData",
-     155,
+     160,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"FxBestEntryOptionData",
-     156,
+     161,
      (xsdcpp::get_field_t)&_get_componentTrade_FxBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"CommodityBestEntryOptionData",
-     157,
+     162,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"TaRFData",
-     158,
+     163,
      (xsdcpp::get_field_t)&_get_componentTrade_TaRFData,
      &domain::_tarfData_Info,
      0,
      1},
     {"EuropeanRainbowCallSpreadOptionData",
-     159,
+     164,
      (xsdcpp::get_field_t)&_get_componentTrade_EuropeanRainbowCallSpreadOptionData,
      &domain::_europeanRainbowCallSpreadOptionData_Info,
      0,
      1},
     {"RainbowCallSpreadBarrierOptionData",
-     160,
+     165,
      (xsdcpp::get_field_t)&_get_componentTrade_RainbowCallSpreadBarrierOptionData,
      &domain::_rainbowCallSpreadBarrierOptionData_Info,
      0,
      1},
     {"AsianRainbowCallSpreadOptionData",
-     161,
+     166,
      (xsdcpp::get_field_t)&_get_componentTrade_AsianRainbowCallSpreadOptionData,
      &domain::_asianRainbowCallSpreadOptionData_Info,
      0,
      1},
     {"AsianIrCapFloorData",
-     162,
+     167,
      (xsdcpp::get_field_t)&_get_componentTrade_AsianIrCapFloorData,
      &domain::_asianIrCapFloorData_Info,
      0,
      1},
     {"ForwardVolatilityAgreementData",
-     163,
+     168,
      (xsdcpp::get_field_t)&_get_componentTrade_ForwardVolatilityAgreementData,
      &domain::_forwardVolatilityAgreementData_Info,
      0,
      1},
     {"CorrelationSwapData",
-     164,
+     169,
      (xsdcpp::get_field_t)&_get_componentTrade_CorrelationSwapData,
      &domain::_correlationSwapData_Info,
      0,
      1},
     {"AssetLinkedCliquetOptionData",
-     165,
+     170,
      (xsdcpp::get_field_t)&_get_componentTrade_AssetLinkedCliquetOptionData,
      &domain::_assetLinkedCliquetOptionData_Info,
      0,
      1},
     {"ConstantMaturityVolatilitySwapData",
-     166,
+     171,
      (xsdcpp::get_field_t)&_get_componentTrade_ConstantMaturityVolatilitySwapData,
      &domain::_constantMaturityVolatilitySwapData_Info,
      0,
      1},
     {"CMSCapFloorBarrierData",
-     167,
+     172,
      (xsdcpp::get_field_t)&_get_componentTrade_CMSCapFloorBarrierData,
      &domain::_cmsCapFloorBarrierData_Info,
      0,
      1},
     {"FixedStrikeForwardStartingOptionData",
-     168,
+     173,
      (xsdcpp::get_field_t)&_get_componentTrade_FixedStrikeForwardStartingOptionData,
      &domain::_fixedStrikeForwardStartingOptionData_Info,
      0,
      1},
     {"FloatingStrikeForwardStartingOptionData",
-     169,
+     174,
      (xsdcpp::get_field_t)&_get_componentTrade_FloatingStrikeForwardStartingOptionData,
      &domain::_floatingStrikeForwardStartingOptionData_Info,
      0,
      1},
     {"ForwardStartingSwaptionData",
-     170,
+     175,
      (xsdcpp::get_field_t)&_get_componentTrade_ForwardStartingSwaptionData,
      &domain::_forwardStartingSwaptionData_Info,
      0,
      1},
     {"FlooredAverageCPIZCIISData",
-     171,
+     176,
      (xsdcpp::get_field_t)&_get_componentTrade_FlooredAverageCPIZCIISData,
      &domain::_flooredAverageCPIZCIISData_Info,
      0,
      1},
     {"GenericBarrierOptionData",
-     172,
+     177,
      (xsdcpp::get_field_t)&_get_componentTrade_GenericBarrierOptionData,
      &domain::_genericBarrierOptionDataRaw_Info,
      0,
      1},
     {"MovingMaxYYIISData",
-     173,
+     178,
      (xsdcpp::get_field_t)&_get_componentTrade_MovingMaxYYIISData,
      &domain::_movingMaxYYIISData_Info,
      0,
      1},
     {"IrregularYYIISData",
-     174,
+     179,
      (xsdcpp::get_field_t)&_get_componentTrade_IrregularYYIISData,
      &domain::_irregularYYIISData_Info,
      0,
      1},
     {"EuropeanOptionBarrierData",
-     175,
+     180,
      (xsdcpp::get_field_t)&_get_componentTrade_EuropeanOptionBarrierData,
      &domain::_europeanOptionBarrierData_Info,
      0,
      1},
     {"LadderLockInOptionData",
-     176,
+     181,
      (xsdcpp::get_field_t)&_get_componentTrade_LadderLockInOptionData,
      &domain::_ladderLockInOptionData_Info,
      0,
      1},
     {"LapseHedgeSwapData",
-     177,
+     182,
      (xsdcpp::get_field_t)&_get_componentTrade_LapseHedgeSwapData,
      &domain::_lapseHedgeSwapData_Info,
      0,
      1},
     {"KnockOutSwapData",
-     178,
+     183,
      (xsdcpp::get_field_t)&_get_componentTrade_KnockOutSwapData,
      &domain::_knockOutSwapData_Info,
      0,
      1},
     {"LPISwapData",
-     179,
+     184,
      (xsdcpp::get_field_t)&_get_componentTrade_LPISwapData,
      &domain::_LPISwapData_Info,
      0,
      1},
     {"CashPositionData",
-     180,
+     185,
      (xsdcpp::get_field_t)&_get_componentTrade_CashPositionData,
      &domain::_cashPositionData_Info,
      0,
      1},
     {"StrikeResettableOptionData",
-     181,
+     186,
      (xsdcpp::get_field_t)&_get_componentTrade_StrikeResettableOptionData,
      &domain::_strikeResettableOptionData_Info,
      0,
      1},
     {"EquityStrikeResettableOptionData",
-     182,
+     187,
      (xsdcpp::get_field_t)&_get_componentTrade_EquityStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
      1},
     {"FxStrikeResettableOptionData",
-     183,
+     188,
      (xsdcpp::get_field_t)&_get_componentTrade_FxStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
      1},
     {"CommodityStrikeResettableOptionData",
-     184,
+     189,
      (xsdcpp::get_field_t)&_get_componentTrade_CommodityStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
@@ -49622,6 +51358,9 @@ void* _get_componentSubTrade_ForwardBondData(domain::componentSubTrade* parent) 
 void* _get_componentSubTrade_BondFutureData(domain::componentSubTrade* parent) {
     return &*(parent->BondFutureData = domain::bondFutureData());
 }
+void* _get_componentSubTrade_BondFutureOptionData(domain::componentSubTrade* parent) {
+    return &*(parent->BondFutureOptionData = domain::bondFutureOptionData());
+}
 void* _get_componentSubTrade_CreditDefaultSwapData(domain::componentSubTrade* parent) {
     return &*(parent->CreditDefaultSwapData = domain::creditDefaultSwapData());
 }
@@ -49630,6 +51369,9 @@ void* _get_componentSubTrade_CreditDefaultSwapOptionData(domain::componentSubTra
 }
 void* _get_componentSubTrade_CommodityForwardData(domain::componentSubTrade* parent) {
     return &*(parent->CommodityForwardData = domain::commodityForwardData());
+}
+void* _get_componentSubTrade_IntradayPowerForwardData(domain::componentSubTrade* parent) {
+    return &*(parent->IntradayPowerForwardData = domain::intradayPowerForwardData());
 }
 void* _get_componentSubTrade_CommodityOptionData(domain::componentSubTrade* parent) {
     return &*(parent->CommodityOptionData = domain::commodityOptionData());
@@ -49816,6 +51558,19 @@ void* _get_componentSubTrade_DualEuroBinaryOptionDoubleKOData(domain::componentS
 }
 void* _get_componentSubTrade_VolatilityBarrierOptionData(domain::componentSubTrade* parent) {
     return &*(parent->VolatilityBarrierOptionData = domain::volBarrierOptionData());
+}
+void* _get_componentSubTrade_FxForwardVolatilityAgreementData(domain::componentSubTrade* parent) {
+    return &*(parent->FxForwardVolatilityAgreementData = domain::forwardVolatilityAgreementData2());
+}
+void* _get_componentSubTrade_EquityForwardVolatilityAgreementData(
+    domain::componentSubTrade* parent) {
+    return &*(parent->EquityForwardVolatilityAgreementData =
+                  domain::forwardVolatilityAgreementData2());
+}
+void* _get_componentSubTrade_CommodityForwardVolatilityAgreementData(
+    domain::componentSubTrade* parent) {
+    return &*(parent->CommodityForwardVolatilityAgreementData =
+                  domain::forwardVolatilityAgreementData2());
 }
 void* _get_componentSubTrade_FxTaRFData(domain::componentSubTrade* parent) {
     return &*(parent->FxTaRFData = domain::tarfData2());
@@ -50350,848 +52105,878 @@ xsdcpp::ChildElementInfo _componentSubTrade_Children[] = {
      &domain::_bondFutureData_Info,
      0,
      1},
-    {"CreditDefaultSwapData",
+    {"BondFutureOptionData",
      44,
+     (xsdcpp::get_field_t)&_get_componentSubTrade_BondFutureOptionData,
+     &domain::_bondFutureOptionData_Info,
+     0,
+     1},
+    {"CreditDefaultSwapData",
+     45,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CreditDefaultSwapData,
      &domain::_creditDefaultSwapData_Info,
      0,
      1},
     {"CreditDefaultSwapOptionData",
-     45,
+     46,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CreditDefaultSwapOptionData,
      &domain::_creditDefaultSwapOptionData_Info,
      0,
      1},
     {"CommodityForwardData",
-     46,
+     47,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityForwardData,
      &domain::_commodityForwardData_Info,
      0,
      1},
+    {"IntradayPowerForwardData",
+     48,
+     (xsdcpp::get_field_t)&_get_componentSubTrade_IntradayPowerForwardData,
+     &domain::_intradayPowerForwardData_Info,
+     0,
+     1},
     {"CommodityOptionData",
-     47,
+     49,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityOptionData,
      &domain::_commodityOptionData_Info,
      0,
      1},
     {"CommodityDigitalAveragePriceOptionData",
-     48,
+     50,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityDigitalAveragePriceOptionData,
      &domain::_commodityDigitalAveragePriceOptionData_Info,
      0,
      1},
     {"CommodityDigitalOptionData",
-     49,
+     51,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityDigitalOptionData,
      &domain::_commodityDigitalOptionData_Info,
      0,
      1},
     {"CommoditySpreadOptionData",
-     50,
+     52,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommoditySpreadOptionData,
      &domain::_commoditySpreadOptionData_Info,
      0,
      1},
     {"CommoditySwapData",
-     51,
+     53,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommoditySwapData,
      &domain::_commoditySwapData_Info,
      0,
      1},
     {"CommoditySwaptionData",
-     52,
+     54,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommoditySwaptionData,
      &domain::_commoditySwaptionData_Info,
      0,
      1},
     {"CommodityAveragePriceOptionData",
-     53,
+     55,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityAveragePriceOptionData,
      &domain::_commodityAveragePriceOptionData_Info,
      0,
      1},
     {"CommodityOptionStripData",
-     54,
+     56,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityOptionStripData,
      &domain::_commodityOptionStripData_Info,
      0,
      1},
     {"CommodityPositionData",
-     55,
+     57,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityPositionData,
      &domain::_commodityPositionData_Info,
      0,
      1},
     {"EquityAsianOptionData",
-     56,
+     58,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"FxAsianOptionData",
-     57,
+     59,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"CommodityAsianOptionData",
-     58,
+     60,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityAsianOptionData,
      &domain::_singleUnderlyingAsianOptionData_Info,
      0,
      1},
     {"BondOptionData",
-     59,
+     61,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BondOptionData,
      &domain::_bondOptionData_Info,
      0,
      1},
     {"BondRepoData",
-     60,
+     62,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BondRepoData,
      &domain::_bondRepoData_Info,
      0,
      1},
     {"BondTRSData",
-     61,
+     63,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BondTRSData,
      &domain::_bondTRSData_Info,
      0,
      1},
     {"CdoData",
-     62,
+     64,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CdoData,
      &domain::_cdoData_Info,
      0,
      1},
     {"CreditLinkedSwapData",
-     63,
+     65,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CreditLinkedSwapData,
      &domain::_creditLinkedSwapData_Info,
      0,
      1},
     {"IndexCreditDefaultSwapData",
-     64,
+     66,
      (xsdcpp::get_field_t)&_get_componentSubTrade_IndexCreditDefaultSwapData,
      &domain::_indexCreditDefaultSwapData_Info,
      0,
      1},
     {"IndexCreditDefaultSwapOptionData",
-     65,
+     67,
      (xsdcpp::get_field_t)&_get_componentSubTrade_IndexCreditDefaultSwapOptionData,
      &domain::_indexCreditDefaultSwapOptionData_Info,
      0,
      1},
     {"AscotData",
-     66,
+     68,
      (xsdcpp::get_field_t)&_get_componentSubTrade_AscotData,
      &domain::_ascotData_Info,
      0,
      1},
     {"ConvertibleBondData",
-     67,
+     69,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ConvertibleBondData,
      &domain::_convertibleBondData_Info,
      0,
      1},
     {"CallableBondData",
-     68,
+     70,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CallableBondData,
      &domain::_callableBondData_Info,
      0,
      1},
     {"TreasuryLockData",
-     69,
+     71,
      (xsdcpp::get_field_t)&_get_componentSubTrade_TreasuryLockData,
      &domain::_tlockData_Info,
      0,
      1},
     {"RiskParticipationAgreementData",
-     70,
+     72,
      (xsdcpp::get_field_t)&_get_componentSubTrade_RiskParticipationAgreementData,
      &domain::_rpaData_Info,
      0,
      1},
     {"CBOData",
-     71,
+     73,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CBOData,
      &domain::_cbodata_Info,
      0,
      1},
     {"BondBasketData",
-     72,
+     74,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BondBasketData,
      &domain::_bondBasketData_Info,
      0,
      1},
     {"EquityPositionData",
-     73,
+     75,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityPositionData,
      &domain::_equityPositionData_Info,
      0,
      1},
     {"EquityOptionPositionData",
-     74,
+     76,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityOptionPositionData,
      &domain::_equityOptionPositionData_Info,
      0,
      1},
     {"TotalReturnSwapData",
-     75,
+     77,
      (xsdcpp::get_field_t)&_get_componentSubTrade_TotalReturnSwapData,
      &domain::_totalReturnSwapData_Info,
      0,
      1},
     {"ContractForDifferenceData",
-     76,
+     78,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ContractForDifferenceData,
      &domain::_totalReturnSwapData_Info,
      0,
      1},
     {"CompositeTradeData",
-     77,
+     79,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CompositeTradeData,
      &domain::_compositeTradeData_Info,
      0,
      1},
     {"PairwiseVarianceSwapData",
-     78,
+     80,
      (xsdcpp::get_field_t)&_get_componentSubTrade_PairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData1_Info,
      0,
      1},
     {"EquityPairwiseVarianceSwapData",
-     79,
+     81,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityPairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData2_Info,
      0,
      1},
     {"FxPairwiseVarianceSwapData",
-     80,
+     82,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxPairwiseVarianceSwapData,
      &domain::_pairwiseVarianceSwapData2_Info,
      0,
      1},
     {"EquityOutperformanceOptionData",
-     81,
+     83,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityOutperformanceOptionData,
      &domain::_eqOutperformanceOptionData_Info,
      0,
      1},
     {"FlexiSwapData",
-     82,
+     84,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FlexiSwapData,
      &domain::_flexiSwapData_Info,
      0,
      1},
     {"BalanceGuaranteedSwapData",
-     83,
+     85,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BalanceGuaranteedSwapData,
      &domain::_bgSwapData_Info,
      0,
      1},
     {"CommodityRevenueOptionData",
-     84,
+     86,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityRevenueOptionData,
      &domain::_commodityRevenueOptionData_Info,
      0,
      1},
     {"BasketVarianceSwapData",
-     85,
+     87,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BasketVarianceSwapData,
      &domain::_basketVarianceSwapData_Info,
      0,
      1},
     {"EquityBasketVarianceSwapData",
-     86,
+     88,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"FxBasketVarianceSwapData",
-     87,
+     89,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"CommodityBasketVarianceSwapData",
-     88,
+     90,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityBasketVarianceSwapData,
      &domain::_basketVarianceSwapData2_Info,
      0,
      1},
     {"ExtendedAccumulatorData",
-     89,
+     91,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ExtendedAccumulatorData,
      &domain::_extendedAccumulatorData_Info,
      0,
      1},
     {"VarianceOptionData",
-     90,
+     92,
      (xsdcpp::get_field_t)&_get_componentSubTrade_VarianceOptionData,
      &domain::_varianceOptionData_Info,
      0,
      1},
     {"VarianceDispersionSwapData",
-     91,
+     93,
      (xsdcpp::get_field_t)&_get_componentSubTrade_VarianceDispersionSwapData,
      &domain::_varianceDispersionSwapData_Info,
      0,
      1},
     {"KIKOVarianceSwapData",
-     92,
+     94,
      (xsdcpp::get_field_t)&_get_componentSubTrade_KIKOVarianceSwapData,
      &domain::_kikoVarianceSwapData_Info,
      0,
      1},
     {"CorridorVarianceSwapData",
-     93,
+     95,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CorridorVarianceSwapData,
      &domain::_corridorVarianceSwapData_Info,
      0,
      1},
     {"IndexedCorridorVarianceSwapData",
-     94,
+     96,
      (xsdcpp::get_field_t)&_get_componentSubTrade_IndexedCorridorVarianceSwapData,
      &domain::_indexedCorridorVarianceSwapData_Info,
      0,
      1},
     {"KIKOCorridorVarianceSwapData",
-     95,
+     97,
      (xsdcpp::get_field_t)&_get_componentSubTrade_KIKOCorridorVarianceSwapData,
      &domain::_kikoCorridorVarianceSwapData_Info,
      0,
      1},
     {"CorridorVarianceDispersionSwapData",
-     96,
+     98,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CorridorVarianceDispersionSwapData,
      &domain::_corridorVarianceDispersionSwapData_Info,
      0,
      1},
     {"KOCorridorVarianceDispersionSwapData",
-     97,
+     99,
      (xsdcpp::get_field_t)&_get_componentSubTrade_KOCorridorVarianceDispersionSwapData,
      &domain::_koCorridorVarianceDispersionSwapData_Info,
      0,
      1},
     {"PairwiseGeometricVarianceDispersionSwapData",
-     98,
+     100,
      (xsdcpp::get_field_t)&_get_componentSubTrade_PairwiseGeometricVarianceDispersionSwapData,
      &domain::_pairwiseGeometricVarianceDispersionSwapData_Info,
      0,
      1},
     {"ConditionalVarianceSwap01Data",
-     99,
+     101,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ConditionalVarianceSwap01Data,
      &domain::_conditionalVarianceSwap01Data_Info,
      0,
      1},
     {"ConditionalVarianceSwap02Data",
-     100,
+     102,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ConditionalVarianceSwap02Data,
      &domain::_conditionalVarianceSwap02Data_Info,
      0,
      1},
     {"GammaSwapData",
-     101,
+     103,
      (xsdcpp::get_field_t)&_get_componentSubTrade_GammaSwapData,
      &domain::_gammaSwapData_Info,
      0,
      1},
     {"BestEntryOptionData",
-     102,
+     104,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BestEntryOptionData,
      &domain::_bestEntryOptionData_Info,
      0,
      1},
     {"DualEuroBinaryOptionData",
-     103,
+     105,
      (xsdcpp::get_field_t)&_get_componentSubTrade_DualEuroBinaryOptionData,
      &domain::_dualEuroBinaryOptionData_Info,
      0,
      1},
     {"DualEuroBinaryOptionDoubleKOData",
-     104,
+     106,
      (xsdcpp::get_field_t)&_get_componentSubTrade_DualEuroBinaryOptionDoubleKOData,
      &domain::_dualEuroBinaryOptionDoubleKOData_Info,
      0,
      1},
     {"VolatilityBarrierOptionData",
-     105,
+     107,
      (xsdcpp::get_field_t)&_get_componentSubTrade_VolatilityBarrierOptionData,
      &domain::_volBarrierOptionData_Info,
      0,
      1},
+    {"FxForwardVolatilityAgreementData",
+     108,
+     (xsdcpp::get_field_t)&_get_componentSubTrade_FxForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
+    {"EquityForwardVolatilityAgreementData",
+     109,
+     (xsdcpp::get_field_t)&_get_componentSubTrade_EquityForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
+    {"CommodityForwardVolatilityAgreementData",
+     110,
+     (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityForwardVolatilityAgreementData,
+     &domain::_forwardVolatilityAgreementData2_Info,
+     0,
+     1},
     {"FxTaRFData",
-     106,
+     111,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"EquityTaRFData",
-     107,
+     112,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"CommodityTaRFData",
-     108,
+     113,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityTaRFData,
      &domain::_tarfData2_Info,
      0,
      1},
     {"FxAccumulatorData",
-     109,
+     114,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"EquityAccumulatorData",
-     110,
+     115,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"CommodityAccumulatorData",
-     111,
+     116,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityAccumulatorData,
      &domain::_accumulatorData_Info,
      0,
      1},
     {"CallableRangeAccrualData",
-     112,
+     117,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CallableRangeAccrualData,
      &domain::_callableRangeAccrualData_Info,
      0,
      1},
     {"FxWindowBarrierOptionData",
-     113,
+     118,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxWindowBarrierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"EquityWindowBarrierOptionData",
-     114,
+     119,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityWindowBarrierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"CommodityWindowBarierOptionData",
-     115,
+     120,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityWindowBarierOptionData,
      &domain::_windowBarrierOptionData2_Info,
      0,
      1},
     {"EquityBasketOptionData",
-     116,
+     121,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"FxBasketOptionData",
-     117,
+     122,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"CommodityBasketOptionData",
-     118,
+     123,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityBasketOptionData,
      &domain::_basketOptionData_Info,
      0,
      1},
     {"FxGenericBarrierOptionData",
-     119,
+     124,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"EquityGenericBarrierOptionData",
-     120,
+     125,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"CommodityGenericBarrierOptionData",
-     121,
+     126,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityGenericBarrierOptionData,
      &domain::_genericBarrierOptionData_Info,
      0,
      1},
     {"EquityRainbowOptionData",
-     122,
+     127,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"FxRainbowOptionData",
-     123,
+     128,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"CommodityRainbowOptionData",
-     124,
+     129,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityRainbowOptionData,
      &domain::_rainbowOptionData_Info,
      0,
      1},
     {"Autocallable01Data",
-     125,
+     130,
      (xsdcpp::get_field_t)&_get_componentSubTrade_Autocallable01Data,
      &domain::_autocallable01Data_Info,
      0,
      1},
     {"DoubleDigitalOptionData",
-     126,
+     131,
      (xsdcpp::get_field_t)&_get_componentSubTrade_DoubleDigitalOptionData,
      &domain::_doubleDigitalOptionData_Info,
      0,
      1},
     {"PerformanceOption01Data",
-     127,
+     132,
      (xsdcpp::get_field_t)&_get_componentSubTrade_PerformanceOption01Data,
      &domain::_performanceOption01Data_Info,
      0,
      1},
     {"ScriptedTradeData",
-     128,
+     133,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ScriptedTradeData,
      &domain::_scriptedTradeData_Info,
      0,
      1},
     {"VanillaBasketOptionData",
-     129,
+     134,
      (xsdcpp::get_field_t)&_get_componentSubTrade_VanillaBasketOptionData,
      &domain::_vanillaBasketOptionData_Info,
      0,
      1},
     {"AsianBasketOptionData",
-     130,
+     135,
      (xsdcpp::get_field_t)&_get_componentSubTrade_AsianBasketOptionData,
      &domain::_asianBasketOptionData_Info,
      0,
      1},
     {"AverageStrikeBasketOptionData",
-     131,
+     136,
      (xsdcpp::get_field_t)&_get_componentSubTrade_AverageStrikeBasketOptionData,
      &domain::_averageStrikeBasketOptionData_Info,
      0,
      1},
     {"LookbackCallBasketOptionData",
-     132,
+     137,
      (xsdcpp::get_field_t)&_get_componentSubTrade_LookbackCallBasketOptionData,
      &domain::_lookbackCallBasketOptionData_Info,
      0,
      1},
     {"LookbackPutBasketOptionData",
-     133,
+     138,
      (xsdcpp::get_field_t)&_get_componentSubTrade_LookbackPutBasketOptionData,
      &domain::_lookbackPutBasketOptionData_Info,
      0,
      1},
     {"BestOfAirbagData",
-     134,
+     139,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BestOfAirbagData,
      &domain::_bestOfAirbagData_Info,
      0,
      1},
     {"WorstOfBasketSwapData",
-     135,
+     140,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData_Info,
      0,
      1},
     {"FxWorstOfBasketSwapData",
-     136,
+     141,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"EquityWorstOfBasketSwapData",
-     137,
+     142,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"CommodityWorstOfBasketSwapData",
-     138,
+     143,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityWorstOfBasketSwapData,
      &domain::_worstOfBasketSwapData2_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption01Data",
-     139,
+     144,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption01Data,
      &domain::_worstPerformanceRainbowOption01Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption02Data",
-     140,
+     145,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption02Data,
      &domain::_worstPerformanceRainbowOption02Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption03Data",
-     141,
+     146,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption03Data,
      &domain::_worstPerformanceRainbowOption03Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption04Data",
-     142,
+     147,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption04Data,
      &domain::_worstPerformanceRainbowOption04Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption05Data",
-     143,
+     148,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption05Data,
      &domain::_worstPerformanceRainbowOption05Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption06Data",
-     144,
+     149,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption06Data,
      &domain::_worstPerformanceRainbowOption06Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption07Data",
-     145,
+     150,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption07Data,
      &domain::_worstPerformanceRainbowOption07Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption08Data",
-     146,
+     151,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption08Data,
      &domain::_worstPerformanceRainbowOption08Data_Info,
      0,
      1},
     {"WorstPerformanceRainbowOption09Data",
-     147,
+     152,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstPerformanceRainbowOption09Data,
      &domain::_worstPerformanceRainbowOption09Data_Info,
      0,
      1},
     {"BestOfAssetOrCashRainbowOptionData",
-     148,
+     153,
      (xsdcpp::get_field_t)&_get_componentSubTrade_BestOfAssetOrCashRainbowOptionData,
      &domain::_bestOfAssetOrCashRainbowOptionData_Info,
      0,
      1},
     {"WorstOfAssetOrCashRainbowOptionData",
-     149,
+     154,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WorstOfAssetOrCashRainbowOptionData,
      &domain::_worstOfAssetOrCashRainbowOptionData_Info,
      0,
      1},
     {"MinRainbowOptionData",
-     150,
+     155,
      (xsdcpp::get_field_t)&_get_componentSubTrade_MinRainbowOptionData,
      &domain::_minRainbowOptionData_Info,
      0,
      1},
     {"MaxRainbowOptionData",
-     151,
+     156,
      (xsdcpp::get_field_t)&_get_componentSubTrade_MaxRainbowOptionData,
      &domain::_maxRainbowOptionData_Info,
      0,
      1},
     {"WindowBarrierOptionData",
-     152,
+     157,
      (xsdcpp::get_field_t)&_get_componentSubTrade_WindowBarrierOptionData,
      &domain::_windowBarrierOptionData_Info,
      0,
      1},
     {"Accumulator01Data",
-     153,
+     158,
      (xsdcpp::get_field_t)&_get_componentSubTrade_Accumulator01Data,
      &domain::_accumulator01Data_Info,
      0,
      1},
     {"Accumulator02Data",
-     154,
+     159,
      (xsdcpp::get_field_t)&_get_componentSubTrade_Accumulator02Data,
      &domain::_accumulator02Data_Info,
      0,
      1},
     {"EquityBestEntryOptionData",
-     155,
+     160,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"FxBestEntryOptionData",
-     156,
+     161,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"CommodityBestEntryOptionData",
-     157,
+     162,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityBestEntryOptionData,
      &domain::_bestEntryOptionData2_Info,
      0,
      1},
     {"TaRFData",
-     158,
+     163,
      (xsdcpp::get_field_t)&_get_componentSubTrade_TaRFData,
      &domain::_tarfData_Info,
      0,
      1},
     {"EuropeanRainbowCallSpreadOptionData",
-     159,
+     164,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EuropeanRainbowCallSpreadOptionData,
      &domain::_europeanRainbowCallSpreadOptionData_Info,
      0,
      1},
     {"RainbowCallSpreadBarrierOptionData",
-     160,
+     165,
      (xsdcpp::get_field_t)&_get_componentSubTrade_RainbowCallSpreadBarrierOptionData,
      &domain::_rainbowCallSpreadBarrierOptionData_Info,
      0,
      1},
     {"AsianRainbowCallSpreadOptionData",
-     161,
+     166,
      (xsdcpp::get_field_t)&_get_componentSubTrade_AsianRainbowCallSpreadOptionData,
      &domain::_asianRainbowCallSpreadOptionData_Info,
      0,
      1},
     {"AsianIrCapFloorData",
-     162,
+     167,
      (xsdcpp::get_field_t)&_get_componentSubTrade_AsianIrCapFloorData,
      &domain::_asianIrCapFloorData_Info,
      0,
      1},
     {"ForwardVolatilityAgreementData",
-     163,
+     168,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ForwardVolatilityAgreementData,
      &domain::_forwardVolatilityAgreementData_Info,
      0,
      1},
     {"CorrelationSwapData",
-     164,
+     169,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CorrelationSwapData,
      &domain::_correlationSwapData_Info,
      0,
      1},
     {"AssetLinkedCliquetOptionData",
-     165,
+     170,
      (xsdcpp::get_field_t)&_get_componentSubTrade_AssetLinkedCliquetOptionData,
      &domain::_assetLinkedCliquetOptionData_Info,
      0,
      1},
     {"ConstantMaturityVolatilitySwapData",
-     166,
+     171,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ConstantMaturityVolatilitySwapData,
      &domain::_constantMaturityVolatilitySwapData_Info,
      0,
      1},
     {"CMSCapFloorBarrierData",
-     167,
+     172,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CMSCapFloorBarrierData,
      &domain::_cmsCapFloorBarrierData_Info,
      0,
      1},
     {"FixedStrikeForwardStartingOptionData",
-     168,
+     173,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FixedStrikeForwardStartingOptionData,
      &domain::_fixedStrikeForwardStartingOptionData_Info,
      0,
      1},
     {"FloatingStrikeForwardStartingOptionData",
-     169,
+     174,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FloatingStrikeForwardStartingOptionData,
      &domain::_floatingStrikeForwardStartingOptionData_Info,
      0,
      1},
     {"ForwardStartingSwaptionData",
-     170,
+     175,
      (xsdcpp::get_field_t)&_get_componentSubTrade_ForwardStartingSwaptionData,
      &domain::_forwardStartingSwaptionData_Info,
      0,
      1},
     {"FlooredAverageCPIZCIISData",
-     171,
+     176,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FlooredAverageCPIZCIISData,
      &domain::_flooredAverageCPIZCIISData_Info,
      0,
      1},
     {"GenericBarrierOptionData",
-     172,
+     177,
      (xsdcpp::get_field_t)&_get_componentSubTrade_GenericBarrierOptionData,
      &domain::_genericBarrierOptionDataRaw_Info,
      0,
      1},
     {"MovingMaxYYIISData",
-     173,
+     178,
      (xsdcpp::get_field_t)&_get_componentSubTrade_MovingMaxYYIISData,
      &domain::_movingMaxYYIISData_Info,
      0,
      1},
     {"IrregularYYIISData",
-     174,
+     179,
      (xsdcpp::get_field_t)&_get_componentSubTrade_IrregularYYIISData,
      &domain::_irregularYYIISData_Info,
      0,
      1},
     {"EuropeanOptionBarrierData",
-     175,
+     180,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EuropeanOptionBarrierData,
      &domain::_europeanOptionBarrierData_Info,
      0,
      1},
     {"LadderLockInOptionData",
-     176,
+     181,
      (xsdcpp::get_field_t)&_get_componentSubTrade_LadderLockInOptionData,
      &domain::_ladderLockInOptionData_Info,
      0,
      1},
     {"LapseHedgeSwapData",
-     177,
+     182,
      (xsdcpp::get_field_t)&_get_componentSubTrade_LapseHedgeSwapData,
      &domain::_lapseHedgeSwapData_Info,
      0,
      1},
     {"KnockOutSwapData",
-     178,
+     183,
      (xsdcpp::get_field_t)&_get_componentSubTrade_KnockOutSwapData,
      &domain::_knockOutSwapData_Info,
      0,
      1},
     {"LPISwapData",
-     179,
+     184,
      (xsdcpp::get_field_t)&_get_componentSubTrade_LPISwapData,
      &domain::_LPISwapData_Info,
      0,
      1},
     {"CashPositionData",
-     180,
+     185,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CashPositionData,
      &domain::_cashPositionData_Info,
      0,
      1},
     {"StrikeResettableOptionData",
-     181,
+     186,
      (xsdcpp::get_field_t)&_get_componentSubTrade_StrikeResettableOptionData,
      &domain::_strikeResettableOptionData_Info,
      0,
      1},
     {"EquityStrikeResettableOptionData",
-     182,
+     187,
      (xsdcpp::get_field_t)&_get_componentSubTrade_EquityStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
      1},
     {"FxStrikeResettableOptionData",
-     183,
+     188,
      (xsdcpp::get_field_t)&_get_componentSubTrade_FxStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
      1},
     {"CommodityStrikeResettableOptionData",
-     184,
+     189,
      (xsdcpp::get_field_t)&_get_componentSubTrade_CommodityStrikeResettableOptionData,
      &domain::_strikeResettableOptionData2_Info,
      0,
@@ -51645,8 +53430,7 @@ void* _get_scriptedTradeData_Data_t_Event_t_ScheduleData(
 }
 void* _get_scriptedTradeData_Data_t_Event_t_DerivedSchedule(
     domain::scriptedTradeData_Data_t_Event_t* parent) {
-    return &*(parent->DerivedSchedule =
-                  domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t());
+    return &*(parent->DerivedSchedule = domain::DerivedScheduleType());
 }
 void* _get_scriptedTradeData_Data_t_Event_t_ApplyCoarsening(
     domain::scriptedTradeData_Data_t_Event_t* parent) {
@@ -51674,7 +53458,7 @@ xsdcpp::ChildElementInfo _scriptedTradeData_Data_t_Event_t_Children[] = {
     {"DerivedSchedule",
      3,
      (xsdcpp::get_field_t)&_get_scriptedTradeData_Data_t_Event_t_DerivedSchedule,
-     &domain::_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Info,
+     &domain::_DerivedScheduleType_Info,
      0,
      1},
     {"ApplyCoarsening",
@@ -51981,6 +53765,18 @@ xsdcpp::AttributeInfo _market_CapFloorVolatilities_t_SmileDynamics_t_Attributes[
      false,
      nullptr},
     {nullptr}};
+void* _get_market_CapFloorVolatilities_t_SmileForwardInteraction_t_key(
+    domain::market_CapFloorVolatilities_t_SmileForwardInteraction_t* elem) {
+    return &*(elem->key = xsd::string());
+}
+xsdcpp::AttributeInfo _market_CapFloorVolatilities_t_SmileForwardInteraction_t_Attributes[] = {
+    {"key",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_market_CapFloorVolatilities_t_SmileForwardInteraction_t_key,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
 void* _get_market_CDSVolatilities_t_SmileDynamics_t_key(
     domain::market_CDSVolatilities_t_SmileDynamics_t* elem) {
     return &*(elem->key = xsd::string());
@@ -52213,6 +54009,18 @@ xsdcpp::AttributeInfo _market_YYCapFloorVolatilities_t_SmileDynamics_t_Attribute
      false,
      nullptr},
     {nullptr}};
+void* _get_market_Commodities_t_Interpolation_t_name(
+    domain::market_Commodities_t_Interpolation_t* elem) {
+    return &*(elem->name = xsd::string());
+}
+xsdcpp::AttributeInfo _market_Commodities_t_Interpolation_t_Attributes[] = {
+    {"name",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_market_Commodities_t_Interpolation_t_name,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
 void* _get_market_Commodities_t_Tenors_t_name(domain::market_Commodities_t_Tenors_t* elem) {
     return &*(elem->name = xsd::string());
 }
@@ -52235,6 +54043,30 @@ xsdcpp::ChildElementInfo _market_Commodities_t_DayCounters_t_Children[] = {
      &domain::_market_Commodities_t_DayCounters_t_DayCounter_t_Info,
      1,
      4294967295},
+    {nullptr}};
+void* _get_market_IntradayPowerCurves_t_Interpolation_t_name(
+    domain::market_IntradayPowerCurves_t_Interpolation_t* elem) {
+    return &*(elem->name = xsd::string());
+}
+xsdcpp::AttributeInfo _market_IntradayPowerCurves_t_Interpolation_t_Attributes[] = {
+    {"name",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves_t_Interpolation_t_name,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_market_IntradayPowerCurves_t_Tenors_t_name(
+    domain::market_IntradayPowerCurves_t_Tenors_t* elem) {
+    return &*(elem->name = xsd::string());
+}
+xsdcpp::AttributeInfo _market_IntradayPowerCurves_t_Tenors_t_Attributes[] = {
+    {"name",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_market_IntradayPowerCurves_t_Tenors_t_name,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
     {nullptr}};
 void* _get_market_CommodityVolatilities_t_Names_t_Name_t_Expiries(
     domain::market_CommodityVolatilities_t_Names_t_Name_t* parent) {
@@ -52279,6 +54111,53 @@ xsdcpp::AttributeInfo _market_CommodityVolatilities_t_SmileDynamics_t_Attributes
     {"key",
      1ULL,
      (xsdcpp::get_field_t)&_get_market_CommodityVolatilities_t_SmileDynamics_t_key,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries(
+    domain::market_BondFutureVolatilities_t_Names_t_Name_t* parent) {
+    return &parent->Expiries;
+}
+void* _get_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness(
+    domain::market_BondFutureVolatilities_t_Names_t_Name_t* parent) {
+    return &*(parent->Moneyness =
+                  domain::market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t());
+}
+xsdcpp::ChildElementInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Children[] = {
+    {"Expiries",
+     0,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries,
+     &domain::_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t_Info,
+     1,
+     1},
+    {"Moneyness",
+     1,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness,
+     &domain::_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t_Info,
+     0,
+     1},
+    {nullptr}};
+void* _get_market_BondFutureVolatilities_t_Names_t_Name_t_id(
+    domain::market_BondFutureVolatilities_t_Names_t_Name_t* elem) {
+    return &*(elem->id = xsd::string());
+}
+xsdcpp::AttributeInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Attributes[] = {
+    {"id",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_Names_t_Name_t_id,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_market_BondFutureVolatilities_t_SmileDynamics_t_key(
+    domain::market_BondFutureVolatilities_t_SmileDynamics_t* elem) {
+    return &*(elem->key = xsd::string());
+}
+xsdcpp::AttributeInfo _market_BondFutureVolatilities_t_SmileDynamics_t_Attributes[] = {
+    {"key",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_market_BondFutureVolatilities_t_SmileDynamics_t_key,
      (xsdcpp::set_value_t)&xsdcpp::set_string,
      false,
      nullptr},
@@ -52837,6 +54716,9 @@ void* _get_parametricSmileConfig_Parameters(domain::parametricSmileConfig* paren
 void* _get_parametricSmileConfig_Calibration(domain::parametricSmileConfig* parent) {
     return &parent->Calibration;
 }
+void* _get_parametricSmileConfig_ResidualCorrection(domain::parametricSmileConfig* parent) {
+    return &*(parent->ResidualCorrection = domain::parametricSmileConfigResidualCorrection());
+}
 xsdcpp::ChildElementInfo _parametricSmileConfig_Children[] = {
     {"Parameters",
      0,
@@ -52849,6 +54731,12 @@ xsdcpp::ChildElementInfo _parametricSmileConfig_Children[] = {
      (xsdcpp::get_field_t)&_get_parametricSmileConfig_Calibration,
      &domain::_parametricSmileConfigCalibration_Info,
      1,
+     1},
+    {"ResidualCorrection",
+     2,
+     (xsdcpp::get_field_t)&_get_parametricSmileConfig_ResidualCorrection,
+     &domain::_parametricSmileConfigResidualCorrection_Info,
+     0,
      1},
     {nullptr}};
 void* _get_swaptionVolatility_ProxyConfig_t_Source_t_CurveId(
@@ -54092,8 +55980,14 @@ void* _get_fittedBondType_Priority(domain::fittedBondType* parent) {
 void* _get_fittedBondType_MinDistance(domain::fittedBondType* parent) {
     return &*(parent->MinDistance = uint64_t());
 }
+void* _get_fittedBondType_IndexCurves(domain::fittedBondType* parent) {
+    return &*(parent->IndexCurves = domain::fittedBondType_IndexCurves_t());
+}
 void* _get_fittedBondType_IborIndexCurves(domain::fittedBondType* parent) {
     return &*(parent->IborIndexCurves = domain::fittedBondType_IborIndexCurves_t());
+}
+void* _get_fittedBondType_InflationIndexCurves(domain::fittedBondType* parent) {
+    return &*(parent->InflationIndexCurves = domain::fittedBondType_InflationIndexCurves_t());
 }
 void* _get_fittedBondType_ExtrapolateFlat(domain::fittedBondType* parent) {
     return &*(parent->ExtrapolateFlat = bool());
@@ -54124,14 +56018,26 @@ xsdcpp::ChildElementInfo _fittedBondType_Children[] = {
      &domain::_uint64_t_Info,
      0,
      1},
-    {"IborIndexCurves",
+    {"IndexCurves",
      5,
+     (xsdcpp::get_field_t)&_get_fittedBondType_IndexCurves,
+     &domain::_fittedBondType_IndexCurves_t_Info,
+     0,
+     1},
+    {"IborIndexCurves",
+     6,
      (xsdcpp::get_field_t)&_get_fittedBondType_IborIndexCurves,
      &domain::_fittedBondType_IborIndexCurves_t_Info,
      0,
      1},
+    {"InflationIndexCurves",
+     7,
+     (xsdcpp::get_field_t)&_get_fittedBondType_InflationIndexCurves,
+     &domain::_fittedBondType_InflationIndexCurves_t_Info,
+     0,
+     1},
     {"ExtrapolateFlat",
-     6,
+     8,
      (xsdcpp::get_field_t)&_get_fittedBondType_ExtrapolateFlat,
      &domain::_bool_Info,
      0,
@@ -54145,6 +56051,9 @@ void* _get_BondYieldShiftedType_ReferenceCurve(domain::BondYieldShiftedType* par
 }
 void* _get_BondYieldShiftedType_Quotes(domain::BondYieldShiftedType* parent) {
     return &parent->Quotes;
+}
+void* _get_BondYieldShiftedType_IndexCurves(domain::BondYieldShiftedType* parent) {
+    return &*(parent->IndexCurves = domain::BondYieldShiftedType_IndexCurves_t());
 }
 void* _get_BondYieldShiftedType_IborIndexCurves(domain::BondYieldShiftedType* parent) {
     return &*(parent->IborIndexCurves = domain::BondYieldShiftedType_IborIndexCurves_t());
@@ -54174,20 +56083,26 @@ xsdcpp::ChildElementInfo _BondYieldShiftedType_Children[] = {
      &domain::_quoteType_Info,
      1,
      1},
-    {"IborIndexCurves",
+    {"IndexCurves",
      3,
+     (xsdcpp::get_field_t)&_get_BondYieldShiftedType_IndexCurves,
+     &domain::_BondYieldShiftedType_IndexCurves_t_Info,
+     0,
+     1},
+    {"IborIndexCurves",
+     4,
      (xsdcpp::get_field_t)&_get_BondYieldShiftedType_IborIndexCurves,
      &domain::_BondYieldShiftedType_IborIndexCurves_t_Info,
      0,
      1},
     {"Conventions",
-     4,
+     5,
      (xsdcpp::get_field_t)&_get_BondYieldShiftedType_Conventions,
      &domain::_BondYieldShiftedType_Conventions_t_Info,
      1,
      1},
     {"ExtrapolateFlat",
-     5,
+     6,
      (xsdcpp::get_field_t)&_get_BondYieldShiftedType_ExtrapolateFlat,
      &domain::_bool_Info,
      0,
@@ -55260,6 +57175,42 @@ xsdcpp::ChildElementInfo _continuationMappingType_Children[] = {
      1},
     {"To", 1, (xsdcpp::get_field_t)&_get_continuationMappingType_To, &domain::_uint64_t_Info, 1, 1},
     {nullptr}};
+void* _get_zeroInflationIndexType_RebasingEvents_t_Event_t_date(
+    domain::zeroInflationIndexType_RebasingEvents_t_Event_t* elem) {
+    return &elem->date;
+}
+xsdcpp::AttributeInfo _zeroInflationIndexType_RebasingEvents_t_Event_t_Attributes[] = {
+    {"date",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_zeroInflationIndexType_RebasingEvents_t_Event_t_date,
+     (xsdcpp::set_value_t)&domain::_set_date,
+     true,
+     nullptr},
+    {nullptr}};
+void* _get_explicitLoadProfileType_LoadProfileDatum(domain::explicitLoadProfileType* parent) {
+    return (parent->LoadProfileDatum.emplace_back(), &parent->LoadProfileDatum.back());
+}
+xsdcpp::ChildElementInfo _explicitLoadProfileType_Children[] = {
+    {"LoadProfileDatum",
+     0,
+     (xsdcpp::get_field_t)&_get_explicitLoadProfileType_LoadProfileDatum,
+     &domain::_explicitLoadProfileType_LoadProfileDatum_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule(
+    domain::ruleBasedLoadProfileType* parent) {
+    return (parent->LoadProfileBusinessDayRule.emplace_back(),
+            &parent->LoadProfileBusinessDayRule.back());
+}
+xsdcpp::ChildElementInfo _ruleBasedLoadProfileType_Children[] = {
+    {"LoadProfileBusinessDayRule",
+     0,
+     (xsdcpp::get_field_t)&_get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule,
+     &domain::_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
 void* _get_nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t_IndependentAmountHeld(
     domain::nettingsetdefinitions_NettingSet_t_CSADetails_t_IndependentAmount_t* parent) {
     return &parent->IndependentAmountHeld;
@@ -55341,16 +57292,94 @@ xsdcpp::ChildElementInfo
          1,
          1},
         {nullptr}};
-void* _get_parconversion_Conventions_t_Convention(domain::parconversion_Conventions_t* parent) {
-    return (parent->Convention.emplace_back(), &parent->Convention.back());
+void* _get_shiftTypeEntry_key(domain::shiftTypeEntry* elem) {
+    return &*(elem->key = xsd::string());
 }
-xsdcpp::ChildElementInfo _parconversion_Conventions_t_Children[] = {
-    {"Convention",
+xsdcpp::AttributeInfo _shiftTypeEntry_Attributes[] = {
+    {"key",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_shiftTypeEntry_key,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_shiftSizeEntry_key(domain::shiftSizeEntry* elem) {
+    return &*(elem->key = xsd::string());
+}
+xsdcpp::AttributeInfo _shiftSizeEntry_Attributes[] = {
+    {"key",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_shiftSizeEntry_key,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_shiftSchemeEntry_key(domain::shiftSchemeEntry* elem) {
+    return &*(elem->key = xsd::string());
+}
+xsdcpp::AttributeInfo _shiftSchemeEntry_Attributes[] = {
+    {"key",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_shiftSchemeEntry_key,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_parconversion_Instruments(domain::parconversion* parent) {
+    return (parent->Instruments.emplace_back(), &parent->Instruments.back());
+}
+void* _get_parconversion_SingleCurve(domain::parconversion* parent) {
+    return (parent->SingleCurve.emplace_back(), &parent->SingleCurve.back());
+}
+void* _get_parconversion_DiscountCurve(domain::parconversion* parent) {
+    return &*(parent->DiscountCurve = domain::parconversion_DiscountCurve_t());
+}
+void* _get_parconversion_OtherCurrency(domain::parconversion* parent) {
+    return &*(parent->OtherCurrency = domain::currencyCode());
+}
+void* _get_parconversion_RateComputationPeriod(domain::parconversion* parent) {
+    return &*(parent->RateComputationPeriod = domain::parconversion_RateComputationPeriod_t());
+}
+void* _get_parconversion_Conventions(domain::parconversion* parent) {
+    return &*(parent->Conventions = domain::parconversion_Conventions_t());
+}
+xsdcpp::ChildElementInfo _parconversion_Children[] = {
+    {"Instruments",
      0,
-     (xsdcpp::get_field_t)&_get_parconversion_Conventions_t_Convention,
-     &domain::_parconversion_Conventions_t_Convention_t_Info,
+     (xsdcpp::get_field_t)&_get_parconversion_Instruments,
+     &domain::_parconversion_Instruments_t_Info,
      0,
      4294967295},
+    {"SingleCurve",
+     1,
+     (xsdcpp::get_field_t)&_get_parconversion_SingleCurve,
+     &domain::_bool_Info,
+     0,
+     4294967295},
+    {"DiscountCurve",
+     2,
+     (xsdcpp::get_field_t)&_get_parconversion_DiscountCurve,
+     &domain::_parconversion_DiscountCurve_t_Info,
+     0,
+     1},
+    {"OtherCurrency",
+     3,
+     (xsdcpp::get_field_t)&_get_parconversion_OtherCurrency,
+     &domain::_currencyCode_Info,
+     0,
+     1},
+    {"RateComputationPeriod",
+     4,
+     (xsdcpp::get_field_t)&_get_parconversion_RateComputationPeriod,
+     &domain::_parconversion_RateComputationPeriod_t_Info,
+     0,
+     1},
+    {"Conventions",
+     5,
+     (xsdcpp::get_field_t)&_get_parconversion_Conventions,
+     &domain::_parconversion_Conventions_t_Info,
+     0,
+     1},
     {nullptr}};
 void* _get_swaptionvolatility_Shifts_t_Shift(domain::swaptionvolatility_Shifts_t* parent) {
     return (parent->Shift.emplace_back(), &parent->Shift.back());
@@ -55660,6 +57689,76 @@ xsdcpp::AttributeInfo _stressfxvolatility_Attributes[] = {
      true,
      nullptr},
     {nullptr}};
+void* _get_stressswaptionvolatility_Shifts_t_Shift(
+    domain::stressswaptionvolatility_Shifts_t* parent) {
+    return (parent->Shift.emplace_back(), &parent->Shift.back());
+}
+xsdcpp::ChildElementInfo _stressswaptionvolatility_Shifts_t_Children[] = {
+    {"Shift",
+     0,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_Shifts_t_Shift,
+     &domain::_stressswaptionvolatility_Shifts_t_Shift_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_stressswaptionvolatility_ShiftType(domain::stressswaptionvolatility* parent) {
+    return &parent->ShiftType;
+}
+void* _get_stressswaptionvolatility_Shifts(domain::stressswaptionvolatility* parent) {
+    return &parent->Shifts;
+}
+void* _get_stressswaptionvolatility_ShiftExpiries(domain::stressswaptionvolatility* parent) {
+    return &parent->ShiftExpiries;
+}
+void* _get_stressswaptionvolatility_ShiftTerms(domain::stressswaptionvolatility* parent) {
+    return &parent->ShiftTerms;
+}
+xsdcpp::ChildElementInfo _stressswaptionvolatility_Children[] = {
+    {"ShiftType",
+     0,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_ShiftType,
+     &domain::_shiftTypeEntry_Info,
+     1,
+     1},
+    {"Shifts",
+     1,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_Shifts,
+     &domain::_stressswaptionvolatility_Shifts_t_Info,
+     1,
+     1},
+    {"ShiftExpiries",
+     2,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_ShiftExpiries,
+     &domain::_stressswaptionvolatility_ShiftExpiries_t_Info,
+     1,
+     1},
+    {"ShiftTerms",
+     3,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_ShiftTerms,
+     &domain::_stressswaptionvolatility_ShiftTerms_t_Info,
+     1,
+     1},
+    {nullptr}};
+void* _get_stressswaptionvolatility_key(domain::stressswaptionvolatility* elem) {
+    return &*(elem->key = xsd::string());
+}
+void* _get_stressswaptionvolatility_ccy(domain::stressswaptionvolatility* elem) {
+    return &*(elem->ccy = xsd::string());
+}
+xsdcpp::AttributeInfo _stressswaptionvolatility_Attributes[] = {
+    {"key",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_key,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {"ccy",
+     2ULL,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_ccy,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
 void* _get_stresscapfloorvolatility_Shifts_t_Shift(
     domain::stresscapfloorvolatility_Shifts_t* parent) {
     return (parent->Shift.emplace_back(), &parent->Shift.back());
@@ -55793,6 +57892,46 @@ xsdcpp::AttributeInfo _stresscommoditycurve_Attributes[] = {
     {"commodity",
      1ULL,
      (xsdcpp::get_field_t)&_get_stresscommoditycurve_commodity,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     true,
+     nullptr},
+    {nullptr}};
+void* _get_stressintradaypowercurve_ShiftType(domain::stressintradaypowercurve* parent) {
+    return (parent->ShiftType.emplace_back(), &parent->ShiftType.back());
+}
+void* _get_stressintradaypowercurve_Shifts(domain::stressintradaypowercurve* parent) {
+    return &parent->Shifts;
+}
+void* _get_stressintradaypowercurve_ShiftTenors(domain::stressintradaypowercurve* parent) {
+    return &parent->ShiftTenors;
+}
+xsdcpp::ChildElementInfo _stressintradaypowercurve_Children[] = {
+    {"ShiftType",
+     0,
+     (xsdcpp::get_field_t)&_get_stressintradaypowercurve_ShiftType,
+     &domain::_shiftTypeEntry_Info,
+     1,
+     4294967295},
+    {"Shifts",
+     1,
+     (xsdcpp::get_field_t)&_get_stressintradaypowercurve_Shifts,
+     &domain::_stressintradaypowercurve_Shifts_t_Info,
+     1,
+     1},
+    {"ShiftTenors",
+     2,
+     (xsdcpp::get_field_t)&_get_stressintradaypowercurve_ShiftTenors,
+     &domain::_stressintradaypowercurve_ShiftTenors_t_Info,
+     1,
+     1},
+    {nullptr}};
+void* _get_stressintradaypowercurve_name(domain::stressintradaypowercurve* elem) {
+    return &elem->name;
+}
+xsdcpp::AttributeInfo _stressintradaypowercurve_Attributes[] = {
+    {"name",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_stressintradaypowercurve_name,
      (xsdcpp::set_value_t)&xsdcpp::set_string,
      true,
      nullptr},
@@ -56233,7 +58372,7 @@ xsdcpp::ChildElementInfo __RangeAccrualLegData_t_Coupons_t_Children[] = {
      0,
      (xsdcpp::get_field_t)&_get__RangeAccrualLegData_t_Coupons_t_Coupon,
      &domain::__RangeAccrualLegData_t_Coupons_t_Coupon_t_Info,
-     1,
+     0,
      4294967295},
     {nullptr}};
 void* _get__RangeAccrualLegData_t_UpperBounds_t_UpperBound(
@@ -57615,6 +59754,10 @@ void* _get_cbotranche_legDataType_CommodityFixedLegData(domain::cbotranche* pare
 void* _get_cbotranche_legDataType_CommodityFloatingLegData(domain::cbotranche* parent) {
     return &*(parent->legDataType.CommodityFloatingLegData = domain::_CommodityFloatingLegData_t());
 }
+void* _get_cbotranche_legDataType_IntradayPowerFloatingLegData(domain::cbotranche* parent) {
+    return &*(parent->legDataType.IntradayPowerFloatingLegData =
+                  domain::_IntradayPowerFloatingLegData_t());
+}
 void* _get_cbotranche_legDataType_FormulaBasedLegData(domain::cbotranche* parent) {
     return &*(parent->legDataType.FormulaBasedLegData = domain::_FormulaBasedLegData_t());
 }
@@ -57723,6 +59866,12 @@ xsdcpp::ChildElementInfo _cbotranche_Children[] = {
      4,
      (xsdcpp::get_field_t)&_get_cbotranche_legDataType_CommodityFloatingLegData,
      &domain::__CommodityFloatingLegData_t_Info,
+     0,
+     1},
+    {"IntradayPowerFloatingLegData",
+     4,
+     (xsdcpp::get_field_t)&_get_cbotranche_legDataType_IntradayPowerFloatingLegData,
+     &domain::__IntradayPowerFloatingLegData_t_Info,
      0,
      1},
     {"FormulaBasedLegData",
@@ -57939,48 +60088,6 @@ xsdcpp::ChildElementInfo _scriptedTradeData_Data_t_Index_t_Values_t_Children[] =
      &domain::_scriptedTradeData_Data_t_Index_t_Values_t_Value_t_Info,
      1,
      4294967295},
-    {nullptr}};
-void* _get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t* parent) {
-    return &parent->BaseSchedule;
-}
-void* _get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t* parent) {
-    return &parent->Shift;
-}
-void* _get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t* parent) {
-    return &parent->Calendar;
-}
-void* _get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention(
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t* parent) {
-    return &parent->Convention;
-}
-xsdcpp::ChildElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Children[] = {
-    {"BaseSchedule",
-     0,
-     (xsdcpp::get_field_t)&_get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule,
-     &domain::_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t_Info,
-     1,
-     1},
-    {"Shift",
-     1,
-     (xsdcpp::get_field_t)&_get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift,
-     &domain::_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t_Info,
-     1,
-     1},
-    {"Calendar",
-     2,
-     (xsdcpp::get_field_t)&_get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar,
-     &domain::_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t_Info,
-     1,
-     1},
-    {"Convention",
-     3,
-     (xsdcpp::get_field_t)&_get_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention,
-     &domain::_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t_Info,
-     1,
-     1},
     {nullptr}};
 void* _get_scriptedTradeData_Data_t_Daycounter_t_Values_t_Value(
     domain::scriptedTradeData_Data_t_Daycounter_t_Values_t* parent) {
@@ -58282,7 +60389,7 @@ void* _get_parametricSmileConfigParameter_Name(domain::parametricSmileConfigPara
 }
 void* _get_parametricSmileConfigParameter_InitialValue(
     domain::parametricSmileConfigParameter* parent) {
-    return &parent->InitialValue;
+    return &*(parent->InitialValue = domain::parametricSmileConfigParameter_InitialValue_t());
 }
 void* _get_parametricSmileConfigParameter_Calibration(
     domain::parametricSmileConfigParameter* parent) {
@@ -58299,12 +60406,24 @@ xsdcpp::ChildElementInfo _parametricSmileConfigParameter_Children[] = {
      1,
      (xsdcpp::get_field_t)&_get_parametricSmileConfigParameter_InitialValue,
      &domain::_parametricSmileConfigParameter_InitialValue_t_Info,
-     1,
+     0,
      1},
     {"Calibration",
      2,
      (xsdcpp::get_field_t)&_get_parametricSmileConfigParameter_Calibration,
      &domain::_parametricVolatilityParameterCalibration_Info,
+     1,
+     1},
+    {nullptr}};
+void* _get_parametricSmileConfigResidualCorrection_Dimension(
+    domain::parametricSmileConfigResidualCorrection* parent) {
+    return &parent->Dimension;
+}
+xsdcpp::ChildElementInfo _parametricSmileConfigResidualCorrection_Children[] = {
+    {"Dimension",
+     0,
+     (xsdcpp::get_field_t)&_get_parametricSmileConfigResidualCorrection_Dimension,
+     &domain::_parametricSmileConfigResidualCorrection_Dimension_t_Info,
      1,
      1},
     {nullptr}};
@@ -58361,19 +60480,19 @@ xsdcpp::ChildElementInfo _indexFactorsType_Children[] = {
     {"IndexFactor",
      0,
      (xsdcpp::get_field_t)&_get_indexFactorsType_IndexFactor,
-     &domain::_positiveDecimal_Info,
+     &domain::_non_negative_decimal_Info,
      1,
      1},
     {"IndexFactorStrike",
      1,
      (xsdcpp::get_field_t)&_get_indexFactorsType_IndexFactorStrike,
-     &domain::_positiveDecimal_Info,
+     &domain::_non_negative_decimal_Info,
      1,
      1},
     {"RealisedFep",
      2,
      (xsdcpp::get_field_t)&_get_indexFactorsType_RealisedFep,
-     &domain::_positiveDecimal_Info,
+     &domain::_non_negative_decimal_Info,
      1,
      1},
     {nullptr}};
@@ -58479,6 +60598,10 @@ void* _get_defaultCurve_Configurations_t_Configuration_t_BootstrapConfig(
 void* _get_defaultCurve_Configurations_t_Configuration_t_AllowNegativeRates(
     domain::defaultCurve_Configurations_t_Configuration_t* parent) {
     return &*(parent->AllowNegativeRates = domain::bool_());
+}
+void* _get_defaultCurve_Configurations_t_Configuration_t_PriceIsUpfront(
+    domain::defaultCurve_Configurations_t_Configuration_t* parent) {
+    return &*(parent->PriceIsUpfront = domain::bool_());
 }
 xsdcpp::ChildElementInfo _defaultCurve_Configurations_t_Configuration_t_Children[] = {
     {"Type",
@@ -58621,6 +60744,12 @@ xsdcpp::ChildElementInfo _defaultCurve_Configurations_t_Configuration_t_Children
      &domain::_bool__Info,
      0,
      1},
+    {"PriceIsUpfront",
+     23,
+     (xsdcpp::get_field_t)&_get_defaultCurve_Configurations_t_Configuration_t_PriceIsUpfront,
+     &domain::_bool__Info,
+     0,
+     1},
     {nullptr}};
 void* _get_defaultCurve_Configurations_t_Configuration_t_priority(
     domain::defaultCurve_Configurations_t_Configuration_t* elem) {
@@ -58656,6 +60785,17 @@ xsdcpp::ChildElementInfo _compositeQuoteType_CompositeQuote_t_Children[] = {
      1,
      1},
     {nullptr}};
+void* _get_fittedBondType_IndexCurves_t_IndexCurve(domain::fittedBondType_IndexCurves_t* parent) {
+    return (parent->IndexCurve.emplace_back(), &parent->IndexCurve.back());
+}
+xsdcpp::ChildElementInfo _fittedBondType_IndexCurves_t_Children[] = {
+    {"IndexCurve",
+     0,
+     (xsdcpp::get_field_t)&_get_fittedBondType_IndexCurves_t_IndexCurve,
+     &domain::_fittedBondType_IndexCurves_t_IndexCurve_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
 void* _get_fittedBondType_IborIndexCurves_t_IborIndexCurve(
     domain::fittedBondType_IborIndexCurves_t* parent) {
     return (parent->IborIndexCurve.emplace_back(), &parent->IborIndexCurve.back());
@@ -58665,6 +60805,30 @@ xsdcpp::ChildElementInfo _fittedBondType_IborIndexCurves_t_Children[] = {
      0,
      (xsdcpp::get_field_t)&_get_fittedBondType_IborIndexCurves_t_IborIndexCurve,
      &domain::_fittedBondType_IborIndexCurves_t_IborIndexCurve_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_fittedBondType_InflationIndexCurves_t_InflationIndexCurve(
+    domain::fittedBondType_InflationIndexCurves_t* parent) {
+    return (parent->InflationIndexCurve.emplace_back(), &parent->InflationIndexCurve.back());
+}
+xsdcpp::ChildElementInfo _fittedBondType_InflationIndexCurves_t_Children[] = {
+    {"InflationIndexCurve",
+     0,
+     (xsdcpp::get_field_t)&_get_fittedBondType_InflationIndexCurves_t_InflationIndexCurve,
+     &domain::_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_BondYieldShiftedType_IndexCurves_t_IndexCurve(
+    domain::BondYieldShiftedType_IndexCurves_t* parent) {
+    return (parent->IndexCurve.emplace_back(), &parent->IndexCurve.back());
+}
+xsdcpp::ChildElementInfo _BondYieldShiftedType_IndexCurves_t_Children[] = {
+    {"IndexCurve",
+     0,
+     (xsdcpp::get_field_t)&_get_BondYieldShiftedType_IndexCurves_t_IndexCurve,
+     &domain::_BondYieldShiftedType_IndexCurves_t_IndexCurve_t_Info,
      0,
      4294967295},
     {nullptr}};
@@ -58799,17 +60963,93 @@ xsdcpp::ChildElementInfo _priceSegmentType_Children[] = {
      0,
      1},
     {nullptr}};
-void* _get_parconversion_Conventions_t_Convention_t_id(
-    domain::parconversion_Conventions_t_Convention_t* elem) {
-    return &*(elem->id = xsd::string());
+void* _get_loadFactorsType_LoadFactor(domain::loadFactorsType* parent) {
+    return (parent->LoadFactor.emplace_back(), &parent->LoadFactor.back());
 }
-xsdcpp::AttributeInfo _parconversion_Conventions_t_Convention_t_Attributes[] = {
-    {"id",
-     1ULL,
-     (xsdcpp::get_field_t)&_get_parconversion_Conventions_t_Convention_t_id,
-     (xsdcpp::set_value_t)&xsdcpp::set_string,
-     false,
-     nullptr},
+xsdcpp::ChildElementInfo _loadFactorsType_Children[] = {
+    {"LoadFactor",
+     0,
+     (xsdcpp::get_field_t)&_get_loadFactorsType_LoadFactor,
+     &domain::_loadFactorType_Info,
+     0,
+     4294967295},
+    {nullptr}};
+void* _get_explicitLoadProfileType_LoadProfileDatum_t_Date(
+    domain::explicitLoadProfileType_LoadProfileDatum_t* parent) {
+    return &parent->Date;
+}
+void* _get_explicitLoadProfileType_LoadProfileDatum_t_LoadFactors(
+    domain::explicitLoadProfileType_LoadProfileDatum_t* parent) {
+    return &parent->LoadFactors;
+}
+xsdcpp::ChildElementInfo _explicitLoadProfileType_LoadProfileDatum_t_Children[] = {
+    {"Date",
+     0,
+     (xsdcpp::get_field_t)&_get_explicitLoadProfileType_LoadProfileDatum_t_Date,
+     &domain::_date_Info,
+     1,
+     1},
+    {"LoadFactors",
+     1,
+     (xsdcpp::get_field_t)&_get_explicitLoadProfileType_LoadProfileDatum_t_LoadFactors,
+     &domain::_loadFactorsType_Info,
+     1,
+     1},
+    {nullptr}};
+void* _get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Date(
+    domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t* parent) {
+    return &parent->Date;
+}
+void* _get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar(
+    domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t* parent) {
+    return &parent->Calendar;
+}
+void* _get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_BusinessDayLoadFactors(
+    domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t* parent) {
+    return &*(parent->BusinessDayLoadFactors = domain::loadFactorsType());
+}
+void* _get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_NonBusinessDayLoadFactors(
+    domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t* parent) {
+    return &*(parent->NonBusinessDayLoadFactors = domain::loadFactorsType());
+}
+xsdcpp::ChildElementInfo _ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Children[] = {
+    {"Date",
+     0,
+     (xsdcpp::get_field_t)&_get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Date,
+     &domain::_date_Info,
+     1,
+     1},
+    {"Calendar",
+     1,
+     (xsdcpp::get_field_t)&_get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar,
+     &domain::_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t_Info,
+     1,
+     1},
+    {"BusinessDayLoadFactors",
+     2,
+     (xsdcpp::
+          get_field_t)&_get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_BusinessDayLoadFactors,
+     &domain::_loadFactorsType_Info,
+     0,
+     1},
+    {"NonBusinessDayLoadFactors",
+     3,
+     (xsdcpp::
+          get_field_t)&_get_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_NonBusinessDayLoadFactors,
+     &domain::_loadFactorsType_Info,
+     0,
+     1},
+    {nullptr}};
+void* _get_parconversion_Conventions_t_Convention(domain::parconversion_Conventions_t* parent) {
+    return (parent->Convention.emplace_back(), &parent->Convention.back());
+}
+xsdcpp::ChildElementInfo _parconversion_Conventions_t_Children[] = {
+    {"Convention",
+     0,
+     (xsdcpp::get_field_t)&_get_parconversion_Conventions_t_Convention,
+     &domain::_parconversion_Conventions_t_Convention_t_Info,
+     0,
+     4294967295},
     {nullptr}};
 void* _get_swaptionvolatility_Shifts_t_Shift_t_expiry(
     domain::swaptionvolatility_Shifts_t_Shift_t* elem) {
@@ -58904,6 +61144,28 @@ xsdcpp::ChildElementInfo _stressfxvolatility_WeightedShifts_t_Children[] = {
      &domain::_stressfxvolatility_WeightedShifts_t_WeightTenors_t_Info,
      0,
      1},
+    {nullptr}};
+void* _get_stressswaptionvolatility_Shifts_t_Shift_t_expiry(
+    domain::stressswaptionvolatility_Shifts_t_Shift_t* elem) {
+    return &*(elem->expiry = xsd::string());
+}
+void* _get_stressswaptionvolatility_Shifts_t_Shift_t_term(
+    domain::stressswaptionvolatility_Shifts_t_Shift_t* elem) {
+    return &*(elem->term = xsd::string());
+}
+xsdcpp::AttributeInfo _stressswaptionvolatility_Shifts_t_Shift_t_Attributes[] = {
+    {"expiry",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_Shifts_t_Shift_t_expiry,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {"term",
+     2ULL,
+     (xsdcpp::get_field_t)&_get_stressswaptionvolatility_Shifts_t_Shift_t_term,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
     {nullptr}};
 void* _get_stresscapfloorvolatility_Shifts_t_Shift_t_tenor(
     domain::stresscapfloorvolatility_Shifts_t_Shift_t* elem) {
@@ -59417,6 +61679,18 @@ xsdcpp::ChildElementInfo _defaultCurve_Configurations_t_Configuration_t_SwitchDa
      0,
      4294967295},
     {nullptr}};
+void* _get_fittedBondType_IndexCurves_t_IndexCurve_t_Index(
+    domain::fittedBondType_IndexCurves_t_IndexCurve_t* elem) {
+    return &*(elem->Index = xsd::string());
+}
+xsdcpp::AttributeInfo _fittedBondType_IndexCurves_t_IndexCurve_t_Attributes[] = {
+    {"Index",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_fittedBondType_IndexCurves_t_IndexCurve_t_Index,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
 void* _get_fittedBondType_IborIndexCurves_t_IborIndexCurve_t_iborIndex(
     domain::fittedBondType_IborIndexCurves_t_IborIndexCurve_t* elem) {
     return &*(elem->iborIndex = xsd::string());
@@ -59425,6 +61699,31 @@ xsdcpp::AttributeInfo _fittedBondType_IborIndexCurves_t_IborIndexCurve_t_Attribu
     {"iborIndex",
      1ULL,
      (xsdcpp::get_field_t)&_get_fittedBondType_IborIndexCurves_t_IborIndexCurve_t_iborIndex,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t_inflationIndex(
+    domain::fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t* elem) {
+    return &*(elem->inflationIndex = xsd::string());
+}
+xsdcpp::AttributeInfo _fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t_Attributes[] = {
+    {"inflationIndex",
+     1ULL,
+     (xsdcpp::
+          get_field_t)&_get_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t_inflationIndex,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_BondYieldShiftedType_IndexCurves_t_IndexCurve_t_Index(
+    domain::BondYieldShiftedType_IndexCurves_t_IndexCurve_t* elem) {
+    return &*(elem->Index = xsd::string());
+}
+xsdcpp::AttributeInfo _BondYieldShiftedType_IndexCurves_t_IndexCurve_t_Attributes[] = {
+    {"Index",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_BondYieldShiftedType_IndexCurves_t_IndexCurve_t_Index,
      (xsdcpp::set_value_t)&xsdcpp::set_string,
      false,
      nullptr},
@@ -59460,6 +61759,56 @@ xsdcpp::ChildElementInfo _offPeakDailyType_Children[] = {
      &domain::_quoteType_Info,
      1,
      1},
+    {nullptr}};
+void* _get_loadFactorType_from(domain::loadFactorType* elem) {
+    return &elem->from;
+}
+void* _get_loadFactorType_to(domain::loadFactorType* elem) {
+    return &elem->to;
+}
+void* _get_loadFactorType_unit(domain::loadFactorType* elem) {
+    return &*(elem->unit = xsd::string());
+}
+void* _get_loadFactorType_dst(domain::loadFactorType* elem) {
+    return &*(elem->dst = domain::bool_());
+}
+xsdcpp::AttributeInfo _loadFactorType_Attributes[] = {
+    {"from",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_loadFactorType_from,
+     (xsdcpp::set_value_t)&xsdcpp::set_int64_t,
+     true,
+     nullptr},
+    {"to",
+     2ULL,
+     (xsdcpp::get_field_t)&_get_loadFactorType_to,
+     (xsdcpp::set_value_t)&xsdcpp::set_int64_t,
+     true,
+     nullptr},
+    {"unit",
+     4ULL,
+     (xsdcpp::get_field_t)&_get_loadFactorType_unit,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
+    {"dst",
+     8ULL,
+     (xsdcpp::get_field_t)&_get_loadFactorType_dst,
+     (xsdcpp::set_value_t)&domain::_set_bool_,
+     false,
+     nullptr},
+    {nullptr}};
+void* _get_parconversion_Conventions_t_Convention_t_id(
+    domain::parconversion_Conventions_t_Convention_t* elem) {
+    return &*(elem->id = xsd::string());
+}
+xsdcpp::AttributeInfo _parconversion_Conventions_t_Convention_t_Attributes[] = {
+    {"id",
+     1ULL,
+     (xsdcpp::get_field_t)&_get_parconversion_Conventions_t_Convention_t_id,
+     (xsdcpp::set_value_t)&xsdcpp::set_string,
+     false,
+     nullptr},
     {nullptr}};
 void* _get_cbContingentConversionData_Observations_t_Observation_t_startDate(
     domain::cbContingentConversionData_Observations_t_Observation_t* elem) {
@@ -59619,6 +61968,12 @@ void _serialize_DerivedScheduleType_BaseSchedule_t(
 void _serialize_DerivedScheduleType_Shift_t(xsdcpp::XmlWriter& w,
                                             const char* name,
                                             const domain::DerivedScheduleType_Shift_t& v);
+void _serialize_dateDeltaUnit(xsdcpp::XmlWriter& w,
+                              const char* name,
+                              const domain::dateDeltaUnit& v);
+void _serialize_dateDeltaAnchor(xsdcpp::XmlWriter& w,
+                                const char* name,
+                                const domain::dateDeltaAnchor& v);
 void _serialize_swapData(xsdcpp::XmlWriter& w, const char* name, const domain::swapData& v);
 void _serialize_uint64_t(xsdcpp::XmlWriter& w, const char* name, uint64_t v);
 void _serialize_settlementType(xsdcpp::XmlWriter& w,
@@ -59980,6 +62335,54 @@ void _serialize__CommodityFloatingLegData_t_Tag_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_Tag_t& v);
 void _serialize__CommodityFloatingLegData_t_FXIndex_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::_CommodityFloatingLegData_t_FXIndex_t& v);
+void _serialize__IntradayPowerFloatingLegData_t(xsdcpp::XmlWriter& w,
+                                                const char* name,
+                                                const domain::_IntradayPowerFloatingLegData_t& v);
+void _serialize__IntradayPowerFloatingLegData_t_Name_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_Name_t& v);
+void _serialize__IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t& v);
+void _serialize_powerLoadProfileDataType(xsdcpp::XmlWriter& w,
+                                         const char* name,
+                                         const domain::powerLoadProfileDataType& v);
+void _serialize_explicitLoadProfileType(xsdcpp::XmlWriter& w,
+                                        const char* name,
+                                        const domain::explicitLoadProfileType& v);
+void _serialize_explicitLoadProfileType_LoadProfileDatum_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::explicitLoadProfileType_LoadProfileDatum_t& v);
+void _serialize_loadFactorsType(xsdcpp::XmlWriter& w,
+                                const char* name,
+                                const domain::loadFactorsType& v);
+void _serialize_loadFactorType(xsdcpp::XmlWriter& w,
+                               const char* name,
+                               const domain::loadFactorType& v);
+void _serialize_ruleBasedLoadProfileType(xsdcpp::XmlWriter& w,
+                                         const char* name,
+                                         const domain::ruleBasedLoadProfileType& v);
+void _serialize_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t& v);
+void _serialize_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t& v);
+void _serialize__IntradayPowerFloatingLegData_t_FXIndex_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_FXIndex_t& v);
+void _serialize__IntradayPowerFloatingLegData_t_Tag_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::_IntradayPowerFloatingLegData_t_Tag_t& v);
+void _serialize__IntradayPowerFloatingLegData_t_QuantityMode_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_QuantityMode_t& v);
 void _serialize__FormulaBasedLegData_t(xsdcpp::XmlWriter& w,
                                        const char* name,
                                        const domain::_FormulaBasedLegData_t& v);
@@ -60122,26 +62525,6 @@ void _serialize_stFreeStyleEventSchedule(xsdcpp::XmlWriter& w,
 void _serialize_stFreeStyleEventScheduleBase(xsdcpp::XmlWriter& w,
                                              const char* name,
                                              const domain::stFreeStyleEventScheduleBase& v);
-void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t& v);
-void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t& v);
-void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t& v);
-void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t& v);
-void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t& v);
 void _serialize_stFreeStyleNumber(xsdcpp::XmlWriter& w,
                                   const char* name,
                                   const domain::stFreeStyleNumber& v);
@@ -60448,46 +62831,11 @@ void _serialize_bondFutureData_ContractNotional_t(
 void _serialize_bondFutureData_LongShort_t(xsdcpp::XmlWriter& w,
                                            const char* name,
                                            const domain::bondFutureData_LongShort_t& v);
-void _serialize_bondFutureData_ContractMonth_t(xsdcpp::XmlWriter& w,
-                                               const char* name,
-                                               const domain::bondFutureData_ContractMonth_t& v);
-void _serialize_bondFutureData_DeliverableGrade_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_DeliverableGrade_t& v);
-void _serialize_bondFutureData_FairPrice_t(xsdcpp::XmlWriter& w,
-                                           const char* name,
-                                           const domain::bondFutureData_FairPrice_t& v);
-void _serialize_bondFutureData_Settlement_t(xsdcpp::XmlWriter& w,
-                                            const char* name,
-                                            const domain::bondFutureData_Settlement_t& v);
-void _serialize_bondFutureData_SettlementDirty_t(xsdcpp::XmlWriter& w,
-                                                 const char* name,
-                                                 const domain::bondFutureData_SettlementDirty_t& v);
-void _serialize_bondFutureData_RootDate_t(xsdcpp::XmlWriter& w,
-                                          const char* name,
-                                          const domain::bondFutureData_RootDate_t& v);
-void _serialize_bondFutureData_ExpiryBasis_t(xsdcpp::XmlWriter& w,
-                                             const char* name,
-                                             const domain::bondFutureData_ExpiryBasis_t& v);
-void _serialize_bondFutureData_SettlementBasis_t(xsdcpp::XmlWriter& w,
-                                                 const char* name,
-                                                 const domain::bondFutureData_SettlementBasis_t& v);
-void _serialize_bondFutureData_ExpiryLag_t(xsdcpp::XmlWriter& w,
-                                           const char* name,
-                                           const domain::bondFutureData_ExpiryLag_t& v);
-void _serialize_bondFutureData_SettlementLag_t(xsdcpp::XmlWriter& w,
-                                               const char* name,
-                                               const domain::bondFutureData_SettlementLag_t& v);
-void _serialize_bondFutureData_LastTradingDate_t(xsdcpp::XmlWriter& w,
-                                                 const char* name,
-                                                 const domain::bondFutureData_LastTradingDate_t& v);
-void _serialize_bondFutureData_LastDeliveryDate_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_LastDeliveryDate_t& v);
-void _serialize_deliveryBasket(xsdcpp::XmlWriter& w,
-                               const char* name,
-                               const domain::deliveryBasket& v);
-void _serialize_deliveryBasket_Id_t(xsdcpp::XmlWriter& w,
-                                    const char* name,
-                                    const domain::deliveryBasket_Id_t& v);
+void _serialize_bondFutureOptionData(xsdcpp::XmlWriter& w,
+                                     const char* name,
+                                     const domain::bondFutureOptionData& v);
+void _serialize_bondFutureOptionData_ContractName_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureOptionData_ContractName_t& v);
 void _serialize_creditDefaultSwapData(xsdcpp::XmlWriter& w,
                                       const char* name,
                                       const domain::creditDefaultSwapData& v);
@@ -60550,6 +62898,12 @@ void _serialize_commForwardSettlementData(xsdcpp::XmlWriter& w,
                                           const domain::commForwardSettlementData& v);
 void _serialize_commForwardSettlementData_FXIndex_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::commForwardSettlementData_FXIndex_t& v);
+void _serialize_intradayPowerForwardData(xsdcpp::XmlWriter& w,
+                                         const char* name,
+                                         const domain::intradayPowerForwardData& v);
+void _serialize_intradayPowerForwardData_Name_t(xsdcpp::XmlWriter& w,
+                                                const char* name,
+                                                const domain::intradayPowerForwardData_Name_t& v);
 void _serialize_commodityOptionData(xsdcpp::XmlWriter& w,
                                     const char* name,
                                     const domain::commodityOptionData& v);
@@ -61190,6 +63544,13 @@ void _serialize_dualEuroBinaryOptionDoubleKOData(xsdcpp::XmlWriter& w,
 void _serialize_volBarrierOptionData(xsdcpp::XmlWriter& w,
                                      const char* name,
                                      const domain::volBarrierOptionData& v);
+void _serialize_forwardVolatilityAgreementData2(xsdcpp::XmlWriter& w,
+                                                const char* name,
+                                                const domain::forwardVolatilityAgreementData2& v);
+void _serialize_forwardVolatilityAgreementData2_PayoffType_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::forwardVolatilityAgreementData2_PayoffType_t& v);
 void _serialize_tarfData2(xsdcpp::XmlWriter& w, const char* name, const domain::tarfData2& v);
 void _serialize_tarfData2_Strikes_t(xsdcpp::XmlWriter& w,
                                     const char* name,
@@ -61485,26 +63846,6 @@ void _serialize_scriptedTradeData_Data_t_Event_t_Value_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::scriptedTradeData_Data_t_Event_t_Value_t& v);
-void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t& v);
-void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t& v);
-void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t& v);
-void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t& v);
-void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t& v);
 void _serialize_scriptedTradeData_Data_t_Daycounter_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::scriptedTradeData_Data_t_Daycounter_t& v);
 void _serialize_scriptedTradeData_Data_t_Daycounter_t_Name_t(
@@ -62183,6 +64524,7 @@ void _serialize_ycInterpolation(xsdcpp::XmlWriter& w,
 void _serialize_ycExtrapolation(xsdcpp::XmlWriter& w,
                                 const char* name,
                                 const domain::ycExtrapolation& v);
+void _serialize_ycRollDown(xsdcpp::XmlWriter& w, const char* name, const domain::ycRollDown& v);
 void _serialize_market_FxRates_t(xsdcpp::XmlWriter& w,
                                  const char* name,
                                  const domain::market_FxRates_t& v);
@@ -62342,6 +64684,10 @@ void _serialize_market_CapFloorVolatilities_t_SmileDynamics_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::market_CapFloorVolatilities_t_SmileDynamics_t& v);
+void _serialize_market_CapFloorVolatilities_t_SmileForwardInteraction_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_CapFloorVolatilities_t_SmileForwardInteraction_t& v);
 void _serialize_market_CDSVolatilities_t(xsdcpp::XmlWriter& w,
                                          const char* name,
                                          const domain::market_CDSVolatilities_t& v);
@@ -62550,11 +64896,16 @@ void _serialize_market_YYCapFloorVolatilities_t_SmileDynamics_t(
 void _serialize_market_Commodities_t(xsdcpp::XmlWriter& w,
                                      const char* name,
                                      const domain::market_Commodities_t& v);
+void _serialize_priceRollDown(xsdcpp::XmlWriter& w,
+                              const char* name,
+                              const domain::priceRollDown& v);
 void _serialize_market_Commodities_t_Names_t(xsdcpp::XmlWriter& w,
                                              const char* name,
                                              const domain::market_Commodities_t_Names_t& v);
 void _serialize_market_Commodities_t_Names_t_Name_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_Names_t_Name_t& v);
+void _serialize_market_Commodities_t_Interpolation_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_Interpolation_t& v);
 void _serialize_market_Commodities_t_Tenors_t(xsdcpp::XmlWriter& w,
                                               const char* name,
                                               const domain::market_Commodities_t_Tenors_t& v);
@@ -62564,6 +64915,21 @@ void _serialize_market_Commodities_t_DayCounters_t_DayCounter_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::market_Commodities_t_DayCounters_t_DayCounter_t& v);
+void _serialize_market_IntradayPowerCurves_t(xsdcpp::XmlWriter& w,
+                                             const char* name,
+                                             const domain::market_IntradayPowerCurves_t& v);
+void _serialize_market_IntradayPowerCurves_t_Names_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::market_IntradayPowerCurves_t_Names_t& v);
+void _serialize_market_IntradayPowerCurves_t_Names_t_Name_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_IntradayPowerCurves_t_Names_t_Name_t& v);
+void _serialize_market_IntradayPowerCurves_t_Interpolation_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_IntradayPowerCurves_t_Interpolation_t& v);
+void _serialize_market_IntradayPowerCurves_t_Tenors_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::market_IntradayPowerCurves_t_Tenors_t& v);
 void _serialize_market_CommodityVolatilities_t(xsdcpp::XmlWriter& w,
                                                const char* name,
                                                const domain::market_CommodityVolatilities_t& v);
@@ -62591,6 +64957,33 @@ void _serialize_market_CommodityVolatilities_t_SmileDynamics_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::market_CommodityVolatilities_t_SmileDynamics_t& v);
+void _serialize_market_BondFutureVolatilities_t(xsdcpp::XmlWriter& w,
+                                                const char* name,
+                                                const domain::market_BondFutureVolatilities_t& v);
+void _serialize_market_BondFutureVolatilities_t_Names_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t& v);
+void _serialize_market_BondFutureVolatilities_t_Names_t_Name_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t_Name_t& v);
+void _serialize_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t& v);
+void _serialize_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t& v);
+void _serialize_market_BondFutureVolatilities_t_DayCounter_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_DayCounter_t& v);
+void _serialize_market_BondFutureVolatilities_t_SmileDynamics_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_SmileDynamics_t& v);
 void _serialize_market_AggregationScenarioDataCurrencies_t(
     xsdcpp::XmlWriter& w,
     const char* name,
@@ -62780,6 +65173,10 @@ void _serialize_globalReportConfiguration_InflationCapFloorVolatilities_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::globalReportConfiguration_InflationCapFloorVolatilities_t& v);
+void _serialize_globalReportConfiguration_DefaultCurves_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::globalReportConfiguration_DefaultCurves_t& v);
 void _serialize_fxSpots(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpots& v);
 void _serialize_fxSpot(xsdcpp::XmlWriter& w, const char* name, const domain::fxSpot& v);
 void _serialize_fxSpot_CurveId_t(xsdcpp::XmlWriter& w,
@@ -62827,6 +65224,14 @@ void _serialize_parametricVolatilityParameterCalibration(
 void _serialize_parametricSmileConfigCalibration(xsdcpp::XmlWriter& w,
                                                  const char* name,
                                                  const domain::parametricSmileConfigCalibration& v);
+void _serialize_parametricSmileConfigResidualCorrection(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::parametricSmileConfigResidualCorrection& v);
+void _serialize_parametricSmileConfigResidualCorrection_Dimension_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::parametricSmileConfigResidualCorrection_Dimension_t& v);
 void _serialize_fxVolatility_Deltas_t(xsdcpp::XmlWriter& w,
                                       const char* name,
                                       const domain::fxVolatility_Deltas_t& v);
@@ -63444,6 +65849,13 @@ void _serialize_fittedBondType_Type_t(xsdcpp::XmlWriter& w,
 void _serialize_fittedBondType_PillarChoice_t(xsdcpp::XmlWriter& w,
                                               const char* name,
                                               const domain::fittedBondType_PillarChoice_t& v);
+void _serialize_fittedBondType_IndexCurves_t(xsdcpp::XmlWriter& w,
+                                             const char* name,
+                                             const domain::fittedBondType_IndexCurves_t& v);
+void _serialize_fittedBondType_IndexCurves_t_IndexCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::fittedBondType_IndexCurves_t_IndexCurve_t& v);
 void _serialize_fittedBondType_IborIndexCurves_t(xsdcpp::XmlWriter& w,
                                                  const char* name,
                                                  const domain::fittedBondType_IborIndexCurves_t& v);
@@ -63451,6 +65863,12 @@ void _serialize_fittedBondType_IborIndexCurves_t_IborIndexCurve_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::fittedBondType_IborIndexCurves_t_IborIndexCurve_t& v);
+void _serialize_fittedBondType_InflationIndexCurves_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType_InflationIndexCurves_t& v);
+void _serialize_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t& v);
 void _serialize_BondYieldShiftedType(xsdcpp::XmlWriter& w,
                                      const char* name,
                                      const domain::BondYieldShiftedType& v);
@@ -63459,6 +65877,12 @@ void _serialize_BondYieldShiftedType_Type_t(xsdcpp::XmlWriter& w,
                                             const domain::BondYieldShiftedType_Type_t& v);
 void _serialize_BondYieldShiftedType_ReferenceCurve_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_ReferenceCurve_t& v);
+void _serialize_BondYieldShiftedType_IndexCurves_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_IndexCurves_t& v);
+void _serialize_BondYieldShiftedType_IndexCurves_t_IndexCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::BondYieldShiftedType_IndexCurves_t_IndexCurve_t& v);
 void _serialize_BondYieldShiftedType_IborIndexCurves_t(
     xsdcpp::XmlWriter& w,
     const char* name,
@@ -63944,6 +66368,45 @@ void _serialize_correlationQuoteType(xsdcpp::XmlWriter& w,
 void _serialize_correlation_OptionTenors_t(xsdcpp::XmlWriter& w,
                                            const char* name,
                                            const domain::correlation_OptionTenors_t& v);
+void _serialize_bondFutureVolatilities(xsdcpp::XmlWriter& w,
+                                       const char* name,
+                                       const domain::bondFutureVolatilities& v);
+void _serialize_bondFutureVolatility(xsdcpp::XmlWriter& w,
+                                     const char* name,
+                                     const domain::bondFutureVolatility& v);
+void _serialize_bondFutureVolatility_CurveId_t(xsdcpp::XmlWriter& w,
+                                               const char* name,
+                                               const domain::bondFutureVolatility_CurveId_t& v);
+void _serialize_bondFutureVolatility_CurveDescription_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::bondFutureVolatility_CurveDescription_t& v);
+void _serialize_bondFutureVolatility_ContractName_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatility_ContractName_t& v);
+void _serialize_bondFutureVolatility_YieldCurveId_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatility_YieldCurveId_t& v);
+void _serialize_bondFutureVolatility_UseOnlyPutCall_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatility_UseOnlyPutCall_t& v);
+void _serialize_intradayPowerCurves(xsdcpp::XmlWriter& w,
+                                    const char* name,
+                                    const domain::intradayPowerCurves& v);
+void _serialize_intradayPowerCurve(xsdcpp::XmlWriter& w,
+                                   const char* name,
+                                   const domain::intradayPowerCurve& v);
+void _serialize_intradayPowerCurve_CurveId_t(xsdcpp::XmlWriter& w,
+                                             const char* name,
+                                             const domain::intradayPowerCurve_CurveId_t& v);
+void _serialize_intradayPowerCurve_CurveDescription_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerCurve_CurveDescription_t& v);
+void _serialize_intradayPowerCurve_DailyAveragePriceCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::intradayPowerCurve_DailyAveragePriceCurve_t& v);
+void _serialize_intradayPowerCurve_ShapeQuoteName_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerCurve_ShapeQuoteName_t& v);
+void _serialize_intradayPowerCurve_Convention_t(xsdcpp::XmlWriter& w,
+                                                const char* name,
+                                                const domain::intradayPowerCurve_Convention_t& v);
 void _serialize_conventions(xsdcpp::XmlWriter& w, const char* name, const domain::conventions& v);
 void _serialize_zeroType(xsdcpp::XmlWriter& w, const char* name, const domain::zeroType& v);
 void _serialize_zeroType_Id_t(xsdcpp::XmlWriter& w,
@@ -64213,6 +66676,10 @@ void _serialize_commodityForwardType_AdvanceCalendar_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::commodityForwardType_AdvanceCalendar_t& v);
+void _serialize_commodityForwardType_DeliveryLocation_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::commodityForwardType_DeliveryLocation_t& v);
 void _serialize_commodityFutureType(xsdcpp::XmlWriter& w,
                                     const char* name,
                                     const domain::commodityFutureType& v);
@@ -64289,6 +66756,10 @@ void _serialize_commodityFutureType_IndexName_t(xsdcpp::XmlWriter& w,
                                                 const domain::commodityFutureType_IndexName_t& v);
 void _serialize_commodityFutureType_SavingsTime_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::commodityFutureType_SavingsTime_t& v);
+void _serialize_commodityFutureType_DeliveryLocation_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::commodityFutureType_DeliveryLocation_t& v);
 void _serialize_commodityFutureType_BalanceOfTheMonthPricingCalendar_t(
     xsdcpp::XmlWriter& w,
     const char* name,
@@ -64376,6 +66847,14 @@ void _serialize_zeroInflationIndexType_AvailabilityLag_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::zeroInflationIndexType_AvailabilityLag_t& v);
+void _serialize_zeroInflationIndexType_RebasingEvents_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::zeroInflationIndexType_RebasingEvents_t& v);
+void _serialize_zeroInflationIndexType_RebasingEvents_t_Event_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::zeroInflationIndexType_RebasingEvents_t_Event_t& v);
 void _serialize_bondYield(xsdcpp::XmlWriter& w, const char* name, const domain::bondYield& v);
 void _serialize_bondYield_Id_t(xsdcpp::XmlWriter& w,
                                const char* name,
@@ -64386,6 +66865,12 @@ void _serialize_bondYield_Compounding_t(xsdcpp::XmlWriter& w,
 void _serialize_bondYield_PriceType_t(xsdcpp::XmlWriter& w,
                                       const char* name,
                                       const domain::bondYield_PriceType_t& v);
+void _serialize_intradayPowerLoad(xsdcpp::XmlWriter& w,
+                                  const char* name,
+                                  const domain::intradayPowerLoad& v);
+void _serialize_intradayPowerLoad_Id_t(xsdcpp::XmlWriter& w,
+                                       const char* name,
+                                       const domain::intradayPowerLoad_Id_t& v);
 void _serialize_collateralBalances(xsdcpp::XmlWriter& w,
                                    const char* name,
                                    const domain::collateralBalances& v);
@@ -64539,6 +67024,14 @@ void _serialize_configurationType_CommodityVolatilitiesId_t(
     const domain::configurationType_CommodityVolatilitiesId_t& v);
 void _serialize_configurationType_CorrelationsId_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::configurationType_CorrelationsId_t& v);
+void _serialize_configurationType_BondFutureVolatilitiesId_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::configurationType_BondFutureVolatilitiesId_t& v);
+void _serialize_configurationType_IntradayPowerPriceCurvesId_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::configurationType_IntradayPowerPriceCurvesId_t& v);
 void _serialize_yieldCurvesType(xsdcpp::XmlWriter& w,
                                 const char* name,
                                 const domain::yieldCurvesType& v);
@@ -64672,6 +67165,33 @@ void _serialize_correlationsType(xsdcpp::XmlWriter& w,
 void _serialize_correlationsType_Correlation_t(xsdcpp::XmlWriter& w,
                                                const char* name,
                                                const domain::correlationsType_Correlation_t& v);
+void _serialize_bondFutureVolatilitiesType(xsdcpp::XmlWriter& w,
+                                           const char* name,
+                                           const domain::bondFutureVolatilitiesType& v);
+void _serialize_bondFutureVolatilitiesType_BondFutureVolatility_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::bondFutureVolatilitiesType_BondFutureVolatility_t& v);
+void _serialize_intradayPowerPriceCurvesType(xsdcpp::XmlWriter& w,
+                                             const char* name,
+                                             const domain::intradayPowerPriceCurvesType& v);
+void _serialize_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t& v);
+void _serialize_sensitivityanalysis(xsdcpp::XmlWriter& w,
+                                    const char* name,
+                                    const domain::sensitivityanalysis& v);
+void _serialize_parExcludes(xsdcpp::XmlWriter& w, const char* name, const domain::parExcludes& v);
+void _serialize_parExcludes_Type_t(xsdcpp::XmlWriter& w,
+                                   const char* name,
+                                   const domain::parExcludes_Type_t& v);
+void _serialize_sensitivityanalysis_ParSensiRemoveFixing_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::sensitivityanalysis_ParSensiRemoveFixing_t& v);
+void _serialize_parConversionMatrixRegularisation(
+    xsdcpp::XmlWriter& w, const char* name, const domain::parConversionMatrixRegularisation& v);
 void _serialize_discountcurves(xsdcpp::XmlWriter& w,
                                const char* name,
                                const domain::discountcurves& v);
@@ -64713,19 +67233,6 @@ void _serialize_parconversion_Conventions_t_Convention_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::parconversion_Conventions_t_Convention_t& v);
-void _serialize_sensitivityanalysis(xsdcpp::XmlWriter& w,
-                                    const char* name,
-                                    const domain::sensitivityanalysis& v);
-void _serialize_parExcludes(xsdcpp::XmlWriter& w, const char* name, const domain::parExcludes& v);
-void _serialize_parExcludes_Type_t(xsdcpp::XmlWriter& w,
-                                   const char* name,
-                                   const domain::parExcludes_Type_t& v);
-void _serialize_sensitivityanalysis_ParSensiRemoveFixing_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::sensitivityanalysis_ParSensiRemoveFixing_t& v);
-void _serialize_parConversionMatrixRegularisation(
-    xsdcpp::XmlWriter& w, const char* name, const domain::parConversionMatrixRegularisation& v);
 void _serialize_indexcurves(xsdcpp::XmlWriter& w, const char* name, const domain::indexcurves& v);
 void _serialize_indexcurve(xsdcpp::XmlWriter& w, const char* name, const domain::indexcurve& v);
 void _serialize_indexcurve_Shifts_t(xsdcpp::XmlWriter& w,
@@ -64947,6 +67454,18 @@ void _serialize_commodityCurve_Shifts_t(xsdcpp::XmlWriter& w,
 void _serialize_commodityCurve_ShiftTenors_t(xsdcpp::XmlWriter& w,
                                              const char* name,
                                              const domain::commodityCurve_ShiftTenors_t& v);
+void _serialize_intradaypowercurves(xsdcpp::XmlWriter& w,
+                                    const char* name,
+                                    const domain::intradaypowercurves& v);
+void _serialize_intradaypowercurve(xsdcpp::XmlWriter& w,
+                                   const char* name,
+                                   const domain::intradaypowercurve& v);
+void _serialize_intradaypowercurve_Shifts_t(xsdcpp::XmlWriter& w,
+                                            const char* name,
+                                            const domain::intradaypowercurve_Shifts_t& v);
+void _serialize_intradaypowercurve_ShiftTenors_t(xsdcpp::XmlWriter& w,
+                                                 const char* name,
+                                                 const domain::intradaypowercurve_ShiftTenors_t& v);
 void _serialize_commodityvolatilities(xsdcpp::XmlWriter& w,
                                       const char* name,
                                       const domain::commodityvolatilities& v);
@@ -64975,6 +67494,22 @@ void _serialize_correlationcurve_ShiftExpiries_t(xsdcpp::XmlWriter& w,
 void _serialize_correlationcurve_ShiftStrikes_t(xsdcpp::XmlWriter& w,
                                                 const char* name,
                                                 const domain::correlationcurve_ShiftStrikes_t& v);
+void _serialize_sensiBondFutureVolatilities(xsdcpp::XmlWriter& w,
+                                            const char* name,
+                                            const domain::sensiBondFutureVolatilities& v);
+void _serialize_sensiBondFutureVolatility(xsdcpp::XmlWriter& w,
+                                          const char* name,
+                                          const domain::sensiBondFutureVolatility& v);
+void _serialize_sensiBondFutureVolatility_Shifts_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::sensiBondFutureVolatility_Shifts_t& v);
+void _serialize_sensiBondFutureVolatility_ShiftExpiries_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::sensiBondFutureVolatility_ShiftExpiries_t& v);
+void _serialize_sensiBondFutureVolatility_ShiftStrikes_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::sensiBondFutureVolatility_ShiftStrikes_t& v);
 void _serialize_crossgammafilter(xsdcpp::XmlWriter& w,
                                  const char* name,
                                  const domain::crossgammafilter& v);
@@ -64991,6 +67526,9 @@ void _serialize_stresstesting(xsdcpp::XmlWriter& w,
                               const char* name,
                               const domain::stresstesting& v);
 void _serialize_stresstest(xsdcpp::XmlWriter& w, const char* name, const domain::stresstest& v);
+void _serialize_stresstest_Date_t(xsdcpp::XmlWriter& w,
+                                  const char* name,
+                                  const domain::stresstest_Date_t& v);
 void _serialize_stresstestparshifts(xsdcpp::XmlWriter& w,
                                     const char* name,
                                     const domain::stresstestparshifts& v);
@@ -65065,6 +67603,24 @@ void _serialize_stressfxvolatility_WeightedShifts_t_WeightTenors_t(
     xsdcpp::XmlWriter& w,
     const char* name,
     const domain::stressfxvolatility_WeightedShifts_t_WeightTenors_t& v);
+void _serialize_stressswaptionvolatilities(xsdcpp::XmlWriter& w,
+                                           const char* name,
+                                           const domain::stressswaptionvolatilities& v);
+void _serialize_stressswaptionvolatility(xsdcpp::XmlWriter& w,
+                                         const char* name,
+                                         const domain::stressswaptionvolatility& v);
+void _serialize_stressswaptionvolatility_Shifts_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressswaptionvolatility_Shifts_t& v);
+void _serialize_stressswaptionvolatility_Shifts_t_Shift_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::stressswaptionvolatility_Shifts_t_Shift_t& v);
+void _serialize_stressswaptionvolatility_ShiftExpiries_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::stressswaptionvolatility_ShiftExpiries_t& v);
+void _serialize_stressswaptionvolatility_ShiftTerms_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressswaptionvolatility_ShiftTerms_t& v);
 void _serialize_stresscapfloorvolatilities(xsdcpp::XmlWriter& w,
                                            const char* name,
                                            const domain::stresscapfloorvolatilities& v);
@@ -65096,6 +67652,18 @@ void _serialize_stresscommoditycurve_Shifts_t(xsdcpp::XmlWriter& w,
                                               const domain::stresscommoditycurve_Shifts_t& v);
 void _serialize_stresscommoditycurve_ShiftTenors_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::stresscommoditycurve_ShiftTenors_t& v);
+void _serialize_stressintradaypowercurves(xsdcpp::XmlWriter& w,
+                                          const char* name,
+                                          const domain::stressintradaypowercurves& v);
+void _serialize_stressintradaypowercurve(xsdcpp::XmlWriter& w,
+                                         const char* name,
+                                         const domain::stressintradaypowercurve& v);
+void _serialize_stressintradaypowercurve_Shifts_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressintradaypowercurve_Shifts_t& v);
+void _serialize_stressintradaypowercurve_ShiftTenors_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::stressintradaypowercurve_ShiftTenors_t& v);
 void _serialize_stresscommodityvolatilities(xsdcpp::XmlWriter& w,
                                             const char* name,
                                             const domain::stresscommodityvolatilities& v);
@@ -65467,6 +68035,21 @@ XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleType_Shift_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void
+_serialize_dateDeltaUnit(xsdcpp::XmlWriter& w, const char* name, const domain::dateDeltaUnit& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_dateDeltaAnchor(xsdcpp::XmlWriter& w,
+                                                    const char* name,
+                                                    const domain::dateDeltaAnchor& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleType(xsdcpp::XmlWriter& w,
                                                         const char* name,
                                                         const domain::DerivedScheduleType& v) {
@@ -65482,6 +68065,10 @@ XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleType(xsdcpp::XmlWriter& w,
         _serialize_bool(w, "RemoveFirstDate", *v.RemoveFirstDate);
     if (v.RemoveLastDate)
         _serialize_bool(w, "RemoveLastDate", *v.RemoveLastDate);
+    if (v.ShiftUnit)
+        _serialize_dateDeltaUnit(w, "ShiftUnit", *v.ShiftUnit);
+    if (v.ShiftAnchor)
+        _serialize_dateDeltaAnchor(w, "ShiftAnchor", *v.ShiftAnchor);
     w.endElement(name);
 }
 
@@ -65496,6 +68083,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_DerivedScheduleGroup_group_t(
 XSDCPP_MAYBE_UNUSED void
 _serialize_scheduleData(xsdcpp::XmlWriter& w, const char* name, const domain::scheduleData& v) {
     w.startElement(name);
+    if ((&v)->name)
+        w.writeAttribute("name", *(&v)->name);
     for (const auto& item : v.Rules)
         _serialize_scheduleData_Rules_t(w, "Rules", item);
     for (const auto& item : v.Dates)
@@ -66005,6 +68594,8 @@ XSDCPP_MAYBE_UNUSED void _serialize__FloatingLegData_t(xsdcpp::XmlWriter& w,
         _serialize_bool(w, "StubUseOriginalCurve", *v.StubUseOriginalCurve);
     if (v.ObservationShift)
         _serialize_bool(w, "ObservationShift", *v.ObservationShift);
+    if (v.RoundingPrecision)
+        _serialize_int64_t(w, "RoundingPrecision", *v.RoundingPrecision);
     w.endElement(name);
 }
 
@@ -66581,7 +69172,7 @@ _serialize_underlying(xsdcpp::XmlWriter& w, const char* name, const domain::unde
     if (v.IdentifierType)
         _serialize_underlying_IdentifierType_t(w, "IdentifierType", *v.IdentifierType);
     if (v.Currency)
-        _serialize_currencyCode(w, "Currency", *v.Currency);
+        _serialize_extendedCurrencyCode(w, "Currency", *v.Currency);
     if (v.Exchange)
         _serialize_underlying_Exchange_t(w, "Exchange", *v.Exchange);
     if (v.Weight)
@@ -67004,6 +69595,169 @@ XSDCPP_MAYBE_UNUSED void _serialize__CommodityFloatingLegData_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize__IntradayPowerFloatingLegData_t_Name_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void
+_serialize_loadFactorType(xsdcpp::XmlWriter& w, const char* name, const domain::loadFactorType& v) {
+    w.startElement(name);
+    w.writeAttribute("from", xsdcpp::get_string((&v)->from));
+    w.writeAttribute("to", xsdcpp::get_string((&v)->to));
+    if ((&v)->unit)
+        w.writeAttribute("unit", *(&v)->unit);
+    if ((&v)->dst)
+        w.writeAttribute("dst", to_string(*(&v)->dst));
+    w.writeText(xsdcpp::get_string(static_cast<double>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_loadFactorsType(xsdcpp::XmlWriter& w,
+                                                    const char* name,
+                                                    const domain::loadFactorsType& v) {
+    w.startElement(name);
+    for (const auto& item : v.LoadFactor)
+        _serialize_loadFactorType(w, "LoadFactor", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_explicitLoadProfileType_LoadProfileDatum_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::explicitLoadProfileType_LoadProfileDatum_t& v) {
+    w.startElement(name);
+    _serialize_date(w, "Date", v.Date);
+    _serialize_loadFactorsType(w, "LoadFactors", v.LoadFactors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_explicitLoadProfileType(
+    xsdcpp::XmlWriter& w, const char* name, const domain::explicitLoadProfileType& v) {
+    w.startElement(name);
+    for (const auto& item : v.LoadProfileDatum)
+        _serialize_explicitLoadProfileType_LoadProfileDatum_t(w, "LoadProfileDatum", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void
+_serialize_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t& v) {
+    w.startElement(name);
+    _serialize_date(w, "Date", v.Date);
+    _serialize_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t(
+        w, "Calendar", v.Calendar);
+    if (v.BusinessDayLoadFactors)
+        _serialize_loadFactorsType(w, "BusinessDayLoadFactors", *v.BusinessDayLoadFactors);
+    if (v.NonBusinessDayLoadFactors)
+        _serialize_loadFactorsType(w, "NonBusinessDayLoadFactors", *v.NonBusinessDayLoadFactors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_ruleBasedLoadProfileType(
+    xsdcpp::XmlWriter& w, const char* name, const domain::ruleBasedLoadProfileType& v) {
+    w.startElement(name);
+    for (const auto& item : v.LoadProfileBusinessDayRule)
+        _serialize_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t(
+            w, "LoadProfileBusinessDayRule", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_powerLoadProfileDataType(
+    xsdcpp::XmlWriter& w, const char* name, const domain::powerLoadProfileDataType& v) {
+    w.startElement(name);
+    if (v.ExplicitDates)
+        _serialize_explicitLoadProfileType(w, "ExplicitDates", *v.ExplicitDates);
+    if (v.BusinessDayRules)
+        _serialize_ruleBasedLoadProfileType(w, "BusinessDayRules", *v.BusinessDayRules);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__IntradayPowerFloatingLegData_t_FXIndex_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_FXIndex_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__IntradayPowerFloatingLegData_t_Tag_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_Tag_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__IntradayPowerFloatingLegData_t_QuantityMode_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::_IntradayPowerFloatingLegData_t_QuantityMode_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize__IntradayPowerFloatingLegData_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::_IntradayPowerFloatingLegData_t& v) {
+    w.startElement(name);
+    _serialize__IntradayPowerFloatingLegData_t_Name_t(w, "Name", v.Name);
+    _serialize_quantitiesType(w, "Quantities", v.Quantities);
+    if (v.Spreads)
+        _serialize_spreads(w, "Spreads", *v.Spreads);
+    if (v.Gearings)
+        _serialize_gearings(w, "Gearings", *v.Gearings);
+    if (v.PricingCalendar)
+        _serialize_calendar(w, "PricingCalendar", *v.PricingCalendar);
+    if (v.IncludePeriodStart)
+        _serialize_bool(w, "IncludePeriodStart", *v.IncludePeriodStart);
+    if (v.IncludePeriodEnd)
+        _serialize_bool(w, "IncludePeriodEnd", *v.IncludePeriodEnd);
+    if (v.BusinessDays)
+        _serialize_bool(w, "BusinessDays", *v.BusinessDays);
+    if (v.PowerLoadProfileReference)
+        _serialize__IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t(
+            w, "PowerLoadProfileReference", *v.PowerLoadProfileReference);
+    if (v.PowerLoadProfileData)
+        _serialize_powerLoadProfileDataType(w, "PowerLoadProfileData", *v.PowerLoadProfileData);
+    if (v.FXIndex)
+        _serialize__IntradayPowerFloatingLegData_t_FXIndex_t(w, "FXIndex", *v.FXIndex);
+    if (v.AvgPricePrecision)
+        _serialize_uint64_t(w, "AvgPricePrecision", *v.AvgPricePrecision);
+    if (v.Tag)
+        _serialize__IntradayPowerFloatingLegData_t_Tag_t(w, "Tag", *v.Tag);
+    if (v.QuantityMode)
+        _serialize__IntradayPowerFloatingLegData_t_QuantityMode_t(
+            w, "QuantityMode", *v.QuantityMode);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize__FormulaBasedLegData_t_Index_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::_FormulaBasedLegData_t_Index_t& v) {
     w.startElement(name);
@@ -67065,6 +69819,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_legDataType_group_t(xsdcpp::XmlWriter& w,
     else if ((&v)->CommodityFloatingLegData)
         _serialize__CommodityFloatingLegData_t(
             w, "CommodityFloatingLegData", *(&v)->CommodityFloatingLegData);
+    else if ((&v)->IntradayPowerFloatingLegData)
+        _serialize__IntradayPowerFloatingLegData_t(
+            w, "IntradayPowerFloatingLegData", *(&v)->IntradayPowerFloatingLegData);
     else if ((&v)->FormulaBasedLegData)
         _serialize__FormulaBasedLegData_t(w, "FormulaBasedLegData", *(&v)->FormulaBasedLegData);
 }
@@ -67105,8 +69862,16 @@ _serialize_legData(xsdcpp::XmlWriter& w, const char* name, const domain::legData
         _serialize_businessDayConvention(w, "PaymentConvention", *v.PaymentConvention);
     if (v.PaymentLag)
         _serialize_paymentLag(w, "PaymentLag", *v.PaymentLag);
+    if (v.PaymentLagUnit)
+        _serialize_dateDeltaUnit(w, "PaymentLagUnit", *v.PaymentLagUnit);
+    if (v.PaymentLagAnchor)
+        _serialize_dateDeltaAnchor(w, "PaymentLagAnchor", *v.PaymentLagAnchor);
     if (v.NotionalPaymentLag)
         _serialize_int64_t(w, "NotionalPaymentLag", *v.NotionalPaymentLag);
+    if (v.NotionalPaymentLagUnit)
+        _serialize_dateDeltaUnit(w, "NotionalPaymentLagUnit", *v.NotionalPaymentLagUnit);
+    if (v.NotionalPaymentLagAnchor)
+        _serialize_dateDeltaAnchor(w, "NotionalPaymentLagAnchor", *v.NotionalPaymentLagAnchor);
     if (v.PaymentCalendar)
         _serialize_legData_PaymentCalendar_t(w, "PaymentCalendar", *v.PaymentCalendar);
     if (v.DayCounter)
@@ -67541,64 +70306,13 @@ XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleIndex(xsdcpp::XmlWriter& w,
     w.endElement(name);
 }
 
-XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::stFreeStyleEventScheduleBase_DerivedSchedule_t& v) {
-    w.startElement(name);
-    _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t(
-        w, "BaseSchedule", v.BaseSchedule);
-    _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t(w, "Shift", v.Shift);
-    _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t(w, "Calendar", v.Calendar);
-    _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t(
-        w, "Convention", v.Convention);
-    w.endElement(name);
-}
-
 XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleEventScheduleBase(
     xsdcpp::XmlWriter& w, const char* name, const domain::stFreeStyleEventScheduleBase& v) {
     w.startElement(name);
     if (v.ScheduleData)
         _serialize_scheduleData(w, "ScheduleData", *v.ScheduleData);
     if (v.DerivedSchedule)
-        _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t(
-            w, "DerivedSchedule", *v.DerivedSchedule);
+        _serialize_DerivedScheduleType(w, "DerivedSchedule", *v.DerivedSchedule);
     w.endElement(name);
 }
 
@@ -67613,7 +70327,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_stFreeStyleEventSchedule(
             "ScheduleData",
             *static_cast<const domain::stFreeStyleEventScheduleBase&>(v).ScheduleData);
     if (static_cast<const domain::stFreeStyleEventScheduleBase&>(v).DerivedSchedule)
-        _serialize_stFreeStyleEventScheduleBase_DerivedSchedule_t(
+        _serialize_DerivedScheduleType(
             w,
             "DerivedSchedule",
             *static_cast<const domain::stFreeStyleEventScheduleBase&>(v).DerivedSchedule);
@@ -67938,10 +70652,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxBarrierOptionData(xsdcpp::XmlWriter& w,
                                                         const char* name,
                                                         const domain::fxBarrierOptionData& v) {
     w.startElement(name);
-    for (const auto& item : v.OptionData)
-        _serialize_optionData(w, "OptionData", item);
-    for (const auto& item : v.BarrierData)
-        _serialize_barrierData(w, "BarrierData", item);
+    _serialize_optionData(w, "OptionData", v.OptionData);
+    _serialize_barrierData(w, "BarrierData", v.BarrierData);
     if (v.StartDate)
         _serialize_date(w, "StartDate", *v.StartDate);
     if (v.Calendar)
@@ -67965,8 +70677,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxDigitalOptionData(xsdcpp::XmlWriter& w,
                                                         const char* name,
                                                         const domain::fxDigitalOptionData& v) {
     w.startElement(name);
-    for (const auto& item : v.OptionData)
-        _serialize_optionData(w, "OptionData", item);
+    _serialize_optionData(w, "OptionData", v.OptionData);
     _serialize_float(w, "Strike", v.Strike);
     if (v.PayoffCurrency)
         _serialize_currencyCode(w, "PayoffCurrency", *v.PayoffCurrency);
@@ -68037,10 +70748,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxDigitalBarrierOptionData_FXIndexDailyHighs
 XSDCPP_MAYBE_UNUSED void _serialize_fxDigitalBarrierOptionData(
     xsdcpp::XmlWriter& w, const char* name, const domain::fxDigitalBarrierOptionData& v) {
     w.startElement(name);
-    for (const auto& item : v.OptionData)
-        _serialize_optionData(w, "OptionData", item);
-    for (const auto& item : v.BarrierData)
-        _serialize_barrierData(w, "BarrierData", item);
+    _serialize_optionData(w, "OptionData", v.OptionData);
+    _serialize_barrierData(w, "BarrierData", v.BarrierData);
     if (v.StartDate)
         _serialize_date(w, "StartDate", *v.StartDate);
     if (v.Calendar)
@@ -68096,10 +70805,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_fxTouchOptionData(xsdcpp::XmlWriter& w,
                                                       const char* name,
                                                       const domain::fxTouchOptionData& v) {
     w.startElement(name);
-    for (const auto& item : v.OptionData)
-        _serialize_optionData(w, "OptionData", item);
-    for (const auto& item : v.BarrierData)
-        _serialize_barrierData(w, "BarrierData", item);
+    _serialize_optionData(w, "OptionData", v.OptionData);
+    _serialize_barrierData(w, "BarrierData", v.BarrierData);
     _serialize_currencyCode(w, "ForeignCurrency", v.ForeignCurrency);
     _serialize_currencyCode(w, "DomesticCurrency", v.DomesticCurrency);
     _serialize_currencyCode(w, "PayoffCurrency", v.PayoffCurrency);
@@ -68185,6 +70892,10 @@ XSDCPP_MAYBE_UNUSED void _serialize_legData_capfloor(xsdcpp::XmlWriter& w,
         _serialize_businessDayConvention(w, "PaymentConvention", *v.PaymentConvention);
     if (v.PaymentLag)
         _serialize_paymentLag(w, "PaymentLag", *v.PaymentLag);
+    if (v.PaymentLagUnit)
+        _serialize_dateDeltaUnit(w, "PaymentLagUnit", *v.PaymentLagUnit);
+    if (v.PaymentLagAnchor)
+        _serialize_dateDeltaAnchor(w, "PaymentLagAnchor", *v.PaymentLagAnchor);
     if (v.PaymentCalendar)
         _serialize_legData_capfloor_PaymentCalendar_t(w, "PaymentCalendar", *v.PaymentCalendar);
     _serialize_legData_capfloor_Notionals_t(w, "Notionals", v.Notionals);
@@ -68402,6 +71113,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_equityAutoDeltaHedgedOptionData(
     _serialize_float(w, "DriftRate", v.DriftRate);
     _serialize_equityAutoDeltaHedgedOptionData_Underlyings_t(w, "Underlyings", v.Underlyings);
     _serialize_date(w, "ObservationStartDate", v.ObservationStartDate);
+    _serialize_date(w, "PaymentDate", v.PaymentDate);
     w.endElement(name);
 }
 
@@ -68841,140 +71553,34 @@ XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_LongShort_t(
     w.endElement(name);
 }
 
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_ContractMonth_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_ContractMonth_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_DeliverableGrade_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_DeliverableGrade_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_FairPrice_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_FairPrice_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_Settlement_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_Settlement_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_SettlementDirty_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_SettlementDirty_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_RootDate_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_RootDate_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_ExpiryBasis_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_ExpiryBasis_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_SettlementBasis_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_SettlementBasis_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_ExpiryLag_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_ExpiryLag_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_SettlementLag_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_SettlementLag_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_LastTradingDate_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_LastTradingDate_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_bondFutureData_LastDeliveryDate_t(
-    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData_LastDeliveryDate_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_deliveryBasket_Id_t(xsdcpp::XmlWriter& w,
-                                                        const char* name,
-                                                        const domain::deliveryBasket_Id_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void
-_serialize_deliveryBasket(xsdcpp::XmlWriter& w, const char* name, const domain::deliveryBasket& v) {
-    w.startElement(name);
-    for (const auto& item : v.Id)
-        _serialize_deliveryBasket_Id_t(w, "Id", item);
-    w.endElement(name);
-}
-
 XSDCPP_MAYBE_UNUSED void
 _serialize_bondFutureData(xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureData& v) {
     w.startElement(name);
     _serialize_bondFutureData_ContractName_t(w, "ContractName", v.ContractName);
     _serialize_bondFutureData_ContractNotional_t(w, "ContractNotional", v.ContractNotional);
     _serialize_bondFutureData_LongShort_t(w, "LongShort", v.LongShort);
-    if (v.Currency)
-        _serialize_currencyCode(w, "Currency", *v.Currency);
-    if (v.ContractMonth)
-        _serialize_bondFutureData_ContractMonth_t(w, "ContractMonth", *v.ContractMonth);
-    if (v.DeliverableGrade)
-        _serialize_bondFutureData_DeliverableGrade_t(w, "DeliverableGrade", *v.DeliverableGrade);
-    if (v.FairPrice)
-        _serialize_bondFutureData_FairPrice_t(w, "FairPrice", *v.FairPrice);
-    if (v.Settlement)
-        _serialize_bondFutureData_Settlement_t(w, "Settlement", *v.Settlement);
-    if (v.SettlementDirty)
-        _serialize_bondFutureData_SettlementDirty_t(w, "SettlementDirty", *v.SettlementDirty);
-    if (v.RootDate)
-        _serialize_bondFutureData_RootDate_t(w, "RootDate", *v.RootDate);
-    if (v.ExpiryBasis)
-        _serialize_bondFutureData_ExpiryBasis_t(w, "ExpiryBasis", *v.ExpiryBasis);
-    if (v.SettlementBasis)
-        _serialize_bondFutureData_SettlementBasis_t(w, "SettlementBasis", *v.SettlementBasis);
-    if (v.ExpiryLag)
-        _serialize_bondFutureData_ExpiryLag_t(w, "ExpiryLag", *v.ExpiryLag);
-    if (v.SettlementLag)
-        _serialize_bondFutureData_SettlementLag_t(w, "SettlementLag", *v.SettlementLag);
-    if (v.LastTradingDate)
-        _serialize_bondFutureData_LastTradingDate_t(w, "LastTradingDate", *v.LastTradingDate);
-    if (v.LastDeliveryDate)
-        _serialize_bondFutureData_LastDeliveryDate_t(w, "LastDeliveryDate", *v.LastDeliveryDate);
-    if (v.DeliveryBasket)
-        _serialize_deliveryBasket(w, "DeliveryBasket", *v.DeliveryBasket);
+    if (v.ApplyConversionFactor)
+        _serialize_bool(w, "ApplyConversionFactor", *v.ApplyConversionFactor);
+    if (v.UseFuturePrice)
+        _serialize_bool(w, "UseFuturePrice", *v.UseFuturePrice);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureOptionData_ContractName_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureOptionData_ContractName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureOptionData(xsdcpp::XmlWriter& w,
+                                                         const char* name,
+                                                         const domain::bondFutureOptionData& v) {
+    w.startElement(name);
+    _serialize_optionData(w, "OptionData", v.OptionData);
+    _serialize_bondFutureOptionData_ContractName_t(w, "ContractName", v.ContractName);
+    _serialize_float(w, "ContractNotional", v.ContractNotional);
+    _serialize_strikeGroup_group_t(w, "strikeGroup", v.strikeGroup);
     w.endElement(name);
 }
 
@@ -69203,6 +71809,40 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardData(xsdcpp::XmlWriter& w,
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerForwardData_Name_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerForwardData_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerForwardData(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerForwardData& v) {
+    w.startElement(name);
+    _serialize_longShort(w, "Position", v.Position);
+    _serialize_date(w, "Maturity", v.Maturity);
+    _serialize_intradayPowerForwardData_Name_t(w, "Name", v.Name);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_float(w, "Strike", v.Strike);
+    _serialize_float(w, "Quantity", v.Quantity);
+    _serialize_date(w, "DeliveryDate", v.DeliveryDate);
+    if (v.DeliveryStart)
+        _serialize_int64_t(w, "DeliveryStart", *v.DeliveryStart);
+    if (v.DeliveryEnd)
+        _serialize_int64_t(w, "DeliveryEnd", *v.DeliveryEnd);
+    if (v.IsDstHour)
+        _serialize_bool(w, "IsDstHour", *v.IsDstHour);
+    if (v.PowerLoadProfileData)
+        _serialize_powerLoadProfileDataType(w, "PowerLoadProfileData", *v.PowerLoadProfileData);
+    if (v.PhysicallySettled)
+        _serialize_bool_(w, "PhysicallySettled", *v.PhysicallySettled);
+    if (v.PaymentDate)
+        _serialize_date(w, "PaymentDate", *v.PaymentDate);
+    if (v.SettlementData)
+        _serialize_commForwardSettlementData(w, "SettlementData", *v.SettlementData);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_commodityOptionData_Name_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::commodityOptionData_Name_t& v) {
     w.startElement(name);
@@ -69217,7 +71857,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityOptionData(xsdcpp::XmlWriter& w,
     _serialize_optionData(w, "OptionData", v.OptionData);
     _serialize_commodityOptionData_Name_t(w, "Name", v.Name);
     _serialize_currencyCode(w, "Currency", v.Currency);
-    _serialize_float(w, "Strike", v.Strike);
+    _serialize_strikeGroup_group_t(w, "strikeGroup", v.strikeGroup);
     _serialize_float(w, "Quantity", v.Quantity);
     if (v.IsFuturePrice)
         _serialize_bool_(w, "IsFuturePrice", *v.IsFuturePrice);
@@ -69675,6 +72315,10 @@ XSDCPP_MAYBE_UNUSED void _serialize_totalReturnData(xsdcpp::XmlWriter& w,
     _serialize_scheduleData(w, "ScheduleData", v.ScheduleData);
     if (v.PayBondCashFlowsImmediately)
         _serialize_bool(w, "PayBondCashFlowsImmediately", *v.PayBondCashFlowsImmediately);
+    if (v.PaymentLagUnit)
+        _serialize_dateDeltaUnit(w, "PaymentLagUnit", *v.PaymentLagUnit);
+    if (v.PaymentLagAnchor)
+        _serialize_dateDeltaAnchor(w, "PaymentLagAnchor", *v.PaymentLagAnchor);
     w.endElement(name);
 }
 
@@ -70931,6 +73575,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_trsUnderlyingData_PortfolioIndexTradeData_t(
     if (v.IndexQuantity)
         _serialize_trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t(
             w, "IndexQuantity", *v.IndexQuantity);
+    if (v.PriceIsPerUnit)
+        _serialize_bool(w, "PriceIsPerUnit", *v.PriceIsPerUnit);
     w.endElement(name);
 }
 
@@ -70991,6 +73637,10 @@ _serialize_trsReturnData(xsdcpp::XmlWriter& w, const char* name, const domain::t
     if (v.PayUnderlyingCashFlowsImmediately)
         _serialize_bool(
             w, "PayUnderlyingCashFlowsImmediately", *v.PayUnderlyingCashFlowsImmediately);
+    if (v.PaymentLagUnit)
+        _serialize_dateDeltaUnit(w, "PaymentLagUnit", *v.PaymentLagUnit);
+    if (v.PaymentLagAnchor)
+        _serialize_dateDeltaAnchor(w, "PaymentLagAnchor", *v.PaymentLagAnchor);
     w.endElement(name);
 }
 
@@ -71752,6 +74402,40 @@ XSDCPP_MAYBE_UNUSED void _serialize_volBarrierOptionData(xsdcpp::XmlWriter& w,
     _serialize_stFreeStyleCurrency(w, "PayCcy", v.PayCcy);
     _serialize_stFreeStyleCurrency(w, "CallCcy", v.CallCcy);
     _serialize_stFreeStyleCurrency(w, "PutCcy", v.PutCcy);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_forwardVolatilityAgreementData2_PayoffType_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::forwardVolatilityAgreementData2_PayoffType_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_forwardVolatilityAgreementData2(
+    xsdcpp::XmlWriter& w, const char* name, const domain::forwardVolatilityAgreementData2& v) {
+    w.startElement(name);
+    _serialize_date(w, "FvaDate", v.FvaDate);
+    _serialize_date(w, "OptionExpiry", v.OptionExpiry);
+    _serialize_date(w, "PremiumDate", v.PremiumDate);
+    _serialize_underlying(w, "Underlying", v.Underlying);
+    _serialize_longShort(w, "LongShort", v.LongShort);
+    _serialize_float(w, "ImpliedVolStrike", v.ImpliedVolStrike);
+    _serialize_float(w, "Quantity", v.Quantity);
+    _serialize_currencyCode(w, "PayCcy", v.PayCcy);
+    _serialize_date(w, "SettlementDate", v.SettlementDate);
+    if (v.UnderlyingStrike)
+        _serialize_float(w, "UnderlyingStrike", *v.UnderlyingStrike);
+    if (v.DayCountFraction)
+        _serialize_dayCounter(w, "DayCountFraction", *v.DayCountFraction);
+    if (v.DividendYield)
+        _serialize_float(w, "DividendYield", *v.DividendYield);
+    if (v.FixedRate)
+        _serialize_float(w, "FixedRate", *v.FixedRate);
+    if (v.PayoffType)
+        _serialize_forwardVolatilityAgreementData2_PayoffType_t(w, "PayoffType", *v.PayoffType);
     w.endElement(name);
 }
 
@@ -72723,58 +75407,6 @@ XSDCPP_MAYBE_UNUSED void _serialize_scriptedTradeData_Data_t_Event_t_Value_t(
     w.endElement(name);
 }
 
-XSDCPP_MAYBE_UNUSED void
-_serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t& v) {
-    w.startElement(name);
-    _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t(
-        w, "BaseSchedule", v.BaseSchedule);
-    _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t(w, "Shift", v.Shift);
-    _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t(
-        w, "Calendar", v.Calendar);
-    _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t(
-        w, "Convention", v.Convention);
-    w.endElement(name);
-}
-
 XSDCPP_MAYBE_UNUSED void _serialize_scriptedTradeData_Data_t_Event_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::scriptedTradeData_Data_t_Event_t& v) {
     w.startElement(name);
@@ -72784,8 +75416,7 @@ XSDCPP_MAYBE_UNUSED void _serialize_scriptedTradeData_Data_t_Event_t(
     if (v.ScheduleData)
         _serialize_scheduleData(w, "ScheduleData", *v.ScheduleData);
     if (v.DerivedSchedule)
-        _serialize_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t(
-            w, "DerivedSchedule", *v.DerivedSchedule);
+        _serialize_DerivedScheduleType(w, "DerivedSchedule", *v.DerivedSchedule);
     if (v.ApplyCoarsening)
         _serialize_bool_(w, "ApplyCoarsening", *v.ApplyCoarsening);
     w.endElement(name);
@@ -74109,6 +76740,8 @@ _serialize_componentTrade(xsdcpp::XmlWriter& w, const char* name, const domain::
         _serialize_forwardBondData(w, "ForwardBondData", *v.ForwardBondData);
     if (v.BondFutureData)
         _serialize_bondFutureData(w, "BondFutureData", *v.BondFutureData);
+    if (v.BondFutureOptionData)
+        _serialize_bondFutureOptionData(w, "BondFutureOptionData", *v.BondFutureOptionData);
     if (v.CreditDefaultSwapData)
         _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", *v.CreditDefaultSwapData);
     if (v.CreditDefaultSwapOptionData)
@@ -74116,6 +76749,9 @@ _serialize_componentTrade(xsdcpp::XmlWriter& w, const char* name, const domain::
             w, "CreditDefaultSwapOptionData", *v.CreditDefaultSwapOptionData);
     if (v.CommodityForwardData)
         _serialize_commodityForwardData(w, "CommodityForwardData", *v.CommodityForwardData);
+    if (v.IntradayPowerForwardData)
+        _serialize_intradayPowerForwardData(
+            w, "IntradayPowerForwardData", *v.IntradayPowerForwardData);
     if (v.CommodityOptionData)
         _serialize_commodityOptionData(w, "CommodityOptionData", *v.CommodityOptionData);
     if (v.CommodityDigitalAveragePriceOptionData)
@@ -74268,6 +76904,16 @@ _serialize_componentTrade(xsdcpp::XmlWriter& w, const char* name, const domain::
     if (v.VolatilityBarrierOptionData)
         _serialize_volBarrierOptionData(
             w, "VolatilityBarrierOptionData", *v.VolatilityBarrierOptionData);
+    if (v.FxForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(
+            w, "FxForwardVolatilityAgreementData", *v.FxForwardVolatilityAgreementData);
+    if (v.EquityForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(
+            w, "EquityForwardVolatilityAgreementData", *v.EquityForwardVolatilityAgreementData);
+    if (v.CommodityForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(w,
+                                                   "CommodityForwardVolatilityAgreementData",
+                                                   *v.CommodityForwardVolatilityAgreementData);
     if (v.FxTaRFData)
         _serialize_tarfData2(w, "FxTaRFData", *v.FxTaRFData);
     if (v.EquityTaRFData)
@@ -74579,6 +77225,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_componentSubTrade(xsdcpp::XmlWriter& w,
         _serialize_forwardBondData(w, "ForwardBondData", *v.ForwardBondData);
     if (v.BondFutureData)
         _serialize_bondFutureData(w, "BondFutureData", *v.BondFutureData);
+    if (v.BondFutureOptionData)
+        _serialize_bondFutureOptionData(w, "BondFutureOptionData", *v.BondFutureOptionData);
     if (v.CreditDefaultSwapData)
         _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", *v.CreditDefaultSwapData);
     if (v.CreditDefaultSwapOptionData)
@@ -74586,6 +77234,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_componentSubTrade(xsdcpp::XmlWriter& w,
             w, "CreditDefaultSwapOptionData", *v.CreditDefaultSwapOptionData);
     if (v.CommodityForwardData)
         _serialize_commodityForwardData(w, "CommodityForwardData", *v.CommodityForwardData);
+    if (v.IntradayPowerForwardData)
+        _serialize_intradayPowerForwardData(
+            w, "IntradayPowerForwardData", *v.IntradayPowerForwardData);
     if (v.CommodityOptionData)
         _serialize_commodityOptionData(w, "CommodityOptionData", *v.CommodityOptionData);
     if (v.CommodityDigitalAveragePriceOptionData)
@@ -74738,6 +77389,16 @@ XSDCPP_MAYBE_UNUSED void _serialize_componentSubTrade(xsdcpp::XmlWriter& w,
     if (v.VolatilityBarrierOptionData)
         _serialize_volBarrierOptionData(
             w, "VolatilityBarrierOptionData", *v.VolatilityBarrierOptionData);
+    if (v.FxForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(
+            w, "FxForwardVolatilityAgreementData", *v.FxForwardVolatilityAgreementData);
+    if (v.EquityForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(
+            w, "EquityForwardVolatilityAgreementData", *v.EquityForwardVolatilityAgreementData);
+    if (v.CommodityForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(w,
+                                                   "CommodityForwardVolatilityAgreementData",
+                                                   *v.CommodityForwardVolatilityAgreementData);
     if (v.FxTaRFData)
         _serialize_tarfData2(w, "FxTaRFData", *v.FxTaRFData);
     if (v.EquityTaRFData)
@@ -75122,6 +77783,8 @@ _serialize_trade(xsdcpp::XmlWriter& w, const char* name, const domain::trade& v)
         _serialize_forwardBondData(w, "ForwardBondData", *v.ForwardBondData);
     if (v.BondFutureData)
         _serialize_bondFutureData(w, "BondFutureData", *v.BondFutureData);
+    if (v.BondFutureOptionData)
+        _serialize_bondFutureOptionData(w, "BondFutureOptionData", *v.BondFutureOptionData);
     if (v.CreditDefaultSwapData)
         _serialize_creditDefaultSwapData(w, "CreditDefaultSwapData", *v.CreditDefaultSwapData);
     if (v.CreditDefaultSwapOptionData)
@@ -75129,6 +77792,9 @@ _serialize_trade(xsdcpp::XmlWriter& w, const char* name, const domain::trade& v)
             w, "CreditDefaultSwapOptionData", *v.CreditDefaultSwapOptionData);
     if (v.CommodityForwardData)
         _serialize_commodityForwardData(w, "CommodityForwardData", *v.CommodityForwardData);
+    if (v.IntradayPowerForwardData)
+        _serialize_intradayPowerForwardData(
+            w, "IntradayPowerForwardData", *v.IntradayPowerForwardData);
     if (v.CommodityOptionData)
         _serialize_commodityOptionData(w, "CommodityOptionData", *v.CommodityOptionData);
     if (v.CommodityDigitalAveragePriceOptionData)
@@ -75281,6 +77947,16 @@ _serialize_trade(xsdcpp::XmlWriter& w, const char* name, const domain::trade& v)
     if (v.VolatilityBarrierOptionData)
         _serialize_volBarrierOptionData(
             w, "VolatilityBarrierOptionData", *v.VolatilityBarrierOptionData);
+    if (v.FxForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(
+            w, "FxForwardVolatilityAgreementData", *v.FxForwardVolatilityAgreementData);
+    if (v.EquityForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(
+            w, "EquityForwardVolatilityAgreementData", *v.EquityForwardVolatilityAgreementData);
+    if (v.CommodityForwardVolatilityAgreementData)
+        _serialize_forwardVolatilityAgreementData2(w,
+                                                   "CommodityForwardVolatilityAgreementData",
+                                                   *v.CommodityForwardVolatilityAgreementData);
     if (v.FxTaRFData)
         _serialize_tarfData2(w, "FxTaRFData", *v.FxTaRFData);
     if (v.EquityTaRFData)
@@ -77075,6 +79751,13 @@ XSDCPP_MAYBE_UNUSED void _serialize_ycExtrapolation(xsdcpp::XmlWriter& w,
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void
+_serialize_ycRollDown(xsdcpp::XmlWriter& w, const char* name, const domain::ycRollDown& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_market_YieldCurves_t_Configuration_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::market_YieldCurves_t_Configuration_t& v) {
     w.startElement(name);
@@ -77085,6 +79768,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_YieldCurves_t_Configuration_t(
         _serialize_ycInterpolation(w, "Interpolation", *v.Interpolation);
     if (v.Extrapolation)
         _serialize_ycExtrapolation(w, "Extrapolation", *v.Extrapolation);
+    if (v.RollDown)
+        _serialize_ycRollDown(w, "RollDown", *v.RollDown);
     if (v.DayCounter)
         _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
     w.endElement(name);
@@ -77246,6 +79931,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_DefaultCurves_t(
         _serialize_market_DefaultCurves_t_Calendars_t(w, "Calendars", *v.Calendars);
     if (v.Extrapolation)
         _serialize_defaultCurveExtrapolation(w, "Extrapolation", *v.Extrapolation);
+    if (v.RollDown)
+        _serialize_ycRollDown(w, "RollDown", *v.RollDown);
     w.endElement(name);
 }
 
@@ -77602,6 +80289,17 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_SmileDynamics_
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t_SmileForwardInteraction_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_CapFloorVolatilities_t_SmileForwardInteraction_t& v) {
+    w.startElement(name);
+    if ((&v)->key)
+        w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::market_CapFloorVolatilities_t& v) {
     w.startElement(name);
@@ -77624,6 +80322,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_CapFloorVolatilities_t(
         _serialize_bool_(w, "UseCapAtm", *v.UseCapAtm);
     for (const auto& item : v.SmileDynamics)
         _serialize_market_CapFloorVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    for (const auto& item : v.SmileForwardInteraction)
+        _serialize_market_CapFloorVolatilities_t_SmileForwardInteraction_t(
+            w, "SmileForwardInteraction", item);
     w.endElement(name);
 }
 
@@ -78236,6 +80937,13 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_YYCapFloorVolatilities_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void
+_serialize_priceRollDown(xsdcpp::XmlWriter& w, const char* name, const domain::priceRollDown& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_Names_t_Name_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_Names_t_Name_t& v) {
     w.startElement(name);
@@ -78248,6 +80956,15 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_Names_t(
     w.startElement(name);
     for (const auto& item : v.Name)
         _serialize_market_Commodities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t_Interpolation_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::market_Commodities_t_Interpolation_t& v) {
+    w.startElement(name);
+    if ((&v)->name)
+        w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
     w.endElement(name);
 }
 
@@ -78285,11 +81002,67 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_Commodities_t(xsdcpp::XmlWriter& w,
     w.startElement(name);
     if (v.Simulate)
         _serialize_bool_(w, "Simulate", *v.Simulate);
+    if (v.RollDown)
+        _serialize_priceRollDown(w, "RollDown", *v.RollDown);
     _serialize_market_Commodities_t_Names_t(w, "Names", v.Names);
+    for (const auto& item : v.Interpolation)
+        _serialize_market_Commodities_t_Interpolation_t(w, "Interpolation", item);
     for (const auto& item : v.Tenors)
         _serialize_market_Commodities_t_Tenors_t(w, "Tenors", item);
     if (v.DayCounters)
         _serialize_market_Commodities_t_DayCounters_t(w, "DayCounters", *v.DayCounters);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_IntradayPowerCurves_t_Names_t_Name_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_IntradayPowerCurves_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_IntradayPowerCurves_t_Names_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::market_IntradayPowerCurves_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name)
+        _serialize_market_IntradayPowerCurves_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_IntradayPowerCurves_t_Interpolation_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_IntradayPowerCurves_t_Interpolation_t& v) {
+    w.startElement(name);
+    if ((&v)->name)
+        w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_IntradayPowerCurves_t_Tenors_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_IntradayPowerCurves_t_Tenors_t& v) {
+    w.startElement(name);
+    if ((&v)->name)
+        w.writeAttribute("name", *(&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_IntradayPowerCurves_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::market_IntradayPowerCurves_t& v) {
+    w.startElement(name);
+    if (v.Simulate)
+        _serialize_bool_(w, "Simulate", *v.Simulate);
+    _serialize_market_IntradayPowerCurves_t_Names_t(w, "Names", v.Names);
+    for (const auto& item : v.Interpolation)
+        _serialize_market_IntradayPowerCurves_t_Interpolation_t(w, "Interpolation", item);
+    for (const auto& item : v.Tenors)
+        _serialize_market_IntradayPowerCurves_t_Tenors_t(w, "Tenors", item);
     w.endElement(name);
 }
 
@@ -78368,6 +81141,84 @@ XSDCPP_MAYBE_UNUSED void _serialize_market_CommodityVolatilities_t(
         _serialize_market_CommodityVolatilities_t_DayCounter_t(w, "DayCounter", *v.DayCounter);
     for (const auto& item : v.SmileDynamics)
         _serialize_market_CommodityVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BondFutureVolatilities_t_Names_t_Name_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t_Name_t& v) {
+    w.startElement(name);
+    if ((&v)->id)
+        w.writeAttribute("id", *(&v)->id);
+    _serialize_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t(w, "Expiries", v.Expiries);
+    if (v.Moneyness)
+        _serialize_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t(
+            w, "Moneyness", *v.Moneyness);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BondFutureVolatilities_t_Names_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_Names_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Name)
+        _serialize_market_BondFutureVolatilities_t_Names_t_Name_t(w, "Name", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BondFutureVolatilities_t_DayCounter_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_DayCounter_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BondFutureVolatilities_t_SmileDynamics_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::market_BondFutureVolatilities_t_SmileDynamics_t& v) {
+    w.startElement(name);
+    if ((&v)->key)
+        w.writeAttribute("key", *(&v)->key);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_market_BondFutureVolatilities_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::market_BondFutureVolatilities_t& v) {
+    w.startElement(name);
+    if (v.Simulate)
+        _serialize_bool_(w, "Simulate", *v.Simulate);
+    if (v.SimulateATMOnly)
+        _serialize_bool(w, "SimulateATMOnly", *v.SimulateATMOnly);
+    _serialize_timeDecayType(w, "ReactionToTimeDecay", v.ReactionToTimeDecay);
+    _serialize_market_BondFutureVolatilities_t_Names_t(w, "Names", v.Names);
+    if (v.DayCounter)
+        _serialize_market_BondFutureVolatilities_t_DayCounter_t(w, "DayCounter", *v.DayCounter);
+    for (const auto& item : v.SmileDynamics)
+        _serialize_market_BondFutureVolatilities_t_SmileDynamics_t(w, "SmileDynamics", item);
     w.endElement(name);
 }
 
@@ -78651,9 +81502,14 @@ _serialize_market(xsdcpp::XmlWriter& w, const char* name, const domain::market& 
             w, "YYCapFloorVolatilities", *v.YYCapFloorVolatilities);
     if (v.Commodities)
         _serialize_market_Commodities_t(w, "Commodities", *v.Commodities);
+    if (v.IntradayPowerCurves)
+        _serialize_market_IntradayPowerCurves_t(w, "IntradayPowerCurves", *v.IntradayPowerCurves);
     if (v.CommodityVolatilities)
         _serialize_market_CommodityVolatilities_t(
             w, "CommodityVolatilities", *v.CommodityVolatilities);
+    if (v.BondFutureVolatilities)
+        _serialize_market_BondFutureVolatilities_t(
+            w, "BondFutureVolatilities", *v.BondFutureVolatilities);
     if (v.AggregationScenarioDataCurrencies)
         _serialize_market_AggregationScenarioDataCurrencies_t(
             w, "AggregationScenarioDataCurrencies", *v.AggregationScenarioDataCurrencies);
@@ -78999,6 +81855,16 @@ XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_InflationCapFloorV
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration_DefaultCurves_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::globalReportConfiguration_DefaultCurves_t& v) {
+    w.startElement(name);
+    if (v.Report)
+        _serialize_reportConfiguration(w, "Report", *v.Report);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration(
     xsdcpp::XmlWriter& w, const char* name, const domain::globalReportConfiguration& v) {
     w.startElement(name);
@@ -79022,6 +81888,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_globalReportConfiguration(
     if (v.InflationCapFloorVolatilities)
         _serialize_globalReportConfiguration_InflationCapFloorVolatilities_t(
             w, "InflationCapFloorVolatilities", *v.InflationCapFloorVolatilities);
+    if (v.DefaultCurves)
+        _serialize_globalReportConfiguration_DefaultCurves_t(w, "DefaultCurves", *v.DefaultCurves);
     w.endElement(name);
 }
 
@@ -79123,7 +81991,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigParameter(
     xsdcpp::XmlWriter& w, const char* name, const domain::parametricSmileConfigParameter& v) {
     w.startElement(name);
     _serialize_parametricSmileConfigParameter_Name_t(w, "Name", v.Name);
-    _serialize_parametricSmileConfigParameter_InitialValue_t(w, "InitialValue", v.InitialValue);
+    if (v.InitialValue)
+        _serialize_parametricSmileConfigParameter_InitialValue_t(
+            w, "InitialValue", *v.InitialValue);
     _serialize_parametricVolatilityParameterCalibration(w, "Calibration", v.Calibration);
     w.endElement(name);
 }
@@ -79145,12 +82015,33 @@ XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigCalibration(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigResidualCorrection_Dimension_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::parametricSmileConfigResidualCorrection_Dimension_t& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfigResidualCorrection(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::parametricSmileConfigResidualCorrection& v) {
+    w.startElement(name);
+    _serialize_parametricSmileConfigResidualCorrection_Dimension_t(w, "Dimension", v.Dimension);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_parametricSmileConfig(xsdcpp::XmlWriter& w,
                                                           const char* name,
                                                           const domain::parametricSmileConfig& v) {
     w.startElement(name);
     _serialize_parametricSmileConfigParameters(w, "Parameters", v.Parameters);
     _serialize_parametricSmileConfigCalibration(w, "Calibration", v.Calibration);
+    if (v.ResidualCorrection)
+        _serialize_parametricSmileConfigResidualCorrection(
+            w, "ResidualCorrection", *v.ResidualCorrection);
     w.endElement(name);
 }
 
@@ -79908,6 +82799,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_capFloorVolatility(xsdcpp::XmlWriter& w,
         _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
     if (v.Report)
         _serialize_reportConfiguration(w, "Report", *v.Report);
+    if (v.UseEffectiveVolatility)
+        _serialize_bool_(w, "UseEffectiveVolatility", *v.UseEffectiveVolatility);
     w.endElement(name);
 }
 
@@ -80254,9 +83147,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_indexFactorsType(xsdcpp::XmlWriter& w,
                                                      const char* name,
                                                      const domain::indexFactorsType& v) {
     w.startElement(name);
-    _serialize_positiveDecimal(w, "IndexFactor", v.IndexFactor);
-    _serialize_positiveDecimal(w, "IndexFactorStrike", v.IndexFactorStrike);
-    _serialize_positiveDecimal(w, "RealisedFep", v.RealisedFep);
+    _serialize_non_negative_decimal(w, "IndexFactor", v.IndexFactor);
+    _serialize_non_negative_decimal(w, "IndexFactorStrike", v.IndexFactorStrike);
+    _serialize_non_negative_decimal(w, "RealisedFep", v.RealisedFep);
     w.endElement(name);
 }
 
@@ -80573,6 +83466,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_defaultCurve_Configurations_t_Configuration_
         _serialize_bootstrapConfigType(w, "BootstrapConfig", *v.BootstrapConfig);
     if (v.AllowNegativeRates)
         _serialize_bool_(w, "AllowNegativeRates", *v.AllowNegativeRates);
+    if (v.PriceIsUpfront)
+        _serialize_bool_(w, "PriceIsUpfront", *v.PriceIsUpfront);
     w.endElement(name);
 }
 
@@ -80734,6 +83629,8 @@ _serialize_defaultCurve(xsdcpp::XmlWriter& w, const char* name, const domain::de
         _serialize_defaultCurve_InitialState_t(w, "InitialState", *v.InitialState);
     if (v.States)
         _serialize_defaultCurve_States_t(w, "States", *v.States);
+    if (v.PriceIsUpfront)
+        _serialize_bool_(w, "PriceIsUpfront", *v.PriceIsUpfront);
     w.endElement(name);
 }
 
@@ -81209,6 +84106,25 @@ XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_PillarChoice_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_IndexCurves_t_IndexCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::fittedBondType_IndexCurves_t_IndexCurve_t& v) {
+    w.startElement(name);
+    if ((&v)->Index)
+        w.writeAttribute("Index", *(&v)->Index);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_IndexCurves_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType_IndexCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.IndexCurve)
+        _serialize_fittedBondType_IndexCurves_t_IndexCurve_t(w, "IndexCurve", item);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_IborIndexCurves_t_IborIndexCurve_t(
     xsdcpp::XmlWriter& w,
     const char* name,
@@ -81228,6 +84144,28 @@ XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_IborIndexCurves_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t& v) {
+    w.startElement(name);
+    if ((&v)->inflationIndex)
+        w.writeAttribute("inflationIndex", *(&v)->inflationIndex);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_fittedBondType_InflationIndexCurves_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::fittedBondType_InflationIndexCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.InflationIndexCurve)
+        _serialize_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t(
+            w, "InflationIndexCurve", item);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void
 _serialize_fittedBondType(xsdcpp::XmlWriter& w, const char* name, const domain::fittedBondType& v) {
     w.startElement(name);
@@ -81239,8 +84177,13 @@ _serialize_fittedBondType(xsdcpp::XmlWriter& w, const char* name, const domain::
         _serialize_uint64_t(w, "Priority", *v.Priority);
     if (v.MinDistance)
         _serialize_uint64_t(w, "MinDistance", *v.MinDistance);
+    if (v.IndexCurves)
+        _serialize_fittedBondType_IndexCurves_t(w, "IndexCurves", *v.IndexCurves);
     if (v.IborIndexCurves)
         _serialize_fittedBondType_IborIndexCurves_t(w, "IborIndexCurves", *v.IborIndexCurves);
+    if (v.InflationIndexCurves)
+        _serialize_fittedBondType_InflationIndexCurves_t(
+            w, "InflationIndexCurves", *v.InflationIndexCurves);
     if (v.ExtrapolateFlat)
         _serialize_bool(w, "ExtrapolateFlat", *v.ExtrapolateFlat);
     w.endElement(name);
@@ -81259,6 +84202,25 @@ XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_ReferenceCurve_t(
     const domain::BondYieldShiftedType_ReferenceCurve_t& v) {
     w.startElement(name);
     w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_IndexCurves_t_IndexCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::BondYieldShiftedType_IndexCurves_t_IndexCurve_t& v) {
+    w.startElement(name);
+    if ((&v)->Index)
+        w.writeAttribute("Index", *(&v)->Index);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType_IndexCurves_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::BondYieldShiftedType_IndexCurves_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.IndexCurve)
+        _serialize_BondYieldShiftedType_IndexCurves_t_IndexCurve_t(w, "IndexCurve", item);
     w.endElement(name);
 }
 
@@ -81298,6 +84260,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_BondYieldShiftedType(xsdcpp::XmlWriter& w,
     _serialize_BondYieldShiftedType_Type_t(w, "Type", v.Type);
     _serialize_BondYieldShiftedType_ReferenceCurve_t(w, "ReferenceCurve", v.ReferenceCurve);
     _serialize_quoteType(w, "Quotes", v.Quotes);
+    if (v.IndexCurves)
+        _serialize_BondYieldShiftedType_IndexCurves_t(w, "IndexCurves", *v.IndexCurves);
     if (v.IborIndexCurves)
         _serialize_BondYieldShiftedType_IborIndexCurves_t(w, "IborIndexCurves", *v.IborIndexCurves);
     _serialize_BondYieldShiftedType_Conventions_t(w, "Conventions", v.Conventions);
@@ -83048,6 +86012,145 @@ _serialize_correlations(xsdcpp::XmlWriter& w, const char* name, const domain::co
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatility_CurveId_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatility_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatility_CurveDescription_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::bondFutureVolatility_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatility_ContractName_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatility_ContractName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatility_YieldCurveId_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatility_YieldCurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatility_UseOnlyPutCall_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::bondFutureVolatility_UseOnlyPutCall_t& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatility(xsdcpp::XmlWriter& w,
+                                                         const char* name,
+                                                         const domain::bondFutureVolatility& v) {
+    w.startElement(name);
+    _serialize_bondFutureVolatility_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_bondFutureVolatility_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_bondFutureVolatility_ContractName_t(w, "ContractName", v.ContractName);
+    if (v.VolatilityConfig)
+        _serialize_volatilityConfig(w, "VolatilityConfig", *v.VolatilityConfig);
+    if (v.StrikeSurface)
+        _serialize_volatilityStrikeSurfaceConfig(w, "StrikeSurface", *v.StrikeSurface);
+    if (v.DayCounter)
+        _serialize_dayCounter(w, "DayCounter", *v.DayCounter);
+    if (v.Calendar)
+        _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.YieldCurveId)
+        _serialize_bondFutureVolatility_YieldCurveId_t(w, "YieldCurveId", *v.YieldCurveId);
+    if (v.StrikeFactor)
+        _serialize_positiveDecimal(w, "StrikeFactor", *v.StrikeFactor);
+    if (v.UseOnlyPutCall)
+        _serialize_bondFutureVolatility_UseOnlyPutCall_t(w, "UseOnlyPutCall", *v.UseOnlyPutCall);
+    if (v.OneDimSolverConfig)
+        _serialize_oneDimSolverConfigType(w, "OneDimSolverConfig", *v.OneDimSolverConfig);
+    if (v.PreferOutOfTheMoney)
+        _serialize_bool_(w, "PreferOutOfTheMoney", *v.PreferOutOfTheMoney);
+    if (v.TreatAsEuropean)
+        _serialize_bool_(w, "TreatAsEuropean", *v.TreatAsEuropean);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatilities(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.BondFutureVolatility)
+        _serialize_bondFutureVolatility(w, "BondFutureVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerCurve_CurveId_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerCurve_CurveId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerCurve_CurveDescription_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::intradayPowerCurve_CurveDescription_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerCurve_DailyAveragePriceCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::intradayPowerCurve_DailyAveragePriceCurve_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerCurve_ShapeQuoteName_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerCurve_ShapeQuoteName_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerCurve_Convention_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerCurve_Convention_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerCurve(xsdcpp::XmlWriter& w,
+                                                       const char* name,
+                                                       const domain::intradayPowerCurve& v) {
+    w.startElement(name);
+    _serialize_intradayPowerCurve_CurveId_t(w, "CurveId", v.CurveId);
+    _serialize_intradayPowerCurve_CurveDescription_t(w, "CurveDescription", v.CurveDescription);
+    _serialize_currencyCode(w, "Currency", v.Currency);
+    _serialize_intradayPowerCurve_DailyAveragePriceCurve_t(
+        w, "DailyAveragePriceCurve", v.DailyAveragePriceCurve);
+    _serialize_intradayPowerCurve_ShapeQuoteName_t(w, "ShapeQuoteName", v.ShapeQuoteName);
+    _serialize_intradayPowerCurve_Convention_t(w, "Convention", v.Convention);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerCurves(xsdcpp::XmlWriter& w,
+                                                        const char* name,
+                                                        const domain::intradayPowerCurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.IntradayPowerCurve)
+        _serialize_intradayPowerCurve(w, "IntradayPowerCurve", item);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_curveconfiguration(xsdcpp::XmlWriter& w,
                                                        const char* name,
                                                        const domain::curveconfiguration& v) {
@@ -83089,6 +86192,10 @@ XSDCPP_MAYBE_UNUSED void _serialize_curveconfiguration(xsdcpp::XmlWriter& w,
         _serialize_commodityVolatilities(w, "CommodityVolatilities", *v.CommodityVolatilities);
     if (v.Correlations)
         _serialize_correlations(w, "Correlations", *v.Correlations);
+    if (v.BondFutureVolatilities)
+        _serialize_bondFutureVolatilities(w, "BondFutureVolatilities", *v.BondFutureVolatilities);
+    if (v.IntradayPowerCurves)
+        _serialize_intradayPowerCurves(w, "IntradayPowerCurves", *v.IntradayPowerCurves);
     w.endElement(name);
 }
 
@@ -83173,6 +86280,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_cdsConventionsType(xsdcpp::XmlWriter& w,
     _serialize_bool_(w, "PaysAtDefaultTime", v.PaysAtDefaultTime);
     if (v.LastPeriodDayCounter)
         _serialize_dayCounter(w, "LastPeriodDayCounter", *v.LastPeriodDayCounter);
+    if (v.UsesReferenceData)
+        _serialize_bool_(w, "UsesReferenceData", *v.UsesReferenceData);
     w.endElement(name);
 }
 
@@ -83532,6 +86641,10 @@ XSDCPP_MAYBE_UNUSED void _serialize_tenorBasisSwapType(xsdcpp::XmlWriter& w,
         _serialize_bool_(w, "IncludeSpread", *v.IncludeSpread);
     if (v.SubPeriodsCouponType)
         _serialize_subPeriodsCouponType(w, "SubPeriodsCouponType", *v.SubPeriodsCouponType);
+    if (v.PayIsAveraged)
+        _serialize_bool_(w, "PayIsAveraged", *v.PayIsAveraged);
+    if (v.RecIsAveraged)
+        _serialize_bool_(w, "RecIsAveraged", *v.RecIsAveraged);
     if (v.LongIndex)
         _serialize_tenorBasisSwapType_LongIndex_t(w, "LongIndex", *v.LongIndex);
     if (v.LongPayTenor)
@@ -84100,6 +87213,15 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardType_AdvanceCalendar_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardType_DeliveryLocation_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::commodityForwardType_DeliveryLocation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardType(xsdcpp::XmlWriter& w,
                                                          const char* name,
                                                          const domain::commodityForwardType& v) {
@@ -84113,6 +87235,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityForwardType(xsdcpp::XmlWriter& w,
         _serialize_commodityForwardType_AdvanceCalendar_t(w, "AdvanceCalendar", *v.AdvanceCalendar);
     if (v.SpotRelative)
         _serialize_bool_(w, "SpotRelative", *v.SpotRelative);
+    if (v.DeliveryLocation)
+        _serialize_commodityForwardType_DeliveryLocation_t(
+            w, "DeliveryLocation", *v.DeliveryLocation);
     if (v.BusinessDayConvention)
         _serialize_businessDayConvention(w, "BusinessDayConvention", *v.BusinessDayConvention);
     if (v.Outright)
@@ -84355,6 +87480,15 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_SavingsTime_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_DeliveryLocation_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::commodityFutureType_DeliveryLocation_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType_BalanceOfTheMonthPricingCalendar_t(
     xsdcpp::XmlWriter& w,
     const char* name,
@@ -84440,6 +87574,9 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityFutureType(xsdcpp::XmlWriter& w,
         _serialize_commodityFutureType_IndexName_t(w, "IndexName", *v.IndexName);
     if (v.SavingsTime)
         _serialize_commodityFutureType_SavingsTime_t(w, "SavingsTime", *v.SavingsTime);
+    if (v.DeliveryLocation)
+        _serialize_commodityFutureType_DeliveryLocation_t(
+            w, "DeliveryLocation", *v.DeliveryLocation);
     if (v.BalanceOfTheMonth)
         _serialize_bool_(w, "BalanceOfTheMonth", *v.BalanceOfTheMonth);
     if (v.BalanceOfTheMonthPricingCalendar)
@@ -84672,6 +87809,26 @@ XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_AvailabilityLag_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_RebasingEvents_t_Event_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::zeroInflationIndexType_RebasingEvents_t_Event_t& v) {
+    w.startElement(name);
+    w.writeAttribute("date", (&v)->date);
+    w.writeText(xsdcpp::get_string(static_cast<double>(v)));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType_RebasingEvents_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::zeroInflationIndexType_RebasingEvents_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Event)
+        _serialize_zeroInflationIndexType_RebasingEvents_t_Event_t(w, "Event", item);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType(
     xsdcpp::XmlWriter& w, const char* name, const domain::zeroInflationIndexType& v) {
     w.startElement(name);
@@ -84682,6 +87839,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_zeroInflationIndexType(
     _serialize_frequencyType(w, "Frequency", v.Frequency);
     _serialize_zeroInflationIndexType_AvailabilityLag_t(w, "AvailabilityLag", v.AvailabilityLag);
     _serialize_currencyCode(w, "Currency", v.Currency);
+    if (v.RebasingEvents)
+        _serialize_zeroInflationIndexType_RebasingEvents_t(w, "RebasingEvents", *v.RebasingEvents);
     w.endElement(name);
 }
 
@@ -84722,6 +87881,23 @@ _serialize_bondYield(xsdcpp::XmlWriter& w, const char* name, const domain::bondY
         _serialize_int64_t(w, "MaxEvaluations", *v.MaxEvaluations);
     if (v.Guess)
         _serialize_float(w, "Guess", *v.Guess);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerLoad_Id_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerLoad_Id_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerLoad(xsdcpp::XmlWriter& w,
+                                                      const char* name,
+                                                      const domain::intradayPowerLoad& v) {
+    w.startElement(name);
+    _serialize_intradayPowerLoad_Id_t(w, "Id", v.Id);
+    if (v.PowerLoadProfileData)
+        _serialize_powerLoadProfileDataType(w, "PowerLoadProfileData", *v.PowerLoadProfileData);
     w.endElement(name);
 }
 
@@ -84778,6 +87954,8 @@ _serialize_conventions(xsdcpp::XmlWriter& w, const char* name, const domain::con
         _serialize_zeroInflationIndexType(w, "ZeroInflationIndex", item);
     for (const auto& item : v.BondYield)
         _serialize_bondYield(w, "BondYield", item);
+    for (const auto& item : v.IntradayPowerLoad)
+        _serialize_intradayPowerLoad(w, "IntradayPowerLoad", item);
     w.endElement(name);
 }
 
@@ -85246,6 +88424,24 @@ XSDCPP_MAYBE_UNUSED void _serialize_configurationType_CorrelationsId_t(
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_BondFutureVolatilitiesId_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::configurationType_BondFutureVolatilitiesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_configurationType_IntradayPowerPriceCurvesId_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::configurationType_IntradayPowerPriceCurvesId_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_configurationType(xsdcpp::XmlWriter& w,
                                                       const char* name,
                                                       const domain::configurationType& v) {
@@ -85310,6 +88506,12 @@ XSDCPP_MAYBE_UNUSED void _serialize_configurationType(xsdcpp::XmlWriter& w,
             w, "CommodityVolatilitiesId", *v.CommodityVolatilitiesId);
     if (v.CorrelationsId)
         _serialize_configurationType_CorrelationsId_t(w, "CorrelationsId", *v.CorrelationsId);
+    if (v.BondFutureVolatilitiesId)
+        _serialize_configurationType_BondFutureVolatilitiesId_t(
+            w, "BondFutureVolatilitiesId", *v.BondFutureVolatilitiesId);
+    if (v.IntradayPowerPriceCurvesId)
+        _serialize_configurationType_IntradayPowerPriceCurvesId_t(
+            w, "IntradayPowerPriceCurvesId", *v.IntradayPowerPriceCurvesId);
     w.endElement(name);
 }
 
@@ -85757,6 +88959,48 @@ XSDCPP_MAYBE_UNUSED void _serialize_correlationsType(xsdcpp::XmlWriter& w,
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatilitiesType_BondFutureVolatility_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::bondFutureVolatilitiesType_BondFutureVolatility_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_bondFutureVolatilitiesType(
+    xsdcpp::XmlWriter& w, const char* name, const domain::bondFutureVolatilitiesType& v) {
+    w.startElement(name);
+    if ((&v)->id)
+        w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.BondFutureVolatility)
+        _serialize_bondFutureVolatilitiesType_BondFutureVolatility_t(
+            w, "BondFutureVolatility", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradayPowerPriceCurvesType(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradayPowerPriceCurvesType& v) {
+    w.startElement(name);
+    if ((&v)->id)
+        w.writeAttribute("id", *(&v)->id);
+    for (const auto& item : v.IntradayPowerPriceCurve)
+        _serialize_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t(
+            w, "IntradayPowerPriceCurve", item);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void
 _serialize_todaysmarket(xsdcpp::XmlWriter& w, const char* name, const domain::todaysmarket& v) {
     w.startElement(name);
@@ -85807,6 +89051,42 @@ _serialize_todaysmarket(xsdcpp::XmlWriter& w, const char* name, const domain::to
         _serialize_commodityVolatilitiesType(w, "CommodityVolatilities", item);
     for (const auto& item : v.Correlations)
         _serialize_correlationsType(w, "Correlations", item);
+    for (const auto& item : v.BondFutureVolatilities)
+        _serialize_bondFutureVolatilitiesType(w, "BondFutureVolatilities", item);
+    for (const auto& item : v.IntradayPowerPriceCurves)
+        _serialize_intradayPowerPriceCurvesType(w, "IntradayPowerPriceCurves", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parExcludes_Type_t(xsdcpp::XmlWriter& w,
+                                                       const char* name,
+                                                       const domain::parExcludes_Type_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void
+_serialize_parExcludes(xsdcpp::XmlWriter& w, const char* name, const domain::parExcludes& v) {
+    w.startElement(name);
+    for (const auto& item : v.Type)
+        _serialize_parExcludes_Type_t(w, "Type", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sensitivityanalysis_ParSensiRemoveFixing_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::sensitivityanalysis_ParSensiRemoveFixing_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_parConversionMatrixRegularisation(
+    xsdcpp::XmlWriter& w, const char* name, const domain::parConversionMatrixRegularisation& v) {
+    w.startElement(name);
+    w.writeText(domain::to_string(v));
     w.endElement(name);
 }
 
@@ -85950,38 +89230,6 @@ _serialize_discountcurves(xsdcpp::XmlWriter& w, const char* name, const domain::
     w.startElement(name);
     for (const auto& item : v.DiscountCurve)
         _serialize_discountcurve(w, "DiscountCurve", item);
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_parExcludes_Type_t(xsdcpp::XmlWriter& w,
-                                                       const char* name,
-                                                       const domain::parExcludes_Type_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void
-_serialize_parExcludes(xsdcpp::XmlWriter& w, const char* name, const domain::parExcludes& v) {
-    w.startElement(name);
-    for (const auto& item : v.Type)
-        _serialize_parExcludes_Type_t(w, "Type", item);
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_sensitivityanalysis_ParSensiRemoveFixing_t(
-    xsdcpp::XmlWriter& w,
-    const char* name,
-    const domain::sensitivityanalysis_ParSensiRemoveFixing_t& v) {
-    w.startElement(name);
-    w.writeText(static_cast<const xsd::string&>(v));
-    w.endElement(name);
-}
-
-XSDCPP_MAYBE_UNUSED void _serialize_parConversionMatrixRegularisation(
-    xsdcpp::XmlWriter& w, const char* name, const domain::parConversionMatrixRegularisation& v) {
-    w.startElement(name);
-    w.writeText(domain::to_string(v));
     w.endElement(name);
 }
 
@@ -86834,6 +90082,10 @@ _serialize_commodityCurve(xsdcpp::XmlWriter& w, const char* name, const domain::
     _serialize_commodityCurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
     if (v.ParConversion)
         _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    if (v.Calendar)
+        _serialize_calendar(w, "Calendar", *v.Calendar);
+    if (v.BusinessDayConvention)
+        _serialize_businessDayConvention(w, "BusinessDayConvention", *v.BusinessDayConvention);
     w.endElement(name);
 }
 
@@ -86843,6 +90095,48 @@ XSDCPP_MAYBE_UNUSED void _serialize_commodityCurves(xsdcpp::XmlWriter& w,
     w.startElement(name);
     for (const auto& item : v.CommodityCurve)
         _serialize_commodityCurve(w, "CommodityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradaypowercurve_Shifts_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradaypowercurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradaypowercurve_ShiftTenors_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::intradaypowercurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradaypowercurve(xsdcpp::XmlWriter& w,
+                                                       const char* name,
+                                                       const domain::intradaypowercurve& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType)
+        _serialize_shiftTypeEntry(w, "ShiftType", item);
+    for (const auto& item : v.ShiftSize)
+        _serialize_shiftSizeEntry(w, "ShiftSize", item);
+    if (v.Shifts)
+        _serialize_intradaypowercurve_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme)
+        _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_intradaypowercurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    if (v.ParConversion)
+        _serialize_parconversion(w, "ParConversion", *v.ParConversion);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_intradaypowercurves(xsdcpp::XmlWriter& w,
+                                                        const char* name,
+                                                        const domain::intradaypowercurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.IntradayPowerCurve)
+        _serialize_intradaypowercurve(w, "IntradayPowerCurve", item);
     w.endElement(name);
 }
 
@@ -86945,6 +90239,57 @@ XSDCPP_MAYBE_UNUSED void _serialize_correlationcurves(xsdcpp::XmlWriter& w,
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_sensiBondFutureVolatility_Shifts_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::sensiBondFutureVolatility_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sensiBondFutureVolatility_ShiftExpiries_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::sensiBondFutureVolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sensiBondFutureVolatility_ShiftStrikes_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::sensiBondFutureVolatility_ShiftStrikes_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sensiBondFutureVolatility(
+    xsdcpp::XmlWriter& w, const char* name, const domain::sensiBondFutureVolatility& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType)
+        _serialize_shiftTypeEntry(w, "ShiftType", item);
+    for (const auto& item : v.ShiftSize)
+        _serialize_shiftSizeEntry(w, "ShiftSize", item);
+    if (v.Shifts)
+        _serialize_sensiBondFutureVolatility_Shifts_t(w, "Shifts", *v.Shifts);
+    for (const auto& item : v.ShiftScheme)
+        _serialize_shiftSchemeEntry(w, "ShiftScheme", item);
+    _serialize_sensiBondFutureVolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    if (v.ShiftStrikes)
+        _serialize_sensiBondFutureVolatility_ShiftStrikes_t(w, "ShiftStrikes", *v.ShiftStrikes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_sensiBondFutureVolatilities(
+    xsdcpp::XmlWriter& w, const char* name, const domain::sensiBondFutureVolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.BondFutureVolatility)
+        _serialize_sensiBondFutureVolatility(w, "BondFutureVolatility", item);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_crossgammafilter_Pair_t(
     xsdcpp::XmlWriter& w, const char* name, const domain::crossgammafilter_Pair_t& v) {
     w.startElement(name);
@@ -86991,7 +90336,8 @@ XSDCPP_MAYBE_UNUSED void _serialize_sensitivityanalysis(xsdcpp::XmlWriter& w,
             w, "ParConversionMatrixRegularisation", *v.ParConversionMatrixRegularisation);
     if (v.ParConversion)
         _serialize_bool(w, "ParConversion", *v.ParConversion);
-    _serialize_discountcurves(w, "DiscountCurves", v.DiscountCurves);
+    if (v.DiscountCurves)
+        _serialize_discountcurves(w, "DiscountCurves", *v.DiscountCurves);
     if (v.IndexCurves)
         _serialize_indexcurves(w, "IndexCurves", *v.IndexCurves);
     if (v.YieldCurves)
@@ -87032,18 +90378,33 @@ XSDCPP_MAYBE_UNUSED void _serialize_sensitivityanalysis(xsdcpp::XmlWriter& w,
         _serialize_securityspreads(w, "SecuritySpreads", *v.SecuritySpreads);
     if (v.CommodityCurves)
         _serialize_commodityCurves(w, "CommodityCurves", *v.CommodityCurves);
+    if (v.IntradayPowerCurves)
+        _serialize_intradaypowercurves(w, "IntradayPowerCurves", *v.IntradayPowerCurves);
     if (v.CommodityVolatilities)
         _serialize_commodityvolatilities(w, "CommodityVolatilities", *v.CommodityVolatilities);
     if (v.Correlations)
         _serialize_correlationcurves(w, "Correlations", *v.Correlations);
+    if (v.BondFutureVolatilities)
+        _serialize_sensiBondFutureVolatilities(
+            w, "BondFutureVolatilities", *v.BondFutureVolatilities);
     if (v.CrossGammaFilter)
         _serialize_crossgammafilter(w, "CrossGammaFilter", *v.CrossGammaFilter);
     if (v.ComputeGamma)
         _serialize_bool_(w, "ComputeGamma", *v.ComputeGamma);
+    if (v.ThetaPeriod)
+        _serialize_period(w, "ThetaPeriod", *v.ThetaPeriod);
     if (v.UseSpreadedTermStructures)
         _serialize_bool_(w, "UseSpreadedTermStructures", *v.UseSpreadedTermStructures);
     if (v.TwoSidedDeltaKeyTypes)
         _serialize_setRiskFactorKeyTypes(w, "TwoSidedDeltaKeyTypes", *v.TwoSidedDeltaKeyTypes);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stresstest_Date_t(xsdcpp::XmlWriter& w,
+                                                      const char* name,
+                                                      const domain::stresstest_Date_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
     w.endElement(name);
 }
 
@@ -87301,6 +90662,67 @@ XSDCPP_MAYBE_UNUSED void _serialize_stressfxvolatilities(xsdcpp::XmlWriter& w,
     w.endElement(name);
 }
 
+XSDCPP_MAYBE_UNUSED void _serialize_stressswaptionvolatility_Shifts_t_Shift_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::stressswaptionvolatility_Shifts_t_Shift_t& v) {
+    w.startElement(name);
+    if ((&v)->expiry)
+        w.writeAttribute("expiry", *(&v)->expiry);
+    if ((&v)->term)
+        w.writeAttribute("term", *(&v)->term);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressswaptionvolatility_Shifts_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressswaptionvolatility_Shifts_t& v) {
+    w.startElement(name);
+    for (const auto& item : v.Shift)
+        _serialize_stressswaptionvolatility_Shifts_t_Shift_t(w, "Shift", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressswaptionvolatility_ShiftExpiries_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::stressswaptionvolatility_ShiftExpiries_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressswaptionvolatility_ShiftTerms_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::stressswaptionvolatility_ShiftTerms_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressswaptionvolatility(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressswaptionvolatility& v) {
+    w.startElement(name);
+    if ((&v)->key)
+        w.writeAttribute("key", *(&v)->key);
+    if ((&v)->ccy)
+        w.writeAttribute("ccy", *(&v)->ccy);
+    _serialize_shiftTypeEntry(w, "ShiftType", v.ShiftType);
+    _serialize_stressswaptionvolatility_Shifts_t(w, "Shifts", v.Shifts);
+    _serialize_stressswaptionvolatility_ShiftExpiries_t(w, "ShiftExpiries", v.ShiftExpiries);
+    _serialize_stressswaptionvolatility_ShiftTerms_t(w, "ShiftTerms", v.ShiftTerms);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressswaptionvolatilities(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressswaptionvolatilities& v) {
+    w.startElement(name);
+    for (const auto& item : v.SwaptionVolatility)
+        _serialize_stressswaptionvolatility(w, "SwaptionVolatility", item);
+    w.endElement(name);
+}
+
 XSDCPP_MAYBE_UNUSED void _serialize_stresscapfloorvolatility_Shifts_t_Shift_t(
     xsdcpp::XmlWriter& w,
     const char* name,
@@ -87399,6 +90821,41 @@ XSDCPP_MAYBE_UNUSED void _serialize_stresscommoditycurves(xsdcpp::XmlWriter& w,
     w.startElement(name);
     for (const auto& item : v.CommodityCurve)
         _serialize_stresscommoditycurve(w, "CommodityCurve", item);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressintradaypowercurve_Shifts_t(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressintradaypowercurve_Shifts_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressintradaypowercurve_ShiftTenors_t(
+    xsdcpp::XmlWriter& w,
+    const char* name,
+    const domain::stressintradaypowercurve_ShiftTenors_t& v) {
+    w.startElement(name);
+    w.writeText(static_cast<const xsd::string&>(v));
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressintradaypowercurve(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressintradaypowercurve& v) {
+    w.startElement(name);
+    w.writeAttribute("name", (&v)->name);
+    for (const auto& item : v.ShiftType)
+        _serialize_shiftTypeEntry(w, "ShiftType", item);
+    _serialize_stressintradaypowercurve_Shifts_t(w, "Shifts", v.Shifts);
+    _serialize_stressintradaypowercurve_ShiftTenors_t(w, "ShiftTenors", v.ShiftTenors);
+    w.endElement(name);
+}
+
+XSDCPP_MAYBE_UNUSED void _serialize_stressintradaypowercurves(
+    xsdcpp::XmlWriter& w, const char* name, const domain::stressintradaypowercurves& v) {
+    w.startElement(name);
+    for (const auto& item : v.IntradayPowerCurve)
+        _serialize_stressintradaypowercurve(w, "IntradayPowerCurve", item);
     w.endElement(name);
 }
 
@@ -87524,6 +90981,8 @@ XSDCPP_MAYBE_UNUSED void
 _serialize_stresstest(xsdcpp::XmlWriter& w, const char* name, const domain::stresstest& v) {
     w.startElement(name);
     w.writeAttribute("id", (&v)->id);
+    if (v.Date)
+        _serialize_stresstest_Date_t(w, "Date", *v.Date);
     if (v.ParShifts)
         _serialize_stresstestparshifts(w, "ParShifts", *v.ParShifts);
     if (v.DiscountCurves)
@@ -87537,7 +90996,7 @@ _serialize_stresstest(xsdcpp::XmlWriter& w, const char* name, const domain::stre
     if (v.FxVolatilities)
         _serialize_stressfxvolatilities(w, "FxVolatilities", *v.FxVolatilities);
     if (v.SwaptionVolatilities)
-        _serialize_swaptionvolatilities(w, "SwaptionVolatilities", *v.SwaptionVolatilities);
+        _serialize_stressswaptionvolatilities(w, "SwaptionVolatilities", *v.SwaptionVolatilities);
     if (v.CapFloorVolatilities)
         _serialize_stresscapfloorvolatilities(w, "CapFloorVolatilities", *v.CapFloorVolatilities);
     if (v.EquitySpots)
@@ -87546,6 +91005,8 @@ _serialize_stresstest(xsdcpp::XmlWriter& w, const char* name, const domain::stre
         _serialize_equityvolatilities(w, "EquityVolatilities", *v.EquityVolatilities);
     if (v.CommodityCurves)
         _serialize_stresscommoditycurves(w, "CommodityCurves", *v.CommodityCurves);
+    if (v.IntradayPowerCurves)
+        _serialize_stressintradaypowercurves(w, "IntradayPowerCurves", *v.IntradayPowerCurves);
     if (v.CommodityVolatilities)
         _serialize_stresscommodityvolatilities(
             w, "CommodityVolatilities", *v.CommodityVolatilities);
@@ -87612,6 +91073,8 @@ _serialize_ore(xsdcpp::XmlWriter& w, const char* name, const domain::ore& v) {
     if (v.Markets)
         _serialize_parameterListType(w, "Markets", *v.Markets);
     _serialize_analyticsType(w, "Analytics", v.Analytics);
+    if (v.Restore)
+        _serialize_parameterListType(w, "Restore", *v.Restore);
     w.endElement(name);
 }
 
@@ -87916,7 +91379,7 @@ const xsdcpp::ElementInfo _creditsimulation_Info = {xsdcpp::ElementInfo::EntryPo
 const xsdcpp::ElementInfo _curveconfiguration_Info = {xsdcpp::ElementInfo::EntryPointFlag,
                                                       nullptr,
                                                       _curveconfiguration_Children,
-                                                      18,
+                                                      20,
                                                       nullptr,
                                                       0ULL,
                                                       nullptr,
@@ -87925,7 +91388,7 @@ const xsdcpp::ElementInfo _curveconfiguration_Info = {xsdcpp::ElementInfo::Entry
 const xsdcpp::ElementInfo _conventions_Info = {xsdcpp::ElementInfo::EntryPointFlag,
                                                nullptr,
                                                _conventions_Children,
-                                               25,
+                                               26,
                                                nullptr,
                                                0ULL,
                                                nullptr,
@@ -87961,19 +91424,16 @@ const xsdcpp::ElementInfo _pricingengines_Info = {xsdcpp::ElementInfo::EntryPoin
 const xsdcpp::ElementInfo _todaysmarket_Info = {xsdcpp::ElementInfo::EntryPointFlag,
                                                 nullptr,
                                                 _todaysmarket_Children,
-                                                23,
+                                                25,
                                                 nullptr,
                                                 0ULL,
                                                 nullptr,
                                                 nullptr,
                                                 nullptr};
-const xsdcpp::ElementInfo _discountcurves_Info = {
-    0, nullptr, _discountcurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
-const xsdcpp::ElementInfo _sensitivityanalysis_Info = {xsdcpp::ElementInfo::EntryPointFlag |
-                                                           xsdcpp::ElementInfo::CheckChildrenFlag,
+const xsdcpp::ElementInfo _sensitivityanalysis_Info = {xsdcpp::ElementInfo::EntryPointFlag,
                                                        nullptr,
                                                        _sensitivityanalysis_Children,
-                                                       30,
+                                                       33,
                                                        nullptr,
                                                        0ULL,
                                                        nullptr,
@@ -87997,7 +91457,7 @@ const xsdcpp::ElementInfo _ore_Info = {xsdcpp::ElementInfo::EntryPointFlag |
                                            xsdcpp::ElementInfo::CheckChildrenFlag,
                                        nullptr,
                                        _ore_Children,
-                                       4,
+                                       5,
                                        nullptr,
                                        0ULL,
                                        nullptr,
@@ -88094,7 +91554,7 @@ const xsdcpp::ElementInfo _trade_Info = {xsdcpp::ElementInfo::AnyAttributeFlag |
                                              xsdcpp::ElementInfo::CheckChildrenFlag,
                                          nullptr,
                                          _trade_Children,
-                                         185,
+                                         190,
                                          _trade_Attributes,
                                          1ULL,
                                          nullptr,
@@ -88143,7 +91603,7 @@ const xsdcpp::ElementInfo _market_YieldCurves_t_Info = {
 const xsdcpp::ElementInfo _market_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                           nullptr,
                                           _market_Children,
-                                          32,
+                                          34,
                                           nullptr,
                                           0ULL,
                                           nullptr,
@@ -88444,7 +91904,7 @@ const xsdcpp::ElementInfo _entity_Info = {xsdcpp::ElementInfo::CheckChildrenFlag
                                           nullptr,
                                           nullptr};
 const xsdcpp::ElementInfo _globalReportConfiguration_Info = {
-    0, nullptr, _globalReportConfiguration_Children, 7, nullptr, 0ULL, nullptr, nullptr, nullptr};
+    0, nullptr, _globalReportConfiguration_Children, 8, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _fxSpots_Info = {
     0, nullptr, _fxSpots_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _fxVolatilities_Info = {
@@ -88487,6 +91947,10 @@ const xsdcpp::ElementInfo _commodityVolatilities_Info = {
     0, nullptr, _commodityVolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _correlations_Info = {
     0, nullptr, _correlations_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatilities_Info = {
+    0, nullptr, _bondFutureVolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _intradayPowerCurves_Info = {
+    0, nullptr, _intradayPowerCurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _zeroType_Id_t_Info = {xsdcpp::ElementInfo::ReadTextFlag,
                                                  (xsdcpp::set_value_t)&domain::_set_zeroType_Id_t,
                                                  nullptr,
@@ -88518,7 +91982,7 @@ const xsdcpp::ElementInfo _cdsConventionsType_Id_t_Info = {
 const xsdcpp::ElementInfo _cdsConventionsType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                       nullptr,
                                                       _cdsConventionsType_Children,
-                                                      11,
+                                                      12,
                                                       nullptr,
                                                       0ULL,
                                                       nullptr,
@@ -88738,7 +92202,7 @@ const xsdcpp::ElementInfo _tenorBasisSwapType_Id_t_Info = {
 const xsdcpp::ElementInfo _tenorBasisSwapType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                       nullptr,
                                                       _tenorBasisSwapType_Children,
-                                                      13,
+                                                      15,
                                                       nullptr,
                                                       0ULL,
                                                       nullptr,
@@ -89146,7 +92610,7 @@ const xsdcpp::ElementInfo _commodityForwardType_Id_t_Info = {
 const xsdcpp::ElementInfo _commodityForwardType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                         nullptr,
                                                         _commodityForwardType_Children,
-                                                        7,
+                                                        8,
                                                         nullptr,
                                                         0ULL,
                                                         nullptr,
@@ -89175,7 +92639,7 @@ const xsdcpp::ElementInfo _commodityFutureType_Calendar_t_Info = {
 const xsdcpp::ElementInfo _commodityFutureType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                        nullptr,
                                                        _commodityFutureType_Children,
-                                                       33,
+                                                       34,
                                                        nullptr,
                                                        0ULL,
                                                        nullptr,
@@ -89291,7 +92755,7 @@ const xsdcpp::ElementInfo _zeroInflationIndexType_AvailabilityLag_t_Info = {
 const xsdcpp::ElementInfo _zeroInflationIndexType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                           nullptr,
                                                           _zeroInflationIndexType_Children,
-                                                          7,
+                                                          8,
                                                           nullptr,
                                                           0ULL,
                                                           nullptr,
@@ -89325,6 +92789,25 @@ const xsdcpp::ElementInfo _bondYield_Info = {xsdcpp::ElementInfo::CheckChildrenF
                                              nullptr,
                                              nullptr,
                                              nullptr};
+const xsdcpp::ElementInfo _intradayPowerLoad_Id_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerLoad_Id_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerLoad_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                     nullptr,
+                                                     _intradayPowerLoad_Children,
+                                                     2,
+                                                     nullptr,
+                                                     0ULL,
+                                                     nullptr,
+                                                     nullptr,
+                                                     nullptr};
 const xsdcpp::ElementInfo _collateralBalances_CollateralBalance_t_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
@@ -89383,7 +92866,7 @@ const xsdcpp::ElementInfo _globalParameters_Info = {
 const xsdcpp::ElementInfo _configurationType_Info = {0,
                                                      nullptr,
                                                      _configurationType_Children,
-                                                     22,
+                                                     24,
                                                      _configurationType_Attributes,
                                                      1ULL,
                                                      nullptr,
@@ -89584,6 +93067,26 @@ const xsdcpp::ElementInfo _correlationsType_Info = {0,
                                                     nullptr,
                                                     nullptr,
                                                     nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatilitiesType_Info = {
+    0,
+    nullptr,
+    _bondFutureVolatilitiesType_Children,
+    1,
+    _bondFutureVolatilitiesType_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerPriceCurvesType_Info = {
+    0,
+    nullptr,
+    _intradayPowerPriceCurvesType_Children,
+    1,
+    _intradayPowerPriceCurvesType_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _parExcludes_Info = {
     0, nullptr, _parExcludes_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _sensitivityanalysis_ParSensiRemoveFixing_t_Info = {
@@ -89596,25 +93099,8 @@ const xsdcpp::ElementInfo _sensitivityanalysis_ParSensiRemoveFixing_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _discountcurve_ShiftTenors_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_discountcurve_ShiftTenors_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _discountcurve_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
-                                                 nullptr,
-                                                 _discountcurve_Children,
-                                                 6,
-                                                 _discountcurve_Attributes,
-                                                 1ULL,
-                                                 nullptr,
-                                                 nullptr,
-                                                 nullptr};
+const xsdcpp::ElementInfo _discountcurves_Info = {
+    0, nullptr, _discountcurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _indexcurves_Info = {
     0, nullptr, _indexcurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _yieldcurves_Info = {
@@ -89653,10 +93139,14 @@ const xsdcpp::ElementInfo _securityspreads_Info = {
     0, nullptr, _securityspreads_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _commodityCurves_Info = {
     0, nullptr, _commodityCurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _intradaypowercurves_Info = {
+    0, nullptr, _intradaypowercurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _commodityvolatilities_Info = {
     0, nullptr, _commodityvolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _correlationcurves_Info = {
     0, nullptr, _correlationcurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _sensiBondFutureVolatilities_Info = {
+    0, nullptr, _sensiBondFutureVolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _crossgammafilter_Info = {
     0, nullptr, _crossgammafilter_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _setRiskFactorKeyTypes_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
@@ -89669,7 +93159,7 @@ const xsdcpp::ElementInfo _setRiskFactorKeyTypes_Info = {xsdcpp::ElementInfo::Ch
                                                          nullptr,
                                                          nullptr};
 const xsdcpp::ElementInfo _stresstest_Info = {
-    0, nullptr, _stresstest_Children, 15, _stresstest_Attributes, 1ULL, nullptr, nullptr, nullptr};
+    0, nullptr, _stresstest_Children, 17, _stresstest_Attributes, 1ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _parameterListType_Parameter_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_parameterListType_Parameter_t,
@@ -89860,8 +93350,15 @@ const xsdcpp::ElementInfo _fxForwardData_Info = {xsdcpp::ElementInfo::CheckChild
                                                  nullptr,
                                                  nullptr,
                                                  nullptr};
-const xsdcpp::ElementInfo _scheduleData_Info = {
-    0, nullptr, _scheduleData_Children, 3, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _scheduleData_Info = {0,
+                                                nullptr,
+                                                _scheduleData_Children,
+                                                3,
+                                                _scheduleData_Attributes,
+                                                0ULL,
+                                                nullptr,
+                                                nullptr,
+                                                nullptr};
 const xsdcpp::ElementInfo _fxAverageForwardData_FXIndex_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_fxAverageForwardData_FXIndex_t,
@@ -89909,6 +93406,24 @@ const xsdcpp::ElementInfo _fxOptionData_Info = {xsdcpp::ElementInfo::CheckChildr
                                                 nullptr,
                                                 nullptr,
                                                 nullptr};
+const xsdcpp::ElementInfo _barrierData_Levels_t_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                        nullptr,
+                                                        _barrierData_Levels_t_Children,
+                                                        1,
+                                                        nullptr,
+                                                        0ULL,
+                                                        nullptr,
+                                                        nullptr,
+                                                        nullptr};
+const xsdcpp::ElementInfo _barrierData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                               nullptr,
+                                               _barrierData_Children,
+                                               8,
+                                               nullptr,
+                                               0ULL,
+                                               nullptr,
+                                               nullptr,
+                                               nullptr};
 const xsdcpp::ElementInfo _fxBarrierOptionData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                        nullptr,
                                                        _fxBarrierOptionData_Children,
@@ -89987,7 +93502,7 @@ const xsdcpp::ElementInfo _legData_capfloor_Notionals_t_Info = {
 const xsdcpp::ElementInfo _legData_capfloor_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                     nullptr,
                                                     _legData_capfloor_Children,
-                                                    11,
+                                                    13,
                                                     nullptr,
                                                     0ULL,
                                                     nullptr,
@@ -90043,30 +93558,12 @@ const xsdcpp::ElementInfo _equityAutoDeltaHedgedOptionData_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
     _equityAutoDeltaHedgedOptionData_Children,
-    4,
+    5,
     nullptr,
     0ULL,
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _barrierData_Levels_t_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
-                                                        nullptr,
-                                                        _barrierData_Levels_t_Children,
-                                                        1,
-                                                        nullptr,
-                                                        0ULL,
-                                                        nullptr,
-                                                        nullptr,
-                                                        nullptr};
-const xsdcpp::ElementInfo _barrierData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
-                                               nullptr,
-                                               _barrierData_Children,
-                                               8,
-                                               nullptr,
-                                               0ULL,
-                                               nullptr,
-                                               nullptr,
-                                               nullptr};
 const xsdcpp::ElementInfo _eqBarrierOptionData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                        nullptr,
                                                        _eqBarrierOptionData_Children,
@@ -90202,16 +93699,35 @@ const xsdcpp::ElementInfo _bondFutureData_LongShort_t_Info = {
 const xsdcpp::ElementInfo _bondFutureData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                   nullptr,
                                                   _bondFutureData_Children,
-                                                  17,
+                                                  5,
                                                   nullptr,
                                                   0ULL,
                                                   nullptr,
                                                   nullptr,
                                                   nullptr};
+const xsdcpp::ElementInfo _bondFutureOptionData_ContractName_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_bondFutureOptionData_ContractName_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _bondFutureOptionData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                        nullptr,
+                                                        _bondFutureOptionData_Children,
+                                                        4,
+                                                        nullptr,
+                                                        0ULL,
+                                                        nullptr,
+                                                        nullptr,
+                                                        nullptr};
 const xsdcpp::ElementInfo _legData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                            nullptr,
                                            _legData_Children,
-                                           18,
+                                           22,
                                            nullptr,
                                            0ULL,
                                            nullptr,
@@ -90255,6 +93771,25 @@ const xsdcpp::ElementInfo _commodityForwardData_Info = {xsdcpp::ElementInfo::Che
                                                         nullptr,
                                                         nullptr,
                                                         nullptr};
+const xsdcpp::ElementInfo _intradayPowerForwardData_Name_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerForwardData_Name_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerForwardData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                            nullptr,
+                                                            _intradayPowerForwardData_Children,
+                                                            14,
+                                                            nullptr,
+                                                            0ULL,
+                                                            nullptr,
+                                                            nullptr,
+                                                            nullptr};
 const xsdcpp::ElementInfo _commodityOptionData_Name_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_commodityOptionData_Name_t,
@@ -90439,7 +93974,7 @@ const xsdcpp::ElementInfo _totalReturnData_PriceType_t_Info = {
 const xsdcpp::ElementInfo _totalReturnData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                    nullptr,
                                                    _totalReturnData_Children,
-                                                   14,
+                                                   16,
                                                    nullptr,
                                                    0ULL,
                                                    nullptr,
@@ -90660,7 +94195,7 @@ const xsdcpp::ElementInfo _trsUnderlyingData_Info = {
 const xsdcpp::ElementInfo _trsReturnData_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                  nullptr,
                                                  _trsReturnData_Children,
-                                                 14,
+                                                 16,
                                                  nullptr,
                                                  0ULL,
                                                  nullptr,
@@ -91046,6 +94581,16 @@ const xsdcpp::ElementInfo _volBarrierOptionData_Info = {xsdcpp::ElementInfo::Che
                                                         nullptr,
                                                         nullptr,
                                                         nullptr};
+const xsdcpp::ElementInfo _forwardVolatilityAgreementData2_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _forwardVolatilityAgreementData2_Children,
+    14,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _tarfData2_Barriers_t_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                         nullptr,
                                                         _tarfData2_Barriers_t_Children,
@@ -91867,7 +95412,7 @@ const xsdcpp::ElementInfo _market_YieldCurves_t_Configuration_t_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
     _market_YieldCurves_t_Configuration_t_Children,
-    4,
+    5,
     _market_YieldCurves_t_Configuration_t_Attributes,
     0ULL,
     nullptr,
@@ -91902,7 +95447,7 @@ const xsdcpp::ElementInfo _market_DefaultCurves_t_Tenors_t_Info = {
 const xsdcpp::ElementInfo _market_DefaultCurves_t_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                           nullptr,
                                                           _market_DefaultCurves_t_Children,
-                                                          7,
+                                                          8,
                                                           nullptr,
                                                           0ULL,
                                                           nullptr,
@@ -92003,7 +95548,7 @@ const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
     _market_CapFloorVolatilities_t_Children,
-    10,
+    11,
     nullptr,
     0ULL,
     nullptr,
@@ -92221,12 +95766,32 @@ const xsdcpp::ElementInfo _market_Commodities_t_Names_t_Info = {
 const xsdcpp::ElementInfo _market_Commodities_t_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                         nullptr,
                                                         _market_Commodities_t_Children,
-                                                        4,
+                                                        6,
                                                         nullptr,
                                                         0ULL,
                                                         nullptr,
                                                         nullptr,
                                                         nullptr};
+const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Names_t_Info = {
+    0,
+    nullptr,
+    _market_IntradayPowerCurves_t_Names_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _market_IntradayPowerCurves_t_Children,
+    4,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Names_t_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
@@ -92241,6 +95806,26 @@ const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
     _market_CommodityVolatilities_t_Children,
+    6,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _market_BondFutureVolatilities_t_Names_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _market_BondFutureVolatilities_t_Children,
     6,
     nullptr,
     0ULL,
@@ -93153,6 +96738,16 @@ const xsdcpp::ElementInfo _globalReportConfiguration_InflationCapFloorVolatiliti
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _globalReportConfiguration_DefaultCurves_t_Info = {
+    0,
+    nullptr,
+    _globalReportConfiguration_DefaultCurves_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _fxSpot_CurveId_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_fxSpot_CurveId_t,
@@ -93322,7 +96917,7 @@ const xsdcpp::ElementInfo _capFloorVolatility_CurveDescription_t_Info = {
 const xsdcpp::ElementInfo _capFloorVolatility_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                       nullptr,
                                                       _capFloorVolatility_Children,
-                                                      33,
+                                                      34,
                                                       nullptr,
                                                       0ULL,
                                                       nullptr,
@@ -93380,7 +96975,7 @@ const xsdcpp::ElementInfo _defaultCurve_CurveDescription_t_Info = {
 const xsdcpp::ElementInfo _defaultCurve_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                 nullptr,
                                                 _defaultCurve_Children,
-                                                26,
+                                                27,
                                                 nullptr,
                                                 0ULL,
                                                 nullptr,
@@ -93809,6 +97404,104 @@ const xsdcpp::ElementInfo _correlation_Info = {xsdcpp::ElementInfo::CheckChildre
                                                nullptr,
                                                nullptr,
                                                nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatility_CurveId_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_bondFutureVolatility_CurveId_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatility_CurveDescription_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_bondFutureVolatility_CurveDescription_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatility_ContractName_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_bondFutureVolatility_ContractName_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatility_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                        nullptr,
+                                                        _bondFutureVolatility_Children,
+                                                        13,
+                                                        nullptr,
+                                                        0ULL,
+                                                        nullptr,
+                                                        nullptr,
+                                                        nullptr};
+const xsdcpp::ElementInfo _intradayPowerCurve_CurveId_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerCurve_CurveId_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerCurve_CurveDescription_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerCurve_CurveDescription_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerCurve_DailyAveragePriceCurve_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerCurve_DailyAveragePriceCurve_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerCurve_ShapeQuoteName_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerCurve_ShapeQuoteName_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerCurve_Convention_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerCurve_Convention_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerCurve_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                      nullptr,
+                                                      _intradayPowerCurve_Children,
+                                                      6,
+                                                      nullptr,
+                                                      0ULL,
+                                                      nullptr,
+                                                      nullptr,
+                                                      nullptr};
 const xsdcpp::ElementInfo _zeroType_TenorCalendar_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_zeroType_TenorCalendar_t,
@@ -94069,6 +97762,16 @@ const xsdcpp::ElementInfo _commodityForwardType_AdvanceCalendar_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _commodityForwardType_DeliveryLocation_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_commodityForwardType_DeliveryLocation_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _commodityFutureType_AnchorDay_t_Info = {
     0,
     nullptr,
@@ -94234,6 +97937,16 @@ const xsdcpp::ElementInfo _commodityFutureType_SavingsTime_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _commodityFutureType_DeliveryLocation_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_commodityFutureType_DeliveryLocation_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _commodityFutureType_BalanceOfTheMonthPricingCalendar_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_commodityFutureType_BalanceOfTheMonthPricingCalendar_t,
@@ -94386,6 +98099,16 @@ const xsdcpp::ElementInfo _fxOptionTimeWeighting_Events_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _zeroInflationIndexType_RebasingEvents_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _zeroInflationIndexType_RebasingEvents_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _bondYield_PriceType_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_bondYield_PriceType_t,
@@ -94396,6 +98119,8 @@ const xsdcpp::ElementInfo _bondYield_PriceType_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _powerLoadProfileDataType_Info = {
+    0, nullptr, _powerLoadProfileDataType_Children, 2, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo __NettingSetId_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set__NettingSetId_t,
@@ -94664,6 +98389,26 @@ const xsdcpp::ElementInfo _configurationType_CorrelationsId_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _configurationType_BondFutureVolatilitiesId_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_configurationType_BondFutureVolatilitiesId_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _configurationType_IntradayPowerPriceCurvesId_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_configurationType_IntradayPowerPriceCurvesId_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _yieldCurvesType_YieldCurve_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_yieldCurvesType_YieldCurve_t,
@@ -94888,6 +98633,26 @@ const xsdcpp::ElementInfo _correlationsType_Correlation_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatilitiesType_BondFutureVolatility_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_bondFutureVolatilitiesType_BondFutureVolatility_t,
+    nullptr,
+    0,
+    _bondFutureVolatilitiesType_BondFutureVolatility_t_Attributes,
+    1ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t,
+    nullptr,
+    0,
+    _intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t_Attributes,
+    1ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _parExcludes_Type_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_parExcludes_Type_t,
@@ -94898,27 +98663,9 @@ const xsdcpp::ElementInfo _parExcludes_Type_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _shiftTypeEntry_Info = {xsdcpp::ElementInfo::ReadTextFlag,
-                                                  (xsdcpp::set_value_t)&domain::_set_shiftTypeEntry,
-                                                  nullptr,
-                                                  0,
-                                                  _shiftTypeEntry_Attributes,
-                                                  0ULL,
-                                                  nullptr,
-                                                  nullptr,
-                                                  nullptr};
-const xsdcpp::ElementInfo _shiftSizeEntry_Info = {xsdcpp::ElementInfo::ReadTextFlag,
-                                                  (xsdcpp::set_value_t)&domain::_set_shiftSizeEntry,
-                                                  nullptr,
-                                                  0,
-                                                  _shiftSizeEntry_Attributes,
-                                                  0ULL,
-                                                  nullptr,
-                                                  nullptr,
-                                                  nullptr};
-const xsdcpp::ElementInfo _discountcurve_Shifts_t_Info = {
+const xsdcpp::ElementInfo _discountcurve_ShiftTenors_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_discountcurve_Shifts_t,
+    (xsdcpp::set_value_t)&domain::_set_discountcurve_ShiftTenors_t,
     nullptr,
     0,
     nullptr,
@@ -94926,18 +98673,15 @@ const xsdcpp::ElementInfo _discountcurve_Shifts_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _shiftSchemeEntry_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_shiftSchemeEntry,
-    nullptr,
-    0,
-    _shiftSchemeEntry_Attributes,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _parconversion_Info = {
-    0, nullptr, _parconversion_Children, 6, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _discountcurve_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                 nullptr,
+                                                 _discountcurve_Children,
+                                                 6,
+                                                 _discountcurve_Attributes,
+                                                 1ULL,
+                                                 nullptr,
+                                                 nullptr,
+                                                 nullptr};
 const xsdcpp::ElementInfo _indexcurve_ShiftTenors_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_indexcurve_ShiftTenors_t,
@@ -95293,12 +99037,31 @@ const xsdcpp::ElementInfo _commodityCurve_ShiftTenors_t_Info = {
 const xsdcpp::ElementInfo _commodityCurve_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                   nullptr,
                                                   _commodityCurve_Children,
-                                                  7,
+                                                  9,
                                                   _commodityCurve_Attributes,
                                                   1ULL,
                                                   nullptr,
                                                   nullptr,
                                                   nullptr};
+const xsdcpp::ElementInfo _intradaypowercurve_ShiftTenors_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradaypowercurve_ShiftTenors_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _intradaypowercurve_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                      nullptr,
+                                                      _intradaypowercurve_Children,
+                                                      6,
+                                                      _intradaypowercurve_Attributes,
+                                                      1ULL,
+                                                      nullptr,
+                                                      nullptr,
+                                                      nullptr};
 const xsdcpp::ElementInfo _commodityvolatility_ShiftExpiries_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_commodityvolatility_ShiftExpiries_t,
@@ -95337,9 +99100,38 @@ const xsdcpp::ElementInfo _correlationcurve_Info = {xsdcpp::ElementInfo::CheckCh
                                                     nullptr,
                                                     nullptr,
                                                     nullptr};
+const xsdcpp::ElementInfo _sensiBondFutureVolatility_ShiftExpiries_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_sensiBondFutureVolatility_ShiftExpiries_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _sensiBondFutureVolatility_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                             nullptr,
+                                                             _sensiBondFutureVolatility_Children,
+                                                             6,
+                                                             _sensiBondFutureVolatility_Attributes,
+                                                             1ULL,
+                                                             nullptr,
+                                                             nullptr,
+                                                             nullptr};
 const xsdcpp::ElementInfo _crossgammafilter_Pair_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_crossgammafilter_Pair_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _stresstest_Date_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_stresstest_Date_t,
     nullptr,
     0,
     nullptr,
@@ -95357,10 +99149,14 @@ const xsdcpp::ElementInfo _stressyieldcurves_Info = {
     0, nullptr, _stressyieldcurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _stressfxvolatilities_Info = {
     0, nullptr, _stressfxvolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _stressswaptionvolatilities_Info = {
+    0, nullptr, _stressswaptionvolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _stresscapfloorvolatilities_Info = {
     0, nullptr, _stresscapfloorvolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _stresscommoditycurves_Info = {
     0, nullptr, _stresscommoditycurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _stressintradaypowercurves_Info = {
+    0, nullptr, _stressintradaypowercurves_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _stresscommodityvolatilities_Info = {
     0, nullptr, _stresscommodityvolatilities_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _recoveryrates_Info = {
@@ -95429,10 +99225,9 @@ const xsdcpp::ElementInfo _tradeAction_Info = {xsdcpp::ElementInfo::CheckChildre
                                                nullptr,
                                                nullptr,
                                                nullptr};
-const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t_Info = {
+const xsdcpp::ElementInfo _DerivedScheduleType_BaseSchedule_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::
-        _set_stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t,
+    (xsdcpp::set_value_t)&domain::_set_DerivedScheduleType_BaseSchedule_t,
     nullptr,
     0,
     nullptr,
@@ -95440,46 +99235,15 @@ const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSc
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _stFreeStyleEventScheduleBase_DerivedSchedule_t_Info = {
-    xsdcpp::ElementInfo::CheckChildrenFlag,
-    nullptr,
-    _stFreeStyleEventScheduleBase_DerivedSchedule_t_Children,
-    4,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
+const xsdcpp::ElementInfo _DerivedScheduleType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                       nullptr,
+                                                       _DerivedScheduleType_Children,
+                                                       8,
+                                                       nullptr,
+                                                       0ULL,
+                                                       nullptr,
+                                                       nullptr,
+                                                       nullptr};
 const xsdcpp::ElementInfo _swaptionStraddleData_LongShort_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_swaptionStraddleData_LongShort_t,
@@ -95539,25 +99303,6 @@ const xsdcpp::ElementInfo _scheduleData_Dates_t_Info = {xsdcpp::ElementInfo::Che
                                                         nullptr,
                                                         nullptr,
                                                         nullptr};
-const xsdcpp::ElementInfo _DerivedScheduleType_BaseSchedule_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_DerivedScheduleType_BaseSchedule_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _DerivedScheduleType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
-                                                       nullptr,
-                                                       _DerivedScheduleType_Children,
-                                                       6,
-                                                       nullptr,
-                                                       0ULL,
-                                                       nullptr,
-                                                       nullptr,
-                                                       nullptr};
 const xsdcpp::ElementInfo _optionData_OptionType_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_optionData_OptionType_t,
@@ -95949,7 +99694,7 @@ const xsdcpp::ElementInfo __FixedLegData_t_Info = {xsdcpp::ElementInfo::CheckChi
 const xsdcpp::ElementInfo __FloatingLegData_t_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                       nullptr,
                                                       __FloatingLegData_t_Children,
-                                                      24,
+                                                      25,
                                                       nullptr,
                                                       0ULL,
                                                       nullptr,
@@ -96141,6 +99886,26 @@ const xsdcpp::ElementInfo __CommodityFloatingLegData_t_Info = {
     nullptr,
     __CommodityFloatingLegData_t_Children,
     25,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_Name_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set__IntradayPowerFloatingLegData_t_Name_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    __IntradayPowerFloatingLegData_t_Children,
+    14,
     nullptr,
     0ULL,
     nullptr,
@@ -96452,128 +100217,6 @@ const xsdcpp::ElementInfo _forwardBondData_PremiumData_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _bondFutureData_ContractMonth_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_ContractMonth_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_DeliverableGrade_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_DeliverableGrade_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_FairPrice_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_FairPrice_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_Settlement_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_Settlement_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_SettlementDirty_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_SettlementDirty_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_RootDate_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_RootDate_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_ExpiryBasis_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_ExpiryBasis_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_SettlementBasis_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_SettlementBasis_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_ExpiryLag_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_ExpiryLag_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_SettlementLag_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_SettlementLag_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_LastTradingDate_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_LastTradingDate_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _bondFutureData_LastDeliveryDate_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_bondFutureData_LastDeliveryDate_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _deliveryBasket_Info = {
-    0, nullptr, _deliveryBasket_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _creditDefaultSwapData_IssuerId_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_creditDefaultSwapData_IssuerId_t,
@@ -97206,7 +100849,7 @@ const xsdcpp::ElementInfo _trsUnderlyingData_PortfolioIndexTradeData_t_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
     _trsUnderlyingData_PortfolioIndexTradeData_t_Children,
-    2,
+    3,
     nullptr,
     0ULL,
     nullptr,
@@ -97215,7 +100858,7 @@ const xsdcpp::ElementInfo _trsUnderlyingData_PortfolioIndexTradeData_t_Info = {
 const xsdcpp::ElementInfo _componentTrade_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                   nullptr,
                                                   _componentTrade_Children,
-                                                  185,
+                                                  190,
                                                   _componentTrade_Attributes,
                                                   0ULL,
                                                   nullptr,
@@ -97224,7 +100867,7 @@ const xsdcpp::ElementInfo _componentTrade_Info = {xsdcpp::ElementInfo::CheckChil
 const xsdcpp::ElementInfo _componentSubTrade_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                      nullptr,
                                                      _componentSubTrade_Children,
-                                                     185,
+                                                     190,
                                                      _componentSubTrade_Attributes,
                                                      0ULL,
                                                      nullptr,
@@ -97398,6 +101041,16 @@ const xsdcpp::ElementInfo _tranche_Info = {xsdcpp::ElementInfo::CheckChildrenFla
                                            nullptr,
                                            nullptr,
                                            nullptr};
+const xsdcpp::ElementInfo _forwardVolatilityAgreementData2_PayoffType_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_forwardVolatilityAgreementData2_PayoffType_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _tarfData2_Strikes_t_Info = {
     0, nullptr, _tarfData2_Strikes_t_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _tarfData2_SettlementLag_t_Info = {
@@ -97902,6 +101555,16 @@ const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_SmileDynamics_t_Info = 
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _market_CapFloorVolatilities_t_SmileForwardInteraction_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_CapFloorVolatilities_t_SmileForwardInteraction_t,
+    nullptr,
+    0,
+    _market_CapFloorVolatilities_t_SmileForwardInteraction_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _market_CDSVolatilities_t_Names_t_Name_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_market_CDSVolatilities_t_Names_t_Name_t,
@@ -98146,6 +101809,16 @@ const xsdcpp::ElementInfo _market_Commodities_t_Names_t_Name_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _market_Commodities_t_Interpolation_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_Commodities_t_Interpolation_t,
+    nullptr,
+    0,
+    _market_Commodities_t_Interpolation_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _market_Commodities_t_Tenors_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_market_Commodities_t_Tenors_t,
@@ -98162,6 +101835,36 @@ const xsdcpp::ElementInfo _market_Commodities_t_DayCounters_t_Info = {
     _market_Commodities_t_DayCounters_t_Children,
     1,
     nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Names_t_Name_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_IntradayPowerCurves_t_Names_t_Name_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Interpolation_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_IntradayPowerCurves_t_Interpolation_t,
+    nullptr,
+    0,
+    _market_IntradayPowerCurves_t_Interpolation_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_IntradayPowerCurves_t_Tenors_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_IntradayPowerCurves_t_Tenors_t,
+    nullptr,
+    0,
+    _market_IntradayPowerCurves_t_Tenors_t_Attributes,
     0ULL,
     nullptr,
     nullptr,
@@ -98202,6 +101905,46 @@ const xsdcpp::ElementInfo _market_CommodityVolatilities_t_SmileDynamics_t_Info =
     nullptr,
     0,
     _market_CommodityVolatilities_t_SmileDynamics_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _market_BondFutureVolatilities_t_Names_t_Name_t_Children,
+    2,
+    _market_BondFutureVolatilities_t_Names_t_Name_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_DayCounter_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_BondFutureVolatilities_t_DayCounter_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_SmileDynamics_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_BondFutureVolatilities_t_SmileDynamics_t,
+    nullptr,
+    0,
+    _market_BondFutureVolatilities_t_SmileDynamics_t_Attributes,
     0ULL,
     nullptr,
     nullptr,
@@ -98545,7 +102288,7 @@ const xsdcpp::ElementInfo _parametricSmileConfigCalibration_Info = {
 const xsdcpp::ElementInfo _parametricSmileConfig_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                          nullptr,
                                                          _parametricSmileConfig_Children,
-                                                         2,
+                                                         3,
                                                          nullptr,
                                                          0ULL,
                                                          nullptr,
@@ -99421,7 +103164,7 @@ const xsdcpp::ElementInfo _fittedBondType_Type_t_Info = {
 const xsdcpp::ElementInfo _fittedBondType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                   nullptr,
                                                   _fittedBondType_Children,
-                                                  7,
+                                                  9,
                                                   nullptr,
                                                   0ULL,
                                                   nullptr,
@@ -99460,7 +103203,7 @@ const xsdcpp::ElementInfo _BondYieldShiftedType_Conventions_t_Info = {
 const xsdcpp::ElementInfo _BondYieldShiftedType_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
                                                         nullptr,
                                                         _BondYieldShiftedType_Children,
-                                                        6,
+                                                        7,
                                                         nullptr,
                                                         0ULL,
                                                         nullptr,
@@ -100204,6 +103947,16 @@ const xsdcpp::ElementInfo _correlation_OptionTenors_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _bondFutureVolatility_YieldCurveId_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_bondFutureVolatility_YieldCurveId_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _prohibitedExpiriesType_Dates_t_Date_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_prohibitedExpiriesType_Dates_t_Date_t,
@@ -100223,6 +103976,20 @@ const xsdcpp::ElementInfo _continuationMappingType_Info = {xsdcpp::ElementInfo::
                                                            nullptr,
                                                            nullptr,
                                                            nullptr};
+const xsdcpp::ElementInfo _zeroInflationIndexType_RebasingEvents_t_Event_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_zeroInflationIndexType_RebasingEvents_t_Event_t,
+    nullptr,
+    0,
+    _zeroInflationIndexType_RebasingEvents_t_Event_t_Attributes,
+    1ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _explicitLoadProfileType_Info = {
+    0, nullptr, _explicitLoadProfileType_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _ruleBasedLoadProfileType_Info = {
+    0, nullptr, _ruleBasedLoadProfileType_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _nettingSetDetails_AgreementType_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_nettingSetDetails_AgreementType_t,
@@ -100365,9 +104132,27 @@ const xsdcpp::ElementInfo
         nullptr,
         nullptr,
         nullptr};
-const xsdcpp::ElementInfo _parconversion_Instruments_t_Info = {
+const xsdcpp::ElementInfo _shiftTypeEntry_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                                  (xsdcpp::set_value_t)&domain::_set_shiftTypeEntry,
+                                                  nullptr,
+                                                  0,
+                                                  _shiftTypeEntry_Attributes,
+                                                  0ULL,
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr};
+const xsdcpp::ElementInfo _shiftSizeEntry_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                                  (xsdcpp::set_value_t)&domain::_set_shiftSizeEntry,
+                                                  nullptr,
+                                                  0,
+                                                  _shiftSizeEntry_Attributes,
+                                                  0ULL,
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr};
+const xsdcpp::ElementInfo _discountcurve_Shifts_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_parconversion_Instruments_t,
+    (xsdcpp::set_value_t)&domain::_set_discountcurve_Shifts_t,
     nullptr,
     0,
     nullptr,
@@ -100375,28 +104160,18 @@ const xsdcpp::ElementInfo _parconversion_Instruments_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _parconversion_DiscountCurve_t_Info = {
+const xsdcpp::ElementInfo _shiftSchemeEntry_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_parconversion_DiscountCurve_t,
+    (xsdcpp::set_value_t)&domain::_set_shiftSchemeEntry,
     nullptr,
     0,
-    nullptr,
+    _shiftSchemeEntry_Attributes,
     0ULL,
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _parconversion_RateComputationPeriod_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_parconversion_RateComputationPeriod_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _parconversion_Conventions_t_Info = {
-    0, nullptr, _parconversion_Conventions_t_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _parconversion_Info = {
+    0, nullptr, _parconversion_Children, 6, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _indexcurve_Shifts_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_indexcurve_Shifts_t,
@@ -100641,6 +104416,16 @@ const xsdcpp::ElementInfo _commodityCurve_Shifts_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _intradaypowercurve_Shifts_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_intradaypowercurve_Shifts_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _commodityvolatility_Shifts_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_commodityvolatility_Shifts_t,
@@ -100674,6 +104459,26 @@ const xsdcpp::ElementInfo _correlationcurve_Shifts_t_Info = {
 const xsdcpp::ElementInfo _correlationcurve_ShiftStrikes_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_correlationcurve_ShiftStrikes_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _sensiBondFutureVolatility_Shifts_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_sensiBondFutureVolatility_Shifts_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _sensiBondFutureVolatility_ShiftStrikes_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_sensiBondFutureVolatility_ShiftStrikes_t,
     nullptr,
     0,
     nullptr,
@@ -100747,6 +104552,45 @@ const xsdcpp::ElementInfo _stressfxvolatility_Info = {xsdcpp::ElementInfo::Check
                                                       nullptr,
                                                       nullptr,
                                                       nullptr};
+const xsdcpp::ElementInfo _stressswaptionvolatility_Shifts_t_Info = {
+    0,
+    nullptr,
+    _stressswaptionvolatility_Shifts_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _stressswaptionvolatility_ShiftExpiries_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_stressswaptionvolatility_ShiftExpiries_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _stressswaptionvolatility_ShiftTerms_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_stressswaptionvolatility_ShiftTerms_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _stressswaptionvolatility_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                            nullptr,
+                                                            _stressswaptionvolatility_Children,
+                                                            4,
+                                                            _stressswaptionvolatility_Attributes,
+                                                            0ULL,
+                                                            nullptr,
+                                                            nullptr,
+                                                            nullptr};
 const xsdcpp::ElementInfo _stresscapfloorvolatility_Shifts_t_Info = {
     0,
     nullptr,
@@ -100805,6 +104649,35 @@ const xsdcpp::ElementInfo _stresscommoditycurve_Info = {xsdcpp::ElementInfo::Che
                                                         nullptr,
                                                         nullptr,
                                                         nullptr};
+const xsdcpp::ElementInfo _stressintradaypowercurve_Shifts_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_stressintradaypowercurve_Shifts_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _stressintradaypowercurve_ShiftTenors_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_stressintradaypowercurve_ShiftTenors_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _stressintradaypowercurve_Info = {xsdcpp::ElementInfo::CheckChildrenFlag,
+                                                            nullptr,
+                                                            _stressintradaypowercurve_Children,
+                                                            3,
+                                                            _stressintradaypowercurve_Attributes,
+                                                            1ULL,
+                                                            nullptr,
+                                                            nullptr,
+                                                            nullptr};
 const xsdcpp::ElementInfo _stresscommodityvolatility_Shifts_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_stresscommodityvolatility_Shifts_t,
@@ -100882,6 +104755,16 @@ const xsdcpp::ElementInfo _envelope_PortfolioIds_t_PortfolioId_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _DerivedScheduleType_Shift_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_DerivedScheduleType_Shift_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _fxForwardSettlementData_FXIndex_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_fxForwardSettlementData_FXIndex_t,
@@ -100905,16 +104788,6 @@ const xsdcpp::ElementInfo _fxForwardSettlementData_Rules_t_Info = {
 const xsdcpp::ElementInfo _scheduleData_Dates_t_Tenor_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_scheduleData_Dates_t_Tenor_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _DerivedScheduleType_Shift_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_DerivedScheduleType_Shift_t,
     nullptr,
     0,
     nullptr,
@@ -101049,7 +104922,7 @@ const xsdcpp::ElementInfo _stubInterpolation_Info = {xsdcpp::ElementInfo::CheckC
                                                      nullptr,
                                                      nullptr};
 const xsdcpp::ElementInfo __RangeAccrualLegData_t_Coupons_t_Info = {
-    xsdcpp::ElementInfo::CheckChildrenFlag,
+    0,
     nullptr,
     __RangeAccrualLegData_t_Coupons_t_Children,
     1,
@@ -101379,6 +105252,46 @@ const xsdcpp::ElementInfo __CommodityFloatingLegData_t_FXIndex_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set__IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_FXIndex_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set__IntradayPowerFloatingLegData_t_FXIndex_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_Tag_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set__IntradayPowerFloatingLegData_t_Tag_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo __IntradayPowerFloatingLegData_t_QuantityMode_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set__IntradayPowerFloatingLegData_t_QuantityMode_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _capFloorData_Caps_t_Cap_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_capFloorData_Caps_t_Cap_t,
@@ -101432,16 +105345,6 @@ const xsdcpp::ElementInfo _eqForwardSettlementData_Rules_t_Info = {
     nullptr,
     _eqForwardSettlementData_Rules_t_Children,
     3,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _deliveryBasket_Id_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_deliveryBasket_Id_t,
-    nullptr,
-    0,
     nullptr,
     0ULL,
     nullptr,
@@ -102023,59 +105926,6 @@ const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_Value_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t_Info =
-    {xsdcpp::ElementInfo::ReadTextFlag,
-     (xsdcpp::set_value_t)&domain::
-         _set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t,
-     nullptr,
-     0,
-     nullptr,
-     0ULL,
-     nullptr,
-     nullptr,
-     nullptr};
-const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::
-        _set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::
-        _set_scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
-const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Info = {
-    xsdcpp::ElementInfo::CheckChildrenFlag,
-    nullptr,
-    _scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Children,
-    4,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
 const xsdcpp::ElementInfo _scriptedTradeData_Data_t_Daycounter_t_Value_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_scriptedTradeData_Data_t_Daycounter_t_Value_t,
@@ -102289,6 +106139,16 @@ const xsdcpp::ElementInfo _market_Commodities_t_DayCounters_t_DayCounter_t_Info 
 const xsdcpp::ElementInfo _market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t,
     nullptr,
     0,
     nullptr,
@@ -102553,21 +106413,21 @@ const xsdcpp::ElementInfo _parametricSmileConfigParameter_Name_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _parametricSmileConfigParameter_InitialValue_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_parametricSmileConfigParameter_InitialValue_t,
-    nullptr,
-    0,
-    nullptr,
-    0ULL,
-    nullptr,
-    nullptr,
-    nullptr};
 const xsdcpp::ElementInfo _parametricSmileConfigParameter_Info = {
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
     _parametricSmileConfigParameter_Children,
     3,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _parametricSmileConfigResidualCorrection_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _parametricSmileConfigResidualCorrection_Children,
+    1,
     nullptr,
     0ULL,
     nullptr,
@@ -102768,7 +106628,7 @@ const xsdcpp::ElementInfo _defaultCurve_Configurations_t_Configuration_t_Info = 
     xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
     _defaultCurve_Configurations_t_Configuration_t_Children,
-    23,
+    24,
     _defaultCurve_Configurations_t_Configuration_t_Attributes,
     0ULL,
     nullptr,
@@ -103004,10 +106864,40 @@ const xsdcpp::ElementInfo _fittedBondType_PillarChoice_t_Info = {
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _fittedBondType_IndexCurves_t_Info = {
+    0,
+    nullptr,
+    _fittedBondType_IndexCurves_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _fittedBondType_IborIndexCurves_t_Info = {
     0,
     nullptr,
     _fittedBondType_IborIndexCurves_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _fittedBondType_InflationIndexCurves_t_Info = {
+    0,
+    nullptr,
+    _fittedBondType_InflationIndexCurves_t_Children,
+    1,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _BondYieldShiftedType_IndexCurves_t_Info = {
+    0,
+    nullptr,
+    _BondYieldShiftedType_IndexCurves_t_Children,
     1,
     nullptr,
     0ULL,
@@ -103211,16 +107101,71 @@ const xsdcpp::ElementInfo _volatilityApoFutureSurfaceConfig_MaxTenor_t_Info = {
     nullptr,
     nullptr,
     nullptr};
-const xsdcpp::ElementInfo _parconversion_Conventions_t_Convention_t_Info = {
-    xsdcpp::ElementInfo::ReadTextFlag,
-    (xsdcpp::set_value_t)&domain::_set_parconversion_Conventions_t_Convention_t,
+const xsdcpp::ElementInfo _loadFactorsType_Info = {
+    0, nullptr, _loadFactorsType_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
+const xsdcpp::ElementInfo _explicitLoadProfileType_LoadProfileDatum_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
     nullptr,
-    0,
-    _parconversion_Conventions_t_Convention_t_Attributes,
+    _explicitLoadProfileType_LoadProfileDatum_t_Children,
+    2,
+    nullptr,
     0ULL,
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::
+        _set_ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Info = {
+    xsdcpp::ElementInfo::CheckChildrenFlag,
+    nullptr,
+    _ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Children,
+    4,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _parconversion_Instruments_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_parconversion_Instruments_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _parconversion_DiscountCurve_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_parconversion_DiscountCurve_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _parconversion_RateComputationPeriod_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_parconversion_RateComputationPeriod_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _parconversion_Conventions_t_Info = {
+    0, nullptr, _parconversion_Conventions_t_Children, 1, nullptr, 0ULL, nullptr, nullptr, nullptr};
 const xsdcpp::ElementInfo _swaptionvolatility_Shifts_t_Shift_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_swaptionvolatility_Shifts_t_Shift_t,
@@ -103337,6 +107282,16 @@ const xsdcpp::ElementInfo _stressfxvolatility_WeightedShifts_t_Info = {
     _stressfxvolatility_WeightedShifts_t_Children,
     5,
     nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _stressswaptionvolatility_Shifts_t_Shift_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_stressswaptionvolatility_Shifts_t_Shift_t,
+    nullptr,
+    0,
+    _stressswaptionvolatility_Shifts_t_Shift_t_Attributes,
     0ULL,
     nullptr,
     nullptr,
@@ -103933,6 +107888,16 @@ const xsdcpp::ElementInfo _boundaryConstraint_Info = {xsdcpp::ElementInfo::Check
                                                       nullptr,
                                                       nullptr,
                                                       nullptr};
+const xsdcpp::ElementInfo _parametricSmileConfigParameter_InitialValue_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_parametricSmileConfigParameter_InitialValue_t,
+    nullptr,
+    0,
+    nullptr,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _cdsVolatility_Terms_t_Term_t_Maturity_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_cdsVolatility_Terms_t_Term_t_Maturity_t,
@@ -104067,12 +108032,42 @@ const xsdcpp::ElementInfo _defaultCurve_Configurations_t_Configuration_t_IndexTe
     nullptr,
     nullptr,
     nullptr};
+const xsdcpp::ElementInfo _fittedBondType_IndexCurves_t_IndexCurve_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_fittedBondType_IndexCurves_t_IndexCurve_t,
+    nullptr,
+    0,
+    _fittedBondType_IndexCurves_t_IndexCurve_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _fittedBondType_IborIndexCurves_t_IborIndexCurve_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_fittedBondType_IborIndexCurves_t_IborIndexCurve_t,
     nullptr,
     0,
     _fittedBondType_IborIndexCurves_t_IborIndexCurve_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t,
+    nullptr,
+    0,
+    _fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
+const xsdcpp::ElementInfo _BondYieldShiftedType_IndexCurves_t_IndexCurve_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_BondYieldShiftedType_IndexCurves_t_IndexCurve_t,
+    nullptr,
+    0,
+    _BondYieldShiftedType_IndexCurves_t_IndexCurve_t_Attributes,
     0ULL,
     nullptr,
     nullptr,
@@ -104116,6 +108111,25 @@ const xsdcpp::ElementInfo _offPeakDailyType_Info = {xsdcpp::ElementInfo::CheckCh
                                                     nullptr,
                                                     nullptr,
                                                     nullptr};
+const xsdcpp::ElementInfo _loadFactorType_Info = {xsdcpp::ElementInfo::ReadTextFlag,
+                                                  (xsdcpp::set_value_t)&domain::_set_loadFactorType,
+                                                  nullptr,
+                                                  0,
+                                                  _loadFactorType_Attributes,
+                                                  3ULL,
+                                                  nullptr,
+                                                  nullptr,
+                                                  nullptr};
+const xsdcpp::ElementInfo _parconversion_Conventions_t_Convention_t_Info = {
+    xsdcpp::ElementInfo::ReadTextFlag,
+    (xsdcpp::set_value_t)&domain::_set_parconversion_Conventions_t_Convention_t,
+    nullptr,
+    0,
+    _parconversion_Conventions_t_Convention_t_Attributes,
+    0ULL,
+    nullptr,
+    nullptr,
+    nullptr};
 const xsdcpp::ElementInfo _stressfxvolatility_WeightedShifts_t_ShiftWeights_t_Info = {
     xsdcpp::ElementInfo::ReadTextFlag,
     (xsdcpp::set_value_t)&domain::_set_stressfxvolatility_WeightedShifts_t_ShiftWeights_t,

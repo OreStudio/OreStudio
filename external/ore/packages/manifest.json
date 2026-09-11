@@ -1,24 +1,38 @@
 {
   "description": "Provenance for the ORE engine binary packages and sample data in this directory. This manifest is metadata for humans/tooling reasoning about this directory -- it is NOT the per-package manifest.json ores.compute.wrapper reads (that one lives inside each package tarball itself, at its root, and is deliberately minimal: {\"executable\": ..., \"args\": [...]} only -- see projects/ores.compute/wrapper/src/app/application.cpp's read_manifest()).",
-  "version_scheme": "Package version is `git describe --tags --always` run against the ORE Engine source checkout (git@github.com:OreStudio/Engine.git, upstream git@github.com:OpenSourceRisk/Engine.git), with any leading 'v' stripped. When the checkout is exactly on a release tag this is the plain tag (e.g. '1.8.16.0'); when it's N commits past the nearest tag it's '<tag>-<N>-g<short-sha>' (e.g. '1.8.16.0-3-g3b62ba248' means 3 commits after the v1.8.16.0 tag, at commit 3b62ba248...). The full commit hash and its commit date are recorded per-package below for exact traceability -- the describe string alone is enough to `git checkout` the same content, but the explicit fields avoid needing to.",
+  "version_scheme": "Package version is `git describe --tags --always` run against the ORE Engine source checkout (git@github.com:OreStudio/Engine.git, upstream git@github.com:OpenSourceRisk/Engine.git), with any leading 'v' stripped. When the checkout is exactly on a release tag this is the plain tag (e.g. '1.8.16.0'); when it's N commits past the nearest tag it's '<tag>-<N>-g<short-sha>' (e.g. '1.8.16.0-4-g3b62ba248' means 4 commits after the v1.8.16.0 tag, at commit 3b62ba248...). The full commit hash and its commit date are recorded per-package below for exact traceability -- the describe string alone is enough to `git checkout` the same content, but the explicit fields avoid needing to, and they survive the tag being moved, which has happened at least once (see the 1.8.16.0 entry's version_note).",
   "packages": [
     {
-      "file": "ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz",
-      "engine_version": "1.8.16.0-3-g3b62ba248",
+      "file": "ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz",
+      "engine_version": "1.8.16.0-4-g3b62ba248",
       "engine_commit": "3b62ba248e36ea92f408f0d863ede09639074836",
       "engine_commit_date": "2026-06-11T12:45:15+02:00",
+      "version_note": "The filename says 4 commits past v1.8.16.0. Re-running `git describe --tags --long 3b62ba248` against today's fork gives 3, so the v1.8.16.0 tag was re-pointed one commit later after this package was built. The commit hash is unambiguous either way; the count is not worth trusting on its own.",
       "built_at": "2026-07-30T20:40:00Z",
       "built_with": "clang++ (linux-clang-ninja-release CMake preset), Boost 1.90.0, self-contained (bundles libOREAnalytics/libOREData/libQuantExt/libQuantLib.so.1 plus every non-glibc runtime dependency under lib/, RPATH=$ORIGIN/lib)",
-      "sha256": "44188963c2c2eb0014b7edc760f2a17224aa65fa2d1f228a6cc3214adafbdf8a",
-      "size_bytes": 57560489,
+      "sha256": "9288aecdcbe17f93c48998d9b8e441eebed0668beee6fb9281a1c6ed4af25513",
+      "size_bytes": 57560918,
       "built_by": "external/ore/tools/package_ore.sh",
-      "verified_against": "external/ore/packages/TA002_IR_Swap.tar.gz, tolerantly diffed against external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput -- see ore-1.8.16.0-3-g3b62ba248-x64-linux.diff-report.txt in this directory",
+      "verified_against": "external/ore/packages/TA002_IR_Swap.tar.gz, tolerantly diffed against external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput -- see ore-1.8.16.0-4-g3b62ba248-x64-linux.diff-report.txt in this directory",
       "superseded": [
         {
           "file": "ore-1.8.15.0-x64-linux.tar.gz",
           "removed_reason": "Broken: not self-contained -- dynamically linked against libOREAnalytics.so/libQuantExt.so/libQuantLib.so.1 with no RPATH into the package and no bundled copies, so `ldd` reported them \"not found\" outside the exact machine/build-tree it was hand-copied from. ores.compute.wrapper spawns the packaged executable directly with no LD_LIBRARY_PATH customisation (see projects/ores.compute/wrapper/src/app/application.cpp), so this package could only ever have worked by coincidence. Replaced, not patched, since a genuinely self-contained rebuild was the correct fix."
         }
       ]
+    },
+    {
+      "file": "ore-1.8.17.0-x64-linux.tar.gz",
+      "engine_version": "1.8.17.0",
+      "engine_commit": "3d75a69087911a7e2cf1e6882da7bc27135c0762",
+      "engine_commit_date": "2026-09-11T17:26:17Z",
+      "provisional_version": "Upstream OpenSourceRisk/Engine had not tagged a v1.8.17.0 release when this package was built, so the tag was created here, on the fork, at this build's own commit. The describe string is therefore the plain tag rather than a '<tag>-<N>-g<sha>' string. Rebuild the package once upstream tags, and check then whether N commits landed between this commit and the real tag.",
+      "built_at": "2026-09-11T23:24:55Z",
+      "built_with": "clang++ (linux-clang-ninja-release CMake preset), Boost 1.90.0, self-contained (bundles libOREAnalytics/libOREData/libQuantExt/libQuantLib.so.1 plus every non-glibc runtime dependency under lib/, RPATH=$ORIGIN/lib)",
+      "sha256": "8099ac8f51067cf59378137a327f273b073390e1cc47ea862f5cfcc2ab519868",
+      "size_bytes": 58946608,
+      "built_by": "external/ore/tools/package_ore.sh",
+      "verified_against": "external/ore/packages/TA002_IR_Swap.tar.gz, tolerantly diffed against external/ore/examples/Academy/TA002_IR_Swap/ExpectedOutput -- see ore-1.8.17.0-x64-linux.diff-report.txt in this directory. That report is identical to the 1.8.16.0 one, line for line apart from the paths and the version: same 240x4 curves.csv and 60x25 flows.csv and 1x13 npv.csv, and the same four report columns the engine emits beyond the reference (EffectiveFloorVolatility, EffectiveCapVolatility, Amount(Base), DiscountFactor(Base)). So the two engines agree on the sample within rtol=1e-6, and the column difference is pre-existing, not introduced by v17."
     }
   ],
   "sample_packages": [

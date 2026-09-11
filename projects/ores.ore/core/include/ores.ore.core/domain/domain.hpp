@@ -150,6 +150,20 @@ struct _CommodityFloatingLegData_t_Name_t;
 struct _CommodityFloatingLegData_t_PricingDates_t;
 struct _CommodityFloatingLegData_t_Tag_t;
 struct _CommodityFloatingLegData_t_FXIndex_t;
+struct _IntradayPowerFloatingLegData_t;
+struct _IntradayPowerFloatingLegData_t_Name_t;
+struct _IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t;
+struct powerLoadProfileDataType;
+struct explicitLoadProfileType;
+struct explicitLoadProfileType_LoadProfileDatum_t;
+struct loadFactorsType;
+struct loadFactorType;
+struct ruleBasedLoadProfileType;
+struct ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t;
+struct ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t;
+struct _IntradayPowerFloatingLegData_t_FXIndex_t;
+struct _IntradayPowerFloatingLegData_t_Tag_t;
+struct _IntradayPowerFloatingLegData_t_QuantityMode_t;
 struct _FormulaBasedLegData_t;
 struct _FormulaBasedLegData_t_Index_t;
 struct legData_SettlementData_t;
@@ -193,11 +207,6 @@ struct stFreeStyleLongShort;
 struct stFreeStyleIndex;
 struct stFreeStyleEventSchedule;
 struct stFreeStyleEventScheduleBase;
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t;
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t;
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t;
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t;
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t;
 struct stFreeStyleNumber;
 struct stFreeStyleEvent;
 struct stFreeStyleCurrency;
@@ -300,20 +309,8 @@ struct bondFutureData;
 struct bondFutureData_ContractName_t;
 struct bondFutureData_ContractNotional_t;
 struct bondFutureData_LongShort_t;
-struct bondFutureData_ContractMonth_t;
-struct bondFutureData_DeliverableGrade_t;
-struct bondFutureData_FairPrice_t;
-struct bondFutureData_Settlement_t;
-struct bondFutureData_SettlementDirty_t;
-struct bondFutureData_RootDate_t;
-struct bondFutureData_ExpiryBasis_t;
-struct bondFutureData_SettlementBasis_t;
-struct bondFutureData_ExpiryLag_t;
-struct bondFutureData_SettlementLag_t;
-struct bondFutureData_LastTradingDate_t;
-struct bondFutureData_LastDeliveryDate_t;
-struct deliveryBasket;
-struct deliveryBasket_Id_t;
+struct bondFutureOptionData;
+struct bondFutureOptionData_ContractName_t;
 struct creditDefaultSwapData;
 struct creditDefaultSwapData_IssuerId_t;
 struct _CreditCurveId_t;
@@ -330,6 +327,8 @@ struct commodityForwardData_FutureExpiryOffset_t;
 struct commodityForwardData_FutureExpiryOffsetCalendar_t;
 struct commForwardSettlementData;
 struct commForwardSettlementData_FXIndex_t;
+struct intradayPowerForwardData;
+struct intradayPowerForwardData_Name_t;
 struct commodityOptionData;
 struct commodityOptionData_Name_t;
 struct commodityDigitalAveragePriceOptionData;
@@ -538,6 +537,8 @@ struct bestEntryOptionData;
 struct dualEuroBinaryOptionData;
 struct dualEuroBinaryOptionDoubleKOData;
 struct volBarrierOptionData;
+struct forwardVolatilityAgreementData2;
+struct forwardVolatilityAgreementData2_PayoffType_t;
 struct tarfData2;
 struct tarfData2_Strikes_t;
 struct tarfData2_Strikes_t_Strike_t;
@@ -627,11 +628,6 @@ struct scriptedTradeData_Data_t_Index_t_Values_t_Value_t;
 struct scriptedTradeData_Data_t_Event_t;
 struct scriptedTradeData_Data_t_Event_t_Name_t;
 struct scriptedTradeData_Data_t_Event_t_Value_t;
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t;
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t;
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t;
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t;
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t;
 struct scriptedTradeData_Data_t_Daycounter_t;
 struct scriptedTradeData_Data_t_Daycounter_t_Name_t;
 struct scriptedTradeData_Data_t_Daycounter_t_Value_t;
@@ -902,6 +898,7 @@ struct market_CapFloorVolatilities_t_Strikes_t;
 struct market_CapFloorVolatilities_t_DayCounters_t;
 struct market_CapFloorVolatilities_t_DayCounters_t_DayCounter_t;
 struct market_CapFloorVolatilities_t_SmileDynamics_t;
+struct market_CapFloorVolatilities_t_SmileForwardInteraction_t;
 struct market_CDSVolatilities_t;
 struct market_CDSVolatilities_t_Names_t;
 struct market_CDSVolatilities_t_Names_t_Name_t;
@@ -964,9 +961,15 @@ struct market_YYCapFloorVolatilities_t_SmileDynamics_t;
 struct market_Commodities_t;
 struct market_Commodities_t_Names_t;
 struct market_Commodities_t_Names_t_Name_t;
+struct market_Commodities_t_Interpolation_t;
 struct market_Commodities_t_Tenors_t;
 struct market_Commodities_t_DayCounters_t;
 struct market_Commodities_t_DayCounters_t_DayCounter_t;
+struct market_IntradayPowerCurves_t;
+struct market_IntradayPowerCurves_t_Names_t;
+struct market_IntradayPowerCurves_t_Names_t_Name_t;
+struct market_IntradayPowerCurves_t_Interpolation_t;
+struct market_IntradayPowerCurves_t_Tenors_t;
 struct market_CommodityVolatilities_t;
 struct market_CommodityVolatilities_t_Names_t;
 struct market_CommodityVolatilities_t_Names_t_Name_t;
@@ -974,6 +977,13 @@ struct market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t;
 struct market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t;
 struct market_CommodityVolatilities_t_DayCounter_t;
 struct market_CommodityVolatilities_t_SmileDynamics_t;
+struct market_BondFutureVolatilities_t;
+struct market_BondFutureVolatilities_t_Names_t;
+struct market_BondFutureVolatilities_t_Names_t_Name_t;
+struct market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t;
+struct market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t;
+struct market_BondFutureVolatilities_t_DayCounter_t;
+struct market_BondFutureVolatilities_t_SmileDynamics_t;
 struct market_AggregationScenarioDataCurrencies_t;
 struct market_AggregationScenarioDataIndices_t;
 struct market_AggregationScenarioDataCreditStates_t;
@@ -1034,6 +1044,7 @@ struct globalReportConfiguration_YieldCurves_t;
 struct yieldCurveReport;
 struct yieldCurveReport_PillarDates_t;
 struct globalReportConfiguration_InflationCapFloorVolatilities_t;
+struct globalReportConfiguration_DefaultCurves_t;
 struct fxSpots;
 struct fxSpot;
 struct fxSpot_CurveId_t;
@@ -1048,6 +1059,7 @@ struct parametricSmileConfigParameter;
 struct parametricSmileConfigParameter_Name_t;
 struct parametricSmileConfigParameter_InitialValue_t;
 struct parametricSmileConfigCalibration;
+struct parametricSmileConfigResidualCorrection;
 struct fxVolatility_Deltas_t;
 struct fxVolatility_SmileDelta_t;
 struct fxVolatility_Conventions_t;
@@ -1229,11 +1241,17 @@ struct discountRatioCurveElement;
 struct fittedBondType;
 struct fittedBondType_Type_t;
 struct fittedBondType_PillarChoice_t;
+struct fittedBondType_IndexCurves_t;
+struct fittedBondType_IndexCurves_t_IndexCurve_t;
 struct fittedBondType_IborIndexCurves_t;
 struct fittedBondType_IborIndexCurves_t_IborIndexCurve_t;
+struct fittedBondType_InflationIndexCurves_t;
+struct fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t;
 struct BondYieldShiftedType;
 struct BondYieldShiftedType_Type_t;
 struct BondYieldShiftedType_ReferenceCurve_t;
+struct BondYieldShiftedType_IndexCurves_t;
+struct BondYieldShiftedType_IndexCurves_t_IndexCurve_t;
 struct BondYieldShiftedType_IborIndexCurves_t;
 struct BondYieldShiftedType_IborIndexCurves_t_IborIndexCurve_t;
 struct BondYieldShiftedType_Conventions_t;
@@ -1382,6 +1400,19 @@ struct correlation_Conventions_t;
 struct correlation_SwaptionVolatility_t;
 struct correlation_DiscountCurve_t;
 struct correlation_OptionTenors_t;
+struct bondFutureVolatilities;
+struct bondFutureVolatility;
+struct bondFutureVolatility_CurveId_t;
+struct bondFutureVolatility_CurveDescription_t;
+struct bondFutureVolatility_ContractName_t;
+struct bondFutureVolatility_YieldCurveId_t;
+struct intradayPowerCurves;
+struct intradayPowerCurve;
+struct intradayPowerCurve_CurveId_t;
+struct intradayPowerCurve_CurveDescription_t;
+struct intradayPowerCurve_DailyAveragePriceCurve_t;
+struct intradayPowerCurve_ShapeQuoteName_t;
+struct intradayPowerCurve_Convention_t;
 struct conventions;
 struct zeroType;
 struct zeroType_Id_t;
@@ -1478,6 +1509,7 @@ struct cmsSpreadOptionType_Calendar_t;
 struct commodityForwardType;
 struct commodityForwardType_Id_t;
 struct commodityForwardType_AdvanceCalendar_t;
+struct commodityForwardType_DeliveryLocation_t;
 struct commodityFutureType;
 struct commodityFutureType_Id_t;
 struct commodityFutureType_AnchorDay_t;
@@ -1500,6 +1532,7 @@ struct offPeakPowerIndexDataType_PeakIndex_t;
 struct offPeakPowerIndexDataType_PeakCalendar_t;
 struct commodityFutureType_IndexName_t;
 struct commodityFutureType_SavingsTime_t;
+struct commodityFutureType_DeliveryLocation_t;
 struct commodityFutureType_BalanceOfTheMonthPricingCalendar_t;
 struct commodityFutureType_OptionUnderlyingFutureConvention_t;
 struct fxOption;
@@ -1527,10 +1560,14 @@ struct zeroInflationIndexType_Id_t;
 struct zeroInflationIndexType_RegionName_t;
 struct zeroInflationIndexType_RegionCode_t;
 struct zeroInflationIndexType_AvailabilityLag_t;
+struct zeroInflationIndexType_RebasingEvents_t;
+struct zeroInflationIndexType_RebasingEvents_t_Event_t;
 struct bondYield;
 struct bondYield_Id_t;
 struct bondYield_Compounding_t;
 struct bondYield_PriceType_t;
+struct intradayPowerLoad;
+struct intradayPowerLoad_Id_t;
 struct collateralBalances;
 struct collateralBalances_CollateralBalance_t;
 struct nettingsetdefinitions;
@@ -1577,6 +1614,8 @@ struct configurationType_SecuritiesId_t;
 struct configurationType_CommodityCurvesId_t;
 struct configurationType_CommodityVolatilitiesId_t;
 struct configurationType_CorrelationsId_t;
+struct configurationType_BondFutureVolatilitiesId_t;
+struct configurationType_IntradayPowerPriceCurvesId_t;
 struct yieldCurvesType;
 struct yieldCurvesType_YieldCurve_t;
 struct discountCurvesType;
@@ -1621,6 +1660,10 @@ struct commodityVolatilitiesType;
 struct commodityVolatilitiesType_CommodityVolatility_t;
 struct correlationsType;
 struct correlationsType_Correlation_t;
+struct bondFutureVolatilitiesType;
+struct bondFutureVolatilitiesType_BondFutureVolatility_t;
+struct intradayPowerPriceCurvesType;
+struct intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t;
 struct sensitivityanalysis;
 struct parExcludes;
 struct parExcludes_Type_t;
@@ -1723,6 +1766,10 @@ struct commodityCurves;
 struct commodityCurve;
 struct commodityCurve_Shifts_t;
 struct commodityCurve_ShiftTenors_t;
+struct intradaypowercurves;
+struct intradaypowercurve;
+struct intradaypowercurve_Shifts_t;
+struct intradaypowercurve_ShiftTenors_t;
 struct commodityvolatilities;
 struct commodityvolatility;
 struct commodityvolatility_Shifts_t;
@@ -1733,11 +1780,17 @@ struct correlationcurve;
 struct correlationcurve_Shifts_t;
 struct correlationcurve_ShiftExpiries_t;
 struct correlationcurve_ShiftStrikes_t;
+struct sensiBondFutureVolatilities;
+struct sensiBondFutureVolatility;
+struct sensiBondFutureVolatility_Shifts_t;
+struct sensiBondFutureVolatility_ShiftExpiries_t;
+struct sensiBondFutureVolatility_ShiftStrikes_t;
 struct crossgammafilter;
 struct crossgammafilter_Pair_t;
 struct setRiskFactorKeyTypes;
 struct stresstesting;
 struct stresstest;
+struct stresstest_Date_t;
 struct stresstestparshifts;
 struct stressdiscountcurves;
 struct stressdiscountcurve;
@@ -1762,6 +1815,12 @@ struct stressfxvolatility_WeightedShifts_t_Shift_t;
 struct stressfxvolatility_WeightedShifts_t_Tenor_t;
 struct stressfxvolatility_WeightedShifts_t_ShiftWeights_t;
 struct stressfxvolatility_WeightedShifts_t_WeightTenors_t;
+struct stressswaptionvolatilities;
+struct stressswaptionvolatility;
+struct stressswaptionvolatility_Shifts_t;
+struct stressswaptionvolatility_Shifts_t_Shift_t;
+struct stressswaptionvolatility_ShiftExpiries_t;
+struct stressswaptionvolatility_ShiftTerms_t;
 struct stresscapfloorvolatilities;
 struct stresscapfloorvolatility;
 struct stresscapfloorvolatility_Shifts_t;
@@ -1772,6 +1831,10 @@ struct stresscommoditycurves;
 struct stresscommoditycurve;
 struct stresscommoditycurve_Shifts_t;
 struct stresscommoditycurve_ShiftTenors_t;
+struct stressintradaypowercurves;
+struct stressintradaypowercurve;
+struct stressintradaypowercurve_Shifts_t;
+struct stressintradaypowercurve_ShiftTenors_t;
 struct stresscommodityvolatilities;
 struct stresscommodityvolatility;
 struct stresscommodityvolatility_Shifts_t;
@@ -2151,6 +2214,8 @@ struct curveconfiguration {
     xsd::optional<domain::simCommodityCurves> CommodityCurves;
     xsd::optional<domain::commodityVolatilities> CommodityVolatilities;
     xsd::optional<domain::correlations> Correlations;
+    xsd::optional<domain::bondFutureVolatilities> BondFutureVolatilities;
+    xsd::optional<domain::intradayPowerCurves> IntradayPowerCurves;
 };
 
 struct conventions {
@@ -2179,6 +2244,7 @@ struct conventions {
     xsd::vector<domain::fxOptionTimeWeighting> FxOptionTimeWeighting;
     xsd::vector<domain::zeroInflationIndexType> ZeroInflationIndex;
     xsd::vector<domain::bondYield> BondYield;
+    xsd::vector<domain::intradayPowerLoad> IntradayPowerLoad;
 };
 
 struct collateralBalances {
@@ -2218,6 +2284,8 @@ struct todaysmarket {
     xsd::vector<domain::commodityCurvesType> CommodityCurves;
     xsd::vector<domain::commodityVolatilitiesType> CommodityVolatilities;
     xsd::vector<domain::correlationsType> Correlations;
+    xsd::vector<domain::bondFutureVolatilitiesType> BondFutureVolatilities;
+    xsd::vector<domain::intradayPowerPriceCurvesType> IntradayPowerPriceCurves;
 };
 
 enum class parConversionMatrixRegularisation {
@@ -2228,16 +2296,14 @@ enum class parConversionMatrixRegularisation {
 
 ORES_ORE_CORE_EXPORT std::string to_string(parConversionMatrixRegularisation);
 
-struct discountcurves {
-    xsd::vector<domain::discountcurve> DiscountCurve;
-};
+typedef xsd::string period;
 
 struct sensitivityanalysis {
     xsd::optional<domain::parExcludes> ParConversionExcludes;
     xsd::optional<domain::sensitivityanalysis_ParSensiRemoveFixing_t> ParSensiRemoveFixing;
     xsd::optional<domain::parConversionMatrixRegularisation> ParConversionMatrixRegularisation;
     xsd::optional<bool> ParConversion;
-    domain::discountcurves DiscountCurves{};
+    xsd::optional<domain::discountcurves> DiscountCurves;
     xsd::optional<domain::indexcurves> IndexCurves;
     xsd::optional<domain::yieldcurves> YieldCurves;
     xsd::optional<domain::fxspots> FxSpots;
@@ -2257,10 +2323,13 @@ struct sensitivityanalysis {
     xsd::optional<domain::basecorrelations> BaseCorrelations;
     xsd::optional<domain::securityspreads> SecuritySpreads;
     xsd::optional<domain::commodityCurves> CommodityCurves;
+    xsd::optional<domain::intradaypowercurves> IntradayPowerCurves;
     xsd::optional<domain::commodityvolatilities> CommodityVolatilities;
     xsd::optional<domain::correlationcurves> Correlations;
+    xsd::optional<domain::sensiBondFutureVolatilities> BondFutureVolatilities;
     xsd::optional<domain::crossgammafilter> CrossGammaFilter;
     xsd::optional<domain::bool_> ComputeGamma;
+    xsd::optional<domain::period> ThetaPeriod;
     xsd::optional<domain::bool_> UseSpreadedTermStructures;
     xsd::optional<domain::setRiskFactorKeyTypes> TwoSidedDeltaKeyTypes;
 };
@@ -2283,6 +2352,7 @@ struct ore {
     xsd::optional<domain::parameterListType> Logging;
     xsd::optional<domain::parameterListType> Markets;
     domain::analyticsType Analytics{};
+    xsd::optional<domain::parameterListType> Restore;
 };
 
 struct calendaradjustment {
@@ -2382,6 +2452,7 @@ enum class oreTradeType {
     EquityVarianceSwap,
     EquityCliquetOption,
     CommodityForward,
+    IntradayPowerForward,
     CommodityOption,
     CommodityDigitalAveragePriceOption,
     CommodityDigitalOption,
@@ -2395,7 +2466,11 @@ enum class oreTradeType {
     CommodityVarianceSwap,
     Bond,
     ForwardBond,
+    FxForwardVolatilityAgreement,
+    EquityForwardVolatilityAgreement,
+    CommodityForwardVolatilityAgreement,
     BondFuture,
+    BondFutureOption,
     CreditDefaultSwap,
     CreditDefaultSwapOption,
     Failed,
@@ -2439,12 +2514,14 @@ enum class oreTradeType {
     FxRainbowOption,
     EquityRainbowOption,
     CommodityRainbowOption,
+    ForwardVolatilityAgreement,
     KnockOutSwap,
     CashPosition,
     RateDigitalOption,
     CommodityStrikeResettableOption,
     FxStrikeResettableOption,
     EquityStrikeResettableOption,
+    EquityAutoDeltaHedgedOption,
 };
 
 ORES_ORE_CORE_EXPORT std::string to_string(oreTradeType);
@@ -2497,9 +2574,11 @@ struct trade {
     xsd::optional<domain::bondData> BondData;
     xsd::optional<domain::forwardBondData> ForwardBondData;
     xsd::optional<domain::bondFutureData> BondFutureData;
+    xsd::optional<domain::bondFutureOptionData> BondFutureOptionData;
     xsd::optional<domain::creditDefaultSwapData> CreditDefaultSwapData;
     xsd::optional<domain::creditDefaultSwapOptionData> CreditDefaultSwapOptionData;
     xsd::optional<domain::commodityForwardData> CommodityForwardData;
+    xsd::optional<domain::intradayPowerForwardData> IntradayPowerForwardData;
     xsd::optional<domain::commodityOptionData> CommodityOptionData;
     xsd::optional<domain::commodityDigitalAveragePriceOptionData>
         CommodityDigitalAveragePriceOptionData;
@@ -2562,6 +2641,9 @@ struct trade {
     xsd::optional<domain::dualEuroBinaryOptionData> DualEuroBinaryOptionData;
     xsd::optional<domain::dualEuroBinaryOptionDoubleKOData> DualEuroBinaryOptionDoubleKOData;
     xsd::optional<domain::volBarrierOptionData> VolatilityBarrierOptionData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> FxForwardVolatilityAgreementData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> EquityForwardVolatilityAgreementData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> CommodityForwardVolatilityAgreementData;
     xsd::optional<domain::tarfData2> FxTaRFData;
     xsd::optional<domain::tarfData2> EquityTaRFData;
     xsd::optional<domain::tarfData2> CommodityTaRFData;
@@ -2813,7 +2895,9 @@ struct market {
     xsd::optional<domain::market_CPICapFloorVolatilities_t> CPICapFloorVolatilities;
     xsd::optional<domain::market_YYCapFloorVolatilities_t> YYCapFloorVolatilities;
     xsd::optional<domain::market_Commodities_t> Commodities;
+    xsd::optional<domain::market_IntradayPowerCurves_t> IntradayPowerCurves;
     xsd::optional<domain::market_CommodityVolatilities_t> CommodityVolatilities;
+    xsd::optional<domain::market_BondFutureVolatilities_t> BondFutureVolatilities;
     xsd::optional<domain::market_AggregationScenarioDataCurrencies_t>
         AggregationScenarioDataCurrencies;
     xsd::optional<domain::market_AggregationScenarioDataIndices_t> AggregationScenarioDataIndices;
@@ -3025,6 +3109,7 @@ struct globalReportConfiguration {
     xsd::optional<domain::globalReportConfiguration_YieldCurves_t> YieldCurves;
     xsd::optional<domain::globalReportConfiguration_InflationCapFloorVolatilities_t>
         InflationCapFloorVolatilities;
+    xsd::optional<domain::globalReportConfiguration_DefaultCurves_t> DefaultCurves;
 };
 
 struct fxSpots {
@@ -3093,6 +3178,14 @@ struct commodityVolatilities {
 
 struct correlations {
     xsd::vector<domain::correlation> Correlation;
+};
+
+struct bondFutureVolatilities {
+    xsd::vector<domain::bondFutureVolatility> BondFutureVolatility;
+};
+
+struct intradayPowerCurves {
+    xsd::vector<domain::intradayPowerCurve> IntradayPowerCurve;
 };
 
 struct zeroType_Id_t : xsd::string {};
@@ -3193,6 +3286,7 @@ enum class dateRule {
     TuesdayAfterThirdFriday,
     LastWednesday,
     EveryThursday,
+    EighthBusinessDay,
     _,
 };
 
@@ -3210,6 +3304,7 @@ struct cdsConventionsType {
     domain::bool_ SettlesAccrual{};
     domain::bool_ PaysAtDefaultTime{};
     xsd::optional<domain::dayCounter> LastPeriodDayCounter;
+    xsd::optional<domain::bool_> UsesReferenceData;
 };
 
 struct depositType_Id_t : xsd::string {};
@@ -3236,6 +3331,7 @@ enum class futureDateGenerationRule {
     SecondThursday,
     IMMNZD,
     IMMCAD,
+    IMMEUR,
 };
 
 ORES_ORE_CORE_EXPORT std::string to_string(futureDateGenerationRule);
@@ -3335,8 +3431,6 @@ struct averageOISType {
 
 struct tenorBasisSwapType_Id_t : xsd::string {};
 
-typedef xsd::string period;
-
 struct tenorBasisSwapType {
     domain::tenorBasisSwapType_Id_t Id{};
     xsd::optional<domain::tenorBasisSwapType_PayIndex_t> PayIndex;
@@ -3346,6 +3440,8 @@ struct tenorBasisSwapType {
     xsd::optional<domain::bool_> SpreadOnRec;
     xsd::optional<domain::bool_> IncludeSpread;
     xsd::optional<domain::subPeriodsCouponType> SubPeriodsCouponType;
+    xsd::optional<domain::bool_> PayIsAveraged;
+    xsd::optional<domain::bool_> RecIsAveraged;
     xsd::optional<domain::tenorBasisSwapType_LongIndex_t> LongIndex;
     xsd::optional<domain::period> LongPayTenor;
     xsd::optional<domain::tenorBasisSwapType_ShortIndex_t> ShortIndex;
@@ -3569,6 +3665,7 @@ struct commodityForwardType {
     xsd::optional<double> PointsFactor;
     xsd::optional<domain::commodityForwardType_AdvanceCalendar_t> AdvanceCalendar;
     xsd::optional<domain::bool_> SpotRelative;
+    xsd::optional<domain::commodityForwardType_DeliveryLocation_t> DeliveryLocation;
     xsd::optional<domain::businessDayConvention> BusinessDayConvention;
     xsd::optional<domain::bool_> Outright;
 };
@@ -3639,6 +3736,7 @@ struct commodityFutureType {
     xsd::optional<domain::offPeakPowerIndexDataType> OffPeakPowerIndexData;
     xsd::optional<domain::commodityFutureType_IndexName_t> IndexName;
     xsd::optional<domain::commodityFutureType_SavingsTime_t> SavingsTime;
+    xsd::optional<domain::commodityFutureType_DeliveryLocation_t> DeliveryLocation;
     xsd::optional<domain::bool_> BalanceOfTheMonth;
     xsd::optional<domain::commodityFutureType_BalanceOfTheMonthPricingCalendar_t>
         BalanceOfTheMonthPricingCalendar;
@@ -3699,6 +3797,7 @@ struct zeroInflationIndexType {
     domain::frequencyType Frequency{};
     domain::zeroInflationIndexType_AvailabilityLag_t AvailabilityLag{};
     domain::currencyCode Currency{};
+    xsd::optional<domain::zeroInflationIndexType_RebasingEvents_t> RebasingEvents;
 };
 
 struct bondYield_Id_t : xsd::string {};
@@ -3713,6 +3812,13 @@ struct bondYield {
     xsd::optional<float> Accuracy;
     xsd::optional<int64_t> MaxEvaluations;
     xsd::optional<float> Guess;
+};
+
+struct intradayPowerLoad_Id_t : xsd::string {};
+
+struct intradayPowerLoad {
+    domain::intradayPowerLoad_Id_t Id{};
+    xsd::optional<domain::powerLoadProfileDataType> PowerLoadProfileData;
 };
 
 struct nettingSetGroup_group_t {
@@ -3785,6 +3891,9 @@ struct configurationType {
     xsd::optional<domain::configurationType_CommodityCurvesId_t> CommodityCurvesId;
     xsd::optional<domain::configurationType_CommodityVolatilitiesId_t> CommodityVolatilitiesId;
     xsd::optional<domain::configurationType_CorrelationsId_t> CorrelationsId;
+    xsd::optional<domain::configurationType_BondFutureVolatilitiesId_t> BondFutureVolatilitiesId;
+    xsd::optional<domain::configurationType_IntradayPowerPriceCurvesId_t>
+        IntradayPowerPriceCurvesId;
 };
 
 struct yieldCurvesType {
@@ -3900,22 +4009,25 @@ struct correlationsType {
     xsd::vector<domain::correlationsType_Correlation_t> Correlation;
 };
 
+struct bondFutureVolatilitiesType {
+    xsd::optional<xsd::string> id;
+    xsd::vector<domain::bondFutureVolatilitiesType_BondFutureVolatility_t> BondFutureVolatility;
+};
+
+struct intradayPowerPriceCurvesType {
+    xsd::optional<xsd::string> id;
+    xsd::vector<domain::intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t>
+        IntradayPowerPriceCurve;
+};
+
 struct parExcludes {
     xsd::vector<domain::parExcludes_Type_t> Type;
 };
 
 struct sensitivityanalysis_ParSensiRemoveFixing_t : xsd::string {};
 
-struct discountcurve_ShiftTenors_t : xsd::string {};
-
-struct discountcurve {
-    domain::currencyCode ccy{};
-    xsd::vector<domain::shiftTypeEntry> ShiftType;
-    xsd::vector<domain::shiftSizeEntry> ShiftSize;
-    xsd::optional<domain::discountcurve_Shifts_t> Shifts;
-    xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
-    domain::discountcurve_ShiftTenors_t ShiftTenors{};
-    xsd::optional<domain::parconversion> ParConversion;
+struct discountcurves {
+    xsd::vector<domain::discountcurve> DiscountCurve;
 };
 
 struct indexcurves {
@@ -3994,12 +4106,20 @@ struct commodityCurves {
     xsd::vector<domain::commodityCurve> CommodityCurve;
 };
 
+struct intradaypowercurves {
+    xsd::vector<domain::intradaypowercurve> IntradayPowerCurve;
+};
+
 struct commodityvolatilities {
     xsd::vector<domain::commodityvolatility> CommodityVolatility;
 };
 
 struct correlationcurves {
     xsd::vector<domain::correlationcurve> Correlation;
+};
+
+struct sensiBondFutureVolatilities {
+    xsd::vector<domain::sensiBondFutureVolatility> BondFutureVolatility;
 };
 
 struct crossgammafilter {
@@ -4042,17 +4162,19 @@ struct setRiskFactorKeyTypes {
 
 struct stresstest {
     xsd::string id{};
+    xsd::optional<domain::stresstest_Date_t> Date;
     xsd::optional<domain::stresstestparshifts> ParShifts;
     xsd::optional<domain::stressdiscountcurves> DiscountCurves;
     xsd::optional<domain::stressindexcurves> IndexCurves;
     xsd::optional<domain::stressyieldcurves> YieldCurves;
     xsd::optional<domain::fxspots> FxSpots;
     xsd::optional<domain::stressfxvolatilities> FxVolatilities;
-    xsd::optional<domain::swaptionvolatilities> SwaptionVolatilities;
+    xsd::optional<domain::stressswaptionvolatilities> SwaptionVolatilities;
     xsd::optional<domain::stresscapfloorvolatilities> CapFloorVolatilities;
     xsd::optional<domain::equityspots> EquitySpots;
     xsd::optional<domain::equityvolatilities> EquityVolatilities;
     xsd::optional<domain::stresscommoditycurves> CommodityCurves;
+    xsd::optional<domain::stressintradaypowercurves> IntradayPowerCurves;
     xsd::optional<domain::stresscommodityvolatilities> CommodityVolatilities;
     xsd::optional<domain::securityspreads> SecuritySpreads;
     xsd::optional<domain::recoveryrates> RecoveryRates;
@@ -4142,7 +4264,7 @@ struct stFreeStyleIndex : xsd::string {
 
 struct stFreeStyleEventScheduleBase {
     xsd::optional<domain::scheduleData> ScheduleData;
-    xsd::optional<domain::stFreeStyleEventScheduleBase_DerivedSchedule_t> DerivedSchedule;
+    xsd::optional<domain::DerivedScheduleType> DerivedSchedule;
 };
 
 struct stFreeStyleEventSchedule : domain::stFreeStyleEventScheduleBase {
@@ -4246,6 +4368,7 @@ struct fxForwardData {
 };
 
 struct scheduleData {
+    xsd::optional<xsd::string> name;
     xsd::vector<domain::scheduleData_Rules_t> Rules;
     xsd::vector<domain::scheduleData_Dates_t> Dates;
     xsd::vector<domain::DerivedScheduleGroup_group_t> DerivedScheduleGroup;
@@ -4318,9 +4441,61 @@ struct fxOptionData {
     xsd::optional<domain::fxOptionData_FXIndex_t> FXIndex;
 };
 
+enum class barrierType {
+    UpAndOut,
+    UpAndIn,
+    DownAndOut,
+    DownAndIn,
+    KnockIn,
+    KnockOut,
+    CumulatedProfitCap,
+    CumulatedProfitCapPoints,
+    FixingCap,
+    FixingFloor,
+};
+
+ORES_ORE_CORE_EXPORT std::string to_string(barrierType);
+
+enum class barrierCompare {
+    _0,
+    _1,
+    _2,
+};
+
+ORES_ORE_CORE_EXPORT std::string to_string(barrierCompare);
+
+enum class barrierStyle {
+    American,
+    European,
+};
+
+ORES_ORE_CORE_EXPORT std::string to_string(barrierStyle);
+
+struct barrierData_Levels_t {
+    xsd::vector<float> Level;
+};
+
+enum class barrierData_RebatePayTime_t {
+    atHit,
+    atExpiry,
+};
+
+ORES_ORE_CORE_EXPORT std::string to_string(barrierData_RebatePayTime_t);
+
+struct barrierData {
+    domain::barrierType Type{};
+    xsd::optional<domain::barrierCompare> StrictComparison;
+    xsd::optional<domain::barrierStyle> Style;
+    domain::barrierData_Levels_t Levels{};
+    xsd::optional<float> Rebate;
+    xsd::optional<domain::currencyCode> RebateCurrency;
+    xsd::optional<domain::barrierData_RebatePayTime_t> RebatePayTime;
+    xsd::optional<domain::bool_> OverrideTriggered;
+};
+
 struct fxBarrierOptionData {
-    xsd::vector<domain::optionData> OptionData;
-    xsd::vector<domain::barrierData> BarrierData;
+    domain::optionData OptionData{};
+    domain::barrierData BarrierData{};
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::fxBarrierOptionData_FXIndex_t> FXIndex;
@@ -4333,7 +4508,7 @@ struct fxBarrierOptionData {
 };
 
 struct fxDigitalOptionData {
-    xsd::vector<domain::optionData> OptionData;
+    domain::optionData OptionData{};
     float Strike{};
     xsd::optional<domain::currencyCode> PayoffCurrency;
     float PayoffAmount{};
@@ -4358,8 +4533,8 @@ struct fxKIKOBarrierOptionData {
 };
 
 struct fxDigitalBarrierOptionData {
-    xsd::vector<domain::optionData> OptionData;
-    xsd::vector<domain::barrierData> BarrierData;
+    domain::optionData OptionData{};
+    domain::barrierData BarrierData{};
     xsd::optional<domain::date> StartDate;
     xsd::optional<domain::calendar> Calendar;
     xsd::optional<domain::fxDigitalBarrierOptionData_FXIndex_t> FXIndex;
@@ -4373,8 +4548,8 @@ struct fxDigitalBarrierOptionData {
 };
 
 struct fxTouchOptionData {
-    xsd::vector<domain::optionData> OptionData;
-    xsd::vector<domain::barrierData> BarrierData;
+    domain::optionData OptionData{};
+    domain::barrierData BarrierData{};
     domain::currencyCode ForeignCurrency{};
     domain::currencyCode DomesticCurrency{};
     domain::currencyCode PayoffCurrency{};
@@ -4412,6 +4587,7 @@ enum class legType {
     Equity,
     FormulaBased,
     ZeroCouponFixed,
+    IntradayPowerFloating,
     CommodityFixed,
     CommodityFloating,
     EquityMargin,
@@ -4422,6 +4598,20 @@ enum class legType {
 ORES_ORE_CORE_EXPORT std::string to_string(legType);
 
 typedef xsd::string paymentLag;
+
+enum class dateDeltaUnit {
+    CalendarDays,
+    BusinessDays,
+};
+
+std::string to_string(dateDeltaUnit);
+
+enum class dateDeltaAnchor {
+    Adjusted,
+    Unadjusted,
+};
+
+std::string to_string(dateDeltaAnchor);
 
 struct legData_capfloor_Notionals_t {
     xsd::vector<domain::legData_capfloor_Notionals_t_Notional_t> Notional;
@@ -4447,6 +4637,7 @@ struct legDataType_group_t {
     xsd::optional<domain::_EquityMarginLegData_t> EquityMarginLegData;
     xsd::optional<domain::_CommodityFixedLegData_t> CommodityFixedLegData;
     xsd::optional<domain::_CommodityFloatingLegData_t> CommodityFloatingLegData;
+    xsd::optional<domain::_IntradayPowerFloatingLegData_t> IntradayPowerFloatingLegData;
     xsd::optional<domain::_FormulaBasedLegData_t> FormulaBasedLegData;
 };
 
@@ -4457,6 +4648,8 @@ struct legData_capfloor {
     domain::dayCounter DayCounter{};
     xsd::optional<domain::businessDayConvention> PaymentConvention;
     xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<domain::dateDeltaUnit> PaymentLagUnit;
+    xsd::optional<domain::dateDeltaAnchor> PaymentLagAnchor;
     xsd::optional<domain::legData_capfloor_PaymentCalendar_t> PaymentCalendar;
     domain::legData_capfloor_Notionals_t Notionals{};
     domain::scheduleData ScheduleData{};
@@ -4521,58 +4714,7 @@ struct equityAutoDeltaHedgedOptionData {
     float DriftRate{};
     domain::equityAutoDeltaHedgedOptionData_Underlyings_t Underlyings{};
     domain::date ObservationStartDate{};
-};
-
-enum class barrierType {
-    UpAndOut,
-    UpAndIn,
-    DownAndOut,
-    DownAndIn,
-    KnockIn,
-    KnockOut,
-    CumulatedProfitCap,
-    CumulatedProfitCapPoints,
-    FixingCap,
-    FixingFloor,
-};
-
-ORES_ORE_CORE_EXPORT std::string to_string(barrierType);
-
-enum class barrierCompare {
-    _0,
-    _1,
-    _2,
-};
-
-ORES_ORE_CORE_EXPORT std::string to_string(barrierCompare);
-
-enum class barrierStyle {
-    American,
-    European,
-};
-
-ORES_ORE_CORE_EXPORT std::string to_string(barrierStyle);
-
-struct barrierData_Levels_t {
-    xsd::vector<float> Level;
-};
-
-enum class barrierData_RebatePayTime_t {
-    atHit,
-    atExpiry,
-};
-
-ORES_ORE_CORE_EXPORT std::string to_string(barrierData_RebatePayTime_t);
-
-struct barrierData {
-    domain::barrierType Type{};
-    xsd::optional<domain::barrierCompare> StrictComparison;
-    xsd::optional<domain::barrierStyle> Style;
-    domain::barrierData_Levels_t Levels{};
-    xsd::optional<float> Rebate;
-    xsd::optional<domain::currencyCode> RebateCurrency;
-    xsd::optional<domain::barrierData_RebatePayTime_t> RebatePayTime;
-    xsd::optional<domain::bool_> OverrideTriggered;
+    domain::date PaymentDate{};
 };
 
 struct eqBarrierOptionData {
@@ -4706,20 +4848,17 @@ struct bondFutureData {
     domain::bondFutureData_ContractName_t ContractName{};
     domain::bondFutureData_ContractNotional_t ContractNotional{};
     domain::bondFutureData_LongShort_t LongShort{};
-    xsd::optional<domain::currencyCode> Currency;
-    xsd::optional<domain::bondFutureData_ContractMonth_t> ContractMonth;
-    xsd::optional<domain::bondFutureData_DeliverableGrade_t> DeliverableGrade;
-    xsd::optional<domain::bondFutureData_FairPrice_t> FairPrice;
-    xsd::optional<domain::bondFutureData_Settlement_t> Settlement;
-    xsd::optional<domain::bondFutureData_SettlementDirty_t> SettlementDirty;
-    xsd::optional<domain::bondFutureData_RootDate_t> RootDate;
-    xsd::optional<domain::bondFutureData_ExpiryBasis_t> ExpiryBasis;
-    xsd::optional<domain::bondFutureData_SettlementBasis_t> SettlementBasis;
-    xsd::optional<domain::bondFutureData_ExpiryLag_t> ExpiryLag;
-    xsd::optional<domain::bondFutureData_SettlementLag_t> SettlementLag;
-    xsd::optional<domain::bondFutureData_LastTradingDate_t> LastTradingDate;
-    xsd::optional<domain::bondFutureData_LastDeliveryDate_t> LastDeliveryDate;
-    xsd::optional<domain::deliveryBasket> DeliveryBasket;
+    xsd::optional<bool> ApplyConversionFactor;
+    xsd::optional<bool> UseFuturePrice;
+};
+
+struct bondFutureOptionData_ContractName_t : xsd::string {};
+
+struct bondFutureOptionData {
+    domain::optionData OptionData{};
+    domain::bondFutureOptionData_ContractName_t ContractName{};
+    float ContractNotional{};
+    domain::strikeGroup_group_t strikeGroup{};
 };
 
 struct creditCurveIdType_group_t {
@@ -4733,7 +4872,11 @@ struct legData {
     xsd::optional<domain::extendedCurrencyCode> Currency;
     xsd::optional<domain::businessDayConvention> PaymentConvention;
     xsd::optional<domain::paymentLag> PaymentLag;
+    xsd::optional<domain::dateDeltaUnit> PaymentLagUnit;
+    xsd::optional<domain::dateDeltaAnchor> PaymentLagAnchor;
     xsd::optional<int64_t> NotionalPaymentLag;
+    xsd::optional<domain::dateDeltaUnit> NotionalPaymentLagUnit;
+    xsd::optional<domain::dateDeltaAnchor> NotionalPaymentLagAnchor;
     xsd::optional<domain::legData_PaymentCalendar_t> PaymentCalendar;
     xsd::optional<domain::dayCounter> DayCounter;
     xsd::optional<domain::legData_Amortizations_t> Amortizations;
@@ -4800,13 +4943,32 @@ struct commodityForwardData {
     xsd::optional<domain::commForwardSettlementData> SettlementData;
 };
 
+struct intradayPowerForwardData_Name_t : xsd::string {};
+
+struct intradayPowerForwardData {
+    domain::longShort Position{};
+    domain::date Maturity{};
+    domain::intradayPowerForwardData_Name_t Name{};
+    domain::currencyCode Currency{};
+    float Strike{};
+    float Quantity{};
+    domain::date DeliveryDate{};
+    xsd::optional<int64_t> DeliveryStart;
+    xsd::optional<int64_t> DeliveryEnd;
+    xsd::optional<bool> IsDstHour;
+    xsd::optional<domain::powerLoadProfileDataType> PowerLoadProfileData;
+    xsd::optional<domain::bool_> PhysicallySettled;
+    xsd::optional<domain::date> PaymentDate;
+    xsd::optional<domain::commForwardSettlementData> SettlementData;
+};
+
 struct commodityOptionData_Name_t : xsd::string {};
 
 struct commodityOptionData {
     domain::optionData OptionData{};
     domain::commodityOptionData_Name_t Name{};
     domain::currencyCode Currency{};
-    float Strike{};
+    domain::strikeGroup_group_t strikeGroup{};
     float Quantity{};
     xsd::optional<domain::bool_> IsFuturePrice;
     xsd::optional<domain::date> FutureExpiryDate;
@@ -4997,6 +5159,8 @@ struct totalReturnData {
     xsd::optional<domain::fxTermsData> FXTerms;
     domain::scheduleData ScheduleData{};
     xsd::optional<bool> PayBondCashFlowsImmediately;
+    xsd::optional<domain::dateDeltaUnit> PaymentLagUnit;
+    xsd::optional<domain::dateDeltaAnchor> PaymentLagAnchor;
 };
 
 struct fundingData {
@@ -5186,6 +5350,8 @@ struct trsReturnData {
     xsd::optional<domain::extendedCurrencyCode> InitialPriceCurrency;
     xsd::optional<domain::fxTermsData> FXTerms;
     xsd::optional<bool> PayUnderlyingCashFlowsImmediately;
+    xsd::optional<domain::dateDeltaUnit> PaymentLagUnit;
+    xsd::optional<domain::dateDeltaAnchor> PaymentLagAnchor;
 };
 
 struct totalReturnSwapData {
@@ -5277,7 +5443,7 @@ struct underlying {
     domain::underlying_Type_t Type{};
     domain::underlying_Name_t Name{};
     xsd::optional<domain::underlying_IdentifierType_t> IdentifierType;
-    xsd::optional<domain::currencyCode> Currency;
+    xsd::optional<domain::extendedCurrencyCode> Currency;
     xsd::optional<domain::underlying_Exchange_t> Exchange;
     xsd::optional<float> Weight;
     xsd::optional<domain::underlying_PriceType_t> PriceType;
@@ -5691,6 +5857,23 @@ struct volBarrierOptionData {
     domain::stFreeStyleCurrency PayCcy{};
     domain::stFreeStyleCurrency CallCcy{};
     domain::stFreeStyleCurrency PutCcy{};
+};
+
+struct forwardVolatilityAgreementData2 {
+    domain::date FvaDate{};
+    domain::date OptionExpiry{};
+    domain::date PremiumDate{};
+    domain::underlying Underlying{};
+    domain::longShort LongShort{};
+    float ImpliedVolStrike{};
+    float Quantity{};
+    domain::currencyCode PayCcy{};
+    domain::date SettlementDate{};
+    xsd::optional<float> UnderlyingStrike;
+    xsd::optional<domain::dayCounter> DayCountFraction;
+    xsd::optional<float> DividendYield;
+    xsd::optional<float> FixedRate;
+    xsd::optional<domain::forwardVolatilityAgreementData2_PayoffType_t> PayoffType;
 };
 
 struct tarfData2_Barriers_t {
@@ -6768,6 +6951,7 @@ struct market_YieldCurves_t_Configuration_t_Tenors_t : xsd::string {};
 enum class ycInterpolation {
     LogLinear,
     LinearZero,
+    LogCubic,
 };
 
 ORES_ORE_CORE_EXPORT std::string to_string(ycInterpolation);
@@ -6792,11 +6976,19 @@ enum class ycExtrapolation {
 
 ORES_ORE_CORE_EXPORT std::string to_string(ycExtrapolation);
 
+enum class ycRollDown {
+    ConstantDiscounts,
+    ForwardForward,
+};
+
+std::string to_string(ycRollDown);
+
 struct market_YieldCurves_t_Configuration_t {
     xsd::optional<xsd::string> curve;
     domain::market_YieldCurves_t_Configuration_t_Tenors_t Tenors{};
     xsd::optional<domain::ycInterpolation> Interpolation;
     xsd::optional<domain::ycExtrapolation> Extrapolation;
+    xsd::optional<domain::ycRollDown> RollDown;
     xsd::optional<domain::dayCounter> DayCounter;
 };
 
@@ -6834,6 +7026,7 @@ struct market_DefaultCurves_t {
     xsd::optional<domain::market_DefaultCurves_t_DayCounters_t> DayCounters;
     xsd::optional<domain::market_DefaultCurves_t_Calendars_t> Calendars;
     xsd::optional<domain::defaultCurveExtrapolation> Extrapolation;
+    xsd::optional<domain::ycRollDown> RollDown;
 };
 
 struct market_Equities_t_Names_t {
@@ -6910,6 +7103,8 @@ struct market_CapFloorVolatilities_t {
     xsd::optional<domain::bool_> AdjustOptionletPillars;
     xsd::optional<domain::bool_> UseCapAtm;
     xsd::vector<domain::market_CapFloorVolatilities_t_SmileDynamics_t> SmileDynamics;
+    xsd::vector<domain::market_CapFloorVolatilities_t_SmileForwardInteraction_t>
+        SmileForwardInteraction;
 };
 
 struct market_CDSVolatilities_t_Names_t {
@@ -7028,15 +7223,35 @@ struct market_YYCapFloorVolatilities_t {
     xsd::vector<domain::market_YYCapFloorVolatilities_t_SmileDynamics_t> SmileDynamics;
 };
 
+enum class priceRollDown {
+    Spot,
+    Forward,
+};
+
+std::string to_string(priceRollDown);
+
 struct market_Commodities_t_Names_t {
     xsd::vector<domain::market_Commodities_t_Names_t_Name_t> Name;
 };
 
 struct market_Commodities_t {
     xsd::optional<domain::bool_> Simulate;
+    xsd::optional<domain::priceRollDown> RollDown;
     domain::market_Commodities_t_Names_t Names{};
+    xsd::vector<domain::market_Commodities_t_Interpolation_t> Interpolation;
     xsd::vector<domain::market_Commodities_t_Tenors_t> Tenors;
     xsd::optional<domain::market_Commodities_t_DayCounters_t> DayCounters;
+};
+
+struct market_IntradayPowerCurves_t_Names_t {
+    xsd::vector<domain::market_IntradayPowerCurves_t_Names_t_Name_t> Name;
+};
+
+struct market_IntradayPowerCurves_t {
+    xsd::optional<domain::bool_> Simulate;
+    domain::market_IntradayPowerCurves_t_Names_t Names{};
+    xsd::vector<domain::market_IntradayPowerCurves_t_Interpolation_t> Interpolation;
+    xsd::vector<domain::market_IntradayPowerCurves_t_Tenors_t> Tenors;
 };
 
 struct market_CommodityVolatilities_t_Names_t {
@@ -7050,6 +7265,19 @@ struct market_CommodityVolatilities_t {
     domain::market_CommodityVolatilities_t_Names_t Names{};
     xsd::optional<domain::market_CommodityVolatilities_t_DayCounter_t> DayCounter;
     xsd::vector<domain::market_CommodityVolatilities_t_SmileDynamics_t> SmileDynamics;
+};
+
+struct market_BondFutureVolatilities_t_Names_t {
+    xsd::vector<domain::market_BondFutureVolatilities_t_Names_t_Name_t> Name;
+};
+
+struct market_BondFutureVolatilities_t {
+    xsd::optional<domain::bool_> Simulate;
+    xsd::optional<bool> SimulateATMOnly;
+    domain::timeDecayType ReactionToTimeDecay{};
+    domain::market_BondFutureVolatilities_t_Names_t Names{};
+    xsd::optional<domain::market_BondFutureVolatilities_t_DayCounter_t> DayCounter;
+    xsd::vector<domain::market_BondFutureVolatilities_t_SmileDynamics_t> SmileDynamics;
 };
 
 struct market_AggregationScenarioDataCurrencies_t {
@@ -7447,6 +7675,10 @@ struct globalReportConfiguration_InflationCapFloorVolatilities_t {
     xsd::optional<domain::reportConfiguration> Report;
 };
 
+struct globalReportConfiguration_DefaultCurves_t {
+    xsd::optional<domain::reportConfiguration> Report;
+};
+
 struct fxSpot_CurveId_t : xsd::string {};
 
 struct fxSpot_CurveDescription_t : xsd::string {};
@@ -7661,6 +7893,7 @@ struct capFloorVolatility {
     xsd::optional<domain::bool_> UseEffeciveVolatility;
     xsd::optional<domain::bootstrapConfigType> BootstrapConfig;
     xsd::optional<domain::reportConfiguration> Report;
+    xsd::optional<domain::bool_> UseEffectiveVolatility;
 };
 
 struct cdsVolatility_CurveId_t : xsd::string {};
@@ -7728,6 +7961,7 @@ struct defaultCurve {
     xsd::optional<domain::bool_> AllowNegativeRates;
     xsd::optional<domain::defaultCurve_InitialState_t> InitialState;
     xsd::optional<domain::defaultCurve_States_t> States;
+    xsd::optional<domain::bool_> PriceIsUpfront;
 };
 
 struct yieldCurve_CurveId_t : xsd::string {};
@@ -8112,6 +8346,54 @@ struct correlation {
     xsd::optional<domain::correlation_OptionTenors_t> OptionTenors;
 };
 
+struct bondFutureVolatility_CurveId_t : xsd::string {};
+
+struct bondFutureVolatility_CurveDescription_t : xsd::string {};
+
+struct bondFutureVolatility_ContractName_t : xsd::string {};
+
+enum class bondFutureVolatility_UseOnlyPutCall_t {
+    C,
+    P,
+};
+
+std::string to_string(bondFutureVolatility_UseOnlyPutCall_t);
+
+struct bondFutureVolatility {
+    domain::bondFutureVolatility_CurveId_t CurveId{};
+    domain::bondFutureVolatility_CurveDescription_t CurveDescription{};
+    domain::bondFutureVolatility_ContractName_t ContractName{};
+    xsd::optional<domain::volatilityConfig> VolatilityConfig;
+    xsd::optional<domain::volatilityStrikeSurfaceConfig> StrikeSurface;
+    xsd::optional<domain::dayCounter> DayCounter;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::bondFutureVolatility_YieldCurveId_t> YieldCurveId;
+    xsd::optional<domain::positiveDecimal> StrikeFactor;
+    xsd::optional<domain::bondFutureVolatility_UseOnlyPutCall_t> UseOnlyPutCall;
+    xsd::optional<domain::oneDimSolverConfigType> OneDimSolverConfig;
+    xsd::optional<domain::bool_> PreferOutOfTheMoney;
+    xsd::optional<domain::bool_> TreatAsEuropean;
+};
+
+struct intradayPowerCurve_CurveId_t : xsd::string {};
+
+struct intradayPowerCurve_CurveDescription_t : xsd::string {};
+
+struct intradayPowerCurve_DailyAveragePriceCurve_t : xsd::string {};
+
+struct intradayPowerCurve_ShapeQuoteName_t : xsd::string {};
+
+struct intradayPowerCurve_Convention_t : xsd::string {};
+
+struct intradayPowerCurve {
+    domain::intradayPowerCurve_CurveId_t CurveId{};
+    domain::intradayPowerCurve_CurveDescription_t CurveDescription{};
+    domain::currencyCode Currency{};
+    domain::intradayPowerCurve_DailyAveragePriceCurve_t DailyAveragePriceCurve{};
+    domain::intradayPowerCurve_ShapeQuoteName_t ShapeQuoteName{};
+    domain::intradayPowerCurve_Convention_t Convention{};
+};
+
 struct zeroType_TenorCalendar_t : xsd::string {};
 
 struct zeroType_SpotCalendar_t : xsd::string {};
@@ -8163,6 +8445,8 @@ struct swapIndexType_FixingCalendar_t : xsd::string {};
 struct inflationswapType_StartDelay_t : xsd::string {};
 
 struct commodityForwardType_AdvanceCalendar_t : xsd::string {};
+
+struct commodityForwardType_DeliveryLocation_t : xsd::string {};
 
 struct commodityFutureType_AnchorDay_t {
     xsd::optional<domain::nthWeekdayType> NthWeekday;
@@ -8241,6 +8525,8 @@ struct commodityFutureType_IndexName_t : xsd::string {};
 
 struct commodityFutureType_SavingsTime_t : xsd::string {};
 
+struct commodityFutureType_DeliveryLocation_t : xsd::string {};
+
 struct commodityFutureType_BalanceOfTheMonthPricingCalendar_t : xsd::string {};
 
 struct commodityFutureType_OptionUnderlyingFutureConvention_t : xsd::string {};
@@ -8283,7 +8569,16 @@ struct fxOptionTimeWeighting_Events_t {
     domain::fxOptionTimeWeighting_Events_t_Event_t Event{};
 };
 
+struct zeroInflationIndexType_RebasingEvents_t {
+    xsd::vector<domain::zeroInflationIndexType_RebasingEvents_t_Event_t> Event;
+};
+
 struct bondYield_PriceType_t : xsd::string {};
+
+struct powerLoadProfileDataType {
+    xsd::optional<domain::explicitLoadProfileType> ExplicitDates;
+    xsd::optional<domain::ruleBasedLoadProfileType> BusinessDayRules;
+};
 
 struct _NettingSetId_t : xsd::string {};
 
@@ -8381,6 +8676,10 @@ struct configurationType_CommodityVolatilitiesId_t : xsd::string {};
 
 struct configurationType_CorrelationsId_t : xsd::string {};
 
+struct configurationType_BondFutureVolatilitiesId_t : xsd::string {};
+
+struct configurationType_IntradayPowerPriceCurvesId_t : xsd::string {};
+
 struct yieldCurvesType_YieldCurve_t : xsd::string {
     xsd::string name{};
 };
@@ -8474,45 +8773,26 @@ struct correlationsType_Correlation_t : xsd::string {
     xsd::string name{};
 };
 
+struct bondFutureVolatilitiesType_BondFutureVolatility_t : xsd::string {
+    xsd::string name{};
+};
+
+struct intradayPowerPriceCurvesType_IntradayPowerPriceCurve_t : xsd::string {
+    xsd::string name{};
+};
+
 struct parExcludes_Type_t : xsd::string {};
 
-enum class shiftType {
-    Relative,
-    Absolute,
-    EqualTo,
-};
+struct discountcurve_ShiftTenors_t : xsd::string {};
 
-ORES_ORE_CORE_EXPORT std::string to_string(shiftType);
-
-struct shiftTypeEntry : xsd::base<domain::shiftType> {
-    xsd::optional<xsd::string> key;
-};
-
-struct shiftSizeEntry : xsd::base<float> {
-    xsd::optional<xsd::string> key;
-};
-
-struct discountcurve_Shifts_t : xsd::string {};
-
-enum class shiftScheme {
-    Forward,
-    Backward,
-    Central,
-};
-
-ORES_ORE_CORE_EXPORT std::string to_string(shiftScheme);
-
-struct shiftSchemeEntry : xsd::base<domain::shiftScheme> {
-    xsd::optional<xsd::string> key;
-};
-
-struct parconversion {
-    xsd::vector<domain::parconversion_Instruments_t> Instruments;
-    xsd::vector<bool> SingleCurve;
-    xsd::optional<domain::parconversion_DiscountCurve_t> DiscountCurve;
-    xsd::optional<domain::currencyCode> OtherCurrency;
-    xsd::optional<domain::parconversion_RateComputationPeriod_t> RateComputationPeriod;
-    xsd::optional<domain::parconversion_Conventions_t> Conventions;
+struct discountcurve {
+    domain::currencyCode ccy{};
+    xsd::vector<domain::shiftTypeEntry> ShiftType;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
+    xsd::optional<domain::discountcurve_Shifts_t> Shifts;
+    xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
+    domain::discountcurve_ShiftTenors_t ShiftTenors{};
+    xsd::optional<domain::parconversion> ParConversion;
 };
 
 struct indexcurve_ShiftTenors_t : xsd::string {};
@@ -8742,6 +9022,20 @@ struct commodityCurve {
     xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
     domain::commodityCurve_ShiftTenors_t ShiftTenors{};
     xsd::optional<domain::parconversion> ParConversion;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::businessDayConvention> BusinessDayConvention;
+};
+
+struct intradaypowercurve_ShiftTenors_t : xsd::string {};
+
+struct intradaypowercurve {
+    xsd::string name{};
+    xsd::vector<domain::shiftTypeEntry> ShiftType;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
+    xsd::optional<domain::intradaypowercurve_Shifts_t> Shifts;
+    xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
+    domain::intradaypowercurve_ShiftTenors_t ShiftTenors{};
+    xsd::optional<domain::parconversion> ParConversion;
 };
 
 struct commodityvolatility_ShiftExpiries_t : xsd::string {};
@@ -8769,7 +9063,21 @@ struct correlationcurve {
     xsd::optional<domain::correlationcurve_ShiftStrikes_t> ShiftStrikes;
 };
 
+struct sensiBondFutureVolatility_ShiftExpiries_t : xsd::string {};
+
+struct sensiBondFutureVolatility {
+    xsd::string name{};
+    xsd::vector<domain::shiftTypeEntry> ShiftType;
+    xsd::vector<domain::shiftSizeEntry> ShiftSize;
+    xsd::optional<domain::sensiBondFutureVolatility_Shifts_t> Shifts;
+    xsd::vector<domain::shiftSchemeEntry> ShiftScheme;
+    domain::sensiBondFutureVolatility_ShiftExpiries_t ShiftExpiries{};
+    xsd::optional<domain::sensiBondFutureVolatility_ShiftStrikes_t> ShiftStrikes;
+};
+
 struct crossgammafilter_Pair_t : xsd::string {};
+
+struct stresstest_Date_t : xsd::string {};
 
 struct stresstestparshifts {
     xsd::optional<domain::bool_> IRCurves;
@@ -8793,12 +9101,20 @@ struct stressfxvolatilities {
     xsd::vector<domain::stressfxvolatility> FxVolatility;
 };
 
+struct stressswaptionvolatilities {
+    xsd::vector<domain::stressswaptionvolatility> SwaptionVolatility;
+};
+
 struct stresscapfloorvolatilities {
     xsd::vector<domain::stresscapfloorvolatility> CapFloorVolatility;
 };
 
 struct stresscommoditycurves {
     xsd::vector<domain::stresscommoditycurve> CommodityCurve;
+};
+
+struct stressintradaypowercurves {
+    xsd::vector<domain::stressintradaypowercurve> IntradayPowerCurve;
 };
 
 struct stresscommodityvolatilities {
@@ -8873,19 +9189,17 @@ struct tradeAction {
     domain::scheduleData Schedule{};
 };
 
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t : xsd::string {};
+struct DerivedScheduleType_BaseSchedule_t : xsd::string {};
 
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t : xsd::string {};
-
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t : xsd::string {};
-
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t : xsd::string {};
-
-struct stFreeStyleEventScheduleBase_DerivedSchedule_t {
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_BaseSchedule_t BaseSchedule{};
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Shift_t Shift{};
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Calendar_t Calendar{};
-    domain::stFreeStyleEventScheduleBase_DerivedSchedule_t_Convention_t Convention{};
+struct DerivedScheduleType {
+    domain::DerivedScheduleType_BaseSchedule_t BaseSchedule{};
+    xsd::optional<domain::DerivedScheduleType_Shift_t> Shift;
+    xsd::optional<domain::calendar> Calendar;
+    xsd::optional<domain::businessDayConvention> Convention;
+    xsd::optional<bool> RemoveFirstDate;
+    xsd::optional<bool> RemoveLastDate;
+    xsd::optional<domain::dateDeltaUnit> ShiftUnit;
+    xsd::optional<domain::dateDeltaAnchor> ShiftAnchor;
 };
 
 struct swaptionStraddleData_LongShort_t : xsd::string {};
@@ -8934,17 +9248,6 @@ struct scheduleData_Dates_t {
 struct DerivedScheduleGroup_group_t {
     xsd::optional<domain::DerivedScheduleType> DerivedSchedule;
     xsd::optional<domain::DerivedScheduleType> Derived;
-};
-
-struct DerivedScheduleType_BaseSchedule_t : xsd::string {};
-
-struct DerivedScheduleType {
-    domain::DerivedScheduleType_BaseSchedule_t BaseSchedule{};
-    xsd::optional<domain::DerivedScheduleType_Shift_t> Shift;
-    xsd::optional<domain::calendar> Calendar;
-    xsd::optional<domain::businessDayConvention> Convention;
-    xsd::optional<bool> RemoveFirstDate;
-    xsd::optional<bool> RemoveLastDate;
 };
 
 struct optionData_OptionType_t : xsd::string {};
@@ -9104,6 +9407,7 @@ struct _FloatingLegData_t {
     xsd::optional<domain::stubInterpolation> BackStubInterpolation;
     xsd::optional<bool> StubUseOriginalCurve;
     xsd::optional<bool> ObservationShift;
+    xsd::optional<int64_t> RoundingPrecision;
 };
 
 struct _RangeAccrualLegData_t {
@@ -9319,6 +9623,26 @@ struct _CommodityFloatingLegData_t {
     xsd::optional<uint64_t> AvgPricePrecision;
 };
 
+struct _IntradayPowerFloatingLegData_t_Name_t : xsd::string {};
+
+struct _IntradayPowerFloatingLegData_t {
+    domain::_IntradayPowerFloatingLegData_t_Name_t Name{};
+    domain::quantitiesType Quantities{};
+    xsd::optional<domain::spreads> Spreads;
+    xsd::optional<domain::gearings> Gearings;
+    xsd::optional<domain::calendar> PricingCalendar;
+    xsd::optional<bool> IncludePeriodStart;
+    xsd::optional<bool> IncludePeriodEnd;
+    xsd::optional<bool> BusinessDays;
+    xsd::optional<domain::_IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t>
+        PowerLoadProfileReference;
+    xsd::optional<domain::powerLoadProfileDataType> PowerLoadProfileData;
+    xsd::optional<domain::_IntradayPowerFloatingLegData_t_FXIndex_t> FXIndex;
+    xsd::optional<uint64_t> AvgPricePrecision;
+    xsd::optional<domain::_IntradayPowerFloatingLegData_t_Tag_t> Tag;
+    xsd::optional<domain::_IntradayPowerFloatingLegData_t_QuantityMode_t> QuantityMode;
+};
+
 struct _FormulaBasedLegData_t_Index_t : xsd::string {};
 
 struct _FormulaBasedLegData_t {
@@ -9413,34 +9737,6 @@ struct forwardBondData_PremiumData_t_Date_t : xsd::string {};
 struct forwardBondData_PremiumData_t {
     domain::forwardBondData_PremiumData_t_Amount_t Amount{};
     domain::forwardBondData_PremiumData_t_Date_t Date{};
-};
-
-struct bondFutureData_ContractMonth_t : xsd::string {};
-
-struct bondFutureData_DeliverableGrade_t : xsd::string {};
-
-struct bondFutureData_FairPrice_t : xsd::string {};
-
-struct bondFutureData_Settlement_t : xsd::string {};
-
-struct bondFutureData_SettlementDirty_t : xsd::string {};
-
-struct bondFutureData_RootDate_t : xsd::string {};
-
-struct bondFutureData_ExpiryBasis_t : xsd::string {};
-
-struct bondFutureData_SettlementBasis_t : xsd::string {};
-
-struct bondFutureData_ExpiryLag_t : xsd::string {};
-
-struct bondFutureData_SettlementLag_t : xsd::string {};
-
-struct bondFutureData_LastTradingDate_t : xsd::string {};
-
-struct bondFutureData_LastDeliveryDate_t : xsd::string {};
-
-struct deliveryBasket {
-    xsd::vector<domain::deliveryBasket_Id_t> Id;
 };
 
 struct creditDefaultSwapData_IssuerId_t : xsd::string {};
@@ -9746,6 +10042,7 @@ struct trsUnderlyingData_PortfolioIndexTradeData_t {
     domain::trsUnderlyingData_PortfolioIndexTradeData_t_BasketName_t BasketName{};
     xsd::optional<domain::trsUnderlyingData_PortfolioIndexTradeData_t_IndexQuantity_t>
         IndexQuantity;
+    xsd::optional<bool> PriceIsPerUnit;
 };
 
 struct componentTrade {
@@ -9794,9 +10091,11 @@ struct componentTrade {
     xsd::optional<domain::bondData> BondData;
     xsd::optional<domain::forwardBondData> ForwardBondData;
     xsd::optional<domain::bondFutureData> BondFutureData;
+    xsd::optional<domain::bondFutureOptionData> BondFutureOptionData;
     xsd::optional<domain::creditDefaultSwapData> CreditDefaultSwapData;
     xsd::optional<domain::creditDefaultSwapOptionData> CreditDefaultSwapOptionData;
     xsd::optional<domain::commodityForwardData> CommodityForwardData;
+    xsd::optional<domain::intradayPowerForwardData> IntradayPowerForwardData;
     xsd::optional<domain::commodityOptionData> CommodityOptionData;
     xsd::optional<domain::commodityDigitalAveragePriceOptionData>
         CommodityDigitalAveragePriceOptionData;
@@ -9859,6 +10158,9 @@ struct componentTrade {
     xsd::optional<domain::dualEuroBinaryOptionData> DualEuroBinaryOptionData;
     xsd::optional<domain::dualEuroBinaryOptionDoubleKOData> DualEuroBinaryOptionDoubleKOData;
     xsd::optional<domain::volBarrierOptionData> VolatilityBarrierOptionData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> FxForwardVolatilityAgreementData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> EquityForwardVolatilityAgreementData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> CommodityForwardVolatilityAgreementData;
     xsd::optional<domain::tarfData2> FxTaRFData;
     xsd::optional<domain::tarfData2> EquityTaRFData;
     xsd::optional<domain::tarfData2> CommodityTaRFData;
@@ -9988,9 +10290,11 @@ struct componentSubTrade {
     xsd::optional<domain::bondData> BondData;
     xsd::optional<domain::forwardBondData> ForwardBondData;
     xsd::optional<domain::bondFutureData> BondFutureData;
+    xsd::optional<domain::bondFutureOptionData> BondFutureOptionData;
     xsd::optional<domain::creditDefaultSwapData> CreditDefaultSwapData;
     xsd::optional<domain::creditDefaultSwapOptionData> CreditDefaultSwapOptionData;
     xsd::optional<domain::commodityForwardData> CommodityForwardData;
+    xsd::optional<domain::intradayPowerForwardData> IntradayPowerForwardData;
     xsd::optional<domain::commodityOptionData> CommodityOptionData;
     xsd::optional<domain::commodityDigitalAveragePriceOptionData>
         CommodityDigitalAveragePriceOptionData;
@@ -10053,6 +10357,9 @@ struct componentSubTrade {
     xsd::optional<domain::dualEuroBinaryOptionData> DualEuroBinaryOptionData;
     xsd::optional<domain::dualEuroBinaryOptionDoubleKOData> DualEuroBinaryOptionDoubleKOData;
     xsd::optional<domain::volBarrierOptionData> VolatilityBarrierOptionData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> FxForwardVolatilityAgreementData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> EquityForwardVolatilityAgreementData;
+    xsd::optional<domain::forwardVolatilityAgreementData2> CommodityForwardVolatilityAgreementData;
     xsd::optional<domain::tarfData2> FxTaRFData;
     xsd::optional<domain::tarfData2> EquityTaRFData;
     xsd::optional<domain::tarfData2> CommodityTaRFData;
@@ -10200,6 +10507,8 @@ struct tranche {
     domain::tranche_Notionals_t Notionals{};
 };
 
+struct forwardVolatilityAgreementData2_PayoffType_t : xsd::string {};
+
 struct tarfData2_Strikes_t {
     xsd::vector<domain::tarfData2_Strikes_t_Strike_t> Strike;
 };
@@ -10295,7 +10604,7 @@ struct scriptedTradeData_Data_t_Event_t {
     domain::scriptedTradeData_Data_t_Event_t_Name_t Name{};
     xsd::optional<domain::scriptedTradeData_Data_t_Event_t_Value_t> Value;
     xsd::optional<domain::scheduleData> ScheduleData;
-    xsd::optional<domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t> DerivedSchedule;
+    xsd::optional<domain::DerivedScheduleType> DerivedSchedule;
     xsd::optional<domain::bool_> ApplyCoarsening;
 };
 
@@ -10398,6 +10707,10 @@ struct market_CapFloorVolatilities_t_SmileDynamics_t : xsd::string {
     xsd::optional<xsd::string> key;
 };
 
+struct market_CapFloorVolatilities_t_SmileForwardInteraction_t : xsd::string {
+    xsd::optional<xsd::string> key;
+};
+
 struct market_CDSVolatilities_t_Names_t_Name_t : xsd::string {};
 
 struct market_CDSVolatilities_t_SmileDynamics_t : xsd::string {
@@ -10488,12 +10801,26 @@ struct market_YYCapFloorVolatilities_t_SmileDynamics_t : xsd::string {
 
 struct market_Commodities_t_Names_t_Name_t : xsd::string {};
 
+struct market_Commodities_t_Interpolation_t : xsd::string {
+    xsd::optional<xsd::string> name;
+};
+
 struct market_Commodities_t_Tenors_t : xsd::string {
     xsd::optional<xsd::string> name;
 };
 
 struct market_Commodities_t_DayCounters_t {
     xsd::vector<domain::market_Commodities_t_DayCounters_t_DayCounter_t> DayCounter;
+};
+
+struct market_IntradayPowerCurves_t_Names_t_Name_t : xsd::string {};
+
+struct market_IntradayPowerCurves_t_Interpolation_t : xsd::string {
+    xsd::optional<xsd::string> name;
+};
+
+struct market_IntradayPowerCurves_t_Tenors_t : xsd::string {
+    xsd::optional<xsd::string> name;
 };
 
 struct market_CommodityVolatilities_t_Names_t_Name_t_Expiries_t : xsd::string {};
@@ -10507,6 +10834,20 @@ struct market_CommodityVolatilities_t_Names_t_Name_t {
 struct market_CommodityVolatilities_t_DayCounter_t : xsd::string {};
 
 struct market_CommodityVolatilities_t_SmileDynamics_t : xsd::string {
+    xsd::optional<xsd::string> key;
+};
+
+struct market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t : xsd::string {};
+
+struct market_BondFutureVolatilities_t_Names_t_Name_t {
+    xsd::optional<xsd::string> id;
+    domain::market_BondFutureVolatilities_t_Names_t_Name_t_Expiries_t Expiries{};
+    xsd::optional<domain::market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t> Moneyness;
+};
+
+struct market_BondFutureVolatilities_t_DayCounter_t : xsd::string {};
+
+struct market_BondFutureVolatilities_t_SmileDynamics_t : xsd::string {
     xsd::optional<xsd::string> key;
 };
 
@@ -10660,6 +11001,7 @@ struct parametricSmileConfigCalibration {
 struct parametricSmileConfig {
     domain::parametricSmileConfigParameters Parameters{};
     domain::parametricSmileConfigCalibration Calibration{};
+    xsd::optional<domain::parametricSmileConfigResidualCorrection> ResidualCorrection;
 };
 
 struct fxVolatility_Deltas_t : xsd::string {};
@@ -11067,7 +11409,9 @@ struct fittedBondType {
     xsd::optional<domain::fittedBondType_PillarChoice_t> PillarChoice;
     xsd::optional<uint64_t> Priority;
     xsd::optional<uint64_t> MinDistance;
+    xsd::optional<domain::fittedBondType_IndexCurves_t> IndexCurves;
     xsd::optional<domain::fittedBondType_IborIndexCurves_t> IborIndexCurves;
+    xsd::optional<domain::fittedBondType_InflationIndexCurves_t> InflationIndexCurves;
     xsd::optional<bool> ExtrapolateFlat;
 };
 
@@ -11081,6 +11425,7 @@ struct BondYieldShiftedType {
     domain::BondYieldShiftedType_Type_t Type{};
     domain::BondYieldShiftedType_ReferenceCurve_t ReferenceCurve{};
     domain::quoteType Quotes{};
+    xsd::optional<domain::BondYieldShiftedType_IndexCurves_t> IndexCurves;
     xsd::optional<domain::BondYieldShiftedType_IborIndexCurves_t> IborIndexCurves;
     domain::BondYieldShiftedType_Conventions_t Conventions{};
     xsd::optional<bool> ExtrapolateFlat;
@@ -11390,6 +11735,8 @@ struct correlation_DiscountCurve_t : xsd::string {};
 
 struct correlation_OptionTenors_t : xsd::string {};
 
+struct bondFutureVolatility_YieldCurveId_t : xsd::string {};
+
 typedef domain::businessDayConvention prohibitedExpiriesBdcType;
 
 struct prohibitedExpiriesType_Dates_t_Date_t : domain::date {
@@ -11402,6 +11749,19 @@ struct prohibitedExpiriesType_Dates_t_Date_t : domain::date {
 struct continuationMappingType {
     uint64_t From{};
     uint64_t To{};
+};
+
+struct zeroInflationIndexType_RebasingEvents_t_Event_t : xsd::base<double> {
+    domain::date date{};
+};
+
+struct explicitLoadProfileType {
+    xsd::vector<domain::explicitLoadProfileType_LoadProfileDatum_t> LoadProfileDatum;
+};
+
+struct ruleBasedLoadProfileType {
+    xsd::vector<domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t>
+        LoadProfileBusinessDayRule;
 };
 
 struct nettingSetDetails_AgreementType_t : xsd::string {};
@@ -11451,14 +11811,43 @@ struct nettingsetdefinitions_NettingSet_t_CSADetails_t_EligibleCollaterals_t {
 
 struct nettingsetdefinitions_NettingSet_t_CSADetails_t_NonExemptIMRegulations_t : xsd::string {};
 
-struct parconversion_Instruments_t : xsd::string {};
+enum class shiftType {
+    Relative,
+    Absolute,
+    EqualTo,
+};
 
-struct parconversion_DiscountCurve_t : xsd::string {};
+ORES_ORE_CORE_EXPORT std::string to_string(shiftType);
 
-struct parconversion_RateComputationPeriod_t : xsd::string {};
+struct shiftTypeEntry : xsd::base<domain::shiftType> {
+    xsd::optional<xsd::string> key;
+};
 
-struct parconversion_Conventions_t {
-    xsd::vector<domain::parconversion_Conventions_t_Convention_t> Convention;
+struct shiftSizeEntry : xsd::base<float> {
+    xsd::optional<xsd::string> key;
+};
+
+struct discountcurve_Shifts_t : xsd::string {};
+
+enum class shiftScheme {
+    Forward,
+    Backward,
+    Central,
+};
+
+ORES_ORE_CORE_EXPORT std::string to_string(shiftScheme);
+
+struct shiftSchemeEntry : xsd::base<domain::shiftScheme> {
+    xsd::optional<xsd::string> key;
+};
+
+struct parconversion {
+    xsd::vector<domain::parconversion_Instruments_t> Instruments;
+    xsd::vector<bool> SingleCurve;
+    xsd::optional<domain::parconversion_DiscountCurve_t> DiscountCurve;
+    xsd::optional<domain::currencyCode> OtherCurrency;
+    xsd::optional<domain::parconversion_RateComputationPeriod_t> RateComputationPeriod;
+    xsd::optional<domain::parconversion_Conventions_t> Conventions;
 };
 
 struct indexcurve_Shifts_t : xsd::string {};
@@ -11517,6 +11906,8 @@ struct securityspread_Shifts_t : xsd::string {};
 
 struct commodityCurve_Shifts_t : xsd::string {};
 
+struct intradaypowercurve_Shifts_t : xsd::string {};
+
 struct commodityvolatility_Shifts_t : xsd::string {};
 
 struct commodityvolatility_ShiftStrikes_t : xsd::string {};
@@ -11524,6 +11915,10 @@ struct commodityvolatility_ShiftStrikes_t : xsd::string {};
 struct correlationcurve_Shifts_t : xsd::string {};
 
 struct correlationcurve_ShiftStrikes_t : xsd::string {};
+
+struct sensiBondFutureVolatility_Shifts_t : xsd::string {};
+
+struct sensiBondFutureVolatility_ShiftStrikes_t : xsd::string {};
 
 struct stressdiscountcurve_ShiftTenors_t : xsd::string {};
 
@@ -11573,6 +11968,23 @@ struct stressfxvolatility {
     xsd::optional<domain::stressfxvolatility_WeightedShifts_t> WeightedShifts;
 };
 
+struct stressswaptionvolatility_Shifts_t {
+    xsd::vector<domain::stressswaptionvolatility_Shifts_t_Shift_t> Shift;
+};
+
+struct stressswaptionvolatility_ShiftExpiries_t : xsd::string {};
+
+struct stressswaptionvolatility_ShiftTerms_t : xsd::string {};
+
+struct stressswaptionvolatility {
+    xsd::optional<xsd::string> key;
+    xsd::optional<xsd::string> ccy;
+    domain::shiftTypeEntry ShiftType{};
+    domain::stressswaptionvolatility_Shifts_t Shifts{};
+    domain::stressswaptionvolatility_ShiftExpiries_t ShiftExpiries{};
+    domain::stressswaptionvolatility_ShiftTerms_t ShiftTerms{};
+};
+
 struct stresscapfloorvolatility_Shifts_t {
     xsd::vector<domain::stresscapfloorvolatility_Shifts_t_Shift_t> Shift;
 };
@@ -11600,6 +12012,17 @@ struct stresscommoditycurve {
     xsd::vector<domain::shiftTypeEntry> ShiftType;
     domain::stresscommoditycurve_Shifts_t Shifts{};
     domain::stresscommoditycurve_ShiftTenors_t ShiftTenors{};
+};
+
+struct stressintradaypowercurve_Shifts_t : xsd::string {};
+
+struct stressintradaypowercurve_ShiftTenors_t : xsd::string {};
+
+struct stressintradaypowercurve {
+    xsd::string name{};
+    xsd::vector<domain::shiftTypeEntry> ShiftType;
+    domain::stressintradaypowercurve_Shifts_t Shifts{};
+    domain::stressintradaypowercurve_ShiftTenors_t ShiftTenors{};
 };
 
 struct stresscommodityvolatility_Shifts_t : xsd::string {};
@@ -11638,6 +12061,8 @@ struct survivalprobability {
 
 struct envelope_PortfolioIds_t_PortfolioId_t : xsd::string {};
 
+struct DerivedScheduleType_Shift_t : xsd::string {};
+
 struct fxForwardSettlementData_FXIndex_t : xsd::string {};
 
 struct fxForwardSettlementData_Rules_t {
@@ -11647,8 +12072,6 @@ struct fxForwardSettlementData_Rules_t {
 };
 
 struct scheduleData_Dates_t_Tenor_t : xsd::string {};
-
-struct DerivedScheduleType_Shift_t : xsd::string {};
 
 struct premiumData_Premium_t {
     float Amount{};
@@ -11858,6 +12281,14 @@ struct _CommodityFloatingLegData_t_Tag_t : xsd::string {};
 
 struct _CommodityFloatingLegData_t_FXIndex_t : xsd::string {};
 
+struct _IntradayPowerFloatingLegData_t_PowerLoadProfileReference_t : xsd::string {};
+
+struct _IntradayPowerFloatingLegData_t_FXIndex_t : xsd::string {};
+
+struct _IntradayPowerFloatingLegData_t_Tag_t : xsd::string {};
+
+struct _IntradayPowerFloatingLegData_t_QuantityMode_t : xsd::string {};
+
 struct capFloorData_Caps_t_Cap_t : xsd::base<float> {
     xsd::optional<xsd::string> startDate;
 };
@@ -11883,8 +12314,6 @@ struct eqForwardSettlementData_Rules_t {
     xsd::optional<domain::calendar> PaymentCalendar;
     xsd::optional<domain::businessDayConvention> PaymentConvention;
 };
-
-struct deliveryBasket_Id_t : xsd::string {};
 
 enum class amortizationType {
     FixedAmount,
@@ -12191,21 +12620,6 @@ struct scriptedTradeData_Data_t_Index_t_Values_t {
 
 struct scriptedTradeData_Data_t_Event_t_Value_t : xsd::string {};
 
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t : xsd::string {};
-
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t : xsd::string {};
-
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t : xsd::string {};
-
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t : xsd::string {};
-
-struct scriptedTradeData_Data_t_Event_t_DerivedSchedule_t {
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_BaseSchedule_t BaseSchedule{};
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Shift_t Shift{};
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Calendar_t Calendar{};
-    domain::scriptedTradeData_Data_t_Event_t_DerivedSchedule_t_Convention_t Convention{};
-};
-
 struct scriptedTradeData_Data_t_Daycounter_t_Value_t : xsd::string {};
 
 struct scriptedTradeData_Data_t_Daycounter_t_Values_t {
@@ -12280,6 +12694,8 @@ struct market_Commodities_t_DayCounters_t_DayCounter_t : xsd::string {
 };
 
 struct market_CommodityVolatilities_t_Names_t_Name_t_Moneyness_t : xsd::string {};
+
+struct market_BondFutureVolatilities_t_Names_t_Name_t_Moneyness_t : xsd::string {};
 
 struct market_BaseCorrelations_t_DayCounters_t_DayCounter_t : xsd::string {
     xsd::optional<xsd::string> name;
@@ -12356,8 +12772,6 @@ struct yieldCurveReport_PillarDates_t : xsd::string {};
 
 struct parametricSmileConfigParameter_Name_t : xsd::string {};
 
-struct parametricSmileConfigParameter_InitialValue_t : xsd::string {};
-
 enum class parametricVolatilityParameterCalibration {
     Fixed,
     Calibrated,
@@ -12368,8 +12782,20 @@ ORES_ORE_CORE_EXPORT std::string to_string(parametricVolatilityParameterCalibrat
 
 struct parametricSmileConfigParameter {
     domain::parametricSmileConfigParameter_Name_t Name{};
-    domain::parametricSmileConfigParameter_InitialValue_t InitialValue{};
+    xsd::optional<domain::parametricSmileConfigParameter_InitialValue_t> InitialValue;
     domain::parametricVolatilityParameterCalibration Calibration{};
+};
+
+enum class parametricSmileConfigResidualCorrection_Dimension_t {
+    AbsoluteStrike,
+    StrikeMinusForward,
+    StrikeOverForward,
+};
+
+std::string to_string(parametricSmileConfigResidualCorrection_Dimension_t);
+
+struct parametricSmileConfigResidualCorrection {
+    domain::parametricSmileConfigResidualCorrection_Dimension_t Dimension{};
 };
 
 struct capFloorVolatility_ProxyConfig_t_Source_t_RateComputationPeriod_t : xsd::string {};
@@ -12415,9 +12841,9 @@ struct proxySurface_CorrelationCurve_t : xsd::string {};
 struct proxySurface_CDSVolatilityCurve_t : xsd::string {};
 
 struct indexFactorsType {
-    domain::positiveDecimal IndexFactor{};
-    domain::positiveDecimal IndexFactorStrike{};
-    domain::positiveDecimal RealisedFep{};
+    domain::non_negative_decimal IndexFactor{};
+    domain::non_negative_decimal IndexFactorStrike{};
+    domain::non_negative_decimal RealisedFep{};
 };
 
 struct defaultCurve_Configurations_t_Configuration_t {
@@ -12451,6 +12877,7 @@ struct defaultCurve_Configurations_t_Configuration_t {
     xsd::optional<domain::bool_> ImplyDefaultFromMarket;
     xsd::optional<domain::bootstrapConfigType> BootstrapConfig;
     xsd::optional<domain::bool_> AllowNegativeRates;
+    xsd::optional<domain::bool_> PriceIsUpfront;
 };
 
 struct defaultCurve_SourceCurves_t_SourceCurve_t : xsd::string {};
@@ -12502,8 +12929,21 @@ struct discountRatioType_Conventions_t : xsd::string {};
 
 struct fittedBondType_PillarChoice_t : xsd::string {};
 
+struct fittedBondType_IndexCurves_t {
+    xsd::vector<domain::fittedBondType_IndexCurves_t_IndexCurve_t> IndexCurve;
+};
+
 struct fittedBondType_IborIndexCurves_t {
     xsd::vector<domain::fittedBondType_IborIndexCurves_t_IborIndexCurve_t> IborIndexCurve;
+};
+
+struct fittedBondType_InflationIndexCurves_t {
+    xsd::vector<domain::fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t>
+        InflationIndexCurve;
+};
+
+struct BondYieldShiftedType_IndexCurves_t {
+    xsd::vector<domain::BondYieldShiftedType_IndexCurves_t_IndexCurve_t> IndexCurve;
 };
 
 struct BondYieldShiftedType_IborIndexCurves_t {
@@ -12576,8 +13016,32 @@ struct volatilityApoFutureSurfaceConfig_VolatilityType_t : xsd::string {};
 
 struct volatilityApoFutureSurfaceConfig_MaxTenor_t : xsd::string {};
 
-struct parconversion_Conventions_t_Convention_t : xsd::string {
-    xsd::optional<xsd::string> id;
+struct loadFactorsType {
+    xsd::vector<domain::loadFactorType> LoadFactor;
+};
+
+struct explicitLoadProfileType_LoadProfileDatum_t {
+    domain::date Date{};
+    domain::loadFactorsType LoadFactors{};
+};
+
+struct ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t : xsd::string {};
+
+struct ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t {
+    domain::date Date{};
+    domain::ruleBasedLoadProfileType_LoadProfileBusinessDayRule_t_Calendar_t Calendar{};
+    xsd::optional<domain::loadFactorsType> BusinessDayLoadFactors;
+    xsd::optional<domain::loadFactorsType> NonBusinessDayLoadFactors;
+};
+
+struct parconversion_Instruments_t : xsd::string {};
+
+struct parconversion_DiscountCurve_t : xsd::string {};
+
+struct parconversion_RateComputationPeriod_t : xsd::string {};
+
+struct parconversion_Conventions_t {
+    xsd::vector<domain::parconversion_Conventions_t_Convention_t> Convention;
 };
 
 struct swaptionvolatility_Shifts_t_Shift_t : xsd::base<float> {
@@ -12614,6 +13078,11 @@ struct stressfxvolatility_WeightedShifts_t {
     domain::stressfxvolatility_WeightedShifts_t_Tenor_t Tenor{};
     xsd::optional<domain::stressfxvolatility_WeightedShifts_t_ShiftWeights_t> ShiftWeights;
     xsd::optional<domain::stressfxvolatility_WeightedShifts_t_WeightTenors_t> WeightTenors;
+};
+
+struct stressswaptionvolatility_Shifts_t_Shift_t : xsd::string {
+    xsd::optional<xsd::string> expiry;
+    xsd::optional<xsd::string> term;
 };
 
 struct stresscapfloorvolatility_Shifts_t_Shift_t : xsd::string {
@@ -12812,6 +13281,8 @@ struct boundaryConstraint {
     float UpperBound{};
 };
 
+struct parametricSmileConfigParameter_InitialValue_t : xsd::string {};
+
 struct cdsVolatility_Terms_t_Term_t_Maturity_t : xsd::string {};
 
 struct defaultCurve_Configurations_t_Configuration_t_DiscountCurve_t : xsd::string {};
@@ -12844,8 +13315,20 @@ struct defaultCurve_Configurations_t_Configuration_t_Conventions_t : xsd::string
 
 struct defaultCurve_Configurations_t_Configuration_t_IndexTerm_t : xsd::string {};
 
+struct fittedBondType_IndexCurves_t_IndexCurve_t : xsd::string {
+    xsd::optional<xsd::string> Index;
+};
+
 struct fittedBondType_IborIndexCurves_t_IborIndexCurve_t : xsd::string {
     xsd::optional<xsd::string> iborIndex;
+};
+
+struct fittedBondType_InflationIndexCurves_t_InflationIndexCurve_t : xsd::string {
+    xsd::optional<xsd::string> inflationIndex;
+};
+
+struct BondYieldShiftedType_IndexCurves_t_IndexCurve_t : xsd::string {
+    xsd::optional<xsd::string> Index;
 };
 
 struct BondYieldShiftedType_IborIndexCurves_t_IborIndexCurve_t : xsd::string {
@@ -12859,6 +13342,17 @@ struct priceSegmentType_PeakPriceCalendar_t : xsd::string {};
 struct offPeakDailyType {
     domain::quoteType OffPeakQuotes{};
     domain::quoteType PeakQuotes{};
+};
+
+struct loadFactorType : xsd::base<double> {
+    int64_t from{};
+    int64_t to{};
+    xsd::optional<xsd::string> unit;
+    xsd::optional<domain::bool_> dst;
+};
+
+struct parconversion_Conventions_t_Convention_t : xsd::string {
+    xsd::optional<xsd::string> id;
 };
 
 struct stressfxvolatility_WeightedShifts_t_ShiftWeights_t : xsd::string {};

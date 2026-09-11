@@ -47,6 +47,9 @@
 #include "ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/trade_envelope_additional_field_protocol.hpp"
+#include "ores.trading.api/messaging/trade_envelope_portfolio_id_protocol.hpp"
+#include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
 #include <boost/uuid/uuid_io.hpp>
@@ -97,6 +100,67 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
         out_error = std::format("Exception calling {}: {}", Req::nats_subject, e.what());
         return std::nullopt;
     }
+}
+
+/**
+ * @brief Saves one trade's envelope and the two lists it carries.
+ *
+ * The envelope row is keyed by the trade, so the trade must be saved
+ * first. A document that stated no envelope writes no row. The list
+ * ordinals are the document's order and start at one.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_envelope(Nats& nats,
+                          const boost::uuids::uuid& trade_id,
+                          const std::optional<ores::trading::domain::trade_envelope_data>& envelope) {
+    if (!envelope)
+        return {};
+
+    using ores::trading::messaging::save_trade_envelope_additional_field_request;
+    using ores::trading::messaging::save_trade_envelope_portfolio_id_request;
+    using ores::trading::messaging::save_trade_envelope_request;
+
+    std::string error;
+    save_trade_envelope_request envelope_req;
+    envelope_req.data.trade_id = trade_id;
+    envelope_req.data.counter_party = envelope->counter_party;
+    envelope_req.data.netting_set_id = envelope->netting_set_id;
+    envelope_req.data.has_portfolio_ids = envelope->portfolio_ids.has_value();
+    envelope_req.data.has_additional_fields = envelope->additional_fields.has_value();
+    auto resp = nats_call(nats, envelope_req, error);
+    if (!resp || !resp->success)
+        return error.empty() ? "save_trade_envelope failed" : error;
+
+    if (envelope->portfolio_ids) {
+        int sequence_number = 0;
+        for (const auto& portfolio_id : *envelope->portfolio_ids) {
+            save_trade_envelope_portfolio_id_request child_req;
+            child_req.data.trade_id = trade_id;
+            child_req.data.sequence_number = ++sequence_number;
+            child_req.data.portfolio_id = portfolio_id;
+            auto child_resp = nats_call(nats, child_req, error);
+            if (!child_resp || !child_resp->success)
+                return error.empty() ? "save_trade_envelope_portfolio_id failed" : error;
+        }
+    }
+
+    if (envelope->additional_fields) {
+        int sequence_number = 0;
+        for (const auto& field : *envelope->additional_fields) {
+            save_trade_envelope_additional_field_request child_req;
+            child_req.data.trade_id = trade_id;
+            child_req.data.sequence_number = ++sequence_number;
+            child_req.data.name = field.name;
+            child_req.data.value = field.value;
+            auto child_resp = nats_call(nats, child_req, error);
+            if (!child_resp || !child_resp->success)
+                return error.empty() ? "save_trade_envelope_additional_field failed" : error;
+        }
+    }
+
+    return {};
 }
 
 } // namespace
@@ -365,7 +429,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // Step 7: save trades (failures collected; saga continues)
     // -------------------------------------------------------------------------
     for (auto& item : plan.trades) {
-        const auto tid = boost::uuids::to_string(item.trade.identity.id);
+        const auto trade_id = item.trade.identity.id;
+        const auto tid = boost::uuids::to_string(trade_id);
         const auto src = item.source_file.string();
         const auto ext_id = item.trade.identity.external_id;
 
@@ -383,6 +448,14 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                 {.source_file = src, .item_id = ext_id, .message = trade_msg});
         } else {
             result.saved_trade_ids.push_back(tid);
+            const auto envelope_error = save_envelope(delegated_nats, trade_id, item.envelope);
+            if (!envelope_error.empty()) {
+                BOOST_LOG_SEV(lg(), warn)
+                    << "ore.import.execute envelope save failed | corr=" << req.correlation_id
+                    << " trade_id=" << tid << " source=" << src << " error=" << envelope_error;
+                result.item_errors.push_back(
+                    {.source_file = src, .item_id = ext_id, .message = envelope_error});
+            }
         }
     }
 

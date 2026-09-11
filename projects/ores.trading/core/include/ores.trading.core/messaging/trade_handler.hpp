@@ -69,6 +69,7 @@
 #include "ores.trading.core/service/rpa_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
+#include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.trading.core/service/trade_service.hpp"
 #include "ores.trading.core/service/trade_status_service.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
@@ -447,6 +448,21 @@ private:
             const auto id = boost::uuids::to_string(*t.classification.instrument_id);
             if (auto it = imap.find(id); it != imap.end())
                 item.instrument = it->second;
+        }
+
+        // Phase 5: fill the trade-level envelope, which is keyed by the
+        // trade rather than the instrument and so crosses product types.
+        std::vector<std::string> trade_ids;
+        trade_ids.reserve(items.size());
+        for (const auto& item : items)
+            trade_ids.push_back(boost::uuids::to_string(item.trade.identity.id));
+
+        service::trade_envelope_reader envelope_reader(ctx);
+        auto envelopes = envelope_reader.read_envelopes(trade_ids);
+        for (auto& item : items) {
+            const auto id = boost::uuids::to_string(item.trade.identity.id);
+            if (auto it = envelopes.find(id); it != envelopes.end())
+                item.envelope = std::move(it->second);
         }
     }
 

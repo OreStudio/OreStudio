@@ -42,8 +42,17 @@ endif()
 # the like — which is deliberate here and not a defect. They accounted
 # for 2040 of the 2153 warnings the first full sweep found, against 113
 # that named something real, so leaving them on would have buried the
-# signal rather than surfaced it. The designated-initializer variant is
-# Clang's alone, hence the separate guard.
+# signal rather than surfaced it.
+#
+# What this gives up, stated plainly because it is what a future
+# missing-field bug will turn on: adding a field to an aggregate no
+# longer errors at the call sites that do not set it. They keep
+# compiling and the new field is value-initialised. If a field added to
+# a struct is silently default somewhere it should not be, this is the
+# warning that would have caught it.
+#
+# The designated-initializer variant is Clang's alone, hence the
+# separate guard.
 add_compile_options(
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall>
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wextra>

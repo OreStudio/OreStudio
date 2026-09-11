@@ -254,8 +254,6 @@ TEST_CASE("two_factor_gaussian_process discount_factor consistency with next for
     ores::analytics::quant::service::two_factor_gaussian_process p(
         kx, ky, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
 
-    // Discount factor from now to T=4 ticks
-
     // Advance 2 ticks
     p.next();
     p.next();

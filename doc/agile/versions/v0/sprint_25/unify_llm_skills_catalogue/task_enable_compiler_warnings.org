@@ -149,7 +149,11 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The suppression's real cost is not "idiomatic init" but that adding a field to an aggregate stops erroring at call sites that do not set it | projects/CMakeLists.txt | Accept | Stated at the flags in those terms. The noise ratio justifies the trade; this names what the trade actually is, which is what someone debugging a future missing-field bug needs to read |
+| 2 | Removing =df_0_to_4= left an orphaned comment with no code under it | two_factor_gaussian_process_tests.cpp | Accept | Removed |
+| 3 | The Eigen retype verified correct across all four files: every retyped index derives from an Eigen size, no tick loop was swept up, and the single API boundary cast is in the right place | — | Accept | No change. This is the check I could not perform on my own work, and it is the reason the round was worth waiting for |
+| 4 | All 74 regenerated files are exactly one line added and one removed, and the only diff body is the =[[maybe_unused]]= | — | Accept | No change. Verified mechanically by numstat rather than by inspection, which is stronger evidence than I offered |
+| 5 | Keeping the warning fix separate from the Wt behaviour fix is the right split | — | Accept | No change |
 
 * Result
 

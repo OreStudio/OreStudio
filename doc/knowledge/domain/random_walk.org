@@ -7,7 +7,7 @@
 #+level: cross
 #+filetags: :knowledge:domain:quantitative_finance:stochastic_processes:ore:
 #+created: 2026-07-16
-#+updated: 2026-07-16
+#+updated: 2026-09-10
 
 * Summary
 
@@ -20,7 +20,11 @@ becomes in the limit of infinitely many, infinitesimally small steps —
 and it already has the [[id:09BA4EBB-BEC0-4AAB-95B1-419B134C9795][Markov
 property]] every process in the
 [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] cluster
-relies on, in its plainest possible form.
+relies on, in its plainest possible form. Its increments are stationary
+while its level is not — variance grows with the horizon and no force
+pulls it back — so it stands as the canonical unit-root process; and
+the question it is most often asked is not where it ends up, but when
+it first reaches a given level.
 
 * Layperson's mental model
 
@@ -58,6 +62,50 @@ probability — the textbook coin-flip walk — but the step distribution
 need not be so restricted: any independent, identically-distributed
 sequence of steps produces a random walk in this general sense.
 
+** Stationary steps, non-stationary level
+
+The steps $X_1, X_2, \ldots$ are drawn independently and from one common
+distribution, so the *increments* of a random walk are stationary: the
+law of the change $X_{i+1}$ does not depend on the index $i$. The
+*level* $S_n$ is a different matter — it is not stationary, and its
+variance grows without bound:
+
+\begin{equation}
+\operatorname{Var}(S_n) = n\,\sigma^2
+\end{equation}
+
+where $\sigma^2$ is the variance of a single step. The horizon widens
+the distribution rather than pinning it down: uncertainty accumulates
+with time instead of settling to a fixed spread. That pairing —
+stationary increments, a non-stationary level — is the signature that
+makes the random walk the natural model for prices, cumulative P&L,
+and inventory drift rather than for a quantity that fluctuates around a
+fixed level. The
+[[id:3AD7973A-57ED-43EB-9504-825719F601A8][Geometric Brownian Motion]]
+behind the synthetic market data generators is the same accumulation
+carried out on a logarithmic scale, so its log-level is the
+non-stationary object.
+
+** A unit root, not a force
+
+A random walk is the canonical *unit-root* process. In the recursion
+$S_n = S_{n-1} + X_n$ the coefficient on the previous level is exactly
+one, and that single fact separates it from every mean-reverting
+process: a shock never decays. A step taken a thousand periods ago is
+still present in full in today's level, and no force pulls the process
+back toward a long-run average — the best forecast of the next level
+is simply the last observation.
+
+Contrast the
+[[id:4F7C0348-3C53-44E2-8C95-B3B26852FB94][Ornstein-Uhlenbeck process]]
+— the mean-reverting building block behind the
+[[id:6FD62097-BF1C-4A29-AD6A-88281F457812][Vasicek]] and Hull-White short
+rates — where a restoring force proportional to the distance from the
+mean makes each shock's influence fade geometrically. In time-series
+language a random walk is $I(1)$: the level must be differenced once to
+become stationary, and it is the differenced series — the increments,
+not the level — that estimation and modelling work with.
+
 ** Already Markov, already no-memory
 
 Because each step $X_i$ is drawn independently of every earlier step,
@@ -81,6 +129,33 @@ Wiener process on a computer, which necessarily advances in discrete
 ticks, is already an approximating random walk that targets the
 continuous idealisation, not the continuous process itself.
 
+** First-passage problems
+
+The question most often put to a random walk is not "where is the
+level at time $n$?" but "when does it first reach a given level?" The
+*first-passage* time is
+
+\begin{equation}
+\tau = \inf\{\, n \ge 0 : S_n \in A \,\}
+\end{equation}
+
+for a target set $A$ — a barrier, a ruin level, a reliability
+threshold. First-passage questions differ from terminal-value
+questions in two ways. The distribution of $\tau$ is long-tailed and
+skewed: crossings cluster neither around a typical time nor
+symmetrically about it, and in the symmetric $\pm 1$ walk every level
+is reached with probability one while the expected time to reach it is
+infinite. And the crossing event, not the terminal level, is often
+what a decision or a payoff depends on — a barrier option pays out or
+expires at the moment of passage, not at maturity.
+
+In ORE Studio the
+[[id:2C172183-1513-45EC-9A42-F0F3AB0E1F56][Generic Barrier Option]] and
+the wider barrier product family are the products that ask exactly
+this question; their valuation needs the distribution of the passage
+time of the underlying through the barrier, not only the distribution
+of the underlying at expiry.
+
 * See also
 
 - [[id:A8C46639-0639-4587-B07D-B8B006C46618][Stochastic Processes]] — the hub.
@@ -102,3 +177,9 @@ continuous idealisation, not the continuous process itself.
   treatment of random walks, including the simple $\pm 1$ walk and its
   key combinatorial results.
 - Wikipedia: [[https://en.wikipedia.org/wiki/Random_walk][Random walk]].
+- Tuncer, T. D. (2026). "A random walk is a discrete-time stochastic
+  process driven by successive random increments." LinkedIn post,
+  September 2026. Retrieved 10 September 2026. The post prompted the
+  "Stationary steps, non-stationary level", "A unit root, not a force",
+  and "First-passage problems" sections above; this document restates
+  that material in its own terms and ties it to ORE Studio's processes.

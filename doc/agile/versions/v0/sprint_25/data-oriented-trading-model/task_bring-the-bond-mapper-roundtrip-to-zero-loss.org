@@ -1194,7 +1194,138 @@ The three =component_files.cmake= files came from
 =regenerate_cmake_component_files.py --all=, run with the codegen
 venv. Nothing generated was opened in an editor.
 
-*** Verification
+** Wave B.4, the forward, the future basket and the TRS residue
+
+B.3 gave the option block and the schedule data their homes. This wave
+closes the last three gaps a document in the corpus can reach: the
+return side of a total return swap, the forward block a forward bond
+states, and the delivery basket a bond future names. One entity is
+grown and two are new.
+
+*** The return side states three members no row held
+
+=totalReturnData= states =Payer=, =PriceType= and =InitialPrice=
+beside the return schedule and the funding leg. The schedule lands in
+the shared schedule table under the =trs= owner role B.3 opened, and
+the funding leg lands in the shared leg family. The three remaining
+members had no home, so =bond_trs= grows them.
+
+| Column          | Type              | Why                              |
+|-----------------+-------------------+----------------------------------|
+| =payer=         | =text=            | the schema types it =xs:string=  |
+| =price_type=    | =text=            | the schema types it =xs:string=  |
+| =initial_price= | =numeric(28, 10)= | the schema types it =xs:float=   |
+
+Neither text column is a decoded boolean or a decoded enumeration. The
+document states its own spelling and export re-emits that spelling.
+=payer= is also not =return_type=. The row already carried
+=return_type=, which names the return side of the swap; =price_type=
+names how the price is quoted.
+
+The return side states nine more members that no table holds:
+=ObservationLag=, =ObservationConvention=, =ObservationCalendar=,
+=PaymentLag=, =PaymentConvention=, =PaymentCalendar=, =PaymentDates=,
+=FXConversion= and =FXTerms=. The corpus states none of them, so the
+round trip is whole without them. They stay a recorded scope limit.
+
+*** Finding: the forward's two date columns were typed as dates
+
+The forward org was first authored with =forward_maturity_date= and
+=forward_settlement_date= as =:type: date=. The schema says otherwise:
+=settlementData= declares =ForwardMaturityDate= as =xs:string=, and
+=ForwardSettlementDate= likewise.
+
+The corpus settles it. =ForwardMaturityDate= appears thirty seven times:
+thirty three spelled =20160808=, =20160909=, =20251220=, =20160304= and
+=20160205= in basic form, and four spelled =2025-07-16= and =2025-08-22=
+in ISO 8601. A date column returns the basic form as =2026-08-08= and
+breaks the round trip on the thirty three documents that state one. The
+settlement date is stated nowhere in the corpus, and follows the schema
+alone.
+
+Both columns are =text= now. The C++ member type was
+=std::optional<std::string>= either way, so the change reaches the SQL
+and not the API. The defect was found by reading the schema and
+surveying the corpus before the entity was generated, so no generated
+file had to be corrected.
+
+*** The forward block, member by member
+
+=bond_forward= is keyed to the instrument, one row per forward bond. It
+carries the settlement block's seven members, the premium block's two,
+and the long-in-forward flag, because no other row holds them. The bond
+block is the issue, and the nine bond tables hold it.
+
+A block is present exactly when its required member is not null. The
+schema declares =ForwardMaturityDate= the settlement block's one
+required member, and the premium's =Amount= and =Date= required
+together, so a null required member means the document stated no block.
+
+The premium amount is text because the schema types it =xs:string=.
+The settlement amount, the lock rate and the dv01 are =numeric(28, 10)=
+because the schema types those three as =xs:float=. The settlement
+type and the lock rate's day counter are text.
+
+=KnockOut= is stated on =forwardBondData= and the mapper does not carry
+it. The corpus states none, so the round trip is whole without it. It
+is a recorded scope limit, not fixed in this wave.
+
+*** The delivery basket is a keyed child table
+
+=deliveryBasket= is an unbounded list of =Id= elements. A bond future
+names several deliverable identifiers and the order is the document's,
+so =bond_future_delivery_baskets= carries one row per identifier, keyed
+to the instrument and the identifier's ordinal. The shape is the one
+the shared schedule tables use.
+
+The identifier is text because the document states a name, not a
+reference to a bond row.
+
+*** Finding: the new tables had no row-level security
+
+=projects/ores.sql/utility/validate_schemas.sh --strict= checks that
+every table carrying =tenant_id= has an =alter table ... enable row
+level security= statement in some create file, and that every file
+under =create/= is reachable from its aggregator.
+
+The check reported sixteen tables with no policy: the three envelope
+tables, the four leg tables, the two schedule tables, the five option
+tables, and this wave's two. Fourteen of the sixteen came from B.1 and
+B.2 and from B.3, so the gate has been red since B.1 and no wave
+recorded it. The two from this wave would have made it seventeen.
+
+The cause is that =trading_rls_policies_create.sql= is hand maintained
+and lists its tables one at a time. The entity generator does not emit
+it, so a table arrives without a policy and nothing reports the gap
+until the validator runs with =--strict=.
+
+All sixteen now carry the tenant isolation policy their neighbours
+carry, and the matching drops are in
+=trading_rls_policies_drop.sql=. The validator reads two hundred and
+ninety nine tables, zero warnings, and exits 0. Every new entity that
+carries =tenant_id= still has to be added to the file by hand.
+
+*** The tables stay empty until B.5
+
+This wave gives the forward block, the delivery basket and the three
+return-side members a home in the schema. It does not fill them.
+=trade_export_item= is still built from the trade row alone, and no
+code reads or writes a row of any table this program added. That
+switch-over is B.5, and the database path keeps losing what the mapper
+path keeps until it lands.
+
+*** No generated file was edited by hand
+
+Every C++ file this wave changes is generated. The three modeling orgs
+are hand written: one edited for the three columns, and two new. The
+two =ores.sql= aggregate scripts are hand written too, and they carry
+the new files in the create block and in the drop block.
+
+The three =component_files.cmake= files came from
+=regenerate_cmake_component_files.py=, run with the codegen venv.
+Nothing generated was opened in an editor.
+
+** Verification
 
 The build ran clean: =./compass.sh build --preset
 linux-clang-debug-make= finished with no error, and the log ends at
@@ -1203,7 +1334,7 @@ linux-clang-debug-make= finished with no error, and the log ends at
 Two findings came out of the verification. Both are older than this
 wave.
 
-**** The trading component is not drift free
+*** The trading component is not drift free
 
 =check_component_drift.py= holds a registry of the components whose
 regeneration leaves the tree clean. That registry carries refdata,
@@ -1231,7 +1362,7 @@ The drift gate cannot read zero for trading until someone brings the
 whole component to the templates. That is a separate pass, sized well
 past one wave, so this task records the position and leaves it.
 
-**** The new files had to be registered, and the component overshoots
+*** The new files had to be registered, and the component overshoots
 
 =src/component_files.cmake= is the explicit source list CMakeLists.txt
 includes, so a generated file that is not in the list is never
@@ -1266,7 +1397,7 @@ seventy five core files, fifty five api files and ten service files
 that had never been compiled, plus the eighty four envelope files, and
 it finished at =[100%] Built target ores.qt.exe= with no error.
 
-**** A test case costs one second of dead time
+*** A test case costs one second of dead time
 
 =ores.testing/test_timeout_listener.hpp= starts a watchdog thread in
 =testCaseStarting= and joins it in =testCaseEnded=. The watchdog sleeps
@@ -1292,7 +1423,7 @@ here, because the fix is to wake the watchdog on a condition variable
 instead of polling, and that change belongs with the harness and not
 with the bond tables.
 
-**** The sweep is green, all seventy one suites
+*** The sweep is green, all seventy one suites
 
 The whole suite ran over the rebuilt binaries, in eight ctest ranges.
 The rebuild matters to the verdict: the trading libraries now carry the

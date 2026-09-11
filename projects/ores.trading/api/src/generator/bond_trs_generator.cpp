@@ -43,6 +43,9 @@ domain::bond_trs generate_synthetic_bond_trs(utility::generation::generation_con
     r.funding_leg_type = std::string("Floating");
     r.funding_rate = 0.045;
     r.funding_index = std::string("SOFR");
+    r.payer = std::optional<std::string>(std::string("true"));
+    r.price_type = std::optional<std::string>(std::string("Dirty"));
+    r.initial_price = std::optional<double>(109.712);
     r.modified_by = modified_by;
     r.performed_by = modified_by;
     r.change_reason_code = "system.test";

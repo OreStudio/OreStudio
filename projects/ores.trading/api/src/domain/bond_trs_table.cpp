@@ -20,20 +20,35 @@
 #include "ores.trading.api/domain/bond_trs_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<bond_trs>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Return Type" << "Funding Leg" << "Funding Rate" << "Funding Index"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Return Type" << "Payer" << "Price Type" << "Initial Price"
+          << "Funding Leg" << "Funding Rate" << "Funding Index" << "Modified By" << "Version"
+          << fort::endr;
 
     for (const auto& bts : v) {
-        table << bts.return_type << bts.funding_leg_type << bts.funding_rate << bts.funding_index
-              << bts.modified_by << bts.version << fort::endr;
+        table << bts.return_type << opt_str(bts.payer) << opt_str(bts.price_type)
+              << opt_str(bts.initial_price) << bts.funding_leg_type << bts.funding_rate
+              << bts.funding_index << bts.modified_by << bts.version << fort::endr;
     }
     return table.to_string();
 }

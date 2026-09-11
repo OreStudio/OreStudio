@@ -28,10 +28,19 @@
  * it extends. The columns fix the ER row ("return type, funding index
  * or rate") from the return side (totalReturnData, instruments.xsd
  * lines 2313-2336) and the funding leg (fundingData lines 2297-2301
- * wrapping one legData). The funding payment dates and the leg
- * schedules have no destination in the nine tables; they land in the
- * shared instrument-keyed schedule tables of the parent story (recorded
- * scope limit, task D7943D7E wave 1.3).
+ * wrapping one legData).
+ *
+ * Three members of the return side ride here because no other row holds
+ * them: the payer flag, the price type and the initial price. The return
+ * schedule lands as schedule rows in the shared instrument-keyed
+ * schedule tables, under the owner role trs, and the funding leg's own
+ * terms land in the shared leg family.
+ *
+ * The return side states nine more members that no table holds:
+ * ObservationLag, ObservationConvention, ObservationCalendar,
+ * PaymentLag, PaymentConvention, PaymentCalendar, PaymentDates,
+ * FXConversion and FXTerms. The corpus states none of them, so the
+ * round trip is whole without them, and they are a recorded scope limit.
  */
 
 create table if not exists "ores_trading_bond_trs_tbl" (
@@ -42,6 +51,9 @@ create table if not exists "ores_trading_bond_trs_tbl" (
     "funding_leg_type" text not null,
     "funding_rate" numeric(28, 10) null,
     "funding_index" text null,
+    "payer" text null,
+    "price_type" text null,
+    "initial_price" numeric(28, 10) null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

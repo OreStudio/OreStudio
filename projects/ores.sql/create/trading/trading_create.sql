@@ -132,6 +132,12 @@
 \ir ./trading_bond_repos_create.sql
 \ir ./trading_bond_repos_notify_trigger_create.sql
 
+\ir ./trading_bond_forwards_create.sql
+\ir ./trading_bond_forwards_notify_trigger_create.sql
+
+\ir ./trading_bond_future_delivery_baskets_create.sql
+\ir ./trading_bond_future_delivery_baskets_notify_trigger_create.sql
+
 \ir ./trading_ascots_create.sql
 \ir ./trading_ascots_notify_trigger_create.sql
 

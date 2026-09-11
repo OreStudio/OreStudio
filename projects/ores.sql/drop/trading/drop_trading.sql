@@ -91,6 +91,10 @@
 \ir ./trading_bond_repos_drop.sql
 \ir ./trading_ascots_notify_trigger_drop.sql
 \ir ./trading_ascots_drop.sql
+\ir ./trading_bond_future_delivery_baskets_notify_trigger_drop.sql
+\ir ./trading_bond_future_delivery_baskets_drop.sql
+\ir ./trading_bond_forwards_notify_trigger_drop.sql
+\ir ./trading_bond_forwards_drop.sql
 \ir ./trading_bond_instruments_notify_trigger_drop.sql
 \ir ./trading_bond_instruments_drop.sql
 \ir ./trading_bond_issues_notify_trigger_drop.sql

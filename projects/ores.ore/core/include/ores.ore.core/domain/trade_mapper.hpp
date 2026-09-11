@@ -113,8 +113,7 @@ public:
      * ConvertibleBond, BondOption, BondTRS and BondRepo. Returns empty
      * for all other types.
      */
-    static std::optional<trading::domain::bond_instrument_data>
-    map_bond_instrument(const trade& v);
+    static std::optional<trading::domain::bond_instrument_data> map_bond_instrument(const trade& v);
 
     /**
      * @brief Dispatches an equity-family trade to equity_instrument_mapper.

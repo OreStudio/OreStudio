@@ -430,8 +430,8 @@ trade bond_instrument_mapper::reverse_bond_trs(const bond_instrument_data& data)
     d.TotalReturnData.PriceType = std::move(pt);
     // Reconstruct funding leg from the captured type, index and rate.
     d.FundingData.LegData.Payer = false;
-    const bool fixed = !data.trs || data.trs->funding_leg_type.empty() ||
-                       data.trs->funding_leg_type == "Fixed";
+    const bool fixed =
+        !data.trs || data.trs->funding_leg_type.empty() || data.trs->funding_leg_type == "Fixed";
     if (fixed) {
         d.FundingData.LegData.LegType = legType::Fixed;
         if (data.trs && data.trs->funding_rate != 0.0) {

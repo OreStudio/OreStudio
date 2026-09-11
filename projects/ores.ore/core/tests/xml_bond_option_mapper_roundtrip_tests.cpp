@@ -87,8 +87,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option", tags) {
     REQUIRE(rt.BondOptionData->strikeGroup.Strike);
     CHECK(std::string(*rt.BondOptionData->strikeGroup.Strike) == "1.000000");
 
-    BOOST_LOG_SEV(lg, info) << "BondOption roundtrip passed. SecurityId: "
-                            << r.issue.security_id;
+    BOOST_LOG_SEV(lg, info) << "BondOption roundtrip passed. SecurityId: " << r.issue.security_id;
 }
 
 TEST_CASE("bond_option_mapper_roundtrip_bond_option_strike", tags) {

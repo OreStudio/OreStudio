@@ -46,7 +46,6 @@ const std::string floating_index_types_desc("Manage floating index types (list, 
 const std::string leg_types_name("leg-types");
 const std::string leg_types_desc("Manage leg types (list, delete, add).");
 
-const std::string domain_name("trading");
 const std::string domain_desc("trading: Trading instrument reference data.");
 
 void print_domain_help(std::ostream& info) {

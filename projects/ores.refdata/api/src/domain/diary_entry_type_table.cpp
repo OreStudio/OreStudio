@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<diary_entry_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& det : v) {
+    for ([[maybe_unused]] const auto& det : v) {
         table << det.code << det.name << det.description << det.display_order << det.modified_by
               << det.version << fort::endr;
     }

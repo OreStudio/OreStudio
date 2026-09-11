@@ -46,7 +46,6 @@ const std::string currencies_command_desc("Manage currencies (import, export, li
 const std::string countries_command_name("countries");
 const std::string countries_command_desc("Manage countries (list, delete, add).");
 
-const std::string domain_name("refdata");
 const std::string domain_desc("refdata: Reference data management.");
 
 void print_domain_help(std::ostream& info) {

@@ -108,7 +108,6 @@ void TelemetrySettingsDialog::setupUI() {
     setMinimumWidth(450);
     setSizeGripEnabled(false);
 
-    const QColor iconColor(220, 220, 220);
 
     // === Logging Tab ===
     auto* logging_tab = new QWidget();

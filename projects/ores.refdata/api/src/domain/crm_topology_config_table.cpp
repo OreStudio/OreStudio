@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<crm_topology_config>& v) {
 
     table << fort::header << fort::endr;
 
-    for (const auto& c : v) {
+    for ([[maybe_unused]] const auto& c : v) {
         table << fort::endr;
     }
     return table.to_string();

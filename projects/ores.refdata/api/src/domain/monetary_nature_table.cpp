@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<monetary_nature>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& mn : v) {
+    for ([[maybe_unused]] const auto& mn : v) {
         table << mn.code << mn.name << mn.description << mn.display_order << mn.modified_by
               << mn.version << fort::endr;
     }

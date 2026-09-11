@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<currency_market_tier>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& mt : v) {
+    for ([[maybe_unused]] const auto& mt : v) {
         table << mt.code << mt.name << mt.description << mt.display_order << mt.modified_by
               << mt.version << fort::endr;
     }

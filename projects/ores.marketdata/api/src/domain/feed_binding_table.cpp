@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<feed_binding>& v) {
 
     table << fort::header << fort::endr;
 
-    for (const auto& fb : v) {
+    for ([[maybe_unused]] const auto& fb : v) {
         table << fort::endr;
     }
     return table.to_string();

@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<day_count_fraction_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& t : v) {
+    for ([[maybe_unused]] const auto& t : v) {
         table << t.code << t.name << t.description << t.display_order << t.modified_by << t.version
               << fort::endr;
     }

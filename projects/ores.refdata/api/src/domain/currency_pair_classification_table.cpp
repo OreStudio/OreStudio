@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<currency_pair_classification>& v)
     table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& cpc : v) {
+    for ([[maybe_unused]] const auto& cpc : v) {
         table << cpc.code << cpc.name << cpc.description << cpc.display_order << cpc.modified_by
               << cpc.version << fort::endr;
     }

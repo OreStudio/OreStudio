@@ -44,7 +44,7 @@ std::string convert_to_table(const std::vector<calendar_rule>& v) {
     table << fort::header << "Calendar" << "Kind" << "Month" << "Day" << "Shift" << "From" << "To"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& rule : v) {
+    for ([[maybe_unused]] const auto& rule : v) {
         table << rule.calendar_code << rule.kind << opt_str(rule.month) << opt_str(rule.day)
               << rule.shift << opt_str(rule.effective_from) << opt_str(rule.effective_to)
               << rule.modified_by << rule.version << fort::endr;

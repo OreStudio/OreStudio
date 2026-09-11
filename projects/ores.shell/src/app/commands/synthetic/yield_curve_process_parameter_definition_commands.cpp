@@ -39,26 +39,6 @@ using namespace logging;
 using ores::nats::service::nats_client;
 namespace domain = ores::synthetic::domain;
 
-namespace {
-
-bool parse_flag(const std::string& value, bool& out) {
-    if (value.empty()) {
-        out = false;
-        return true;
-    }
-    if (value == "true") {
-        out = true;
-        return true;
-    }
-    if (value == "false") {
-        out = false;
-        return true;
-    }
-    return false;
-}
-
-} // namespace
-
 void yield_curve_process_parameter_definition_commands::register_commands(
     cli::Menu& root_menu, nats_client& session, pagination_context& pagination) {
     auto yield_curve_process_parameter_definitions_menu =

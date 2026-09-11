@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<floating_index_type>& v) {
 
     table << fort::header << fort::endr;
 
-    for (const auto& t : v) {
+    for ([[maybe_unused]] const auto& t : v) {
         table << fort::endr;
     }
     return table.to_string();

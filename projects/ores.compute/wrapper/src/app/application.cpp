@@ -429,30 +429,6 @@ std::string tail_file(const fs::path& path, int max_lines = 50) {
 /**
  * @brief Replace {input}, {config}, {output} placeholders in argument list.
  */
-std::vector<std::string> substitute_args(const std::vector<std::string>& tmpl,
-                                         const std::string& input_path,
-                                         const std::string& config_path,
-                                         const std::string& output_path) {
-
-    std::vector<std::string> result;
-    result.reserve(tmpl.size());
-    for (const auto& arg : tmpl) {
-        std::string s = arg;
-        auto replace_all = [&](const std::string& from, const std::string& to) {
-            std::string::size_type pos = 0;
-            while ((pos = s.find(from, pos)) != std::string::npos) {
-                s.replace(pos, from.size(), to);
-                pos += to.size();
-            }
-        };
-        replace_all("{input}", input_path);
-        replace_all("{config}", config_path);
-        replace_all("{output}", output_path);
-        result.push_back(std::move(s));
-    }
-    return result;
-}
-
 /**
  * @brief Process one work assignment.
  *
@@ -712,13 +688,13 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         io_ctx,
         nats,
         service_name,
-        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group, this](
+        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group](
             auto& n, auto /*verifier*/) {
             auto sub = n.js_queue_subscribe(
                 work_subject,
                 durable_name,
                 queue_group,
-                [&nats, &cfg, raw_reporter, this](ores::nats::message msg) {
+                [&nats, &cfg, raw_reporter](ores::nats::message msg) {
                     const auto evt =
                         ores::nats::default_wire_codec()
                             .decode<compute::messaging::work_assignment_event>(msg.data);

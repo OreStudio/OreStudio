@@ -371,7 +371,7 @@ iam::domain::account AccountDetailDialog::getAccount() const {
     return account;
 }
 
-void AccountDetailDialog::populateReportsToCombo(const iam::domain::account& account) {
+void AccountDetailDialog::populateReportsToCombo(const iam::domain::account& /*account*/) {
     {
         const QSignalBlocker blocker(ui_->reportsToCombo);
         ui_->reportsToCombo->clear();

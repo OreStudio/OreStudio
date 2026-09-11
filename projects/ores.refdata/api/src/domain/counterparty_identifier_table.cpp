@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<counterparty_identifier>& v) {
     table << fort::header << "Counterparty" << "Scheme" << "Value" << "Description" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& ci : v) {
+    for ([[maybe_unused]] const auto& ci : v) {
         table << boost::uuids::to_string(ci.counterparty_id) << ci.id_scheme << ci.id_value
               << ci.description << ci.modified_by << ci.version << fort::endr;
     }

@@ -44,7 +44,7 @@ std::string convert_to_table(const std::vector<calendar_exception>& v) {
     table << fort::header << "Calendar" << "Date" << "Business Day" << "Description"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& exc : v) {
+    for ([[maybe_unused]] const auto& exc : v) {
         table << exc.calendar_code << exc.exception_date << (exc.is_business_day ? "true" : "false")
               << opt_str(exc.description) << exc.modified_by << exc.version << fort::endr;
     }

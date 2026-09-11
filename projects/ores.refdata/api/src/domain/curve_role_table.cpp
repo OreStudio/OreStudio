@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<curve_role>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& cr : v) {
+    for ([[maybe_unused]] const auto& cr : v) {
         table << cr.code << cr.name << cr.description << cr.display_order << cr.modified_by
               << cr.version << fort::endr;
     }

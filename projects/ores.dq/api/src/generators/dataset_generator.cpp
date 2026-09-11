@@ -31,7 +31,7 @@ domain::dataset generate_synthetic_dataset(utility::generation::generation_conte
     static constexpr std::array<const char*, 2> origins = {"Primary", "Derived"};
     static constexpr std::array<const char*, 3> natures = {"Actual", "Synthetic", "Mock"};
     static constexpr std::array<const char*, 3> treatments = {"Raw", "Masked", "Anonymized"};
-    static std::atomic<int> counter{0};
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto idx = counter++;
     const auto modified_by = ctx.env().get_or(generation_keys::modified_by, "system");
 

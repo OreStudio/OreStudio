@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<pricing_model_product_parameter>&
 
     table << fort::header << fort::endr;
 
-    for (const auto& pp : v) {
+    for ([[maybe_unused]] const auto& pp : v) {
         table << fort::endr;
     }
     return table.to_string();

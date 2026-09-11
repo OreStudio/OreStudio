@@ -130,7 +130,6 @@ TEST_CASE("two_factor_gaussian_process next advances and current changes", tags)
                                                                    independent_params::seed,
                                                                    independent_params::dt);
 
-    const double r0 = p.current();
     const double r1 = p.next();
 
     // The short rate should evolve — with non-zero vol it almost certainly changes.
@@ -254,9 +253,6 @@ TEST_CASE("two_factor_gaussian_process discount_factor consistency with next for
     const double kx = 0.5, ky = 0.3;
     ores::analytics::quant::service::two_factor_gaussian_process p(
         kx, ky, 0.0, 0.0, 0.0, 0.04, 42, 0.25);
-
-    // Discount factor from now to T=4 ticks
-    const double df_0_to_4 = p.discount_factor(4);
 
     // Advance 2 ticks
     p.next();

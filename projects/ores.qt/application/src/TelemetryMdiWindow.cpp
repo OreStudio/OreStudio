@@ -41,10 +41,10 @@ TelemetryMdiWindow::TelemetryMdiWindow(ClientManager* clientManager,
                                        const QString& username,
                                        QWidget* parent)
     : QWidget(parent)
-    , clientManager_(clientManager)
-    , username_(username)
     , pulseTimer_(new QTimer(this))
-    , logModel_(std::make_unique<ClientTelemetryLogModel>(clientManager)) {
+    , logModel_(std::make_unique<ClientTelemetryLogModel>(clientManager))
+    , clientManager_(clientManager)
+    , username_(username) {
 
     BOOST_LOG_SEV(lg(), debug) << "Creating telemetry MDI window";
     setupUi();

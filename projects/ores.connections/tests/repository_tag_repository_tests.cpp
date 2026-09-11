@@ -29,7 +29,6 @@
 namespace {
 
 const std::string test_suite("ores.connections.tests");
-const std::string tags("[repository]");
 
 class scoped_sqlite_context {
 public:

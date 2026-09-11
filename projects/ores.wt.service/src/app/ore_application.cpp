@@ -677,14 +677,14 @@ void ore_application::show_edit_account_dialog(const boost::uuids::uuid& id) {
     dialog->show();
 }
 
-void ore_application::confirm_delete_account(const boost::uuids::uuid& id) {
+void ore_application::confirm_delete_account([[maybe_unused]] const boost::uuids::uuid& id) {
     auto msg_box = addChild(
         std::make_unique<Wt::WMessageBox>("Confirm Delete",
                                           "Are you sure you want to delete this account?",
                                           Wt::Icon::Warning,
                                           Wt::StandardButton::Yes | Wt::StandardButton::No));
 
-    msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
+    msg_box->buttonClicked().connect([this, msg_box](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
             load_accounts();
         }
@@ -694,14 +694,14 @@ void ore_application::confirm_delete_account(const boost::uuids::uuid& id) {
     msg_box->show();
 }
 
-void ore_application::confirm_lock_account(const boost::uuids::uuid& id) {
+void ore_application::confirm_lock_account([[maybe_unused]] const boost::uuids::uuid& id) {
     auto msg_box = addChild(
         std::make_unique<Wt::WMessageBox>("Confirm Lock",
                                           "Are you sure you want to lock this account?",
                                           Wt::Icon::Warning,
                                           Wt::StandardButton::Yes | Wt::StandardButton::No));
 
-    msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
+    msg_box->buttonClicked().connect([this, msg_box](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
             load_accounts();
         }
@@ -711,14 +711,14 @@ void ore_application::confirm_lock_account(const boost::uuids::uuid& id) {
     msg_box->show();
 }
 
-void ore_application::confirm_unlock_account(const boost::uuids::uuid& id) {
+void ore_application::confirm_unlock_account([[maybe_unused]] const boost::uuids::uuid& id) {
     auto msg_box = addChild(
         std::make_unique<Wt::WMessageBox>("Confirm Unlock",
                                           "Are you sure you want to unlock this account?",
                                           Wt::Icon::Information,
                                           Wt::StandardButton::Yes | Wt::StandardButton::No));
 
-    msg_box->buttonClicked().connect([this, msg_box, id](Wt::StandardButton btn) {
+    msg_box->buttonClicked().connect([this, msg_box](Wt::StandardButton btn) {
         if (btn == Wt::StandardButton::Yes) {
             load_accounts();
         }

@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<tenor_anchor>& v) {
 
     table << fort::header << fort::endr;
 
-    for (const auto& a : v) {
+    for ([[maybe_unused]] const auto& a : v) {
         table << fort::endr;
     }
     return table.to_string();

@@ -79,9 +79,6 @@ public:
     const std::string& seriesType() const {
         return seriesType_;
     }
-    const std::string& metric() const {
-        return metric_;
-    }
     const std::string& qualifier() const {
         return qualifier_;
     }

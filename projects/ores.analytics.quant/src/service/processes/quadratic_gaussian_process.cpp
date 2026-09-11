@@ -53,7 +53,7 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     // The validation prefix is the process name: the constructor is the
     // public entry point and must say who rejected the input. The checks
     // mirror the affine process's, plus the quadratic matrix gamma.
-    const std::size_t num_factors = kappas.size();
+    const Eigen::Index num_factors = kappas.size();
     if (num_factors == 0)
         throw std::invalid_argument("quadratic_gaussian_process: kappas must not be empty");
     if (theta.size() != num_factors || deltas.size() != num_factors ||
@@ -67,7 +67,7 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     if (gamma.rows() != num_factors || gamma.cols() != num_factors)
         throw std::invalid_argument("quadratic_gaussian_process: gamma must be square with one "
                                     "row and column per factor in kappas");
-    for (std::size_t i = 0; i < num_factors; ++i) {
+    for (Eigen::Index i = 0; i < num_factors; ++i) {
         if (!(kappas[i] >= 0.0))
             throw std::invalid_argument("quadratic_gaussian_process: kappas must be "
                                         "non-negative, got " +
@@ -76,13 +76,13 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     }
     // The diagonal participates in the symmetry check: a NaN diagonal
     // entry fails the self-comparison and is rejected here.
-    for (std::size_t i = 0; i < num_factors; ++i)
-        for (std::size_t j = i; j < num_factors; ++j)
+    for (Eigen::Index i = 0; i < num_factors; ++i)
+        for (Eigen::Index j = i; j < num_factors; ++j)
             if (!(sigma(i, j) == sigma(j, i)))
                 throw std::invalid_argument("quadratic_gaussian_process: sigma must be "
                                             "symmetric");
-    for (std::size_t i = 0; i < num_factors; ++i)
-        for (std::size_t j = i; j < num_factors; ++j)
+    for (Eigen::Index i = 0; i < num_factors; ++i)
+        for (Eigen::Index j = i; j < num_factors; ++j)
             if (!(gamma(i, j) == gamma(j, i)))
                 throw std::invalid_argument("quadratic_gaussian_process: gamma must be "
                                             "symmetric");
@@ -125,8 +125,8 @@ quadratic_gaussian_process::quadratic_gaussian_process(Eigen::VectorXd kappas,
     gamma_dt_ = gamma_ * dt_;
 
     sigma_dt_.resize(num_factors, num_factors);
-    for (std::size_t i = 0; i < num_factors; ++i)
-        for (std::size_t j = 0; j < num_factors; ++j) {
+    for (Eigen::Index i = 0; i < num_factors; ++i)
+        for (Eigen::Index j = 0; j < num_factors; ++j) {
             const double kappa_sum = kappas[i] + kappas[j];
             const double factor = (kappa_sum > small_kappa_threshold) ?
                                       (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum :
@@ -168,7 +168,7 @@ double quadratic_gaussian_process::next() {
     // Independent standard normals, one per factor (the same consumption
     // order as the affine process), then the exact one-step Gaussian
     // transition with Cholesky-correlated shocks.
-    for (std::size_t i = 0; i < z_.size(); ++i)
+    for (Eigen::Index i = 0; i < z_.size(); ++i)
         z_[i] = normal_(rng_);
     factors_ = theta_ + lambda_.cwiseProduct(factors_ - theta_) + cholesky_ * z_;
     ++tick_;
@@ -189,7 +189,7 @@ double quadratic_gaussian_process::discount_factor(std::size_t ticks_ahead) cons
     // eps ~ N(0, V) of the exact transition, V = sigma_dt_: the
     // covariance dressing of the quadratic form is C~ = C (I + 2 V C)^-1
     // and P = V (I + 2 C V)^-1 = V - 2 V C~ V (I is the identity).
-    const std::size_t num_factors = factors_.size();
+    const Eigen::Index num_factors = factors_.size();
     const Eigen::MatrixXd identity = Eigen::MatrixXd::Identity(num_factors, num_factors);
     Eigen::VectorXd b = Eigen::VectorXd::Zero(num_factors);
     Eigen::MatrixXd c = Eigen::MatrixXd::Zero(num_factors, num_factors);

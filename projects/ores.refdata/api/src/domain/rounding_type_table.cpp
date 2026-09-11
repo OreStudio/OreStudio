@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<rounding_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& rt : v) {
+    for ([[maybe_unused]] const auto& rt : v) {
         table << rt.code << rt.name << rt.description << rt.display_order << rt.modified_by
               << rt.version << fort::endr;
     }

@@ -23,8 +23,6 @@ namespace ores::utility::program_options {
 
 namespace {
 
-const std::string help_arg("help");
-const std::string version_arg("version");
 const std::string verbose_arg("verbose");
 
 }

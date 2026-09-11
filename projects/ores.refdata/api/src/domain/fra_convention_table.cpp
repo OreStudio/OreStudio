@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<fra_convention>& v) {
 
     table << fort::header << "Id" << "Index" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& fc : v) {
+    for ([[maybe_unused]] const auto& fc : v) {
         table << fc.id << fc.index << fc.modified_by << fc.version << fort::endr;
     }
     return table.to_string();

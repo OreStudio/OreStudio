@@ -154,14 +154,6 @@ std::string expiry_date_from_single(const optionData& od) {
     return std::string(od.exerciseDatesGroup->ExerciseDates->ExerciseDate.front());
 }
 
-std::string exercise_style_from_vec(const xsd::vector<optionData>& v) {
-    if (v.empty())
-        return "European";
-    // If ExerciseDates is present it implies European; American exercise uses
-    // ExerciseSchedule. We default to European as that is far more common.
-    return "European";
-}
-
 void validate_long_short(const std::string& v) {
     if (v != "Long" && v != "Short")
         throw std::invalid_argument("Unrecognised LongShort value: '" + v + "'");

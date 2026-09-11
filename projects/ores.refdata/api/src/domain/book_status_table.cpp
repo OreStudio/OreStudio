@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<book_status>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& bs : v) {
+    for ([[maybe_unused]] const auto& bs : v) {
         table << bs.code << bs.name << bs.description << bs.display_order << bs.modified_by
               << bs.version << fort::endr;
     }

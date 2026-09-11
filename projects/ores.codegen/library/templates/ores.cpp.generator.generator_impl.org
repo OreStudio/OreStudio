@@ -44,7 +44,7 @@ using ores::utility::generation::generation_keys;
 domain::{{entity_singular}} generate_synthetic_{{entity_singular}}(
     utility::generation::generation_context& ctx) {
 {{#needs_counter}}
-    static std::atomic<int> counter{0};
+    [[maybe_unused]] static std::atomic<int> counter{0};
 {{/needs_counter}}
 {{#has_audit_columns}}
     const auto modified_by = ctx.env().get_or(

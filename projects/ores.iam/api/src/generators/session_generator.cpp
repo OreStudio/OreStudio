@@ -27,7 +27,7 @@ namespace ores::iam::generators {
 using ores::utility::generation::generation_keys;
 
 domain::session generate_synthetic_session(utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto idx = ++counter;
     const auto tid = ctx.env().get_or(generation_keys::tenant_id, "system");
     const auto parsed_tid = utility::uuid::tenant_id::from_string(tid);

@@ -37,7 +37,7 @@ generate_synthetic_environment_tag(utility::generation::generation_context& ctx)
 }
 
 domain::environment_tag
-generate_synthetic_environment_tag(utility::generation::generation_context& ctx,
+generate_synthetic_environment_tag(utility::generation::generation_context& /*ctx*/,
                                    const boost::uuids::uuid& environment_id,
                                    const boost::uuids::uuid& tag_id) {
     domain::environment_tag r;

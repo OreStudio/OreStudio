@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<regulatory_book_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Display Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& rbt : v) {
+    for ([[maybe_unused]] const auto& rbt : v) {
         table << rbt.code << rbt.name << rbt.description << rbt.display_order << rbt.modified_by
               << rbt.version << fort::endr;
     }

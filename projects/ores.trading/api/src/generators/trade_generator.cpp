@@ -28,7 +28,7 @@ namespace ores::trading::generator {
 using ores::utility::generation::generation_keys;
 
 domain::trade generate_synthetic_trade(utility::generation::generation_context& ctx) {
-    static std::atomic<int> counter{0};
+    [[maybe_unused]] static std::atomic<int> counter{0};
     const auto modified_by = ctx.env().get_or(std::string(generation_keys::modified_by), "system");
 
     domain::trade r;

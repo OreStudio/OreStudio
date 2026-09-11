@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<overnight_index_convention>& v) {
     table << fort::header << "Id" << "Fixing Calendar" << "DCF" << "Settlement Days"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& ni : v) {
+    for ([[maybe_unused]] const auto& ni : v) {
         table << ni.id << ni.fixing_calendar << ni.day_count_fraction << ni.settlement_days
               << ni.modified_by << ni.version << fort::endr;
     }

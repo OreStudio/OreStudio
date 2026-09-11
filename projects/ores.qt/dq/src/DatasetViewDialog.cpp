@@ -555,7 +555,7 @@ void DatasetViewDialog::updateLineageView() {
         datasetX = (totalWidth - lineageNodeWidth_) / 2;
     }
 
-    qreal datasetHeight = createLineageNode(
+    createLineageNode(
         scene,
         datasetX,
         datasetRow,

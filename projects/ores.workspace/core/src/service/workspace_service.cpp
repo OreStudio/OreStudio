@@ -69,7 +69,7 @@ std::string workspace_service::create_workspace(const domain::workspace& ws) {
 }
 
 void workspace_service::archive_workspace(const std::string& id,
-                                          const std::string& modified_by,
+                                          const std::string& /*modified_by*/,
                                           const std::string& change_reason_code,
                                           const std::string& change_commentary) {
 

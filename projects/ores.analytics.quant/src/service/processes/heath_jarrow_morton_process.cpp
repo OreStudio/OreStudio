@@ -41,7 +41,7 @@ void validate_grid(const Eigen::VectorXd& initial_forward_rates,
                    const Eigen::VectorXd& tenor_spacings,
                    double dt,
                    const char* prefix) {
-    const std::size_t num_rates = initial_forward_rates.size();
+    const Eigen::Index num_rates = initial_forward_rates.size();
     if (num_rates == 0)
         throw std::invalid_argument(std::string(prefix) +
                                     ": initial_forward_rates must not be empty");
@@ -52,13 +52,13 @@ void validate_grid(const Eigen::VectorXd& initial_forward_rates,
         throw std::invalid_argument(std::string(prefix) +
                                     ": tenor_spacings must have one entry fewer than "
                                     "initial_forward_rates");
-    for (std::size_t i = 0; i < volatilities.size(); ++i) {
+    for (Eigen::Index i = 0; i < volatilities.size(); ++i) {
         if (!(volatilities[i] >= 0.0))
             throw std::invalid_argument(
                 std::string(prefix) + ": volatilities must be non-negative, got " +
                 std::to_string(volatilities[i]) + " at index " + std::to_string(i));
     }
-    for (std::size_t i = 0; i < tenor_spacings.size(); ++i) {
+    for (Eigen::Index i = 0; i < tenor_spacings.size(); ++i) {
         if (!(tenor_spacings[i] > 0.0))
             throw std::invalid_argument(
                 std::string(prefix) + ": tenor_spacings must be strictly positive, got " +
@@ -72,20 +72,20 @@ void validate_grid(const Eigen::VectorXd& initial_forward_rates,
 
 Eigen::VectorXd hjm_no_arbitrage_drift(const Eigen::VectorXd& volatilities,
                                        const Eigen::VectorXd& tenor_spacings) {
-    const std::size_t num_rates = volatilities.size();
+    const Eigen::Index num_rates = volatilities.size();
     if (num_rates == 0)
         throw std::invalid_argument("hjm_no_arbitrage_drift: volatilities must not be empty");
     if (tenor_spacings.size() != num_rates - 1)
         throw std::invalid_argument("hjm_no_arbitrage_drift: tenor_spacings must have one entry "
                                     "fewer than volatilities");
-    for (std::size_t i = 0; i < num_rates; ++i) {
+    for (Eigen::Index i = 0; i < num_rates; ++i) {
         if (!(volatilities[i] >= 0.0))
             throw std::invalid_argument("hjm_no_arbitrage_drift: volatilities must be "
                                         "non-negative, got " +
                                         std::to_string(volatilities[i]) + " at index " +
                                         std::to_string(i));
     }
-    for (std::size_t i = 0; i < tenor_spacings.size(); ++i) {
+    for (Eigen::Index i = 0; i < tenor_spacings.size(); ++i) {
         if (!(tenor_spacings[i] > 0.0))
             throw std::invalid_argument("hjm_no_arbitrage_drift: tenor_spacings must be "
                                         "strictly positive, got " +
@@ -101,7 +101,7 @@ Eigen::VectorXd hjm_no_arbitrage_drift(const Eigen::VectorXd& volatilities,
     // measure.
     Eigen::VectorXd drift(volatilities.size());
     double vol_integral = 0.0;
-    for (std::size_t i = 0; i < volatilities.size(); ++i) {
+    for (Eigen::Index i = 0; i < volatilities.size(); ++i) {
         drift[i] = volatilities[i] * vol_integral;
         if (i + 1 < volatilities.size())
             vol_integral += volatilities[i + 1] * tenor_spacings[i];
@@ -131,7 +131,7 @@ heath_jarrow_morton_process::heath_jarrow_morton_process(Eigen::VectorXd initial
 
     tenors_.resize(forward_rates_.size());
     tenors_[0] = 0.0;
-    for (std::size_t i = 0; i < tenor_spacings.size(); ++i)
+    for (Eigen::Index i = 0; i < tenor_spacings.size(); ++i)
         tenors_[i + 1] = tenors_[i] + tenor_spacings[i];
 }
 
@@ -163,9 +163,9 @@ double heath_jarrow_morton_process::discount_factor(std::size_t ticks_ahead) con
     // tenor beyond the grid. A horizon inside a segment integrates the
     // partial linear piece.
     const double horizon = ticks_ahead * dt_;
-    const std::size_t num_rates = forward_rates_.size();
+    const Eigen::Index num_rates = forward_rates_.size();
     double integral = 0.0;
-    for (std::size_t i = 0; i + 1 < num_rates && horizon > tenors_[i]; ++i) {
+    for (Eigen::Index i = 0; i + 1 < num_rates && horizon > tenors_[i]; ++i) {
         const double segment_end = tenors_[i + 1];
         const double end = std::min(segment_end, horizon);
         const double length = end - tenors_[i];

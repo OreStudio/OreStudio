@@ -47,7 +47,6 @@ const std::string change_reason_categories_command_name("change-reason-categorie
 const std::string
     change_reason_categories_command_desc("Manage change reason categories (list, delete).");
 
-const std::string domain_name("dq");
 const std::string domain_desc("dq: Data quality.");
 
 void print_domain_help(std::ostream& info) {

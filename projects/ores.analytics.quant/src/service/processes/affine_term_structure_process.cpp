@@ -51,7 +51,7 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
 
     // The validation prefix is the process name: the constructor is the
     // public entry point and must say who rejected the input.
-    const std::size_t num_factors = kappas.size();
+    const Eigen::Index num_factors = kappas.size();
     if (num_factors == 0)
         throw std::invalid_argument("affine_term_structure_process: kappas must not be empty");
     if (theta.size() != num_factors || deltas.size() != num_factors ||
@@ -62,7 +62,7 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
     if (sigma.rows() != num_factors || sigma.cols() != num_factors)
         throw std::invalid_argument("affine_term_structure_process: sigma must be square with one "
                                     "row and column per factor in kappas");
-    for (std::size_t i = 0; i < num_factors; ++i) {
+    for (Eigen::Index i = 0; i < num_factors; ++i) {
         if (!(kappas[i] >= 0.0))
             throw std::invalid_argument("affine_term_structure_process: kappas must be "
                                         "non-negative, got " +
@@ -71,8 +71,8 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
     }
     // The diagonal participates in the symmetry check: a NaN diagonal
     // entry fails the self-comparison and is rejected here.
-    for (std::size_t i = 0; i < num_factors; ++i)
-        for (std::size_t j = i; j < num_factors; ++j)
+    for (Eigen::Index i = 0; i < num_factors; ++i)
+        for (Eigen::Index j = i; j < num_factors; ++j)
             if (!(sigma(i, j) == sigma(j, i)))
                 throw std::invalid_argument("affine_term_structure_process: sigma must be "
                                             "symmetric");
@@ -102,8 +102,8 @@ affine_term_structure_process::affine_term_structure_process(Eigen::VectorXd kap
     deltas_dt_ = deltas_ * dt_;
 
     sigma_dt_.resize(num_factors, num_factors);
-    for (std::size_t i = 0; i < num_factors; ++i)
-        for (std::size_t j = 0; j < num_factors; ++j) {
+    for (Eigen::Index i = 0; i < num_factors; ++i)
+        for (Eigen::Index j = 0; j < num_factors; ++j) {
             const double kappa_sum = kappas[i] + kappas[j];
             const double factor = (kappa_sum > small_kappa_threshold) ?
                                       (1.0 - std::exp(-kappa_sum * dt_)) / kappa_sum :
@@ -142,7 +142,7 @@ double affine_term_structure_process::next() {
     // Independent standard normals, one per factor (the same consumption
     // order as two_factor_gaussian_process's u1, u2), then the exact
     // one-step Gaussian transition with Cholesky-correlated shocks.
-    for (std::size_t i = 0; i < z_.size(); ++i)
+    for (Eigen::Index i = 0; i < z_.size(); ++i)
         z_[i] = normal_(rng_);
     factors_ = theta_ + lambda_.cwiseProduct(factors_ - theta_) + cholesky_ * z_;
     ++tick_;
@@ -160,7 +160,7 @@ double affine_term_structure_process::discount_factor(std::size_t ticks_ahead) c
     // The affine recursion run forward from the bond's maturity: b holds
     // B_{i+1} and a accumulates the A shift, exactly as the scalar
     // hull_white recursion does per tick.
-    const std::size_t num_factors = factors_.size();
+    const Eigen::Index num_factors = factors_.size();
     Eigen::VectorXd b = Eigen::VectorXd::Zero(num_factors);
     double a = 0.0;
     for (std::size_t i = 0; i < ticks_ahead; ++i) {

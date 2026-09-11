@@ -44,7 +44,7 @@ std::string convert_to_table(const std::vector<calendar_event>& v) {
     table << fort::header << "Calendar" << "Date" << "Diary Entry" << "Name" << "Source"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& evt : v) {
+    for ([[maybe_unused]] const auto& evt : v) {
         table << evt.calendar_code << evt.event_date << evt.diary_entry_type << evt.name
               << opt_str(evt.source) << evt.modified_by << evt.version << fort::endr;
     }

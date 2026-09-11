@@ -1,0 +1,108 @@
+:PROPERTIES:
+:ID: ADF5BBA5-4461-4CA9-9A01-B64A713D5110
+:END:
+#+title: Task: Wt account delete, lock and unlock confirm then do nothing
+#+description: Three confirmation dialogs in the Wt UI reload the account list on Yes and never perform the action; the id they are given is unused.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Three account operations in the Wt web UI ask the user to confirm and
+then do not perform the operation.
+
+=confirm_delete_account=, =confirm_lock_account= and
+=confirm_unlock_account= in =ores.wt.service/src/app/ore_application.cpp=
+each build a message box, and on =StandardButton::Yes= call
+=load_accounts()= and nothing else. The account id each is given is
+never used. A user who confirms a delete sees the list refresh and the
+account still there.
+
+Found by =-Wunused-parameter= once the warnings were enabled. The
+parameter was hidden until then because each lambda captured =id=
+without reading it, so the capture consumed the reference and the
+compiler saw a use. Removing the dead capture exposed the parameter,
+and the parameter exposed the missing implementation.
+
+That chain is the argument for the warnings: nothing else in the build,
+the tests or the review had reported three operations that silently do
+nothing.
+
+
+(Describe what user-visible-or-internal change this task produces.)
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Discovered by the compiler warnings.    |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- Each of the three confirmations performs its operation against the account it was given.
+- A failure is reported to the user rather than swallowed, and the list refresh happens after the operation rather than instead of it.
+- Each has a test that fails if the handler reloads without acting.
+- The =[[maybe_unused]]= markers left on the three id parameters are removed, because the parameters are used.
+
+
+-
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+The three id parameters currently carry =[[maybe_unused]]= so the build
+stays clean under =-Werror=. That marker is a placeholder for this task
+and should not survive it: a parameter the implementation needs is not
+maybe-unused, it is unimplemented.
+
+Whether the same shape exists on other entities in the Wt UI is worth
+checking while here. These three were found together because they sit
+together; nothing suggests they are the only ones.
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

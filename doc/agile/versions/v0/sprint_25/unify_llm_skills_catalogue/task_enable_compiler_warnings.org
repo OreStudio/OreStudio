@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/enable-compiler-warnings
+#+pr: 2061
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
 #+updated: 2026-09-10
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -47,11 +47,11 @@ enum hides exactly the case the warning exists to find, while a
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Discovered in review of PR #2056.       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-10                               |
 
 * Acceptance
@@ -66,6 +66,61 @@ enum hides exactly the case the warning exists to find, while a
 -
 
 * Plan
+
+Run under =compass-helm=. The matching rule sent it to
+=compass-method-feature= rather than bug fix: nothing misbehaves
+against a contract in force, the build is silent by configuration, and
+what changes is the build's behaviour. One predicate describes the
+finished state, so it is one piece of work rather than a sequence.
+
+Measure before deciding. A syntax-only sweep of all 3591 translation
+units under the new flags is the right instrument for a predicate about
+diagnostics: it runs the same front end that emits the warnings without
+paying for codegen and linking, which matters on a machine that has
+been killing heavy builds.
+
+The sweep found 2153 warnings across 259 units. 2040 were
+=-Wmissing-field-initializers= and its designated twin, both firing on
+aggregate initialisation that leaves a trailing field to its default.
+That is idiomatic here, so both are off; leaving them on would have
+buried the 113 that named something real.
+
+* Notes
+
+An early 30-unit sample came back clean and I reported that the
+codebase was already warning-free. It was not: at a 7% dirty rate, 30
+units draw all-clean about one time in ten, and that is what happened.
+The claim was withdrawn when the full sweep landed. The lesson is the
+sample size, not the sampling: 30 was never enough to support the
+conclusion I drew from it.
+
+Three findings were not warnings at all.
+
+The Wt account delete, lock and unlock confirmations do nothing. Each
+shows a dialog and calls =load_accounts()= on Yes. The =id= was
+invisible while a dead lambda capture consumed it, so removing the
+capture exposed the parameter and the parameter exposed the missing
+implementation. Filed as its own defect.
+
+=compute_telemetry_repository= carries a complete =from_entity= mapper
+nothing calls, while its =to_entity= write path is live: a read path
+that was never wired. =substitute_args= in the compute wrapper is 24
+lines of argument templating, also unreferenced. Both are deleted here
+— git keeps the text — and recorded so the finding is not lost with the
+code.
+
+Regenerating the table renderers surfaced 116 files of drift and 24
+generated files never committed, in three components. None of it
+belongs in a warnings change; it is reverted and filed.
+
+Two mistakes of my own are worth recording. A filter written to keep
+only the template's one-line change reverted my hand-written fixes too,
+because they are multi-line: it was defined by what to discard rather
+than what to keep. And a script to sort an initialiser list anchored on
+the first colon, which is the =::= in =MainWindow::MainWindow=, and ate
+the signature; a backup taken beforehand is the only reason that cost
+nothing.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -88,12 +143,80 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2061][#2061]] | [build] Enable the compiler warnings the code assumes |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The suppression's real cost is not "idiomatic init" but that adding a field to an aggregate stops erroring at call sites that do not set it | projects/CMakeLists.txt | Accept | Stated at the flags in those terms. The noise ratio justifies the trade; this names what the trade actually is, which is what someone debugging a future missing-field bug needs to read |
+| 2 | Removing =df_0_to_4= left an orphaned comment with no code under it | two_factor_gaussian_process_tests.cpp | Accept | Removed |
+| 3 | The Eigen retype verified correct across all four files: every retyped index derives from an Eigen size, no tick loop was swept up, and the single API boundary cast is in the right place | — | Accept | No change. This is the check I could not perform on my own work, and it is the reason the round was worth waiting for |
+| 4 | All 74 regenerated files are exactly one line added and one removed, and the only diff body is the =[[maybe_unused]]= | — | Accept | No change. Verified mechanically by numstat rather than by inspection, which is stronger evidence than I offered |
+| 5 | Keeping the warning fix separate from the Wt behaviour fix is the right split | — | Accept | No change |
 
 * Result
+
+All five acceptance criteria are met.
+
+=-Wall= and =-Wextra= are on for GCC and Clang, with =/W4= beside the
+existing =/WX= for MSVC. Two of =-Wextra='s warnings are off, with the
+reason and the counts recorded at the flags.
+
+Everything the new warnings surfaced is fixed rather than suppressed,
+with one exception that names its reason in place: =domain.cpp= is
+104641 lines emitted by xsdcpp from ORE's schemas, so its three
+warnings are silenced on that file alone and the fix belongs upstream
+in the generator.
+
+A switch over a closed enum that misses an enumerator now fails the
+build. Demonstrated rather than asserted: the same source compiles
+clean under main's =-Werror= alone and is an error under the flags this
+adds.
+
+=default:= labels were not the work after all. A =default:= suppresses
+=-Wswitch=, so those 174 files produced no warnings before this change
+and produce none after. They are future blind spots rather than
+remediation, and removing them is a judgement per site that this task
+does not make. The filed premise was wrong about that and is corrected
+here.
+
+The exhaustive-matching section of
+=compass-principle-type-system-discipline= still describes the warning
+as off, and is corrected in this change to describe the mechanism that
+now exists.
+
+Verification, and a correction to what earlier rounds of this task
+claimed.
+
+The sweep script decided whether a translation unit was clean by
+grepping its stderr for a =[-W...]= tag. A unit that failed to compile
+outright emits no such tag, so every broken compile was counted clean.
+The "2153, then 13, then 3 across 3591 units" figures recorded earlier
+therefore measured less than they appeared to. The checker now treats a
+non-zero exit as a failure in its own right.
+
+The corrected sweep covers 3949 translation units, the count having
+grown with =ores.synthetic=. It reports 73 units to look at:
+
+- 55 fail on a stale precompiled header in the clang build tree, which
+  a concurrent full build invalidated. An environment fault, not a
+  diagnostic.
+- 11 fail on Qt =ui_*.h= and moc outputs that only exist after a real
+  build step. The same kind of fault: syntax-only compilation cannot
+  synthesise them.
+- 3 are =domain.cpp=, reported because the sweep appends =-Wall= after
+  the compile database's own flags and so re-enables what the per-file
+  =-Wno-unused-const-variable= turned off. The suppression is confirmed
+  present in the database entry, so these are an artefact of the
+  instrument.
+- 6 are real: an anonymous-namespace =parse_flag= helper that nothing
+  calls, in six =ores.shell= synthetic command files. These are
+  hand-written rather than generated. The dead helper is removed, and
+  the two files left holding an empty anonymous namespace have that
+  removed too.
+
+No warning survives that names something real. The three classes of
+false positive above are properties of a syntax-only sweep run against
+a build tree, and a real build does not have them — which is why the
+full build is the check that settles this, not the sweep.

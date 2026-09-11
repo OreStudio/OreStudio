@@ -59,7 +59,6 @@ RoleMdiWindow::RoleMdiWindow(ClientManager* clientManager, const QString& userna
 
     toolBar_->setMovable(false);
     toolBar_->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    const auto& iconColor = color_constants::icon_color;
 
     // Setup reload action with normal and stale icons
     setupReloadAction();

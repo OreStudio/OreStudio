@@ -44,7 +44,7 @@ std::string convert_to_table(const std::vector<zero_convention>& v) {
     table << fort::header << "Id" << "Tenor Based" << "DCF" << "Compounding" << "Tenor Calendar"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& zc : v) {
+    for ([[maybe_unused]] const auto& zc : v) {
         table << zc.id << (zc.tenor_based ? "true" : "false") << zc.day_count_fraction
               << opt_str(zc.compounding) << opt_str(zc.tenor_calendar) << zc.modified_by
               << zc.version << fort::endr;

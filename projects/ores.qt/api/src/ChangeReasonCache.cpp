@@ -212,8 +212,8 @@ void ChangeReasonCache::onCategoriesLoaded() {
 }
 
 void ChangeReasonCache::onNotificationReceived(const QString& eventType,
-                                               const QDateTime& timestamp,
-                                               const QStringList& entityIds,
+                                               const QDateTime& /*timestamp*/,
+                                               const QStringList& /*entityIds*/,
                                                const QString& /*tenantId*/) {
 
     const auto reason_event = QString::fromStdString(std::string{reason_event_name});

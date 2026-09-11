@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<calendar_type>& v) {
     table << fort::header << "Code" << "Name" << "Description" << "Order" << "Modified By"
           << "Version" << fort::endr;
 
-    for (const auto& ct : v) {
+    for ([[maybe_unused]] const auto& ct : v) {
         table << ct.code << ct.name << ct.description << ct.display_order << ct.modified_by
               << ct.version << fort::endr;
     }

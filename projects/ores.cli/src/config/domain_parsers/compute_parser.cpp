@@ -62,7 +62,6 @@ const std::string workunits_command_desc("Manage compute workunits (list).");
 const std::string results_command_name("results");
 const std::string results_command_desc("Manage compute results (list).");
 
-const std::string domain_name("compute");
 const std::string domain_desc("compute: BOINC-inspired distributed compute grid.");
 
 void print_domain_help(std::ostream& info) {

@@ -43,7 +43,7 @@ void test_timeout_listener::testCaseStarting(Catch::TestCaseInfo const& testInfo
     watchdog_thread_ = std::thread([this]() { watchdog_thread_func(); });
 }
 
-void test_timeout_listener::testCaseEnded(Catch::TestCaseStats const& testCaseStats) {
+void test_timeout_listener::testCaseEnded(Catch::TestCaseStats const& /*testCaseStats*/) {
     test_running_ = false;
 
     // Wait for watchdog thread to finish

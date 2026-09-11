@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<ibor_index_convention>& v) {
     table << fort::header << "Id" << "Fixing Calendar" << "DCF" << "Settlement Days"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& ic : v) {
+    for ([[maybe_unused]] const auto& ic : v) {
         table << ic.id << ic.fixing_calendar << ic.day_count_fraction << ic.settlement_days
               << ic.modified_by << ic.version << fort::endr;
     }

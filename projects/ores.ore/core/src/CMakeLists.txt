@@ -27,6 +27,14 @@ target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_CORE_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden)
+
+    # domain.cpp is 104k lines emitted by xsdcpp from ORE's schemas. It
+    # declares per-element info tables, three of which no generated code
+    # references. The fix belongs upstream in the generator, so the
+    # warning is silenced for that one file rather than the tree.
+    set_source_files_properties(
+        ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
+        PROPERTIES COMPILE_OPTIONS "-Wno-unused-const-variable")
 endif()
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})

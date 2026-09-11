@@ -30,7 +30,7 @@ std::string convert_to_table(const std::vector<observation_lineage>& v) {
 
     table << fort::header << fort::endr;
 
-    for (const auto& ol : v) {
+    for ([[maybe_unused]] const auto& ol : v) {
         table << fort::endr;
     }
     return table.to_string();

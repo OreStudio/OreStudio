@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<country>& v) {
     table << fort::header << "Alpha-2 Code" << "Alpha-3 Code" << "Numeric Code" << "Name"
           << "Official Name" << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& c : v) {
+    for ([[maybe_unused]] const auto& c : v) {
         table << c.alpha2_code << c.alpha3_code << c.numeric_code << c.name << c.official_name
               << c.modified_by << c.version << fort::endr;
     }

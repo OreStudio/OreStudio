@@ -51,7 +51,7 @@ void validate_grid(const Eigen::VectorXd& forward_rates,
                    const Eigen::VectorXd& displacements,
                    const Eigen::VectorXd& tenor_spacings,
                    const char* prefix) {
-    const std::size_t num_rates = forward_rates.size();
+    const Eigen::Index num_rates = forward_rates.size();
     if (num_rates == 0)
         throw std::invalid_argument(std::string(prefix) + ": forward_rates must not be empty");
     if (displacements.size() != num_rates)
@@ -61,7 +61,7 @@ void validate_grid(const Eigen::VectorXd& forward_rates,
         throw std::invalid_argument(std::string(prefix) +
                                     ": tenor_spacings must have one entry per "
                                     "forward_rates entry");
-    for (std::size_t i = 0; i < num_rates; ++i) {
+    for (Eigen::Index i = 0; i < num_rates; ++i) {
         if (!(displacements[i] >= 0.0))
             throw std::invalid_argument(
                 std::string(prefix) + ": displacements must be non-negative, got " +
@@ -80,7 +80,7 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
                                        const Eigen::VectorXd& tenor_spacings,
                                        const Eigen::MatrixXd& covariance) {
     validate_grid(forward_rates, displacements, tenor_spacings, "lmm_spot_measure_drift");
-    const std::size_t num_rates = forward_rates.size();
+    const Eigen::Index num_rates = forward_rates.size();
     if (covariance.rows() != num_rates || covariance.cols() != num_rates)
         throw std::invalid_argument("lmm_spot_measure_drift: covariance must be square "
                                     "with one row and column per forward_rates entry");
@@ -89,8 +89,8 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
     // entries in different rounding orders, so strict equality would
     // reject a legitimate covariance. A NaN entry fails the comparison
     // below and is rejected alongside a genuinely asymmetric matrix.
-    for (std::size_t i = 0; i < num_rates; ++i) {
-        for (std::size_t j = i + 1; j < num_rates; ++j) {
+    for (Eigen::Index i = 0; i < num_rates; ++i) {
+        for (Eigen::Index j = i + 1; j < num_rates; ++j) {
             const double difference = std::abs(covariance(i, j) - covariance(j, i));
             const double tolerance = 1e-12 * std::max(1.0, std::abs(covariance(i, j)));
             if (!(difference <= tolerance))
@@ -110,7 +110,7 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
     // stay positive, so a rate that crossed the pole L_j = -1/tau_j is
     // a hard error, not a silently sign-flipped weight.
     Eigen::VectorXd weights(num_rates);
-    for (std::size_t j = 0; j < num_rates; ++j) {
+    for (Eigen::Index j = 0; j < num_rates; ++j) {
         const double denominator = 1.0 + tenor_spacings[j] * forward_rates[j];
         if (!(denominator > 0.0))
             throw std::invalid_argument("lmm_spot_measure_drift: the numeraire growth "
@@ -124,9 +124,9 @@ Eigen::VectorXd lmm_spot_measure_drift(const Eigen::VectorXd& forward_rates,
     // with numeraire = 0: the sum range is j in [0, i] and there is no
     // sign flip).
     Eigen::VectorXd drift(num_rates);
-    for (std::size_t i = 0; i < num_rates; ++i) {
+    for (Eigen::Index i = 0; i < num_rates; ++i) {
         double sum = 0.0;
-        for (std::size_t j = 0; j <= i; ++j)
+        for (Eigen::Index j = 0; j <= i; ++j)
             sum += covariance(i, j) * weights[j];
         drift[i] = sum;
     }
@@ -147,7 +147,7 @@ libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_f
     // builds the covariance and its Cholesky root, and then delegates
     // the drift core to the free function -- which can then never
     // reject these inputs.
-    const std::size_t num_rates = initial_forward_rates.size();
+    const Eigen::Index num_rates = initial_forward_rates.size();
     if (num_rates == 0)
         throw std::invalid_argument("libor_market_model_process: "
                                     "initial_forward_rates must not be empty");
@@ -161,7 +161,7 @@ libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_f
     if (!(dt > 0.0))
         throw std::invalid_argument("libor_market_model_process: dt must be "
                                     "strictly positive");
-    for (std::size_t i = 0; i < num_rates; ++i) {
+    for (Eigen::Index i = 0; i < num_rates; ++i) {
         if (!(volatilities[i] >= 0.0))
             throw std::invalid_argument("libor_market_model_process: volatilities must "
                                         "be non-negative, got " +
@@ -172,7 +172,7 @@ libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_f
                                         "have unit diagonal, got " +
                                         std::to_string(correlation(i, i)) + " at index " +
                                         std::to_string(i));
-        for (std::size_t j = i + 1; j < num_rates; ++j) {
+        for (Eigen::Index j = i + 1; j < num_rates; ++j) {
             if (!(correlation(i, j) >= -1.0 && correlation(i, j) <= 1.0))
                 throw std::invalid_argument("libor_market_model_process: correlation "
                                             "entries must be within [-1, 1], got " +
@@ -188,7 +188,7 @@ libor_market_model_process::libor_market_model_process(Eigen::VectorXd initial_f
     // core itself does not require this: the Euler step can wander out
     // of the domain mid-run, a documented discretisation artifact that
     // the simulation survives.)
-    for (std::size_t i = 0; i < num_rates; ++i) {
+    for (Eigen::Index i = 0; i < num_rates; ++i) {
         if (!(initial_forward_rates[i] + displacements[i] > 0.0))
             throw std::invalid_argument(
                 "libor_market_model_process: "
@@ -233,10 +233,10 @@ double libor_market_model_process::next() {
     // the displaced-lognormal dynamics.
     const Eigen::VectorXd drift =
         lmm_spot_measure_drift(forward_rates_, displacements_, tenor_spacings_, covariance_);
-    for (std::size_t i = 0; i < z_.size(); ++i)
+    for (Eigen::Index i = 0; i < z_.size(); ++i)
         z_[i] = normal_(rng_);
     correlated_ = cholesky_ * z_;
-    for (std::size_t i = 0; i < forward_rates_.size(); ++i)
+    for (Eigen::Index i = 0; i < forward_rates_.size(); ++i)
         forward_rates_[i] += drift[i] * dt_ + vol_sqrt_dt_[i] *
                                                   (forward_rates_[i] + displacements_[i]) *
                                                   correlated_[i];
@@ -251,7 +251,7 @@ double libor_market_model_process::current() const {
 double libor_market_model_process::discount_factor(std::size_t ticks_ahead) const {
     if (ticks_ahead == 0)
         return 1.0;
-    if (ticks_ahead > forward_rates_.size())
+    if (static_cast<Eigen::Index>(ticks_ahead) > forward_rates_.size())
         throw std::out_of_range("libor_market_model_process: discounting beyond the last "
                                 "rate's payment date is not defined: the grid holds " +
                                 std::to_string(forward_rates_.size()) + " rates");

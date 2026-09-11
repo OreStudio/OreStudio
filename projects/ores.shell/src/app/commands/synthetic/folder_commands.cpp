@@ -42,22 +42,6 @@ namespace domain = ores::synthetic::domain;
 
 namespace {
 
-bool parse_flag(const std::string& value, bool& out) {
-    if (value.empty()) {
-        out = false;
-        return true;
-    }
-    if (value == "true") {
-        out = true;
-        return true;
-    }
-    if (value == "false") {
-        out = false;
-        return true;
-    }
-    return false;
-}
-
 std::optional<boost::uuids::uuid> parse_uuid(const std::string& value) {
     try {
         return boost::lexical_cast<boost::uuids::uuid>(value);

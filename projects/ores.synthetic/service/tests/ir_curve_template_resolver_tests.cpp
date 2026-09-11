@@ -271,7 +271,7 @@ TEST_CASE("resolve maps the FOMC template onto the meeting-dated point ids 1F..8
     CHECK(out[0].ticks_ahead_start == 0);
     CHECK(out[0].ticks_ahead_end == 26); // 2026-01-02 -> 2026-01-28
     // 1F->2F, ..., 7F->8F: each FRA pillar ends at the next meeting.
-    const std::vector<int> expected_end = {75, 117, 166, 208, 257, 299, 341};
+    const std::vector<std::size_t> expected_end = {75, 117, 166, 208, 257, 299, 341};
     for (int n = 1; n <= 7; ++n) {
         CHECK(out[n].curve_role == "FRA");
         CHECK(out[n].point_id == std::to_string(n + 1) + "F");

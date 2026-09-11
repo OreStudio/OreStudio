@@ -667,7 +667,6 @@ void ComputeConsoleWindow::on_show_details() {
         return;
 
     const auto& result = selected_task_->result;
-    const auto& workunit = selected_task_->workunit;
 
     auto* dlg = new QDialog(nullptr);
     dlg->setAttribute(Qt::WA_DeleteOnClose);

@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<cds_convention>& v) {
     table << fort::header << "Id" << "Frequency" << "Rule" << "DCF" << "Modified By" << "Version"
           << fort::endr;
 
-    for (const auto& cc : v) {
+    for ([[maybe_unused]] const auto& cc : v) {
         table << cc.id << cc.frequency << cc.rule << cc.day_count_fraction << cc.modified_by
               << cc.version << fort::endr;
     }

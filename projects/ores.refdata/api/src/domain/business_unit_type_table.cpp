@@ -31,7 +31,7 @@ std::string convert_to_table(const std::vector<business_unit_type>& v) {
     table << fort::header << "Coding Scheme" << "Code" << "Name" << "Level" << "Description"
           << "Modified By" << "Version" << fort::endr;
 
-    for (const auto& but : v) {
+    for ([[maybe_unused]] const auto& but : v) {
         table << but.coding_scheme_code << but.code << but.name << but.level << but.description
               << but.modified_by << but.version << fort::endr;
     }

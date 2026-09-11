@@ -75,6 +75,33 @@ the residue, as modeling orgs under =projects/ores.trading/modeling/=
 and generated, never hand-written. Unit B lands after the whole of the
 container growth, so one pass adds every table the container needs.
 
+The scope is measured now, not assumed. =bond_schedule_data= carries 136
+members and no table holds any of them: the only references to the type
+outside its own header are the two members of =bond_instrument_data=,
+so the schedule lives in memory alone. Of the 105 create scripts under
+=projects/ores.sql/create/trading/=, none names a schedule, an envelope,
+an amortization, a notional or a payment.
+
+The envelope already has a relational design, and it disagrees with the
+carrier wave A.4 built:
+
+| Carrier member | Schema today | Gap |
+|----------------+--------------+-----|
+| =netting_set_id= | =trades.netting_set_id= | closed |
+| =counter_party= | resolved through a party role to =refdata_counterparties= by INNER JOIN | a name that resolves to no counterparty row is dropped |
+| =portfolio_ids=, unbounded | one =trades.portfolio_id= | a document naming several loses all but one |
+| =additional_fields= | no table and no column | no home at all |
+
+=ores_trade_ore_envelope_vw=, in =trading_ore_envelope_view_create.sql=,
+is the existing statement of that design. Unit B reconciles it with the
+carrier rather than designing the envelope again from nothing.
+
+Two further facts fix the shape of the work. A field group flattens into
+its entity with =rfl::Flatten<T>=, so no list member can live in a field
+group and every list needs a keyed child table of its own. And the export
+handler builds =trade_export_item= from the trade row alone, so it cannot
+fill the carrier until those tables exist.
+
 Unit 3 of the story, the qt bridge, stays BACKLOG until this task
 closes.
 

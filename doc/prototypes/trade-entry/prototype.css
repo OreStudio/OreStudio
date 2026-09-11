@@ -61,6 +61,28 @@ a { color: var(--accent); }
 .struct-header h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
 .struct-header .sub { color: var(--ink-dim); font-size: 12px; margin-top: 2px; }
 
+/* The structure is a trade too, so it carries a trade header in the same
+ * shape as a component's. It never moves. */
+.envelope-strip {
+    flex: 1 1 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line-soft);
+}
+
+.env-pair { display: flex; flex-direction: column; gap: 1px; }
+
+.env-key {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+}
+
+.env-val { font-size: 12px; font-variant-numeric: tabular-nums; }
+
 .badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
 .chip {
@@ -223,13 +245,39 @@ button.danger:hover { border-color: var(--bad); color: var(--bad); }
 
 /* --- Widgets --------------------------------------------------------- */
 
-.widget h3 { margin: 0 0 4px; font-size: 14px; }
-.widget .widget-kind {
+.widget h3, .widget-head h3 { margin: 0 0 4px; font-size: 14px; }
+
+.widget-kind {
     color: var(--ink-faint);
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+}
+
+.widget .widget-kind { margin-bottom: 12px; }
+
+/* The component's name and the group it sits in. The group is a display
+ * concept, not a term, so it lives here and not in the form below. */
+.widget-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
     margin-bottom: 12px;
+}
+
+.head-group { display: flex; align-items: center; gap: 6px; }
+.head-group label { font-size: 11px; color: var(--ink-faint); }
+
+.head-group select {
+    font: inherit;
+    font-size: 12px;
+    background: #151b24;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 4px 6px;
 }
 
 .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
@@ -261,10 +309,6 @@ button.danger:hover { border-color: var(--bad); color: var(--bad); }
     border-top: 1px solid var(--line-soft);
     padding-top: 12px;
 }
-
-.barrier-grid { display: grid; grid-template-columns: 120px 1fr; gap: 8px; align-items: center; }
-.barrier-grid .level-row { display: flex; gap: 8px; align-items: center; }
-.barrier-grid .level-row input { max-width: 120px; }
 
 table.legs, table.schedule {
     width: 100%;
@@ -299,6 +343,145 @@ table.legs tr:last-child td, table.schedule tr:last-child td { border-bottom: no
     font-size: 12px;
     border-radius: 0 var(--radius) var(--radius) 0;
 }
+
+/* --- The trade header -------------------------------------------------
+ *
+ * Reference data, not the instrument. It sits above the economics in a
+ * fixed place, and its five field groups are the ones ores.trading
+ * composes a trade from. */
+
+.envelope-block {
+    padding: 10px 14px 12px;
+    background: #151b24;
+    border-bottom: 1px solid var(--line);
+}
+
+.envelope-title {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+}
+
+.envelope-title .legend { margin: 0; }
+
+.env-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px 18px;
+}
+
+.env-group h4 {
+    margin: 0 0 5px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+}
+
+.env-group .env-pair {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 1px 0;
+}
+
+.env-group .env-key { font-size: 11px; text-transform: none; letter-spacing: 0; }
+.env-group .env-val { font-size: 11px; text-align: right; }
+
+/* --- Economics tabs --------------------------------------------------- */
+
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 8px 14px 0;
+    background: var(--panel-2);
+    border-bottom: 1px solid var(--line);
+}
+
+.tabs button {
+    margin-bottom: -1px;
+    padding: 6px 12px;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: var(--radius) var(--radius) 0 0;
+    background: transparent;
+    color: var(--ink-dim);
+}
+
+.tabs button:hover { background: #26303f; border-color: var(--line); border-bottom: none; }
+
+.tabs button.on {
+    background: var(--panel);
+    border-color: var(--line);
+    border-bottom: 1px solid var(--panel);
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* --- Premium sub-leg -------------------------------------------------- */
+
+.subleg {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.subleg-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+}
+
+.subleg-head strong { font-variant-numeric: tabular-nums; }
+.subleg .grow { flex: 1; min-width: 0; color: var(--ink-dim); }
+.subleg .field-grid { padding: 12px; }
+.subleg .legend { margin: 0; padding: 0 12px 12px; }
+
+/* --- Audit drawer ----------------------------------------------------- */
+
+.drawer {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.drawer > summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: var(--panel-2);
+    cursor: pointer;
+    list-style: none;
+}
+
+.drawer > summary::-webkit-details-marker { display: none; }
+.drawer > summary::before { content: "▸"; font-size: 10px; color: var(--ink-faint); }
+.drawer[open] > summary::before { content: "▾"; }
+.drawer > summary .legend { margin: 0; }
+
+.summary-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-dim);
+}
+
+.drawer .audit-list { padding: 10px 14px; }
 
 /* --- NPV strip -------------------------------------------------------- */
 

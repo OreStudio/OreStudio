@@ -335,6 +335,7 @@ function confirmTicket() {
         counterparty: structure.counterparty,
         nettingSet: structure.nettingSet,
         book: structure.book,
+        portfolio: structure.portfolio,
         tradeDate: structure.tradeDate,
         mode: 'package',
         strategy: null,

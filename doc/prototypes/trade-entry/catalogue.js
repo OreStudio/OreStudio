@@ -72,6 +72,11 @@ function productTypeName(code) {
     return pt ? pt.name : code;
 }
 
+function assetClassName(code) {
+    const ac = ASSET_CLASSES.find(a => a.code === code);
+    return ac ? ac.name : code;
+}
+
 /* Strategies. Strategy mode fixes the leg set and refuses a structure
  * that breaks the invariant. Each invariant is a testable condition over
  * the legs, evaluated by checkStrategy() below.
@@ -304,6 +309,7 @@ function openingStructure() {
         counterparty: 'CPTY',
         nettingSet: 'NS',
         book: 'FX-OPTIONS',
+        portfolio: 'FX-G10',
         tradeDate: '2025-02-10',
         mode: 'strategy',
         strategy: 'risk-reversal',
@@ -340,7 +346,8 @@ function openingStructure() {
                             soldCurrency: 'USD', soldAmount: '5450000',
                             strike: '1.09', notional: '5000000'
                         },
-                        premium: { amount: '48000', currency: 'EUR', payDate: '2025-02-14' }
+                        envelope: { externalId: 'ORES-ST-1042-T-8841', status: 'Booked' },
+                        premium: { id: 'T-8844', amount: '48000', currency: 'EUR', payDate: '2025-02-14' }
                     },
                     {
                         id: 'T-8842',
@@ -354,7 +361,8 @@ function openingStructure() {
                             soldCurrency: 'USD', soldAmount: '5600000',
                             strike: '1.12', notional: '5000000'
                         },
-                        premium: { amount: '61500', currency: 'EUR', payDate: '2025-02-14' }
+                        envelope: { externalId: 'ORES-ST-1042-T-8842', status: 'Booked' },
+                        premium: { id: 'T-8845', amount: '61500', currency: 'EUR', payDate: '2025-02-14' }
                     }
                 ]
             },
@@ -374,6 +382,12 @@ function openingStructure() {
                             boughtCurrency: 'USD', boughtAmount: '11180000',
                             soldCurrency: 'EUR', soldAmount: '10000000',
                             strike: '1.118', notional: '10000000'
+                        },
+                        envelope: {
+                            externalId: 'ORES-ST-1042-T-8843',
+                            activityType: 'New',
+                            status: 'Booked',
+                            changeReasonCode: 'HEDGE'
                         },
                         premium: null
                     }
@@ -425,7 +439,8 @@ function schedulePeriods(rules) {
 
 /* --- Self-check ------------------------------------------------------
  *
- * The strategy invariants and the tenor parser carry the prototype's
+ * The strategy invariants, the widget routing, the tenor parser and the
+ * split between the trade header and the instrument carry the prototype's
  * non-trivial logic, so they get a check. Open either page with
  * ?selfcheck=1 to run it; it fails loudly in the console and returns the
  * count of failures.
@@ -492,6 +507,36 @@ function runSelfCheck() {
     check('a 1Y tenor is twelve months', typeof tenorMonths === 'function' && tenorMonths('1Y') === 12);
     check('a 3M tenor is three months', typeof tenorMonths === 'function' && tenorMonths('3M') === 3);
     check('a malformed tenor is zero months', typeof tenorMonths === 'function' && tenorMonths('x') === 0);
+
+    /* The split the screen argues: the trade header carries the reference
+     * data, the instrument carries the economics, and no field appears in
+     * both. A form that asks for a counterparty or a book has crossed the
+     * line, and that is the failure this check exists to catch. */
+    const headerFields = ['counterparty', 'book', 'portfolio', 'nettingSet',
+                          'tradeDate', 'activityType', 'status', 'externalId'];
+    const widgets = [['fx', 'FxOption'], ['fx', 'FxBarrierOption'],
+                     ['swap', ''], ['composite', ''], ['credit', '']];
+
+    const fieldKeys = html =>
+        (String(html).match(/data-field="[^"]+"/g) || []).map(s => s.slice(12, -1));
+
+    const instrumentHtml = ([productType, tradeTypeCode]) =>
+        sectionsFor(widgetFor(productType, tradeTypeCode),
+                    blankComponent(productType, tradeTypeCode, []))
+            .map(section => section.html).join('');
+
+    check('every widget splits into named sections',
+        widgets.every(w => sectionsFor(widgetFor(w[0], w[1]),
+                                       blankComponent(w[0], w[1], [])).length > 0));
+    check('no economics section carries a trade-header field',
+        widgets.every(w => fieldKeys(instrumentHtml(w))
+            .every(k => headerFields.indexOf(k) === -1)));
+
+    /* A premium is a trade in its own right, not a field on the option. */
+    check('a premium is a sub-leg with its own identifier',
+        allComponents().filter(c => c.premium).every(c =>
+            c.premium.id && c.premium.id !== c.id
+            && !Object.prototype.hasOwnProperty.call(c.fields, 'premiumAmount')));
 
     if (failures.length) {
         console.error(`prototype self-check: ${failures.length} failed`, failures);

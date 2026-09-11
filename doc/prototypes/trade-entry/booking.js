@@ -16,6 +16,7 @@ const STORAGE_KEY = 'ores.trade-entry.structure';
 let structure = null;
 let selected = null;          // { kind: 'structure' | 'group' | 'component', id }
 let pendingComponents = [];   // candidates ticked in the "form from trades" dialog
+let activeTab = 'terms';      // which economics section the component pane shows
 
 /* --- Utilities ------------------------------------------------------ */
 
@@ -156,10 +157,32 @@ function render() {
     renderAudit();
 }
 
+/* The structure is a trade too, so it carries a trade header as well. It
+ * sits here, above everything, and never moves. The reader always knows
+ * where the deal's reference data lives. */
+function renderStructEnvelope() {
+    const fields = [
+        ['Structure ID', structure.id],
+        ['Counterparty', structure.counterparty],
+        ['Portfolio', structure.portfolio],
+        ['Netting set', structure.nettingSet],
+        ['Book', structure.book],
+        ['Trade date', structure.tradeDate]
+    ];
+    document.getElementById('struct-envelope').innerHTML = fields.map(([k, v]) => `
+        <div class="env-pair">
+            <span class="env-key">${esc(k)}</span>
+            <span class="env-val">${esc(v || '—')}</span>
+        </div>`).join('');
+}
+
 function renderHeader() {
     document.getElementById('struct-name').textContent = structure.name;
     document.getElementById('struct-sub').textContent =
-        `${structure.id} · ${structure.counterparty} · ${structure.book} · traded ${structure.tradeDate}`;
+        `${structure.id} · ${structure.groups.length} group${structure.groups.length === 1 ? '' : 's'} · `
+        + `${allComponents().length} component${allComponents().length === 1 ? '' : 's'}`;
+
+    renderStructEnvelope();
 
     document.getElementById('version-chip').textContent = `v${structure.version}`;
 
@@ -272,43 +295,173 @@ function renderTree() {
     });
 }
 
+/* The pane has two regions, and they never swap places. The trade header
+ * is reference data: the same fields, in the same order, whatever the
+ * product type. The economics below it is the instrument, and only that
+ * part changes with the product type. */
 function renderEditor() {
     const editor = document.getElementById('editor');
     const removeBtn = document.getElementById('remove-component');
+    const envelope = document.getElementById('envelope');
+    const tabs = document.getElementById('tabs');
 
     const component = selected && selected.kind === 'component' ? findComponent(selected.id) : null;
     removeBtn.hidden = !component;
+    envelope.hidden = !component;
+    tabs.hidden = !component;
 
     if (!component) {
-        editor.innerHTML = `
-            <div class="widget">
-                <h3>${esc(structure.name)}</h3>
-                <div class="widget-kind">Structure · ${esc(structure.mode)} mode</div>
-                <p class="field-note">
-                    Select a component to edit it. A change to any component
-                    increments the structure version.
-                </p>
-                <div class="subhead">Components by type</div>
-                <table class="legs">
-                    <thead><tr><th>ID</th><th>Type</th><th>Label</th><th>Widget</th></tr></thead>
-                    <tbody>
-                        ${allComponents().map(c => `
-                            <tr>
-                                <td>${esc(c.id)}</td>
-                                <td>${esc(productTypeName(c.productType))}</td>
-                                <td>${esc(c.label)}</td>
-                                <td>${esc(WIDGET_NAMES[widgetFor(c.productType, c.tradeTypeCode)])}</td>
-                            </tr>`).join('')}
-                    </tbody>
-                </table>
-            </div>`;
+        envelope.innerHTML = '';
+        tabs.innerHTML = '';
+        editor.innerHTML = structureOverview();
         return;
     }
 
+    renderEnvelope(component);
+
     const widget = widgetFor(component.productType, component.tradeTypeCode);
-    editor.innerHTML = groupField(component) + renderWidget(widget, component);
-    bindWidget(component, widget);
+    const sections = sectionsFor(widget, component);
+    const shown = sections.find(s => s.id === activeTab) || sections[0];
+    activeTab = shown.id;
+
+    tabs.innerHTML = sections.map(s => `
+        <button role="tab" data-tab="${esc(s.id)}" aria-selected="${s.id === shown.id}"
+                class="${s.id === shown.id ? 'on' : ''}">${esc(s.label)}</button>`).join('');
+
+    editor.innerHTML = `
+        <div class="widget-head">
+            <div>
+                <h3>${esc(component.label)}</h3>
+                <div class="widget-kind">${esc(productTypeName(component.productType))} ·
+                    ${esc(component.tradeTypeCode || 'no type code')} · ${esc(WIDGET_NAMES[widget])}</div>
+            </div>
+            ${groupField(component)}
+        </div>
+        <div class="tab-panel" role="tabpanel">${shown.html}</div>`;
+
+    bindTabs();
+    bindWidget(component);
     bindGroupField(component);
+}
+
+function renderEnvelope(component) {
+    document.getElementById('envelope').innerHTML = `
+        <div class="envelope-title">
+            Trade header
+            <span class="legend">The same fields for every product type. The instrument is below.</span>
+        </div>
+        <div class="env-board">
+            ${envelopeOf(component).map(g => `
+                <div class="env-group">
+                    <h4>${esc(g.group)}</h4>
+                    ${g.fields.map(([k, v]) => `
+                        <div class="env-pair">
+                            <span class="env-key">${esc(k)}</span>
+                            <span class="env-val">${esc(v === undefined || v === null || v === '' ? '—' : v)}</span>
+                        </div>`).join('')}
+                </div>`).join('')}
+        </div>`;
+}
+
+/* What the structure pane shows when the reader has the root selected
+ * rather than a component. */
+function structureOverview() {
+    return `
+        <div class="widget">
+            <h3>${esc(structure.name)}</h3>
+            <div class="widget-kind">Structure · ${esc(structure.mode)} mode</div>
+            <p class="field-note">
+                Select a component to edit it. A change to any component
+                increments the structure version.
+            </p>
+            <div class="subhead">Components by type</div>
+            <table class="legs">
+                <thead><tr><th>ID</th><th>Type</th><th>Label</th><th>Widget</th></tr></thead>
+                <tbody>
+                    ${allComponents().map(c => `
+                        <tr>
+                            <td>${esc(c.id)}</td>
+                            <td>${esc(productTypeName(c.productType))}</td>
+                            <td>${esc(c.label)}</td>
+                            <td>${esc(WIDGET_NAMES[widgetFor(c.productType, c.tradeTypeCode)])}</td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>`;
+}
+
+function bindTabs() {
+    document.querySelectorAll('#tabs button[data-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            activeTab = btn.dataset.tab;
+            render();
+        });
+    });
+}
+
+/* The last audit line that names this component. The trade header reads
+ * its audit group from here, so the header and the drawer cannot drift
+ * apart. */
+function lastTouchOf(component) {
+    const hit = structure.audit.filter(a => String(a.text).includes(component.id)).pop();
+    return hit ? `${hit.at.slice(0, 10)} ${shortTime(hit.at)}` : structure.tradeDate;
+}
+
+/* The trade header of one component: the five field groups ores.trading
+ * composes a trade from. None of them is the instrument. The parties and
+ * the dates are inherited from the structure, because that is the deal
+ * the component is booked under. */
+function envelopeOf(component) {
+    const e = component.envelope || {};
+    const family = PRODUCT_TYPES.find(p => p.code === component.productType);
+    const f = component.fields;
+
+    return [
+        {
+            group: 'Identity',
+            fields: [
+                ['Trade ID', component.id],
+                ['External ID', e.externalId || `ORES-${structure.id}-${component.id}`]
+            ]
+        },
+        {
+            group: 'Classification',
+            fields: [
+                ['Trade type', component.tradeTypeCode || '—'],
+                ['Product type', family ? family.name : component.productType],
+                ['Asset class', e.assetClass || assetClassName(family && family.assetClass)],
+                ['Trade status', e.status || 'Booked'],
+                ['Activity', e.activityType || 'New'],
+                ['Netting set', structure.nettingSet]
+            ]
+        },
+        {
+            group: 'Parties',
+            fields: [
+                ['Book', structure.book],
+                ['Portfolio', structure.portfolio],
+                ['Counterparty', structure.counterparty],
+                ['Successor', e.successorTradeId]
+            ]
+        },
+        {
+            group: 'Lifecycle',
+            fields: [
+                ['Trade date', structure.tradeDate],
+                ['Effective date', f.startDate || structure.tradeDate],
+                ['Termination date', f.expiry || f.endDate],
+                ['Executed at', `${structure.tradeDate}T09:04:00Z`]
+            ]
+        },
+        {
+            group: 'Audit',
+            fields: [
+                ['Modified by', 'marco'],
+                ['Change reason', e.changeReasonCode || 'NEW'],
+                ['Recorded at', lastTouchOf(component)]
+            ]
+        }
+    ];
 }
 
 /* A component sits in exactly one group, and the group it sits in decides
@@ -319,10 +472,13 @@ function groupOf(component) {
     return group ? group.id : '';
 }
 
+/* The group is where the component sits in the tree. It is a display
+ * concept, not a term of the trade, so it is no field on the instrument:
+ * it sits beside the component's name, not in the form. */
 function groupField(component) {
     const here = groupOf(component);
     return `
-        <div class="field">
+        <div class="head-group">
             <label for="f-group">Group</label>
             <select id="f-group">
                 ${structure.groups.map(g => `
@@ -347,20 +503,46 @@ function bindGroupField(component) {
     });
 }
 
-/* Each widget is the specialised view for a product family, and the
- * fallback is a real path, not dead code: most trade type codes have no
- * dedicated form. */
-function renderWidget(widget, component) {
-    const head = `
-        <h3>${esc(component.label)}</h3>
-        <div class="widget-kind">${esc(productTypeName(component.productType))} ·
-            ${esc(component.tradeTypeCode || 'no type code')} · ${esc(WIDGET_NAMES[widget])}</div>`;
+/* Each widget is the specialised instrument view for a product family,
+ * and the fallback is a real path, not dead code: most trade type codes
+ * have no dedicated form.
+ *
+ * A widget returns named sections, not one block, so the pane shows one
+ * at a time instead of a single long scroll. Which sections exist is the
+ * product type's business; the trade header above them is not. */
+function sectionsFor(widget, component) {
+    if (widget === 'vanilla') {
+        return [
+            { id: 'terms', label: 'Terms', html: vanillaTerms(component) },
+            { id: 'schedule', label: 'Schedule', html: scheduleSection(component) },
+            { id: 'premium', label: 'Premium', html: premiumSection(component) }
+        ];
+    }
 
-    if (widget === 'vanilla') return head + vanillaFields(component);
-    if (widget === 'barrier') return head + barrierFields(component);
-    if (widget === 'schedule') return head + scheduleFields(component);
-    if (widget === 'composite') return head + compositeFields(component);
-    return head + genericFields(component);
+    if (widget === 'barrier') {
+        return [
+            { id: 'terms', label: 'Terms', html: vanillaTerms(component) },
+            { id: 'barriers', label: 'Barriers', html: barriersSection(component) },
+            { id: 'schedule', label: 'Schedule', html: scheduleSection(component) },
+            { id: 'premium', label: 'Premium', html: premiumSection(component) }
+        ];
+    }
+
+    if (widget === 'schedule') {
+        return [
+            { id: 'terms', label: 'Terms', html: swapTerms(component) },
+            { id: 'schedule', label: 'Schedule', html: swapScheduleSection(component) }
+        ];
+    }
+
+    if (widget === 'composite') {
+        return [
+            { id: 'terms', label: 'Terms', html: compositeTerms(component) },
+            { id: 'legs', label: 'Legs', html: legsSection(component) }
+        ];
+    }
+
+    return [{ id: 'terms', label: 'Terms', html: genericTerms(component) }];
 }
 
 function field(key, label, value, kind, extra) {
@@ -384,7 +566,7 @@ function selectField(key, label, value, options) {
         </div>`;
 }
 
-function vanillaFields(c) {
+function vanillaTerms(c) {
     const f = c.fields;
     return `
         <div class="field-grid">
@@ -398,71 +580,89 @@ function vanillaFields(c) {
             ${field('soldAmount', 'Sold amount', f.soldAmount, 'number')}
             ${field('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
             ${field('notional', 'Notional', f.notional, 'number')}
-        </div>
+        </div>`;
+}
 
-        <div class="subhead">Schedule and expiry</div>
+function scheduleSection(c) {
+    const f = c.fields;
+    return `
         <div class="field-grid">
             ${field('expiry', 'Expiry', f.expiry, 'date')}
             ${selectField('payOffAtExpiry', 'Pay off at expiry', f.payOffAtExpiry, ['false', 'true'])}
         </div>
-        <div class="field full" style="margin-top:10px">
-            <label>Exercise dates</label>
-            <table class="schedule">
-                <thead><tr><th>#</th><th>Date</th><th>Type</th></tr></thead>
-                <tbody><tr><td>1</td><td>${esc(f.expiry || '—')}</td><td>Expiry</td></tr></tbody>
-            </table>
-        </div>
-        ${premiumFields(c)}`;
+        <div class="subhead">Exercise dates</div>
+        <table class="schedule">
+            <thead><tr><th>#</th><th>Date</th><th>Type</th></tr></thead>
+            <tbody><tr><td>1</td><td>${esc(f.expiry || '—')}</td><td>Expiry</td></tr></tbody>
+        </table>
+        <div class="legend">Rebuilt from the expiry. A Bermudan lists one row per
+            exercise date.</div>`;
 }
 
-function premiumFields(c) {
-    const on = c.premium ? '' : 'disabled';
-    const p = c.premium || { amount: '', currency: '', payDate: '' };
+/* The premium is a sub-leg: a trade in its own right with its own
+ * identifier, currency and payment date. It is built here, not described
+ * here, and the option does not own it. */
+function premiumSection(c) {
+    if (!c.premium) {
+        return `
+            <p class="field-note">
+                This option pays nothing up front. Add the sub-leg when it carries a premium.
+            </p>
+            <button class="primary" id="add-premium">Add premium sub-leg</button>`;
+    }
+
+    const p = c.premium;
     return `
-        <div class="subhead">Premium — a trade in its own right, not a field on the option</div>
-        <div class="legend">The prototype records it here only because the product-type list has
-            no premium type yet. The target model gives it its own identifier.</div>
-        <div class="field-grid">
-            <div class="field"><label>Carries a premium</label>
-                <select data-premium="on">
-                    <option value="no"${c.premium ? '' : ' selected'}>No</option>
-                    <option value="yes"${c.premium ? ' selected' : ''}>Yes</option>
-                </select>
+        <div class="subleg">
+            <div class="subleg-head">
+                <span class="type-tag">Sub-leg</span>
+                <strong>${esc(p.id)}</strong>
+                <span class="grow">FX option premium</span>
+                <button class="danger ghost" id="remove-premium">Remove</button>
             </div>
-            ${field('premiumAmount', 'Amount', p.amount, 'number', on)}
-            ${field('premiumCurrency', 'Currency', p.currency, '', on)}
-            ${field('premiumPayDate', 'Pay date', p.payDate, 'date', on)}
+            <div class="field-grid">
+                <div class="field">
+                    <label for="f-premiumAmount">Amount</label>
+                    <input id="f-premiumAmount" data-premium-field="amount"
+                           type="number" value="${esc(p.amount)}">
+                </div>
+                <div class="field">
+                    <label for="f-premiumCurrency">Currency</label>
+                    <input id="f-premiumCurrency" data-premium-field="currency"
+                           value="${esc(p.currency)}">
+                </div>
+                <div class="field">
+                    <label for="f-premiumPayDate">Pay date</label>
+                    <input id="f-premiumPayDate" data-premium-field="payDate"
+                           type="date" value="${esc(p.payDate)}">
+                </div>
+            </div>
+            <div class="legend">Its own identifier, currency and payment date. The structure
+                references it by key; it does not own it.</div>
         </div>`;
 }
 
-function barrierFields(c) {
+function barriersSection(c) {
     const f = c.fields;
     const levels = [f.barrierLevel, f.barrierLevel2].filter(Boolean);
     return `
-        ${vanillaFields(c)}
-        <div class="subhead">Barrier management</div>
-        <div class="barrier-grid">
-            <label for="f-barrierType">Type</label>
+        <div class="field-grid">
             <div class="field">
+                <label for="f-barrierType">Barrier type</label>
                 <select id="f-barrierType" data-field="barrierType">
                     ${['UpAndIn', 'UpAndOut', 'DownAndIn', 'DownAndOut'].map(t =>
                         `<option${t === f.barrierType ? ' selected' : ''}>${t}</option>`).join('')}
                 </select>
             </div>
-            <label>Levels</label>
-            <div class="level-row">
-                ${field('barrierLevel', 'Level 1', f.barrierLevel, 'number', 'step="0.0001"')}
-                ${field('barrierLevel2', 'Level 2 (double barrier)', f.barrierLevel2 || '', 'number', 'step="0.0001"')}
-            </div>
-            <label for="f-rebate">Rebate</label>
-            <div>${field('rebate', '', f.rebate, 'number', 'step="0.0001"')}</div>
-            <label for="f-fxIndex">FX index</label>
-            <div>${field('fxIndex', '', f.fxIndex)}</div>
+            ${field('barrierLevel', 'Level 1', f.barrierLevel, 'number', 'step="0.0001"')}
+            ${field('barrierLevel2', 'Level 2 (double barrier)', f.barrierLevel2 || '', 'number', 'step="0.0001"')}
+            ${field('rebate', 'Rebate', f.rebate, 'number', 'step="0.0001"')}
+            ${field('fxIndex', 'FX index', f.fxIndex)}
         </div>
         <div class="legend">${levels.length} level${levels.length === 1 ? '' : 's'} set.</div>`;
 }
 
-function scheduleFields(c) {
+function swapTerms(c) {
     const f = c.fields;
     return `
         <div class="field-grid">
@@ -472,9 +672,12 @@ function scheduleFields(c) {
             ${field('notional', 'Notional', f.notional, 'number')}
             ${field('rate', 'Rate', f.rate, 'number', 'step="0.0001"')}
             ${field('dayCounter', 'Day counter', f.dayCounter)}
-        </div>
+        </div>`;
+}
 
-        <div class="subhead">Two-leg schedule</div>
+function swapScheduleSection(c) {
+    const f = c.fields;
+    return `
         <div class="field-grid">
             ${field('startDate', 'Start date', f.startDate, 'date')}
             ${field('endDate', 'End date', f.endDate, 'date')}
@@ -505,9 +708,8 @@ function scheduleRows(f) {
         `<tr><td>${i + 1}</td><td>${p.start}</td><td>${p.end}</td></tr>`).join('');
 }
 
-function compositeFields(c) {
+function compositeTerms(c) {
     const f = c.fields;
-    const legs = c.components || [];
     return `
         <div class="field-grid">
             ${field('currency', 'Currency', f.currency)}
@@ -516,9 +718,12 @@ function compositeFields(c) {
             ${field('strike', 'Strike', f.strike, 'number', 'step="0.0001"')}
             ${field('expiry', 'Expiry', f.expiry, 'date')}
             ${field('quantity', 'Quantity', f.quantity, 'number')}
-        </div>
+        </div>`;
+}
 
-        <div class="subhead">Leg list</div>
+function legsSection(c) {
+    const legs = c.components || [];
+    return `
         <table class="legs">
             <thead><tr><th>Leg</th><th>Type</th><th>Side</th><th>Strike</th><th class="num">Notional</th></tr></thead>
             <tbody>
@@ -536,64 +741,72 @@ function compositeFields(c) {
             The legs keep their own identifiers.</div>`;
 }
 
-function genericFields(c) {
+/* The fallback. It captures the instrument and nothing else: the
+ * counterparty and the book are already in the trade header above, and a
+ * form that asks for them twice is the split failing. */
+function genericTerms(c) {
     const f = c.fields;
     return `
         <div class="generic-note">
             No dedicated form exists for <strong>${esc(c.tradeTypeCode || 'this type code')}</strong>.
-            The generic form captures the reference data by hand. This is the path most
+            The generic form captures the instrument by hand. This is the path most
             product types take, and it is the one that proves the picker is extensible.
         </div>
 
-        <div class="subhead">Reference data</div>
         <div class="field-grid">
             ${field('longShort', 'Long / short', f.longShort || '')}
             ${field('notional', 'Notional', f.notional || '', 'number')}
             ${field('currency', 'Currency', f.currency || '')}
             ${field('expiry', 'Expiry', f.expiry || '', 'date')}
-            ${field('counterparty', 'Counterparty', f.counterparty || structure.counterparty)}
-            ${field('book', 'Book', f.book || structure.book)}
         </div>
-        <div class="legend">Fields are free text on this path. The booking still validates
-            the notional and the expiry.</div>`;
+        <div class="legend">The trade header above carries the counterparty and the book.
+            This form carries only the instrument.</div>`;
 }
 
-function bindWidget(component, widget) {
+function bindWidget(component) {
     const editor = document.getElementById('editor');
 
     editor.querySelectorAll('[data-field]').forEach(input => {
         const key = input.dataset.field;
         input.addEventListener('change', () => {
-            const before = JSON.stringify(component.fields[key]);
-            const value = input.value;
-            if (before === JSON.stringify(value)) return;
-            component.fields[key] = value;
+            if (JSON.stringify(component.fields[key]) === JSON.stringify(input.value)) return;
+            component.fields[key] = input.value;
             component.label = relabel(component);
             mutate(`${component.id} ${key} changed`);
         });
     });
 
-    const premiumToggle = editor.querySelector('[data-premium="on"]');
-    if (premiumToggle) {
-        premiumToggle.addEventListener('change', () => {
-            component.premium = premiumToggle.value === 'yes'
-                ? { amount: '0', currency: component.fields.boughtCurrency || '', payDate: '' }
-                : null;
-            mutate(`${component.id} premium ${premiumToggle.value === 'yes' ? 'added' : 'removed'}`);
+    const addPremium = document.getElementById('add-premium');
+    if (addPremium) {
+        addPremium.addEventListener('click', () => {
+            component.premium = {
+                id: nextTradeId(),
+                amount: '0',
+                currency: component.fields.boughtCurrency || component.fields.currency || 'USD',
+                payDate: ''
+            };
+            activeTab = 'premium';
+            mutate(`${component.id} premium sub-leg ${component.premium.id} added`);
         });
-
-        if (component.premium) {
-            [['premiumAmount', 'amount'], ['premiumCurrency', 'currency'], ['premiumPayDate', 'payDate']]
-                .forEach(([id, key]) => {
-                    const el = editor.querySelector(`[data-field="${id}"]`);
-                    if (!el) return;
-                    el.addEventListener('change', () => {
-                        component.premium[key] = el.value;
-                        mutate(`${component.id} premium ${key} changed`);
-                    });
-                });
-        }
     }
+
+    const removePremium = document.getElementById('remove-premium');
+    if (removePremium) {
+        removePremium.addEventListener('click', () => {
+            const id = component.premium.id;
+            component.premium = null;
+            mutate(`${component.id} premium sub-leg ${id} removed`);
+        });
+    }
+
+    editor.querySelectorAll('[data-premium-field]').forEach(input => {
+        const key = input.dataset.premiumField;
+        input.addEventListener('change', () => {
+            if (component.premium[key] === input.value) return;
+            component.premium[key] = input.value;
+            mutate(`${component.id} premium ${key} changed`);
+        });
+    });
 }
 
 /* The label follows the economics, so the tree stays readable while the
@@ -693,10 +906,19 @@ function addComponent(productType, tradeTypeCode) {
     mutate(`${component.id} added to ${targetGroup.name}`);
 }
 
+/* A premium sub-leg is a trade, so it takes an identifier from the same
+ * space as the components. Nothing reuses one. */
+function nextTradeId() {
+    const taken = allComponents()
+        .flatMap(c => [c.id].concat(c.premium && c.premium.id ? [c.premium.id] : []))
+        .map(id => ({ id }));
+    return nextId('T', taken);
+}
+
 function blankComponent(productType, tradeTypeCode, existing) {
     const family = PRODUCT_TYPES.find(p => p.code === productType);
     return {
-        id: nextId('T-9', existing),
+        id: nextId('T', existing),
         productType,
         tradeTypeCode,
         label: `New ${family ? family.name : productType} component`,
@@ -706,6 +928,7 @@ function blankComponent(productType, tradeTypeCode, existing) {
             currency: 'USD', boughtCurrency: '', soldCurrency: '',
             ...((family && family.defaults) || {})
         },
+        envelope: { activityType: 'New', status: 'Draft' },
         premium: null
     };
 }
@@ -835,11 +1058,22 @@ function wire() {
     });
 }
 
+/* A structure stored by an earlier version of the page carries no trade
+ * header on its components, and its premium carries no identifier of its
+ * own. Derive both rather than discard the booking. */
+function backfill() {
+    allComponents().forEach(c => {
+        if (!c.envelope) c.envelope = { activityType: 'New', status: 'Booked' };
+        if (c.premium && !c.premium.id) c.premium.id = nextTradeId();
+    });
+}
+
 function boot() {
     structure = load() || openingStructure();
     if (!structure.mode) structure.mode = 'package';
     if (!structure.audit) structure.audit = [];
     if (!structure.groups) structure.groups = [];
+    backfill();
     selected = { kind: 'structure', id: structure.id };
     wire();
     render();

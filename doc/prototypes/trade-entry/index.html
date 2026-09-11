@@ -28,6 +28,8 @@
             <button id="authorise-btn">Authorise</button>
             <a href="pricing.html" id="price-link" class="btn ghost">Price this structure</a>
         </div>
+
+        <div class="envelope-strip" id="struct-envelope"></div>
     </header>
 
     <div class="validation ok" id="validation">
@@ -55,6 +57,8 @@
                 <h2>Component</h2>
                 <button class="danger ghost" id="remove-component" hidden>Remove</button>
             </header>
+            <div class="envelope-block" id="envelope" hidden></div>
+            <div class="tabs" id="tabs" role="tablist" hidden></div>
             <div class="body" id="editor"></div>
         </section>
 
@@ -68,15 +72,13 @@
         <div class="provenance" id="provenance"></div>
     </div>
 
-    <section class="panel">
-        <header>
-            <h2>Audit and version</h2>
+    <details class="drawer" id="audit-drawer">
+        <summary>
+            <span class="summary-title">Audit and version</span>
             <span class="legend">A component change bumps the version. Authorisation does not.</span>
-        </header>
-        <div class="body">
-            <ul class="audit-list" id="audit"></ul>
-        </div>
-    </section>
+        </summary>
+        <ul class="audit-list" id="audit"></ul>
+    </details>
 
 </div>
 

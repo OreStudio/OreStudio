@@ -93,6 +93,45 @@ export verbs belong with the trading group.
 | Import | =workflow.v1.ore.import=                                                   |
 | Export | =trading.v1.trades.portfolio.export=                                       |
 
+** The upload is HTTP, and the shell has no HTTP client
+
+Object storage has no NATS subject. =ores.storage= is an HTTP client
+library (=net/http_client.hpp=, =net/storage_paths.hpp=,
+=net/storage_transfer.hpp=), and the two NATS subjects that name storage
+(=marketdata.v1.series.export-to-storage= and
+=trading.v1.trades.export-to-storage=) move data from the server into
+storage, which is the opposite direction.
+
+=projects/ores.qt/trading/src/OreImportWizard.cpp= is the working
+reference for the first two steps:
+
+#+begin_example
+ores::storage::net::storage_transfer transfer(http_base_url);
+transfer.pack_and_upload(ore_dir,
+                         std::string(ores::ore::net::ore_storage::bucket),
+                         ores::ore::net::ore_storage::import_key(request_id));
+...
+ores::ore::messaging::ore_import_request req;
+req.request_id = request_id;
+req.correlation_id = request_id;
+cm->process_authenticated_request(req, std::chrono::minutes(10));
+#+end_example
+
+=ores.shell= links no HTTP client and holds no base URL today, so this
+verb adds configuration the shell does not have, and not only a verb.
+The three verbs need three new links: =ores.storage= and =ores.ore.api=
+for the upload and the import request, and =ores.ore.core= for the
+exporter, on top of the =ores.trading.api= and =ores.workflow.api=
+links already present.
+
+=storage_transfer= offers both shapes. =pack_and_upload(src_dir, ...)=
+takes a directory and does the packing itself, and =upload(bucket, key,
+src_file)= takes one file. The second fits the acceptance as written,
+which has the script tar and gzip the document first, but it puts tar
+and gzip in the =ores= script language. The first avoids that by
+pointing the verb at a directory holding the one example document.
+Settle this when the verb is written.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

@@ -6,15 +6,16 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One schedule an instrument's leg states, either as a rule block or as a date list, keyed to the instrument, the leg and the schedule's role.
+#+brief: One schedule entry an instrument's owner states, either as a rule block or as a date list, keyed to the instrument, the owner, the schedule's role and the entry's ordinal.
 #+entity_singular: instrument_schedule
 #+entity_plural: instrument_schedules
 #+entity_title: Instrument Schedule
 #+created: 2026-09-11
 #+updated: 2026-09-11
 
-One row per schedule an instrument's leg states, keyed to the
-instrument, the leg that states it and the schedule's role.
+One row per schedule entry an instrument's owner states, keyed to the
+instrument, the owner that states it, the schedule's role and the
+entry's ordinal within that role.
 
 The ORE schema states a schedule as a choice: a rule block that a
 calendar expands, or an explicit list of dates. The generated code
@@ -24,10 +25,17 @@ scalars and the =schedule_kind= column records which arm the document
 chose, so a reader rebuilds the arm it read rather than guessing. The
 date arm's rows land in the keyed child table.
 
+Both lists are unbounded and a document interleaves their entries, so
+the role alone does not identify a row. =sequence_number= is the
+entry's ordinal within its owner's list for that role, counting from
+one, and it preserves the order the document stated.
+
 A bond leg states four schedules: its own schedule, its payment
 schedule, and, when the leg is floating, the fixing and reset
 schedules. The role column names which one, so one table holds all
-four.
+four. The column also carries the schedules that hang off an option
+block and off a total return swap, so the table is keyed by owner
+rather than by leg.
 
 The nine bond tables carry no schedule column, and the org models of
 the family record this table as the destination. It is keyed by the
@@ -55,34 +63,41 @@ cannot hold stays distinguishable from one the document omits.
 :primary_key: true
 :END:
 
-UUID of the instrument whose leg states this schedule.
+UUID of the instrument whose owner states this schedule.
 
 The instrument row carries the trade, the workspace and the party. The
 schedule rows are family-owned and ride the instrument's scope, so no
 workspace column rides them.
 
-** leg_role
+** owner_role
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
 :END:
 
-Which leg list of the instrument the leg stating this schedule belongs
-to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+Which list of the instrument states this schedule: =bond=,
+=trs_funding=, =repo=, =ascot_swap=, =option= or =trs=.
 
-** leg_number
+The first four name a leg list. =option= is the exercise schedule an
+option block states, and =trs= is the return schedule a total return
+swap states. Neither is a leg, so the column names an owner rather
+than a leg.
+
+** owner_number
 :PROPERTIES:
 :type:        integer
 :cpp_type:    int
 :primary_key: true
 :END:
 
-Ordinal of the leg within its list, counting from one.
+Ordinal of the owner within its list, counting from one.
 
 The schema declares the bond's leg list unbounded, and a bond states
-one leg per coupon. The number is the leg's position in the document,
-so a reader reassembles the legs in the order the document held them.
+one leg per coupon. The number is the owner's position in the
+document, so a reader reassembles the owners in the order the document
+held them. An owner that is not a list member holds one row and takes
+the number one.
 
 ** schedule_role
 :PROPERTIES:
@@ -91,11 +106,27 @@ so a reader reassembles the legs in the order the document held them.
 :primary_key: true
 :END:
 
-Which of the leg's schedules this row is.
+Which of the owner's schedules this row is.
 
 The container's member names are the values: =schedule=,
 =payment_schedule=, =fixing_schedule= and =reset_schedule=. The first
 two sit on the leg, the last two on its floating rate block.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this entry within its owner's list for the schedule's role,
+counting from one.
+
+The schema states a schedule as an unbounded choice of rules and
+dates, and a document interleaves the two arms. One owner can
+therefore state several entries under one role, and the role alone
+does not identify a row. The ordinal preserves the order the document
+stated.
 
 ** schedule_kind
 :PROPERTIES:
@@ -118,12 +149,12 @@ std::string("rules")
 
 ** start_date
 :PROPERTIES:
-:type:     text
+:type:     date
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-First date of the rule block (ISO 8601 date string).
+First date of the rule block.
 
 The schema requires this member on a rule block and states no
 equivalent on a date list, so the column is nullable and a =dates= row
@@ -131,7 +162,7 @@ leaves it unset.
 
 ** end_date
 :PROPERTIES:
-:type:     text
+:type:     date
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
@@ -230,7 +261,7 @@ Business day convention applied when the end-of-month flag is on.
 
 ** first_date
 :PROPERTIES:
-:type:     text
+:type:     date
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
@@ -239,7 +270,7 @@ First date of the rule block, stated outright.
 
 ** last_date
 :PROPERTIES:
-:type:     text
+:type:     date
 :cpp_type: std::optional<std::string>
 :nullable: true
 :END:
@@ -289,11 +320,12 @@ spelling.
 
 ** Checks
 
-| expression                                                  |
-|-------------------------------------------------------------|
-| "schedule_kind" in ('rules', 'dates')                       |
-| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
-| "leg_number" > 0                                            |
+| expression                                                                     |
+|--------------------------------------------------------------------------------|
+| "schedule_kind" in ('rules', 'dates')                                          |
+| "owner_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap', 'option', 'trs') |
+| "owner_number" > 0                                                             |
+| "sequence_number" > 0                                                          |
 
 * C++
 
@@ -326,16 +358,17 @@ spelling.
 
 ** Table display
 
-| column        | header      |
-|---------------+-------------|
-| leg_role      | Leg Role    |
-| leg_number    | Leg         |
-| schedule_role | Role        |
-| schedule_kind | Kind        |
-| tenor         | Tenor       |
-| calendar      | Calendar    |
-| modified_by   | Modified By |
-| version       | Version     |
+| column          | header      |
+|-----------------+-------------|
+| owner_role      | Owner Role  |
+| owner_number    | Owner       |
+| schedule_role   | Role        |
+| sequence_number | Sequence    |
+| schedule_kind   | Kind        |
+| tenor           | Tenor       |
+| calendar        | Calendar    |
+| modified_by     | Modified By |
+| version         | Version     |
 
 ** Custom repository methods
 

@@ -6,7 +6,7 @@
 #+type: ores.codegen.entity
 #+component: trading
 #+filetags: :model:entity:trading:
-#+brief: One date of an instrument schedule's date list, keyed to the schedule that holds it.
+#+brief: One date of an instrument schedule's date list, keyed to the schedule entry that holds it.
 #+entity_singular: instrument_schedule_date
 #+entity_plural: instrument_schedule_dates
 #+entity_title: Instrument Schedule Date
@@ -21,9 +21,10 @@ date arm: the explicit list a document writes out. The rule arm writes
 no row here, because a calendar expands its dates at read time rather
 than the document stating them.
 
-The owning schedule's key reaches this table whole. A schedule is
-keyed by the instrument, the leg and its role, so those three columns
-lead the key here and the ordinal follows them.
+The owning schedule's key reaches this table whole. A schedule entry
+is keyed by the instrument, the owner, the entry's role and its
+ordinal, so those four columns lead the key here and the date's own
+ordinal follows them.
 
 A leg states four schedules, and one of them, the payment dates of a
 leg, is a bare date list with no rule arm at all. Such a list is a
@@ -47,30 +48,30 @@ without a table of its own.
 :primary_key: true
 :END:
 
-UUID of the instrument whose leg states the owning schedule.
+UUID of the instrument whose owner states the owning schedule.
 
 The instrument row carries the trade, the workspace and the party. The
 date rows are family-owned and ride the instrument's scope, so no
 workspace column rides them.
 
-** leg_role
+** owner_role
 :PROPERTIES:
 :type:        text
 :cpp_type:    std::string
 :primary_key: true
 :END:
 
-Which leg list of the instrument the leg stating the owning schedule
-belongs to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+Which list of the instrument states the owning schedule: =bond=,
+=trs_funding=, =repo=, =ascot_swap=, =option= or =trs=.
 
-** leg_number
+** owner_number
 :PROPERTIES:
 :type:        integer
 :cpp_type:    int
 :primary_key: true
 :END:
 
-Ordinal of the leg within its list, counting from one.
+Ordinal of the owner within its list, counting from one.
 
 ** schedule_role
 :PROPERTIES:
@@ -79,7 +80,21 @@ Ordinal of the leg within its list, counting from one.
 :primary_key: true
 :END:
 
-Which of the leg's schedules the owning row is.
+Which of the owner's schedules the owning row is.
+
+** schedule_sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the owning schedule entry within its owner's list for that
+role, counting from one.
+
+The parent's =sequence_number= reaches this table under this name, so
+a date stays bound to the entry that holds it when one owner states
+several entries under one role.
 
 ** sequence_number
 :PROPERTIES:
@@ -116,11 +131,12 @@ std::string("2029-01-15")
 
 ** Checks
 
-| expression                                                  |
-|-------------------------------------------------------------|
-| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
-| "leg_number" > 0                                            |
-| "sequence_number" > 0                                       |
+| expression                                                                     |
+|--------------------------------------------------------------------------------|
+| "owner_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap', 'option', 'trs') |
+| "owner_number" > 0                                                             |
+| "schedule_sequence_number" > 0                                                 |
+| "sequence_number" > 0                                                          |
 
 * C++
 
@@ -152,12 +168,13 @@ std::string("2029-01-15")
 
 ** Table display
 
-| column          | header      |
-|-----------------+-------------|
-| sequence_number | Sequence    |
-| schedule_date   | Date        |
-| modified_by     | Modified By |
-| version         | Version     |
+| column                   | header            |
+|--------------------------+-------------------|
+| schedule_sequence_number | Schedule Sequence |
+| sequence_number          | Sequence          |
+| schedule_date            | Date              |
+| modified_by              | Modified By       |
+| version                  | Version           |
 
 ** Custom repository methods
 

@@ -40,9 +40,10 @@ generate_synthetic_instrument_schedule(utility::generation::generation_context& 
     r.tenant_id =
         utility::uuid::tenant_id::from_string(tid_str).value_or(utility::uuid::tenant_id::system());
     r.instrument_id = ctx.generate_uuid();
-    r.leg_role = std::string(faker::word::noun());
-    r.leg_number = 0;
+    r.owner_role = std::string(faker::word::noun());
+    r.owner_number = 0;
     r.schedule_role = std::string(faker::word::noun());
+    r.sequence_number = 0;
     r.schedule_kind = std::string("rules");
     r.modified_by = modified_by;
     r.performed_by = modified_by;

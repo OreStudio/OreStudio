@@ -45,27 +45,34 @@ std::uint32_t instrument_schedule_service::count_instrument_schedules() {
 
 std::optional<domain::instrument_schedule>
 instrument_schedule_service::get_instrument_schedule_at_version(const std::string& instrument_id,
-                                                                const std::string& leg_role,
-                                                                const std::string& leg_number,
+                                                                const std::string& owner_role,
+                                                                const std::string& owner_number,
                                                                 const std::string& schedule_role,
+                                                                const std::string& sequence_number,
                                                                 std::uint32_t version) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument schedule at version. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role << " version: " << version;
-    return repo_.read_at_version(ctx_, instrument_id, leg_role, leg_number, schedule_role, version);
+                               << "instrument_id: " << instrument_id
+                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << " schedule_role: " << schedule_role
+                               << " sequence_number: " << sequence_number
+                               << " version: " << version;
+    return repo_.read_at_version(
+        ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number, version);
 }
 
 std::optional<domain::instrument_schedule>
 instrument_schedule_service::get_instrument_schedule(const std::string& instrument_id,
-                                                     const std::string& leg_role,
-                                                     const std::string& leg_number,
-                                                     const std::string& schedule_role) {
+                                                     const std::string& owner_role,
+                                                     const std::string& owner_number,
+                                                     const std::string& schedule_role,
+                                                     const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting instrument schedule. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role;
-    auto results = repo_.read_latest(ctx_, instrument_id, leg_role, leg_number, schedule_role);
+                               << "instrument_id: " << instrument_id
+                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << " schedule_role: " << schedule_role
+                               << " sequence_number: " << sequence_number;
+    auto results = repo_.read_latest(
+        ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number);
     if (results.empty())
         return std::nullopt;
     return results.front();
@@ -74,21 +81,25 @@ instrument_schedule_service::get_instrument_schedule(const std::string& instrume
 void instrument_schedule_service::save_instrument_schedule(const domain::instrument_schedule& v) {
     if (v.instrument_id.is_nil())
         throw std::invalid_argument("Instrument Schedule instrument_id cannot be empty.");
-    if (v.leg_role.empty())
-        throw std::invalid_argument("Instrument Schedule leg_role cannot be empty.");
+    if (v.owner_role.empty())
+        throw std::invalid_argument("Instrument Schedule owner_role cannot be empty.");
     if (v.schedule_role.empty())
         throw std::invalid_argument("Instrument Schedule schedule_role cannot be empty.");
     BOOST_LOG_SEV(lg(), debug) << "Saving instrument schedule. "
                                << "instrument_id: " << v.instrument_id
-                               << " leg_role: " << v.leg_role << " leg_number: " << v.leg_number
-                               << " schedule_role: " << v.schedule_role;
+                               << " owner_role: " << v.owner_role
+                               << " owner_number: " << v.owner_number
+                               << " schedule_role: " << v.schedule_role
+                               << " sequence_number: " << v.sequence_number;
     auto t = v;
     stamp(t, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved instrument schedule. "
-                              << "instrument_id: " << v.instrument_id << " leg_role: " << v.leg_role
-                              << " leg_number: " << v.leg_number
-                              << " schedule_role: " << v.schedule_role;
+                              << "instrument_id: " << v.instrument_id
+                              << " owner_role: " << v.owner_role
+                              << " owner_number: " << v.owner_number
+                              << " schedule_role: " << v.schedule_role
+                              << " sequence_number: " << v.sequence_number;
 }
 
 void instrument_schedule_service::save_instrument_schedules(
@@ -96,8 +107,8 @@ void instrument_schedule_service::save_instrument_schedules(
     for (const auto& e : instrument_schedules) {
         if (e.instrument_id.is_nil())
             throw std::invalid_argument("Instrument Schedule instrument_id cannot be empty.");
-        if (e.leg_role.empty())
-            throw std::invalid_argument("Instrument Schedule leg_role cannot be empty.");
+        if (e.owner_role.empty())
+            throw std::invalid_argument("Instrument Schedule owner_role cannot be empty.");
         if (e.schedule_role.empty())
             throw std::invalid_argument("Instrument Schedule schedule_role cannot be empty.");
     }
@@ -110,38 +121,46 @@ void instrument_schedule_service::save_instrument_schedules(
 }
 
 void instrument_schedule_service::delete_instrument_schedule(const std::string& instrument_id,
-                                                             const std::string& leg_role,
-                                                             const std::string& leg_number,
-                                                             const std::string& schedule_role) {
+                                                             const std::string& owner_role,
+                                                             const std::string& owner_number,
+                                                             const std::string& schedule_role,
+                                                             const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Removing instrument schedule. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role;
-    repo_.remove(ctx_, instrument_id, leg_role, leg_number, schedule_role);
+                               << "instrument_id: " << instrument_id
+                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << " schedule_role: " << schedule_role
+                               << " sequence_number: " << sequence_number;
+    repo_.remove(ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number);
     BOOST_LOG_SEV(lg(), info) << "Removed instrument schedule. "
-                              << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                              << " leg_number: " << leg_number
-                              << " schedule_role: " << schedule_role;
+                              << "instrument_id: " << instrument_id << " owner_role: " << owner_role
+                              << " owner_number: " << owner_number
+                              << " schedule_role: " << schedule_role
+                              << " sequence_number: " << sequence_number;
 }
 
 void instrument_schedule_service::delete_instrument_schedules(
     const std::vector<std::string>& instrument_ids,
-    const std::vector<std::string>& leg_roles,
-    const std::vector<std::string>& leg_numbers,
-    const std::vector<std::string>& schedule_roles) {
-    repo_.remove(ctx_, instrument_ids, leg_roles, leg_numbers, schedule_roles);
+    const std::vector<std::string>& owner_roles,
+    const std::vector<std::string>& owner_numbers,
+    const std::vector<std::string>& schedule_roles,
+    const std::vector<std::string>& sequence_numbers) {
+    repo_.remove(
+        ctx_, instrument_ids, owner_roles, owner_numbers, schedule_roles, sequence_numbers);
 }
 
 std::vector<domain::instrument_schedule>
 instrument_schedule_service::get_instrument_schedule_history(const std::string& instrument_id,
-                                                             const std::string& leg_role,
-                                                             const std::string& leg_number,
-                                                             const std::string& schedule_role) {
+                                                             const std::string& owner_role,
+                                                             const std::string& owner_number,
+                                                             const std::string& schedule_role,
+                                                             const std::string& sequence_number) {
     BOOST_LOG_SEV(lg(), debug) << "Getting history for instrument schedule. "
-                               << "instrument_id: " << instrument_id << " leg_role: " << leg_role
-                               << " leg_number: " << leg_number
-                               << " schedule_role: " << schedule_role;
-    return repo_.read_all(ctx_, instrument_id, leg_role, leg_number, schedule_role);
+                               << "instrument_id: " << instrument_id
+                               << " owner_role: " << owner_role << " owner_number: " << owner_number
+                               << " schedule_role: " << schedule_role
+                               << " sequence_number: " << sequence_number;
+    return repo_.read_all(
+        ctx_, instrument_id, owner_role, owner_number, schedule_role, sequence_number);
 }
 
 }

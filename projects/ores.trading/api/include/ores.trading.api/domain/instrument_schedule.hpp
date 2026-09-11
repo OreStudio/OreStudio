@@ -29,11 +29,12 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One schedule an instrument's leg states, either as a rule block or as a date list, keyed
- * to the instrument, the leg and the schedule's role.
+ * @brief One schedule entry an instrument's owner states, either as a rule block or as a date list,
+ * keyed to the instrument, the owner, the schedule's role and the entry's ordinal.
  *
- * One row per schedule an instrument's leg states, keyed to the
- * instrument, the leg that states it and the schedule's role.
+ * One row per schedule entry an instrument's owner states, keyed to the
+ * instrument, the owner that states it, the schedule's role and the
+ * entry's ordinal within that role.
  *
  * The ORE schema states a schedule as a choice: a rule block that a
  * calendar expands, or an explicit list of dates. The generated code
@@ -43,10 +44,17 @@ namespace ores::trading::domain {
  * chose, so a reader rebuilds the arm it read rather than guessing. The
  * date arm's rows land in the keyed child table.
  *
+ * Both lists are unbounded and a document interleaves their entries, so
+ * the role alone does not identify a row. sequence_number is the
+ * entry's ordinal within its owner's list for that role, counting from
+ * one, and it preserves the order the document stated.
+ *
  * A bond leg states four schedules: its own schedule, its payment
  * schedule, and, when the leg is floating, the fixing and reset
  * schedules. The role column names which one, so one table holds all
- * four.
+ * four. The column also carries the schedules that hang off an option
+ * block and off a total return swap, so the table is keyed by owner
+ * rather than by leg.
  *
  * The nine bond tables carry no schedule column, and the org models of
  * the family record this table as the destination. It is keyed by the
@@ -69,7 +77,7 @@ struct instrument_schedule final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument whose leg states this schedule.
+     * @brief UUID of the instrument whose owner states this schedule.
      *
      * The instrument row carries the trade, the workspace and the party. The schedule rows are
      * family-owned and ride the instrument's scope, so no workspace column rides them.
@@ -77,27 +85,42 @@ struct instrument_schedule final {
     boost::uuids::uuid instrument_id;
 
     /**
-     * @brief Which leg list of the instrument the leg stating this schedule belongs to: bond,
-     * trs_funding, repo or ascot_swap.
+     * @brief Which list of the instrument states this schedule: bond, trs_funding, repo,
+     * ascot_swap, option or trs.
+     *
+     * The first four name a leg list. option is the exercise schedule an option block states, and
+     * trs is the return schedule a total return swap states. Neither is a leg, so the column names
+     * an owner rather than a leg.
      */
-    std::string leg_role;
+    std::string owner_role;
 
     /**
-     * @brief Ordinal of the leg within its list, counting from one.
+     * @brief Ordinal of the owner within its list, counting from one.
      *
      * The schema declares the bond's leg list unbounded, and a bond states one leg per coupon. The
-     * number is the leg's position in the document, so a reader reassembles the legs in the order
-     * the document held them.
+     * number is the owner's position in the document, so a reader reassembles the owners in the
+     * order the document held them. An owner that is not a list member holds one row and takes the
+     * number one.
      */
-    int leg_number;
+    int owner_number;
 
     /**
-     * @brief Which of the leg's schedules this row is.
+     * @brief Which of the owner's schedules this row is.
      *
      * The container's member names are the values: schedule, payment_schedule, fixing_schedule and
      * reset_schedule. The first two sit on the leg, the last two on its floating rate block.
      */
     std::string schedule_role;
+
+    /**
+     * @brief Ordinal of this entry within its owner's list for the schedule's role, counting from
+     * one.
+     *
+     * The schema states a schedule as an unbounded choice of rules and dates, and a document
+     * interleaves the two arms. One owner can therefore state several entries under one role, and
+     * the role alone does not identify a row. The ordinal preserves the order the document stated.
+     */
+    int sequence_number;
 
     /**
      * @brief Which arm of the schema's choice the document stated: rules or dates.
@@ -109,7 +132,7 @@ struct instrument_schedule final {
     std::string schedule_kind;
 
     /**
-     * @brief First date of the rule block (ISO 8601 date string).
+     * @brief First date of the rule block.
      *
      * The schema requires this member on a rule block and states no equivalent on a date list, so
      * the column is nullable and a dates row leaves it unset.

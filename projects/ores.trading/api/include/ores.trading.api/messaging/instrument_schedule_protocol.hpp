@@ -60,9 +60,10 @@ struct delete_instrument_schedule_request {
     using response_type = struct delete_instrument_schedule_response;
     static constexpr std::string_view nats_subject = "trading.v1.instrument_schedules.delete";
     std::vector<std::string> ids;
-    std::vector<std::string> leg_roles;
-    std::vector<std::string> leg_numbers;
+    std::vector<std::string> owner_roles;
+    std::vector<std::string> owner_numbers;
     std::vector<std::string> schedule_roles;
+    std::vector<std::string> sequence_numbers;
 };
 
 struct delete_instrument_schedule_response {
@@ -74,9 +75,10 @@ struct get_instrument_schedule_history_request {
     using response_type = struct get_instrument_schedule_history_response;
     static constexpr std::string_view nats_subject = "trading.v1.instrument_schedules.history";
     std::string instrument_id;
-    std::string leg_role;
-    std::string leg_number;
+    std::string owner_role;
+    std::string owner_number;
     std::string schedule_role;
+    std::string sequence_number;
 };
 
 struct get_instrument_schedule_history_response {

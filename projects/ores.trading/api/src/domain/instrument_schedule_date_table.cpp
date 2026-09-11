@@ -28,11 +28,13 @@ std::string convert_to_table(const std::vector<instrument_schedule_date>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Sequence" << "Date" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Schedule Sequence" << "Sequence" << "Date" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& sched_date : v) {
-        table << sched_date.sequence_number << sched_date.schedule_date << sched_date.modified_by
-              << sched_date.version << fort::endr;
+        table << sched_date.schedule_sequence_number << sched_date.sequence_number
+              << sched_date.schedule_date << sched_date.modified_by << sched_date.version
+              << fort::endr;
     }
     return table.to_string();
 }

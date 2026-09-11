@@ -28,7 +28,7 @@
 namespace ores::trading::domain {
 
 /**
- * @brief One date of an instrument schedule's date list, keyed to the schedule that holds it.
+ * @brief One date of an instrument schedule's date list, keyed to the schedule entry that holds it.
  *
  * One row per date of an instrument schedule's date list, family-owned
  * by the schedule row that holds it.
@@ -38,9 +38,10 @@ namespace ores::trading::domain {
  * no row here, because a calendar expands its dates at read time rather
  * than the document stating them.
  *
- * The owning schedule's key reaches this table whole. A schedule is
- * keyed by the instrument, the leg and its role, so those three columns
- * lead the key here and the ordinal follows them.
+ * The owning schedule's key reaches this table whole. A schedule entry
+ * is keyed by the instrument, the owner, the entry's role and its
+ * ordinal, so those four columns lead the key here and the date's own
+ * ordinal follows them.
  *
  * A leg states four schedules, and one of them, the payment dates of a
  * leg, is a bare date list with no rule arm at all. Such a list is a
@@ -59,7 +60,7 @@ struct instrument_schedule_date final {
     utility::uuid::tenant_id tenant_id = utility::uuid::tenant_id::system();
 
     /**
-     * @brief UUID of the instrument whose leg states the owning schedule.
+     * @brief UUID of the instrument whose owner states the owning schedule.
      *
      * The instrument row carries the trade, the workspace and the party. The date rows are
      * family-owned and ride the instrument's scope, so no workspace column rides them.
@@ -67,20 +68,29 @@ struct instrument_schedule_date final {
     boost::uuids::uuid instrument_id;
 
     /**
-     * @brief Which leg list of the instrument the leg stating the owning schedule belongs to: bond,
-     * trs_funding, repo or ascot_swap.
+     * @brief Which list of the instrument states the owning schedule: bond, trs_funding, repo,
+     * ascot_swap, option or trs.
      */
-    std::string leg_role;
+    std::string owner_role;
 
     /**
-     * @brief Ordinal of the leg within its list, counting from one.
+     * @brief Ordinal of the owner within its list, counting from one.
      */
-    int leg_number;
+    int owner_number;
 
     /**
-     * @brief Which of the leg's schedules the owning row is.
+     * @brief Which of the owner's schedules the owning row is.
      */
     std::string schedule_role;
+
+    /**
+     * @brief Ordinal of the owning schedule entry within its owner's list for that role, counting
+     * from one.
+     *
+     * The parent's sequence_number reaches this table under this name, so a date stays bound to the
+     * entry that holds it when one owner states several entries under one role.
+     */
+    int schedule_sequence_number;
 
     /**
      * @brief Ordinal of this date within the schedule's list.

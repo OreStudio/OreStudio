@@ -30,24 +30,27 @@ declare
     entity_name text := 'ores.trading.instrument_schedule_date';
     change_timestamp timestamptz := NOW();
     changed_instrument_id uuid;
-    changed_leg_role text;
-    changed_leg_number integer;
+    changed_owner_role text;
+    changed_owner_number integer;
     changed_schedule_role text;
+    changed_schedule_sequence_number integer;
     changed_sequence_number integer;
     changed_tenant_id text;
 begin
     if TG_OP = 'DELETE' then
         changed_instrument_id := OLD.instrument_id;
-        changed_leg_role := OLD.leg_role;
-        changed_leg_number := OLD.leg_number;
+        changed_owner_role := OLD.owner_role;
+        changed_owner_number := OLD.owner_number;
         changed_schedule_role := OLD.schedule_role;
+        changed_schedule_sequence_number := OLD.schedule_sequence_number;
         changed_sequence_number := OLD.sequence_number;
         changed_tenant_id := OLD.tenant_id::text;
     else
         changed_instrument_id := NEW.instrument_id;
-        changed_leg_role := NEW.leg_role;
-        changed_leg_number := NEW.leg_number;
+        changed_owner_role := NEW.owner_role;
+        changed_owner_number := NEW.owner_number;
         changed_schedule_role := NEW.schedule_role;
+        changed_schedule_sequence_number := NEW.schedule_sequence_number;
         changed_sequence_number := NEW.sequence_number;
         changed_tenant_id := NEW.tenant_id::text;
     end if;
@@ -55,7 +58,7 @@ begin
     notification_payload := jsonb_build_object(
         'entity', entity_name,
         'timestamp', ores_utility_iso8601_timestamp_fn(change_timestamp),
-        'entity_ids', jsonb_build_array(changed_instrument_id, changed_leg_role, changed_leg_number, changed_schedule_role, changed_sequence_number),
+        'entity_ids', jsonb_build_array(changed_instrument_id, changed_owner_role, changed_owner_number, changed_schedule_role, changed_schedule_sequence_number, changed_sequence_number),
         'tenant_id', changed_tenant_id
     );
 

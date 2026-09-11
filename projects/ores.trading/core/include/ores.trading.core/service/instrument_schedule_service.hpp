@@ -86,9 +86,10 @@ public:
      */
     std::optional<domain::instrument_schedule>
     get_instrument_schedule_at_version(const std::string& instrument_id,
-                                       const std::string& leg_role,
-                                       const std::string& leg_number,
+                                       const std::string& owner_role,
+                                       const std::string& owner_number,
                                        const std::string& schedule_role,
+                                       const std::string& sequence_number,
                                        std::uint32_t version);
 
     /**
@@ -98,9 +99,10 @@ public:
      */
     std::optional<domain::instrument_schedule>
     get_instrument_schedule(const std::string& instrument_id,
-                            const std::string& leg_role,
-                            const std::string& leg_number,
-                            const std::string& schedule_role);
+                            const std::string& owner_role,
+                            const std::string& owner_number,
+                            const std::string& schedule_role,
+                            const std::string& sequence_number);
 
     /**
      * @brief Saves a instrument schedule (creates or updates).
@@ -125,26 +127,29 @@ public:
      * @throws std::exception on failure.
      */
     void delete_instrument_schedule(const std::string& instrument_id,
-                                    const std::string& leg_role,
-                                    const std::string& leg_number,
-                                    const std::string& schedule_role);
+                                    const std::string& owner_role,
+                                    const std::string& owner_number,
+                                    const std::string& schedule_role,
+                                    const std::string& sequence_number);
 
     /**
      * @brief Deletes instrument schedules by their primary keys.
      */
     void delete_instrument_schedules(const std::vector<std::string>& instrument_ids,
-                                     const std::vector<std::string>& leg_roles,
-                                     const std::vector<std::string>& leg_numbers,
-                                     const std::vector<std::string>& schedule_roles);
+                                     const std::vector<std::string>& owner_roles,
+                                     const std::vector<std::string>& owner_numbers,
+                                     const std::vector<std::string>& schedule_roles,
+                                     const std::vector<std::string>& sequence_numbers);
 
     /**
      * @brief Retrieves all historical versions of a instrument schedule.
      */
     std::vector<domain::instrument_schedule>
     get_instrument_schedule_history(const std::string& instrument_id,
-                                    const std::string& leg_role,
-                                    const std::string& leg_number,
-                                    const std::string& schedule_role);
+                                    const std::string& owner_role,
+                                    const std::string& owner_number,
+                                    const std::string& schedule_role,
+                                    const std::string& sequence_number);
 
 private:
     context ctx_;

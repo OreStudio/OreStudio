@@ -1,0 +1,439 @@
+:PROPERTIES:
+:ID: 3BCB362D-83D2-4456-BE57-3B1716F5ED1F
+:END:
+#+title: ores.trading.instrument_option
+#+description: Codegen entity model for the trading =instrument_option= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The option block a document states on an instrument, keyed to the instrument.
+#+entity_singular: instrument_option
+#+entity_plural: instrument_options
+#+entity_title: Instrument Option
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per instrument whose document stated an option block, keyed to
+the instrument.
+
+The bond option and the ascot both state the same =optionData= element,
+and the equity, FX and commodity products state it too. The nine bond
+tables carry the option's type and its strike and nothing else, so this
+table holds the block: the exercise and payment terms, the settlement
+terms, and the three nested groups whose lists get child tables of
+their own.
+
+A member the document omits is a null column. Three members are
+themselves groups whose every member is optional, so a null column set
+cannot say whether the document stated the group and left it bare or
+omitted it. Each of those three carries a flag on this row:
+=has_exercise_data=, =has_payment_data= and =has_settlement_data=.
+
+Every other member is text, and the text is the document's own
+spelling. The schema types the premium amount, the exercise price list
+and the several flags as text or as its own bool, which enumerates
+thirteen spellings, so a decoded form would not re-emit what the
+document held.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument whose document stated this option block.
+
+** long_short
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Whether the holder is long or short the option.
+
+The schema declares the member required, so a row here always states
+it. The type is the schema's own enumeration of two values.
+
+#+begin_src cpp :name generator
+std::string("Long")
+#+end_src
+
+** option_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The option's type, as the document spelled it.
+
+** payoff_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The payoff the option settles to.
+
+** payoff_type_2
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The second payoff, for the products that state two.
+
+** style
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Exercise style, for example European or American.
+
+** notice_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Notice period the holder must give before exercising.
+
+** notice_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the notice period is counted against.
+
+** notice_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date convention the notice period rolls under.
+
+** mid_coupon_exercise
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Flag saying the option may be exercised between coupons.
+
+** settlement
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Settlement type the option pays under.
+
+** settlement_method
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Method the settlement takes, for example cash or physical.
+
+** pay_off_at_expiry
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Flag saying the payoff falls due at expiry.
+
+** premium_amount
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Premium amount for the single-premium spelling.
+
+The column is text because the schema states the amount as text, and
+the corpus states amounts the numeric form would reformat. The premium
+list spelling keeps its rows in the premium table.
+
+** premium_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency the single premium pays in.
+
+** premium_pay_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the single premium pays on.
+
+** exercise_prices
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The exercise price list, as the document spelled it.
+
+The schema types the member as text, so the column keeps the
+document's own text rather than a decoded list of numbers.
+
+** exercise_fee_settlement_period
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Period an exercise fee settles over.
+
+** exercise_fee_settlement_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar an exercise fee settles against.
+
+** exercise_fee_settlement_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date convention an exercise fee settles under.
+
+** automatic_exercise
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Flag saying the option exercises itself when it is in the money.
+
+The schema's bool type enumerates thirteen spellings, so the column
+keeps the document's own spelling rather than a canonical one.
+
+** has_exercise_data
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the document stated an exercise block, whether or not the
+block carried a price.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** exercise_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the exercise block names.
+
+The schema types this member as a date, so the generated reader has
+already parsed it and the writer re-emits a canonical form. A date
+column therefore carries the member whole.
+
+** exercise_price
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Price the exercise block states, when it states one.
+
+** has_payment_data
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the document stated a payment-dates block.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** payment_lag
+:PROPERTIES:
+:type:     integer
+:cpp_type: std::optional<std::int64_t>
+:nullable: true
+:END:
+
+Number of days the payment dates are derived forward by.
+
+** payment_calendar
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Calendar the payment dates roll against.
+
+** payment_convention
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date convention the payment dates roll under.
+
+** payment_relative_to
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The date the payment dates are measured from.
+
+** has_settlement_data
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the document stated a settlement block.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** settlement_pay_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency the settlement block pays in.
+
+** settlement_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+FX index the settlement block fixes against.
+
+** settlement_fixing_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the settlement block fixes on, when the document states one.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_options_tbl
+:END:
+
+** Checks
+
+| expression                        |
+|-----------------------------------|
+| "long_short" in ('Long', 'Short') |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instrument_option
+:entity_plural_short:   instrument_options
+:entity_singular_words: instrument option
+:entity_plural_words:   instrument options
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <cstdint>
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: option
+:END:
+
+** Table display
+
+| column                | header        |
+|-----------------------+---------------|
+| long_short            | Long/Short    |
+| option_type           | Type          |
+| style                 | Style         |
+| premium_amount        | Premium       |
+| premium_currency      | Premium Ccy   |
+| modified_by           | Modified By   |
+| version               | Version       |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:c7d2b157-2f5b-41f1-a504-ffa0347496a5][ores.trading.bond_option]] — the fact row holding the option's type and strike.

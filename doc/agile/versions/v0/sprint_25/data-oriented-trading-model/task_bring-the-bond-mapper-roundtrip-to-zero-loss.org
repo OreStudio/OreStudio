@@ -1065,6 +1065,233 @@ failures, so the defect is a temporal-validity race in the refdata
 eventing fixtures that test order and accumulated database state
 expose. It is recorded as its own task and does not gate this wave.
 
+** Wave B.3, the schedule reshape and the option block
+
+Wave B.1 and B.2 shipped the tables in the shape the leg family
+needs. This wave gives the schedule tables the shape the schedule data
+needs, and gives the option block the homes no bond table had. Eight
+entities are generated: two reshaped schedule tables, one grown fact
+table, and five new ones.
+
+*** The reshape is three changes in the key
+
+The parent gains =sequence_number=. The schema states a schedule as an
+unbounded choice of =Rules= and =Dates=, and a document interleaves
+the two arms, so one owner can state several entries under one role.
+The role alone did not identify a row.
+
+The pair =leg_role= and =leg_number= becomes =owner_role= and
+=owner_number=. Two of the six values name an owner that is not a leg.
+=option= is the exercise schedule an option block states, and =trs= is
+the return schedule a total return swap states. The other four,
+=bond=, =trs_funding=, =repo= and =ascot_swap=, do name a leg.
+
+The child gains =schedule_sequence_number=, which is the parent's
+=sequence_number= under its own name. A date stays bound to the entry
+that holds it when one owner states several entries under one role.
+
+The parent key is now =(tenant_id, instrument_id, owner_role,
+owner_number, schedule_role, sequence_number, valid_from, valid_to)=.
+The child's key is that key with =schedule_sequence_number= ahead of
+the child's own ordinal.
+
+No code reads either column yet. Nothing writes a schedule row until
+B.5, so the rename costs no data and no caller outside the generated
+stack. A search of the repository found no consumer of the renamed
+columns outside =ores.trading=.
+
+*** Finding: the five dates-arm columns already existed
+
+The B.1 section above records that the dates arm states five members
+(=Calendar=, =Convention=, =Tenor=, =EndOfMonth= and
+=IncludeDuplicateDates=) that no column holds. That text was written
+before the tables shipped, and B.3 adds none of the five.
+
+B.1 and B.2 added all five. The parent already carries =tenor=,
+=calendar=, =convention=, =end_of_month= and
+=include_duplicate_dates=. The earlier text stands as the record of
+what B.1 measured, and this paragraph corrects it.
+
+*** Six columns typed text that hold a date
+
+Comparing every column of the reshaped and the new tables against the
+generated schema member types found six columns typed =text= whose
+member the schema types as a date.
+
+| Table                        | Columns                                             |
+|------------------------------+-----------------------------------------------------|
+| =instrument_schedules=       | =start_date=, =end_date=, =first_date=, =last_date= |
+| =instrument_options=         | =exercise_date=                                     |
+| =instrument_option_premiums= | =pay_date=                                          |
+
+All six become =date=. The generated reader parses the member before
+the mapper sees it, and the writer re-emits a canonical form, so a
+date column carries the member whole.
+
+Five columns that look the same stay =text=, and the schema says why.
+=premium_pay_date= is an =xsd::string=. Both =settlement_fixing_date=
+columns are =xsd::string=. The exercise fee's =start_date= is an
+optional string attribute on a numeric element. Their documents spell
+dates the schema never typed as dates.
+
+*** The option block, and where the container's members land
+
+=bondOptionData= states three members beside its option block rather
+than inside it: the redemption code, the price type and the knock-out
+flag. The shared =optionData= element states none of the three, so an
+Ascot never writes them and no other row can hold them. They ride on
+=bond_options=, the one row that is a bond option.
+
+=knocks_out= is text. The schema types the member as its own bool,
+which enumerates thirteen spellings, and the corpus states =false=. A
+decoded boolean would lose the spelling on every document that
+carries one.
+
+The block itself is the element every product states, so it gets the
+shared treatment. Five tables carry it.
+
+| Table                             | What it holds                                              |
+|-----------------------------------+------------------------------------------------------------|
+| =instrument_options=              | the block's own members, and a flag per optional sub-block |
+| =instrument_option_premiums=      | the =Premium= list                                         |
+| =instrument_option_exercise_fees= | the =ExerciseFees= list                                    |
+| =instrument_option_payment_dates= | the =PaymentData/Dates= list                               |
+| =instrument_strikes=              | the strike group                                           |
+
+=bond_option_data= carries twenty five members. Every one of them has
+a column or a keyed child row once the option row is read with its
+three child tables, so the container is the specification for the
+tables and the count closes.
+
+Three members are themselves groups whose every member is optional. A
+set of null columns could not say whether the document stated the
+group and left it bare or omitted it, so each group carries a flag on
+the option row: =has_exercise_data=, =has_payment_data= and
+=has_settlement_data=.
+
+Every other member is text, and the text is the document's own
+spelling. The schema types the premium amount, the exercise price list
+and the several flags as text or as its own bool, so a decoded form
+would not re-emit what the document held.
+
+*** The tables stay empty until B.5
+
+This wave gives the option block and the schedule data a home in the
+schema. It does not fill them. =trade_export_item= is still built from
+the trade row alone, and no code reads or writes a row of the fourteen
+shared tables. That switch-over is B.5, and the database path keeps
+losing what the mapper path keeps until it lands.
+
+*** No generated file was edited by hand
+
+Every C++ file this wave changes is generated. The modeling orgs are
+hand written: three edited for the reshape and the residue columns,
+and five new for the option tables and the strike table. The two
+=ores.sql= aggregate scripts are hand written too, and they list the
+new files in create order and in reverse drop order.
+
+The three =component_files.cmake= files came from
+=regenerate_cmake_component_files.py --all=, run with the codegen
+venv. Nothing generated was opened in an editor.
+
+*** Verification
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with no error, and the log ends at
+=[100%] Built target ores.qt.exe=.
+
+Two findings came out of the verification. Both are older than this
+wave.
+
+**** The trading component is not drift free
+
+=check_component_drift.py= holds a registry of the components whose
+regeneration leaves the tree clean. That registry carries refdata,
+reporting, marketdata, compute-cpp, iam, iam-cpp and synthetic. It does
+not carry trading-cpp, and the script's own header explains why a
+component outside the registry cannot pass: a committed tree that
+predates a template takes the newer per-entity families as untracked
+files, and =git diff= cannot see untracked files.
+
+Regenerating trading-cpp did exactly that. It rewrote sixty eight
+tracked files that no part of this wave touches: the whole
+=projects/ores.qt/trading= set, the =trade= entity's generated family,
+nine equity instrument services, seven fx instrument services,
+nineteen eventing integration tests, and =trading_trades_create.sql=.
+Those files went back to a shape HEAD has moved past. The trade table
+alone lost seven indexes.
+
+The run also materialised a hundred and eight untracked files.
+
+Every one of the sixty eight was reverted before this wave's commit.
+The wave's own files regenerate unchanged, so the verdict is about the
+component and not about this wave.
+
+The drift gate cannot read zero for trading until someone brings the
+whole component to the templates. That is a separate pass, sized well
+past one wave, so this task records the position and leaves it.
+
+**** The new files had to be registered, and the component overshoots
+
+=src/component_files.cmake= is the explicit source list CMakeLists.txt
+includes, so a generated file that is not in the list is never
+compiled. The api and service lists took the wave's new files. The core
+list did not, because the run that produced the other two happened
+before the core files existed.
+
+Re-running the generator for the core list exposed a second effect of
+the same drift. The generator scans the directory, so it also picked up
+the hundred and eight files the drift run had just materialised, and
+wrote them into the list. Committing that list would point the build at
+files that are in no commit.
+
+So the hundred and eight came out first. They are generated files, the
+orgs that produce them are on disk, and a copy went to
+=/tmp/drift_byproducts_1429.tar.gz= before the removal. The untracked
+count returned to its pre-drift figure of a hundred and sixty seven,
+which is the check that the removal took exactly what the drift run had
+created.
+
+The three lists were then regenerated. They carry the wave's files, and
+they carry no entry whose file is absent.
+
+The regeneration also registered files the earlier waves had left out:
+the =trade_envelope= family, which B.1+B.2 committed but never added to
+the api, core or service lists. Eighty four generated files were
+tracked and never compiled. One hand-written header, the container,
+was the family's only registered member.
+
+The lists changed, so the build had to prove them. The rebuild compiled
+seventy five core files, fifty five api files and ten service files
+that had never been compiled, plus the eighty four envelope files, and
+it finished at =[100%] Built target ores.qt.exe= with no error.
+
+**** A test case costs one second of dead time
+
+=ores.testing/test_timeout_listener.hpp= starts a watchdog thread in
+=testCaseStarting= and joins it in =testCaseEnded=. The watchdog sleeps
+in one second steps, so a join waits out the rest of the current
+second, and every test case pays that second whether it needs it or
+not.
+
+The cost is one second per test case, on every suite that registers the
+listener. Measured: =ores.iam.core.tests= has ninety six test cases and
+took 97.69 seconds, =ores.shell.tests= has twenty six and took 26.66,
+and =ores.cli.tests= has a hundred and twenty five and took 125.72. The
+whole sweep therefore costs about one second per case, which for this
+tree is tens of minutes.
+
+It also makes a normal per-test timeout look like a hang. =ores.cli.tests=
+failed at a 120 second limit and passed at 480, and a stack sample
+taken while it "hung" showed the main thread inside
+=std::thread::join= in =testCaseEnded= and the watchdog inside
+=sleep_for=. No test was running at the time.
+
+This is a defect in the harness and not in any test. It is not fixed
+here, because the fix is to wake the watchdog on a condition variable
+instead of polling, and that change belongs with the harness and not
+with the bond tables.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

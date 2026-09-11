@@ -38,9 +38,10 @@ struct instrument_schedule_date_entity {
     constexpr static const char* tablename = "ores_trading_instrument_schedule_dates_tbl";
 
     sqlgen::PrimaryKey<std::string> instrument_id;
-    sqlgen::PrimaryKey<std::string> leg_role;
-    sqlgen::PrimaryKey<std::string> leg_number;
+    sqlgen::PrimaryKey<std::string> owner_role;
+    sqlgen::PrimaryKey<std::string> owner_number;
     sqlgen::PrimaryKey<std::string> schedule_role;
+    sqlgen::PrimaryKey<std::string> schedule_sequence_number;
     sqlgen::PrimaryKey<std::string> sequence_number;
     std::string tenant_id;
     int version = 0;

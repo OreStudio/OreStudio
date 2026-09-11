@@ -41,13 +41,13 @@ std::string convert_to_table(const std::vector<instrument_schedule>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Leg Role" << "Leg" << "Role" << "Kind" << "Tenor" << "Calendar"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Owner Role" << "Owner" << "Role" << "Sequence" << "Kind" << "Tenor"
+          << "Calendar" << "Modified By" << "Version" << fort::endr;
 
     for (const auto& sched : v) {
-        table << sched.leg_role << sched.leg_number << sched.schedule_role << sched.schedule_kind
-              << opt_str(sched.tenor) << opt_str(sched.calendar) << sched.modified_by
-              << sched.version << fort::endr;
+        table << sched.owner_role << sched.owner_number << sched.schedule_role
+              << sched.sequence_number << sched.schedule_kind << opt_str(sched.tenor)
+              << opt_str(sched.calendar) << sched.modified_by << sched.version << fort::endr;
     }
     return table.to_string();
 }

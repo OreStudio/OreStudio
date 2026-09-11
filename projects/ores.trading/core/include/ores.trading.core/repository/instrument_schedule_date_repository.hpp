@@ -68,23 +68,27 @@ public:
      */
     /**@{*/
     std::vector<domain::instrument_schedule_date> read_latest(context ctx);
-    std::vector<domain::instrument_schedule_date> read_latest(context ctx,
-                                                              const std::string& instrument_id,
-                                                              const std::string& leg_role,
-                                                              const std::string& leg_number,
-                                                              const std::string& schedule_role,
-                                                              const std::string& sequence_number);
+    std::vector<domain::instrument_schedule_date>
+    read_latest(context ctx,
+                const std::string& instrument_id,
+                const std::string& owner_role,
+                const std::string& owner_number,
+                const std::string& schedule_role,
+                const std::string& schedule_sequence_number,
+                const std::string& sequence_number);
     /**@}*/
 
     /**
      * @brief Reads all instrument schedule dates, possibly filtered by primary key.
      */
-    std::vector<domain::instrument_schedule_date> read_all(context ctx,
-                                                           const std::string& instrument_id,
-                                                           const std::string& leg_role,
-                                                           const std::string& leg_number,
-                                                           const std::string& schedule_role,
-                                                           const std::string& sequence_number);
+    std::vector<domain::instrument_schedule_date>
+    read_all(context ctx,
+             const std::string& instrument_id,
+             const std::string& owner_role,
+             const std::string& owner_number,
+             const std::string& schedule_role,
+             const std::string& schedule_sequence_number,
+             const std::string& sequence_number);
 
     /**
      * @brief Reads a single instrument schedule date as it stood at a specific
@@ -98,9 +102,10 @@ public:
     std::optional<domain::instrument_schedule_date>
     read_at_version(context ctx,
                     const std::string& instrument_id,
-                    const std::string& leg_role,
-                    const std::string& leg_number,
+                    const std::string& owner_role,
+                    const std::string& owner_number,
                     const std::string& schedule_role,
+                    const std::string& schedule_sequence_number,
                     const std::string& sequence_number,
                     std::uint32_t version);
 
@@ -125,9 +130,10 @@ public:
      */
     void remove(context ctx,
                 const std::string& instrument_id,
-                const std::string& leg_role,
-                const std::string& leg_number,
+                const std::string& owner_role,
+                const std::string& owner_number,
                 const std::string& schedule_role,
+                const std::string& schedule_sequence_number,
                 const std::string& sequence_number);
 
     /**
@@ -135,9 +141,10 @@ public:
      */
     void remove(context ctx,
                 const std::vector<std::string>& instrument_ids,
-                const std::vector<std::string>& leg_roles,
-                const std::vector<std::string>& leg_numbers,
+                const std::vector<std::string>& owner_roles,
+                const std::vector<std::string>& owner_numbers,
                 const std::vector<std::string>& schedule_roles,
+                const std::vector<std::string>& schedule_sequence_numbers,
                 const std::vector<std::string>& sequence_numbers);
 };
 

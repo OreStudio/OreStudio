@@ -138,9 +138,10 @@ public:
         if (auto req = decode<get_instrument_schedule_date_history_request>(msg)) {
             try {
                 auto hist = svc.get_instrument_schedule_date_history(req->instrument_id,
-                                                                     req->leg_role,
-                                                                     req->leg_number,
+                                                                     req->owner_role,
+                                                                     req->owner_number,
                                                                      req->schedule_role,
+                                                                     req->schedule_sequence_number,
                                                                      req->sequence_number);
                 BOOST_LOG_SEV(instrument_schedule_date_handler_lg(), debug)
                     << "Completed " << msg.subject;
@@ -179,9 +180,10 @@ public:
         if (auto req = decode<delete_instrument_schedule_date_request>(msg)) {
             try {
                 svc.delete_instrument_schedule_dates(req->ids,
-                                                     req->leg_roles,
-                                                     req->leg_numbers,
+                                                     req->owner_roles,
+                                                     req->owner_numbers,
                                                      req->schedule_roles,
+                                                     req->schedule_sequence_numbers,
                                                      req->sequence_numbers);
                 BOOST_LOG_SEV(instrument_schedule_date_handler_lg(), debug)
                     << "Completed " << msg.subject;

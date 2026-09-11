@@ -87,9 +87,10 @@ public:
      */
     std::optional<domain::instrument_schedule_date>
     get_instrument_schedule_date_at_version(const std::string& instrument_id,
-                                            const std::string& leg_role,
-                                            const std::string& leg_number,
+                                            const std::string& owner_role,
+                                            const std::string& owner_number,
                                             const std::string& schedule_role,
+                                            const std::string& schedule_sequence_number,
                                             const std::string& sequence_number,
                                             std::uint32_t version);
 
@@ -100,9 +101,10 @@ public:
      */
     std::optional<domain::instrument_schedule_date>
     get_instrument_schedule_date(const std::string& instrument_id,
-                                 const std::string& leg_role,
-                                 const std::string& leg_number,
+                                 const std::string& owner_role,
+                                 const std::string& owner_number,
                                  const std::string& schedule_role,
+                                 const std::string& schedule_sequence_number,
                                  const std::string& sequence_number);
 
     /**
@@ -129,18 +131,20 @@ public:
      * @throws std::exception on failure.
      */
     void delete_instrument_schedule_date(const std::string& instrument_id,
-                                         const std::string& leg_role,
-                                         const std::string& leg_number,
+                                         const std::string& owner_role,
+                                         const std::string& owner_number,
                                          const std::string& schedule_role,
+                                         const std::string& schedule_sequence_number,
                                          const std::string& sequence_number);
 
     /**
      * @brief Deletes instrument schedule dates by their primary keys.
      */
     void delete_instrument_schedule_dates(const std::vector<std::string>& instrument_ids,
-                                          const std::vector<std::string>& leg_roles,
-                                          const std::vector<std::string>& leg_numbers,
+                                          const std::vector<std::string>& owner_roles,
+                                          const std::vector<std::string>& owner_numbers,
                                           const std::vector<std::string>& schedule_roles,
+                                          const std::vector<std::string>& schedule_sequence_numbers,
                                           const std::vector<std::string>& sequence_numbers);
 
     /**
@@ -148,9 +152,10 @@ public:
      */
     std::vector<domain::instrument_schedule_date>
     get_instrument_schedule_date_history(const std::string& instrument_id,
-                                         const std::string& leg_role,
-                                         const std::string& leg_number,
+                                         const std::string& owner_role,
+                                         const std::string& owner_number,
                                          const std::string& schedule_role,
+                                         const std::string& schedule_sequence_number,
                                          const std::string& sequence_number);
 
 private:

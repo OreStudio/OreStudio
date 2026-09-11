@@ -36,9 +36,10 @@ instrument_schedule_date_mapper::map(const instrument_schedule_date_entity& v) {
     r.version = v.version;
     r.tenant_id = utility::uuid::tenant_id::from_string(v.tenant_id).value();
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
-    r.leg_role = v.leg_role.value();
-    r.leg_number = boost::lexical_cast<int>(v.leg_number.value());
+    r.owner_role = v.owner_role.value();
+    r.owner_number = boost::lexical_cast<int>(v.owner_number.value());
     r.schedule_role = v.schedule_role.value();
+    r.schedule_sequence_number = boost::lexical_cast<int>(v.schedule_sequence_number.value());
     r.sequence_number = boost::lexical_cast<int>(v.sequence_number.value());
     r.schedule_date = v.schedule_date;
     r.modified_by = v.modified_by;
@@ -57,9 +58,10 @@ instrument_schedule_date_mapper::map(const domain::instrument_schedule_date& v) 
 
     instrument_schedule_date_entity r;
     r.instrument_id = boost::uuids::to_string(v.instrument_id);
-    r.leg_role = v.leg_role;
-    r.leg_number = std::to_string(v.leg_number);
+    r.owner_role = v.owner_role;
+    r.owner_number = std::to_string(v.owner_number);
     r.schedule_role = v.schedule_role;
+    r.schedule_sequence_number = std::to_string(v.schedule_sequence_number);
     r.sequence_number = std::to_string(v.sequence_number);
     r.tenant_id = v.tenant_id.to_string();
     r.version = v.version;

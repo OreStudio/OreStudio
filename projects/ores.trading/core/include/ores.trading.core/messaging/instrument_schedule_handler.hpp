@@ -134,8 +134,11 @@ public:
         service::instrument_schedule_service svc(req_ctx);
         if (auto req = decode<get_instrument_schedule_history_request>(msg)) {
             try {
-                auto hist = svc.get_instrument_schedule_history(
-                    req->instrument_id, req->leg_role, req->leg_number, req->schedule_role);
+                auto hist = svc.get_instrument_schedule_history(req->instrument_id,
+                                                                req->owner_role,
+                                                                req->owner_number,
+                                                                req->schedule_role,
+                                                                req->sequence_number);
                 BOOST_LOG_SEV(instrument_schedule_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_,
@@ -172,8 +175,11 @@ public:
         service::instrument_schedule_service svc(req_ctx);
         if (auto req = decode<delete_instrument_schedule_request>(msg)) {
             try {
-                svc.delete_instrument_schedules(
-                    req->ids, req->leg_roles, req->leg_numbers, req->schedule_roles);
+                svc.delete_instrument_schedules(req->ids,
+                                                req->owner_roles,
+                                                req->owner_numbers,
+                                                req->schedule_roles,
+                                                req->sequence_numbers);
                 BOOST_LOG_SEV(instrument_schedule_handler_lg(), debug)
                     << "Completed " << msg.subject;
                 reply(nats_, msg, delete_instrument_schedule_response{.success = true});

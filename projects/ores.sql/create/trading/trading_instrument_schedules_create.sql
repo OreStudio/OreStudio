@@ -24,8 +24,9 @@
  *
  * Instrument Schedule Table
  *
- * One row per schedule an instrument's leg states, keyed to the
- * instrument, the leg that states it and the schedule's role.
+ * One row per schedule entry an instrument's owner states, keyed to the
+ * instrument, the owner that states it, the schedule's role and the
+ * entry's ordinal within that role.
  *
  * The ORE schema states a schedule as a choice: a rule block that a
  * calendar expands, or an explicit list of dates. The generated code
@@ -35,10 +36,17 @@
  * chose, so a reader rebuilds the arm it read rather than guessing. The
  * date arm's rows land in the keyed child table.
  *
+ * Both lists are unbounded and a document interleaves their entries, so
+ * the role alone does not identify a row. sequence_number is the
+ * entry's ordinal within its owner's list for that role, counting from
+ * one, and it preserves the order the document stated.
+ *
  * A bond leg states four schedules: its own schedule, its payment
  * schedule, and, when the leg is floating, the fixing and reset
  * schedules. The role column names which one, so one table holds all
- * four.
+ * four. The column also carries the schedules that hang off an option
+ * block and off a total return swap, so the table is keyed by owner
+ * rather than by leg.
  *
  * The nine bond tables carry no schedule column, and the org models of
  * the family record this table as the destination. It is keyed by the
@@ -52,14 +60,15 @@
 
 create table if not exists "ores_trading_instrument_schedules_tbl" (
     "instrument_id" uuid not null,
-    "leg_role" text not null,
-    "leg_number" integer not null,
+    "owner_role" text not null,
+    "owner_number" integer not null,
     "schedule_role" text not null,
+    "sequence_number" integer not null,
     "tenant_id" uuid not null,
     "version" integer not null,
     "schedule_kind" text not null,
-    "start_date" text null,
-    "end_date" text null,
+    "start_date" date null,
+    "end_date" date null,
     "adjust_end_date_to_previous_month_end" text null,
     "tenor" text null,
     "calendar" text null,
@@ -68,8 +77,8 @@ create table if not exists "ores_trading_instrument_schedules_tbl" (
     "rule" text null,
     "end_of_month" text null,
     "end_of_month_convention" text null,
-    "first_date" text null,
-    "last_date" text null,
+    "first_date" date null,
+    "last_date" date null,
     "remove_first_date" boolean null,
     "remove_last_date" boolean null,
     "include_duplicate_dates" text null,
@@ -79,31 +88,33 @@ create table if not exists "ores_trading_instrument_schedules_tbl" (
     "change_commentary" text not null,
     "valid_from" timestamp with time zone not null,
     "valid_to" timestamp with time zone not null,
-    primary key (tenant_id, instrument_id, leg_role, leg_number, schedule_role, valid_from, valid_to),
+    primary key (tenant_id, instrument_id, owner_role, owner_number, schedule_role, sequence_number, valid_from, valid_to),
     exclude using gist (
         tenant_id WITH =,
         instrument_id WITH =,
-        leg_role WITH =,
-        leg_number WITH =,
+        owner_role WITH =,
+        owner_number WITH =,
         schedule_role WITH =,
+        sequence_number WITH =,
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
     check ("instrument_id" <> ores_utility_nil_uuid_fn()),
-    check ("leg_role" <> ''),
+    check ("owner_role" <> ''),
     check ("schedule_role" <> ''),
     check ("schedule_kind" in ('rules', 'dates')),
-    check ("leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap')),
-    check ("leg_number" > 0)
+    check ("owner_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap', 'option', 'trs')),
+    check ("owner_number" > 0),
+    check ("sequence_number" > 0)
 );
 
 -- Version uniqueness for optimistic concurrency
 create unique index if not exists instrument_schedules_version_uniq_idx
-on "ores_trading_instrument_schedules_tbl" (tenant_id, instrument_id, leg_role, leg_number, schedule_role, version)
+on "ores_trading_instrument_schedules_tbl" (tenant_id, instrument_id, owner_role, owner_number, schedule_role, sequence_number, version)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create unique index if not exists instrument_schedules_id_uniq_idx
-on "ores_trading_instrument_schedules_tbl" (tenant_id, instrument_id, leg_role, leg_number, schedule_role)
+on "ores_trading_instrument_schedules_tbl" (tenant_id, instrument_id, owner_role, owner_number, schedule_role, sequence_number)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
 create index if not exists instrument_schedules_tenant_idx
@@ -125,7 +136,7 @@ begin
     select version into current_version
     from "ores_trading_instrument_schedules_tbl"
     where tenant_id = NEW.tenant_id
-      and instrument_id = NEW.instrument_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number and schedule_role = NEW.schedule_role
+      and instrument_id = NEW.instrument_id and owner_role = NEW.owner_role and owner_number = NEW.owner_number and schedule_role = NEW.schedule_role and sequence_number = NEW.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn()
     for update;
 
@@ -144,7 +155,7 @@ begin
         update "ores_trading_instrument_schedules_tbl"
         set valid_to = clock_timestamp()
         where tenant_id = NEW.tenant_id
-          and instrument_id = NEW.instrument_id and leg_role = NEW.leg_role and leg_number = NEW.leg_number and schedule_role = NEW.schedule_role
+          and instrument_id = NEW.instrument_id and owner_role = NEW.owner_role and owner_number = NEW.owner_number and schedule_role = NEW.schedule_role and sequence_number = NEW.sequence_number
           and valid_to = ores_utility_infinity_timestamp_fn()
           and valid_from < clock_timestamp();
     else
@@ -169,6 +180,6 @@ on delete to "ores_trading_instrument_schedules_tbl" do instead (
     update "ores_trading_instrument_schedules_tbl"
     set valid_to = clock_timestamp()
     where tenant_id = OLD.tenant_id
-      and instrument_id = OLD.instrument_id and leg_role = OLD.leg_role and leg_number = OLD.leg_number and schedule_role = OLD.schedule_role
+      and instrument_id = OLD.instrument_id and owner_role = OLD.owner_role and owner_number = OLD.owner_number and schedule_role = OLD.schedule_role and sequence_number = OLD.sequence_number
       and valid_to = ores_utility_infinity_timestamp_fn();
 );

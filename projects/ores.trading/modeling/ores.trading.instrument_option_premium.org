@@ -1,0 +1,200 @@
+:PROPERTIES:
+:ID: 7E9C4A16-2B8D-4F31-9A57-1D6E80C3B942
+:END:
+#+title: ores.trading.instrument_option_premium
+#+description: Codegen entity model for the trading =instrument_option_premium= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One entry of an option block's premium list, keyed to the instrument and the entry's ordinal.
+#+entity_singular: instrument_option_premium
+#+entity_plural: instrument_option_premiums
+#+entity_title: Instrument Option Premium
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per premium an option block's list states, keyed to the
+instrument and the entry's ordinal.
+
+The schema states the list unbounded, and the entry carries an amount,
+a currency, a pay date and an optional settlement block. The ordinal
+preserves the document's order, so export re-emits the entries as the
+document held them.
+
+The amount, the currency and the pay date are required within an
+entry, so the row holds them unconditionally. The settlement block is
+optional, and its own two required members would sit in nullable
+columns, so the row carries =has_settlement= to say whether the
+document stated the block at all.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument whose option block stated this premium.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this premium within the option block's list.
+
+** amount
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Amount of the premium.
+
+#+begin_src cpp :name generator
+1000.0
+#+end_src
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Currency the premium pays in.
+
+#+begin_src cpp :name generator
+std::string("USD")
+#+end_src
+
+** pay_date
+:PROPERTIES:
+:type:     date
+:cpp_type: std::string
+:nullable: false
+:END:
+
+Date the premium pays on.
+
+The schema types this member as a date, so the generated reader has
+already parsed it and the writer re-emits a canonical form. A date
+column therefore carries the member whole.
+
+#+begin_src cpp :name generator
+std::string("2026-01-15")
+#+end_src
+
+** has_settlement
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the premium states a settlement block.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** settlement_pay_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency the premium's settlement block pays in.
+
+** settlement_fx_index
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+FX index the premium's settlement block fixes against.
+
+** settlement_fixing_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the premium's settlement block fixes on.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_option_premiums_tbl
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: option_premium
+:entity_plural_short:   option_premiums
+:entity_singular_words: instrument option premium
+:entity_plural_words:   instrument option premiums
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: premium
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| amount          | Amount      |
+| currency        | Currency    |
+| pay_date        | Pay Date    |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:3BCB362D-83D2-4456-BE57-3B1716F5ED1F][ores.trading.instrument_option]] — the option block these premiums belong to.

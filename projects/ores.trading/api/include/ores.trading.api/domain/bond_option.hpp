@@ -22,6 +22,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -31,12 +32,20 @@ namespace ores::trading::domain {
  * @brief Per-trade bond option facts: one row per option instrument, keyed by instrument_id.
  *
  * One row per bond option trade, keyed by the instrument row it
- * extends. The column set is final: the ER row names option_type and
- * option_strike, which map from optionData and the strikeGroup of
- * bondOptionData (instruments.xsd lines 2273-2282). The exercise
- * dates have no destination in the nine tables; they land as schedule
- * rows in the shared instrument-keyed schedule tables of the parent
- * story (recorded scope limit, task D7943D7E wave 1.3).
+ * extends. The ER row names option_type and option_strike, which map
+ * from optionData and the strikeGroup of bondOptionData
+ * (instruments.xsd lines 2273-2282).
+ *
+ * Three members of bondOptionData sit beside its option block rather
+ * than inside it: the redemption code, the price type and the knock-out
+ * flag. The shared option element states none of them, so an Ascot never
+ * writes them and no other table can hold them. They ride here, on the
+ * one row that is a bond option.
+ *
+ * The rest of the block lands elsewhere. The option element's own
+ * members go to instrument_option and its keyed children, and the
+ * exercise dates land as schedule rows in the shared instrument-keyed
+ * schedule tables, under the owner role option.
  */
 struct bond_option final {
     /**
@@ -66,6 +75,26 @@ struct bond_option final {
      * @brief Strike price of the option. Non-negative.
      */
     double option_strike = 0.0;
+
+    /**
+     * @brief The redemption code the document states.
+     */
+    std::optional<std::string> redemption;
+
+    /**
+     * @brief The price type the document states.
+     */
+    std::optional<std::string> price_type;
+
+    /**
+     * @brief The document's spelling of the knock-out flag.
+     *
+     * The schema types this member as its own bool, which enumerates thirteen spellings including
+     * the empty one. The column holds the spelling the document chose rather than a decoded
+     * boolean, so export re-emits the same text. The corpus states false, so a decoded column would
+     * lose the spelling on every document that carries one.
+     */
+    std::optional<std::string> knocks_out;
 
     /**
      * @brief Username of the person who last modified this bond option.

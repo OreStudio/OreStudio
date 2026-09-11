@@ -103,6 +103,16 @@
 \ir ./trading_trade_envelope_portfolio_ids_drop.sql
 \ir ./trading_trade_envelopes_notify_trigger_drop.sql
 \ir ./trading_trade_envelopes_drop.sql
+\ir ./trading_instrument_strikes_notify_trigger_drop.sql
+\ir ./trading_instrument_strikes_drop.sql
+\ir ./trading_instrument_option_payment_dates_notify_trigger_drop.sql
+\ir ./trading_instrument_option_payment_dates_drop.sql
+\ir ./trading_instrument_option_exercise_fees_notify_trigger_drop.sql
+\ir ./trading_instrument_option_exercise_fees_drop.sql
+\ir ./trading_instrument_option_premiums_notify_trigger_drop.sql
+\ir ./trading_instrument_option_premiums_drop.sql
+\ir ./trading_instrument_options_notify_trigger_drop.sql
+\ir ./trading_instrument_options_drop.sql
 \ir ./trading_instrument_schedule_dates_notify_trigger_drop.sql
 \ir ./trading_instrument_schedule_dates_drop.sql
 \ir ./trading_instrument_schedules_notify_trigger_drop.sql

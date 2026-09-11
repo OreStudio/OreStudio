@@ -1705,16 +1705,15 @@ TEST_CASE("convertible_conversion_ratios_become_rows", tags) {
 }
 
 // =============================================================================
-// The bond members the issue row has no column for
+// The bond members the issue row holds
 // =============================================================================
 
 TEST_CASE("a_bonds_calendar_curves_and_notional_survive_the_round_trip", tags) {
     auto lg(make_logger(test_suite));
 
-    // The issue row holds the security, the issuer, the dates, the
-    // coupon terms and the settlement days, and none of these four. The
-    // corpus states all four on every bond, so the container carries
-    // them.
+    // The corpus states all four on every bond. They land on the issue
+    // row, which is what the database path persists and rebuilds them
+    // from.
     const std::string xml = R"(
 <Portfolio>
   <Trade id="Bond_Level_Residue">
@@ -1730,15 +1729,15 @@ TEST_CASE("a_bonds_calendar_curves_and_notional_survive_the_round_trip", tags) {
 </Portfolio>
 )";
     const auto r = map_inline(xml);
-    REQUIRE(r.calendar);
-    CHECK(*r.calendar == "TARGET");
-    REQUIRE(r.credit_curve_id);
-    CHECK(*r.credit_curve_id == "CRV_EUR_ISSUER");
-    REQUIRE(r.reference_curve_id);
-    CHECK(*r.reference_curve_id == "BENCHMARK_EUR");
-    REQUIRE(r.bond_notional);
-    CHECK(*r.bond_notional == "8000000");
-    CHECK(!r.income_curve_id);
+    REQUIRE(r.issue.calendar);
+    CHECK(*r.issue.calendar == "TARGET");
+    REQUIRE(r.issue.credit_curve_id);
+    CHECK(*r.issue.credit_curve_id == "CRV_EUR_ISSUER");
+    REQUIRE(r.issue.reference_curve_id);
+    CHECK(*r.issue.reference_curve_id == "BENCHMARK_EUR");
+    REQUIRE(r.issue.bond_notional);
+    CHECK(*r.issue.bond_notional == "8000000");
+    CHECK(!r.issue.income_curve_id);
 
     const auto rt = bond_instrument_mapper::reverse_bond(r);
     REQUIRE(rt.BondData);
@@ -1779,10 +1778,10 @@ TEST_CASE("a_forward_bonds_income_curve_survives_the_round_trip", tags) {
 </Portfolio>
 )";
     const auto r = map_inline(xml);
-    REQUIRE(r.income_curve_id);
-    CHECK(*r.income_curve_id == "EUR-EURIBOR-6M");
-    REQUIRE(r.calendar);
-    CHECK(*r.calendar == "TARGET");
+    REQUIRE(r.issue.income_curve_id);
+    CHECK(*r.issue.income_curve_id == "EUR-EURIBOR-6M");
+    REQUIRE(r.issue.calendar);
+    CHECK(*r.issue.calendar == "TARGET");
 
     const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
     REQUIRE(rt.ForwardBondData);

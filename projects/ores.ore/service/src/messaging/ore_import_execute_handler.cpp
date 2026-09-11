@@ -29,7 +29,15 @@
 #include "ores.refdata.api/messaging/portfolio_protocol.hpp"
 #include "ores.service/messaging/workflow_helpers.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
+#include "ores.trading.api/messaging/ascot_protocol.hpp"
+#include "ores.trading.api/messaging/bond_future_protocol.hpp"
 #include "ores.trading.api/messaging/bond_instrument_protocol.hpp"
+#include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
+#include "ores.trading.api/messaging/bond_issue_conversion_target_protocol.hpp"
+#include "ores.trading.api/messaging/bond_issue_protocol.hpp"
+#include "ores.trading.api/messaging/bond_option_protocol.hpp"
+#include "ores.trading.api/messaging/bond_repo_protocol.hpp"
+#include "ores.trading.api/messaging/bond_trs_protocol.hpp"
 #include "ores.trading.api/messaging/equity_accumulator_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_asian_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/equity_barrier_option_instrument_protocol.hpp"
@@ -52,10 +60,13 @@
 #include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.utility/rfl/reflectors.hpp"
+#include <boost/lexical_cast.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <cstdint>
 #include <format>
 #include <rfl/json.hpp>
 #include <set>
+#include <unordered_map>
 
 namespace ores::ore::service::messaging {
 
@@ -158,6 +169,163 @@ std::string save_envelope(Nats& nats,
             if (!child_resp || !child_resp->success)
                 return error.empty() ? "save_trade_envelope_additional_field failed" : error;
         }
+    }
+
+    return {};
+}
+
+/**
+ * @brief Reads the identifier of every stored bond issue, keyed by its security id.
+ *
+ * One issue row serves every trade of an ISIN and its security_id is
+ * unique among the current rows, so an import that meets an ISIN already
+ * stored adopts that row instead of minting a second one. The read is
+ * paged, and one pass covers the whole run.
+ *
+ * @return The map, empty when the read fails, with out_error set.
+ */
+template <typename Nats>
+std::unordered_map<std::string, std::string>
+read_bond_issue_ids_by_security(Nats& nats, std::string& out_error) {
+    using ores::trading::messaging::get_bond_issues_request;
+
+    constexpr std::uint32_t page_size = 200;
+    constexpr int max_pages = 500;
+
+    std::unordered_map<std::string, std::string> result;
+    std::uint32_t offset = 0;
+    for (int page = 0; page < max_pages; ++page) {
+        get_bond_issues_request req;
+        req.offset = offset;
+        req.limit = page_size;
+        auto resp = nats_call(nats, req, out_error);
+        if (!resp || !resp->success)
+            return {};
+        for (const auto& issue : resp->issues)
+            result[issue.security_id] = boost::uuids::to_string(issue.issue_id);
+        if (resp->issues.size() < page_size)
+            break;
+        offset += page_size;
+    }
+    return result;
+}
+
+/**
+ * @brief Saves one bond instrument: its issue row, its header row, the
+ * issue's child rows and the product's fact row.
+ *
+ * The issue row comes first because both the header and the child rows
+ * reference it. A document that stated no call dates and no conversion
+ * targets writes none of either, and a trade type with no product row
+ * writes none.
+ *
+ * @param issue_ids_by_security The stored issue identifiers, keyed by
+ * security id. A miss mints a row and records it here for the trades that
+ * follow.
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_bond_instrument(
+    Nats& nats,
+    const ores::trading::domain::bond_instrument_data& data,
+    std::unordered_map<std::string, std::string>& issue_ids_by_security) {
+    using ores::trading::messaging::save_ascot_request;
+    using ores::trading::messaging::save_bond_future_request;
+    using ores::trading::messaging::save_bond_instrument_request;
+    using ores::trading::messaging::save_bond_issue_call_date_request;
+    using ores::trading::messaging::save_bond_issue_conversion_target_request;
+    using ores::trading::messaging::save_bond_issue_request;
+    using ores::trading::messaging::save_bond_option_request;
+    using ores::trading::messaging::save_bond_repo_request;
+    using ores::trading::messaging::save_bond_trs_request;
+
+    std::string error;
+    auto instrument = data.instrument;
+    auto issue = data.issue;
+
+    const auto found = issue_ids_by_security.find(issue.security_id);
+    const bool issue_is_new = found == issue_ids_by_security.end();
+    if (!issue_is_new) {
+        issue.issue_id = boost::lexical_cast<boost::uuids::uuid>(found->second);
+        instrument.issue_id = issue.issue_id;
+    }
+
+    // A failed save leaves the security id out of the map, so the next
+    // trade of it tries the issue again rather than opening an instrument
+    // against a row that is not there.
+    if (issue_is_new) {
+        save_bond_issue_request issue_req;
+        issue_req.data = issue;
+        auto resp = nats_call(nats, issue_req, error);
+        if (!resp || !resp->success)
+            return error.empty() ? "save_bond_issue failed" : error;
+        issue_ids_by_security[issue.security_id] = boost::uuids::to_string(issue.issue_id);
+    }
+
+    save_bond_instrument_request instrument_req;
+    instrument_req.data = instrument;
+    auto resp = nats_call(nats, instrument_req, error);
+    if (!resp || !resp->success)
+        return error.empty() ? "save_bond_instrument failed" : error;
+
+    int sequence_number = 0;
+    for (const auto& call_date : data.call_dates) {
+        save_bond_issue_call_date_request child_req;
+        child_req.data = call_date;
+        child_req.data.issue_id = issue.issue_id;
+        child_req.data.sequence_number = ++sequence_number;
+        auto child_resp = nats_call(nats, child_req, error);
+        if (!child_resp || !child_resp->success)
+            return error.empty() ? "save_bond_issue_call_date failed" : error;
+    }
+
+    sequence_number = 0;
+    for (const auto& target : data.conversion_targets) {
+        save_bond_issue_conversion_target_request child_req;
+        child_req.data = target;
+        child_req.data.issue_id = issue.issue_id;
+        child_req.data.sequence_number = ++sequence_number;
+        auto child_resp = nats_call(nats, child_req, error);
+        if (!child_resp || !child_resp->success)
+            return error.empty() ? "save_bond_issue_conversion_target failed" : error;
+    }
+
+    const auto& ttc = instrument.identity.trade_type_code;
+    if (ttc == "BondOption" && data.option) {
+        save_bond_option_request fact_req;
+        fact_req.data = *data.option;
+        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        auto fact_resp = nats_call(nats, fact_req, error);
+        if (!fact_resp || !fact_resp->success)
+            return error.empty() ? "save_bond_option failed" : error;
+    } else if (ttc == "BondTRS" && data.trs) {
+        save_bond_trs_request fact_req;
+        fact_req.data = *data.trs;
+        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        auto fact_resp = nats_call(nats, fact_req, error);
+        if (!fact_resp || !fact_resp->success)
+            return error.empty() ? "save_bond_trs failed" : error;
+    } else if (ttc == "BondRepo" && data.repo) {
+        save_bond_repo_request fact_req;
+        fact_req.data = *data.repo;
+        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        auto fact_resp = nats_call(nats, fact_req, error);
+        if (!fact_resp || !fact_resp->success)
+            return error.empty() ? "save_bond_repo failed" : error;
+    } else if (ttc == "BondFuture" && data.future) {
+        save_bond_future_request fact_req;
+        fact_req.data = *data.future;
+        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        auto fact_resp = nats_call(nats, fact_req, error);
+        if (!fact_resp || !fact_resp->success)
+            return error.empty() ? "save_bond_future failed" : error;
+    } else if (ttc == "Ascot" && data.ascot) {
+        save_ascot_request fact_req;
+        fact_req.data = *data.ascot;
+        fact_req.data.instrument_id = instrument.identity.instrument_id;
+        auto fact_resp = nats_call(nats, fact_req, error);
+        if (!fact_resp || !fact_resp->success)
+            return error.empty() ? "save_ascot failed" : error;
     }
 
     return {};
@@ -467,6 +635,8 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
     // Step 8: save instruments (non-fatal — collect errors, continue)
     // -------------------------------------------------------------------------
     int instruments_saved = 0;
+    std::unordered_map<std::string, std::string> issue_ids_by_security;
+    bool bond_issues_loaded = false;
     for (const auto& item : plan.trades) {
         using namespace ores::trading::messaging;
         using ores::trading::domain::swap_instrument_data;
@@ -595,14 +765,15 @@ void ore_import_execute_handler::execute(ores::nats::message msg) {
                         },
                         r);
                 } else if constexpr (std::is_same_v<T, bond_instrument_data>) {
-                    // The bond family persists its header row only, the way
-                    // the rates family persists its headers. Issue
-                    // find-or-create and the fact-row saves are the mapping
-                    // task's rework.
-                    save_bond_instrument_request req;
-                    req.data = r.instrument;
-                    auto resp = nats_call(delegated_nats, req, instr_error);
-                    return resp && resp->success;
+                    if (!bond_issues_loaded) {
+                        bond_issues_loaded = true;
+                        issue_ids_by_security =
+                            read_bond_issue_ids_by_security(delegated_nats, instr_error);
+                        if (!instr_error.empty())
+                            return false;
+                    }
+                    instr_error = save_bond_instrument(delegated_nats, r, issue_ids_by_security);
+                    return instr_error.empty();
                 } else if constexpr (std::is_same_v<T, credit_instrument>) {
                     save_credit_instrument_request req;
                     req.data = r;

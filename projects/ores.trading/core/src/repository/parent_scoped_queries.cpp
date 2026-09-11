@@ -20,6 +20,10 @@
 #include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.trading.core/repository/bond_issue_call_date_entity.hpp"
+#include "ores.trading.core/repository/bond_issue_call_date_mapper.hpp"
+#include "ores.trading.core/repository/bond_issue_conversion_target_entity.hpp"
+#include "ores.trading.core/repository/bond_issue_conversion_target_mapper.hpp"
 #include "ores.trading.core/repository/trade_envelope_additional_field_entity.hpp"
 #include "ores.trading.core/repository/trade_envelope_entity.hpp"
 #include "ores.trading.core/repository/trade_envelope_mapper.hpp"
@@ -101,6 +105,45 @@ read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>&
         [](const auto& entities) { return trade_envelope_additional_field_mapper::map(entities); },
         lg(),
         "Reading trade envelope additional fields by trade ids.");
+}
+
+std::vector<domain::bond_issue_call_date>
+read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+    if (issue_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_issue_call_date_entity>> |
+                       where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("issue_id"_c, "sequence_number"_c);
+
+    return execute_read_query<bond_issue_call_date_entity, domain::bond_issue_call_date>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_issue_call_date_mapper::map(entities); },
+        lg(),
+        "Reading bond issue call dates by issue ids.");
+}
+
+std::vector<domain::bond_issue_conversion_target>
+read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids) {
+    if (issue_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_issue_conversion_target_entity>> |
+                       where("tenant_id"_c == tid && "issue_id"_c.in(issue_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("issue_id"_c, "sequence_number"_c);
+
+    return execute_read_query<bond_issue_conversion_target_entity,
+                              domain::bond_issue_conversion_target>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
+        lg(),
+        "Reading bond issue conversion targets by issue ids.");
 }
 
 }

@@ -22,6 +22,8 @@
 
 #include "ores.database/domain/context.hpp"
 #include "ores.trading.core/export.hpp"
+#include "ores.trading.api/domain/bond_issue_call_date.hpp"
+#include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
 #include "ores.trading.api/domain/trade_envelope.hpp"
 #include "ores.trading.api/domain/trade_envelope_additional_field.hpp"
 #include "ores.trading.api/domain/trade_envelope_portfolio_id.hpp"
@@ -76,6 +78,28 @@ read_portfolio_ids_by_trade_ids(context ctx, const std::vector<std::string>& tra
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::trade_envelope_additional_field>
 read_additional_fields_by_trade_ids(context ctx, const std::vector<std::string>& trade_ids);
+
+/**
+ * @brief Reads the call dates of a set of bond issues.
+ *
+ * Rows come back in issue order, then in ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose call dates to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_call_date>
+read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+
+/**
+ * @brief Reads the conversion targets of a set of bond issues.
+ *
+ * Rows come back in issue order, then in ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param issue_ids UUIDs of the issues whose conversion targets to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_conversion_target>
+read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
 
 /**@}*/
 

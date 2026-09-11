@@ -52,6 +52,8 @@ namespace ores::trading::domain {
  * and the issue's child rows (call dates, conversion targets). The
  * instrument.issue_id member pins issue.issue_id: the mapper looks the
  * issue up by security_id and mints one only when the lookup misses.
+ * Every bond-level member of the document reaches the issue row, so the
+ * container holds no second copy of one.
  *
  * The remainder members carry what the nine tables cannot store, so
  * that export re-emits what the document held. Each one is a recorded
@@ -70,22 +72,6 @@ struct bond_instrument_data final {
      * @brief The issue row holding the bond terms of this trade's security.
      */
     bond_issue issue;
-
-    /**
-     * @brief The bond members the issue row has no column for.
-     *
-     * The reference calendar, the credit, reference and income curve
-     * identifiers, and the stated notional. The corpus states four of
-     * them on every bond product, and the issue row holds none. Unit B
-     * adds them as columns on the issue table; until then the container
-     * is their only home, so export re-emits them from here and an
-     * unengaged member means the document omitted the element.
-     */
-    std::optional<std::string> calendar;
-    std::optional<std::string> credit_curve_id;
-    std::optional<std::string> reference_curve_id;
-    std::optional<std::string> income_curve_id;
-    std::optional<std::string> bond_notional;
 
     /**
      * @brief The issue's call dates, one row per date the call schedule names.

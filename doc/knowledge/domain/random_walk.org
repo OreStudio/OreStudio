@@ -149,11 +149,12 @@ infinite. And the crossing event, not the terminal level, is often
 what a decision or a payoff depends on — a barrier option pays out or
 expires at the moment of passage, not at maturity.
 
-In ORE Studio the [[id:2C172183-1513-45EC-9A42-F0F3AB0E1F56][Generic Barrier Option]] and the
-wider barrier product family are the products that ask exactly this
-question; their valuation needs the distribution of the passage time of
-the underlying through the barrier, not only the distribution of the
-underlying at expiry.
+In ORE Studio the
+[[id:2C172183-1513-45EC-9A42-F0F3AB0E1F56][Generic Barrier Option]] and
+the wider barrier product family are the products that ask exactly
+this question; their valuation needs the distribution of the passage
+time of the underlying through the barrier, not only the distribution
+of the underlying at expiry.
 
 * See also
 

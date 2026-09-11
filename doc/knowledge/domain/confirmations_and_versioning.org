@@ -1,0 +1,359 @@
+:PROPERTIES:
+:ID: 74721BF2-2290-4AA7-8871-E215DA04351F
+:END:
+#+title: Confirmations and Deal Versioning
+#+description: What a trade confirmation is, the internal and external version model, amendment classification, and the events that must be re-confirmed.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:confirmations:versioning:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+* Summary
+
+A confirmation is the written record of a deal that both parties accept
+as binding. The trade exists without it, but nothing else in the
+process does: settlement, collateral, netting, reporting and dispute
+resolution all read the confirmed terms.
+
+Every change to a deal raises two questions that look like one. Has the
+deal changed? And has the agreement with the customer changed? The
+answers differ often enough that systems keep two version numbers, one
+internal and one external. The external version moves only when the
+customer's terms move, and it is the handle the customer's records
+match.
+
+This page states the confirmation model, the two-version rule, the
+classification of amendments, and the events that must be re-confirmed.
+
+* Detail
+
+** What a confirmation is
+
+A confirmation is a legal document, not a report. The CFTC defines
+confirming as the consummation of legally binding documentation that
+memorializes the agreement of the parties to all terms of a swap, and
+requires that a confirmation be in writing and that it legally
+supersede any previous agreement. Under the ISDA Master Agreement the
+parties exchange documents and other confirming evidence, each a
+Confirmation, and each Transaction is evidenced by one.
+
+Three properties follow, and each has a system consequence.
+
+1. The confirmation supersedes what came before. A new confirmation
+   replaces the previous one; it does not accumulate.
+2. It is bilateral. Both parties hold the same document, and both can
+   enforce it.
+3. It is the record of the terms, not of the trade. A trade can exist
+   unconfirmed; it cannot settle unconfirmed.
+
+** Verification, affirmation, confirmation
+
+Three steps sit between an execution and a confirmed deal, and the
+words are not interchangeable.
+
+| Step | Who acts | What it establishes | System consequence |
+|------+----------+---------------------+--------------------|
+| Verification | The firm, internally | Our record matches the execution | A verified trade may enter the population |
+| Affirmation | The two counterparties, on the economic terms | Both sides agree the terms | The trade is affirmable; a query is raised instead if the terms differ |
+| Confirmation | The two counterparties, in writing | The binding record, superseding earlier agreement | The trade is confirmed as of a version |
+
+Affirmation is not confirmation, and a platform makes the difference
+easy to miss. DTCC Deriv/SERV ran an affirmation service, AffirmXpress,
+in which a counterparty reviewed a broker's trade details and affirmed
+or queried them, and an affirmed trade could flow automatically to the
+matching and confirmation service "resulting in legal confirmation
+within seconds of affirmation". The affirmation was the trigger; the
+confirmation was the legal act.
+
+The three steps also age differently. An unverified trade is an
+internal control exception. An unconfirmed trade is a counterparty
+risk, because the terms are not yet enforceable in the form the parties
+agreed.
+
+** Why confirmation timing is regulated
+
+Confirmation backlogs were an operational risk long before they were
+regulated. The 2005 ISDA Novation Protocol existed to clear a backlog
+that was largely novation-driven, and both major regimes now set
+deadlines of their own.
+
+- In the United States, CFTC rule 17 CFR 23.501 requires a swap dealer
+  or major swap participant to have written procedures to execute a
+  confirmation for each swap, with time limits that depend on the
+  counterparty type and the asset class. Subpart I of Part 23 also
+  covers portfolio reconciliation (23.502), portfolio compression
+  (23.503) and swap trading relationship documentation (23.504).
+- Also in the United States, 17 CFR Part 45 separates primary economic
+  terms data from confirmation data. Primary economic terms are the
+  terms the counterparties match or affirm when they verify a swap;
+  confirmation data are the terms they match and agree when they
+  confirm it. Both must reach a swap data repository, on a schedule
+  tied to the confirmation.
+- In the European Union, EMIR Article 11(1) requires procedures for
+  timely confirmation of non-cleared OTC derivative contracts, and
+  Article 12 of the risk mitigation RTS, Commission Delegated
+  Regulation (EU) No 149/2013, sets the deadlines: T+1 for credit and
+  interest rate derivatives between financial counterparties, T+2 for
+  equity, FX and commodity derivatives, and longer windows where one
+  party is a non-financial counterparty below the clearing threshold.
+  Article 12(4) adds a monthly reporting duty for unconfirmed trades
+  outstanding more than five business days.
+
+The European Commission has stated that the deadlines require
+procedures that enable confirmation within the period, and are not hard
+deadlines in themselves. The practical reading is the same either way:
+a trade that ages past its deadline is an exception that must be
+counted, explained and cleared.
+
+** The two-version rule
+
+A deal carries two version numbers.
+
+- The /internal version/ moves on every recorded change to the deal. It
+  is the audit spine. It answers "what did we hold, and when".
+- The /external version/ moves only when the terms the customer has
+  agreed to change. It is the commercial spine. It answers "what has
+  the customer agreed to".
+
+The rule in one sentence: a trade changes version only if the agreement
+with the customer has changed.
+
+The external version is the handle the customer's records match. When a
+client queries a trade, they quote the version they hold. A system that
+bumps the external version for internal reasons forces a confirmation
+the customer never agreed to and never asked for.
+
+Two consequences are worth stating plainly:
+
+1. Authorisation does not bump either version. Authorisation is our
+   workflow state, not a term of the deal. Treating it as a term would
+   make the firm issue confirmations for its own internal approvals.
+   Authorisation is metadata on the trade.
+2. An economic change is normally confirmable, and a non-economic
+   change normally is not. The two properties are close, but they are
+   not the same property, and the next section separates them.
+
+** Classification of an amendment
+
+Amendments are classified on four orthogonal axes. They are not values
+of one enumeration, and an amendment sits on all four at once.
+
+| Axis | Values | What it decides |
+|------+--------+-----------------|
+| Economic | Economic / non-economic | Whether the deal must be revalued |
+| Confirmable | Confirmable / non-confirmable | Whether a new confirmation is issued |
+| Real | Real / null | Whether anything at all feeds downstream |
+| Customer-visible | External version moves / does not move | Whether the customer sees a change |
+
+Two combinations deserve a note.
+
+A /null amend/ is real on none of the axes. The value entered equals
+the value held, so nothing changed. The record of the attempt is worth
+keeping for the audit trail, but a null amend must not move the
+external version and must not raise a confirmation.
+
+A /misbooking correction/ is real and economic, and it is confirmable,
+even though it is not a change of mind. It corrects an error in the
+original booking terms, so the confirmed terms change, and the customer
+must agree them again.
+
+** One activity per version
+
+Each version carries one activity record that states why it exists.
+Where several causes land at once, the system records them in a fixed
+priority order and the highest-priority cause names the version. The
+priority order exists because one-activity-per-version is an aim, not a
+guarantee: a batch may deliver a rate reset and a correction together.
+
+** Confirmable events
+
+The events that raise a confirmation:
+
+| Event | Notes |
+|-------+-------|
+| New | The original trade input |
+| Amend | Only when the amend is confirmable |
+| Close out, full | The parties end the deal early |
+| Close out, partial | The unclosed remainder is re-confirmed under the same trade |
+| Cancellation | A trade booked in error and removed in its entirety |
+| Trigger | A barrier is crossed, whether the barrier activates or knocks out the deal |
+| Exercise | The holder exercises an option under the deal |
+| Partial exercise | The holder exercises part of a structure; the untouched legs stay live |
+| Rate reset | A rate is reset under the terms of the deal |
+| Strike fixing | A strike is fixed from an observed level |
+| Restructure | The deal is replaced by a new version |
+
+The list is not a list of trade events. It is the subset of trade
+events that change the terms the customer has agreed to, or that the
+deal itself requires the customer to acknowledge in writing.
+
+Events that are not on the list are not confirmed: authorisation states,
+internal book moves, netting and settlement mechanics, market fixings
+the contract already provides for, and annotations such as hedge links
+and user-defined links. [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] carries
+the full table of linkages and marks which ones have an economic
+effect.
+
+** Undoing an event
+
+Most confirmable events have a mirror. A cancellation is undone by a
+reinstatement, a restructure by a reversion, a confirmation by an
+un-confirm. Two rules govern the family:
+
+1. Never delete a version. Post the mirror event and let the record
+   show both.
+2. A matched pair is P&L neutral. The mirror event restores the prior
+   state exactly, so the pair moves no value.
+
+The second rule is the test of a correct implementation. If undoing an
+event changes the P&L, the undo is not a mirror; it is a second event.
+
+** Confirming a deal and confirming a structure
+
+A structure is confirmed as a whole when the parts have no independent
+existence to the customer. The test is not the size of the deal, it is
+the typeness:
+
+- A structure whose legs exist only as parts of the deal confirms as
+  one document. A partial close-out of such a deal produces one
+  confirmation for the remainder, not one per leg.
+- A package of trades that the customer holds under its own terms per
+  trade confirms trade by trade, even though the trades were executed
+  together.
+
+Netting complicates the picture, and the rules depend on the cause. An
+execution algorithm produces many fills that collapse to one ticket, so
+one confirmation covers the lot. A scheduled netting under a hedging
+programme produces one confirmation per netting date. In both cases the
+confirmation follows the trade population, not the message flow.
+
+** The trade population**
+
+A trade must be in the population before it can receive events. The
+population is a state machine, and the states track the confirmation
+steps above: captured, verified, affirmed, confirmed. The states are
+not decoration. Each one gates a different capability, and the useful
+implementation reads the gate rather than re-deriving the state at each
+call site.
+
+** What travels with the trade**
+
+Confirmation intent is a property of the trade, not of a separate
+workflow. A message that carries a trade therefore carries, alongside
+the terms:
+
+- The intent to confirm, and whether that intent is active.
+- The authorisation state and the actor who set it.
+- The event timestamps, at the precision the matching service needs.
+- The identifiers, long and short, so the receiving system can match
+  the trade to its own record.
+- The eligibility of the trade for transaction reporting.
+- The version the message confirms.
+
+The last item is the one most often dropped, and it is the one that
+makes reconciliation possible. A confirmation that does not name the
+version it confirms cannot be matched against the customer's record.
+
+** The document itself
+
+The confirmed document and the booked trade are related but not
+identical. Confirmations are often enriched by hand while they are
+drafted, because the legal text carries terms the booking system does
+not hold: governing law, additional representations, and the settlement
+and account details the two parties have agreed.
+
+Two consequences:
+
+- The confirmation is a document with a life of its own. It is stored,
+  versioned and retrieved as a document, not regenerated on demand.
+- Reconstructing the booked trade from the confirmation is not
+  guaranteed, and reconstructing the confirmation from the booked
+  trade is not either. The link between them is the trade identifier
+  and the version.
+
+Settlement instructions are the common case of a term that lives on the
+confirmation more than on the trade. See
+[[id:0929B047-1A31-3514-9EDB-EF7B4F012C5D][Standing Settlement Instructions]].
+
+** Special cases
+
+| Case | What changes |
+|------+--------------|
+| Non-deliverable forward | The fixing source and the non-deliverable settlement terms are the load-bearing ones. EMTA publishes template terms per currency pair, and a template applies only to trades from its effective date onward, so the version of the template matters. The Master Confirmation Agreement for NDF transactions provides the framework. |
+| Barrier option | Some dealers issue the confirmation "with docs" and some "without docs"; a trade that was documented one way cannot be re-documented the other without a new confirmation. |
+| Broker-executed trade | The trade passes through a sandbox or pre-live environment before it reaches the live system, and the confirmation carries the version from the originating system. |
+| Cleared trade | The original trade is extinguished at acceptance for clearing and replaced by two clearing swaps. The clearing house assigns its own internal identifiers, and those form part of the confirmation data. |
+
+** In ORE Studio
+
+We have the versioning primitives and we do not yet have the
+confirmation model.
+
+What exists:
+
+- Reference data versions a composite by touching the parent when a
+  child changes, so "as of version N" is a temporal window join. See
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]].
+- Trading does not adopt that design. Each entity versions on its own
+  spine and the composite read is a temporal join over keys. See
+  [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]].
+- The blotter exposes the deal actions that produce versions: Amend,
+  Cancel, Clone and Roll Forward. See
+  [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
+
+What is missing, and what development should add:
+
+1. An external version, distinct from the internal version, and bumped
+   only by a change to the customer's terms.
+2. Authorisation recorded as trade metadata, never as a version cause.
+3. One activity record per version, carrying the cause, with a stated
+   priority order when several causes coincide.
+4. A confirmable flag derived from the amend classification, not
+   inferred from the presence of a value change.
+5. Undo events that post a mirror version and never delete one.
+6. The confirmed version stamped on every outgoing confirmation
+   message.
+
+** Sources
+
+- CFTC, 17 CFR Part 23 Subpart I, Swap Documentation (confirmation,
+  portfolio reconciliation, compression, relationship documentation):
+  https://www.law.cornell.edu/cfr/text/17/part-23/subpart-I
+- CFTC, 17 CFR 45.1 definitions: primary economic terms data,
+  confirmation data, life cycle event:
+  https://www.govinfo.gov/content/pkg/CFR-2013-title17-vol1/pdf/CFR-2013-title17-vol1-sec45-1.pdf
+- EMIR, Article 11, risk mitigation techniques for non-cleared OTC
+  derivative contracts: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32012R0648
+- Commission Delegated Regulation (EU) No 149/2013, Article 12, timely
+  confirmation: https://www.legislation.gov.uk/eur/2013/149/chapter/VIII/adopted
+- ESMA, Questions and Answers on EMIR implementation:
+  https://www.esma.europa.eu/sites/default/files/library/esma70-1861941480-52_qa_on_emir_implementation.pdf
+- DTCC Deriv/SERV AffirmXpress (archived product page):
+  https://web.archive.org/web/20071105023716/http://www.dtcc.com/products/derivserv/suite/affirmxpress.php
+- FpML 5.10, Messaging Framework (confirmation and trade change
+  messages): https://www.fpml.org/docs/FpML5-messaging-framework-2.pdf
+- FpML 5, post-trade events (amendment, increase, termination,
+  novation):
+  https://cdn.fpml.org/spec/fpml-5-11-7-rec-1/html/confirmation/schemaDocumentation/schemas/fpml-business-events-5-11_xsd/groups/PostTradeEventsBase.model.html
+- ISDA Common Domain Model, Event Model (a lifecycle event as atomic
+  primitive instructions over trade states):
+  https://cdm.finos.org/docs/6.0.0/event-model/
+- EMTA, NDF template terms and FX market practice:
+  https://www.emta.org/
+- Foreign Exchange Committee, Master Confirmation Agreement for
+  Non-Deliverable Forward FX Transactions, Practice Notes:
+  https://resources.newyorkfed.org/medialibrary/microsites/fmlg/files/documentation/practicenotes.pdf
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition model
+  whose changes this page classifies.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the versioning
+  spine our entities already carry.
+- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — the per-entity
+  versioning the trading component targets.
+- [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — trade activity categories, and why a version
+  boundary matters to an attribution run.

@@ -208,12 +208,14 @@ Tags that describe the business or technical domain of the content.
 | =commodityswaption= | Commodity swaptions and commodity derivatives markets. |
 | =commodityvarianceswap= | Commodity variance swaps and commodity volatility markets. |
 | =compositetrade= | Composite trades and multi-component trade structures. |
+| =confirmations= | Trade confirmation, affirmation, and confirmation controls. |
 | =convertiblebond= | Convertible bonds and hybrid equity-debt instruments. |
 | =currencies= | Currency reference data. |
 | =counterparty= | Counterparty entity and management. |
 | =cpiswap= | CPI inflation swaps and inflation-linked markets. |
 | =creditdefaultswap= | Single-name credit default swaps and credit markets. |
 | =creditlinkedswap= | Credit linked swaps and structured credit. |
+| =deal_composition= | Deal composition: structures, legs, and the linkages between trades. |
 | =deployment= | Deployment and environment provisioning. |
 | =documentation= | Documentation tooling and conventions. |
 | =domain= | Business domain modelling. |
@@ -280,6 +282,7 @@ Tags that describe the business or technical domain of the content.
 | =security= | Security features and hardening (also component tag). |
 | =sprint= | Sprint-level document (also type tag). |
 | =strikeresettableoption= | Strike resettable options and trigger-reset option structures. |
+| =structures= | Trade structures and multi-leg deal composition. |
 | =swap= | Swap products and interest-rate derivatives. |
 | =swaption= | Swaptions and the interest rate option market. |
 | =syntheticcdo= | Synthetic collateralised debt obligations and tranches. |
@@ -290,6 +293,7 @@ Tags that describe the business or technical domain of the content.
 | =ui= | User interface design and implementation. |
 | =ux= | User experience. |
 | =var_and_vol_derivatives= | Exotic variance and volatility swaps and options with barriers and corridors. |
+| =versioning= | Versioning of deals and entities: internal and external versions. |
 | =window_barrieroption= | Window barrier options and time-windowed barrier structures. |
 | =worstofbasketswap= | Worst of basket swaps and basket trigger structures. |
 | =yyswap= | Year-on-year inflation swaps and inflation-linked markets. |

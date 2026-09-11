@@ -33,11 +33,11 @@ settled with the requester when the work starts.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:B660460A-682B-4728-9A8F-21B9A9AF52E4][Documentation improvements]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -49,11 +49,32 @@ settled with the requester when the work starts.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Two knowledge pages, not one. The material splits on a natural seam:
+how a deal is composed, and what happens when the composed deal
+changes. Each page stands alone and links to the other.
+
+1. =doc/knowledge/domain/trade_structures.org= — the composition
+   ladder, the rule that a leg is a trade with its own identifier, the
+   deal topology, structure operations, and the linkages between
+   trades.
+2. =doc/knowledge/domain/confirmations_and_versioning.org= — the
+   confirmation model, the internal and external version rule, the
+   amendment classification, and the confirmable events.
+
+Grounding rules for both pages:
+
+- Use the market term, not a local one. Check each term against FpML,
+  the ISDA Common Domain Model, the CFTC and EMIR rules, and the
+  published vendor material for Murex, Calypso and OpenGamma Strata.
+- Cite the source for every external claim, with a link.
+- Tie each page to our implementation in an "In ORE Studio" section,
+  and link the existing knowledge notes rather than restating them.
+- No pseudo-XML examples. Use tables and prose.
 
 * Notes
+
+Both pages are domain-level. They ground development rather than
+describe a screen or a component.
 
 * Test Scenarios
 
@@ -79,3 +100,26 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two domain-level knowledge pages shipped under =doc/knowledge/domain/=,
+both wired into the knowledge hub and the tag inventory:
+
+- =trade_structures.org= — how a deal is built from its parts: the
+  composition ladder, the rule that a leg is a trade with its own
+  identifier, the deal topology, structure operations, and the linkages
+  between trades.
+- =confirmations_and_versioning.org= — what a confirmation is, the
+  internal and external version model, the four amendment axes, and the
+  events that must be re-confirmed.
+
+Every external claim cites a source: FpML, the ISDA Common Domain
+Model, CFTC Part 23 and Part 45, EMIR and its risk mitigation RTS,
+CPMI-IOSCO guidance on the unique transaction identifier, the ISDA
+Novation Protocol, EMTA NDF template terms, and OpenGamma Strata. The
+terminology is checked against the published vendor material for Murex
+and Calypso.
+
+Acceptance is met: the pages exist, link to and from the hub, and the
+site build succeeds with both pages published. =compass lint --path
+doc= exits non-zero on dangling id links, and it does so identically on
+=origin/main= (620 violations on both), so this change adds none.

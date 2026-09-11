@@ -8,7 +8,7 @@
 #+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/enable-compiler-warnings
-#+pr:
+#+pr: 2061
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
@@ -143,7 +143,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2061][#2061]] | [build] Enable the compiler warnings the code assumes |
 
 * Review
 

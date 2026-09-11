@@ -1468,21 +1468,21 @@ mapper directions now point at the issue row, and the five were
 deleted. The container and the tables hold one list rather than two
 views of it kept in step by hand.
 
-*** Finding: no case covers the two new child readers
+*** Finding: no case covered the two new child readers
 
 The wave adds no test case. =parent_scoped_queries= gained
 =read_call_dates_by_issue_ids= and
 =read_conversion_targets_by_issue_ids=, and the header and the handler
-are their only callers. Compilation is the whole of their coverage
-until the full round trip of Unit C runs.
+were their only callers. Compilation was the whole of their coverage,
+and it stayed so only until the extraction below.
 
 The envelope path of B.5a took the other shape:
 =trade_envelope_reader= is a service, and
 =service_trade_envelope_reader_tests.cpp= drives it against a database
-with four cases. The bond read assembly sits inline in
-=populate_instruments_for_trades= instead. The two readers want the
-same treatment, and the assembly wants the same home, before Unit C
-depends on either.
+with four cases. The bond read assembly sat inline in
+=populate_instruments_for_trades= instead. The two readers wanted the
+same treatment, and the assembly wanted the same home, before Unit C
+depended on either.
 
 *** Finding: the fact row is chosen by the instrument's type code
 
@@ -1500,7 +1500,7 @@ tables below them stay empty, which is B.5c. The option block, the
 strike, the exercise schedule, the forward, the delivery basket and the
 three return-side members stay as they were, which is B.5d. The two
 readers of the finding above are the debt this wave records against
-Unit C.
+Unit C, and the extraction below paid it before B.5c began.
 
 *** No generated file was edited by hand
 
@@ -1509,9 +1509,117 @@ Six of the seven files this wave changes are hand written. The seventh,
 hand; this wave deepens that debt rather than opening it. No file is
 added or removed, so no =component_files.cmake= list changes.
 
+*** The bond read assembly becomes a reader service
+
+The finding above left two pieces of debt: the two child readers had no
+case, and the bond assembly sat inline in =trade_handler.hpp=, the
+generated path kept by hand. B.5c and B.5d both grow that assembly, so
+it was settled before either landed rather than after.
+
+=populate_instruments_for_trades= now calls =bond_instrument_reader=,
+which mirrors =trade_envelope_reader=: a service under
+=ores.trading.core/service/= that takes instrument identifiers and
+returns the containers keyed by them. It reads the headers in one
+batch, each distinct issue once rather than once per instrument, the
+two child lists in one query each, and the fact row of each instrument
+from that instrument's type code. The inline block and the nine
+includes it needed are gone from the handler, which keeps one call site
+in the generated file where it held sixty lines.
+
+=service_bond_instrument_reader_tests.cpp= drives it against a database
+with four cases: children read back in ordinal order after being
+written out of it, one issue serving two instruments, an instrument
+with no header row absent from the result, and a fact row read only for
+the instrument whose type code names it.
+
+No generated file was edited by hand in this pass. The handler edit is
+a call site on the path already recorded as kept by hand, and it
+narrows that debt rather than widening it.
+
+*** Finding: the case for two instruments of one issue caught a real defect
+
+The handler built one container per instrument and never shared anything
+between them. The reader does: the issue-keyed child rows are read once
+and held in a cache that every instrument of that issue reads from. The
+first version moved the two child lists out of the cache and into the
+container, so the second instrument of an issue found a cache entry that
+was present and empty. Its call dates and conversion targets vanished
+with no error raised.
+
+=read_instruments_gives_two_instruments_the_one_issue= fails against that
+version, and it is the case written for exactly this shape. The lists are
+now copied. =trade_envelope_reader= has the same read-one-batch shape and
+never had the bug, because it pushes each child straight into the
+container named by that child's own trade id, so no container is ever
+built from a cache another container also reads.
+
+*** Finding: the in-place refresh cannot add a column to an existing table
+
+B.5 recorded that the sixteen new tables were absent from this database
+and applied the trading create aggregate in place to add them. That
+procedure cannot add a column: =create table if not exists= skips a table
+that is already there, and every column in it.
+
+Eleven columns were in that state. =calendar=, =credit_curve_id=,
+=reference_curve_id=, =income_curve_id= and =bond_notional= on
+=bond_issue=; =knocks_out=, =price_type= and =redemption= on
+=bond_option=; =initial_price=, =payer= and =price_type= on =bond_trs=.
+Every one was added by A.2 to B.4 to a table that predated it. The
+database reported all sixty five trading tables present, and the B.5
+finding's own check passed, while all eleven were missing.
+
+Nothing failed until the reader tests wrote an issue row, which is the
+first write to that table since the columns were modelled. The first
+error named a missing column and the second a violated check constraint,
+and neither names drift.
+
+=scripts/ore_schema_column_drift.py= reads the column list out of every
+create script and diffs it against =information_schema=, over all two
+hundred and seventy six declared tables rather than the trading family
+alone. It exits 1 on a gap and prints the statements that close it under
+=--emit-alters=, with each column's definition taken verbatim from its
+create script rather than retyped. The eleven were applied and the check
+now reads clean.
+
 ** Verification
 
-Each wave records its build and suite result here.
+Each wave records its build and suite result here. A wave that models a
+table or a column also runs =scripts/ore_schema_column_drift.py= first,
+because the database is restored at a commit and the create aggregate
+cannot add a column to a table that is already there.
+
+*** The reader extraction, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the pass ends at
+=[100%] Built target ores.trading.core.tests= with no error line. The
+three new files, the handler, and the two regenerated lists all compiled
+and linked on that pass.
+
+The suite did not pass first time, and what it caught is the value of
+this wave. The first sweep failed four cases in the new file, all on
+=column "calendar" does not exist=, which is the drift finding above.
+With the eleven columns applied, the second failed two: a second fixture
+that left =conversion_ratio= at its zero default and so broke the
+=conversion_ratio > 0= check, and the shared-cache defect. The reader's
+mock was the only mock in the file that was wrong; the defect was real.
+
+The final sweep is 100% tests passed, 0 failed out of 71, in 913.40
+seconds. =ores.trading.core.tests= is 90 cases, all passing, and carries
+the four reader cases.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.09 s  |
+| ores.trading.core.tests    | passed |  15.20 s  |
+| ores.trading.service.tests | passed |   0.59 s  |
+| ores.ore.core.tests        | passed |   4.14 s  |
+| ores.ore.api.tests         | passed |   0.52 s  |
+| ores.ore.service.tests     | passed |   0.56 s  |
+
+=scripts/ore_schema_column_drift.py= reads clean against this database:
+two hundred and seventy six declared tables, every declared column
+present.
 
 *** Wave B.5b, the build and the sweep
 

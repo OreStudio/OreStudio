@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: B868C4DA-D1BC-411B-A2DE-A68386CC9E1C
+:END:
+#+title: C++ Custom Types
+#+description: Registry binding each custom C++ column type to the header that defines it, so a model declares the type and codegen supplies the include.
+#+type: knowledge
+#+level: cross
+#+filetags: :codegen:cpp:types:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+
+* Summary
+
+A column declares its C++ type with =:cpp_type:=, and the type may be
+anything the generated header can name: a standard type, a domain enum,
+or a value type such as =cron_expression=. Whatever the type, the
+header that defines it has to be included, and until this registry the
+two were stated separately — the type in the column, the header in the
+entity's =** Domain includes= block. Nothing connected them, so an
+include could be forgotten, or left behind when the type changed.
+
+This registry is the connection. A column whose =:cpp_type:= names a
+type below pulls that type's header into the entity's includes without
+the model repeating it.
+
+* Detail
+
+** What is registered
+
+Only types whose header codegen cannot otherwise derive. A plain
+=std::string= or =int= needs no row: the domain-header template emits
+the standard includes it always needs. A row earns its place when
+forgetting the header would fail the build.
+
+The match covers wrapped forms. A column typed
+=std::optional<cron_expression>= or =std::vector<domain::scope>=
+resolves to the same header as the bare type, because the wrapper is
+not what needs including.
+
+An entity that already lists the header in its =** Domain includes=
+block keeps working unchanged: the registry adds only what is missing,
+so registering a type that models already declare by hand changes
+nothing.
+
+** Order
+
+The order includes appear in is not meaningful. Codegen runs
+clang-format over its C++ output, and =.clang-format= sets
+=SortIncludes= with =IncludeBlocks: Merge=, so the emitted header
+carries clang-format's order whatever order the model lists them in.
+
+* The registry
+
+| Type | Header |
+|------+--------|
+| =cron_expression= | ="ores.scheduler.api/domain/cron_expression.hpp"= |
+| =domain::asset_class= | ="ores.marketdata.api/domain/asset_class.hpp"= |
+| =domain::binding_mode= | ="ores.synthetic.api/domain/binding_mode.hpp"= |
+| =domain::product_type= | ="ores.trading.api/domain/product_type.hpp"= |
+| =domain::scope= | ="ores.synthetic.api/domain/scope.hpp"= |
+| =domain::series_subclass= | ="ores.marketdata.api/domain/series_subclass.hpp"= |
+| =ores::trading::domain::product_type= | ="ores.trading.api/domain/product_type.hpp"= |
+| =std::chrono::year_month_day= | =<chrono>= |
+| =utility::uuid::tenant_id= | ="ores.utility/uuid/tenant_id.hpp"= |
+
+A =domain::= name is component-relative rather than globally unique.
+Each one above resolves to exactly one header across the corpus today,
+and the loader rejects a registry that binds the same type to two
+headers, so an ambiguity introduced later fails rather than picking a
+side.
+
+* See also
+
+- [[id:A57C28EA-EB88-4C0A-BDDF-F414CCCF96F7][Variability Profiles]] — the other registry the org loader reads from this directory.

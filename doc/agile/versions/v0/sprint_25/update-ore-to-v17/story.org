@@ -1,0 +1,78 @@
+:PROPERTIES:
+:ID: A34F4835-5CA5-4F30-91D6-90975354534C
+:END:
+#+title: Story: Update ORE to v17
+#+description: Sync the vendored ORE examples and XSD to v1.8.17.0, build and vendor the new engine package, and publish both v1.8.16.0 and v1.8.17.0 so grid jobs can run on either.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment: eager_maxwell
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Bring the vendored ORE engine up to v1.8.17.0, and keep v1.8.16.0 in
+service beside it. Three things move: the XML (examples and XSD), the
+binaries (a new self-tested engine package), and the packages the
+compute grid publishes.
+
+The two versions are separate app versions of the same =ORE= compute
+app. ACME provisioning publishes both, so a grid job picks the engine
+version it wants and we can compare the two on live jobs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Story scaffolded. No implementation work has started. |
+| Waiting on    | The v1.8.17.0 engine build under =/home/marco/Development/ORE/Engine=. Only the packaging step waits on it. |
+| Next          | Raise the scaffold PR, then start the first task. |
+| Last touched  | 2026-09-11                               |
+
+* Acceptance
+
+- The vendored examples and XSD match the v1.8.17.0 engine checkout.
+- The v1.8.17.0 package builds with =external/ore/tools/package_ore.sh=
+  and passes its TA002 self-test.
+- =external/ore/packages/manifest.json= describes the tarball that is
+  actually tracked, with a matching version, size and sha256.
+- The C++ domain types regenerate from the v1.8.17.0 XSD with no
+  unexplained diff.
+- The v1.8.16.0 package stays in place, and every existing reference to
+  it still resolves.
+- ACME provisioning registers both engine versions, each with its own
+  platform package, and a grid job runs on either one.
+- =TA002_IR_Swap.tar.gz= is byte-identical, or the change is explained
+  and accepted.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:EB84218C-FF1E-4EB6-8E65-218F41930350][Scaffold story: Update ORE to v17]] | STARTED | 2026-09-11 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:25EC2B31-812F-4EB1-8ADE-966DF496D5E8][Sync ORE examples and XSD to v1.8.17.0]] | BACKLOG | | | Sync external/ore/examples/ and external/ore/xsd/ from the v1.8.17.0 engine checkout, and regenerate the C++ domain types from the new XSD. |
+| [[id:E6AD2AD9-2EF9-4F3E-8D10-526E0B60232A][Build and vendor the ORE v1.8.17.0 engine package]] | BACKLOG | | | Build the v1.8.17.0 engine into one self-contained package with external/ore/tools/package_ore.sh, self-test it against TA002, and commit it beside the v1.8.16.0 package. |
+| [[id:ADA8C792-C844-485E-81EE-8BA4073FF3F8][Publish both ORE engine versions during provisioning]] | BACKLOG | | | Register both engine versions in the compute seed and publish both packages during ACME provisioning, so a grid job can run on v1.8.16.0 or v1.8.17.0. |
+
+* Decisions
+
+- Keep v1.8.16.0 and add v1.8.17.0 beside it. Both ship as app versions
+  of the =ORE= compute app, so a grid job chooses the version. Retiring
+  v1.8.16.0 is a later decision, not this story.
+- Fold in the stale =external/ore/packages/manifest.json=. It still
+  names the =1.8.16.0-3-g3b62ba248= tarball, but the tracked file is
+  =ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz=. The seed SQL carries
+  the correct sha256 (=9288aecd&#x2026;=) for the tracked file, so the
+  drift is confined to the manifest.
+
+* Out of scope
+
+- Retiring the v1.8.16.0 package, and migrating existing jobs to
+  v1.8.17.0.
+- Engine changes. We vendor an upstream build and do not modify it.

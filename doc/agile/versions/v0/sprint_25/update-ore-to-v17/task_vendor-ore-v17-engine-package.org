@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: E6AD2AD9-2EF9-4F3E-8D10-526E0B60232A
+:END:
+#+title: Task: Build and vendor the ORE v1.8.17.0 engine package
+#+description: Build the v1.8.17.0 engine into one self-contained package with external/ore/tools/package_ore.sh, self-test it against TA002, and commit it beside the v1.8.16.0 package.
+#+type: task
+#+level: s1
+#+filetags: :update-ore-to-v17:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Build the v1.8.17.0 engine into one self-contained tarball that carries its own libraries, and prove it runs by replaying TA002_IR_Swap. Commit the tarball, the diff report and the manifest update beside the existing v1.8.16.0 package, and leave that package untouched.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The v1.8.17.0 package builds self-contained and passes the TA002 self-test, with a diff report recorded.
+- The tarball is committed beside ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz, and the v1.8.16.0 package is unchanged.
+- external/ore/packages/manifest.json names both tracked tarballs, each with the right version, size and sha256.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

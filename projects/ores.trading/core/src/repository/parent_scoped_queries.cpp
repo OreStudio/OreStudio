@@ -24,6 +24,18 @@
 #include "ores.trading.core/repository/bond_issue_call_date_mapper.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_entity.hpp"
 #include "ores.trading.core/repository/bond_issue_conversion_target_mapper.hpp"
+#include "ores.trading.core/repository/bond_leg_amortization_entity.hpp"
+#include "ores.trading.core/repository/bond_leg_amortization_mapper.hpp"
+#include "ores.trading.core/repository/bond_leg_amount_entity.hpp"
+#include "ores.trading.core/repository/bond_leg_amount_mapper.hpp"
+#include "ores.trading.core/repository/bond_leg_entity.hpp"
+#include "ores.trading.core/repository/bond_leg_mapper.hpp"
+#include "ores.trading.core/repository/bond_leg_rate_entity.hpp"
+#include "ores.trading.core/repository/bond_leg_rate_mapper.hpp"
+#include "ores.trading.core/repository/instrument_schedule_date_entity.hpp"
+#include "ores.trading.core/repository/instrument_schedule_date_mapper.hpp"
+#include "ores.trading.core/repository/instrument_schedule_entity.hpp"
+#include "ores.trading.core/repository/instrument_schedule_mapper.hpp"
 #include "ores.trading.core/repository/trade_envelope_additional_field_entity.hpp"
 #include "ores.trading.core/repository/trade_envelope_entity.hpp"
 #include "ores.trading.core/repository/trade_envelope_mapper.hpp"
@@ -144,6 +156,138 @@ read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>
         [](const auto& entities) { return bond_issue_conversion_target_mapper::map(entities); },
         lg(),
         "Reading bond issue conversion targets by issue ids.");
+}
+
+std::vector<domain::bond_leg>
+read_legs_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_leg_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c);
+
+    return execute_read_query<bond_leg_entity, domain::bond_leg>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_leg_mapper::map(entities); },
+        lg(),
+        "Reading bond legs by instrument ids.");
+}
+
+std::vector<domain::bond_leg_amount>
+read_leg_amounts_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_leg_amount_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c,
+                                "leg_role"_c,
+                                "leg_number"_c,
+                                "amount_role"_c,
+                                "sequence_number"_c);
+
+    return execute_read_query<bond_leg_amount_entity, domain::bond_leg_amount>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_leg_amount_mapper::map(entities); },
+        lg(),
+        "Reading bond leg amounts by instrument ids.");
+}
+
+std::vector<domain::bond_leg_rate>
+read_leg_rates_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_leg_rate_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c, "leg_role"_c, "leg_number"_c);
+
+    return execute_read_query<bond_leg_rate_entity, domain::bond_leg_rate>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_leg_rate_mapper::map(entities); },
+        lg(),
+        "Reading bond leg rates by instrument ids.");
+}
+
+std::vector<domain::bond_leg_amortization>
+read_leg_amortizations_by_instrument_ids(context ctx,
+                                         const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<bond_leg_amortization_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c,
+                                "leg_role"_c,
+                                "leg_number"_c,
+                                "sequence_number"_c);
+
+    return execute_read_query<bond_leg_amortization_entity, domain::bond_leg_amortization>(
+        ctx,
+        query,
+        [](const auto& entities) { return bond_leg_amortization_mapper::map(entities); },
+        lg(),
+        "Reading bond leg amortizations by instrument ids.");
+}
+
+std::vector<domain::instrument_schedule>
+read_schedules_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<instrument_schedule_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c,
+                                "owner_role"_c,
+                                "owner_number"_c,
+                                "schedule_role"_c,
+                                "sequence_number"_c);
+
+    return execute_read_query<instrument_schedule_entity, domain::instrument_schedule>(
+        ctx,
+        query,
+        [](const auto& entities) { return instrument_schedule_mapper::map(entities); },
+        lg(),
+        "Reading instrument schedules by instrument ids.");
+}
+
+std::vector<domain::instrument_schedule_date>
+read_schedule_dates_by_instrument_ids(context ctx,
+                                      const std::vector<std::string>& instrument_ids) {
+    if (instrument_ids.empty())
+        return {};
+    static const auto max(make_timestamp(MAX_TIMESTAMP, lg()));
+    const auto tid = ctx.tenant_id().to_string();
+    const auto query = sqlgen::read<std::vector<instrument_schedule_date_entity>> |
+                       where("tenant_id"_c == tid && "instrument_id"_c.in(instrument_ids) &&
+                             "valid_to"_c == max.value()) |
+                       order_by("instrument_id"_c,
+                                "owner_role"_c,
+                                "owner_number"_c,
+                                "schedule_role"_c,
+                                "schedule_sequence_number"_c,
+                                "sequence_number"_c);
+
+    return execute_read_query<instrument_schedule_date_entity, domain::instrument_schedule_date>(
+        ctx,
+        query,
+        [](const auto& entities) { return instrument_schedule_date_mapper::map(entities); },
+        lg(),
+        "Reading instrument schedule dates by instrument ids.");
 }
 
 }

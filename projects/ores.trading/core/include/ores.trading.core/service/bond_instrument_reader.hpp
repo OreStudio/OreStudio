@@ -34,8 +34,8 @@ namespace ores::trading::service {
  * @brief Rebuilds bond instrument containers from the rows that hold them.
  *
  * A bond instrument is spread over one header row, one issue row, the
- * issue's two keyed child lists and one fact row chosen by the
- * instrument's type code. The export path holds the instrument
+ * issue's two keyed child lists, the leg family and one fact row chosen
+ * by the instrument's type code. The export path holds the instrument
  * identifiers and needs the whole container for each, which no single
  * generated repository read answers.
  *

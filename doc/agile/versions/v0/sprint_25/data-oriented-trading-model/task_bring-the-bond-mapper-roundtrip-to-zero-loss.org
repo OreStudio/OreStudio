@@ -28,9 +28,9 @@ The bond products and the trade envelope round trip at zero loss on the mapper p
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave B.1 and B.2 landed: the nine shared tables and the five columns on the issue row. Unit B continues. |
+| Now          | Wave B.5c landed: the leg family and the shared schedule tables are written and read. Only B.5d remains before unit C. |
 | Waiting on   | Nothing.                               |
-| Next         | Wave B.3's schedule reshape and option block, then B.4, B.5 and unit C. |
+| Next         | Wave B.5d, the option block, the strike, the exercise schedule, the forward, the delivery basket and the three return-side members. Then unit C. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -1581,12 +1581,219 @@ alone. It exits 1 on a gap and prints the statements that close it under
 create script rather than retyped. The eleven were applied and the check
 now reads clean.
 
+** Wave B.5c, the leg family and the shared schedule tables
+
+B.5b wrote the identity of a bond trade: the issue row and the product's
+fact row. This wave writes the instrument's own terms. Seven files
+change, and six of the seven are hand written.
+
+*** The six tables get a surface
+
+The sixteen tables B.1 to B.4 added have generated protocols, handlers
+and registrars, and no registrar was called, so no subject reached any
+of them. Six of the sixteen are this wave's: the four leg tables and the
+two schedule tables. =registrar_bond.cpp= wires all six, so a running
+service can read and write them.
+
+The other ten stay unwired. B.5a wired the three envelope tables, and
+B.5d takes the seven that remain.
+
+*** The six reads the generated repository does not offer
+
+=parent_scoped_queries= gains one batch read per table, on the pattern
+B.5b set for the issue's two child lists: legs, amounts, rates,
+amortizations, schedules and schedule dates.
+
+Each read filters on the instrument identifiers and the current
+bitemporal version, and orders by the columns the container's own member
+order needs, so a reader walks the rows in document order without
+sorting again. The orders are =(instrument_id, leg_role, leg_number)=
+for the legs and for the rates, that key plus =sequence_number= for the
+amortizations, that key plus =amount_role= and =sequence_number= for the
+amounts, and =(instrument_id, owner_role, owner_number, schedule_role,
+sequence_number)= for the schedules, with the child adding
+=schedule_sequence_number= ahead of its own ordinal.
+
+=read_schedules_by_instrument_ids= reads every owner rather than the legs
+alone. A schedule row's owner is a leg, an option block or a return
+block, and one query serves all three, so B.5d reuses it as it stands.
+
+*** The reader rebuilds the legs
+
+=bond_instrument_reader= now returns the leg family. The six row sets
+are read once for the whole batch and grouped by instrument, and each
+header row whose instrument appears in the group becomes a
+=bond_leg_data=.
+
+The role decides the destination. A =bond= row appends to the leg list,
+because the schema declares =LegData= unbounded. The other three fill the
+single leg the schema declares, which is =trs_funding=, =repo= or
+=ascot_swap=. A row whose role is none of the four is read and dropped,
+because the container has no member for it.
+
+A leg's schedule is found by its role. =schedule_for= selects the rows
+whose owner matches the leg and whose schedule role names the member, so
+one lookup serves the leg schedule, the payment schedule, the two inner
+schedules of a floating rate and the synthesized payment dates block.
+
+=bond_leg_rate_data= is a choice of three alternatives, and the rate row
+carries the discriminator. =to_rate_data= builds the alternative the
+=rate_kind= column names, and falls through to the fixed case, which is
+the only one with no rate row members of its own: its numbers live in the
+amount table under the =rate= role.
+
+*** The writer saves the legs
+
+=save_leg= writes one leg whole. It returns immediately when
+=bond_leg_data::is_empty()= holds, which is the shape a container built
+from a row set has, so an absent leg writes no row and reads back as an
+absent leg.
+
+Otherwise it writes the leg row, the amount lists, the rate row, the
+amortizations and the schedules in that order, and stops at the first
+failure with the response's own message.
+
+The amount lists are written under the role that names them, numbered
+from one within each role, so the reader's own ordering reassembles the
+lists. A fixed leg writes its rates under the =rate= role, and a floating
+leg writes =spread=, =cap=, =floor= and =gearing=.
+
+=save_bond_instrument= calls =save_leg= once per bond leg in list order,
+then once for each of the three single legs. The leg number is the
+ordinal, counted from one.
+
+*** Finding: =payment_dates= is a fifth schedule role
+
+=bond_leg_data= carries a =payment_dates= list of dates. No table holds a
+bare date list: the shared schedule table holds an entry, and an entry of
+the dates kind holds a child row per date. So the writer synthesizes one
+dates entry holding the list, under the schedule role =payment_dates=.
+
+=instrument_schedule.org= names four schedule roles in its prose and
+states the rule that binds them: "The container's member names are the
+values". The container's member is =payment_dates=, so the fifth value
+follows from the model's own rule. The column carries no check
+constraint, so no schema change is needed.
+
+The prose is now shorter than the rule it states, which is a defect in
+the org and not in this wave. Correcting it means regenerating the
+=instrument_schedule= entity, and the text is what a reader consults
+rather than what the code executes, so it is recorded here rather than
+changed in a wave whose subject is the switch-over.
+
+*** Two type wrinkles at the column boundary
+
+The =fixing_days= column is signed and the container member is not. A
+negative column value would wrap rather than fail, so the reader engages
+the member only when the value is zero or more. The writer casts back.
+
+=indexings_from_asset_leg= is one optional flag in the container, and the
+schema states =Indexings= as an unbounded list of a choice. The container
+holds the =FromAssetLeg= member alone, which is the bound wave A.2b
+recorded. The leg row carries the flag as a column, so a leg writes one
+entry and reads one back.
+
+*** What B.5c does not carry
+
+The option block, the strike, the exercise schedule, the forward, the
+delivery basket and the three return-side members stay unwired, which is
+B.5d.
+
+Two behaviours of the write path stay as B.5b recorded them, and this
+wave extends both to the legs. A re-import writes new rows rather than
+updating the existing ones, because the generated save handler is a
+bitemporal insert. And a leg the second import of a document no longer
+states keeps its row from the first, because nothing deletes a child row
+the new container omits. Neither is reachable from a document the mapper
+produced, and both are the same shape across every child table this
+program added.
+
+*** No generated file was edited by hand
+
+Six of the seven files are hand written: the queries header and source,
+the reader's header and source, the import handler and the test file.
+The seventh, =trade_handler.hpp=, is the generated path already recorded
+as kept by hand, and this wave changes no call site in it.
+
+No file is added or removed, so no =component_files.cmake= list changes.
+
 ** Verification
 
 Each wave records its build and suite result here. A wave that models a
 table or a column also runs =scripts/ore_schema_column_drift.py= first,
 because the database is restored at a commit and the create aggregate
 cannot add a column to a table that is already there.
+
+*** Wave B.5c, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit code 0, and the log ends at
+=[100%] Built target ores.qt.exe=. The reader, the writer and the three
+new cases compiled and linked on that pass.
+
+The sweep reads 70 of 71 suites passing. The one failure is not this
+wave's, and the section below records why.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.09 s  |
+| ores.trading.core.tests    | passed |  19.57 s  |
+| ores.trading.service.tests | passed |   0.55 s  |
+| ores.ore.core.tests        | passed |   4.08 s  |
+| ores.ore.api.tests         | passed |   0.45 s  |
+| ores.ore.service.tests     | passed |   0.73 s  |
+
+=ores.trading.core.tests= carries the wave's three new cases and reads
+19.57 seconds against the 13.38 of the wave before.
+
+The whole sweep took 2179.50 seconds, which is longer than the 884.80 of
+B.5b and is the one second per test case the watchdog join costs.
+
+=scripts/ore_schema_column_drift.py= reads clean against this database:
+two hundred and seventy six declared tables, every declared column
+present. No modeling file changed, so no codegen drift check applies.
+=regenerate_cmake_component_files.py --all --check= reports every
+=component_files.cmake= up to date, which follows from the wave adding
+and removing no file.
+
+*** Finding: the listener loss-window test fails under load
+
+=ores.database.tests= failed in the sweep, on
+=postgres_listener_service_reconnect_surfaces_loss_window= at
+=postgres_listener_service_tests.cpp:367=.
+
+The case terminates the listener's backend, sends a notification into
+the window it believes is open, and then requires that the only
+notification to arrive is the one it sends after the listener is back.
+It received the one sent during the window instead.
+
+The test's own comment states the assumption the failure breaks:
+"PostgreSQL delivers NOTIFY only to live LISTEN sessions, so everything
+sent from here until the reconnect is a lost window." The listener
+reconnects on its own schedule. =expect_gone= proves the old backend has
+gone and nothing more, so the reconnect can complete and reissue LISTEN
+before the test sends the notification it intends to lose. That
+notification is then delivered, and the follow-up wait for exactly one
+received message is satisfied by the very message the test meant to lose.
+
+The suite is a timing race over a reconnect, and it is not this wave's.
+=ores.database.tests= links =ores.database.lib=, =ores.testing.lib= and
+=ores.logging.lib=, so the seven files this wave changes are outside its
+link closure and nothing in the component depends on =ores.trading= or
+=ores.ore=. The suite passes alone in 20.60 seconds against the 159.70 it
+took in the sweep, which is the load sensitivity the race predicts.
+
+The reconnect path the test leans on was given an exponential backoff
+policy in four =ores.database= commits that are all in this branch's
+history, so the window the test measures has moved recently. The repair
+is to close the race rather than to widen the sleeps: establish that the
+reissued LISTEN has landed before sending, and wait for the notification
+the test wants rather than for a count of one.
+
+This is the third suite defect this task records. A.3b found the
+=ores.reporting= retry that cannot work, and B.3 the =ores.refdata=
+currency race. Each belongs to the suite it sits in, and together they
+are why a green sweep is not on its own evidence that a wave is sound.
 
 *** The reader extraction, the build and the sweep
 

@@ -35,6 +35,10 @@
 #include "ores.trading.api/messaging/bond_issue_call_date_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_conversion_target_protocol.hpp"
 #include "ores.trading.api/messaging/bond_issue_protocol.hpp"
+#include "ores.trading.api/messaging/bond_leg_amortization_protocol.hpp"
+#include "ores.trading.api/messaging/bond_leg_amount_protocol.hpp"
+#include "ores.trading.api/messaging/bond_leg_protocol.hpp"
+#include "ores.trading.api/messaging/bond_leg_rate_protocol.hpp"
 #include "ores.trading.api/messaging/bond_option_protocol.hpp"
 #include "ores.trading.api/messaging/bond_repo_protocol.hpp"
 #include "ores.trading.api/messaging/bond_trs_protocol.hpp"
@@ -55,6 +59,8 @@
 #include "ores.trading.api/messaging/fx_vanilla_option_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/fx_variance_swap_instrument_protocol.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_schedule_date_protocol.hpp"
+#include "ores.trading.api/messaging/instrument_schedule_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_additional_field_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_portfolio_id_protocol.hpp"
 #include "ores.trading.api/messaging/trade_envelope_protocol.hpp"
@@ -211,8 +217,310 @@ read_bond_issue_ids_by_security(Nats& nats, std::string& out_error) {
 }
 
 /**
+ * @brief Saves one schedule of one owner: the entries and their dates.
+ *
+ * The entries are numbered from one within their role, so a reader
+ * reassembles the document's order. Each entry writes its own row and
+ * each of its dates writes a child row keyed to that entry's ordinal.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_schedule(Nats& nats,
+                          const boost::uuids::uuid& instrument_id,
+                          const std::string& owner_role,
+                          int owner_number,
+                          const std::string& schedule_role,
+                          const ores::trading::domain::bond_schedule_data& schedule) {
+    using ores::trading::messaging::save_instrument_schedule_date_request;
+    using ores::trading::messaging::save_instrument_schedule_request;
+
+    std::string error;
+    int sequence_number = 0;
+    for (const auto& rule : schedule.rules) {
+        save_instrument_schedule_request req;
+        req.data.instrument_id = instrument_id;
+        req.data.owner_role = owner_role;
+        req.data.owner_number = owner_number;
+        req.data.schedule_role = schedule_role;
+        req.data.sequence_number = ++sequence_number;
+        req.data.schedule_kind = "rules";
+        req.data.start_date = rule.start_date;
+        req.data.end_date = rule.end_date;
+        req.data.adjust_end_date_to_previous_month_end = rule.adjust_end_date_to_previous_month_end;
+        req.data.tenor = rule.tenor;
+        req.data.calendar = rule.calendar;
+        req.data.convention = rule.convention;
+        req.data.term_convention = rule.term_convention;
+        req.data.rule = rule.rule;
+        req.data.end_of_month = rule.end_of_month;
+        req.data.end_of_month_convention = rule.end_of_month_convention;
+        req.data.first_date = rule.first_date;
+        req.data.last_date = rule.last_date;
+        req.data.remove_first_date = rule.remove_first_date;
+        req.data.remove_last_date = rule.remove_last_date;
+        auto resp = nats_call(nats, req, error);
+        if (!resp || !resp->success)
+            return error.empty() ? "save_instrument_schedule failed" : error;
+    }
+
+    for (const auto& dates : schedule.dates) {
+        save_instrument_schedule_request req;
+        req.data.instrument_id = instrument_id;
+        req.data.owner_role = owner_role;
+        req.data.owner_number = owner_number;
+        req.data.schedule_role = schedule_role;
+        req.data.sequence_number = ++sequence_number;
+        req.data.schedule_kind = "dates";
+        req.data.calendar = dates.calendar;
+        req.data.convention = dates.convention;
+        req.data.tenor = dates.tenor;
+        req.data.end_of_month = dates.end_of_month;
+        req.data.include_duplicate_dates = dates.include_duplicate_dates;
+        auto resp = nats_call(nats, req, error);
+        if (!resp || !resp->success)
+            return error.empty() ? "save_instrument_schedule failed" : error;
+
+        int date_number = 0;
+        for (const auto& date : dates.dates) {
+            save_instrument_schedule_date_request date_req;
+            date_req.data.instrument_id = instrument_id;
+            date_req.data.owner_role = owner_role;
+            date_req.data.owner_number = owner_number;
+            date_req.data.schedule_role = schedule_role;
+            date_req.data.schedule_sequence_number = req.data.sequence_number;
+            date_req.data.sequence_number = ++date_number;
+            date_req.data.schedule_date = date;
+            auto date_resp = nats_call(nats, date_req, error);
+            if (!date_resp || !date_resp->success)
+                return error.empty() ? "save_instrument_schedule_date failed" : error;
+        }
+    }
+
+    return {};
+}
+
+/**
+ * @brief Saves one of a leg's six amount lists under the role that names it.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_leg_amounts(Nats& nats,
+                             const boost::uuids::uuid& instrument_id,
+                             const std::string& leg_role,
+                             int leg_number,
+                             const std::string& amount_role,
+                             const std::vector<ores::trading::domain::bond_float_data>& amounts) {
+    using ores::trading::messaging::save_bond_leg_amount_request;
+
+    std::string error;
+    int sequence_number = 0;
+    for (const auto& amount : amounts) {
+        save_bond_leg_amount_request req;
+        req.data.instrument_id = instrument_id;
+        req.data.leg_role = leg_role;
+        req.data.leg_number = leg_number;
+        req.data.amount_role = amount_role;
+        req.data.sequence_number = ++sequence_number;
+        req.data.value = amount.value;
+        req.data.start_date = amount.start_date;
+        auto resp = nats_call(nats, req, error);
+        if (!resp || !resp->success)
+            return error.empty() ? "save_bond_leg_amount failed" : error;
+    }
+    return {};
+}
+
+/**
+ * @brief Saves one bond leg: its row, its amounts, its rate, its
+ * amortizations and its five schedules.
+ *
+ * A leg that carries nothing writes no row, which is what a container
+ * that came from a row set rather than from a document holds.
+ *
+ * @return An empty string on success, or the first failure.
+ */
+template <typename Nats>
+std::string save_leg(Nats& nats,
+                     const boost::uuids::uuid& instrument_id,
+                     const std::string& leg_role,
+                     int leg_number,
+                     const ores::trading::domain::bond_leg_data& leg) {
+    using ores::trading::messaging::save_bond_leg_amortization_request;
+    using ores::trading::messaging::save_bond_leg_rate_request;
+    using ores::trading::messaging::save_bond_leg_request;
+
+    if (leg.is_empty())
+        return {};
+
+    std::string error;
+    save_bond_leg_request leg_req;
+    leg_req.data.instrument_id = instrument_id;
+    leg_req.data.leg_role = leg_role;
+    leg_req.data.leg_number = leg_number;
+    leg_req.data.payer = leg.payer;
+    leg_req.data.leg_type = leg.leg_type;
+    leg_req.data.currency = leg.currency;
+    leg_req.data.payment_convention = leg.payment_convention;
+    leg_req.data.payment_lag = leg.payment_lag;
+    leg_req.data.payment_calendar = leg.payment_calendar;
+    leg_req.data.day_counter = leg.day_counter;
+    leg_req.data.last_period_day_counter = leg.last_period_day_counter;
+    leg_req.data.notional_payment_lag = leg.notional_payment_lag;
+    leg_req.data.strict_notional_dates = leg.strict_notional_dates;
+    leg_req.data.indexings_from_asset_leg = leg.indexings_from_asset_leg;
+    if (leg.settlement) {
+        leg_req.data.settlement_fx_index = leg.settlement->fx_index;
+        leg_req.data.settlement_fixing_date = leg.settlement->fixing_date;
+    }
+    auto leg_resp = nats_call(nats, leg_req, error);
+    if (!leg_resp || !leg_resp->success)
+        return error.empty() ? "save_bond_leg failed" : error;
+
+    if (auto failure = save_leg_amounts(
+            nats, instrument_id, leg_role, leg_number, "notional", leg.notionals);
+        !failure.empty())
+        return failure;
+
+    if (leg.rate && leg.rate->fixed) {
+        if (auto failure = save_leg_amounts(
+                nats, instrument_id, leg_role, leg_number, "rate", leg.rate->fixed->rates);
+            !failure.empty())
+            return failure;
+    }
+
+    if (leg.rate && leg.rate->floating) {
+        const auto& floating = *leg.rate->floating;
+        const std::pair<std::string, const std::vector<ores::trading::domain::bond_float_data>*>
+            lists[] = {{"spread", &floating.spreads},
+                       {"cap", &floating.caps},
+                       {"floor", &floating.floors},
+                       {"gearing", &floating.gearings}};
+        for (const auto& [role, amounts] : lists) {
+            if (auto failure =
+                    save_leg_amounts(nats, instrument_id, leg_role, leg_number, role, *amounts);
+                !failure.empty())
+                return failure;
+        }
+
+        save_bond_leg_rate_request rate_req;
+        rate_req.data.instrument_id = instrument_id;
+        rate_req.data.leg_role = leg_role;
+        rate_req.data.leg_number = leg_number;
+        rate_req.data.rate_kind = "floating";
+        rate_req.data.index = floating.index;
+        rate_req.data.is_in_arrears = floating.is_in_arrears;
+        rate_req.data.last_recent_period = floating.last_recent_period;
+        rate_req.data.last_recent_period_calendar = floating.last_recent_period_calendar;
+        if (floating.fixing_days)
+            rate_req.data.fixing_days = static_cast<std::int64_t>(*floating.fixing_days);
+        rate_req.data.lookback = floating.lookback;
+        rate_req.data.rate_cutoff = floating.rate_cutoff;
+        rate_req.data.is_averaged = floating.is_averaged;
+        rate_req.data.has_sub_periods = floating.has_sub_periods;
+        rate_req.data.include_spread = floating.include_spread;
+        rate_req.data.is_not_resetting_xccy = floating.is_not_resetting_xccy;
+        rate_req.data.naked_option = floating.naked_option;
+        rate_req.data.local_cap_floor = floating.local_cap_floor;
+        rate_req.data.stub_use_original_curve = floating.stub_use_original_curve;
+        rate_req.data.observation_shift = floating.observation_shift;
+        if (floating.front_stub_interpolation) {
+            const auto& stub = *floating.front_stub_interpolation;
+            rate_req.data.front_stub_short_index = stub.short_index;
+            rate_req.data.front_stub_long_index = stub.long_index;
+            rate_req.data.front_stub_rounding_type = stub.rounding_type;
+            rate_req.data.front_stub_rounding_precision = stub.rounding_precision;
+        }
+        if (floating.back_stub_interpolation) {
+            const auto& stub = *floating.back_stub_interpolation;
+            rate_req.data.back_stub_short_index = stub.short_index;
+            rate_req.data.back_stub_long_index = stub.long_index;
+            rate_req.data.back_stub_rounding_type = stub.rounding_type;
+            rate_req.data.back_stub_rounding_precision = stub.rounding_precision;
+        }
+        auto rate_resp = nats_call(nats, rate_req, error);
+        if (!rate_resp || !rate_resp->success)
+            return error.empty() ? "save_bond_leg_rate failed" : error;
+
+        if (auto failure = save_schedule(
+                nats, instrument_id, leg_role, leg_number, "fixing_schedule",
+                floating.fixing_schedule);
+            !failure.empty())
+            return failure;
+        if (auto failure = save_schedule(
+                nats, instrument_id, leg_role, leg_number, "reset_schedule", floating.reset_schedule);
+            !failure.empty())
+            return failure;
+    } else if (leg.rate && leg.rate->formula_based) {
+        const auto& formula = *leg.rate->formula_based;
+        save_bond_leg_rate_request rate_req;
+        rate_req.data.instrument_id = instrument_id;
+        rate_req.data.leg_role = leg_role;
+        rate_req.data.leg_number = leg_number;
+        rate_req.data.rate_kind = "formula_based";
+        rate_req.data.index = formula.index;
+        rate_req.data.is_in_arrears = formula.is_in_arrears;
+        rate_req.data.fixing_days = formula.fixing_days;
+        rate_req.data.fixing_calendar = formula.fixing_calendar;
+        auto rate_resp = nats_call(nats, rate_req, error);
+        if (!rate_resp || !rate_resp->success)
+            return error.empty() ? "save_bond_leg_rate failed" : error;
+    } else if (leg.rate && leg.rate->fixed) {
+        save_bond_leg_rate_request rate_req;
+        rate_req.data.instrument_id = instrument_id;
+        rate_req.data.leg_role = leg_role;
+        rate_req.data.leg_number = leg_number;
+        rate_req.data.rate_kind = "fixed";
+        auto rate_resp = nats_call(nats, rate_req, error);
+        if (!rate_resp || !rate_resp->success)
+            return error.empty() ? "save_bond_leg_rate failed" : error;
+    }
+
+    int sequence_number = 0;
+    for (const auto& amortization : leg.amortizations) {
+        save_bond_leg_amortization_request req;
+        req.data.instrument_id = instrument_id;
+        req.data.leg_role = leg_role;
+        req.data.leg_number = leg_number;
+        req.data.sequence_number = ++sequence_number;
+        req.data.amortization_type = amortization.type;
+        req.data.value = amortization.value;
+        req.data.start_date = amortization.start_date;
+        req.data.end_date = amortization.end_date;
+        req.data.frequency = amortization.frequency;
+        req.data.underflow = amortization.underflow;
+        auto resp = nats_call(nats, req, error);
+        if (!resp || !resp->success)
+            return error.empty() ? "save_bond_leg_amortization failed" : error;
+    }
+
+    if (auto failure =
+            save_schedule(nats, instrument_id, leg_role, leg_number, "schedule", leg.schedule);
+        !failure.empty())
+        return failure;
+    if (auto failure = save_schedule(
+            nats, instrument_id, leg_role, leg_number, "payment_schedule", leg.payment_schedule);
+        !failure.empty())
+        return failure;
+
+    if (!leg.payment_dates.empty()) {
+        ores::trading::domain::bond_schedule_data dates;
+        ores::trading::domain::bond_schedule_dates block;
+        block.dates = leg.payment_dates;
+        dates.dates.push_back(std::move(block));
+        if (auto failure =
+                save_schedule(nats, instrument_id, leg_role, leg_number, "payment_dates", dates);
+            !failure.empty())
+            return failure;
+    }
+
+    return {};
+}
+
+/**
  * @brief Saves one bond instrument: its issue row, its header row, the
- * issue's child rows and the product's fact row.
+ * issue's child rows, its legs and the product's fact row.
  *
  * The issue row comes first because both the header and the child rows
  * reference it. A document that stated no call dates and no conversion
@@ -289,6 +597,22 @@ std::string save_bond_instrument(
         if (!child_resp || !child_resp->success)
             return error.empty() ? "save_bond_issue_conversion_target failed" : error;
     }
+
+    const auto instrument_id = instrument.identity.instrument_id;
+    int leg_number = 0;
+    for (const auto& leg : data.bond_legs) {
+        if (auto failure = save_leg(nats, instrument_id, "bond", ++leg_number, leg);
+            !failure.empty())
+            return failure;
+    }
+    if (auto failure = save_leg(nats, instrument_id, "trs_funding", 1, data.trs_funding_leg);
+        !failure.empty())
+        return failure;
+    if (auto failure = save_leg(nats, instrument_id, "repo", 1, data.repo_leg); !failure.empty())
+        return failure;
+    if (auto failure = save_leg(nats, instrument_id, "ascot_swap", 1, data.ascot_swap_leg);
+        !failure.empty())
+        return failure;
 
     const auto& ttc = instrument.identity.trade_type_code;
     if (ttc == "BondOption" && data.option) {

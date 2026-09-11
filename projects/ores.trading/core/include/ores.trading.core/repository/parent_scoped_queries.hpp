@@ -24,6 +24,12 @@
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
 #include "ores.trading.api/domain/bond_issue_conversion_target.hpp"
+#include "ores.trading.api/domain/bond_leg.hpp"
+#include "ores.trading.api/domain/bond_leg_amortization.hpp"
+#include "ores.trading.api/domain/bond_leg_amount.hpp"
+#include "ores.trading.api/domain/bond_leg_rate.hpp"
+#include "ores.trading.api/domain/instrument_schedule.hpp"
+#include "ores.trading.api/domain/instrument_schedule_date.hpp"
 #include "ores.trading.api/domain/trade_envelope.hpp"
 #include "ores.trading.api/domain/trade_envelope_additional_field.hpp"
 #include "ores.trading.api/domain/trade_envelope_portfolio_id.hpp"
@@ -100,6 +106,72 @@ read_call_dates_by_issue_ids(context ctx, const std::vector<std::string>& issue_
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::bond_issue_conversion_target>
 read_conversion_targets_by_issue_ids(context ctx, const std::vector<std::string>& issue_ids);
+
+/**
+ * @brief Reads the legs of a set of instruments.
+ *
+ * Rows come back in instrument order, then in role and ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose legs to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg>
+read_legs_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the named amounts of a set of instruments' legs.
+ *
+ * Rows come back in instrument order, then in role and ordinal order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose leg amounts to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_amount>
+read_leg_amounts_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the rate group rows of a set of instruments' legs.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose leg rates to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_rate>
+read_leg_rates_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the amortizations of a set of instruments' legs.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose amortizations to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::bond_leg_amortization>
+read_leg_amortizations_by_instrument_ids(context ctx,
+                                         const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the schedules of a set of instruments, whichever owner stated them.
+ *
+ * A row's owner is a leg list, an option block or a return block, so the
+ * read covers the leg family and the two owners beside it.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose schedules to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_schedule>
+read_schedules_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
+
+/**
+ * @brief Reads the dates of a set of instruments' schedules.
+ *
+ * Rows come back in instrument order, then in owner, role and schedule
+ * order, then in the date list's own order.
+ *
+ * @param ctx The database context, which carries the tenant.
+ * @param instrument_ids UUIDs of the instruments whose schedule dates to read.
+ */
+ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_schedule_date>
+read_schedule_dates_by_instrument_ids(context ctx,
+                                      const std::vector<std::string>& instrument_ids);
 
 /**@}*/
 

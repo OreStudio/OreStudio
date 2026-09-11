@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :update-ore-to-v17:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/sync-ore-examples-and-xsd
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
 #+updated: 2026-09-11
-#+environment:
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -29,12 +29,12 @@ upstream hand-patches must survive the sync. Report whether
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-11                               |
+| Now          | Both compile breaks from the XSD regeneration are fixed, and every =ores.ore= source and test unit type-checks. Nothing has run yet. |
+| Waiting on   | A free build-lock slot. Another worktree holds both with a full-repo build. |
+| Next         | Build and run =ores.ore.core.tests=, then bootstrap the missing golden for =Credit_CallableBond.xml=. |
+| Last touched | 2026-09-12                               |
 
 * Acceptance
 
@@ -48,11 +48,90 @@ upstream hand-patches must survive the sync. Report whether
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+The sync follows the scripted methodology in =external/ore/methodology.txt=.
+The plan covers the two points where that methodology does not apply as
+written.
+
+- Sync the examples and XSD with
+  =external/ore/tools/update_ore_samples.sh=, which also regenerates both
+  =manifest.json= files and reapplies the known hand-patches.
+- Regenerate the domain types with
+  =projects/ores.codegen/scripts/xsdcpp_generate_ore.sh=, then run
+  =clang-format -i= twice over the two generated C++ files. The committed
+  files are formatted and raw xsdcpp output is not, so one pass leaves a
+  large phantom diff. The second pass is a fixed point and proves it.
+- Verify on a committed tree: the two codegen drift checks, the ores.ore
+  test binary, and the example coverage test added here.
 
 * Notes
+
+- The =v1.8.17.0= tag on the engine fork is provisional. Upstream had not
+  tagged when this work started, so the tag was created at the sync
+  commit, =3d75a6908=. The package rebuilds once upstream tags properly.
+- =TA002_IR_Swap.tar.gz= is byte-identical to its previous contents.
+  Checked by extracting it and diffing its =Input/= tree against
+  =external/ore/examples/Academy/TA002_IR_Swap/Input/=.
+- The =oreTradeData= blocker recorded in
+  =doc/agile/product_backlog/next/xsdcpp-fails-to-resolve-oretradedata-group.org=
+  did not recur. The script that failed during the v16 bump ran clean.
+- Seven trade types are new in v1.8.17.0, and none of them has a mapper
+  or a round-trip test: =BondFutureOption=,
+  =CommodityForwardVolatilityAgreement=, =EquityAutoDeltaHedgedOption=,
+  =EquityForwardVolatilityAgreement=, =ForwardVolatilityAgreement=,
+  =FxForwardVolatilityAgreement=, and =IntradayPowerForward=. Only
+  =IntradayPowerForward= has a portfolio example, at
+  =examples/MarketRisk/Input/Intradaypower/portfolio.xml=. Tracked by
+  [[id:64CB13D8-4848-4C66-8B6B-5946A4F4D8FF][Cover the seven new ORE v1.8.17.0 trade types]].
+- =Credit_CallableBond.xml= was the one example trade with no golden and
+  no test reference. It predates v17. The coverage test added here fails
+  on any such gap from now on, and this file's golden is committed with it.
+- =assets/test_data/domain_roundtrip/= is the second derived artefact of
+  the examples tree, and it is now out of step with it.
+  =scripts/ore_domain_roundtrip_check.py= reports 30 source documents with
+  no round-trip output. Twelve of those are new upstream examples that
+  this sync introduced, so the sync caused them. The other eighteen,
+  including =Products/Example_Trades/Credit_CallableBond.xml=, were
+  already missing before the sync. The check is not run with =--strict= in
+  CI, so none of this fails a build today.
+
+- The XSD regeneration broke the build in two places.
+  =commodityOptionData= replaced its inline =Strike= element with the
+  =strikeGroup= substitution group, so =commodity_instrument_mapper=
+  stopped compiling on =d.Strike=. Fixed by reading the strike from
+  =d.strikeGroup= and writing it back the way the bond and equity
+  mappers already do. A =StrikeData= strike is read as well, because the
+  new schema allows it and reading only =Strike= would drop it silently.
+- The second break is in =fx_instrument_mapper=, and it is larger. Five
+  FX types changed =OptionData= and =BarrierData= from a repeated
+  element to a single one: =fxBarrierOptionData=,
+  =fxDigitalOptionData=, =fxDigitalBarrierOptionData=,
+  =fxDoubleBarrierOptionData= (through the shared barrier type), and
+  =fxTouchOptionData=. Every =push_back= on those members stopped
+  compiling, in both directions, so the mapper carries one read helper
+  and one write helper for each. A double barrier now keeps both levels
+  in the one group, lower first, which is how upstream writes them.
+- =fxKIKOBarrierOptionData= and =genericBarrierOptionData= keep their
+  nested =Barriers/BarrierData= vector and were not touched.
+- Both breaks were found by the compile-database syntax check described
+  below, which is what made them cheap to fix while the build lock was
+  held by another worktree.
+- Upstream restructured several other types. No ORES code reads them, so
+  nothing else broke: =bondFutureData= lost sixteen members,
+  =stFreeStyleEventScheduleBase= replaced its members with
+  =ScheduleData= and =DerivedSchedule=, and =IborIndexCurve= became
+  =IndexCurve= on the bond curve config types.
+- The member-name diff found both breakages, which is worth repeating on
+  the next bump. Diff every complexType's member names between =HEAD= and
+  the regenerated =domain.hpp=, then grep for each removed name. That
+  finds every break before a build does.
+- A second lever checks the fixes without a build. Read the command for
+  one source file out of
+  =build/output/linux-clang-debug-make/compile_commands.json=, remove
+  =-c= and =-o=, add =-fsyntax-only=, and run it. That type-checks one
+  translation unit in seconds and needs no build-lock slot. A sweep over
+  the 32 =ores.ore= source units and the 59 test units found the second
+  break class before the queued build reached it. Reuse it on the next
+  bump: it is the only local check that does not queue behind the lock.
 
 * Test Scenarios
 

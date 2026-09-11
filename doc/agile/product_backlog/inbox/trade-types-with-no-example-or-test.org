@@ -1,0 +1,28 @@
+:PROPERTIES:
+:ID: 8F20BEF0-EF21-4525-847A-316F30B67181
+:END:
+#+title: Cover the 43 ORE trade types that no example exercises
+#+description: 43 of the 122 oreTradeType values in the regenerated domain.hpp appear in no example under external/ore/examples/. The example-walking golden test added with the v17 sync covers only the 79 types that do have an example, and it cannot reach the rest. A hand-written fixture is the only route for those 43. Split: 12 types are referenced by hand-written code and need a fixture only (Autocallable_01, BondFuture, BondPosition, CommodityAccumulator, CommodityBasketOption, CommodityRainbowOption, CommoditySpreadOption, CommodityTaRF, CommodityWorstOfBasketSwap, EquityOptionPosition, EquityStrikeResettableOption). The other 31 have no example and no hand-written reference at all, so they need a mapper as well as a test; the seven new v17 types are a subset of that group and are tracked separately at task 64CB13D8. The 31 are: BondFutureOption, CashPosition, CommodityAsianOption, CommodityBasketVarianceSwap, CommodityBestEntryOption, CommodityDigitalAveragePriceOption, CommodityDigitalOption, CommodityForwardVolatilityAgreement, CommodityGenericBarrierOption, CommodityPairwiseVarianceSwap, CommodityPosition, CommodityStrikeResettableOption, CommodityWindowBarrierOption, EquityAutoDeltaHedgedOption, EquityBasketOption, EquityBasketVarianceSwap, EquityBestEntryOption, EquityDoubleTouchOption, EquityForwardVolatilityAgreement, EquityFutureOption, EquityGenericBarrierOption, EquityPairwiseVarianceSwap, EquityRainbowOption, EquityWindowBarrierOption, ForwardVolatilityAgreement, FxBasketOption, FxForwardVolatilityAgreement, FxPairwiseVarianceSwap, FxRainbowOption, RateDigitalOption, SwaptionStraddle.
+#+type: capture
+#+level: cross
+#+filetags: :ore:trading:testing:coverage:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+(One paragraph: the idea.)
+
+* Why
+
+(Motivation, problem being solved, related context.)
+
+* References
+
+-
+
+* See also
+
+-

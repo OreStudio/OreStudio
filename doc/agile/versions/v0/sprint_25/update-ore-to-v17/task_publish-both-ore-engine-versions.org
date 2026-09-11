@@ -26,12 +26,12 @@ Make both engine versions available to the compute grid. The seed registers both
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | STARTED                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-11                               |
+| Now          | The seed and the provisioning script register and publish both versions. No build or grid run has verified them yet. |
+| Waiting on   | A free build-lock slot, then a provisioned database and a running grid. |
+| Next         | Provision from the recipe and dispatch one job per engine version. |
+| Last touched | 2026-09-12                               |
 
 * Acceptance
 
@@ -41,11 +41,33 @@ Make both engine versions available to the compute grid. The seed registers both
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+- Add a second app-version block to =compute_ore_app_seed.sql= for
+  =1.8.17.0=, with the package URI and the sha256 the v17 tarball
+  actually has. Leave the =1.8.16.0= block alone so both versions stay
+  seeded. The file is hand-maintained, not generated.
+- Add a second =compute publish-package= line to the ACME provisioning
+  recipe, then regenerate the tangled =.ores= from it. The =.ores= file
+  carries a "do not edit by hand" header, so
+  =compass build --direct tangle_shell_scripts= owns it.
+- Change nothing in CMake. =vendor_compute_packages= globs every
+  =*-x64-linux.tar.gz= in =external/ore/packages/=, so the v17 tarball
+  is vendored as soon as it lands in that directory.
+- Verify by provisioning a fresh database from the recipe and running
+  one grid job per engine version. =compute publish-package= upserts by
+  app name and merges platforms, so the second call adds a version
+  rather than replacing the first.
 
 * Notes
+
+- The seed block is a copy of the =1.8.16.0= block with the version, the
+  package URI, and the sha256 substituted. The sha256 is the v17 value
+  recorded in =external/ore/packages/manifest.json=.
+- =package_ore.sh= already tells the packager to update this seed file
+  when a package replaces the seeded version. This task adds a version
+  instead of replacing one, so both blocks stay.
+- The v17 version string is the provisional tag on the engine fork. When
+  upstream tags =1.8.17.0= properly, the tarball is rebuilt, and the
+  sha256 here and in the manifest change with it.
 
 * Test Scenarios
 

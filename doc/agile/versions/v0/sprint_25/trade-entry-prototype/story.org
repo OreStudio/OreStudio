@@ -119,10 +119,10 @@ story branch.
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | Charted 2026-09-11. The product-type research is done, both screens are built, and the site serves them behind a prototypes gallery. All under PR #2067 review. |
+| Now           | Charted 2026-09-11. The product-type research is done, both screens are built, and the site serves them behind a prototypes gallery. The user's second review round is in, and the screen separates reference data from economics. All under PR #2067 review. |
 | Waiting on    | The prototype PR. The user reacts to the artifact. |
-| Next          | Review the prototype on the published site, then take the next frontier ticket. |
-| Last touched  | 2026-09-11                               |
+| Next          | Review the revised prototype on the published site, then take the next frontier ticket. |
+| Last touched  | 2026-09-12                               |
 
 * Acceptance
 

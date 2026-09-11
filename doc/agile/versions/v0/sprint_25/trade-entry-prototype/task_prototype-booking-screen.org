@@ -44,10 +44,10 @@ Fixtures only. No backend and no valuation.
 |--------------+----------------------------------------|
 | State        | DONE                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Built and verified 2026-09-11. Both screens run, and the site build deploys them. |
+| Now          | Built and verified 2026-09-12. Both screens run, the site build deploys them, and the second feedback round is in. |
 | Waiting on   | PR review. The user reacts to the prototype. |
-| Next         | Review the prototype on the published site after it merges. |
-| Last touched | 2026-09-11                               |
+| Next         | Review the revised prototype on the published site. |
+| Last touched | 2026-09-12                               |
 
 * Acceptance
 
@@ -164,8 +164,9 @@ via its "Verifies task" field.
 
 * Review
 
-The local review pass, before the PR. Each row is a defect found and the
-decision taken.
+Two rounds. Rows 1 to 11 are the local review pass, before the PR. Rows 12
+to 16 are the user's review of the published prototype. Each row is a defect
+found and the decision taken.
 
 | # | Finding | File | Decision | Notes |
 |---+---------+------+----------+-------|
@@ -180,6 +181,11 @@ decision taken.
 | 9 | The link to the pricing screen nested a =button= inside an =a=, which is invalid markup. | index.html | Accepted | The anchor carries the button styling instead. |
 | 10 | The acceptance bullet "components move between groups" had no implementation. A component could be added and removed, but never reassigned, so the two-level topology was fixed at the point of creation. | booking.js | Accepted | The component editor opens with a Group select. A move reassigns the component and takes the version with it. |
 | 11 | The Book handoff ran one way only. The pricing screen could price a structure that already existed, but the trader could not start a deal there. The flow the brief describes — price the deal, then book it with the economics filled in — was therefore not demonstrable. | pricing.js, pricing.html | Accepted | The pricing screen gains *New trade*: the least reference data it can price from, carried across by Book. The booking screen fills in the rest. |
+| 12 | The component form mixed reference data with economics. Counterparty, book, portfolio, status and trade date sat in the same flat list as strike, notional and expiry, so nothing separated the trade header from the instrument, and each field moved when the widget changed. | booking.js | Accepted | The component panel gains an envelope block above the form, grouped under the field-group names of =ores.trading.trade=: identity, classification, parties, lifecycle and audit. The instrument form carries the instrument only, and says so. |
+| 13 | The structure had no reference data of its own on screen. Counterparty, portfolio, netting set and book were reachable only through a component, so the reader could not tell what the structure was booked under. | booking.js, index.html | Accepted | The structure header gains a full-width envelope strip. The same reference data now sits in the same position at both levels: structure envelope in the header, component envelope at the head of the panel. |
+| 14 | The component form ran the full height of the panel. Strike, notional and expiry sat above the schedule, the barriers and the premium, so reaching either end meant scrolling past the other. | booking.js, prototype.css | Accepted | The instrument splits into tabs, named for what the widget holds: Terms, Schedule, Premium, Barriers and Legs. Each tab is one screen long, and the trade header stays above them. |
+| 15 | The premium was explained by a banner that said it is a trade in its own right, while the model stored it as a field on the option. Row 6 kept the banner and added a legend for the gap. Explaining a gap is not closing it, and the user asked for the sub-leg. | booking.js, catalogue.js | Accepted | Reverses row 6. The premium renders as a sub-leg with its own identifier, currency, amount and payment date, and its own remove and add actions. The structure references it by key. The banner is gone. |
+| 16 | The audit log ran the full width below the NPV strip, and grew with every action, taking workspace away as the booking progressed. | index.html, prototype.css | Accepted | The audit folds into a drawer, closed by default, with the version rule as its summary line. A native =details= element, so it needs no script. |
 
 * Result
 
@@ -208,6 +214,43 @@ change, and the version follows it. Moving a component into a hedge group
 also takes it out of the strategy invariant, which is the point of the
 group being marked as a hedge.
 
+** Reference data and economics are separated
+
+The screen reads as two levels, and each level keeps its reference data in
+a fixed place.
+
+| Level     | Reference data                       | Economics                        |
+|-----------+--------------------------------------+----------------------------------|
+| Structure | The envelope strip in the header: structure ID, counterparty, portfolio, netting set, book, trade date. | The components, below it. |
+| Component | The envelope block at the head of the panel, in five groups. | The instrument tabs, below it. |
+
+The five groups are not invented. They are the field groups of
+=ores.trading.trade=, which is the FpML trade header: identity,
+classification, parties, lifecycle and audit. The trade is the header, and
+=instrument_id= is the soft key to the instrument that carries the economics,
+so the screen renders that same split rather than a new one.
+
+The position does not move. The structure envelope is always in the header.
+The component envelope is always at the head of the component panel, above
+the tabs, and it stays there as the reader changes tab.
+
+** The instrument form is tabbed
+
+A widget splits its form into named sections, and each section is one screen
+long. The tabs follow the widget: the vanilla option shows Terms, Schedule
+and Premium; the barrier option adds Barriers; the swap shows Terms and
+Schedule; the composite shows Terms and Legs; the generic form shows Terms
+alone.
+
+The premium is the sub-leg the knowledge page describes. It carries its own
+identifier, currency, amount and payment date, it can be removed and added,
+and the option references it by key. It is not a field on the option, and no
+text block claims otherwise.
+
+The audit and the version rule fold into a drawer at the foot of the screen,
+closed by default. The summary line carries the rule: a component change
+bumps the version, and authorisation does not.
+
 ** Delivery
 
 One call to =ores-deploy-web-app= in =ores-build-site.el= copies the
@@ -218,8 +261,24 @@ describes the prototype and links to it.
 
 ** Verification
 
-- Nineteen self-check assertions pass under node. Open either page with
-  =?selfcheck=1= to run them in the browser.
+- Twenty self-check assertions pass. Open either page with =?selfcheck=1=
+  to run them; the console reports =all passed=. Three are new: every
+  widget splits into named sections, no economics section carries a
+  trade-header field, and a premium is a sub-leg with its own identifier.
+- The split check was shown to fail. Adding a counterparty field back to
+  the generic instrument form reported =1 failed=, so the check catches
+  the defect it names rather than passing on any input. A check that
+  cannot fail is worth nothing.
+- The rendered booking screen was read back from the DOM: the structure
+  strip carries all six envelope fields, the component header carries all
+  five field groups, the tab strip carries Terms, Schedule and Premium,
+  and the audit drawer is closed on load.
+- The sub-leg was driven in headless Chrome. Removing the premium took the
+  version from =v7= to =v8=, adding one took it to =v9= with a fresh
+  identifier, and editing a field took it to =v10=, each with the audit
+  line it should write.
+- The layout was read from a screenshot at 1500 by 1000. Both envelopes
+  and the whole of one tab are visible without scrolling.
 - Both pages render in headless Chrome with no script error, and the
   booking screen opens on a valid structure.
 - The move action was driven in headless Chrome: a component row was
@@ -241,12 +300,18 @@ describes the prototype and links to it.
 
 ** Defects found and fixed
 
-Eleven, all found by the local review and the verification above. Each one
-is in the =* Review= table with the file it touches and what was done.
+Sixteen. Eleven came from the local review and the verification above, and
+five from the user's review of the published prototype. Each one is in the
+=* Review= table with the file it touches and what was done.
 
-The strategy set is provisional and the premium is recorded on the option
-rather than as a trade of its own. Both belong to decision tickets that
-stay open, so neither is settled here.
+The strategy set is still provisional. It belongs to
+[[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]],
+which stays open, so this task does not settle it.
+
+The premium is no longer one of these. Row 15 moved it out of the option
+and into a sub-leg of its own, which is what the knowledge page asks for.
+The option still keys to it rather than owning it, which is the rule the
+page sets out.
 
 ** Scope note
 

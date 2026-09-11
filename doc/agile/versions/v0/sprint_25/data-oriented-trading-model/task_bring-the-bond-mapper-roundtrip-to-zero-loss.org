@@ -1430,9 +1430,128 @@ amortization tables below them.
 =** B.5d= takes the option block, the strike, the exercise schedule, the
 forward, the delivery basket and the three return-side members.
 
+*** Wave B.5b, the identity on the write path
+
+The import handler saves the two halves of a bond trade that no earlier
+wave wrote: the issue row, with its call dates and its conversion
+targets, and the product's fact row. The read path in
+=trade_handler.hpp= rebuilds the same three things, so a stored bond
+instrument comes back as the container the mapper expects.
+
+*** Decision: an issue is found by security id, never minted per trade
+
+=bond_issues_security_idx= is unique on =(tenant_id, security_id)=
+among the current rows. The mapper mints a fresh identifier inside
+=resolve_issue=, and =trade_mapper.cpp= passes no lookup, so two trades
+of one ISIN arrive at the handler holding two different issue
+identifiers. Saving both rows would violate the index on the second,
+and a re-import would violate it on the first.
+
+The handler pages the stored issues once per run into a map keyed by
+security id, two hundred rows to a page and five hundred pages at most.
+A hit adopts the stored identifier and rewrites the instrument's
+=issue_id= to match. A miss saves the issue row and records the minted
+identifier, but only after the save returns success. A failed save
+therefore leaves the security id out of the map, and the next trade of
+it tries the issue again rather than opening an instrument against a
+row that is not there.
+
+The read is lazy. It runs at the first bond instrument of the run, and
+a failure stops the run with the response's own message.
+
+*** The container holds no second copy of a bond-level member
+
+Five members the issue row holds as columns were also on
+=bond_instrument_data=: =calendar=, =credit_curve_id=,
+=reference_curve_id=, =income_curve_id= and =bond_notional=. Both
+mapper directions now point at the issue row, and the five were
+deleted. The container and the tables hold one list rather than two
+views of it kept in step by hand.
+
+*** Finding: no case covers the two new child readers
+
+The wave adds no test case. =parent_scoped_queries= gained
+=read_call_dates_by_issue_ids= and
+=read_conversion_targets_by_issue_ids=, and the header and the handler
+are their only callers. Compilation is the whole of their coverage
+until the full round trip of Unit C runs.
+
+The envelope path of B.5a took the other shape:
+=trade_envelope_reader= is a service, and
+=service_trade_envelope_reader_tests.cpp= drives it against a database
+with four cases. The bond read assembly sits inline in
+=populate_instruments_for_trades= instead. The two readers want the
+same treatment, and the assembly wants the same home, before Unit C
+depends on either.
+
+*** Finding: the fact row is chosen by the instrument's type code
+
+=save_bond_instrument= writes one fact row, chosen by
+=trade_type_code= and gated on the matching member being present. A
+document whose type code and payload disagree therefore writes no fact
+row, and the block is lost on export. The mapper produces both from one
+source, so a round trip cannot reach that state, but a container built
+by hand can.
+
+*** What B.5b does not carry
+
+The leg tables and the shared schedule, amount, rate and amortization
+tables below them stay empty, which is B.5c. The option block, the
+strike, the exercise schedule, the forward, the delivery basket and the
+three return-side members stay as they were, which is B.5d. The two
+readers of the finding above are the debt this wave records against
+Unit C.
+
+*** No generated file was edited by hand
+
+Six of the seven files this wave changes are hand written. The seventh,
+=trade_handler.hpp=, is the generated path already recorded as kept by
+hand; this wave deepens that debt rather than opening it. No file is
+added or removed, so no =component_files.cmake= list changes.
+
 ** Verification
 
 Each wave records its build and suite result here.
+
+*** Wave B.5b, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the log ends at
+=[100%] Built target ores.qt.exe= with no error line. The three
+translation units this wave edited that carry logic compiled and linked
+on that pass: =bond_instrument_mapper.cpp= in =ores.ore.core=,
+=parent_scoped_queries.cpp= in =ores.trading.core=, and
+=ore_import_execute_handler.cpp= in =ores.ore.service=.
+
+All seventy one suites pass, in one =ctest= run rather than the ranges
+the earlier waves used, in 884.80 seconds. =ctest= reports 100% tests
+passed, 0 tests failed out of 71.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.09 s  |
+| ores.trading.core.tests    | passed |  13.38 s  |
+| ores.trading.service.tests | passed |   0.57 s  |
+| ores.ore.core.tests        | passed |   4.45 s  |
+| ores.ore.api.tests         | passed |   0.46 s  |
+| ores.ore.service.tests     | passed |   0.58 s  |
+
+=ores.trading.core.tests= carries the four envelope reader cases of
+B.5a and reads 13.38 seconds against the 14.35 of the wave before.
+=ores.ore.core.tests= carries the mapper round trip suite whose
+assertions this wave repointed, and reads 4.45 seconds against 4.64.
+Both suites passed on the first run, so the not-yet-covered readers of
+the finding above did not fail anything.
+
+The build took about an hour of wall time because two builds ran at
+once on this host, this worktree's and another's, each on a different
+worktree. The suite was unaffected and ran alone.
+
+=git status= lists seven modified files and no new file, so no
+=component_files.cmake= list changes and no codegen drift check applies
+to this wave. Six of the seven are hand written; the seventh,
+=trade_handler.hpp=, is the generated path already recorded as kept by
+hand.
 
 *** Wave B.5a, the build and the sweep
 

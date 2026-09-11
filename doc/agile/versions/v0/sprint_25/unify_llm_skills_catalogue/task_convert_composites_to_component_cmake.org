@@ -80,7 +80,16 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Nothing cross-checks =#+parts:= against the sub-components on disk, so a part left out silently stops being built: configure succeeds because CMake never learns the directory exists, and the drift check compares output against the same wrong model | generate.py | Accept | The finding I asked for and did not find myself. =resolve_targets= now raises when a composite's declared parts disagree with its hosted sub-components in either direction. Proved by injecting both failures into a real model rather than reasoning about them |
+| 2 | The gap is the shape flagged in the PR body — a target disappearing in a way neither check would see | — | Accept | Recorded as the reason the gate exists, in the docstring rather than only here |
+| 3 | The collapse is a straight substring merge and no part was dropped or reordered relative to its siblings, verified byte-for-byte on marketdata, iam and compute | — | Accept | No change. Independent confirmation of the claim the baseline comparison was making |
+| 4 | Declaring =#+parts:= rather than deriving it is the pragmatic choice; deriving from the link graph would be more correct but is real complexity for two components | — | Accept | No change. The cross-check narrows the cost of declaring it, since a wrong declaration now fails rather than quietly building less |
+| 5 | The eight hand-written roots are honestly filed rather than silently inconsistent, confirmed by their licence wrap style | — | Accept | No change |
+
+The kind-gate test asserted that a composite generates nothing. That
+was true while no archetype served the kind and is not true now, so it
+is updated rather than left passing for the wrong reason, and three
+tests are added for the new gate.
 
 * Result
 
@@ -113,6 +122,13 @@ clean with no errors, and the target set is identical to the baseline:
 The generator reproduces all twelve declared composites' roots
 byte-identically, =check_component_drift.py --all= passes, the audit
 passes at 43 components, and the codegen suite passes at 180 tests.
+
+A composite's parts are checked against the disk. The root renders one
+=add_subdirectory= per declared part, so a part omitted from
+=#+parts:= would stop being built with nothing to report it —
+configure cannot fail over a directory it never hears about, and the
+drift check would compare against the same wrong model. Review found
+that gap and it is now a hard error.
 
 The drift gate earned its place during this task. My hand-written
 licence headers wrapped differently from the generated ones, and the

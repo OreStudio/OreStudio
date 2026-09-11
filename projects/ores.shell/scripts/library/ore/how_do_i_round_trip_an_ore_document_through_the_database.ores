@@ -1,0 +1,12 @@
+# How do I round trip an ORE document through the database?
+# Upload an ORE document, import it into the database, export it back to XML, and classify the difference against the source with the roundtrip checker.
+#
+# GENERATED from doc/recipes/shell/ore/how_do_i_round_trip_an_ore_document_through_the_database.org — do not edit by hand.
+# Regenerate with: ./compass.sh build --direct tangle_shell_scripts
+#
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+ore upload $ORE_ROUNDTRIP_DIR/source --request-id $ORE_ROUNDTRIP_REQUEST_ID
+ore import $ORE_ROUNDTRIP_REQUEST_ID
+ore export $ORE_ROUNDTRIP_DIR/output/portfolio_roundtrip.xml
+logout

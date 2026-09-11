@@ -26,11 +26,11 @@ Three kinds of codegen drift exist and only one is enforced. Template drift is g
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-08-26                               |
 
 * Acceptance
@@ -42,6 +42,26 @@ Three kinds of codegen drift exist and only one is enforced. Template drift is g
 - The three drift kinds are documented with which check guards each and whether it is enforced.
 
 * Plan
+
+Measure before wiring. Running =check_component_drift.py --all= on
+clean main before touching anything is what a gate is for, and it
+failed immediately: 102 generated files across the registry, left
+behind by the two template changes merged in the previous two tasks.
+Both had gone through review and CI. That is the argument for the task
+rather than a detour inside it, so the regeneration is its own commit.
+
+Model drift needed a checker built. Profiles already state their
+contract as a feature-to-value table, and a bound model states its own
+features in a property drawer, so the check is a comparison rather than
+an inference. Only features the model states itself are compared: a
+feature it leaves unstated is supplied by the profile and cannot
+contradict it.
+
+Both enforced sets are partial on purpose. =check_component_drift.py=
+already carried a registry of components verified byte-identical;
+=check_model_drift.py= gets named exceptions for the same reason. A
+gate that reports a standing failure is one people learn to ignore.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -73,3 +93,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five acceptance criteria are met.
+
+=codegen-drift.yml= runs =check_component_drift.py --all= on every push
+and pull request that touches a model or codegen, and fails on artefact
+drift. It installs clang-format from the distro deliberately: codegen
+formats its own C++ output, so without the formatter every generated
+file reads as drifted, and the distro package is the one
+=nightly-format.yml= uses to normalise the tree, so both agree on what
+formatted means.
+
+The nightly-includes body no longer claims a check that does not run.
+It now names =codegen-drift.yml= and what that check covers, so the
+claim and the mechanism match.
+
+=check_model_drift.py= is new and reports entities whose declared
+features contradict the profile they bind to. It also reports a model
+binding to two profiles that fix the same feature to different values,
+which is unsatisfiable either way. It runs as a second job in the same
+workflow, needing neither codegen nor a formatter because it reads only
+the models.
+
+The registry discipline is preserved on both checks. Components join
+the artefact registry only once verified byte-identical, and the model
+check carries named exceptions rather than a lowered bar.
+
+The three drift kinds are documented in
+[[id:D8CB6EED-1F6A-4EE5-840B-2FE28DE17911][Generated artefacts]], each with the check that guards it and whether
+it is enforced, and the section is marked as describing what runs
+rather than the target state the rest of that page describes.
+
+Verification is demonstrated rather than asserted. The artefact check
+failed on 102 real drifted files, then passed once they were
+regenerated. The model check was proved to fail by injecting a
+contradiction into a bound model, and to pass once it was restored.
+
+One finding is filed rather than fixed. =report_definition= is
+uuid-keyed and workspace-scoped, and no profile in the catalogue
+describes that combination: =uuid-identified-lookup= fixes
+=has_workspace_id=false= and =workspace-scoped-lookup= fixes
+=has_uuid_primary_key=false=. Re-binding would move the false promise
+rather than remove it, so it is a named exception with its reason and
+its own task.

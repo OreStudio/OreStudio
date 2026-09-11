@@ -1,0 +1,148 @@
+:PROPERTIES:
+:ID: 82B0DD7E-4DB1-4F99-AF73-6FBB6C258786
+:END:
+#+title: Task: Nest quant under analytics and register the role
+#+description: ores.analytics.quant sits as a dotted sibling where the signed-off layout is nested parts under a composite root, and quant is in neither the sub-component catalogue nor the signed-off folder catalogue.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch: feature/nest-quant-under-analytics
+#+pr: 2068
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+quant is a registered sub-component of ores.analytics, living at projects/ores.analytics/quant, and would pass a component architecture audit on shape and folder naming.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- projects/ores.analytics.quant no longer exists; the part lives at projects/ores.analytics/quant.
+- quant appears in the sub-component catalogue's specialist roles with its role stated.
+- quant appears in the signed-off folder catalogue of the component architecture audit.
+- The composite component registry lists quant among ores.analytics sub-components.
+- The CMake target name and the include prefix ores.analytics.quant are unchanged, so no consumer include changes.
+
+* Plan
+
+Found by the operator while reviewing the codegen drift work, and the
+distinction it rests on is worth keeping. Clearing codegen drift says
+the generated tree matches the generator. It says nothing about
+whether the component has a legal shape, and analytics did not.
+
+Measure the move before fearing it. 229 references to the name look
+like a large refactor until you read the catalogue: a part's CMake
+target and include prefix are already the fully-qualified name, so
+almost none of them are path references.
+
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2068][#2068]] | [analytics] Nest quant under analytics and register the role |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The move-is-free claim is structurally true, not just true for the units compiled: the part's CMakeLists sets the target name as a literal and derives includes from =CMAKE_CURRENT_SOURCE_DIR=, so neither can change with the directory | — | Accept | No change. Stronger than my evidence: I showed it held for 61 units and one cross-component consumer, the reviewer showed it cannot fail |
+| 2 | The role description names the wrong consumers. =ores.analytics.core= does not link quant at all; the real consumers are =ores.refdata.core=, the =ores.synthetic= api and service, =ores.marketdata.service= and two =ores.qt= plugins | component_architecture.org | Accept | Verified against every =target_link_libraries= before changing it. I wrote "by =core=" from quant's own overview rather than from the build, and it reads as the sibling core in the same composite, which is exactly wrong. Corrected, and the sharper fact is now recorded: no part of =ores.analytics= links quant |
+| 3 | The overview still said three sub-components while its table listed four | component_overview.org | Accept | Corrected. A doc-drift instance of the kind the audit exists to catch, introduced by me in the same commit that added the fourth row |
+| 4 | Operator: =projects/CMakeLists.txt= should add the component, and the component should add its parts — follow the existing pattern | projects/CMakeLists.txt, ores.analytics/CMakeLists.txt | Accept | =ores.eventing= is that pattern and was the only composite using it. =ores.analytics= now has a root CMakeLists adding api, core, quant and service, and the projects level adds the component. This reverses recorded decision D5, so the two documents that stated D5 are corrected and the 18 composites still on the old shape are filed |
+| 5 | Nothing else in =docs_exceptions.txt= hides a shape problem: =NAME_COLLISION= is the only code meaning the tree shape is wrong, and the deleted entry was the only one | — | Accept | No change. This answers the question I asked directly, and narrows the follow-up task to enforcement rather than a hunt |
+
+* Result
+
+All five acceptance criteria are met.
+
+=quant= is the =quant= part of the =ores.analytics= composite, at
+=projects/ores.analytics/quant=, beside =api=, =core= and =service=.
+The dotted sibling is gone.
+
+The move was almost free, which is the useful finding rather than the
+work. A part keeps the fully-qualified name for both its CMake target
+and its include prefix, so =ores.analytics.quant= remains both and
+none of the 120 files including it change. Git records a pure rename
+of 129 files with no content change, and the only build edit is the
+=add_subdirectory= path.
+
+Registering the role was the other half, and the audit is explicit
+that an unregistered folder name is a finding in its own right, so
+absorbing the component without it would have traded one finding for
+another. =quant= is now in the sub-component catalogue's specialist
+roles, in the signed-off folder catalogue, in the composite component
+registry row for =ores.analytics=, and in that group's component
+overview.
+
+The =NAME_COLLISION= exception is deleted, which the audit calls part
+of the fix rather than an afterthought. =validate_docs= passes with it
+gone, so the resolution is mechanical rather than asserted.
+
+Verification went past the doc checks, because they cannot see build
+wiring. CMake configures clean with no errors; all 61 quant
+translation units appear in the compile database at the nested path
+and none at the old one; a quant unit compiles, and so does a
+=ores.marketdata= consumer that includes quant headers across the
+component boundary, which is what proves the include prefix survived
+the move.
+
+The CMake registration changed shape during review. The parts were
+added individually at the projects level, which is what 18 other
+composites do and what decision D5 recorded, but =ores.eventing=
+already showed the better shape: the projects level adds the
+component, and the component adds its parts, so a component's parts
+are listed in one place. =ores.analytics= now does that. The decision
+is reversed in the two documents that stated it, and converting the
+remaining composites is filed rather than done here.
+
+Review turned up something the move itself does not settle. No part
+of =ores.analytics= links =quant=: every consumer is in another group
+(=ores.refdata.core=, the =ores.synthetic= api and service,
+=ores.marketdata.service=, and two =ores.qt= plugins). Nesting it here
+is still right — a dotted sibling claimed a parentage that did not
+exist, and this one is registered — but the placement records where
+the mathematics belongs by subject rather than an existing dependency,
+and the catalogue now says so rather than implying a link that is not
+there.
+
+One thing this task did not address, and it is why the gap existed.
+The component architecture audit is not wired into CI the way the
+codegen drift checks now are. It runs when someone runs it, and its
+exception file is what kept this finding quiet. Suppression that
+nothing re-reads is indistinguishable from a passing check.

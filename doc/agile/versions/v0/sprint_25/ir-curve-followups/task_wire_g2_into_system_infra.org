@@ -247,7 +247,7 @@ One-shot SQL script:
 
 | File                                                                                          | Change                                                                                                            |
 |------------------------------------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------|
-| =projects/ores.analytics.quant/include/…/processes/=                                           | New: =two_factor_gaussian_params.hpp=, =vasicek_params.hpp=, =cox_ingersoll_ross_params.hpp=, =hull_white_params.hpp= |
+| =projects/ores.analytics/quant/include/…/processes/=                                           | New: =two_factor_gaussian_params.hpp=, =vasicek_params.hpp=, =cox_ingersoll_ross_params.hpp=, =hull_white_params.hpp= |
 | =projects/ores.synthetic/api/include/…/domain/=                                                | New (codegen): =yield_curve_process_parameter_definition.hpp=, =ir_curve_generation_config_process_parameter_value.hpp=; new (hand): =yield_curve_process_parameter_mapping.hpp=; modify: =ir_curve_generation_config.hpp= |
 | =projects/ores.synthetic/api/include/…/messaging/=                                              | Modify: =simulate_ir_curve_paths_protocol.hpp=, =preview_ir_curve_shape_protocol.hpp=                              |
 | =projects/ores.synthetic/api/src/domain/=                                                      | New (hand): =yield_curve_process_parameter_mapping.cpp=                                                             |

@@ -21,7 +21,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 * Goal
 
 Add the missing string include to
-projects/ores.analytics.quant/src/math/rate_tree.cpp so that
+projects/ores.analytics/quant/src/math/rate_tree.cpp so that
 std::to_string (used in validate_branching's error message) compiles
 on MSVC, where the standard headers do not provide it transitively.
 

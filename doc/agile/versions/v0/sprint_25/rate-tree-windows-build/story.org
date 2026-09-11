@@ -16,7 +16,7 @@ This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id
 * Goal
 
 The Windows (MSVC) CI build fails on
-projects/ores.analytics.quant/src/math/rate_tree.cpp:70 with error
+projects/ores.analytics/quant/src/math/rate_tree.cpp:70 with error
 C2039 — 'to_string' is not a member of 'std'. The file calls
 std::to_string but does not include the string header; GCC/Clang
 happen to pull it in transitively, MSVC does not. The fix restores a

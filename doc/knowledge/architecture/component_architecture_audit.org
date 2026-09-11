@@ -108,13 +108,13 @@ Any folder name outside it is a finding.
 
 | Folder | Applies to | Technical space | Meaning |
 |--------+------------+-----------------+---------|
-| =CMakeLists.txt= | Simple root; every part root | CMake | Build definition. The root of a composite parent holds none (decision D5). |
+| =CMakeLists.txt= | Simple root; composite root; every part root | CMake | Build definition. A composite root's only job is to add its parts, and =projects/CMakeLists.txt= adds the component rather than each part. |
 | =include/= | Simple; every part | C++ | Public headers, nested one level as =include/ores.<full-name>/= |
 | =src/= | Simple; every part | C++ | Implementation; mirrors the facet dirs of =include/= |
 | =tests/= | Simple; every part | C++ | Catch2 tests; the file name ends in =_tests.cpp= |
 | =modeling/= | Simple; parts; composite root | Codegen org models | Entity org models, =component_overview.org=, PlantUML sources. Not a CMake target. |
 | =api=, =core=, =service= | Composite children | C++ | Standard part roles |
-| =server=, =client=, =wrapper=, =database= | Composite children | C++ | Specialist part roles |
+| =server=, =client=, =wrapper=, =database=, =quant= | Composite children | C++ | Specialist part roles |
 | Domain-area names | =ores.qt= children | C++ / Qt | One Qt plugin per domain area |
 | =venv/= | Python tools only | Python | Local interpreter. Never committed; it is gitignored. |
 
@@ -151,20 +151,30 @@ both at once.
 
 The collision check automates the failure mode: a top-level
 =ores.<a>.<b>= next to an =ores.<a>= composite claims a parentage the
-tree does not have. The current example is =ores.analytics.quant= next
-to the =ores.analytics= composite. Resolve it by absorbing the simple
-component into the composite as a proper sub-component, or by renaming
-it. Use the sub-component catalogue names.
+tree does not have. Resolve it by absorbing the simple component into
+the composite as a proper sub-component, or by renaming it. Use the
+sub-component catalogue names, and add the name to the catalogue when
+the part is a role the catalogue does not yet carry — an unregistered
+folder name is a finding in its own right, so absorbing a component
+without registering its role trades one finding for another.
+
+=quant= arrived this way. It sat as =ores.analytics.quant= beside the
+=ores.analytics= composite, and is now the =quant= part of it. The
+move cost nothing at the call sites because a part's CMake target and
+include prefix are already the fully-qualified name, so only the
+directory and its registration in =projects/CMakeLists.txt= changed.
 
 *** 2. Sub-component structure
 
 Each part of a composite is one of the catalogue roles
 (=api=, =core=, =service=, and the specialist roles), with the
-dependency order =api= to =core= to =service=. The parent root holds no
-=CMakeLists.txt=. Each part carries the full simple layout: its own
+dependency order =api= to =core= to =service=. The parent root holds a
+=CMakeLists.txt= that adds its parts and nothing else, and
+=projects/CMakeLists.txt= adds the component rather than each part.
+Each part carries the full simple layout: its own
 =CMakeLists.txt=, =include/ores.<group>.<part>/=, =src/=, =tests/=,
-=modeling/=. Parts register in =projects/CMakeLists.txt= in dependency
-order. Facets sit in the part the facet placement table assigns, and
+=modeling/=. Parts register in their component's =CMakeLists.txt= in
+dependency order. Facets sit in the part the facet placement table assigns, and
 facet dirs appear in the same part in =include/= and =src/=. The
 [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]] facet table and the component-only checks of
 [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]] are the reference.

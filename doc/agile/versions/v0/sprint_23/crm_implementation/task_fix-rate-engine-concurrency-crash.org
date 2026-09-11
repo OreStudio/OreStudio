@@ -112,12 +112,12 @@ is pre-existing behaviour in code from the earlier CRM story (PRs #1510,
   with the default compact reporter did *not* reproduce across several
   attempts -- the crash is timing/scheduling-sensitive, consistent with a
   genuine data race rather than a deterministic logic bug.
-- Test in question: [[file:../../../../../projects/ores.analytics.quant/tests/rate_engine_tests.cpp][rate_engine_tests.cpp]], =TEST_CASE("concurrent
+- Test in question: [[file:../../../../../projects/ores.analytics/quant/tests/rate_engine_tests.cpp][rate_engine_tests.cpp]], =TEST_CASE("concurrent
   updates and batched reads never crash or hang", "[rate_engine][thread]")=
   (line ~219). One writer thread calls =engine.update(...)= in a loop;
   four reader threads call =engine.rates(...)= 2000 times each -- this
   matches =rate_engine='s own documented contract in
-  [[file:../../../../../projects/ores.analytics.quant/include/ores.analytics.quant/service/rate_engine.hpp][rate_engine.hpp]] (single producer, many concurrent readers), so the test
+  [[file:../../../../../projects/ores.analytics/quant/include/ores.analytics.quant/service/rate_engine.hpp][rate_engine.hpp]] (single producer, many concurrent readers), so the test
   is not misusing the API as far as could be determined.
 
 ** Coredumps
@@ -171,7 +171,7 @@ gone; see Reproduction above).
   lookup (crashing in =max_size()=/=size()= before even reaching the byte
   comparison) is the strongest signal here: =crm_topology= is
   constructed once and never mutated (see its class comment in
-  [[file:../../../../../projects/ores.analytics.quant/include/ores.analytics.quant/domain/crm_topology.hpp][crm_topology.hpp]]), so a concurrent *read-only* lookup into its
+  [[file:../../../../../projects/ores.analytics/quant/include/ores.analytics.quant/domain/crm_topology.hpp][crm_topology.hpp]]), so a concurrent *read-only* lookup into its
   =currency_index_= should never see a torn/corrupt key -- unless
   something elsewhere has corrupted the heap (e.g. a use-after-free or
   buffer overrun in the immer-backed =rate_snapshot=/=immer::atom= path)
@@ -195,10 +195,10 @@ raw segfault.
 - =rate_engine::update()= is documented as the single producer, and
   =rate()=/=rates()= as safe for concurrent readers, via
   =immer::atom<rate_snapshot> snapshot_= (see the class doc in
-  [[file:../../../../../projects/ores.analytics.quant/include/ores.analytics.quant/service/rate_engine.hpp][rate_engine.hpp]]). The crash inside the writer's own call to
+  [[file:../../../../../projects/ores.analytics/quant/include/ores.analytics.quant/service/rate_engine.hpp][rate_engine.hpp]]). The crash inside the writer's own call to
   =rate_snapshot::transient()= -- i.e. destructing/reference-counting the
   =immer::vector<vertex_state>= it just loaded via
-  ~snapshot_.load().get()~ in [[file:../../../../../projects/ores.analytics.quant/src/service/rate_engine.cpp][rate_engine.cpp]] line ~108 -- suggests the
+  ~snapshot_.load().get()~ in [[file:../../../../../projects/ores.analytics/quant/src/service/rate_engine.cpp][rate_engine.cpp]] line ~108 -- suggests the
   refcount on the immer tree nodes is being corrupted by concurrent
   =load()= calls from the four reader threads racing with the single
   writer's =load()=/=store()=, despite immer's

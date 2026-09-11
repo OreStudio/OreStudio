@@ -1966,6 +1966,95 @@ table or a column also runs =scripts/ore_schema_column_drift.py= first,
 because the database is restored at a commit and the create aggregate
 cannot add a column to a table that is already there.
 
+*** Wave B.5d, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit code 0, and the log ends at
+=[100%] Built target ores.qt.exe=. The seven registrars, the seven batch
+reads, the reader rebuild, the handler and the four new cases all
+compiled and linked on that pass.
+
+The sweep reads 70 of 71 suites passing, in 3456.50 seconds. The one
+failure is =ores.refdata.core.tests=, and the section below records why
+it is not this wave's. The host carried a build in another worktree for
+the length of the sweep, which is why the total is the largest this task
+records.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.10 s  |
+| ores.trading.core.tests    | passed |  15.90 s  |
+| ores.trading.service.tests | passed |   0.58 s  |
+| ores.ore.core.tests        | passed |   4.51 s  |
+| ores.ore.api.tests         | passed |   0.51 s  |
+| ores.ore.service.tests     | passed |   0.58 s  |
+
+=ores.trading.core.tests= carries the wave's four new cases. It reads
+15.90 seconds against the 19.57 of the B.5c sweep and the 15.20 of the
+B.5c re-run.
+
+The six readings come from a re-run of those suites on their own, and
+not from the sweep. A =compass test run= writes one host-wide slot log,
+so the next run overwrites the last, and the sweep's per-suite lines
+were gone before they were read. The sweep total, its result and the
+failing suite are read from the sweep's own summary, which was captured
+first.
+
+=ores.database.tests= passed in the sweep at 10.82 seconds. The wave's
+own earlier sweep failed it at 163.52 seconds, while another worktree
+ran =compass db recreate= against the shared database. The two runs
+together settle that failure as environmental.
+
+No modeling file changed, so no schema drift applies and no codegen
+drift is expected. The codegen drift check was run anyway and reads "No
+drift: regenerated output matches the checked-in tree", and
+=regenerate_cmake_component_files.py --all --check= reports every
+=component_files.cmake= up to date, which follows from the wave adding
+and removing no file.
+
+*** Finding: the refdata core suite dies on its own failure path
+
+=ores.refdata.core.tests= failed in the sweep at 271.51 seconds. It is
+not this wave's. The failing case includes =ores.database=,
+=ores.eventing=, =ores.nats=, =ores.refdata=, =ores.testing= and
+=ores.utility=, and nothing from =ores.trading= or =ores.ore=, which is
+all this wave changes.
+
+It is the flake this task already records. B.1 and B.2 found
+=write_book_publishes_nats_changed_event= failing on a temporal-validity
+race in the refdata eventing fixtures, and recorded it as its own task.
+The case that took the suite down here is a sibling of it.
+
+The Catch2 XML carries the evidence. It holds 152 case elements. The
+last, =write_calendar_event_publishes_nats_changed_event=, opens and
+never closes, and the file has no =OverallResults= element. The suite
+died inside its final eventing case and Catch2 never wrote a summary.
+The suite's own per-case report stops at the case before it, which is
+=regenerate_is_extend_only_and_does_not_rewrite_existing_watermark= at
+43.004 seconds.
+
+That case writes a calendar event, waits for its NATS notification, and
+reports a lost notification when its budget runs out. The budget is four
+attempts of twenty five polls at one hundred milliseconds, or ten
+seconds. The suite cost about nine seconds more than its completed cases
+and their per-case overhead explain, so the case spent its budget and
+the process ended as the case reported.
+
+The suite passes on its own, 152 cases in 263.90 seconds against the
+262.85 this task measured before. The flake is load sensitive, and a
+build ran in another worktree through both the sweep and the re-run,
+which is the load it needs.
+
+Two defects in the harness were read from source while this failure was
+investigated. Neither explains it: no case in this suite's run came near
+the sixty second watchdog default, so the watchdog did not fire. They are
+recorded here because they belong to =ores.testing= and not to this
+task. The watchdog's =test_running_= flag is a plain =bool= that the
+main thread writes and the watchdog thread reads. The watchdog also logs
+through Boost.Log before it reaches its =std::cerr= banner and its
+=std::_Exit=, so a thread that holds the logging lock can stall the exit
+path the timeout depends on.
+
 *** Wave B.5c, the build and the sweep
 
 The build ran clean: =./compass.sh build --preset

@@ -164,6 +164,7 @@
         <li><a href='/OreStudio/graph/index.html'>Knowledge Graph</a></li>
       </ul>
     </div>
+    <a href='/OreStudio/doc/prototypes/index.html'>Prototypes</a>
     <a href='/OreStudio/doc/downloads.html'>Downloads</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>
@@ -286,8 +287,10 @@ with the site chrome."
    "./projects/ores.org-js/agile" site-dir "agile"
    "<style>body{display:block;padding:0;align-items:unset;}</style>")
   ;; Trade entry prototype: same body reset; the prototype styles itself.
+  ;; It deploys beside the org page that describes it, under doc/prototypes/,
+  ;; so the gallery, the description and the app share one tree.
   (ores-deploy-web-app
-   "./doc/prototypes/trade-entry" site-dir "prototypes/trade-entry"
+   "./doc/prototypes/trade-entry" site-dir "doc/prototypes/trade-entry"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

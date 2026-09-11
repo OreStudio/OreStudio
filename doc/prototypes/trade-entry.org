@@ -20,7 +20,7 @@ The prototype is throwaway. It is not production code and it does not
 ship to users. It exists so that the layout and the behaviour can be
 argued about with something concrete in front of us.
 
-Open it at [[https://orestudio.github.io/OreStudio/prototypes/trade-entry/][the booking screen]].
+Open it at [[https://orestudio.github.io/OreStudio/doc/prototypes/trade-entry/][the booking screen]].
 The pricing screen is one click away, under *Price this structure*. From
 there, *New trade* starts a deal and *Book* brings it back.
 
@@ -114,6 +114,7 @@ for the assumptions it was built on, and for the decisions still open.
 
 * See also
 
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
 - [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder, the deal topology and the versioning rule this prototype follows.
 - [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] — the story the prototype belongs to.
 - [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]] — the task that built it, and its assumptions.

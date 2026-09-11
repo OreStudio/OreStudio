@@ -1,0 +1,40 @@
+:PROPERTIES:
+:ID: D913FE21-6CF6-439A-89CF-6A1928AFA094
+:END:
+#+title: Prototypes
+#+description: Index of throwaway clickable prototypes: what each one argues, and where to open it.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:index:ui:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+* Summary
+
+A prototype answers a question about layout or behaviour that a document
+argues badly. It is throwaway: static files, mock data, no framework and no
+backend. It exists so a design can be argued about with something concrete
+in front of you.
+
+This page is the index. Each entry opens the prototype, and names the page
+that describes it.
+
+* The prototypes
+
+| Prototype                                       | What it argues                                                                                                        | Open it                                          |
+|-------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------+--------------------------------------------------|
+| [[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade entry]] | Trade entry belongs to the structure, not the trade. Manage the structure and its components, then price it and book it. | [[file:trade-entry/][Booking screen]] |
+
+* Adding a prototype
+
+1. Put the static files under =doc/prototypes/<name>/=. Plain HTML, CSS and
+   JavaScript. No build step.
+2. Deploy them with one call to =ores-deploy-web-app= inside
+   =ores-deploy-web-apps=, in =projects/ores.lisp/src/ores-build-site.el=.
+3. Describe the prototype on a knowledge page beside this one.
+4. Add a row to the table above.
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the rules the trade entry prototype follows.

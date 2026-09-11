@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-entry-prototype:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/prototype-booking-screen
+#+pr: 2067
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
 #+updated: 2026-09-11
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -33,11 +33,11 @@ the org pages. An org page describes the prototypes and links them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Built and verified 2026-09-11. The build deploys the prototype under =doc/prototypes/=, and the gallery and the nav link are on the site. |
+| Waiting on   | PR review. The user checks the published gallery. |
+| Next         | Review the gallery and the prototype on the published site. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -50,9 +50,34 @@ the org pages. An org page describes the prototypes and links them.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+=ores-deploy-web-app= and =ores-inject-site-nav= already do the whole job:
+copy a directory into the site tree, then patch its =index.html= with the
+site chrome. The graph and agile apps deploy through them. So this task
+adds no machinery. It does three things.
+
+1. *Relocate the deploy destination.* The call for the trade entry prototype
+   becomes =doc/prototypes/trade-entry=, so the app lands beside the org page
+   that describes it. [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]]
+   planned that path in the first place; the earlier call deployed to
+   =prototypes/trade-entry= instead.
+
+   The relocation also removes a trap. =ores-build-page.el= hardcodes the
+   =site:pages= project, and =site:pages= publishes =doc/X.org= to
+   =doc/X.html=. A page under a different publish project would go to a
+   different place under =compass site page= than under a full build. Keeping
+   the gallery inside =doc/= means the incremental publisher and the full
+   build agree, and no second publish project is needed.
+
+2. *Add the gallery.* =doc/prototypes/index.org=, scaffolded with
+   =compass add knowledge=. One row per prototype, linking the app and the
+   page that describes it. The link is relative (=file:trade-entry/=), so it
+   resolves on the local preview and on the published site alike. A root
+   relative link is not usable: org exports =[[/OreStudio/...]]= as
+   =file:///OreStudio/...=, which is dead.
+
+3. *Link it from the nav.* One top-level anchor in =site-html-preamble=,
+   beside Home and Downloads, so the gallery is visible without opening a
+   dropdown.
 
 * Notes
 
@@ -71,6 +96,28 @@ and
 Do not pipe or redirect a =compass= site or build command. Read the log file
 the command prints.
 
+** The nav change needs the publish cache cleared
+
+The site chrome — the nav and the stylesheet tag — is applied when a page is
+published, and no source file's timestamp moves when it changes. So
+=org-publish= keeps serving the old chrome from
+=build/output/org-timestamps/site:pages.cache=, and a nav edit reaches only
+the pages that were edited for some other reason.
+
+=ores-build-page.el= states the intended cure for a rendering-only change:
+name the pages on the command line, since a named page is published whether
+or not its timestamp moved. That is the right tool for a handful of pages.
+For a whole-site chrome change it is not practical, so delete the cache
+instead and let a full build republish every page:
+
+#+begin_src sh
+rm build/output/org-timestamps/site:pages.cache
+compass build site
+#+end_src
+
+=build/output/= is gitignored, so CI is always cold and always publishes
+every page. The trap is local to a warm worktree.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run
@@ -86,7 +133,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2067][#2067]] | [prototype] Add the structure-based trade entry prototype |
 
 * Review
 
@@ -95,3 +142,50 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The prototype, the page that describes it and the gallery all sit under
+=doc/prototypes/=, on the site and in the repository.
+
+| Artefact | URL |
+|----------+-----|
+| Gallery  | =/OreStudio/doc/prototypes/=. |
+| Booking screen | =/OreStudio/doc/prototypes/trade-entry/=. |
+| Pricing screen | =/OreStudio/doc/prototypes/trade-entry/pricing.html=. |
+| Description page | =/OreStudio/doc/prototypes/trade-entry.html=. |
+
+The gallery is one row per prototype, and the row links the app and the page
+that describes it. A top-level *Prototypes* link in the site nav opens it, so
+it is reachable from every page without opening a dropdown.
+
+The deploy call now names =doc/prototypes/trade-entry= as its destination.
+Nothing else in the deploy changed: the same =ores-deploy-web-app= copies the
+directory and the same =ores-inject-site-nav= patches its =index.html=.
+
+This task and [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]]
+share one branch and one pull request. The gallery links to an app the first
+task creates, so neither can be verified without the other, and splitting
+them would leave one pull request unbuildable.
+
+** Verification
+
+- =compass build site= reported =Build succeeded.= and exited 0. The graph
+  export wrote 5301 nodes and 31836 links, one node more than before, which
+  is the new gallery page.
+- The deploy log names all three apps: =graph deployed to=,
+  =agile deployed to= and =doc/prototypes/trade-entry deployed to= the site
+  tree.
+- =diff -rq= between =doc/prototypes/trade-entry= and its deployed copy
+  reports one difference: =index.html=, which carries the injected site
+  chrome. The other five files are byte-identical.
+- The preview server returned 200 for the gallery, its =index.html=, the app
+  directory, the pricing screen and the site home.
+- The booking screen was loaded in headless Chrome at the new URL. It
+  rendered its own output — the structure name, =ST-1042= and version =v7= —
+  and carried the site nav. So the styles and the scripts resolve from the
+  new path.
+- The gallery was loaded in headless Chrome. It rendered the title, the nav
+  link, the =Trade entry= row and =href="trade-entry"=.
+- The nav link is present on the home page, the knowledge hub and the
+  gallery. That is the check that the republish reached the cached pages.
+- =misspell-fixer= on the three changed paths exited 0 with nothing to
+  replace.

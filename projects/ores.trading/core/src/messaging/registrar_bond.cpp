@@ -46,8 +46,7 @@ register_bond_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(bond_issue_subs.begin()),
                 std::make_move_iterator(bond_issue_subs.end()));
 
-    auto bond_issue_call_date_subs =
-        register_bond_issue_call_date_handlers(nats, ctx, verifier);
+    auto bond_issue_call_date_subs = register_bond_issue_call_date_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(bond_issue_call_date_subs.begin()),
                 std::make_move_iterator(bond_issue_call_date_subs.end()));

@@ -201,16 +201,14 @@ void BondInstrumentForm::writeUiToInstrument() {
         data_.option->option_type = option_type;
         data_.option->option_strike = ui_->optionStrikeSpinBox->value();
     }
-    const std::string trs_return_type =
-        InstrumentFormUtils::getComboValue(ui_->trsReturnTypeCombo);
+    const std::string trs_return_type = InstrumentFormUtils::getComboValue(ui_->trsReturnTypeCombo);
     if (trs_return_type.empty()) {
         data_.trs = std::nullopt;
     } else {
         if (!data_.trs)
             data_.trs.emplace();
         data_.trs->return_type = trs_return_type;
-        data_.trs->funding_index =
-            ui_->trsFundingLegCodeEdit->text().trimmed().toStdString();
+        data_.trs->funding_index = ui_->trsFundingLegCodeEdit->text().trimmed().toStdString();
     }
 
     data_.instrument.audit.modified_by = username_;
@@ -246,12 +244,14 @@ void BondInstrumentForm::populateFromInstrument() {
     };
 
     block(true);
-    ui_->tradeTypeCodeEdit->setText(QString::fromStdString(data_.instrument.identity.trade_type_code));
+    ui_->tradeTypeCodeEdit->setText(
+        QString::fromStdString(data_.instrument.identity.trade_type_code));
     ui_->issuerEdit->setText(QString::fromStdString(data_.issue.issuer));
     InstrumentFormUtils::setComboValue(ui_->currencyCombo, data_.issue.currency);
     ui_->faceValueSpinBox->setValue(data_.issue.face_value);
     ui_->couponRateSpinBox->setValue(data_.issue.coupon_rate);
-    InstrumentFormUtils::setComboValue(ui_->couponFrequencyCombo, data_.issue.coupon_frequency_code);
+    InstrumentFormUtils::setComboValue(ui_->couponFrequencyCombo,
+                                       data_.issue.coupon_frequency_code);
     InstrumentFormUtils::setComboValue(ui_->dayCountCombo, data_.issue.day_count_code);
     ui_->issueDateEdit->setIsoDate(data_.issue.issue_date);
     ui_->maturityDateEdit->setIsoDate(data_.issue.maturity_date);
@@ -265,8 +265,8 @@ void BondInstrumentForm::populateFromInstrument() {
     const bool has_trs = data_.trs.has_value();
     InstrumentFormUtils::setComboValue(ui_->trsReturnTypeCombo,
                                        has_trs ? data_.trs->return_type : std::string());
-    ui_->trsFundingLegCodeEdit->setText(has_trs ? QString::fromStdString(data_.trs->funding_index)
-                                                : QString());
+    ui_->trsFundingLegCodeEdit->setText(has_trs ? QString::fromStdString(data_.trs->funding_index) :
+                                                  QString());
     block(false);
 }
 

@@ -164,9 +164,10 @@ via its "Verifies task" field.
 
 * Review
 
-Two rounds. Rows 1 to 11 are the local review pass, before the PR. Rows 12
-to 16 are the user's review of the published prototype. Each row is a defect
-found and the decision taken.
+Three rounds. Rows 1 to 11 are the local review pass, before the PR. Rows 12
+to 17 are the user's review of the published prototype. Rows 18 to 20 are the
+on-demand review of the pull request. Each row is a defect found and the
+decision taken.
 
 | # | Finding | File | Decision | Notes |
 |---+---------+------+----------+-------|
@@ -187,6 +188,9 @@ found and the decision taken.
 | 15 | The premium was explained by a banner that said it is a trade in its own right, while the model stored it as a field on the option. Row 6 kept the banner and added a legend for the gap. Explaining a gap is not closing it, and the user asked for the sub-leg. | booking.js, catalogue.js | Accepted | Reverses row 6. The premium renders as a sub-leg with its own identifier, currency, amount and payment date, and its own remove and add actions. The structure references it by key. The banner is gone. |
 | 16 | The audit log ran the full width below the NPV strip, and grew with every action, taking workspace away as the booking progressed. | index.html, prototype.css | Accepted | The audit folds into a drawer, closed by default, with the version rule as its summary line. A native =details= element, so it needs no script. |
 | 17 | The split did not read. The component block was headed *Trade header* and the structure strip carried no heading at all, so neither named the thing the layout is arguing, and a reader had to infer the grouping from the field names. | booking.js, prototype.css | Accepted | Both carry the same label, *Envelope*, with *Reference data* named under it. The component legend adds that the instrument below carries the economics. Same word, same place, both levels. |
+| 18 | The side chip wrote the field's own text into a =class= attribute. The generic form lets the reader type anything into =longShort=, so a value such as =x"><img src=x onerror=alert(1)>= left the attribute and injected markup. Every other interpolated value in the two files goes through =esc()=, so this was the one gap. | booking.js | Accepted | The class comes from a known pair now: =side-buy= for a long, =side-sell= for a short, and nothing for anything else. A self-check holds it there. The same change closes a second defect the review did not name: the chip emitted =side-long= and =side-short=, which no rule in the stylesheet matches, while =side-buy= and =side-sell= were defined and unused. The chip carries a colour for the first time. |
+| 19 | The self-check count in the PR body and on this page did not match the code. Both said nineteen assertions passed under node, and node never runs them, because the guard reads =window.location=. | task record, PR body | Accepted | Both say twenty in headless Chrome. Corrected before this round. |
+| 20 | =field()= carried a =select= branch that no caller reaches. =selectField()= is the helper for that, and =field()= is only ever given =text=, =number= or =date=. | booking.js | Accepted | Removed. |
 
 * Result
 
@@ -262,18 +266,23 @@ describes the prototype and links to it.
 
 ** Verification
 
-- Twenty self-check assertions pass. Open either page with =?selfcheck=1=
-  to run them; the console reports =all passed=. Three are new: every
+- Twenty-one self-check assertions pass. Open either page with =?selfcheck=1=
+  to run them; the console reports =all passed=. Four are new: every
   widget splits into named sections, no economics section carries a
-  trade-header field, and a premium is a sub-leg with its own identifier.
+  trade-header field, a premium is a sub-leg with its own identifier, and
+  a side chip takes its class from a known pair.
 - The split check was shown to fail. Adding a counterparty field back to
   the generic instrument form reported =1 failed=, so the check catches
   the defect it names rather than passing on any input. A check that
   cannot fail is worth nothing.
+- The side-chip check was shown to fail the same way. Restoring the old
+  class line in a scratch copy reported =1 failed a side chip takes its
+  class from a known pair=.
 - The rendered booking screen was read back from the DOM: the structure
   strip carries all six envelope fields, the component header carries all
   five field groups, the tab strip carries Terms, Schedule and Premium,
-  and the audit drawer is closed on load.
+  and the audit drawer is closed on load. The three component chips carry
+  =side-buy= and =side-sell=, the two classes the stylesheet defines.
 - The sub-leg was driven in headless Chrome. Removing the premium took the
   version from =v7= to =v8=, adding one took it to =v9= with a fresh
   identifier, and editing a field took it to =v10=, each with the audit
@@ -301,9 +310,10 @@ describes the prototype and links to it.
 
 ** Defects found and fixed
 
-Seventeen. Eleven came from the local review and the verification above,
-and six from the user's review of the prototype. Each one is in the
-=* Review= table with the file it touches and what was done.
+Twenty. Eleven came from the local review and the verification above, six
+from the user's review of the prototype, and three from the on-demand review
+of the pull request. Each one is in the =* Review= table with the file it
+touches and what was done.
 
 The strategy set is still provisional. It belongs to
 [[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]],

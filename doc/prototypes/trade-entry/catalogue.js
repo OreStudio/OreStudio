@@ -538,6 +538,13 @@ function runSelfCheck() {
             c.premium.id && c.premium.id !== c.id
             && !Object.prototype.hasOwnProperty.call(c.fields, 'premiumAmount')));
 
+    /* The side chip writes its class into an attribute, so the class is a
+     * known pair and never the field's own text. */
+    check('a side chip takes its class from a known pair',
+        typeof sideClass === 'function'
+        && sideClass('Long') === 'side-buy' && sideClass('Short') === 'side-sell'
+        && sideClass('x"><img src=x onerror=alert(1)>') === '');
+
     if (failures.length) {
         console.error(`prototype self-check: ${failures.length} failed`, failures);
     } else {

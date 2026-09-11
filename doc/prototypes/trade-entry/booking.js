@@ -237,9 +237,19 @@ function renderValidation() {
     document.getElementById('validation-why').textContent = problem.why;
 }
 
+/* The side chip is coloured by its class, and the generic form lets the
+ * reader type anything into longShort, so the class comes from a known pair
+ * rather than from the field. */
+function sideClass(value) {
+    const side = String(value || '').toLowerCase();
+    if (side === 'long') return 'side-buy';
+    if (side === 'short') return 'side-sell';
+    return '';
+}
+
 function componentMeta(component) {
     const f = component.fields;
-    const side = f.longShort ? `<span class="side-${f.longShort.toLowerCase()}">${esc(f.longShort)}</span>` : '';
+    const side = f.longShort ? `<span class="${sideClass(f.longShort)}">${esc(f.longShort)}</span>` : '';
     const num = f.notional ? Number(f.notional).toLocaleString() : '';
     const ccy = f.currency || f.boughtCurrency || '';
     return [side, num && `${num} ${esc(ccy)}`].filter(Boolean).join(' · ');
@@ -553,7 +563,6 @@ function sectionsFor(widget, component) {
 function field(key, label, value, kind, extra) {
     const type = kind || 'text';
     const attrs = extra || '';
-    if (type === 'select') return '';
     return `
         <div class="field">
             <label for="f-${esc(key)}">${esc(label)}</label>
@@ -736,7 +745,7 @@ function legsSection(c) {
                     <tr>
                         <td>${esc(l.label)}</td>
                         <td>${esc(l.fields.optionType || '—')}</td>
-                        <td><span class="side-${String(l.fields.longShort || '').toLowerCase()}">${esc(l.fields.longShort || '—')}</span></td>
+                        <td><span class="${sideClass(l.fields.longShort)}">${esc(l.fields.longShort || '—')}</span></td>
                         <td>${esc(l.fields.strike || '—')}</td>
                         <td class="num">${esc(l.fields.notional || '—')}</td>
                     </tr>`).join('')}

@@ -26,6 +26,7 @@
 #include "ores.nats/domain/message.hpp"
 #include "ores.nats/export.hpp"
 #include "ores.nats/service/session_expired_error.hpp"
+#include "ores.nats/service/timeouts.hpp"
 #include <chrono>
 #include <functional>
 #include <memory>
@@ -181,7 +182,7 @@ public:
     [[nodiscard]] message
     authenticated_request(std::string_view subject,
                           std::string_view json_body,
-                          std::chrono::milliseconds timeout = std::chrono::seconds(30));
+                          std::chrono::milliseconds timeout = default_request_timeout);
 
     /**
      * @brief Authenticated synchronous request — byte-span overload.
@@ -191,7 +192,7 @@ public:
     [[nodiscard]] message
     authenticated_request(std::string_view subject,
                           std::span<const std::byte> body,
-                          std::chrono::milliseconds timeout = std::chrono::seconds(10));
+                          std::chrono::milliseconds timeout = default_request_timeout);
 
     /**
      * @brief Returns a new nats_client that shares this instance's underlying

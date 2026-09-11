@@ -26,6 +26,7 @@
 #include "ores.nats/service/buffered_subscription.hpp"
 #include "ores.nats/service/jetstream_admin.hpp"
 #include "ores.nats/service/subscription.hpp"
+#include "ores.nats/service/timeouts.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <chrono>
 #include <cstddef>
@@ -126,7 +127,7 @@ public:
     request_sync(std::string_view subject,
                  std::span<const std::byte> data,
                  std::unordered_map<std::string, std::string> headers = {},
-                 std::chrono::milliseconds timeout = std::chrono::seconds(30));
+                 std::chrono::milliseconds timeout = default_request_timeout);
 
     /**
      * @brief Asynchronous request/reply (ASIO coroutine).
@@ -138,7 +139,7 @@ public:
     request(std::string_view subject,
             std::span<const std::byte> data,
             std::unordered_map<std::string, std::string> headers = {},
-            std::chrono::milliseconds timeout = std::chrono::seconds(30));
+            std::chrono::milliseconds timeout = default_request_timeout);
 
     /**
      * @brief Subscribe to a subject.

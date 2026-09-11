@@ -41,7 +41,7 @@ database is fresh (=compass db recreate -y -k= → bootstrap mode).
 =connect= takes the endpoint from =$ORES_NATS_URL= and inherits the
 subject prefix and TLS context the shell was started with.
 
-Also publishes the vendored ORE engine package (see [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build
+Also publishes the vendored ORE engine packages (see [[id:0F768B80-184A-44C7-B725-A594A873AB4A][Design and build
 ACME compute package publishing (client lib, shell, Qt)]]) as its own
 step, still logged in as =super_admin= so the app/version lands under
 the *system* tenant — the scope every tenant's compute jobs dispatch
@@ -53,6 +53,11 @@ version/platform triplet here must match whatever
 =external/ore/tools/package_ore.sh= last vendored into
 =publish/vendor-packages/= — bump all three together when refreshing
 the vendored engine.
+
+Two engine versions are published, 1.8.16.0 and 1.8.17.0, so a job can
+be dispatched against either and the two results compared. Both rows
+land under the same =ORE= app, because =publish-package= upserts the app
+by name and adds a version rather than creating a second app.
 
 =--file= is =build/output/${ORES_PRESET}/publish/vendor-packages/...=,
 not a bare =publish/vendor-packages/...=, even though the running
@@ -71,6 +76,7 @@ connect $ORES_NATS_URL
 
 provision system super_admin Secure-Password-123 super_admin@localhost.com --tenant-admin-password Secure-Password-123 --tenant-code acme_corporation --tenant-name "Acme Corporation" --tenant-hostname acme_corporation
 compute publish-package ORE 1.8.16.0-4-g3b62ba248 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz
+compute publish-package ORE 1.8.17.0 x64-linux --wrapper-version 1.0.0 --file build/output/${ORES_PRESET}/publish/vendor-packages/ore-1.8.17.0-x64-linux.tar.gz
 logout
 
 login tenant_admin@acme_corporation Secure-Password-123

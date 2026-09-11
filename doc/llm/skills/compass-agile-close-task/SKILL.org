@@ -37,20 +37,33 @@ routine review feedback as reopening the task by default.
 
 * How to use this skill
 
-1. /Flip the state/ — task DONE, story table row synced, journal stamped:
+1. /Run the component audit first, when the task touched a component/.
+   Clearing codegen drift, moving a part, adding a facet — none of it
+   says the component has a legal shape, and =validate_docs= is only
+   the audit's automated half. Walk
+   [[id:45CAC01F-BC56-4600-B206-EEE7545AE3AB][the component architecture audit]] over each component the task
+   touched, and record what it found on the task. A component whose
+   task closed without it has been declared done on evidence nobody
+   gathered.
+
+   #+begin_src sh :results verbatim
+   projects/ores.codegen/validate_docs.sh
+   #+end_src
+
+2. /Flip the state/ — task DONE, story table row synced, journal stamped:
 
    #+begin_src sh :results verbatim
    ./projects/ores.compass/compass.sh task done <task-slug>
    #+end_src
 
 
-2. /Write the =* Result=/ by hand: what shipped, what acceptance was met.
+3. /Write the =* Result=/ by hand: what shipped, what acceptance was met.
 
-3. /Distill the =* Plan=/ into the parent story's =* Decisions= if it holds durable choices.
+4. /Distill the =* Plan=/ into the parent story's =* Decisions= if it holds durable choices.
 
-4. /Cascade if last task/: when no open tasks remain, set the story DONE in =story.org= /and/ its row in =sprint.org= — both files in the same commit.
+5. /Cascade if last task/: when no open tasks remain, set the story DONE in =story.org= /and/ its row in =sprint.org= — both files in the same commit.
 
-5. /Commit/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]]: =[agile] Close <task>=. This commit is
+6. /Commit/ per [[id:F4B1A670-3B02-11F1-BCE2-4B06F4BBA5D9][commit conventions]]: =[agile] Close <task>=. This commit is
    part of what =compass-pr-raise= pushes when it opens the PR — not a
    follow-up. Once the PR is open, CI and review run against a branch
    that already reflects the task as done; when CI goes green

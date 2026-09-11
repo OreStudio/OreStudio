@@ -43,6 +43,23 @@ shipping a 1100-line diff they did not author and not making the change
 at all. That is what happened here: the drift was reverted and the task
 it surfaced in shipped without it.
 
+=trade= is a fourth component with the same disagreement, and it is the
+one that shows what the drift costs. Its committed
+=trade_generator.cpp= declares a =counter= that nothing reads. The
+model gives =trade= a uuid primary key, no natural keys and no
+=:unique:= column, so all three disjuncts of =needs_counter= are false
+and the current generator emits no counter at all. The declaration is a
+leftover from a generator the model no longer describes.
+
+The compiler found it once =-Wall= was on, and the warnings task
+silenced it with =[[maybe_unused]]= rather than by regeneration,
+because regenerating =trade= is not a one-line diff: the emitted code
+is flat where the committed code uses field groups, and it lands in
+namespace =generators= where the committed code uses =generator=. It
+would not compile against the domain type as it stands. That
+=[[maybe_unused]]= should come back out when this task regenerates the
+component; it marks drift rather than an intentional declaration.
+
 
 (Describe what user-visible-or-internal change this task produces.)
 

@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/fix-unique-suffix-not-applied
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
 #+updated: 2026-09-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,11 +26,11 @@ Synthetic generation of an entity with a requires_unique_suffix column produces 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | ABANDONED |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. Abandoned on a false premise. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -47,26 +47,37 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
-Found while enabling =-Wall=. The compiler reported an unused =counter=
-in =trade_generator.cpp=. The warning is a symptom, not the defect.
+Filed on a premise that does not hold, and abandoned once checked.
 
-=needs_counter= in =codegen/core.py= turns the process-static counter
-on when any column carries =requires_unique_suffix=. =trade.external_id=
-carries it, so the counter is declared. The generator then emits
+The premise was that =trade.external_id= carries
+=requires_unique_suffix=, turning the counter on while receiving no
+suffix. It does not. =external_id= is nullable and declares no
+=:unique:=, so =requires_unique_suffix= is false for it.
+=requires_unique_suffix= is set only for a non-optional
+=std::string= column marked =:unique:= that has not opted out.
 
-: r.identity.external_id = std::string();
+The corpus contains exactly one such column, =tenant.hostname=, and
+the generator handles it correctly:
 
-with no suffix and no read of the counter. The column is under a unique
-index, so the second synthetic trade written in one process collides on
-an empty string.
+: r.hostname = std::string(faker::word::noun()) + ".example.com" + "-" + std::to_string(idx);
 
-Eight generated files declared the counter without consuming it. Seven
-of those consume it elsewhere in the same function; =trade_generator.cpp=
-was the only one that did not, which is why only it failed the build.
-The template now marks the declaration =[[maybe_unused]]=, so a future
-instance of this defect no longer announces itself at compile time. That
-is the reason to fix the generator rather than leave the suppression to
-stand in for it.
+The template applies the suffix on both the =generator_expr= and the
+plain-string paths. There is no defect in the mechanism to fix.
+
+What the unused counter actually was is drift. =trade= has a uuid
+primary key, no natural keys and no =:unique:= column, so
+=needs_counter= is false and the current generator emits no counter.
+The declaration in the committed file is a leftover. Regenerating
+=trade= removes it, and also rewrites the whole function, because the
+committed code uses field groups and namespace =generator= while the
+generator now emits flat fields and namespace =generators=. That is
+the codegen drift already filed, and the evidence is recorded there.
+
+The lesson is about the filing rather than the code. The task was
+written from the shape of the symptom while the build was broken and
+the fix was the urgent thing, and the model was never opened to
+confirm the column carried the property the premise depended on. One
+grep would have settled it before a task existed.
 
 * Test Scenarios
 
@@ -92,3 +103,11 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Abandoned. The defect does not exist.
+
+=requires_unique_suffix= is applied correctly wherever it is set, and
+it is set on one column in the corpus. The unused counter that
+prompted the filing is stale generated code in =trade=, recorded as
+further evidence on the codegen drift task, which is where regenerating
+the component belongs.

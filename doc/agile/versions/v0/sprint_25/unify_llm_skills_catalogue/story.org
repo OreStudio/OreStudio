@@ -104,7 +104,7 @@ Tasks are listed in intended execution order.
 | [[id:4302B38D-B857-464E-97C1-A7E54A2DE70C][Validate the matching rule and the decline path in use]] | DISCOVERED | | | The matching rule and the mode's refusal are specified and each has at most one run behind it; gather evidence from real uses and amend what the cases break. |
 | [[id:A6DB4F4C-D4F5-4913-AFD3-CC791A921517][Clear the codegen drift in analytics, refdata and scheduler]] | DISCOVERED | | | Regenerating three components rewrites 116 checked-in files and creates 24 that were never committed; the generated tree and the generator disagree. |
 | [[id:ADF5BBA5-4461-4CA9-9A01-B64A713D5110][Wt account delete, lock and unlock confirm then do nothing]] | DISCOVERED | | | Three confirmation dialogs in the Wt UI reload the account list on Yes and never perform the action; the id they are given is unused. |
-| [[id:4CB973CA-86B7-4476-85F2-0F11626BFB27][Apply the unique suffix that requires_unique_suffix asks for]] | BACKLOG | | | A column marked requires_unique_suffix turns the synthetic counter on but never receives a suffix, so repeated generation collides on the unique index. |
+| [[id:4CB973CA-86B7-4476-85F2-0F11626BFB27][Apply the unique suffix that requires_unique_suffix asks for]] | ABANDONED | 2026-09-11 | 2026-09-11 | Filed on a false premise. requires_unique_suffix is applied correctly wherever it is set; the unused counter that prompted it is drift in trade, recorded on the codegen drift task. |
 
 * Decisions
 

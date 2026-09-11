@@ -12,8 +12,8 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
-#+updated: 2026-09-11
-#+environment:
+#+updated: 2026-09-12
+#+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ Build the v1.8.17.0 engine into one self-contained tarball that carries its own 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-11                               |
+| Now          | The v1.8.17.0 tarball is built, self-tested against TA002, and committed beside the v1.8.16.0 one. |
+| Waiting on   | Nothing. The v1.8.17.0 tag is provisional; the package rebuilds once upstream tags. |
+| Next         | None.                                  |
+| Last touched | 2026-09-12                               |
 
 * Acceptance
 
@@ -41,11 +41,52 @@ Build the v1.8.17.0 engine into one self-contained tarball that carries its own 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Follow =external/ore/methodology.txt=. Build the engine with the
+=linux-clang-ninja-release= preset, package it with
+=external/ore/tools/package_ore.sh=, and self-test the package by
+replaying =TA002_IR_Swap.tar.gz=.
 
 * Notes
+
+- The engine checkout is at commit =3d75a69087911a7e2cf1e6882da7bc27135c0762=.
+  Upstream had not tagged a =v1.8.17.0= release when the package was
+  built, so the tag was created on the fork at that commit. The
+  =git describe= string is therefore the plain tag and not a
+  =<tag>-<N>-g<sha>= string. The manifest records this in
+  =provisional_version=. Rebuild the package once upstream tags, and
+  check then whether any commits landed between that commit and the real
+  tag.
+- The package bundles =libOREAnalytics=, =libOREData=, =libQuantExt= and
+  =libQuantLib.so.1=, plus every non-glibc runtime dependency under
+  =lib/=, with =RPATH=$ORIGIN/lib=. It is self-contained.
+- The v1.8.16.0 tarball is unchanged by this task. Commit =992e8a05ae=
+  had already repackaged it, because =package_ore.sh= archived the whole
+  staging directory instead of its contents, and renamed it from
+  =ore-1.8.16.0-3-g3b62ba248-x64-linux.tar.gz= to
+  =ore-1.8.16.0-4-g3b62ba248-x64-linux.tar.gz=. That commit left this
+  directory's =manifest.json= describing the old =-3-= package, so the
+  manifest was stale. This task corrected the manifest's =file=,
+  =engine_version=, =sha256= and =size_bytes= to match the tarball that
+  was already committed, and added the =version_note=.
+- The =version_note= records that the count in the filename is not
+  trustworthy on its own. Re-running =git describe --tags --long
+  3b62ba248= against the fork today gives =v1.8.16.0-3-g3b62ba248=,
+  because the =v1.8.16.0= tag now sits at =b1f239332f=, one commit later
+  than when the package was repackaged. The commit hash is unambiguous
+  either way.
+- =TA002_IR_Swap.tar.gz= is byte-identical to its previous contents.
+
+* Result
+
+Both tarballs are committed. The v1.8.17.0 self-test passes.
+
+The diff report is identical to the v1.8.16.0 one, line for line apart
+from the paths and the version. Both reports show the same 240x4
+=curves.csv=, 60x25 =flows.csv= and 1x13 =npv.csv=, and the same four
+columns the engine emits beyond the reference: =EffectiveFloorVolatility=,
+=EffectiveCapVolatility=, =Amount(Base)= and =DiscountFactor(Base)=.
+So the two engines agree on the sample within =rtol=1e-6=, and the extra
+columns are pre-existing rather than new in v17.
 
 * Test Scenarios
 

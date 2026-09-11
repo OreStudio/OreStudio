@@ -186,6 +186,7 @@ found and the decision taken.
 | 14 | The component form ran the full height of the panel. Strike, notional and expiry sat above the schedule, the barriers and the premium, so reaching either end meant scrolling past the other. | booking.js, prototype.css | Accepted | The instrument splits into tabs, named for what the widget holds: Terms, Schedule, Premium, Barriers and Legs. Each tab is one screen long, and the trade header stays above them. |
 | 15 | The premium was explained by a banner that said it is a trade in its own right, while the model stored it as a field on the option. Row 6 kept the banner and added a legend for the gap. Explaining a gap is not closing it, and the user asked for the sub-leg. | booking.js, catalogue.js | Accepted | Reverses row 6. The premium renders as a sub-leg with its own identifier, currency, amount and payment date, and its own remove and add actions. The structure references it by key. The banner is gone. |
 | 16 | The audit log ran the full width below the NPV strip, and grew with every action, taking workspace away as the booking progressed. | index.html, prototype.css | Accepted | The audit folds into a drawer, closed by default, with the version rule as its summary line. A native =details= element, so it needs no script. |
+| 17 | The split did not read. The component block was headed *Trade header* and the structure strip carried no heading at all, so neither named the thing the layout is arguing, and a reader had to infer the grouping from the field names. | booking.js, prototype.css | Accepted | Both carry the same label, *Envelope*, with *Reference data* named under it. The component legend adds that the instrument below carries the economics. Same word, same place, both levels. |
 
 * Result
 
@@ -300,8 +301,8 @@ describes the prototype and links to it.
 
 ** Defects found and fixed
 
-Sixteen. Eleven came from the local review and the verification above, and
-five from the user's review of the published prototype. Each one is in the
+Seventeen. Eleven came from the local review and the verification above,
+and six from the user's review of the prototype. Each one is in the
 =* Review= table with the file it touches and what was done.
 
 The strategy set is still provisional. It belongs to

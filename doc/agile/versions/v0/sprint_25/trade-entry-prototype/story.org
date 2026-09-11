@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: D63FCA11-EE40-438F-ADF7-12C2ED5541D3
+:END:
+#+title: Story: Trade entry prototype: structure-based booking screen
+#+description: Prototype a modern trade entry screen built around structures rather than single trades: a structure panel managing components of any ORE product type, a specialised widget per product family, a companion pricing screen with the Book handoff that carries the initial NPV, and audit/versioning surfaced at the structure level. Throwaway prototype plus the decisions it settles, not production code.
+#+type: story
+#+level: s2
+#+filetags: :trading:prototype:structures:booking:sprint_25:v0:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment: clever_dijkstra
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and any notes or results.
+
+* Goal
+
+Replace the current CRUD-style trade entry with a screen built around
+*structures*, and settle the decisions that screen forces before anyone
+writes production code.
+
+Today a trade is booked on its own through
+[[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]]'s CRUD dialogs and
+a per-instrument Qt form. That shape is wrong for the way deals actually
+arrive: a risk reversal is three or four components, a dual currency deposit
+is two, and even a vanilla drags a premium and a brokerage deal behind it.
+The screen must let a booker *manage a structure and its components*, choose
+a component of any ORE product type, and see a widget built for that product
+family — barrier management for a barrier option, schedule management for a
+swap.
+
+The destination is a *throwaway clickable prototype* of that screen plus its
+companion pricing screen, and the decisions the prototype settles. The
+prototype is not production code and is not shipped to users; it exists to
+make the layout and the behaviour arguable with something concrete. A later
+effort turns the settled decisions into a spec and then into Qt.
+
+Scope of the two screens:
+
+- The *booking screen* captures reference data and validates the booking. It
+  is deliberately not interactive: no live market data, no model inputs.
+- The *pricing screen* is the dynamic one — ticking market data, tweakable
+  vols and rates, a NPV readout — and carries the *Book* button that hands
+  the booked economics to the booking screen.
+
+* Notes
+
+The source document is outside this repo, at
+=~/Development/Notebooks/summaries/structures-and-deal-composition.org=
+(2026-09-09). It defines the composition taxonomy the prototype follows, and
+it is the authority for the strategy/package split, the deal topology and the
+versioning rule. Structure support is not implemented anywhere in ORE Studio
+yet; this prototype runs ahead of it.
+
+A knowledge page for that source is already in flight in the
+=eager maxwell= worktree, on branch =feature/document-structures-and-deal-composition=:
+*Trade Structures and Deal Composition*, id
+=FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160=. Tickets in this story cite the source
+file by path until that page lands here, and cite the page afterwards.
+
+Decisions taken while charting, which fix the frame for every task below:
+
+- *Composition rungs.* The prototype covers rung 1 (*strategy*) and rung 4
+  (*untyped structure / package*) of the taxonomy. Strategy mode fixes the leg
+  set and enforces the strategy's invariants. Package mode offers every
+  product type and enforces nothing structural. Typed structures between them
+  are template mode with a larger leg set, so they need no third mode.
+- *Deal topology.* Two levels, with named groups allowed. A component is
+  either a leaf deal or a named group of deals. This matches the source
+  document's worked example, which nests a =Vanilla Group= inside the
+  structure. The document states three or more levels of containment are not
+  needed, so the prototype does not offer them.
+- *Widget coverage.* Four archetypes carry a real specialised widget, chosen
+  to differ from each other: FX vanilla option (schedule and expiry), FX
+  barrier option (barrier management), a swap or IRS (two-leg schedule and
+  cashflows), and composite (leg list). Every other product type stays
+  pickable and falls through to a generic form, which is what proves the
+  extensibility story.
+- *Version and authorisation.* The booking screen shows both, read-only. The
+  structure header carries a version and an authorisation status. Editing a
+  component visibly bumps the version; authorising does not.
+- *Structure operations.* The screen composes a new structure, and it can also
+  form a structure out of existing component trades. Unstructure, split,
+  merge and lock/unlock are deferred.
+- *Data.* Mock fixtures, built from the ORE example trades under
+  =external/ore/examples/Products/Example_Trades=. The prototype does not
+  read live services.
+- *Delivery.* The prototype lives under =doc/prototypes/=, described by an org
+  page. The site build copies and deploys it, so it is viewable from the
+  published site.
+
+Existing machinery the prototype must reuse rather than reinvent:
+
+- *Audit display.* [[id:9562F9CA-DCEB-44C6-8DB1-F3FC56D7703A][ores.history]] dispatches
+  by =entity_type= to one non-templated history dialog, and
+  [[id:85892C17-BB81-4724-9B84-20E21D41C499][History Diff Architecture]] carries the
+  design. Audit is a wiring job, not a new widget.
+- *Versioning.*
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]]
+  already specifies that a child write bumps the parent's version in the same
+  transaction, and that a parent at version $N$ composes its children by a
+  temporal window join. That is precisely the structures rule "any change to a
+  component increments the structure's version", so the prototype must render
+  version state in that shape.
+- *Valuation runs.* The [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]]
+  separates run configurations from execution and resolves input tokens into
+  versioned snapshots. The initial NPV is the output of such a run.
+
+The related [[id:189E3D42-2702-40B4-A08D-47E37B920ED6][Trade Blotter]] story,
+in the product backlog, carries the wider target-state screen design in
+[[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter (knowledge doc)]].
+This prototype feeds that story's design task; it does not replace it.
+The working branch is =feature/deal-entry-screen=.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Charted 2026-09-11. Tickets created; one abandoned as superseded. No ticket resolved yet. |
+| Waiting on    | Nothing.                               |
+| Next          | Take the first frontier ticket.        |
+| Last touched  | 2026-09-11                               |
+
+* Acceptance
+
+- The prototype covers both screens: the booking screen and the pricing
+  screen with its Book handoff.
+- The booking screen manages a structure and its components, in both strategy
+  mode and package mode.
+- The structure panel shows two levels of deal topology, with named groups.
+- A component can be any ORE product type, and the four archetype types open
+  a specialised widget.
+- The booking screen shows the structure version and authorisation status, and
+  shows that a component edit bumps the version while authorisation does not.
+- The booking screen can form a structure out of existing component trades.
+- The booking screen displays the initial NPV with its as-of time and market
+  data snapshot reference, read-only.
+- An org page under =doc/prototypes/= describes the prototype and links to it,
+  and the site build copies and deploys the prototype.
+- Every decision ticket under this story is closed, or explicitly ruled out
+  of scope.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:741B9065-5ADB-4391-BB21-B6C72D979771][Research: catalogue the product types and their existing Qt form coverage]] | BACKLOG | | | List every ORE Studio product type the component picker must offer, grouped by asset class, and record which ones already have a specialised Qt form in InstrumentFormRegistry and which do not. The list feeds the picker and the rule that decides which types fall through to the generic form. |
+| [[id:D36D2221-7DC8-4DA8-A727-5C82BB8A022A][Research: what the compute grid can do for an ad-hoc valuation run]] | BACKLOG | | | Establish what ores.compute offers today for a one-off valuation: what a run configuration and a computation definition require, how an input token resolves to a versioned market data snapshot, whether a single trade or structure can be valued on demand, and what a result carries. This is the fact the initial-NPV decision waits on. |
+| [[id:EE8DF78E-B3DC-45A8-AB91-0EC4943EEBAE][Capture the structures and deal-composition notes into the repo]] | ABANDONED | | | Superseded on 2026-09-11: the =eager maxwell= worktree already has this page in flight as *Trade Structures and Deal Composition* (=FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160=), on branch =feature/document-structures-and-deal-composition=. Two worktrees writing one page would clash. |
+| [[id:07E0C977-798A-4801-A623-E294169D6960][Make the site build copy and deploy doc/prototypes]] | BACKLOG | | | The prototype lives under doc/prototypes/ and must be viewable from the published site. Extend the site build to copy the prototype assets and deploy them alongside the org pages, and confirm a published prototype loads with its assets intact. Nothing else in this story is viewable until this lands. |
+| [[id:08A64F8B-2834-459B-8401-ACE814A99E0C][Decide how the booking screen obtains its initial NPV]] | BLOCKED | | | The booking screen must capture the NPV at the time of booking, but no pricing layer exists. The candidate is to have the user request a valuation and dispatch a compute run, whose result carries the NPV and the market data snapshot it was struck against. Decide the request path, what the booker sees while it runs, what happens when it fails or is stale, and what provenance is stored beside the number. |
+| [[id:3EF0E6D8-72FE-4239-AB12-8670E234B5AC][Decide how audit and object versioning surface in the booking screen]] | BACKLOG | | | The booking screen must show the structure version and its audit trail. ores.history already dispatches by entity_type to one generic history dialog, and Temporal Composite Entity Versioning already specifies that a child write bumps the parent's version. Decide what the screen shows, at which level, and how a component change reads in the structure's history. |
+| [[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]] | BACKLOG | | | Strategy mode fixes the leg set and refuses a structure that breaks the strategy's invariants. Decide which strategies the prototype carries, prompted by the source document's examples (Risk Reversal, Butterfly, Straddle, Strangle, FX Swap, Vega Spread), what each one's invariant actually is, and how the screen reports a broken one without blocking an amend that only touches reference data. |
+| [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]] | BLOCKED | | | Build the throwaway clickable prototype of the booking screen: the two-level structure panel, strategy and package modes, the component picker over every product type, the four archetype widgets with a generic fallback, the version and authorisation header, the read-only initial NPV with its provenance, and forming a structure from existing trades. Mock fixtures only, from the ORE example trades. |
+| [[id:DD436803-DCB9-4774-8A77-133AA0614219][Build the pricing screen prototype and the Book handoff]] | BLOCKED | | | Build the throwaway prototype of the pricing screen: single-leg and structure modes, condensed and expanded views, tweakable vols and rates under a ticking market data indicator, a NPV readout, and the Book button that carries the economics across to the booking screen. The prototype fakes the valuation; the point is the handoff and the two views. |
+
+* Decisions
+
+Each entry is one closed task: the decision and a link to the task that holds
+the detail. Tasks are listed in resolution order.
+
+* Not yet specified
+
+These questions are in scope but not yet sharp enough to write as tasks.
+Each one graduates into a task, or is dropped, as the tickets ahead of it
+resolve.
+
+- What "correct" means for the booking screen: which validation the screen
+  performs, and how it presents a failure. Reference-data completeness,
+  template invariants and date or schedule sanity are the candidates.
+- Whether the initial NPV belongs to the structure, to each component, or to
+  both, and how components aggregate into a structure value.
+- Whether the prototype needs an authorisation queue view, or only the status
+  field on the structure header.
+- Which existing trades are eligible to be formed into a structure, and
+  whether the screen enforces eligibility or only reports it.
+- Whether structure stripping — a master deal plus a calendar generating $n$
+  instances — belongs on the booking screen or on a separate sales wizard.
+
+* Out of scope
+
+- The production Qt implementation. This story produces a prototype and the
+  decisions behind it, not shipped code.
+- The pricing layer itself: two-way support, live market data, and the real
+  valuation. The prototype fakes all three.
+- The structures data model in [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]].
+  Persistence is a separate story; this one records what the model must
+  support.
+- Containment deeper than two levels. The source document does not ask for it.
+- The Structured Transaction Approval Request workflow.
+- Confirmation and settlement at structure level.

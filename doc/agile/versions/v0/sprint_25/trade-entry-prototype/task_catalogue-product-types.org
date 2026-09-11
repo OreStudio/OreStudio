@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: 741B9065-5ADB-4391-BB21-B6C72D979771
+:END:
+#+title: Task: Research: catalogue the product types and their existing Qt form coverage
+#+description: List every ORE Studio product type the component picker must offer, grouped by asset class, and record which ones already have a specialised Qt form in InstrumentFormRegistry and which do not. The list feeds the picker and the rule that decides which types fall through to the generic form.
+#+type: task
+#+level: s1
+#+filetags: :trade-entry-prototype:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ticket type: research (agent-driven, no human needed).
+
+What can the picker offer, and what does each product type already have?
+The booking screen's component picker must list every ORE Studio product
+type, grouped by asset class, and the screen must decide which types open a
+specialised widget and which fall through to the generic form.
+
+The Qt client already maps a product type to a specialised form through
+=InstrumentFormRegistry=, so part of this answer exists. Establish the full
+product type enumeration, the registry's present coverage, and the gaps
+between them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- A table of every ORE Studio product type, grouped by asset class.
+- The table marks which types have a specialised Qt form today, and which
+  do not.
+- The enumeration names its source of truth.
+- The four prototype archetypes are matched to real product types.
+- The result is recorded where the prototype task can read it.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+On the frontier: no blockers, takeable now.
+
+Blocks [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]].
+
+Starting points: =projects/ores.qt/trading/src/InstrumentFormRegistry.cpp=
+for what exists, and =external/ore/examples/Products/Example_Trades= for
+the product families in use.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

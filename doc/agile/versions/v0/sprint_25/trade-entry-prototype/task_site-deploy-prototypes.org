@@ -1,0 +1,92 @@
+:PROPERTIES:
+:ID: 07E0C977-798A-4801-A623-E294169D6960
+:END:
+#+title: Task: Make the site build copy and deploy doc/prototypes
+#+description: The prototype lives under doc/prototypes/ and must be viewable from the published site. Extend the site build to copy the prototype assets and deploy them alongside the org pages, and confirm a published prototype loads with its assets intact. Nothing else in this story is viewable until this lands.
+#+type: task
+#+level: s1
+#+filetags: :trade-entry-prototype:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ticket type: task, agent-driven.
+
+The prototypes live under =doc/prototypes/= and must be viewable from the
+published site. Nothing in this story is reviewable until a reader can open
+the prototypes on the web.
+
+Extend the site build to copy the prototype assets and deploy them beside
+the org pages. An org page describes the prototypes and links them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The site build copies everything under =doc/prototypes/=.
+- The deployed site serves the prototypes from a stable URL.
+- A published prototype loads with its styles and scripts intact.
+- An org page describes the prototypes and links each one.
+- The site build run reports no error.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+On the frontier: no blockers, takeable now.
+
+Blocks [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]]
+and [[id:DD436803-DCB9-4774-8A77-133AA0614219][Build the pricing screen prototype and the Book handoff]],
+for review only. Both prototypes can be built before this lands; neither is
+reviewable by the user until it does.
+
+Do not pipe or redirect a =compass= site or build command. Read the log file
+the command prints.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

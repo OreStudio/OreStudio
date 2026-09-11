@@ -1292,6 +1292,34 @@ here, because the fix is to wake the watchdog on a condition variable
 instead of polling, and that change belongs with the harness and not
 with the bond tables.
 
+**** The sweep is green, all seventy one suites
+
+The whole suite ran over the rebuilt binaries, in eight ctest ranges.
+The rebuild matters to the verdict: the trading libraries now carry the
+files the source lists had left out, and every suite that links them
+ran against the larger build.
+
+| range  | wall time |
+|--------+-----------|
+| 1-24   | 197.58 s  |
+| 25-27  | 249.02 s  |
+| 28-31  | 263.52 s  |
+| 32-34  |  14.25 s  |
+| 35-37  |  30.07 s  |
+| 38-50  |  18.95 s  |
+| 51-56  |   9.33 s  |
+| 57-71  |  79.05 s  |
+
+The three trading suites are the wave's own: =ores.trading.api.tests=
+at 0.09 seconds, =ores.trading.core.tests= at 13.63 and
+=ores.trading.service.tests= at 0.51.
+
+=ores.refdata.core.tests= passed at 262.85 seconds. The flake recorded
+against it did not recur, which is the second clean run since the fix.
+
+Most of the fourteen minutes is the one second per test case the
+watchdog join costs, and not test work.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

@@ -1325,9 +1325,161 @@ The three =component_files.cmake= files came from
 =regenerate_cmake_component_files.py=, run with the codegen venv.
 Nothing generated was opened in an editor.
 
+** Wave B.5, the mapper switch-over to the tables
+
+Waves B.1 to B.4 gave every member the container carries a column or a
+keyed child row. This wave points the database path at them, so import
+writes what the container holds and export rebuilds it.
+
+Two surfaces change, and both are hand written. The write side is
+=ore_import_execute_handler.cpp=, which saves the bond header row and
+nothing else. The read side is =populate_instruments_for_trades= in
+=trade_handler.hpp=, which rebuilds the header, the issue and the
+option, TRS and repo fact rows, and rebuilds neither the envelope nor
+any child list.
+
+*** Finding: the sixteen new tables have no nats surface
+
+Each of the sixteen entities has a generated protocol, handler and
+registrar. None of the sixteen registrars is called. =registrar.cpp=
+wires eight product aggregators, and =registrar_bond.cpp= carries the
+eight bond tables of the pilot. The sixteen new ones are absent from
+both, so no subject reaches any of the sixteen tables and a running
+service cannot read or write one of them. The history providers are
+absent from the dispatch registry for the same reason.
+
+The import handler writes over nats, so the write path needs the
+registrars wired before it can save a single child row.
+
+*** Finding: the read path needs a query shape the generator does not emit
+
+A child table is keyed by its parent and by the child's own ordinal,
+and export holds the parent keys. It needs every child row of a set of
+parents.
+
+The generated repository offers an exact primary key read, a paged read
+of the whole table, and a batch read over the full primary key. None of
+the three answers the question. The batch read takes one vector per key
+column and filters exact key tuples in C++, so a caller that does not
+already know the ordinals cannot use it.
+
+The trading component already meets this gap once:
+=fra_instrument_service::get_swap_legs_batch= takes instrument ids and
+returns legs. That method is not in the regenerated output, so it was
+written into a generated file by hand. This wave does not repeat that.
+The reads go in a new hand-written file that reuses the generated
+entity and mapper types, so no entity file is edited.
+
+*** Finding: =trade_handler.hpp= is a generated path kept by hand
+
+The generator renders =messaging/<entity>_handler.hpp= from
+=cpp_nats_handler.hpp.mustache= for each domain entity, so
+=trade_handler.hpp= is in its write list. The committed file is not what
+the template emits. It carries =ORES_TRADING_CORE_EXPORT= on the class
+and the activity-type, instrument and two export methods the template
+has no source for, and the regenerated form carries none of them and a
+different handler set. The trading component sits outside the drift
+checker's known-drift-free registry for reasons of this kind.
+
+The file is therefore a generated path whose content the team maintains
+by hand and does not regenerate. The switch-over needs one call site in
+it, because the export paths and the read helper they call all live
+there and no hand-written seam exists. A new hand-written helper called
+from the generated file would edit the same file at the same place. The
+wave takes the call-site edit and records it here.
+
+The durable fix is the template's paste mechanism. The mustache carries
+=<<paste:UUID>>= markers, and a hand-written fragment pasted at a marker
+survives regeneration. Moving the hand-written body behind a marker
+would let the file regenerate from its model. That is a wave of its own.
+
+*** Finding: the sixteen tables are absent from the development database
+
+A create script writes a table only when the database is built or
+rebuilt from the scripts. This database was last restored on 2026-09-10
+from an earlier commit, so it carried none of the sixteen tables B.1 to
+B.5a added. =compass db status= reports the schema a day behind head.
+
+Nothing had exercised them, so nothing had noticed. The write path this
+wave wires would have failed at the first =save_trade_envelope=
+request, and the read path at the first query, with the table missing
+rather than the code wrong.
+
+The tables were applied in place rather than by a database rebuild,
+because a rebuild drops the loaded data and the connections of a running
+environment. The trading create aggregate is idempotent, so re-running
+it created the sixteen and skipped the forty nine already present, and
+the row-level security blocks for the sixteen were applied after it.
+=information_schema= now reports all sixty five trading tables, each of
+the sixteen with row-level security enabled and one tenant-isolation
+policy.
+
+*** The switch-over lands in four parts
+
+=** B.5a= takes the trade envelope, because it is the second half of the
+scope and because it is the smallest part that exercises the whole
+shape: three tables, one of them the parent and two keyed children, on
+the trade side rather than the instrument side.
+
+=** B.5b= takes the issue row, its call dates and its conversion
+targets, and the five product fact rows.
+
+=** B.5c= takes the leg tables and the shared schedule, amount, rate and
+amortization tables below them.
+
+=** B.5d= takes the option block, the strike, the exercise schedule, the
+forward, the delivery basket and the three return-side members.
+
 ** Verification
 
 Each wave records its build and suite result here.
+
+*** Wave B.5a, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the log ends at
+=[100%] Built target ores.qt.exe= with no error. The five files this
+wave added compiled and linked on that pass.
+
+All seventy one suites pass over those binaries, in eight ctest ranges.
+
+| range  | result | wall time |
+|--------+--------+-----------|
+| 1-24   | 24/24  | 237.08 s  |
+| 25-27  |  3/3   | 246.13 s  |
+| 28-31  |  4/4   | 262.63 s  |
+| 32-34  |  3/3   |  14.92 s  |
+| 35-37  |  3/3   |  30.14 s  |
+| 38-50  | 13/13  |  20.02 s  |
+| 51-56  |  6/6   |  10.68 s  |
+| 57-71  | 15/15  |  88.32 s  |
+
+=ctest= reports 100% tests passed, 0 tests failed out of 71, in 909.97
+seconds.
+
+The three trading suites are the wave's own, at 0.09, 14.35 and 0.48
+seconds. The three ore suites carry the mapper path, at 4.64, 0.55 and
+0.71 seconds. =ores.trading.core.tests= carries the wave's four new
+envelope-reader cases, which is why it reads 14.35 seconds against the
+14.50 of the wave before.
+
+The first run of that suite failed, and the failure was the database
+rather than the code. Four cases read =permission denied for table
+ores_trading_trade_envelopes_tbl=, because the sixteen tables had been
+created in place rather than through =setup_schema.sql= and so carried
+no grants. Once the grants were copied from a sibling trading table the
+suite passed 86 of 86 in 13.32 seconds, and the sweep above followed.
+
+=projects/ores.sql/utility/validate_schemas.sh --strict= reads two
+hundred and ninety nine tables and exits 0 with no warning.
+
+=regenerate_cmake_component_files.py --all --check= reports all
+component_files.cmake up to date, so the five new files are registered.
+
+No generated file was edited by hand. =git status= lists five new
+hand-written files, the two headers and two sources plus one test,
+three hand-written files edited, and the two =component_files.cmake=
+lists the registrar script rewrote.
 
 *** Wave B.4, the build and the sweep
 

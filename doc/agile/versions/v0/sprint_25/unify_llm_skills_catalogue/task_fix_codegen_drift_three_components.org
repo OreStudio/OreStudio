@@ -67,11 +67,11 @@ component; it marks drift rather than an intentional declaration.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Discovered while fixing compiler warnings. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -86,6 +86,11 @@ component; it marks drift rather than an intentional declaration.
 -
 
 * Plan
+
+Measure each component separately before deciding anything. The three
+were filed together because one sweep found them together, not because
+they share a cause, and they turned out not to.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -127,3 +132,53 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Two of the three components are cleared and one cannot be cleared this
+way. The premise that all three were the same kind of problem was
+wrong, and that is the substantive finding.
+
+=analytics-cpp= is done and has joined the enforced registry. 23 files
+changed and 12 were materialized that had never been committed. Almost
+all of it was the generator being right and the tree being stale: the
+SQL create scripts gain change-reason validation and replace
+=current_timestamp= with =clock_timestamp=, which fixes a
+same-transaction multi-write colliding with itself; the drop scripts
+gain their licence header; services gain braces and generators gain
+the maybe_unused marker.
+
+One difference was substantive, and it is the reason this task
+insisted on understanding each one. The combo sort lambda in
+=PricingEngineTypeDetailDialog= was hand-edited to return a constant
+while the generator emits the code field, so regenerating blindly
+would have reverted the hand-edit. Neither form was right.
+=sort_key_of= takes an =int= and =instrument_code::code= is a
+=std::string=, so the generated form does not compile — proved by
+compiling it rather than argued. The hand-edit made it compile by
+sorting on a constant, which disables ordering. The model was the
+defect: it named =code= as =combo_sort_field= where every other dialog
+names an integer column, so it now names =display_order=, the column
+24 other dialogs use. The result compiles and sorts.
+
+The 12 untracked files are the history-provider registrars and
+eventing integration tests, a family =iam= already carries committed.
+Committing them needed the eventing dependency their tests use, which
+the analytics test target did not link.
+
+=refdata= needed nothing. It joined the registry between this task
+being filed and being worked, and regenerates clean.
+
+=scheduler-cpp= is not a drift clear, and is filed separately as
+[[id:294FFF1A-E70B-489A-B7A3-40F57528B46E][Resync the job_definition model with its hand-written code]]. Its
+model carries a warning against regenerating any facet of it, and the
+warning is correct: the model's =tenant_id=, =schedule_expression= and
+=is_active= column shapes do not match the hand-written struct, so
+regenerating emits =std::string= where the code has a
+=cron_expression= value type and =int= where it has a =bool=. That is
+wrong types rather than wrong formatting, and accepting it would
+regress the code in order to clear a diff. The model needs correcting
+first, which is a modelling task rather than a regeneration.
+
+Acceptance is met for =analytics-cpp= and =refdata= and not for
+=scheduler-cpp=. The registry criterion is met for the two that can
+join it: eight components are now enforced. The criterion that the
+gate runs in CI was met by the preceding task.

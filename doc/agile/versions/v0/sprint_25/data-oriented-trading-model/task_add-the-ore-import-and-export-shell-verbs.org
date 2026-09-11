@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
-#+updated: 2026-09-10
+#+updated: 2026-09-11
 #+environment:
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,7 +31,7 @@ The shell can upload an ORE import tarball, start the import workflow, and expor
 | Now          | Not yet started.                       |
 | Waiting on   | Nothing.                               |
 | Next         | Begin implementation.                  |
-| Last touched | 2026-09-10                               |
+| Last touched | 2026-09-11                               |
 
 * Acceptance
 
@@ -60,6 +60,38 @@ Each verb follows the shape of the existing shell command units under
 =trading_commands.cpp= or the workflow menu.
 
 * Notes
+
+** The export verb needs the ORE core library
+
+=trading.v1.trades.portfolio.export= returns =items=, a vector of
+=trade_export_item= (a trade, its instrument and an optional envelope).
+The XML is not on the wire. The shell must map those items into the
+=ores.ore= container and call =exporter::export_portfolio= itself.
+=ores.shell= links =ores.trading.api.lib= and =ores.workflow.api.lib=
+today, and it does not link =ores.ore.core.lib=, so this verb adds that
+one link. It adds no service, subject or protocol member, so the
+acceptance holds as written.
+
+** Where each verb registers
+
+=projects/ores.shell/src/app/repl.cpp= builds the root menu and calls
+each group's =register_commands=. =workflow_commands= takes the root
+menu and the session; the trading groups also take the pagination
+context. A command unit makes a =cli::Menu=, inserts its verbs, and
+inserts that menu into the root.
+
+The import verb belongs with the workflow group, because it starts a
+workflow instance and the group already owns =steps= and =wait=, which
+the round trip script needs to observe the outcome. The upload and
+export verbs belong with the trading group.
+
+** The three subjects
+
+| Step   | Subject                                                                    |
+|--------+----------------------------------------------------------------------------|
+| Upload | =ores::ore::net::ore_storage=, bucket =ore-imports=, key ={request_id}.tar.gz= |
+| Import | =workflow.v1.ore.import=                                                   |
+| Export | =trading.v1.trades.portfolio.export=                                       |
 
 * Test Scenarios
 

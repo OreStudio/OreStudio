@@ -235,3 +235,31 @@ TEST_CASE("read_latest_by_app_version_filters_by_app_version", tags) {
     for (const auto& r : b_rows)
         CHECK(r.package_uri.find("/b") != std::string::npos);
 }
+
+TEST_CASE("replace_by_app_version_stamps_the_context_tenant", tags) {
+    database_helper h;
+    const auto platforms = seeded_platforms(h);
+    const auto av_id = boost::uuids::random_generator()();
+
+    // A client must not assert its own tenant, so the shell sends rows with
+    // tenant_id unset. The repository stamps the context tenant on each one
+    // before the insert, which keeps the close and the insert on one tenant.
+    auto a = make_row(h, av_id, platforms[0], "stamped-a.tar.gz");
+    auto b = make_row(h, av_id, platforms[1], "stamped-b.tar.gz");
+    a.tenant_id.clear();
+    b.tenant_id.clear();
+
+    app_version_platform_repository repo(h.context());
+    CHECK_NOTHROW(repo.replace_by_app_version(av_id,
+                                              {a, b},
+                                              h.db_user(),
+                                              h.db_user(),
+                                              "system.new_record",
+                                              "stamp"));
+
+    const auto expected = h.tenant_id().to_string();
+    const auto listed = repo.read_latest_by_app_version(av_id);
+    CHECK(listed.size() == 2);
+    for (const auto& r : listed)
+        CHECK(r.tenant_id == expected);
+}

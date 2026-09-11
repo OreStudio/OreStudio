@@ -36,11 +36,11 @@ between them.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Not yet started.                       |
+| Now          | Resolved. The catalogue is in =* Result=. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | None.                                  |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -92,3 +92,69 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Resolved by observation, 2026-09-11. No subagent was needed: the
+enumeration and the coverage are both in the tree.
+
+** The product types
+
+Source of truth: =projects/ores.trading/api/include/ores.trading.api/domain/product_type.hpp=.
+The enumeration holds eight real values. They match the SQL
+=product_type_t= values and the JSON wire format. =unknown= is a sentinel
+and maps to the empty string.
+
+| Product type | Asset class | Family form | Type-code forms |
+|--------------+-------------+-------------+-----------------|
+| =swap=       | Rates       | Swap        | none            |
+| =fx=         | FX          | FX          | six, see below  |
+| =bond=       | Credit      | Bond        | none            |
+| =credit=     | Credit      | Credit      | none            |
+| =equity=     | Equity      | Equity      | none            |
+| =commodity=  | Commodity   | Commodity   | none            |
+| =composite=  | Container   | Composite   | none            |
+| =scripted=   | Container   | Scripted    | none            |
+
+Source of truth for coverage:
+=projects/ores.qt/trading/src/InstrumentFormRegistry.cpp=.
+
+All eight families have a specialised Qt form today, so the fallback rule
+is not exercised at family level. Type codes are where the gaps are.
+
+** The type-code forms
+
+The registry keys a second table by =trade_type_code=. Six FX codes
+resolve to a dedicated form. Every other code falls through to its family
+form.
+
+| Trade type code | Form |
+|-----------------+------|
+| =FxOption= | FxVanillaOptionInstrumentForm |
+| =FxBarrierOption=, =FxDoubleBarrierOption=, =FxEuropeanBarrierOption=, =FxKIKOBarrierOption=, =FxGenericBarrierOption= | FxBarrierOptionInstrumentForm |
+| =FxDigitalOption=, =FxDigitalBarrierOption=, =FxTouchOption=, =FxDoubleTouchOption= | FxDigitalOptionInstrumentForm |
+| =FxAverageForward=, =FxTaRF= | FxAsianForwardInstrumentForm |
+| =FxAccumulator= | FxAccumulatorInstrumentForm |
+| =FxVarianceSwap= | FxVarianceSwapInstrumentForm |
+
+** The four prototype archetypes
+
+| Archetype | Product type | Type code | Form in the prototype |
+|-----------+--------------+-----------+-----------------------|
+| FX vanilla option | =fx= | =FxOption= | schedule and expiry |
+| FX barrier option | =fx= | =FxBarrierOption= | barrier management |
+| Swap or IRS | =swap= | none | two-leg schedule and cashflows |
+| Composite | =composite= | none | leg list |
+
+The picker offers all eight families. Within =fx= it offers the type
+codes above, because that is where a dedicated form already exists. Every
+other family offers its family form alone.
+
+** What this implies for the prototype
+
+The generic fallback is a real path, because =trade_type_code= is free
+text and 132 example trades use codes with no dedicated form. The
+prototype must therefore keep the fallback reachable from the picker, not
+treat it as dead code.
+
+=external/ore/examples/Products/Example_Trades= holds 132 trades across
+all eight families. The four archetypes above take their fixtures from
+there.

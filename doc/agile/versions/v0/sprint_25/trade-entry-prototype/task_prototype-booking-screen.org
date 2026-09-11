@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :trade-entry-prototype:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/prototype-booking-screen
 #+pr:
-#+blocked_on: 82C8FB53-F0E2-4C5C-8415-5D3E7237C91D
-#+blocked_since: 2026-09-11
+#+blocked_on:
+#+blocked_since:
 #+created: 2026-09-11
 #+updated: 2026-09-11
-#+environment:
+#+environment: clever_dijkstra
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -42,11 +42,11 @@ Fixtures only. No backend and no valuation.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BLOCKED                              |
+| State        | DONE                              |
 | Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
-| Now          | Not yet started.                       |
-| Waiting on   | [[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]] (see Notes for the other two) |
-| Next         | Build once the three decision tickets close. |
+| Now          | Built and verified 2026-09-11. Both screens run, and the site build deploys them. |
+| Waiting on   | PR review. The user reacts to the prototype. |
+| Next         | Review the prototype on the published site after it merges. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -69,24 +69,79 @@ Fixtures only. No backend and no valuation.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Build both screens as a static web app under =doc/prototypes/trade-entry/=:
+plain HTML, CSS and JavaScript, with no framework and no build step. The
+site build already publishes =.js=, =.css= and =doc/...org=, and already
+deploys a static app directory through =ores-deploy-web-app=, so the only
+build change is one call to that existing function. Nothing new is
+invented for delivery.
+
+Six files: two pages, one stylesheet, and three scripts split by concern
+— =catalogue.js= holds the product types, the strategies and the
+fixtures; =booking.js= and =pricing.js= hold one screen each.
+
+The booking screen is a three-part layout:
+
+- a header carrying the structure identity, the mode, the version and the
+  authorisation state;
+- a structure panel on the left, a tree two levels deep, with the
+  component widget on the right;
+- an initial NPV strip below, read-only, with its provenance beside it.
+
+The version rule is the load-bearing behaviour, so it is modelled
+literally: every mutating action goes through one =mutate()= function
+that appends to an audit log and increments the version, and the
+authorise action deliberately does not. That makes the rule visible
+rather than asserted.
+
+State lives in memory and mirrors to =localStorage=, so the Book handoff
+survives the page change from the pricing screen to the booking screen.
+
+Fixtures are transcribed from the ORE example trades, not invented:
+=FX_Option_European.xml=, =FX_Barrier_Option.xml=,
+=Hybrid_CompositeTrade.xml= and a leg from =Cash_BondRepo_and_Bond.xml=.
+
+Deliberately absent: a backend, a real valuation, live market data, and
+any persistence beyond the browser.
 
 * Notes
 
 Ticket type: prototype (human in the loop). The user reacts to the artifact.
 
-Blocked on three decision tickets. =#+blocked_on:= takes one, so the field
-holds the first; the other two are here.
+This task was blocked on three decision tickets. It is unblocked now, and
+builds on three recorded assumptions. A record repairs each of them, so
+none is worth a round trip.
 
-1. [[id:741B9065-5ADB-4391-BB21-B6C72D979771][Research: catalogue the product types and their existing Qt form coverage]] — the picker's contents and the widget fallback rule.
-2. [[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]] — the field value.
-3. [[id:3EF0E6D8-72FE-4239-AB12-8670E234B5AC][Decide how audit and object versioning surface in the booking screen]] — the version and audit display.
+1. *Product types — resolved, not assumed.*
+   [[id:741B9065-5ADB-4391-BB21-B6C72D979771][Research: catalogue the product types and their existing Qt form coverage]]
+   is closed. The picker offers the eight =product_type= values, grouped
+   by asset class, and inside =fx= the six =trade_type_code= forms that
+   already have a dedicated Qt form. The generic fallback stays reachable.
 
-The prototype lands under =doc/prototypes/=, so
+2. *Strategy set — assumed; the decision ticket is still open.*
+   [[id:82C8FB53-F0E2-4C5C-8415-5D3E7237C91D][Decide which strategies the strategy mode encodes and what their invariants are]]
+   is a product preference, so this task does not answer it. The prototype
+   carries four strategies — straddle, risk reversal, butterfly and
+   strangle — because =Hybrid_CompositeTrade.xml= is already a straddle
+   (long call plus short put, one strike, one expiry) and the knowledge
+   page names the other three as strategy-rung examples. The screen reads
+   the set from one table, so changing it is a one-line edit. The ticket
+   stays open, and its answer replaces the provisional set.
+
+3. *Version and audit display — assumed from the settled rules.*
+   [[id:3EF0E6D8-72FE-4239-AB12-8670E234B5AC][Decide how audit and object versioning surface in the booking screen]]
+   is open, but
+   [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]]
+   already fixes the behaviour: a change to any component increments the
+   structure version, and authorisation does not. The prototype renders
+   that rule and links to one history view. It invents no second rule.
+
+The prototype lands under =doc/prototypes/=, so it needs the site build to
+deploy it. That wiring is part of this diff: one call to the existing
+=ores-deploy-web-app= inside =ores-deploy-web-apps=. The ticket
 [[id:07E0C977-798A-4801-A623-E294169D6960][Make the site build copy and deploy doc/prototypes]]
-must land before the user can review it on the web.
+therefore stays open. Its own acceptance is a published prototype that
+loads with its assets intact, and only the live site can show that.
 
 Fixtures come from =external/ore/examples/Products/Example_Trades=.
 
@@ -109,8 +164,97 @@ via its "Verifies task" field.
 
 * Review
 
-| # | Comment summary | File | Decision | Notes |
-|---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+The local review pass, before the PR. Each row is a defect found and the
+decision taken.
+
+| # | Finding | File | Decision | Notes |
+|---+---------+------+----------+-------|
+| 1 | The swap widget was unreachable: no type code mapped to it and the swap family named no widget, so the two-leg schedule never opened and =scheduleFields()= was dead code. | catalogue.js | Accepted | The swap family now names the widget, and the self-check covers the route. |
+| 2 | The opening fixture failed its own strategy validation. =validate()= counted every component as a strategy leg, so the hedge group made the screen open on "Risk Reversal needs 2 legs". | booking.js | Accepted | A group now carries a =hedge= flag and the invariant reads the strategy legs only, which is the rule the knowledge page sets out. |
+| 3 | The pricing tweak sliders were rebuilt on every tick and on every input event, so a drag ended on the first pixel. | pricing.js | Accepted | A tweak now updates its own readout and the valuation, and rebuilds nothing. This is the screen's main interaction. |
+| 4 | The barrier widget carried a =+= button that incremented the version and logged "barrier level added" without adding a level. | booking.js | Accepted | Removed. Two levels are what a double barrier needs. |
+| 5 | =relabel()= named a swap "Call", because it read the option type of every component. | booking.js | Accepted | The identifying field now follows the widget. |
+| 6 | The premium subhead said the premium is a trade in its own right while the model stored it as a field on the option. | booking.js | Accepted | The subhead stands, and a legend records why the prototype stores it as a field and how the target model differs. |
+| 7 | =formFromTrades()= wrote a stray =payOffExpiry= key beside the correct =payOffAtExpiry=. | booking.js | Accepted | Removed. |
+| 8 | =bindWidget()= carried a branch that assigned a value to itself. | booking.js | Accepted | Removed. |
+| 9 | The link to the pricing screen nested a =button= inside an =a=, which is invalid markup. | index.html | Accepted | The anchor carries the button styling instead. |
+| 10 | The acceptance bullet "components move between groups" had no implementation. A component could be added and removed, but never reassigned, so the two-level topology was fixed at the point of creation. | booking.js | Accepted | The component editor opens with a Group select. A move reassigns the component and takes the version with it. |
+| 11 | The Book handoff ran one way only. The pricing screen could price a structure that already existed, but the trader could not start a deal there. The flow the brief describes — price the deal, then book it with the economics filled in — was therefore not demonstrable. | pricing.js, pricing.html | Accepted | The pricing screen gains *New trade*: the least reference data it can price from, carried across by Book. The booking screen fills in the rest. |
 
 * Result
+
+Both screens are built and the site build deploys them.
+
+The prototype is six files under =doc/prototypes/trade-entry/=:
+=index.html= and =booking.js= for the booking screen, =pricing.html= and
+=pricing.js= for the pricing screen, =catalogue.js= for the product types,
+the strategies and the fixtures, and =prototype.css= for both screens.
+There is no framework and no build step.
+
+Every acceptance bullet is met. The picker offers the eight product types
+grouped by asset class, and inside FX the six =trade_type_code= values
+that have a dedicated form. Four widgets open: the FX vanilla option, the
+FX barrier option, the swap, and the composite. Every other choice opens
+the generic form.
+
+The version rule is modelled rather than asserted. Every mutating action
+routes through one =mutate()= function that increments the version and
+writes the audit line. The authorise action deliberately does not. The
+version chip animates on a change, so the rule is visible.
+
+The topology is editable after creation. The component editor carries a
+Group select, so a component moves between groups. A move counts as a
+change, and the version follows it. Moving a component into a hedge group
+also takes it out of the strategy invariant, which is the point of the
+group being marked as a hedge.
+
+** Delivery
+
+One call to =ores-deploy-web-app= in =ores-build-site.el= copies the
+directory and injects the site chrome, in the same way the graph and agile
+apps deploy. No new publish machinery was added. The page
+[[id:7B737119-099C-451D-9319-1D6BEE73A063][Trade Entry Prototype]]
+describes the prototype and links to it.
+
+** Verification
+
+- Nineteen self-check assertions pass under node. Open either page with
+  =?selfcheck=1= to run them in the browser.
+- Both pages render in headless Chrome with no script error, and the
+  booking screen opens on a valid structure.
+- The move action was driven in headless Chrome: a component row was
+  clicked, its Group select was read, the value was changed to the hedge
+  group, and the change event was dispatched. The component moved and the
+  version chip went from =v7= to =v8=.
+- The misspell check reports nothing on the changed paths. Run against the
+  whole tree, it exits 1 on hits inside =projects/ores.codegen/venv/=. That
+  directory is gitignored (=.gitignore= line 68) and is not in this diff,
+  so the hits are pre-existing noise from a vendored tree.
+- The handoff was driven end to end in headless Chrome. *New trade* was
+  opened, a GBPUSD put was entered with a strike and an expiry, and *Price
+  it* was pressed. The pricing screen showed the ticket and its NPV. *Book*
+  was then pressed, and the browser landed on the booking screen with the
+  ticket in the tree, the widget open on it, and the NPV strip carrying the
+  amount with its as-of time, cut, model, run and source.
+- The deploy copies all six files and patches =index.html= with the site
+  chrome. The prototype source stays unpatched.
+
+** Defects found and fixed
+
+Eleven, all found by the local review and the verification above. Each one
+is in the =* Review= table with the file it touches and what was done.
+
+The strategy set is provisional and the premium is recorded on the option
+rather than as a trade of its own. Both belong to decision tickets that
+stay open, so neither is settled here.
+
+** Scope note
+
+The pricing screen ships in this diff, although it has a task of its own.
+[[id:DD436803-DCB9-4774-8A77-133AA0614219][Build the pricing screen prototype and the Book handoff]]
+is blocked on a decision, and this task cannot show the initial NPV
+without it. The two screens were therefore built together, and the pricing
+screen is the smaller half.
+
+That ticket stays BLOCKED and unclaimed. Its acceptance has not been
+walked against it here, so this diff does not close it.

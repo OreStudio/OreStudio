@@ -142,6 +142,7 @@ via its "Verifies task" field.
 |---+-----------------+------+----------+-------|
 | 1 | The description page linked the prototype with an absolute =https://orestudio.github.io/= URL. It 404s until the pull request merges, and it never resolves on the local preview or from a =file://= open, so the same page worked in one place and failed in two others. | trade-entry.org | Accepted | The link is relative, =file:trade-entry/=, which is what the gallery already used. |
 | 2 | The *Prototypes* link was a top-level nav anchor. A prototype is a developer artifact, so it took a top-level slot from a destination that earns one. | ores-build-site.el | Accepted | The anchor moves into the *Developer* menu, beside Guide, Recipes and Agile. |
+| 3 | The pricing screen had no link of its own. The description page named it in prose, so a reader reached it only through the booking screen. | trade-entry.org | Accepted | The page links it directly, in the same relative =file:= form as the booking screen. |
 
 * Result
 
@@ -160,9 +161,9 @@ that describes it. A *Prototypes* entry in the *Developer* nav menu opens it,
 so it is reachable from every page.
 
 Every link between these pages is relative — =file:trade-entry/= from the
-gallery, =file:trade-entry/= from the description page. A relative link
-resolves on the published site, on the local preview and on a =file://=
-open alike. An absolute link to =https://orestudio.github.io/= resolves on
+gallery, and =file:trade-entry/= plus =file:trade-entry/pricing.html= from
+the description page. A relative link resolves on the published site, on
+the local preview and on a =file://= open alike. An absolute link to =https://orestudio.github.io/= resolves on
 exactly one of those, and 404s on the other two until the pull request
 merges. The description page carried one, and it is fixed.
 

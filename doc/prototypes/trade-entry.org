@@ -20,9 +20,10 @@ The prototype is throwaway. It is not production code and it does not
 ship to users. It exists so that the layout and the behaviour can be
 argued about with something concrete in front of us.
 
-Open the [[file:trade-entry/][booking screen]]. The pricing screen is one click away,
-under *Price this structure*. From there, *New trade* starts a deal and
-*Book* brings it back.
+Open the [[file:trade-entry/][booking screen]], or go straight to the
+[[file:trade-entry/pricing.html][pricing screen]]. The pricing screen is one
+click away from the booking screen, under *Price this structure*. From
+there, *New trade* starts a deal and *Book* brings it back.
 
 Everything on both screens is mock data, transcribed from
 =external/ore/examples/Products/Example_Trades=. Neither screen reads a

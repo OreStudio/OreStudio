@@ -410,6 +410,13 @@ organised by asset class on the [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE P
   regulatory classification: intent-based assignment, presumptive
   lists, trading desk structure, capital treatment, switching
   restrictions.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — how a deal is
+  built from its parts: the composition ladder, the rule that a
+  leg is a trade with its own identifier, structure operations,
+  and the linkages between trades.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — what a confirmation is,
+  the internal and external version model, amendment
+  classification, and the events that must be re-confirmed.
 
 ** Data quality
 

@@ -1,0 +1,398 @@
+:PROPERTIES:
+:ID: FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160
+:END:
+#+title: Trade Structures and Deal Composition
+#+description: How a deal is built from its parts: the composition ladder, deal topology, structure operations, and the linkages between trades.
+#+type: knowledge
+#+level: cross
+#+filetags: :knowledge:domain:finance:trading:structures:deal_composition:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+* Summary
+
+A trade structure is one deal assembled from several parts. The parts
+are legs, and each leg is itself a trade with its own identifier. A
+structure is the set of those trades plus the rules that bind them: the
+role each leg plays, the pricing that reads them together, and the one
+commercial act the customer sees.
+
+This page fixes the vocabulary. It gives the composition ladder from a
+same-family strategy to an untyped package, the rule that binds a
+structure to its legs, the operations that create and reshape a
+structure, and the portfolio-level operations that replace trades
+outright. It closes with how ORE Studio models composition today and
+what the target model changes.
+
+* Detail
+
+** Why composition needs its own vocabulary
+
+A single trade is a product with a payoff. A structure is not a bigger
+product. It is a small graph of trades with rules about who plays which
+part.
+
+The distinction matters because every layer of the system needs it. The
+pricer needs to read the legs as one deal. The blotter needs to show the
+deal as one row and the legs as children of it. The confirmer needs to
+know which changes to the legs the customer must agree to again. The
+ledger and the netting engine need the leaves, not the container.
+
+Loose usage of the words causes defects. "Structure", "group" and "set"
+are not synonyms:
+
+- A /structure/ binds its parts economically. The parts have roles, and
+  the whole prices differently from the sum of the parts. A straddle is
+  a structure.
+- A /group/ is a bundle a user assembles for convenience. The trades in
+  it keep their own economics. A hedge group is a group.
+- A /set/ is a collection with no relationship at all. A portfolio of
+  unrelated trades is a set.
+
+Reserve "structure" for the first case. The other two are display and
+organisation concepts, and they belong to the blotter, not to the trade
+model.
+
+** The composition ladder
+
+Structures form a ladder. Each rung binds the legs more weakly than the
+rung above it, and holds more of them.
+
+| Rung | Binds the legs by | Example | Industry name |
+|------+-------------------+---------+---------------|
+| Strategy | One product family, one pricing model, fixed leg roles | Straddle, risk reversal, butterfly, calendar spread | FpML =strategy=; "combination" in front-office systems |
+| Typed structure | Legs from different families, roles fixed in the type | Callable swap, convertible bond, total return swap with a funding leg | A qualified product in the CDM |
+| Dynamically typed structure | Roles read from data at run time | Generic scripted product; an exotic whose payoff comes from a script | FpML generic products; scripted trades |
+| Untyped structure (package) | Nothing economic; a container | Composite trade, portfolio basket, a package executed as one order | FpML =tradePackage=; block then allocate |
+
+Two rules hold across the ladder. A structure may contain another
+structure, so the ladder nests. And a structure is priced as a whole at
+the top rungs and as the sum of its parts at the bottom rung.
+
+FpML carries the top rung as the =strategy= element, which substitutes
+for the abstract =product= element of a trade. It holds a repeating
+=product= child, one per leg, plus =strategyComponentIdentifier= for the
+legs and an optional =premiumProductReference= that names the leg which
+carries the premium. FpML never recommends the older =multiLeg= boolean,
+because the strategy structure says the same thing with more detail.
+
+** A leg is a trade, not a property
+
+The load-bearing rule of the whole page: an atomic deal has a unique
+identifier, and a leg of a structure is an atomic deal.
+
+Consequences:
+
+1. The premium leg is a trade in its own right, not a field on the
+   option. It has its own currency, payment date and identifier.
+2. Brokerage is a separate leg. The dealer's margin stays visible and
+   reportable instead of being netted into a price.
+3. Composition is by key, not by ownership. A structure refers to its
+   legs; it does not own them. A leg can be unlinked from one structure
+   and linked to another without being rewritten.
+
+The third consequence is a data-model constraint, not a preference.
+Where a model stores a leg as an owned child of a parent object, every
+read of the parent drags in the whole subtree, and no read can cross
+structures. Where a leg is a row with a key, the structure is a join.
+[[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] states the same rule for
+the trading component: =trade=, =instrument= and =leg= are sets of rows
+joined by keys, and no aggregate versions as a whole.
+
+** The deal topology of a structure
+
+A structure is a tree. The root is the deal the customer sees. The
+leaves are the trades that carry cash flows. Inner nodes may be further
+structures.
+
+A worked shape, from a strategy structure that wraps an inner option
+structure:
+
+- Structure: the customer-facing deal.
+  - Vanilla group: an inner structure holding one option and its
+    side trades.
+    - Vanilla option: the leg that carries the payoff.
+    - FX trade: the leg that fixes the currency of the premium.
+    - Premium: the leg that pays for the option.
+    - Brokerage: the leg that carries the dealer's margin.
+  - Hedge legs: the trades the desk books to flatten the risk of the
+    option.
+
+Four rules govern this tree:
+
+1. Every node that carries a cash flow or a valuation is a trade with an
+   identifier. Container nodes are the only exception, and they hold no
+   economics of their own.
+2. The arrangement is built by a pipeline that spans pricing, booking
+   and post-processing. One stage prices the package, the next books the
+   legs, the last attaches the hedge and the settlement instructions.
+3. Downstream systems read the leaves. Valuation, netting, ledger
+   posting and regulatory reporting all work on trades, not on the
+   container.
+4. The tree may be rebuilt. A restructure of the deal produces a new
+   version of the tree with new links, and it leaves the old version
+   readable.
+
+** Pricing a structure
+
+A pricing run has two modes, and they answer different questions.
+
+- /Structure mode/ treats the deal as one unit. It uses one model for
+  the parts that interact, and it produces one price for the deal. A
+  callable swap is priced this way, because the call right and the swap
+  are one instrument economically.
+- /Leg mode/ prices each trade on its own and reports the results side
+  by side. It answers the question "what is each piece worth", which is
+  what the trader needs in order to hedge.
+
+Most front-office screens offer both, plus a condensed and an expanded
+presentation of the same tree. The condensed view shows the structure as
+one line; the expanded view shows the legs. The two views read the same
+data.
+
+The same split appears in other systems. OpenGamma Strata composes a
+=Swap= from one or more =SwapLeg= objects, notes that a swap has two
+legs in most cases but may have one, three or more, and resolves the
+whole into a =ResolvedSwapLeg= per leg before pricing. The resolution
+step is the boundary between "the deal as modelled" and "the deal as
+priced", and it is a useful pattern to copy: keep the trade shape and
+the pricing shape separate.
+
+Pricing a structure can also mean stripping it. Structure stripping
+prices the deal as one unit and shows the equivalent set of independent
+legs, so that a desk can see what it would take to hedge the deal trade
+by trade. In our UI this is the master deal plus its calendar: the
+master deal is the priced unit, and the calendar holds the legs.
+
+** Structure versioning
+
+Versioning follows the composition rule: a change anywhere in the tree
+is a change to the structure. The rules in brief:
+
+- A change to any component increments the structure version. The
+  version belongs to the deal, not to the leg.
+- Authorisation does not increment it. Authorisation is metadata about
+  the deal, not a term of it.
+- An economic change is confirmable. A life-cycle event that the
+  contract already provides for is not.
+
+The full model, with the amend classification and the confirmable-event
+list, is on [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]].
+
+** Structure operations
+
+| Operation | What it does | Economic effect |
+|-----------+--------------+-----------------|
+| Create from existing trades | Assemble a structure from trades already booked | None until the structure is confirmed |
+| Unstructure | Drop the structure and keep the legs as independent trades | None; presentation only |
+| Split (allocate) | Give part of a trade or a structure to another book or account | None; ownership only |
+| Merge (aggregate, net) | Combine trades into one trade, or into a netted position | Yes; the old trades close and a new one opens |
+| Link / unlink | Attach or detach a trade from a structure or from another trade | None; the link carries no cash flow |
+| Lock / unlock | Freeze a structure against edits | None |
+| Roll / restructure | Replace the current version with a new one | Yes; a confirmable amendment |
+
+The table separates two kinds of operation that look alike in a UI.
+Split, link, unstructure and lock change only what the system records
+about the deal. Merge, roll and any change to a term change the deal
+itself, and they travel to the customer as a confirmation.
+
+** Linkages between trades
+
+Structures are the strongest form of linkage between trades, but not
+the only one. Trading systems record a family of links. Each link has a
+cause and an economic effect, and the two are not the same thing.
+
+| Linkage | Cause | Economic effect |
+|---------+-------+-----------------|
+| Close-out, full or partial | The parties agree to end a trade early | Yes; the trade terminates or downsizes |
+| Novation or assignment | One party transfers its position to a third party | Yes; the counterparty changes |
+| Roll or restructure | The parties replace the deal with a new one | Yes; a new version supersedes the old |
+| Partial exercise | The holder exercises part of a deal | Yes; the exercised part settles and the rest continues |
+| Expiry and exercise | The contract reaches a date in its terms | Yes |
+| Netting | The parties agree to settle amounts net | No; settlement mechanics only |
+| Tom/Next funding | The desk funds a currency position overnight | No; funding mechanics only |
+| Spot sweep | The desk sweeps residual currency balances | No; cash management only |
+| End-of-month and start-of-year cleardown | The desk resets positions at a period boundary | No |
+| NDF fixing | The rate for a non-deliverable forward is fixed | No; the trade already provides for it |
+| Wash or back-to-back | The desk offsets a position with a matching trade | No; risk routing only |
+| Hedge link | The desk marks a trade as the hedge of another trade | No |
+| User-defined link | A user records an arbitrary association | No |
+
+The right-hand column is the one that decides behaviour. A link with an
+economic effect is a trade event: it changes the deal, it carries a
+version, and it may need a confirmation. A link with no economic effect
+is an annotation: it is recorded, displayed and reported, and it changes
+no term.
+
+Novation deserves one further note, because it changes the parties
+rather than the terms. Under the ISDA Master Agreement a party may not
+transfer its interest without the prior written consent of the other
+party, and the 2005 ISDA Novation Protocol sets a same-day consent
+process between the transferor, the transferee and the remaining party.
+The substance is that a novation is a new legal relationship, not an
+edit to an existing one, and a system that models it as an edit loses
+the audit trail.
+
+[[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] describes these operations as the front office sees
+them: Link / Unlink, Allocate (Split), Aggregate / Net, and Roll
+Forward.
+
+** Portfolio-level composition: compression and tear-ups
+
+The largest composition operation runs across portfolios rather than
+inside one deal.
+
+Portfolio compression, also called a tear-up, terminates trades that
+offset each other and replaces them with a smaller set that carries the
+same net risk. TriOptima introduced the practice to the interest rate
+swap market in 2003 through its triReduce service, and it runs cycles
+for trades cleared at LCH SwapClear. ISDA reported $164 trillion of
+notional eliminated industry-wide through compression by the end of
+2011, and LCH announced that SwapClear had compressed over $1
+quadrillion of notional by 2016.
+
+Compression is the clearest case for treating a composition change as
+one atomic event. The ISDA Common Domain Model states the same rule:
+compression downsizes or terminates several trades while it creates
+new ones, and those primitive changes happen together or not at all. A
+system that applies them one at a time exposes a book that never
+existed.
+
+Compression also breaks the identifier chain, by design. Under the
+CPMI-IOSCO guidance on the unique transaction identifier, a new UTI is
+required when a transaction is replaced by one or more other
+transactions, including through compression, allocation or a change of
+counterparty, while a pure amendment keeps the existing UTI. The
+original UTI stays with the original trade. Clearing houses keep the
+link explicit: Eurex records the superseded identifier in a
+=priorUTI= field on the new trade.
+
+Both obligations pull in the same direction for us. Keep the successor
+link on the replacement trade, and never reuse an identifier.
+
+** What the customer sees
+
+The customer sees the structure, not the legs. The confirmation, the
+statement and the reporting describe one deal with one set of terms.
+Two consequences follow for the trade model:
+
+- A structure is confirmed as a whole. A partial confirmation of the
+  parts would leave the customer's record and ours describing different
+  deals.
+- Presentation terms belong to the structure. Zero-premium quotes,
+  budget rates and protection and participation axes are ways of
+  describing the deal to the customer. They are not legs.
+
+The confirmation side of this is on
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]].
+
+** Naming across systems
+
+The concepts on this page are industry-wide, and the names differ.
+
+| Concept | Name in the source we follow |
+|---------+------------------------------|
+| Same-family structure | FpML =strategy=; a "combination" in several front-office systems |
+| Multi-leg container | FpML =tradePackage=; a package in post-trade messaging |
+| Leg | FpML =product= child of a strategy; =SwapLeg= and =ResolvedSwapLeg= in OpenGamma Strata |
+| Untyped container | ORE =CompositeTrade=; portfolio basket in ORE and FpML |
+| Composition change | A business event made of primitive instructions in the ISDA CDM |
+| Replacing trades without changing net risk | Compression; a tear-up in interest rate and credit markets |
+
+Vendor front-office systems agree on the verbs even where they differ
+on the nouns. The published Calypso and Nasdaq training catalogue names
+the same life-cycle events we do, including ALLOCATION, MATURE, RATE
+RESET, ROLLOVER and TERMINATION, and it names single-leg trade capture
+as its own topic. Murex markets MX.3 with a structuring tool and life
+cycle management at both bulk and trade level. Neither point needs more
+than this: the vocabulary on this page is the vocabulary of the market,
+not a local dialect.
+
+** In ORE Studio
+
+The trading component has no object graph today. Its entities are
+separate tables, and
+[[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] records the consequence:
+ownership and aggregate versioning do not exist as model concepts, and
+the composite as-of read is a temporal join over keys rather than a
+version on the parent.
+
+The pieces that exist:
+
+- =CompositeTrade= is our untyped structure today. It bundles component
+  trades into one position, reports one NPV in one currency, and
+  aggregates the notional of its components by a chosen method. See
+  [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]].
+- The trade blotter shows a structure view: structures collapse to one
+  header row with a disclosure triangle, and the structure view tabs the
+  legs by type. See [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
+- Reference data uses aggregate versioning: a write to a child bumps
+  the parent's version in the same transaction, which makes "the
+  composite as of version N" a temporal window join. See
+  [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]].
+
+The target for trading follows the relational reading instead. A
+composite instrument is =composite_instruments= rows and
+=composite_legs= rows joined by keys, a leg is keyed by its instrument
+and its leg sequence, and each entity versions on its own spine. The
+aggregate version of the reference-data model is deliberately not
+adopted for trading, because it is object-graph thinking. See
+[[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] for the review criteria that
+follow from this.
+
+Development on structures should ground on four rules:
+
+1. Every atomic trade gets a unique identifier, including premium,
+   brokerage and hedge legs.
+2. A structure references its legs by key. No parent owns a child.
+3. The structure version is read from the legs, not stored beside them.
+4. A link that carries an economic effect is a trade event; a link that
+   carries none is an annotation.
+
+** Sources
+
+- FpML, =strategy= element:
+  https://www.fpml.org/spec/fpml-5-8-6-tr-1/html/recordkeeping/schemaDocumentation/schemas/fpml-doc-5-8_xsd/elements/strategy.html
+- FpML 5, post-trade events (amendment, increase, termination, novation):
+  https://cdn.fpml.org/spec/fpml-5-11-7-rec-1/html/confirmation/schemaDocumentation/schemas/fpml-business-events-5-11_xsd/groups/PostTradeEventsBase.model.html
+- FpML 5.10, Messaging Framework:
+  https://www.fpml.org/docs/FpML5-messaging-framework-2.pdf
+- ISDA Common Domain Model, Event Model:
+  https://cdm.finos.org/docs/6.0.0/event-model/
+- OpenGamma Strata, =SwapLeg=:
+  https://strata.opengamma.io/apidocs/com/opengamma/strata/product/swap/SwapLeg.html
+- ISDA, Interest Rate Swaps Compression: A Progress Report (February
+  2012): https://www.isda.org/a/R0DDE/irs-compression-progress-report-feb-2012.pdf
+- LCH.Clearnet, TriOptima and SwapClear terminate USD interest rate
+  swaps (4 August 2011):
+  https://ftp.lchclearnet.com/media_centre/press_releases/2011-08-04.asp
+- CPMI-IOSCO, Harmonisation of the Unique Transaction Identifier:
+  Technical Guidance (28 February 2017):
+  https://www.bis.org/cpmi/publ/d158.htm
+- Eurex Clearing, change of unique transaction identifier (clearing
+  circular): https://www.eurex.com/ec-en/find/circulars/clearing-circular-3237254
+- ISDA, Novation Protocol: https://www.isda.org/traditional-protocol/isda-novation-protocol/
+- Murex, treasury management (MX.3 structuring and life cycle
+  management): https://www.murex.com/en/solutions/business-solutions/treasury-management
+- Nasdaq Calypso, learning catalogue (trade capture and structured
+  product life-cycle events): https://learncalypso.nasdaq.com/courses/how-to-videos
+
+* See also
+
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — the confirmation model
+  that a structure version drives.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the structure view, and the deal actions that
+  operate on a structure.
+- [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — ORE's untyped structure, and the notional
+  aggregation methods it offers.
+- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — why composition is
+  keys and joins, not an object graph.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-Oriented Design in ORE Studio]] — the review criteria that
+  follow from that model.
+- [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the
+  aggregate-versioning design used by reference data.
+- [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — why the version of a structure matters to the
+  attribution of a P&L move.
+- [[id:5FC58A79-DBC9-46AF-9AAA-2C80B3A47850][Books and portfolios]] — where structures sit in the book
+  hierarchy.

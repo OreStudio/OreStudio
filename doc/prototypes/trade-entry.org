@@ -20,9 +20,9 @@ The prototype is throwaway. It is not production code and it does not
 ship to users. It exists so that the layout and the behaviour can be
 argued about with something concrete in front of us.
 
-Open it at [[https://orestudio.github.io/OreStudio/doc/prototypes/trade-entry/][the booking screen]].
-The pricing screen is one click away, under *Price this structure*. From
-there, *New trade* starts a deal and *Book* brings it back.
+Open the [[file:trade-entry/][booking screen]]. The pricing screen is one click away,
+under *Price this structure*. From there, *New trade* starts a deal and
+*Book* brings it back.
 
 Everything on both screens is mock data, transcribed from
 =external/ore/examples/Products/Example_Trades=. Neither screen reads a
@@ -38,6 +38,13 @@ correctness and the validity of the booking.
 
 - *The structure panel.* A tree two levels deep: structure, group,
   component. A group carries a name, and components sit inside it.
+- *Two envelopes, in fixed positions.* Reference data is kept apart from
+  the economics, and it stays where it is. The structure carries an
+  envelope strip in the header: its identifier, counterparty, portfolio,
+  netting set, book and trade date. The selected component carries an
+  envelope block at the head of its panel, grouped under the field groups
+  of =ores.trading.trade= — identity, classification, parties, lifecycle
+  and audit. The instrument form below carries the instrument only.
 - *The mode switch.* Strategy mode fixes the leg set and enforces the
   strategy's invariant. Package mode offers every product type and
   enforces nothing structural.
@@ -47,6 +54,13 @@ correctness and the validity of the booking.
   option opens a schedule and an expiry, a swap opens a two-leg schedule
   and its cashflows, and a composite opens its leg list. Every other
   choice opens the generic form.
+- *The instrument tabs.* The form is tabbed, and the tabs follow the
+  widget: terms, schedule and premium for the vanilla option, plus
+  barriers for the barrier option, and legs for the composite. Each tab
+  is one screen long, so no tab runs past the fold.
+- *The premium is a sub-leg.* It carries its own identifier, currency,
+  amount and payment date, and the option references it by key. It is not
+  a field on the option.
 - *The version header.* The structure version and the authorisation state
   sit beside the name.
 - *The initial NPV.* Read-only, with its provenance beside it: the as-of

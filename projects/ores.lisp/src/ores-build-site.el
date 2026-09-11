@@ -154,6 +154,7 @@
         <li><a href='/OreStudio/doc/agile/agile.html'>Agile</a></li>
         <li><a href='/OreStudio/agile/index.html'>Agile Board</a></li>
         <li><a href='/OreStudio/doc/llm/llm.html'>LLMs</a></li>
+        <li><a href='/OreStudio/doc/prototypes/index.html'>Prototypes</a></li>
       </ul>
     </div>
     <div class='nav-group'>
@@ -164,7 +165,6 @@
         <li><a href='/OreStudio/graph/index.html'>Knowledge Graph</a></li>
       </ul>
     </div>
-    <a href='/OreStudio/doc/prototypes/index.html'>Prototypes</a>
     <a href='/OreStudio/doc/downloads.html'>Downloads</a>
     <a href='https://github.com/OreStudio/OreStudio' aria-label='GitHub' title='GitHub'><i class='fab fa-github'></i></a>
   </nav>

@@ -75,9 +75,10 @@ adds no machinery. It does three things.
    relative link is not usable: org exports =[[/OreStudio/...]]= as
    =file:///OreStudio/...=, which is dead.
 
-3. *Link it from the nav.* One top-level anchor in =site-html-preamble=,
-   beside Home and Downloads, so the gallery is visible without opening a
-   dropdown.
+3. *Link it from the nav.* One entry in =site-html-preamble=. It started
+   as a top-level anchor beside Home and Downloads. The user moved it into
+   the *Developer* menu, beside Guide, Recipes and Agile, because a
+   prototype is a developer artifact and not a top-level destination.
 
 * Notes
 
@@ -139,7 +140,8 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The description page linked the prototype with an absolute =https://orestudio.github.io/= URL. It 404s until the pull request merges, and it never resolves on the local preview or from a =file://= open, so the same page worked in one place and failed in two others. | trade-entry.org | Accepted | The link is relative, =file:trade-entry/=, which is what the gallery already used. |
+| 2 | The *Prototypes* link was a top-level nav anchor. A prototype is a developer artifact, so it took a top-level slot from a destination that earns one. | ores-build-site.el | Accepted | The anchor moves into the *Developer* menu, beside Guide, Recipes and Agile. |
 
 * Result
 
@@ -154,8 +156,15 @@ The prototype, the page that describes it and the gallery all sit under
 | Description page | =/OreStudio/doc/prototypes/trade-entry.html=. |
 
 The gallery is one row per prototype, and the row links the app and the page
-that describes it. A top-level *Prototypes* link in the site nav opens it, so
-it is reachable from every page without opening a dropdown.
+that describes it. A *Prototypes* entry in the *Developer* nav menu opens it,
+so it is reachable from every page.
+
+Every link between these pages is relative — =file:trade-entry/= from the
+gallery, =file:trade-entry/= from the description page. A relative link
+resolves on the published site, on the local preview and on a =file://=
+open alike. An absolute link to =https://orestudio.github.io/= resolves on
+exactly one of those, and 404s on the other two until the pull request
+merges. The description page carried one, and it is fixed.
 
 The deploy call now names =doc/prototypes/trade-entry= as its destination.
 Nothing else in the deploy changed: the same =ores-deploy-web-app= copies the

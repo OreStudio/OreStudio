@@ -54,6 +54,17 @@
 #include "ores.refdata.api/generators/country_generator.hpp"
 #include "ores.refdata.core/repository/country_repository.hpp"
 {{/seed_parent_country_sentinel}}
+{{#seed_parent_currency}}
+// FK-parent aggregation-currency seed: a seeded portfolio parent's insert
+// trigger validates aggregation_ccy against the currencies table for the
+// write tenant, and the synthetic portfolio generator always emits the
+// X-0 sentinel -- the test seeds it before the parent write or the
+// parent insert is rejected. Like the entity-level currency seed, the
+// currency generator and repository are used regardless of the child's
+// generator facet, hence the fully-qualified refdata paths.
+#include "ores.refdata.api/generators/currency_generator.hpp"
+#include "ores.refdata.core/repository/currency_repository.hpp"
+{{/seed_parent_currency}}
 {{#seed_currency}}
 // Aggregation-currency seed ({{entity_title}}'s insert trigger validates
 // aggregation_ccy against the active currencies for the write tenant,
@@ -146,6 +157,9 @@ using ores::refdata::repository::country_repository;
 {{#seed_currency}}
 using ores::refdata::repository::currency_repository;
 {{/seed_currency}}
+{{#seed_parent_currency}}
+using ores::refdata::repository::currency_repository;
+{{/seed_parent_currency}}
 using ores::testing::scoped_database_helper;
 using namespace ores::logging;
 
@@ -307,6 +321,18 @@ TEST_CASE("write_{{entity_singular}}_publishes_nats_changed_event", tags) {
     country_repository parent_cty_repo;
     parent_cty_repo.write(party_ctx, {generate_country_sentinel(ctx)});
 {{/parent_seed_country_sentinel}}
+{{#parent_seed_currency}}
+    // The parent portfolio's insert trigger validates aggregation_ccy
+    // against the currencies table for the write tenant, and the
+    // synthetic portfolio generator always emits the X-0 sentinel --
+    // seed it before the parent write or the parent insert is rejected.
+    // Distinct name from the entity-level currency seed block: both are
+    // in scope when the entity also carries the seed_currency flag.
+    auto parent_ccy = generate_synthetic_currency(ctx);
+    parent_ccy.iso_code = "X-0";
+    currency_repository parent_ccy_repo;
+    parent_ccy_repo.write(party_ctx, {parent_ccy});
+{{/parent_seed_currency}}
     ores::{{component}}::repository::{{parent_entity_singular}}_repository {{column}}_repo;
     {{column}}_repo.write(party_ctx, {{column}}_parent);
     v.{{#is_identity_group_column}}identity.{{/is_identity_group_column}}{{column}} = {{column}}_parent.{{target_column}};

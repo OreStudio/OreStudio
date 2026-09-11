@@ -27,11 +27,14 @@ via self-referencing parent_portfolio_id.
 :seed_currency: true
 :END:
 
-=:seed_currency:=: the eventing integration test writes a synthetic
+=:seed_currency:=: the eventing integration fixtures write a synthetic
 portfolio whose aggregation currency the generator hardcodes as the
 synthetic currency generator's first code (X-0); the portfolios insert
 trigger validates =aggregation_ccy= against the active currencies for
-the write tenant — the test must seed that currency row.
+the write tenant — the fixtures must seed that currency row. The flag
+also drives the FK-parent seed block: a child whose
+=parent_portfolio_id= FK points here seeds that currency before writing
+the parent row.
 
 * Columns
 
@@ -152,11 +155,12 @@ Currency for P&L/risk aggregation at this node.
 ISO 4217 currency code.
 
 #+begin_src cpp :name generator
-// "X-0" is the first code the synthetic currency generator emits: the
-// aggregation-currency validation accepts only codes of active
-// currencies, and every test tenant inherits the system tenant's
-// accumulated active set, which always contains X-0 (every generator
-// process starts its counter at zero).
+// X-0 is the sentinel code the eventing integration fixtures seed
+// before writing this row, directly or through a child's FK-parent
+// seed: the aggregation-currency trigger accepts only codes of active
+// currencies for the write tenant, so no fixed code is valid on its own
+// and the seed must come first. A caller that does not seed it must
+// overwrite this with a code it has written, or the insert is rejected.
 std::string("X-0")
 #+end_src
 

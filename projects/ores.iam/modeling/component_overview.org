@@ -12,6 +12,7 @@
 #+full_name: ores.iam
 #+brief: Identity and access management component
 #+component_kind: composite
+#+parts: api client core service
 
 * Summary
 

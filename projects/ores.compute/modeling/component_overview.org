@@ -12,6 +12,7 @@
 #+full_name: ores.compute
 #+brief: Distributed compute grid component
 #+component_kind: composite
+#+parts: api client core service wrapper
 
 * Summary
 

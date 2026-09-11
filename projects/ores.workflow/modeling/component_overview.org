@@ -12,6 +12,7 @@
 #+full_name: ores.workflow
 #+brief: Workflow orchestration service component
 #+component_kind: composite
+#+parts: api core service
 
 * Summary
 

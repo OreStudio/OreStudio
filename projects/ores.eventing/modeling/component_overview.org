@@ -4,6 +4,8 @@
 #+title: ores.eventing
 #+name: eventing
 #+full_name: ores.eventing
+#+component_kind: composite
+#+parts: api core modeling
 #+description: In-process pub/sub event bus with PostgreSQL LISTEN/NOTIFY bridge for cross-service domain events.
 #+type: ores.codegen.component
 #+level: cross

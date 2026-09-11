@@ -12,6 +12,7 @@
 #+full_name: ores.refdata
 #+brief: Reference-data domain component
 #+component_kind: composite
+#+parts: api client core service
 
 * Summary
 

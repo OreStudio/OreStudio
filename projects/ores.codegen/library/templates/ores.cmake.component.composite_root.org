@@ -1,0 +1,50 @@
+:PROPERTIES:
+:ID: 400B9A29-04EA-4B44-A416-EEBCFAC1EAA7
+:END:
+#+title: ores.cmake.component.composite_root
+#+description: The composite root =CMakeLists.txt=: adds the component's parts and nothing else. Output =projects/{component_dir}/CMakeLists.txt=.
+#+type: archetype
+#+output: projects/{component_dir}/CMakeLists.txt
+#+facet: ores.cmake.component
+#+component_kind: composite
+#+level: cross
+#+filetags: :codegen:templates:literate:archetype:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+The composite root =CMakeLists.txt=: adds the component's parts and
+nothing else. A composite owns no code, so this is the only file it
+generates.
+
+=projects/CMakeLists.txt= adds the component, and the component adds
+its parts, so a component's parts are listed in exactly one place.
+
+Part order is declared in the model's =#+parts:= rather than derived,
+because dependency order is not alphabetical: =ores.qt= needs
+=headless= and =api= ahead of the plugins that link them, and a
+composite whose =modeling/= carries its own =CMakeLists.txt= lists
+=modeling= among its parts.
+
+See the [[id:C4E8A91F-3B7D-4F2E-85A6-1D9C7E3B2F4A][Template variable reference]] for the complete list of available
+variables and their semantics.
+
+* Template
+
+The full template source. Edit here and re-tangle with
+=compass build --direct tangle_codegen_templates= to regenerate
+=library/templates/cmake_composite_root.mustache=.
+
+#+begin_src mustache :tangle cmake_composite_root.mustache
+{{! GENERATED FILE — tangled from projects/ores.codegen/library/templates/ores.cmake.component.composite_root.org. Edit the org source. }}
+{{{cmake_license}}}
+{{#component}}
+{{#parts}}
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/{{part}})
+{{/parts}}
+{{/component}}
+#+end_src
+
+* See also
+
+- Parent facet: [[id:4A3D3B2C-B4EC-46D7-BFF1-816A41896199][ores.cmake.component]]
+- [[id:9D61216E-4B20-4326-9547-FB93B34DB24B][ores.cmake.component.root]] — the part-level counterpart, which descends into =src/=, =tests/= and =modeling/=.

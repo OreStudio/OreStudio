@@ -64,9 +64,19 @@ Current simple components:
 
 A parent directory =projects/ores.<group>/= contains child sub-component
 directories (short names: =api=, =core=, =service=, …). Each child is an
-independent CMake target. The parent directory holds no CMakeLists.txt of its
-own (decision D5, sprint 19 PR #997). When writing about architecture, say
+independent CMake target. When writing about architecture, say
 *composite component* rather than "component with sub-components" or "component group".
+
+The parent holds a =CMakeLists.txt= whose whole job is to add its
+parts, and =projects/CMakeLists.txt= adds the component rather than
+each part, so the parts of a component are listed in exactly one
+place. This reverses decision D5 (sprint 19, PR #997), which had the
+parent hold no =CMakeLists.txt= and every part registered at the
+projects level.
+
+The tree is part-way through that change. =ores.analytics= and
+=ores.eventing= are component-level; the other 18 composites still
+register each part in =projects/CMakeLists.txt=.
 
 Sub-component names follow the conventions in [[* Sub-component catalogue]].
 Child CMake targets keep the fully-qualified name: =ores.<group>.api=,

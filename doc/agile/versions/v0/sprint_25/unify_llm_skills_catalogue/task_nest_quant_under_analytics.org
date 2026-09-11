@@ -84,7 +84,8 @@ via its "Verifies task" field.
 | 1 | The move-is-free claim is structurally true, not just true for the units compiled: the part's CMakeLists sets the target name as a literal and derives includes from =CMAKE_CURRENT_SOURCE_DIR=, so neither can change with the directory | — | Accept | No change. Stronger than my evidence: I showed it held for 61 units and one cross-component consumer, the reviewer showed it cannot fail |
 | 2 | The role description names the wrong consumers. =ores.analytics.core= does not link quant at all; the real consumers are =ores.refdata.core=, the =ores.synthetic= api and service, =ores.marketdata.service= and two =ores.qt= plugins | component_architecture.org | Accept | Verified against every =target_link_libraries= before changing it. I wrote "by =core=" from quant's own overview rather than from the build, and it reads as the sibling core in the same composite, which is exactly wrong. Corrected, and the sharper fact is now recorded: no part of =ores.analytics= links quant |
 | 3 | The overview still said three sub-components while its table listed four | component_overview.org | Accept | Corrected. A doc-drift instance of the kind the audit exists to catch, introduced by me in the same commit that added the fourth row |
-| 4 | Nothing else in =docs_exceptions.txt= hides a shape problem: =NAME_COLLISION= is the only code meaning the tree shape is wrong, and the deleted entry was the only one | — | Accept | No change. This answers the question I asked directly, and narrows the follow-up task to enforcement rather than a hunt |
+| 4 | Operator: =projects/CMakeLists.txt= should add the component, and the component should add its parts — follow the existing pattern | projects/CMakeLists.txt, ores.analytics/CMakeLists.txt | Accept | =ores.eventing= is that pattern and was the only composite using it. =ores.analytics= now has a root CMakeLists adding api, core, quant and service, and the projects level adds the component. This reverses recorded decision D5, so the two documents that stated D5 are corrected and the 18 composites still on the old shape are filed |
+| 5 | Nothing else in =docs_exceptions.txt= hides a shape problem: =NAME_COLLISION= is the only code meaning the tree shape is wrong, and the deleted entry was the only one | — | Accept | No change. This answers the question I asked directly, and narrows the follow-up task to enforcement rather than a hunt |
 
 * Result
 
@@ -120,6 +121,15 @@ and none at the old one; a quant unit compiles, and so does a
 =ores.marketdata= consumer that includes quant headers across the
 component boundary, which is what proves the include prefix survived
 the move.
+
+The CMake registration changed shape during review. The parts were
+added individually at the projects level, which is what 18 other
+composites do and what decision D5 recorded, but =ores.eventing=
+already showed the better shape: the projects level adds the
+component, and the component adds its parts, so a component's parts
+are listed in one place. =ores.analytics= now does that. The decision
+is reversed in the two documents that stated it, and converting the
+remaining composites is filed rather than done here.
 
 Review turned up something the move itself does not settle. No part
 of =ores.analytics= links =quant=: every consumer is in another group

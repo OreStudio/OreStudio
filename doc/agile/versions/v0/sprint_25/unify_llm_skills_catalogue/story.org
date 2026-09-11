@@ -110,6 +110,7 @@ Tasks are listed in intended execution order.
 | [[id:294FFF1A-E70B-489A-B7A3-40F57528B46E][Resync the job_definition model with its hand-written code]] | BACKLOG | | | The scheduler model's column shapes do not match the hand-written struct, so regenerating emits wrong types rather than wrong formatting; the model must be corrected before any facet can be regenerated. |
 | [[id:82B0DD7E-4DB1-4F99-AF73-6FBB6C258786][Nest quant under analytics and register the role]] | DONE | 2026-09-11 | 2026-09-11 | ores.analytics.quant sits as a dotted sibling where the signed-off layout is nested parts under a composite root, and quant is in neither the sub-component catalogue nor the signed-off folder catalogue. |
 | [[id:C8C1316A-07A5-47E2-9077-FF0664C511AF][Run the component architecture audit in CI]] | BACKLOG | | | validate_docs.py is the audit's automated half and no workflow runs it; its exception file kept a real finding quiet until someone looked by hand. |
+| [[id:4B43941A-957B-4FC9-82BD-AB131F541825][Register composite parts in their component CMakeLists]] | BACKLOG | | | Eighteen composites still register each part in projects/CMakeLists.txt; the target shape adds the component there and its parts in the component's own CMakeLists. |
 
 * Decisions
 

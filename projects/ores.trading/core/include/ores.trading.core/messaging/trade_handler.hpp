@@ -31,20 +31,12 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
-#include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
-#include "ores.trading.core/repository/parent_scoped_queries.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
-#include "ores.trading.core/service/ascot_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
-#include "ores.trading.core/service/bond_future_service.hpp"
-#include "ores.trading.core/service/bond_instrument_service.hpp"
-#include "ores.trading.core/service/bond_issue_service.hpp"
-#include "ores.trading.core/service/bond_option_service.hpp"
-#include "ores.trading.core/service/bond_repo_service.hpp"
-#include "ores.trading.core/service/bond_trs_service.hpp"
+#include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
@@ -117,10 +109,6 @@ private:
         using ores::trading::domain::trade_instrument;
         using ores::trading::domain::swap_instrument_data;
         using ores::trading::domain::composite_instrument_data;
-        using ores::trading::domain::bond_instrument_data;
-        using ores::trading::domain::bond_issue;
-        using ores::trading::domain::bond_issue_call_date;
-        using ores::trading::domain::bond_issue_conversion_target;
 
         // Phase 1: bucket instrument IDs by (product_type, trade_type)
         std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
@@ -264,66 +252,9 @@ private:
         };
 
         if (!bond_ids.empty()) {
-            // Assemble each header row with its issue row (shared by every
-            // instrument of one ISIN), the issue's child rows and the
-            // product's fact row, which the export path reads back from the
-            // container.
-            service::bond_instrument_service svc(ctx);
-            service::bond_issue_service issue_svc(ctx);
-            service::bond_option_service option_svc(ctx);
-            service::bond_trs_service trs_svc(ctx);
-            service::bond_repo_service repo_svc(ctx);
-            service::bond_future_service future_svc(ctx);
-            service::ascot_service ascot_svc(ctx);
-
-            auto rows = svc.get_bond_instruments(bond_ids);
-
-            std::unordered_map<std::string, bond_issue> issue_cache;
-            std::vector<std::string> issue_ids;
-            for (const auto& v : rows) {
-                const auto issue_id = boost::uuids::to_string(v.issue_id);
-                if (issue_cache.contains(issue_id))
-                    continue;
-                if (auto issue = issue_svc.get_issue(issue_id))
-                    issue_cache[issue_id] = *issue;
-                issue_ids.push_back(issue_id);
-            }
-
-            std::unordered_map<std::string, std::vector<bond_issue_call_date>> call_dates;
-            for (auto& row : repository::read_call_dates_by_issue_ids(ctx, issue_ids))
-                call_dates[boost::uuids::to_string(row.issue_id)].push_back(std::move(row));
-
-            std::unordered_map<std::string, std::vector<bond_issue_conversion_target>>
-                conversion_targets;
-            for (auto& row : repository::read_conversion_targets_by_issue_ids(ctx, issue_ids))
-                conversion_targets[boost::uuids::to_string(row.issue_id)].push_back(
-                    std::move(row));
-
-            for (auto& v : rows) {
-                const auto id = boost::uuids::to_string(v.identity.instrument_id);
-                const auto issue_id = boost::uuids::to_string(v.issue_id);
-                bond_instrument_data data;
-                data.instrument = std::move(v);
-                if (auto it = issue_cache.find(issue_id); it != issue_cache.end())
-                    data.issue = it->second;
-                if (auto it = call_dates.find(issue_id); it != call_dates.end())
-                    data.call_dates = std::move(it->second);
-                if (auto it = conversion_targets.find(issue_id); it != conversion_targets.end())
-                    data.conversion_targets = std::move(it->second);
-
-                const auto& ttc = data.instrument.identity.trade_type_code;
-                if (ttc == "BondOption")
-                    data.option = option_svc.get_option(id);
-                else if (ttc == "BondTRS")
-                    data.trs = trs_svc.get_trs(id);
-                else if (ttc == "BondRepo")
-                    data.repo = repo_svc.get_repo(id);
-                else if (ttc == "BondFuture")
-                    data.future = future_svc.get_future(id);
-                else if (ttc == "Ascot")
-                    data.ascot = ascot_svc.get_ascot(id);
+            service::bond_instrument_reader reader(ctx);
+            for (auto& [id, data] : reader.read_instruments(bond_ids))
                 imap[id] = std::move(data);
-            }
         }
         if (!credit_ids.empty()) {
             service::credit_instrument_service svc(ctx);

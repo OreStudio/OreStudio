@@ -7,6 +7,6 @@
 connect $ORES_NATS_URL
 login tenant_admin@acme_corporation Secure-Password-123
 ore upload $ORE_ROUNDTRIP_DIR/source --request-id $ORE_ROUNDTRIP_REQUEST_ID
-ore import $ORE_ROUNDTRIP_REQUEST_ID
+ore import $ORE_ROUNDTRIP_REQUEST_ID --parent-portfolio-name ore_roundtrip_${ORE_ROUNDTRIP_REQUEST_ID}
 ore export $ORE_ROUNDTRIP_DIR/output/portfolio_roundtrip.xml
 logout

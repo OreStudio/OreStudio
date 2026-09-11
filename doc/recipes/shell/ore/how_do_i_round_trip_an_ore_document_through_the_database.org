@@ -43,7 +43,7 @@ from =$ORE_ROUNDTRIP_DIR/source= and writes the result to
 connect $ORES_NATS_URL
 login tenant_admin@acme_corporation Secure-Password-123
 ore upload $ORE_ROUNDTRIP_DIR/source --request-id $ORE_ROUNDTRIP_REQUEST_ID
-ore import $ORE_ROUNDTRIP_REQUEST_ID
+ore import $ORE_ROUNDTRIP_REQUEST_ID --parent-portfolio-name ore_roundtrip_${ORE_ROUNDTRIP_REQUEST_ID}
 ore export $ORE_ROUNDTRIP_DIR/output/portfolio_roundtrip.xml
 logout
 exit
@@ -61,6 +61,14 @@ makes of the returned items.
 
 The import uses its default choices and the logged-in account's default
 party. Pass =--choices-file= or =--party-id= to override either.
+
+=--parent-portfolio-name= names the portfolio that wraps the imported
+books. A book cannot stand without a portfolio above it, and a flat
+upload has no portfolio directory in its tree, so the name is what the
+import builds that portfolio from. The name carries the request id,
+because the database holds one live portfolio per name and party, and
+the script must stay runnable against a database that already holds a
+previous run's portfolio.
 
 The whole run, staging and diff included:
 

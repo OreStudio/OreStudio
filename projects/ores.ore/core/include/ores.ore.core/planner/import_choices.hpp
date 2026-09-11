@@ -79,6 +79,11 @@ struct import_choices {
 
     /**
      * @brief Name for the optional wrapping parent portfolio.
+     *
+     * The wrapping portfolio needs this name to be built. A book at the
+     * top of the scanned tree has no portfolio above it, and the database
+     * rejects a book with no parent portfolio, so an import over such a
+     * tree must name the wrapping portfolio.
      */
     std::string parent_portfolio_name;
 

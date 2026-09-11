@@ -92,12 +92,18 @@ public:
      * @param choices_file Path to a JSON-serialised import_choices; the
      *                     server's defaults when empty, which is every
      *                     field except the party.
+     * @param parent_portfolio_name Name of the portfolio that wraps the
+     *                 imported books. Overrides the choices file. An
+     *                 upload with no portfolio directory above its books
+     *                 needs a name here, because a book cannot stand
+     *                 without a portfolio.
      */
     static void process_import(std::ostream& out,
                                ores::nats::service::nats_client& session,
                                const std::string& request_id,
                                const std::string& party_id,
                                const std::string& choices_file,
+                               const std::string& parent_portfolio_name,
                                std::chrono::seconds timeout);
 
     /**

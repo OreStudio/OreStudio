@@ -97,6 +97,7 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
             auto parsed = parse_args(args,
                                      {{.name = "party-id", .requires_value = true},
                                       {.name = "choices-file", .requires_value = true},
+                                      {.name = "parent-portfolio-name", .requires_value = true},
                                       {.name = "timeout",
                                        .requires_value = true,
                                        .default_value = std::to_string(default_import_timeout.count())}});
@@ -106,7 +107,8 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
             }
             if (parsed->positionals.size() != 1) {
                 fail(out) << "Usage: ore import <request_id> [--party-id <uuid>] "
-                             "[--choices-file <path>] [--timeout <seconds>]"
+                             "[--parent-portfolio-name <name>] [--choices-file <path>] "
+                             "[--timeout <seconds>]"
                           << std::endl;
                 return;
             }
@@ -123,10 +125,12 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
                            parsed->positionals.front(),
                            parsed->flag("party-id"),
                            parsed->flag("choices-file"),
+                           parsed->flag("parent-portfolio-name"),
                            *timeout);
         },
         "Import an uploaded ORE tarball and wait for the workflow to finish",
-        {"request_id [--party-id <uuid>] [--choices-file <path>] [--timeout <seconds>]"});
+        {"request_id [--party-id <uuid>] [--parent-portfolio-name <name>] "
+         "[--choices-file <path>] [--timeout <seconds>]"});
 
     ore_menu->Insert(
         "export",
@@ -200,6 +204,7 @@ void ore_commands::process_import(std::ostream& out,
                                   const std::string& request_id,
                                   const std::string& party_id,
                                   const std::string& choices_file,
+                                  const std::string& parent_portfolio_name,
                                   std::chrono::seconds timeout) {
     ores::ore::planner::import_choices choices;
 
@@ -217,6 +222,13 @@ void ore_commands::process_import(std::ostream& out,
             return;
         }
         choices = std::move(*parsed);
+    }
+
+    // The flag wins over the file, so a caller can name the wrapping
+    // portfolio without writing a choices file.
+    if (!parent_portfolio_name.empty()) {
+        choices.parent_portfolio_name = parent_portfolio_name;
+        choices.create_parent_portfolio = true;
     }
 
     const auto& party_ref = party_id.empty() ? session.auth().default_party_id : party_id;

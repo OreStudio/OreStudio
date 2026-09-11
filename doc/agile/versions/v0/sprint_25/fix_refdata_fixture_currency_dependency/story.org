@@ -1,0 +1,65 @@
+:PROPERTIES:
+:ID: D0695476-CC9F-4F3C-8752-36321D163C1C
+:END:
+#+title: Story: refdata fixtures depend on a currency row no fixture writes
+#+description: The synthetic book and portfolio generators hardcode the currency code X-0, on the false assumption that every test tenant's active set contains it. Only the first synthetic-currency call in a process emits X-0, and only for the tenant that call is written under, so the row is often absent. write_book_publishes_nats_changed_event then fails under full-suite ordering with Invalid currency: X-0.
+#+type: story
+#+level: s2
+#+filetags: :refdata:testing:sprint_25:v0:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+No refdata fixture depends on synthetic state another test may or may not have written: every currency code a fixture references is seeded by that same fixture.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                                 |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Complete.                              |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing.                               |
+| Last touched  | 2026-09-11                               |
+
+* Acceptance
+
+- The book and portfolio generators carry no invented parent code, and their comments state the real rule.
+- Every fixture that writes a generated book or portfolio seeds each currency that row references.
+- ores.refdata.core.tests and the full suite pass, and no suite depends on the synthetic-currency counter's first value.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:DA43BCDB-356E-4B39-A9B1-756BA6FF0D1D][Seed every currency the refdata fixtures reference]] | DONE | 2026-09-11 | 2026-09-11 | The eventing-test template seeds a soft-FK parent's own mandatory soft FKs and its country sentinel, but not the currency the parent's insert trigger validates. Adds a parent_seed_currency block to the template, wired through core.py, and corrects the generator comments that claimed every tenant already holds X-0. |
+
+* Decisions
+
+** The fix belongs in the eventing-test template, not in the generated files
+
+The test and the generators are codegen output: the test comes from
+=cpp_nats_integration_test.cpp.mustache=, tangled from
+=ores.cpp.eventing-integration-test.nats_integration_test.org=, and the
+generators from the entity orgs. An edit to a generated file is lost on
+the next regeneration, so the seed went into the template and its flag
+into =core.py=, and both entities were then regenerated.
+
+** X-0 stays, as a documented sentinel
+
+Emptying the generators' currency field was the alternative. The column
+is non-nullable, no fixture can rely on a fixed code being valid, and
+the fixtures overwrite or seed the field anyway. So the generators keep
+X-0 and the comments now state what it is: a sentinel the fixtures seed,
+not a code the tenant is guaranteed to hold. The old comments asserted
+the opposite, and that false invariant is what hid the flake.
+
+* Out of scope
+
+-

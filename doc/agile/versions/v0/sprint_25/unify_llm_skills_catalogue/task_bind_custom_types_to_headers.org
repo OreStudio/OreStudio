@@ -26,11 +26,11 @@ Declaring a registered custom type in a column is enough; codegen supplies the h
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                                |
+| State        | DONE                                |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Building the registry.                 |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-12                               |
 
 * Acceptance
@@ -42,6 +42,19 @@ Declaring a registered custom type in a column is enough; codegen supplies the h
 - cron_expression is registered, proving the mechanism on the type that motivated it.
 
 * Plan
+
+Find out whether the mechanism is needed before designing one. The
+survey settled it: eight custom types are already in use across the
+corpus — four domain enums, the =tenant_id= value type,
+=year_month_day=, and both spellings of =product_type= — and each one
+has its header written out by hand in the entity that uses it. The
+loader's own comment already named the case it could not derive.
+
+Design for byte-identity. Anything that reorders existing include
+lists rewrites 171 models, so the mechanism adds only what is missing.
+That also makes the first verification meaningful: if regeneration is
+unchanged, the registry agrees with every include a human wrote.
+
 
 (Implementation strategy. Written when work starts; key decisions
 are distilled into the parent story's =* Decisions= at close, but the
@@ -73,3 +86,46 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All five acceptance criteria are met.
+
+=projects/modeling/cpp_custom_types.org= registers nine types against
+the headers that define them. A column declaring a registered type
+pulls its header in, and wrapped forms resolve to the same header
+because the wrapper is not what needs including.
+
+Eight of the nine were already in use and had their headers written
+out by hand. =cron_expression= is the ninth, registered for the
+scheduler resync that motivated the task.
+
+Verified two ways, because either alone proves half of it.
+Regenerating all eight registry components is byte-identical, so the
+registry agrees with every include a human wrote and nothing existing
+moved. Then deleting the =asset_class= include from =feed_binding='s
+model and regenerating =marketdata= left the generated header
+unchanged and still including it — the registry supplied what the
+model stopped declaring, which the byte-identical run cannot show.
+
+Nine tests cover it. One earned its place on the first run: checking
+that every registered header exists on disk caught that a simple
+component nests one level shallower than a part of a composite.
+
+The registry rejects binding one type to two headers. A bare
+=domain::= name is component-relative rather than globally unique, so
+an ambiguity introduced later has to fail rather than resolve to
+whichever row comes first.
+
+* Audit
+
+Run before closing, per the trigger this task tightened.
+
+The components touched are =ores.codegen= and =projects/modeling=.
+=ores.codegen= is a tool component, and the audit is explicit that
+tool components keep their own documented trees rather than the
+api/core/service shape its checklist governs, so the C++ component
+checklist does not apply to it. The automated half passes: 43
+components, no findings. =projects/modeling= is a modeling directory
+rather than a component and the audit does not cover it.
+
+No C++ domain component was touched, so no component audit was due
+beyond this.

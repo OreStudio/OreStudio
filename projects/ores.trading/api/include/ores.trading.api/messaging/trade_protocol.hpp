@@ -22,8 +22,10 @@
 
 #include "ores.trading.api/domain/activity_type.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include "ores.trading.api/messaging/instrument_protocol.hpp"
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -44,10 +46,15 @@ struct get_activity_types_response {
  *
  * The instrument field is monostate when the trade has no linked instrument
  * or the product_type is unrecognised.
+ *
+ * The envelope holds the trade-level data the product tables do not: the
+ * counterparty name, the netting set id, the portfolio id labels and the
+ * document's additional fields. It is absent when the trade has none.
  */
 struct trade_export_item {
     ores::trading::domain::trade trade;
     ores::trading::domain::trade_instrument instrument;
+    std::optional<ores::trading::domain::trade_envelope_data> envelope;
 };
 
 /**

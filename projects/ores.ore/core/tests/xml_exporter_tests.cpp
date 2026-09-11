@@ -317,7 +317,32 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
     CHECK(xml.contains("Euro-Bund-Future"));
 }
 
-TEST_CASE("export_portfolio_monostate_items_are_skipped", tags) {
+TEST_CASE("export_portfolio_unmapped_trade_keeps_its_type_and_envelope", tags) {
+    auto lg(make_logger(test_suite));
+
+    trade_export_item item;
+    item.trade.identity.external_id = "FlexiSwap001";
+    item.trade.classification.trade_type = "FlexiSwap";
+    // instrument left as monostate: no reverse mapper exists for this type
+
+    ores::trading::domain::trade_envelope_data env;
+    env.counter_party = "CPTY";
+    env.netting_set_id = "NS";
+    item.envelope = env;
+
+    const auto xml = exporter::export_portfolio({item});
+    BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
+
+    // The schema makes the product data optional, so the trade goes out as
+    // its type and its envelope rather than being dropped whole.
+    CHECK(xml.contains("FlexiSwap001"));
+    CHECK(xml.contains("<TradeType>FlexiSwap</TradeType>"));
+    CHECK(xml.contains("<CounterParty>CPTY</CounterParty>"));
+    CHECK(xml.contains("<NettingSetId>NS</NettingSetId>"));
+    CHECK(!xml.contains("<SwapData>"));
+}
+
+TEST_CASE("export_portfolio_unknown_type_is_skipped", tags) {
     auto lg(make_logger(test_suite));
 
     trade_export_item item;
@@ -328,6 +353,7 @@ TEST_CASE("export_portfolio_monostate_items_are_skipped", tags) {
     const auto xml = exporter::export_portfolio({item});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;
 
+    // A type the schema does not name leaves no valid document to write.
     CHECK(!xml.empty());
     CHECK(!xml.contains("UnmappedTrade001"));
 }

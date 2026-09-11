@@ -28,9 +28,9 @@ The bond products and the trade envelope round trip at zero loss on the mapper p
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave A.4, the trade envelope.          |
+| Now          | Unit A is complete: the mapper path is at zero loss. Unit B, the tables that hold what the container carries. |
 | Waiting on   | Nothing.                               |
-| Next         | Carry the envelope members no table holds, then unit B's shared tables. |
+| Next         | Unit B's shared tables, then unit C's shell verbs and the full round trip test. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -636,6 +636,294 @@ is now lossless across the whole corpus.
 The five files this wave changes are the two container headers, the
 mapper and two test suites. =domain.hpp= and =domain.cpp= are
 untouched.
+
+** Wave A.4, the trade envelope
+
+*** The envelope is keyed by the trade, not by the product
+
+=envelope= is an =xs:all= of four members: =CounterParty=,
+=nettingSetGroup=, =PortfolioIds= and =AdditionalFields=. The story's
+fourth decision assigns it to the trade entity and not to the
+instrument family, and the schema agrees: every product carries one,
+and nothing inside it is product-specific.
+
+=AdditionalFields= is the fourth member and it is open content. The
+schema states it as =xs:any processContents="lax"= with
+=maxOccurs="unbounded"=, so it names no field and no generated type can
+enumerate one. The binding carries the block as a list of name and
+value pairs. This wave had to carry that list whole.
+
+The wave was 6,510 pairs over 14 paths, from =Envelope/CounterParty=
+down to the six additional fields the corpus states.
+
+*** The carrier and the mapper pair
+
+=trade_envelope_data= is new, in =ores.trading.api=, and it holds four
+optionals, one per member. =trade_envelope_field= holds one additional
+field as a name and a value. Every member is an optional for the reason
+wave A.1 set: an element the document states empty must stay distinct
+from one it omits. =CounterParty= and =nettingSetGroup= are already
+optionals in the binding. =PortfolioIds= and =AdditionalFields= are
+not, so their optionals carry presence alone.
+
+=trade_mapper::map_envelope= returns nothing when the trade states no
+=Envelope=, and a carrier when it does, holding whatever the members
+hold. =reverse_envelope= is its inverse and emits every engaged member,
+so a held-empty element comes back as an empty element.
+
+One bound stays open. The schema heads the netting set group with an
+abstract element and gives it two substitution-group members:
+=NettingSetId=, a string, and =NettingSetDetails=, which holds a
+NettingSetId of its own plus =AgreementType=, =CallType=,
+=InitialMarginType= and =LegalEntityId=. The carrier holds the first
+form only, so a document that stated the second would lose four
+members. No corpus document states it, and the one mention of the name
+in =external/ore= is inside a Python script and not an XML document, so
+nothing exercises the bound.
+
+The carrier rides beside the trade and not inside it.
+=trade_import_item= in =ores.ore.core= and =trade_export_item= in
+=ores.trading.api= both gained a
+=std::optional<trade_envelope_data> envelope= member, and
+=export_portfolio= takes the envelope from the item rather than
+rebuilding one from the trade's =netting_set_id= column. That column
+stays a projection: it holds the text of =NettingSetId= and none of the
+presence, so the envelope is the carrier of record.
+
+The new member replaces =ore_counterparty_name= in =trade_import_item=,
+which held one string of the envelope and dropped the other three
+members whole. The qt import dialog reads the counterparty through the
+envelope now.
+
+*** The shell writes the trades no reverse mapper can rebuild
+
+The 6,510 pairs fell to 310 once the carrier was in place, and all 310
+sat on 63 trades the exporter dropped whole. The exporter visits the
+instrument variant and returns without writing anything in two cases: a
+=std::monostate=, and a type that reaches a family but no branch inside
+it. =InflationSwap= is the second kind. It dispatches to the swap family
+and falls into that family's =else=, so it counts as mapped and is then
+dropped.
+
+The schema makes the drop unnecessary. =trade= is a sequence of
+=TradeType=, an optional =Envelope=, an optional =TradeActions= and an
+optional =oreTradeData= group, over a required =id= attribute. A trade
+that states only its type and its envelope is therefore a valid
+document. The writer now falls back to exactly that: it parses the type
+string back to the generated enumeration and writes the trade with its
+envelope and no product data. The envelope is keyed by the trade and not
+by the product, so dropping the trade whole would lose envelope pairs
+that no other trade states.
+
+A type the schema does not name leaves no valid document to write, and
+that trade is still dropped, with a warning.
+
+*** The count that has to be maintained by hand
+
+=domain.hpp= exports =to_string= for every enumeration and no parse for
+any of them. The generated =_oreTradeType_Values= table and
+=xsdcpp::toNumeric= are of internal linkage, so the exporter cannot
+reach them.
+
+The new =parse_ore_trade_type= scans the spellings through =to_string=,
+which keeps one source of truth: a spelling the generated table adds is
+parsed with no table here to keep in step. That needs an upper bound,
+and =ore_trade_type_count = 115= is it. The number is not a guess. The
+generated =to_string(oreTradeType)= passes =115= to
+=xsdcpp::to_string= as its own count, and =_oreTradeType_Values= holds
+115 spellings, so the constant is the same number the generated code
+states and a regeneration can be checked against it.
+
+This is still the hazard the =bond_instrument_mapper= =*_count=
+constants already carry: the count is correct for the generated code of
+today, and a regeneration that adds a type would silently stop finding
+it. It is recorded here rather than left implicit.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over
+=external/ore/examples=. The carrier alone moved 6,510 to 310, and the
+shell emission moved 310 to nothing.
+
+| Measure | A.3c | A.4, carrier | A.4, shell |
+|---------+------+--------------+------------|
+| In-scope lost pairs | 6,510 | 310 | 0 |
+| In-scope unexplained pairs | 0 | 0 | 0 |
+
+Every path under =/Portfolio/Trade/Envelope= left the list whole, and
+no bond product path returned to it.
+
+The 310 decomposed exactly, and every pair of it sat on the 63 trades
+the exporter dropped:
+
+| Path | Pairs |
+|------+-------|
+| =Envelope= | 63 |
+| =Envelope/AdditionalFields= | 63 |
+| =Envelope/CounterParty= | 63 |
+| =Envelope/NettingSetId= | 63 |
+| =Envelope/PortfolioIds= | 38 |
+| =Envelope/AdditionalFields/party_id= | 10 |
+| =Envelope/AdditionalFields/valuation_date= | 10 |
+
+Two tests guard the change.
+=export_portfolio_unmapped_trade_keeps_its_type_and_envelope= writes a
+monostate item and checks the type and the envelope reach the output and
+no product block does.
+=export_portfolio_unknown_type_is_skipped= checks that a type the schema
+does not name is still dropped. The test the first one replaces asserted
+the opposite, that a monostate item is skipped, and it was deleted.
+
+*** The trade count now matches the written documents
+
+The roundtrip writes 543 documents and skips 1,023, all 1,566 read.
+Across the 543, the counters read 2,590 trades mapped and 40
+passthrough, and the output tree holds 2,630 =<Trade>= elements. The
+tree before this wave held 2,567, so 63 is exactly the difference and
+every trade in a written document now reaches the output.
+
+The 40 is the monostate class. The 23 trades that reach a family and no
+branch inside it were never counted anywhere, because the counter asks
+only whether the variant is monostate. That is a defect in the counter
+and not in the writer, since it measures dispatch and not output, and
+after this wave both classes are written anyway.
+
+*** The literal diff is ordering, tag spelling and number formatting
+
+The classifier normalises values before it compares them, so a separate
+literal text diff was run on =Cash_Bonds.xml= to see what a byte-level
+comparison reports. Four classes appear, and none of them is a loss.
+
+- Element order inside =LegData=. The schema declares =legData= as
+  =xs:all=, so any order is valid. Our writer emits in the order the
+  container declares and the document states its own.
+- An element the document states empty comes back as =<NettingSetId/>=
+  or as =<NettingSetId></NettingSetId>=, whichever the writer picks.
+  Both are the same infoset.
+- Numbers. =10000000= comes back as =10000000.000000=, and =0.05= as
+  =0.0500000007=. Both stay inside the =1e-6= tolerance, and the worst
+  relative error over the whole corpus is 5.660e-8.
+- Booleans. =<EndOfMonth/>= comes back as =<EndOfMonth>Y</EndOfMonth>=.
+  The generated reader holds the two as the same value and the
+  classifier compares them as such.
+
+This is the allowance the user set: a diff is acceptable when it is
+ordering or the like, and not when it is a loss.
+
+*** The database still has no home for the envelope
+
+The carrier closes the mapper path. It does not close the database path.
+=trade_export_item= is built from the trade row alone at the service
+boundary, so the envelope stays absent on the way out of the database.
+=ores.trading.core/messaging/trade_handler.hpp= builds its items with
+designated initialisers in two places, one for a single trade and one
+paged over the trades of a book, and then populates the instrument from
+the trade's facts. Neither reads an envelope, because no table holds
+one.
+
+So the full XML to database to XML round trip loses the envelope until
+unit B gives it a home and the export handler reads it back. That is the
+acceptance line "every member the container carries has a column or a
+keyed child row", and the carrier is now its complete specification:
+four members, one of them an open list of name and value pairs.
+
+The designated initialisers are also why the new member broke nothing.
+Both call sites set =trade= by name, so =instrument= and =envelope=
+default and the existing code compiles unchanged.
+
+*** The full suite is green, and the flake did not recur
+
+=compass build= is clean and =compass test run= reads 71 of 71 passing,
+0 failed, in 910 seconds. =ores.ore.core.tests= passed in 4.13 seconds,
+which carries the new envelope suite and the two exporter tests.
+
+The =ores.reporting= temporal exclusion flake A.3b recorded did not
+recur. That is luck and not a fix: the retry path it describes still
+cannot work, and the suite stays unreliable until someone repairs it.
+
+*** No generated code was touched
+
+The twelve files this wave changes are four headers, three sources,
+two test sources, two build files and the qt dialog. =domain.hpp= and
+=domain.cpp= are untouched, and the two =component_files.cmake= files
+were regenerated rather than edited.
+
+*** What the gate's exit code counts, and why it is not zero
+
+=main()= returns 1 if any document is MISSING, UNPARSED, or DIFFERENT
+with an in-scope loss. On the A.4 output tree that is 1023 MISSING, 0
+UNPARSED and 0 DIFFERENT, so the script exits 1 while the in-scope
+counters read zero. The two statements are both true and they measure
+different things.
+
+The 1023 are the documents =roundtrip()= never writes, because their
+header matches none of its four markers. They are pricing engines,
+market data configs and the like. Not one of them contains a =<Trade>=
+element: counting =<Trade>= across all 1023 source documents returns
+zero. A trade-bearing document is a =<Portfolio>= document, and every
+=Portfolio= document is written and compared.
+
+So no trade escapes the comparison by going missing, and the in-scope
+lost and unexplained counters are the predicate. A reader who wants a
+green exit code has to decide what the tool should do with documents it
+does not handle at all, which is the same decision the sniff finding
+below raises.
+
+*** Finding: the puml generator cannot reach the nested components
+
+=build/scripts/generate_component_puml.py= discovers components by
+scanning =projects/*/include=, so it sees the flat layout only. The
+regroup commit 164255805d moved most components to
+=projects/<group>/<component>=, and their puml files have been frozen
+since 2026-06-02. A dry run today finds 18 projects, reports 13 would
+change, and refuses =ores.ore.core= with "No include/ directory found".
+
+The thirteen changes are drift unrelated to this wave, so no
+regeneration was run. The consequence for this wave is that
+=ores.ore.core.puml= still names =ore_counterparty_name=, a member this
+wave deleted. The file was left alone rather than hand-patched: the
+sentinel in it declares everything above the manual line generated, and
+waves A.1 to A.3c set the same precedent by leaving the puml files of
+the components they changed untouched. The repair belongs to whoever
+teaches the generator the nested layout, and it will correct this puml
+and the other twelve in one pass.
+
+*** Finding: the roundtrip classifies a document by substring, and rewrites what it misfiles
+
+=read_header= in =exporter.cpp= peeks the first 4096 bytes of a
+document, and =roundtrip()= picks the importer by looking for one of
+four markers in that window: =<Portfolio>=, =<CurrencyConfig>=,
+=<CalendarAdjustments>=, =<Conventions>=. A =<CurveConfiguration>=
+document is none of the four, so it falls through to the conventions
+branch whenever the word =<Conventions>= appears inside the window,
+which it does in every curve configuration that names a convention.
+
+The result is data loss under a name that does not announce it.
+=Academy/FC003_Reporting_Currency/Input/curveconfig.xml= is 21,505
+bytes and holds a curve configuration; its =<Conventions>= element sits
+at byte offset 457. The roundtrip reads it as a conventions document
+and writes 15 bytes of =<Conventions/>= to the same relative path. 91
+output documents are under 64 bytes where their source is more than ten
+times larger, and every one of them is a curve configuration.
+
+This is not this wave's doing. The sniff is untouched by the wave's
+diff, and the pretree =/tmp/ore_rt_a4= holds a byte-identical 15-byte
+file. The conventions path is also neither the bond products nor the
+envelope, so it sits outside the declared scope and is recorded rather
+than repaired here.
+
+It does bound one thing this wave wanted. A second pass over the output
+tree cannot serve as an idempotence check, because the tree holds
+documents whose content contradicts their filename: pass 2 reads 543
+files, skips 120, and writes 423, and =diff -rq= against its own output
+reports 125 differences. The check is contaminated at the source, not
+by the mapper, and the mapper path was measured instead against
+=external/ore/examples=, which is the input the directive names.
+
+The repair is to classify by root element and to refuse a document
+whose root is none of the four, rather than to trust a substring. That
+change belongs to a task of its own, since it decides what the tool
+does with the documents it cannot currently name at all.
 
 * Test Scenarios
 

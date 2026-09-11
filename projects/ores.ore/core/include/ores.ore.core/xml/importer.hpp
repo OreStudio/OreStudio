@@ -27,8 +27,10 @@
 #include "ores.refdata.api/domain/calendar_adjustment.hpp"
 #include "ores.refdata.api/domain/currency.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include <filesystem>
+#include <optional>
 #include <vector>
 
 namespace ores::ore::xml {
@@ -36,17 +38,17 @@ namespace ores::ore::xml {
 /**
  * @brief A trade with its ORE source context for import mapping.
  *
- * Pairs a partially-mapped ORES trading domain trade with the raw ORE
- * CounterParty string from the trade envelope and the path of the file it
- * came from. The counterparty_id in the trade is left nil; callers must
- * resolve it via ore_counterparty_name.
+ * Pairs a partially-mapped ORES trading domain trade with the trade
+ * envelope from the document and the path of the file it came from. The
+ * counterparty_id in the trade is left nil; callers resolve it from the
+ * envelope's CounterParty.
  *
  * The source_file field enables callers (e.g. batch directory import) to
  * report per-trade provenance without having to keep a separate index.
  */
 struct trade_import_item {
     trading::domain::trade trade;
-    std::string ore_counterparty_name;            ///< ORE CounterParty string, empty if absent
+    std::optional<trading::domain::trade_envelope_data> envelope; ///< absent when the document states no Envelope
     std::filesystem::path source_file;            ///< ORE XML file this trade was read from
     trading::domain::trade_instrument instrument; ///< monostate if trade type not yet mapped
 };

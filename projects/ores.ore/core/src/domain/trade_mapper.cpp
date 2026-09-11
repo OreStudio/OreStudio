@@ -47,20 +47,12 @@ trading::domain::trade trade_mapper::map(const trade& v) {
     r.parties.book_id = nil;
     r.parties.portfolio_id = nil;
 
-    // Extract envelope fields where available.
-    if (v.Envelope) {
-        if (v.Envelope->CounterParty) {
-            // Store the counterparty name as the netting set ID fallback
-            // context. The actual counterparty_id UUID must be resolved by the
-            // calling code via a mapping dialog or lookup.
-        }
-        if (v.Envelope->nettingSetGroup) {
-            if (v.Envelope->nettingSetGroup->NettingSetId) {
-                r.classification.netting_set_id =
-                    std::string(*v.Envelope->nettingSetGroup->NettingSetId);
-            }
-        }
-    }
+    // The netting set id projects from the envelope, which stays the
+    // carrier of record: it holds the element's presence as well as its
+    // text, and the column holds only the text.
+    const auto envelope = map_envelope(v);
+    if (envelope)
+        r.classification.netting_set_id = envelope->netting_set_id.value_or(std::string());
 
     r.classification.activity_type_code = "new_booking";
     r.classification.status_id = boost::uuids::nil_uuid();
@@ -263,6 +255,75 @@ trade_mapper::map_composite_instrument(const trade& v) {
     if (type == "ContractForDifference")
         return composite_instrument_mapper::forward_contract_for_difference(v);
     return std::nullopt;
+}
+
+std::optional<trading::domain::trade_envelope_data> trade_mapper::map_envelope(const trade& v) {
+    if (!v.Envelope)
+        return std::nullopt;
+
+    trading::domain::trade_envelope_data r;
+    const auto& e = *v.Envelope;
+
+    if (e.CounterParty)
+        r.counter_party = std::string(*e.CounterParty);
+
+    if (e.nettingSetGroup && e.nettingSetGroup->NettingSetId)
+        r.netting_set_id = std::string(*e.nettingSetGroup->NettingSetId);
+
+    if (e.PortfolioIds) {
+        std::vector<std::string> ids;
+        ids.reserve(e.PortfolioIds->PortfolioId.size());
+        for (const auto& id : e.PortfolioIds->PortfolioId)
+            ids.emplace_back(id);
+        r.portfolio_ids = std::move(ids);
+    }
+
+    if (e.AdditionalFields) {
+        std::vector<trading::domain::trade_envelope_field> fields;
+        fields.reserve(e.AdditionalFields->other_elements.size());
+        for (const auto& f : e.AdditionalFields->other_elements)
+            fields.push_back({f.name, f.value});
+        r.additional_fields = std::move(fields);
+    }
+
+    return r;
+}
+
+envelope trade_mapper::reverse_envelope(const trading::domain::trade_envelope_data& v) {
+    envelope r;
+
+    if (v.counter_party) {
+        domain::envelope_CounterParty_t cp;
+        static_cast<std::string&>(cp) = *v.counter_party;
+        r.CounterParty = cp;
+    }
+
+    if (v.netting_set_id) {
+        domain::_NettingSetId_t nsid;
+        static_cast<std::string&>(nsid) = *v.netting_set_id;
+        domain::nettingSetGroup_group_t nsg;
+        nsg.NettingSetId = nsid;
+        r.nettingSetGroup = nsg;
+    }
+
+    if (v.portfolio_ids) {
+        domain::envelope_PortfolioIds_t ids;
+        for (const auto& id : *v.portfolio_ids) {
+            domain::envelope_PortfolioIds_t_PortfolioId_t pid;
+            static_cast<std::string&>(pid) = id;
+            ids.PortfolioId.push_back(std::move(pid));
+        }
+        r.PortfolioIds = std::move(ids);
+    }
+
+    if (v.additional_fields) {
+        domain::envelope_AdditionalFields_t fields;
+        for (const auto& f : *v.additional_fields)
+            fields.other_elements.push_back(xsd::any_element{f.name, f.value});
+        r.AdditionalFields = std::move(fields);
+    }
+
+    return r;
 }
 
 trading::domain::trade_instrument trade_mapper::map_instrument(const trade& v) {

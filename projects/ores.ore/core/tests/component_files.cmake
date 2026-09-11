@@ -74,5 +74,6 @@ set(files
     "xml_stresstesting_roundtrip_tests.cpp"
     "xml_swaption_mapper_roundtrip_tests.cpp"
     "xml_todaysmarket_roundtrip_tests.cpp"
+    "xml_trade_envelope_mapper_roundtrip_tests.cpp"
     "xml_trade_import_tests.cpp"
 )

@@ -1,0 +1,110 @@
+:PROPERTIES:
+:ID: EE8DF78E-B3DC-45A8-AB91-0EC4943EEBAE
+:END:
+#+title: Task: Capture the structures and deal-composition notes into the repo
+#+description: The structures source document lives outside the repo, at ~/Development/Notebooks/summaries/structures-and-deal-composition.org, and every ticket below cites it. Bring it in as a knowledge page under doc/knowledge/domain/ so it is citable by id, reachable from the domain index, and published with the site. Cite it by path until then.
+#+type: task
+#+level: s1
+#+filetags: :trade-entry-prototype:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ABANDONED 2026-09-11 — another worktree is already writing this page. See
+=* Notes= and =* Result=. Nothing here needed doing.
+
+Ticket type: task, agent-driven.
+
+The authority for this story sits outside the repo, at
+=~/Development/Notebooks/summaries/structures-and-deal-composition.org=.
+Every ticket here cites it. A document outside the repo cannot be cited by
+id, cannot be found by a reader of the published site, and can change
+without the story noticing.
+
+Bring it in as a knowledge page under =doc/knowledge/domain/=, reachable
+from the domain index and published with the site.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | ABANDONED                              |
+| Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
+| Now          | Closed as superseded.                  |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. The page comes from another worktree. |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The document exists in the repo as a knowledge page with an id.
+- The page keeps the source's content and its worked examples.
+- The page states that the design is not built yet.
+- The domain index links the page.
+- Every ticket in this story that cites the source file by path is
+  repointed at the page id.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Ticket type: task, agent-driven. Superseded before any work started.
+
+Found on 2026-09-11, while wiring the story table: another worktree has this
+page in flight. =ores_dev_eager_maxwell= (identity "eager maxwell") holds
+=doc/knowledge/domain/trade_structures.org=, titled *Trade Structures and
+Deal Composition*, id =FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160=, on branch
+=feature/document-structures-and-deal-composition=. It runs to 398 lines and
+is uncommitted, with a task under way to write it.
+
+Two worktrees writing one page would clash, and the bearings report warns
+against work that clashes with another environment. This ticket stops. The
+story cites that page instead.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+Superseded. No work was done.
+
+The page is being written in the =eager maxwell= worktree as *Trade
+Structures and Deal Composition* (=FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160=),
+on branch =feature/document-structures-and-deal-composition=.
+
+If that branch does not land, revive this task: the source is still outside
+the repo, and the story still needs a citable page.

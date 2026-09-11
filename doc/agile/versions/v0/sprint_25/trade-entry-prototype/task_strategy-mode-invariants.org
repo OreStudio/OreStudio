@@ -1,0 +1,100 @@
+:PROPERTIES:
+:ID: 82C8FB53-F0E2-4C5C-8415-5D3E7237C91D
+:END:
+#+title: Task: Decide which strategies the strategy mode encodes and what their invariants are
+#+description: Strategy mode fixes the leg set and refuses a structure that breaks the strategy's invariants. Decide which strategies the prototype carries, prompted by the source document's examples (Risk Reversal, Butterfly, Straddle, Strangle, FX Swap, Vega Spread), what each one's invariant actually is, and how the screen reports a broken one without blocking an amend that only touches reference data.
+#+type: task
+#+level: s1
+#+filetags: :trade-entry-prototype:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ticket type: grilling (human in the loop).
+
+A strategy is the first rung of the composition taxonomy: a small fixed set
+of named shapes with invariants that hold by construction. Strategy mode
+fixes the leg set and refuses a structure that breaks those invariants.
+
+Decide which strategies the prototype carries, and what each one's invariant
+actually is. The source document names Risk Reversal, Butterfly, Straddle,
+Strangle, FX Swap and Vega Spread. The prototype needs enough to show the
+mode, not the whole set.
+
+Also decide how the screen reports a broken invariant. An amend that touches
+only reference data must pass with the invariants intact.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The prototype's strategy set is named, with the ones left out and why.
+- Every chosen strategy has its invariant stated as a testable condition.
+- The screen's treatment of a broken invariant is decided.
+- An amend that touches only reference data passes with the invariants
+  intact.
+- The decision is recorded in the story's =* Decisions=.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Ticket type: grilling (human in the loop). The answer is a decision.
+
+On the frontier: no blockers, takeable now.
+
+Blocks [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]].
+
+Source: =~/Development/Notebooks/summaries/structures-and-deal-composition.org=,
+the first rung of the composition taxonomy. A knowledge page is in flight on
+branch =feature/document-structures-and-deal-composition=, in the
+=eager maxwell= worktree: *Trade Structures and Deal Composition*
+(=FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160=). Cite the page once it lands here.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

@@ -1,0 +1,109 @@
+:PROPERTIES:
+:ID: DD436803-DCB9-4774-8A77-133AA0614219
+:END:
+#+title: Task: Build the pricing screen prototype and the Book handoff
+#+description: Build the throwaway prototype of the pricing screen: single-leg and structure modes, condensed and expanded views, tweakable vols and rates under a ticking market data indicator, a NPV readout, and the Book button that carries the economics across to the booking screen. The prototype fakes the valuation; the point is the handoff and the two views.
+#+type: task
+#+level: s1
+#+filetags: :trade-entry-prototype:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on: 08A64F8B-2834-459B-8401-ACE814A99E0C
+#+blocked_since: 2026-09-11
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ticket type: prototype (human in the loop).
+
+Build the throwaway prototype of the pricing screen and its Book handoff.
+The prototype fakes the valuation. The point is the two pricing modes and the
+handoff.
+
+The prototype covers:
+
+- single-leg mode and structure mode;
+- the condensed and the expanded view of a structure, with hedges at leg
+  level;
+- market data shown as ticking;
+- inputs the user can move, such as vols and rates, with the NPV responding;
+- the NPV readout;
+- the Book button, which carries the economics to the booking screen.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BLOCKED                              |
+| Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | [[id:08A64F8B-2834-459B-8401-ACE814A99E0C][Decide how the booking screen obtains its initial NPV]] |
+| Next         | Build once the initial NPV decision closes. |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The screen switches between single-leg mode and structure mode.
+- Structure mode switches between the condensed and the expanded view.
+- The expanded view shows hedges at leg level.
+- The market data indicator ticks.
+- Moving a vol or a rate moves the NPV readout.
+- The Book button carries the economics into the booking screen, with every
+  economic field filled in.
+- The prototype is reachable from the published site.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+Ticket type: prototype (human in the loop). The user reacts to the artifact.
+
+Blocked on [[id:08A64F8B-2834-459B-8401-ACE814A99E0C][Decide how the booking screen obtains its initial NPV]].
+The pricing screen produces the NPV that becomes the booking's initial NPV, so
+the handoff contract has to be settled before the handoff is drawn.
+
+The prototype lands under =doc/prototypes/=, so
+[[id:07E0C977-798A-4801-A623-E294169D6960][Make the site build copy and deploy doc/prototypes]]
+must land before the user can review it on the web.
+
+Source for the modes:
+=~/Development/Notebooks/summaries/structures-and-deal-composition.org= —
+option pricing has two modes, single leg and structure, and structure mode has
+a condensed and an expanded view.
+
+No pricing layer exists and none is built here. The valuation is faked.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

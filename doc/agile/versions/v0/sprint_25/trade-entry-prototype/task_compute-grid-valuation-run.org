@@ -1,0 +1,94 @@
+:PROPERTIES:
+:ID: D36D2221-7DC8-4DA8-A727-5C82BB8A022A
+:END:
+#+title: Task: Research: what the compute grid can do for an ad-hoc valuation run
+#+description: Establish what ores.compute offers today for a one-off valuation: what a run configuration and a computation definition require, how an input token resolves to a versioned market data snapshot, whether a single trade or structure can be valued on demand, and what a result carries. This is the fact the initial-NPV decision waits on.
+#+type: task
+#+level: s1
+#+filetags: :trade-entry-prototype:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Ticket type: research (agent-driven, no human needed).
+
+What can the compute grid already do for a one-off valuation? The booking
+screen must capture an initial NPV, and the candidate mechanism is to
+dispatch a valuation run and read the result. That decision cannot be taken
+until the current capability is known.
+
+Establish what =ores.compute= offers today: what a run configuration and a
+computation definition require, how an input token resolves to a versioned
+market data snapshot, whether a single trade or structure can be valued on
+demand, and what a completed result carries.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The run configuration, computation definition and computation run path is
+  described as it exists today, with the artefacts that implement each.
+- Whether a single trade or a structure can be valued on demand is stated
+  plainly, with evidence for the answer.
+- How an input token resolves to a versioned market data snapshot is stated.
+- What a completed run's result carries is stated.
+- The findings are recorded where the initial NPV decision can cite them.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+On the frontier: no blockers, takeable now.
+
+Blocks [[id:08A64F8B-2834-459B-8401-ACE814A99E0C][Decide how the booking screen obtains its initial NPV]].
+
+Starting points: [[id:98B9FE2A-57FB-464F-A4E5-198461FE6987][Compute Engine]] for
+the conceptual model, and =projects/ores.compute/= for what is built.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

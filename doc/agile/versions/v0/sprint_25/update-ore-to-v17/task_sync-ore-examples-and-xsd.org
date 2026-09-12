@@ -8,7 +8,7 @@
 #+filetags: :update-ore-to-v17:sprint_25:v0:
 #+owner: marco
 #+branch: feature/sync-ore-examples-and-xsd
-#+pr:
+#+pr: 2072
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
@@ -181,7 +181,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2072][#2072]] | [ore] Sync ORE examples and XSD to v1.8.17.0 |
 
 * Review
 

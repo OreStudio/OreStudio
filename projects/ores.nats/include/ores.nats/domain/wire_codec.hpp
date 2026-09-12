@@ -22,6 +22,7 @@
 
 #include "ores.nats/domain/wire_format.hpp"
 #include <cstddef>
+#include <rfl/AddTagsToVariants.hpp>
 #include <rfl/json.hpp>
 #include <rfl/msgpack.hpp>
 #include <span>
@@ -56,16 +57,25 @@ public:
 
     /**
      * @brief Serializes @p obj to this codec's fixed wire_format.
+     *
+     * Variants are written tagged (rfl::AddTagsToVariants). reflect-cpp
+     * otherwise writes only the active alternative's value, with nothing
+     * naming it, and reads a std::variant back by trying the alternatives
+     * in declaration order until one parses. std::monostate parses from
+     * any payload, so a variant that lists it first -- as
+     * ores.trading.api::domain::trade_instrument does -- decodes every
+     * payload as monostate and loses the instrument silently. The tag
+     * names the alternative, so any order decodes unambiguously.
      */
     template <typename T>
     [[nodiscard]] std::vector<std::byte> encode(const T& obj) const {
         switch (format_) {
             case wire_format::json: {
-                const auto s = rfl::json::write(obj);
+                const auto s = rfl::json::write<rfl::AddTagsToVariants>(obj);
                 return to_bytes(s);
             }
             case wire_format::msgpack: {
-                const auto b = rfl::msgpack::write(obj);
+                const auto b = rfl::msgpack::write<rfl::AddTagsToVariants>(obj);
                 return to_bytes(b);
             }
         }
@@ -81,10 +91,10 @@ public:
         switch (format_) {
             case wire_format::json: {
                 const std::string_view sv(reinterpret_cast<const char*>(data.data()), data.size());
-                return rfl::json::read<T>(sv);
+                return rfl::json::read<T, rfl::AddTagsToVariants>(sv);
             }
             case wire_format::msgpack:
-                return rfl::msgpack::read<T>(data);
+                return rfl::msgpack::read<T, rfl::AddTagsToVariants>(data);
         }
         std::unreachable();
     }

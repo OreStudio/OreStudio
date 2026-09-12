@@ -129,6 +129,33 @@ The first run failed before the codec defect was fixed: the same
 document exported 653 bytes with no product block and 27 lost pairs in
 scope. The export is now 1775 bytes and carries both products whole.
 
+** The re-run over the payload
+
+Both documents were run again after the untagged-variant codec was
+replaced. =trade_export_item::instrument= is now an =instrument_payload=,
+and no =std::variant= reaches the wire. The payload is
+document-independent, so the same documents must reproduce the same
+numbers, and they do:
+
+| Document | Request id | Export | In scope | Out of scope | Worst relative error |
+|----------+------------+--------+----------+--------------+----------------------|
+| =Cash_BondRepo_and_Bond.xml= | =f88c963c-cc7f-4528-b8b2-719734155630= | 1775 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 2.247e-8 |
+| =BondOption_StrikePrice_StrikeYield.xml= | =d57ae6e0-7894-4f0b-beb5-bb308c750f25= | 2169 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 5.455e-9 |
+
+Each re-run again took a fresh database, its own provisioning and its own
+request id. The exported byte counts and the worst relative errors are
+identical to the two runs above, which is the evidence that the payload
+carries the instrument whole rather than by a guess. The runs above were
+taken with variant tagging in the tree, so they verified the tagged build
+and not the payload that replaced it.
+
+The rows the import wrote were counted directly, so the export is known
+to read from storage and not from memory. The bond document left 2
+trades, 2 bond instruments, 1 bond issue, 1 bond repo, 1 bond leg and 2
+leg amounts. The option document left 2 trades, 2 bond instruments, 1
+bond issue and 2 bond options, with no legs and no leg rates, which is
+what a document stating no =LegData= should leave.
+
 Recorded debt:
 
 - The export returns every trade in the database, so the test needs one

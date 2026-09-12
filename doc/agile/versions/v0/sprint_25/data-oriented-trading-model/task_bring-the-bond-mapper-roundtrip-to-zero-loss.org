@@ -26,12 +26,12 @@ The bond products and the trade envelope round trip at zero loss on the mapper p
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Wave B.5d landed: the option block, the strike, the forward and the delivery basket are written and read, and all sixteen tables have a surface. The mapper gate reads zero lost and zero unexplained pairs in scope and exits 0. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Unit C: the shell verbs for storage upload, =ore import= and portfolio export, then the .ores script that drives one document through the database and back. |
-| Last touched | 2026-09-11                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                               |
 
 * Acceptance
 
@@ -2424,3 +2424,84 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The bond products and the trade envelope round trip at zero loss on the
+mapper path, and every member the container carries has a column or a
+keyed child row, so the database holds what the container holds.
+
+The gate reads zero over the whole corpus:
+
+#+begin_example
+Documents: 1566  Failures: 0  Skipped: 1113
+Classified: numeric 2330, boolean 313
+In scope, bond products and the trade envelope: lost 0, unexplained 0
+Out of scope, the other instrument families: lost 81432, unexplained 9917
+Worst relative error on a numeric pair: 5.660e-8 (tolerance 0.000001)
+EXIT=0
+#+end_example
+
+** The reading was retaken, and the later reading is the one that stands
+
+The gate above was first read when wave B.5d landed. It was read again
+after the untagged-variant codec was replaced by =instrument_payload=,
+and the two readings agree on every number.
+
+The second reading is the one this Result rests on, because the payload
+sits on the mapper path. =exporter::roundtrip= encodes the instrument on
+the way in and decodes it on the way out, so the B.5d reading verified a
+codec that is no longer in the tree: it was taken with variant tagging
+present, and tagging is what made every instrument decode as
+=std::monostate=.
+
+** The four acceptance lines, and what answered each
+
+- Zero lost and zero unexplained in scope, over every document in
+  =external/ore/examples=. The reading above is that, over all 1,566
+  documents.
+- The other families counted and not failed. The out-of-scope line
+  carries the 81,432 lost and the 9,917 unexplained pairs of the other
+  instrument families, and the run exits zero.
+- The container carries every member the mapper needs, and the generated
+  binding stays untouched. Waves A.1 to A.4 grew the container, and each
+  one records that =domain.hpp= and =domain.cpp= were not opened.
+- Every member the container carries has a column or a keyed child row.
+  Waves B.1 to B.4 built the sixteen tables and the columns, and B.5a to
+  B.5d pointed the read and write paths at them.
+
+** What closed the losses
+
+Four classes, in the order they were closed. The container flattened
+=xsd::optional<T>= into a plain member and tested =.empty()=, so an
+element the document stated empty collapsed into an absent one; the
+container now holds =std::optional= and the mappers emit on presence. The
+container never held most of =legData=, and it held one leg where the
+schema declares =LegData= unbounded. Five =bondData= members had no home
+at all. And the whole trade envelope had no carrier, which wave A.4 gave
+it, keyed by the trade rather than by the product.
+
+The gate itself needed two repairs before its exit code meant anything:
+it counted a document the exporter never writes as a failure, and its
+boolean rule swallowed a real loss whenever a string element held the
+text =true=.
+
+** The bounds that stay open
+
+Each is recorded in its own wave and none is exercised by the corpus, so
+none shows in the reading above. The fifteen =legDataType= alternatives
+other than fixed, floating and formula-based. The =FXReset= and
+=Exchanges= members of =Notionals=. The =Indexing= member of =Indexings=,
+where the container carries =FromAssetLeg= alone. =HistoricalFixings=,
+whose date member is named =fixingDate= rather than =startDate=. An
+element the document states bare, as =<ScheduleData/>= with no =Rules=
+and no =Dates=. The =NettingSetDetails= substitution group, which the
+envelope carries in its =NettingSetId= form alone. Nine
+=totalReturnData= members. =KnockOut= on a forward bond. And the eight
+=bondData= elements with no column anywhere, which
+[[id:F8D78E13-F2A7-47AD-90E2-7251D2FA7895][Align bond_issue with the ORE
+data model]] records.
+
+Two hazards are worth carrying rather than closing. =parse_ore_trade_type=
+scans 115 spellings through a hand-held count, so a regeneration that
+adds a type would silently stop finding it. And a re-import writes new
+rows rather than updating the existing ones, because the generated save
+handler is a bitemporal insert.

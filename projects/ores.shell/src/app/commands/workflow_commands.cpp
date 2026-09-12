@@ -67,6 +67,23 @@ fetch_steps(nats_client& session, const std::string& instance_id) {
 }
 
 
+/**
+ * @brief Print the entries a step handler recorded while it ran.
+ *
+ * A step can report success and still have skipped work: the import
+ * handler marks itself completed_with_warnings and puts the reason in
+ * its log rather than in the step error, so a reader that prints only
+ * the status cannot tell a clean run from a lossy one.
+ */
+void print_step_log(std::ostream& out, const workflow::messaging::workflow_step_summary& step) {
+    for (const auto& entry : step.log) {
+        out << "      " << workflow::messaging::to_string(entry.level) << ": " << entry.message;
+        if (!entry.context.empty())
+            out << " [" << entry.context << "]";
+        out << std::endl;
+    }
+}
+
 void print_step(std::ostream& out,
                 const workflow::messaging::workflow_step_summary& step,
                 std::size_t total) {
@@ -75,6 +92,7 @@ void print_step(std::ostream& out,
     if (!step.error.empty())
         out << " — " << step.error;
     out << std::endl;
+    print_step_log(out, step);
 }
 
 }

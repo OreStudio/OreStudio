@@ -26,11 +26,11 @@ job_definition regenerates safely, and scheduler-cpp joins the enforced drift re
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-11                               |
 
 * Acceptance
@@ -170,3 +170,80 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+Partly done, and the part that is done is the one that could be done
+without changing behaviour anyone depends on.
+
+=is_active= is a boolean across the board. The domain was already
+right — the struct, the protocol struct, the Qt model and monitor, the
+generator and the status handler all declared =bool=. Only the SQL
+column, the repository entity and the model said integer, with the
+mapper converting. So the change went to storage: the model declares
+=boolean= and =bool=, the regenerated DDL reads
+=boolean not null default true=, the entity is =bool=, and the
+mapper's conversions are plain assignments.
+
+Two breaks sat below the model and would have shipped unnoticed. The
+hand-written repository parsed the column with =std::stoi=, which
+throws on the =t= Postgres returns for a boolean, and
+=read_all_active= filtered on =is_active = 1=, which a boolean column
+rejects. The parse now accepts =1=, =t= or =true= following
+=fsm_service=, and the predicate compares against =true=. Two populate
+scripts wrote the integer literal, one of them in =compute= seeding a
+row into the scheduler's table, and a one-shot migration converts
+databases that predate the change.
+
+=schedule_expression=, =action_type= and =action_payload= were fixed
+earlier in this task: the first now declares =cron_expression= and
+lets the custom-type registry supply the header, which is that
+mechanism's first real use.
+
+=tenant_id= is filed rather than fixed, because the defect is not in
+the scheduler. Its column is nullable and its code already uses an
+optional, which is correct. Codegen is what emits a non-optional
+strong type for a nullable tenant, and =system()= is the max UUID — a
+real tenant rather than an absence — so the two are not
+interchangeable. Filed as [[id:B69BF02C-9E16-4DAF-BC0C-C5DBE0EC1BF4][Make a nullable tenant column an optional type]],
+which also carries the crash it exposed in =synthetic=.
+
+The six hand-written operations are all live and none is cruft, so
+they are filed as [[id:07494555-8EDB-48C2-8425-CB86EE366FDC][Model the scheduler's hand-written operations and remove them together]],
+whose first constraint is that no commit removes an operation before
+its replacement exists. The custom history is filed separately as
+[[id:6110D479-CAF3-4915-8A64-698193893402][Replace the scheduler's custom history with the generic provider]]:
+it discards the service result and replies success with an empty
+vector, so there is no working behaviour to preserve.
+
+The component therefore does not join the drift registry yet. Saying
+otherwise would claim a guarantee the remaining facets cannot honour.
+
+* Audit
+
+Run before closing, on =ores.scheduler=.
+
+Passing: the component is a composite with =api=, =core= and
+=service=, each carrying the full part layout, and a root
+=CMakeLists.txt= that adds them; no leftover or temporary artefacts;
+no platform-specific code; test files named =_tests.cpp=; all three
+parts listed with their dependencies on the domain layer page of the
+System Model; a =scheduler-cpp= row in =component_catalogue.org=;
+documentation and diagrams pass =validate_docs= at 43 components.
+
+Findings, filed as [[id:9FE3FA66-514B-4C67-83E7-11973B8E520E][Clear the ores.scheduler component audit findings]]:
+
+1. The model sets =:generator_facet_name: generator= while the tree
+   has =api/src/generators= and every other component uses the plural.
+   Regenerating creates a second directory beside the existing one and
+   orphans it.
+2. =core/src/builder/= is not a catalogued facet, so it is a folder
+   name with no signed-off meaning.
+3. The messaging reference documents four subjects while the registrar
+   registers seven handlers: =schedule_jobs_batch=,
+   =get_job_instances= and =get_scheduler_status= have no subject row.
+4. The reference describes the history subject as retrieving execution
+   history, which is what its handler does not do.
+
+Also worth recording rather than filing: =core= has one test file,
+covering the builder. The repository and mapper this task changed have
+no tests, which is why the change was verified by compiling them and
+by reading the SQL rather than by running anything.

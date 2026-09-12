@@ -181,8 +181,16 @@ via its "Verifies task" field.
 
 * Review
 
+Local code review against the [[id:0FB2EA84-EBB8-45C8-A8C8-F5815431C2D2][Code Review Checklist]],
+run before the PR was raised. No critical findings.
+
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =make_barrier_group= treats =lower == 0.0= as "no lower barrier", so a barrier level of exactly zero would be dropped | =fx_instrument_mapper.cpp= | Declined | The convention predates this change: the code it replaces also compared =instr.lower_barrier != 0.0=. An FX barrier at exactly zero is not a meaningful level, and the helper now documents the rule. |
+| 2 | The new coverage test is a thirteenth consumer of =assets/test_data/golden_dataset/=, a dataset whose retirement the sprint_17 task claims to have completed | =xml_example_coverage_tests.cpp= | Accepted, deferred | Real, and wider than this test. Recorded in [[id:2E4FFE8F-3804-400F-BCB2-6DAA6987A498][Regenerate or retire the domain round-trip dataset]]. |
+| 3 | The twelve golden suites print "run with =--reset-goldens= to bootstrap", but that flag only deletes the dataset; nothing writes it back | =xml_*_golden_roundtrip_tests.cpp= | Accepted, deferred | Pre-existing, and not this PR's to fix. Recorded in [[id:41FB0924-C9F6-4884-BA8C-BEAC71A6B6AD][--reset-goldens deletes the golden dataset and nothing recreates it]]. |
+| 4 | The coverage test walks =Products/Example_Trades= only, and non-recursively | =xml_example_coverage_tests.cpp= | Declined | That directory holds the trade examples. The twelve suites cover the rest of the examples tree, and 132 files is the whole trade set. |
+| 5 | =std::to_string= writes a strike as "100.000000", not "100" | =commodity_instrument_mapper.cpp= | Declined | Byte-for-byte the idiom the bond and equity mappers already use, and the round-trip compares parsed values, so trailing zeros do not reach a test. |
+| 6 | Misspell check (=misspell-fixer .=) | whole diff | Pending | Result recorded in =* Result= once the scan returns. |
 
 * Result

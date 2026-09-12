@@ -28,9 +28,9 @@ Make both engine versions available to the compute grid. The seed registers both
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | The seed and the provisioning script register and publish both versions. No build or grid run has verified them yet. |
-| Waiting on   | A free build-lock slot, then a provisioned database and a running grid. |
-| Next         | Provision from the recipe and dispatch one job per engine version. |
+| Now          | The seed is verified against the live database and the tangled =.ores= matches the recipe. No provisioned database or grid run has exercised either. |
+| Waiting on   | A provisioned database and a running grid host. |
+| Next         | Recreate the database, provision from the recipe, and dispatch one job per engine version. |
 | Last touched | 2026-09-12                               |
 
 * Acceptance
@@ -68,6 +68,25 @@ Make both engine versions available to the compute grid. The seed registers both
 - The v17 version string is the provisional tag on the engine fork. When
   upstream tags =1.8.17.0= properly, the tarball is rebuilt, and the
   sha256 here and in the manifest change with it.
+- The storage key is built from the app-name argument, not from the file
+  name. =compute_storage::package_key= concatenates
+  =packages/{app_name}/{version}/{app_name}-{version}-{platform_code}=
+  and the publisher's =ext= default is =.tar.gz=, so
+  =publish-package ORE 1.8.17.0 x64-linux --file .../ore-1.8.17.0-x64-linux.tar.gz=
+  uploads to =packages/ORE/1.8.17.0/ORE-1.8.17.0-x64-linux.tar.gz=. That
+  is byte-for-byte the =package_uri= in the seed, so the lowercase file
+  name and the uppercase key do not conflict. Checked in
+  =projects/ores.compute/api/.../compute_storage.hpp= and
+  =package_publisher.hpp=.
+- The seed was run against the live database inside a transaction that
+  was then rolled back. It reported =INSERT 0 0= for the ORE app and for
+  the =1.8.16.0= block, and =INSERT 0 1= for the =1.8.17.0= block, so
+  both idempotence guards hold and the new block inserts exactly one
+  platform row. The rollback left the database untouched.
+- =compass sql= runs as =postgres= by default, and that account is not a
+  valid =modified_by= for the compute tables: the insert triggers reject
+  it with "Invalid modified_by: postgres". Pass =-u ddl= to check these
+  tables by hand.
 
 * Test Scenarios
 

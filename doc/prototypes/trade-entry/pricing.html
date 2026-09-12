@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pricing screen prototype — trade entry</title>
+<link rel="stylesheet" href="prototype.css">
+</head>
+<body>
+
+<div class="app">
+
+    <header class="struct-header">
+        <div class="identity">
+            <h1 id="instrument-name">Instrument</h1>
+            <div class="sub" id="instrument-sub"></div>
+        </div>
+
+        <div class="ticker">
+            <span class="dot" id="tick-dot"></span>
+            <span id="tick-text">Market data live</span>
+            <button class="ghost" id="tick-toggle">Pause</button>
+        </div>
+
+        <div class="mode-switch" id="price-mode" role="group" aria-label="Pricing mode">
+            <button data-pmode="structure">Structure</button>
+            <button data-pmode="leg">Leg</button>
+        </div>
+
+        <div class="mode-switch" id="view-mode" role="group" aria-label="Presentation">
+            <button data-view="condensed">Condensed</button>
+            <button data-view="expanded">Expanded</button>
+        </div>
+    </header>
+
+    <div class="workspace">
+
+        <section class="panel">
+            <header>
+                <h2>Market data</h2>
+                <span class="legend">Ticking. Not a real feed.</span>
+            </header>
+            <div class="body">
+                <table class="price-table">
+                    <thead><tr><th>Quote</th><th class="num">Value</th></tr></thead>
+                    <tbody id="market-rows"></tbody>
+                </table>
+
+                <div class="subhead">Tweaks</div>
+                <div class="tweak-grid" id="tweaks"></div>
+                <div class="legend">Vols and rates move the NPV readout. Reset restores the opening market.</div>
+                <button class="ghost" id="reset-tweaks" style="margin-top:10px">Reset</button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <header>
+                <h2>Valuation</h2>
+                <span class="legend" id="valuation-note"></span>
+            </header>
+            <div class="body">
+                <div class="npv-readout">
+                    <span class="big" id="npv-value">—</span>
+                    <span id="npv-ccy"></span>
+                    <span id="npv-delta"></span>
+                </div>
+                <div class="subhead">Breakdown</div>
+                <table class="price-table">
+                    <thead>
+                        <tr><th>Line</th><th class="num">NPV</th><th class="num">Notional</th></tr>
+                    </thead>
+                    <tbody id="price-rows"></tbody>
+                </table>
+                <div class="legend" id="mode-note"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="book-bar">
+        <div class="handoff-note" id="handoff-note">
+            The Book button carries the economics across to the booking screen.
+        </div>
+        <div style="display:flex;gap:8px">
+            <button class="ghost" id="new-trade">New trade</button>
+            <button class="ghost" id="reprice">Reprice</button>
+            <button class="primary" id="book">Book</button>
+        </div>
+    </div>
+
+    <section class="panel">
+        <header>
+            <h2>What Book does</h2>
+            <span class="legend">The handoff, in one place.</span>
+        </header>
+        <div class="body">
+            <p class="field-note" style="margin-top:0">
+                On a real desk the pricing screen and the booking screen are two halves of
+                one flow. The trader tweaks the deal until the number is right, then books
+                it. Book carries the economics across: every leg, every schedule, every
+                strike. What it does not carry is the interaction — the booking screen opens
+                without a market data feed and without model inputs, because its job is the
+                correctness of the record, not the price.
+            </p>
+            <p class="field-note">
+                The one thing the booking screen cannot derive is the initial NPV. Book
+                carries it with its provenance: the as-of time, the market data cut, the
+                model, and the run that produced it. The booking screen shows it read-only.
+            </p>
+            <p class="field-note">
+                <strong>New trade</strong> starts a deal here, from the least reference data
+                the screen can price from: the product type, the two currencies and their
+                amounts, the strike, the option type and the expiry. Book carries that set
+                across, and the booking screen fills in the rest. Opening this page with a
+                structure already booked amends it instead, which is the other half of the flow.
+            </p>
+            <p class="legend" style="margin-bottom:0">
+                This prototype fakes the valuation. The number moves with the tweaks
+                because a static number would hide the handoff, which is the point.
+            </p>
+        </div>
+    </section>
+
+</div>
+
+<dialog id="ticket-dialog">
+    <header>
+        <h2>Price a new trade</h2>
+        <button class="ghost" data-close>Close</button>
+    </header>
+    <div class="dialog-body">
+        <p class="field-note" style="margin-top:0">
+            Pricing needs the least reference data it can price from. Book carries
+            this much across, and the booking screen fills in the rest.
+        </p>
+        <div class="field-grid">
+            <div class="field">
+                <label for="t-product">Product type</label>
+                <select id="t-product"></select>
+            </div>
+            <div class="field">
+                <label for="t-longshort">Long or short</label>
+                <select id="t-longshort">
+                    <option>Long</option>
+                    <option>Short</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="t-option">Option type</label>
+                <select id="t-option">
+                    <option>Call</option>
+                    <option>Put</option>
+                </select>
+            </div>
+            <div class="field">
+                <label for="t-bought-ccy">Bought currency</label>
+                <input id="t-bought-ccy" type="text" size="3">
+            </div>
+            <div class="field">
+                <label for="t-bought-amt">Bought amount</label>
+                <input id="t-bought-amt" type="text" inputmode="decimal">
+            </div>
+            <div class="field">
+                <label for="t-sold-ccy">Sold currency</label>
+                <input id="t-sold-ccy" type="text" size="3">
+            </div>
+            <div class="field">
+                <label for="t-sold-amt">Sold amount</label>
+                <input id="t-sold-amt" type="text" inputmode="decimal">
+            </div>
+            <div class="field">
+                <label for="t-strike">Strike</label>
+                <input id="t-strike" type="text" inputmode="decimal">
+            </div>
+            <div class="field">
+                <label for="t-expiry">Expiry</label>
+                <input id="t-expiry" type="date">
+            </div>
+        </div>
+    </div>
+    <footer>
+        <button class="ghost" data-close>Cancel</button>
+        <button class="primary" id="ticket-confirm">Price it</button>
+    </footer>
+</dialog>
+
+<script src="catalogue.js"></script>
+<script src="pricing.js"></script>
+</body>
+</html>

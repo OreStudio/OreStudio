@@ -154,6 +154,7 @@
         <li><a href='/OreStudio/doc/agile/agile.html'>Agile</a></li>
         <li><a href='/OreStudio/agile/index.html'>Agile Board</a></li>
         <li><a href='/OreStudio/doc/llm/llm.html'>LLMs</a></li>
+        <li><a href='/OreStudio/doc/prototypes/index.html'>Prototypes</a></li>
       </ul>
     </div>
     <div class='nav-group'>
@@ -272,7 +273,10 @@ managed uniformly: copy, then patch index.html with the site chrome."
       (message "%s deployed to %s" app-name dst))))
 
 (defun ores-deploy-web-apps (site-dir)
-  "Deploy every ores.org-js app into SITE-DIR."
+  "Deploy every static web app into SITE-DIR.
+The ores.org-js apps and the doc/prototypes pages all go out this way, so
+they are managed uniformly: copy the directory, then patch its index.html
+with the site chrome."
   ;; Graph: float the header and undo the body flex/padding from
   ;; style.css (org-roam-ui sizes its canvas to window inner dimensions).
   (ores-deploy-web-app
@@ -281,6 +285,12 @@ managed uniformly: copy, then patch index.html with the site chrome."
   ;; Agile board: undo the site body flex/padding; the app styles itself.
   (ores-deploy-web-app
    "./projects/ores.org-js/agile" site-dir "agile"
+   "<style>body{display:block;padding:0;align-items:unset;}</style>")
+  ;; Trade entry prototype: same body reset; the prototype styles itself.
+  ;; It deploys beside the org page that describes it, under doc/prototypes/,
+  ;; so the gallery, the description and the app share one tree.
+  (ores-deploy-web-app
+   "./doc/prototypes/trade-entry" site-dir "doc/prototypes/trade-entry"
    "<style>body{display:block;padding:0;align-items:unset;}</style>"))
 
 ;; The forms below run the whole-site build.  A caller wanting only the

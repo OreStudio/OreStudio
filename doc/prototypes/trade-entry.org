@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 7B737119-099C-451D-9319-1D6BEE73A063
+:END:
+#+title: Trade Entry Prototype
+#+description: A clickable prototype of a structure-based trade entry flow: a booking screen that manages a structure and its components, and a pricing screen whose Book button hands the economics across.
+#+type: knowledge
+#+level: cross
+#+filetags: :prototype:trading:structures:booking:ui:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+* Summary
+
+The trade entry prototype shows a booking flow built around structures
+rather than single trades. It has two screens. The booking screen manages
+a structure and its components, and the pricing screen carries the Book
+button that hands the economics across.
+
+The prototype is throwaway. It is not production code and it does not
+ship to users. It exists so that the layout and the behaviour can be
+argued about with something concrete in front of us.
+
+Open the [[file:trade-entry/][booking screen]], or go straight to the
+[[file:trade-entry/pricing.html][pricing screen]]. The pricing screen is one
+click away from the booking screen, under *Price this structure*. From
+there, *New trade* starts a deal and *Book* brings it back.
+
+Everything on both screens is mock data, transcribed from
+=external/ore/examples/Products/Example_Trades=. Neither screen reads a
+service, a database or a market data feed.
+
+* Detail
+
+** What the booking screen does
+
+The booking screen is deliberately not interactive in the pricing sense.
+It has no market data and no model inputs. It concentrates on the
+correctness and the validity of the booking.
+
+- *The structure panel.* A tree two levels deep: structure, group,
+  component. A group carries a name, and components sit inside it.
+- *Two envelopes, in fixed positions.* Reference data is kept apart from
+  the economics, and it stays where it is. The structure carries an
+  envelope strip in the header: its identifier, counterparty, portfolio,
+  netting set, book and trade date. The selected component carries an
+  envelope block at the head of its panel, grouped under the field groups
+  of =ores.trading.trade= — identity, classification, parties, lifecycle
+  and audit. The instrument form below carries the instrument only.
+- *The mode switch.* Strategy mode fixes the leg set and enforces the
+  strategy's invariant. Package mode offers every product type and
+  enforces nothing structural.
+- *The component picker.* Every =product_type= value, grouped by asset
+  class, plus the FX =trade_type_code= values that have a dedicated form.
+- *The widgets.* A barrier option opens barrier management, an FX vanilla
+  option opens a schedule and an expiry, a swap opens a two-leg schedule
+  and its cashflows, and a composite opens its leg list. Every other
+  choice opens the generic form.
+- *The instrument tabs.* The form is tabbed, and the tabs follow the
+  widget: terms, schedule and premium for the vanilla option, plus
+  barriers for the barrier option, and legs for the composite. Each tab
+  is one screen long, so no tab runs past the fold.
+- *The premium is a sub-leg.* It carries its own identifier, currency,
+  amount and payment date, and the option references it by key. It is not
+  a field on the option.
+- *The version header.* The structure version and the authorisation state
+  sit beside the name.
+- *The initial NPV.* Read-only, with its provenance beside it: the as-of
+  time, the market data cut, the model, and the run that produced it.
+- *Form from existing trades.* The screen can also build a structure out
+  of trades that are already booked.
+
+** What the pricing screen does
+
+The pricing screen is the dynamic half. Market data ticks, and the vols
+and the rates are the trader's to move.
+
+- *Two pricing modes.* Structure mode prices the deal as one unit. Leg
+  mode prices each trade on its own and reports the results side by side.
+- *Two presentations.* The condensed view shows the structure as one
+  line. The expanded view shows the legs. Both read the same data.
+- *The NPV readout.* It moves as the market moves and as the trader
+  tweaks.
+- *New trade.* A deal can start here, from the least reference data the
+  screen can price from: the product type, the currencies and their
+  amounts, the strike, the option type and the expiry.
+- *The Book button.* Book carries the economics to the booking screen,
+  and stamps the initial NPV with its provenance. Book works on a deal
+  started with *New trade* and on one that is already booked, which is the
+  amend half of the flow.
+
+** The rule the prototype exists to show
+
+A change to any component increments the structure version. Authorisation
+does not. The prototype models this literally rather than asserting it:
+every mutating action routes through one function that bumps the version
+and writes the audit trail, and the authorise action deliberately does
+not. Watch the version chip while you change a strike.
+
+This rule comes from
+[[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]].
+The prototype invents no second rule.
+
+** What is fake
+
+Do not read a number on either screen as a price.
+
+- The valuation is not real. The model is monotonic in vol and in
+  moneyness, so a tweak moves the number the way a trader expects. It is
+  not a price.
+- The market data is not real. The spots random-walk on a timer.
+- There is no backend. State lives in the browser, so the Book handoff
+  works and a reload keeps your place.
+
+** Where the code lives
+
+=doc/prototypes/trade-entry/=. Six files, no framework and no build step.
+The site build copies the directory through =ores-deploy-web-app=, which
+already deploys the other static apps.
+
+Open either page with =?selfcheck=1= to run the checks on the strategy
+invariants and the schedule generator. The booking screen runs all
+twenty-one. The pricing screen runs seventeen and names the four that
+read =booking.js=, which it does not load.
+
+** Reading the prototype
+
+The prototype answers layout and behaviour questions. It does not settle
+product preferences. The strategy set it carries is provisional: see
+[[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]]
+for the assumptions it was built on, and for the decisions still open.
+
+* See also
+
+- [[id:D913FE21-6CF6-439A-89CF-6A1928AFA094][Prototypes]] — the index of every prototype, and where to open each one.
+- [[id:FC31FC9C-7A6E-4EFD-8A62-6DE4137F7160][Trade Structures and Deal Composition]] — the composition ladder, the deal topology and the versioning rule this prototype follows.
+- [[id:D63FCA11-EE40-438F-ADF7-12C2ED5541D3][Trade entry prototype: structure-based booking screen]] — the story the prototype belongs to.
+- [[id:EDA1C2B2-C029-4BFC-8DEF-A15E8B369B4A][Build the booking screen prototype]] — the task that built it, and its assumptions.
+- [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations and Deal Versioning]] — the confirmation model that a structure version drives.
+- [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the wider target-state screen design.
+- [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] — ORE's untyped structure, and the notional aggregation methods it offers.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

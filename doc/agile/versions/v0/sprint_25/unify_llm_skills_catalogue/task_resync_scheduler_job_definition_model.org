@@ -48,6 +48,57 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
+** The breaks, measured
+
+Three of the five column divergences were the model being wrong, and
+they are fixed:
+
+- =schedule_expression= was =std::string= where the code has
+  =cron_expression=. The model now declares the type and nothing
+  else; the custom-type registry supplies the header. The generated
+  domain header is identical to the hand-written line, which is this
+  mechanism's first real use.
+- =action_type= and =action_payload= carried SQL defaults but no
+  C++ member default, so the generated struct lost
+  ="execute_sql"= and ="{}"=. Both now declare =:default_value:=.
+
+Two are not model defects, and neither can be fixed by editing the
+model alone.
+
+=is_active= is =integer= in SQL, =int= in the repository entity, and
+=bool= in the domain struct, with =job_definition_mapper.cpp=
+converting at the boundary. The model can give a column one
+=cpp_type=, so it cannot say "int in storage, bool in the domain".
+Three ways out: align the domain on =int= and change the struct;
+change the SQL column to =boolean= and migrate; or teach codegen that
+storage and domain types can differ. The first is the smallest and
+matches what the model already says.
+
+=tenant_id= is =std::optional<boost::uuids::uuid>= in the code, and
+codegen emits =utility::uuid::tenant_id= defaulting to =system()= for
+any entity with =has_tenant_id=. =nullable_tenant_id: true= does not
+change that — it affects the SQL primary key only, and
+=synthetic.market_data_generation_config= sets the same flag and gets
+the strong type. So the code, not the model, is the outlier. Changing
+it means the mapper's presence branches, the builder's member, and
+every consumer.
+
+** What regeneration would still destroy
+
+Fixing the columns does not make the component safe to regenerate.
+=job_definition_repository.cpp= loses 134 lines and
+=job_definition_handler.hpp= 120: =read_all_active=, =find_by_name=
+twice, =schedule=, =schedule_batch=, =unschedule=, and a =history=
+whose shape differs from the generic one. Their protocol structs live
+in a hand-maintained header consumed cross-component by
+=ores.reporting=. The Qt controllers and dialogs bind to that same
+header.
+
+Those facets have to be disabled explicitly before any of this can
+regenerate, which the =* Physical space= table does, one row per
+address. Clearing the columns is necessary and nowhere near
+sufficient.
+
 * Test Scenarios
 
 Manual QA scenarios (scaffolded via =compass add test_scenario=, run

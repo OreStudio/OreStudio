@@ -29,11 +29,11 @@ upstream hand-patches must survive the sync. Report whether
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | The build is green and =ores.ore.core.tests= passes: 479 test cases, 428882 assertions. The example coverage test covers all 132 examples in =Products/Example_Trades=. |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Raise the PR. The domain round-trip dataset is still out of step; it is tracked separately. |
+| Next         | Nothing. |
 | Last touched | 2026-09-12                               |
 
 * Acceptance
@@ -71,6 +71,10 @@ written.
 - =TA002_IR_Swap.tar.gz= is byte-identical to its previous contents.
   Checked by extracting it and diffing its =Input/= tree against
   =external/ore/examples/Academy/TA002_IR_Swap/Input/=.
+- The sync deletes 13 files whose names look like =#run.py#=. They are
+  Emacs auto-save files that a previous hand-vendoring committed by
+  accident. The engine checkout has none, and the sync mirrors that
+  checkout, so they go. They are the only deletions in the diff.
 - The =oreTradeData= blocker recorded in
   =doc/agile/product_backlog/next/xsdcpp-fails-to-resolve-oretradedata-group.org=
   did not recur. The script that failed during the v16 bump ran clean.
@@ -191,6 +195,38 @@ run before the PR was raised. No critical findings.
 | 3 | The twelve golden suites print "run with =--reset-goldens= to bootstrap", but that flag only deletes the dataset; nothing writes it back | =xml_*_golden_roundtrip_tests.cpp= | Accepted, deferred | Pre-existing, and not this PR's to fix. Recorded in [[id:41FB0924-C9F6-4884-BA8C-BEAC71A6B6AD][--reset-goldens deletes the golden dataset and nothing recreates it]]. |
 | 4 | The coverage test walks =Products/Example_Trades= only, and non-recursively | =xml_example_coverage_tests.cpp= | Declined | That directory holds the trade examples. The twelve suites cover the rest of the examples tree, and 132 files is the whole trade set. |
 | 5 | =std::to_string= writes a strike as "100.000000", not "100" | =commodity_instrument_mapper.cpp= | Declined | Byte-for-byte the idiom the bond and equity mappers already use, and the round-trip compares parsed values, so trailing zeros do not reach a test. |
-| 6 | Misspell check (=misspell-fixer .=) | whole diff | Pending | Result recorded in =* Result= once the scan returns. |
+| 6 | Misspell check (=misspell-fixer .=) exits 1 on a clean tree | whole tree | Fixed | Every hit sat in the untracked, gitignored =projects/ores.codegen/venv=. The ignore file names the compass venv but not this one. Added the missing line in =b772be2e43=; a run from the repo root now reports "nothing to replace" and exits 0. |
+| 7 | =LOAD_PROFILE_1_EXPLICT= is a misspelling | =examples/MarketRisk/Input/Intradaypower/{conventions,portfolio}.xml= | Declined | An upstream data identifier, not prose. It names a load profile and the portfolio references it by that name, so correcting the spelling breaks the example. Present verbatim in the engine checkout. |
 
 * Result
+
+DONE. The examples and XSD trees match the v1.8.17.0 engine checkout, the
+C++ domain types regenerate from the new XSD, and the three compile
+breaks the regeneration caused are fixed. =TA002_IR_Swap.tar.gz= is
+byte-identical to its previous contents.
+
+The branch mixes code, docs and ci, so the union of the three check sets
+ran against =b772be2e43=:
+
+| Check | Result |
+|-------+--------|
+| Build, =linux-clang-debug-make= | clean |
+| =ctest= | 71/71 passed, 0 failed, 777.59 s |
+| Round-trip, =scripts/ore_domain_roundtrip_check.py= | exit 0 |
+| cmake-sources drift | clean, exit 0 |
+| Codegen component drift | "No drift: regenerated output matches the checked-in tree", exit 0 |
+| Site build | "Build succeeded.", 5318 nodes / 31901 links |
+| Misspell, =misspell-fixer .= | exit 0, "nothing to replace" |
+
+The first =ctest= round failed eight suites, and none of it was code.
+Three of them named a column or a row the schema had dropped, because
+the worktree database was 15 days behind HEAD. =compass db status=
+reported that drift and named its own remedy. The recreate fixed those
+three. The other five failed on =NATS connect failed=, because =compass
+services stop= preceded the recreate and nothing restarted the broker.
+With the 23 services back up, all 71 suites pass.
+
+The coverage test added here walks all 132 files in
+=Products/Example_Trades= and finds a golden and a test reference for
+each one. =Credit_CallableBond.xml= was the single gap; its golden is
+committed with it.

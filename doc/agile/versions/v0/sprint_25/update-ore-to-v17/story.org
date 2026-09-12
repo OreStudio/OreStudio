@@ -56,7 +56,7 @@ version it wants and we can compare the two on live jobs.
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:EB84218C-FF1E-4EB6-8E65-218F41930350][Scaffold story: Update ORE to v17]] | DONE | 2026-09-11 | 2026-09-11 | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:25EC2B31-812F-4EB1-8ADE-966DF496D5E8][Sync ORE examples and XSD to v1.8.17.0]] | STARTED | 2026-09-11 | | Sync external/ore/examples/ and external/ore/xsd/ from the v1.8.17.0 engine checkout, and regenerate the C++ domain types from the new XSD. |
+| [[id:25EC2B31-812F-4EB1-8ADE-966DF496D5E8][Sync ORE examples and XSD to v1.8.17.0]] | DONE | 2026-09-11 | 2026-09-12 | Sync external/ore/examples/ and external/ore/xsd/ from the v1.8.17.0 engine checkout, and regenerate the C++ domain types from the new XSD. |
 | [[id:E6AD2AD9-2EF9-4F3E-8D10-526E0B60232A][Build and vendor the ORE v1.8.17.0 engine package]] | DONE | 2026-09-11 | 2026-09-12 | Build the v1.8.17.0 engine into one self-contained package with external/ore/tools/package_ore.sh, self-test it against TA002, and commit it beside the v1.8.16.0 package. |
 | [[id:ADA8C792-C844-485E-81EE-8BA4073FF3F8][Publish both ORE engine versions during provisioning]] | STARTED | 2026-09-11 | | Register both engine versions in the compute seed and publish both packages during ACME provisioning, so a grid job can run on v1.8.16.0 or v1.8.17.0. |
 | [[id:64CB13D8-4848-4C66-8B6B-5946A4F4D8FF][Cover the seven new ORE v1.8.17.0 trade types]] | BACKLOG | | | Add mapper and round-trip coverage for the trade types that appear for the first time in v1.8.17.0, none of which maps into an ORES trading type today. |

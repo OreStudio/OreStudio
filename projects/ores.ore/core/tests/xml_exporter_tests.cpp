@@ -217,7 +217,7 @@ TEST_CASE("export_portfolio_swap_roundtrip", tags) {
     for (const auto& src : imported) {
         trade_export_item item;
         item.trade = src.trade;
-        item.instrument = src.instrument;
+        item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
 
@@ -241,7 +241,7 @@ TEST_CASE("export_portfolio_fx_forward_roundtrip", tags) {
     for (const auto& src : imported) {
         trade_export_item item;
         item.trade = src.trade;
-        item.instrument = src.instrument;
+        item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
 
@@ -264,7 +264,7 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
     for (const auto& src : imported) {
         trade_export_item item;
         item.trade = src.trade;
-        item.instrument = src.instrument;
+        item.instrument = ores::trading::domain::encode_instrument(src.instrument);
         items.push_back(std::move(item));
     }
 
@@ -306,7 +306,7 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
     trade_export_item item;
     item.trade.identity.external_id = "RoundtripBondFuture001";
     item.trade.classification.trade_type = "BondFuture";
-    item.instrument = *r;
+    item.instrument = ores::trading::domain::encode_instrument(*r);
 
     const auto xml = exporter::export_portfolio({item});
     BOOST_LOG_SEV(lg, debug) << "Exported XML:\n" << xml;

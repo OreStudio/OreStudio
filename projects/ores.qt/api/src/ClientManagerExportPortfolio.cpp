@@ -20,13 +20,11 @@
 
 // Isolated TU for ClientManager::exportPortfolio().
 //
-// export_portfolio_response carries vector<trade_export_item> where each item
-// contains trade_instrument — a std::variant with 9 alternatives including
-// with_legs<..., swap_leg> types.
-//
-// swap_leg is decomposed via rfl::Flatten into three sub-structs (≤9 fields
-// each), so rfl::internal::no_duplicate_field_names never sees more than 9
-// field names at once and stays below MSVC's C1202 template-graph limit.
+// export_portfolio_response carries vector<trade_export_item>, where each item
+// holds an instrument_payload: the leaf type name plus the leaf as JSON text.
+// No std::variant reaches the wire, so no alternative is lost to declaration
+// order, and rfl::internal::no_duplicate_field_names never sees the whole
+// variant at once.
 //
 // This TU also prevents the rfl instantiation from leaking into caller TUs via
 // the process_authenticated_request<T> header template.

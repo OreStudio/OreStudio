@@ -414,7 +414,7 @@ private:
                 continue;
             const auto id = boost::uuids::to_string(*t.classification.instrument_id);
             if (auto it = imap.find(id); it != imap.end())
-                item.instrument = it->second;
+                item.instrument = encode_instrument(it->second);
         }
 
         // Phase 5: fill the trade-level envelope, which is keyed by the
@@ -592,7 +592,7 @@ public:
                     std::vector<trade_export_item> items{{.trade = std::move(*trade_opt)}};
                     populate_instruments_for_trades(ctx, items);
                     resp.trade = std::move(items[0].trade);
-                    resp.instrument = std::move(items[0].instrument);
+                    resp.instrument = decode_instrument(items[0].instrument);
                     resp.success = true;
                 }
             }

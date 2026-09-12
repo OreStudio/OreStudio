@@ -21,6 +21,7 @@
 #define ORES_TRADING_MESSAGING_TRADE_PROTOCOL_HPP
 
 #include "ores.trading.api/domain/activity_type.hpp"
+#include "ores.trading.api/domain/instrument_payload.hpp"
 #include "ores.trading.api/domain/trade.hpp"
 #include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
@@ -44,8 +45,12 @@ struct get_activity_types_response {
 /**
  * @brief One trade plus its resolved instrument data.
  *
- * The instrument field is monostate when the trade has no linked instrument
- * or the product_type is unrecognised.
+ * The instrument is carried as a payload rather than as a trade_instrument
+ * variant. reflect-cpp cannot name the active alternative of that variant:
+ * untagged, the first alternative std::monostate parses from any payload and
+ * wins; tagged, rfl::AddTagsToVariants exceeds the fold limits on macOS and
+ * MSVC. See instrument_payload. The payload's type is empty when the trade has
+ * no linked instrument or the product_type is unrecognised.
  *
  * The envelope holds the trade-level data the product tables do not: the
  * counterparty name, the netting set id, the portfolio id labels and the
@@ -53,7 +58,7 @@ struct get_activity_types_response {
  */
 struct trade_export_item {
     ores::trading::domain::trade trade;
-    ores::trading::domain::trade_instrument instrument;
+    ores::trading::domain::instrument_payload instrument;
     std::optional<ores::trading::domain::trade_envelope_data> envelope;
 };
 

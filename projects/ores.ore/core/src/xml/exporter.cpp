@@ -465,7 +465,7 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                 p.Trade.push_back(std::move(xsd_t));
                 rebuilt = true;
             },
-            item.instrument);
+            trading::domain::decode_instrument(item.instrument));
 
         if (!rebuilt) {
             if (append_unmapped_trade(p, tr, item.envelope))
@@ -530,7 +530,7 @@ roundtrip_summary exporter::roundtrip(const std::filesystem::path& input_dir,
                 for (const auto& item : import_items) {
                     trading::messaging::trade_export_item ei;
                     ei.trade = item.trade;
-                    ei.instrument = item.instrument;
+                    ei.instrument = trading::domain::encode_instrument(item.instrument);
                     ei.envelope = item.envelope;
                     if (std::holds_alternative<std::monostate>(item.instrument))
                         ++summary.trades_passthrough;

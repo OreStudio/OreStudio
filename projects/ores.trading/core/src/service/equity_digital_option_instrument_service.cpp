@@ -77,7 +77,8 @@ void equity_digital_option_instrument_service::save_equity_digital_option_instru
     BOOST_LOG_SEV(lg(), debug) << "Saving Equity Digital Option instrument. "
                                << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved Equity Digital Option instrument. "
                               << "instrument_id: " << v.identity.instrument_id;
@@ -93,8 +94,10 @@ void equity_digital_option_instrument_service::save_equity_digital_option_instru
     BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_digital_option_instruments.size()
                                << " Equity Digital Option instruments";
     auto ts = equity_digital_option_instruments;
-    for (auto& e : ts)
-        stamp(e, ctx_);
+    for (auto& e : ts) {
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

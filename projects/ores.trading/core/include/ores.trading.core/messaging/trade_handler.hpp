@@ -31,17 +31,12 @@
 #include "ores.service/messaging/handler_helpers.hpp"
 #include "ores.service/service/request_context.hpp"
 #include "ores.storage/net/storage_transfer.hpp"
-#include "ores.trading.api/domain/bond_instrument_data.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
 #include "ores.trading.api/messaging/trade_protocol.hpp"
 #include "ores.trading.core/export.hpp"
 #include "ores.trading.core/service/activity_type_service.hpp"
 #include "ores.trading.core/service/balance_guaranteed_swap_instrument_service.hpp"
-#include "ores.trading.core/service/bond_instrument_service.hpp"
-#include "ores.trading.core/service/bond_issue_service.hpp"
-#include "ores.trading.core/service/bond_option_service.hpp"
-#include "ores.trading.core/service/bond_repo_service.hpp"
-#include "ores.trading.core/service/bond_trs_service.hpp"
+#include "ores.trading.core/service/bond_instrument_reader.hpp"
 #include "ores.trading.core/service/callable_swap_instrument_service.hpp"
 #include "ores.trading.core/service/cap_floor_instrument_service.hpp"
 #include "ores.trading.core/service/commodity_instrument_service.hpp"
@@ -69,6 +64,7 @@
 #include "ores.trading.core/service/rpa_instrument_service.hpp"
 #include "ores.trading.core/service/scripted_instrument_service.hpp"
 #include "ores.trading.core/service/swaption_instrument_service.hpp"
+#include "ores.trading.core/service/trade_envelope_reader.hpp"
 #include "ores.trading.core/service/trade_service.hpp"
 #include "ores.trading.core/service/trade_status_service.hpp"
 #include "ores.trading.core/service/vanilla_swap_instrument_service.hpp"
@@ -113,8 +109,6 @@ private:
         using ores::trading::domain::trade_instrument;
         using ores::trading::domain::swap_instrument_data;
         using ores::trading::domain::composite_instrument_data;
-        using ores::trading::domain::bond_instrument_data;
-        using ores::trading::domain::bond_issue;
 
         // Phase 1: bucket instrument IDs by (product_type, trade_type)
         std::vector<std::string> bond_ids, credit_ids, commodity_ids, scripted_ids, composite_ids,
@@ -258,35 +252,9 @@ private:
         };
 
         if (!bond_ids.empty()) {
-            // Assemble each header row with its issue row (shared by every
-            // instrument of one ISIN) and the product's fact row, which the
-            // export path reads back from the container.
-            service::bond_instrument_service svc(ctx);
-            service::bond_issue_service issue_svc(ctx);
-            service::bond_option_service option_svc(ctx);
-            service::bond_trs_service trs_svc(ctx);
-            service::bond_repo_service repo_svc(ctx);
-            std::unordered_map<std::string, bond_issue> issue_cache;
-            for (auto& v : svc.get_bond_instruments(bond_ids)) {
-                const auto id = boost::uuids::to_string(v.identity.instrument_id);
-                const auto issue_id = boost::uuids::to_string(v.issue_id);
-                bond_instrument_data data;
-                data.instrument = std::move(v);
-                if (auto it = issue_cache.find(issue_id); it != issue_cache.end())
-                    data.issue = it->second;
-                else if (auto issue = issue_svc.get_issue(issue_id)) {
-                    data.issue = *issue;
-                    issue_cache[issue_id] = data.issue;
-                }
-                const auto& ttc = data.instrument.identity.trade_type_code;
-                if (ttc == "BondOption")
-                    data.option = option_svc.get_option(id);
-                else if (ttc == "BondTRS")
-                    data.trs = trs_svc.get_trs(id);
-                else if (ttc == "BondRepo")
-                    data.repo = repo_svc.get_repo(id);
+            service::bond_instrument_reader reader(ctx);
+            for (auto& [id, data] : reader.read_instruments(bond_ids))
                 imap[id] = std::move(data);
-            }
         }
         if (!credit_ids.empty()) {
             service::credit_instrument_service svc(ctx);
@@ -446,7 +414,22 @@ private:
                 continue;
             const auto id = boost::uuids::to_string(*t.classification.instrument_id);
             if (auto it = imap.find(id); it != imap.end())
-                item.instrument = it->second;
+                item.instrument = encode_instrument(it->second);
+        }
+
+        // Phase 5: fill the trade-level envelope, which is keyed by the
+        // trade rather than the instrument and so crosses product types.
+        std::vector<std::string> trade_ids;
+        trade_ids.reserve(items.size());
+        for (const auto& item : items)
+            trade_ids.push_back(boost::uuids::to_string(item.trade.identity.id));
+
+        service::trade_envelope_reader envelope_reader(ctx);
+        auto envelopes = envelope_reader.read_envelopes(trade_ids);
+        for (auto& item : items) {
+            const auto id = boost::uuids::to_string(item.trade.identity.id);
+            if (auto it = envelopes.find(id); it != envelopes.end())
+                item.envelope = std::move(it->second);
         }
     }
 
@@ -609,7 +592,7 @@ public:
                     std::vector<trade_export_item> items{{.trade = std::move(*trade_opt)}};
                     populate_instruments_for_trades(ctx, items);
                     resp.trade = std::move(items[0].trade);
-                    resp.instrument = std::move(items[0].instrument);
+                    resp.instrument = decode_instrument(items[0].instrument);
                     resp.success = true;
                 }
             }

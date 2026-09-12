@@ -48,12 +48,12 @@ domain::book generate_synthetic_book(utility::generation::generation_context& ct
     r.description = std::string(faker::lorem::sentence());
     r.parent_portfolio_id = ctx.generate_uuid();
     r.owner_unit_id = std::nullopt;
-    r.functional_currency = // "X-0" is the first code the synthetic currency generator emits (see
-                            // the currency entity's own generator): the functional-currency
-                            // validation only accepts codes of active currencies, and every test
-                            // tenant inherits the system tenant's accumulated active set, which
-                            // always contains X-0 -- every generator process starts its counter at
-                            // zero, so X-0 is present whenever any synthetic currency exists.
+    r.functional_currency = // X-0 is the sentinel code the eventing integration fixture seeds
+                            // before writing this row: the functional-currency trigger accepts only
+                            // codes of active currencies for the write tenant, so no fixed code is
+                            // valid on its own and the seed must come first. A caller that does not
+                            // seed it must overwrite this with a code it has written, or the insert
+                            // is rejected.
         std::string("X-0");
     r.gl_account_ref = std::string("GL-10150-TEST");
     r.cost_center = std::string("CC-001");

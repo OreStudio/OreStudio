@@ -71,7 +71,8 @@ void rpa_instrument_service::save_rpa_instrument(const domain::rpa_instrument& v
     BOOST_LOG_SEV(lg(), debug) << "Saving RPA instrument. "
                                << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved RPA instrument. "
                               << "instrument_id: " << v.identity.instrument_id;
@@ -85,8 +86,10 @@ void rpa_instrument_service::save_rpa_instruments(
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving " << rpa_instruments.size() << " RPA instruments";
     auto ts = rpa_instruments;
-    for (auto& e : ts)
-        stamp(e, ctx_);
+    for (auto& e : ts) {
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

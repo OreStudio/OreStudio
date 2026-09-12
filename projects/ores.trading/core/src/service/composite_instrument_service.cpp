@@ -75,7 +75,8 @@ void composite_instrument_service::save_composite_instrument(
     const auto id_str = boost::uuids::to_string(t.identity.instrument_id);
     BOOST_LOG_SEV(lg(), debug) << "Saving composite_instrument: " << t.identity.instrument_id
                                << " with " << legs.size() << " legs";
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     // Replace-on-save: remove the existing leg set before writing the new
     // one so that updates do not accumulate stale legs.
     leg_repo_.remove_by_instrument(ctx_, id_str);

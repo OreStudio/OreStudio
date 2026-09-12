@@ -30,11 +30,14 @@
 #include "ores.ore.core/domain/fx_instrument_mapper.hpp"
 #include "ores.ore.core/domain/scripted_instrument_mapper.hpp"
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
+#include "ores.ore.core/domain/trade_mapper.hpp"
 #include "ores.ore.core/xml/importer.hpp"
 #include "ores.platform/filesystem/file.hpp"
 #include "ores.utility/streaming/std_vector.hpp" // IWYU pragma: keep.
+#include <cctype>
 #include <chrono>
 #include <fstream>
+#include <optional>
 
 namespace ores::ore::xml {
 
@@ -63,17 +66,83 @@ std::string read_header(const std::filesystem::path& file) {
     return buf;
 }
 
-void fill_envelope(domain::trade& t, const trading::domain::trade& src) {
-    static_cast<std::string&>(t.id) = src.identity.external_id;
-    if (!src.classification.netting_set_id.empty()) {
-        domain::_NettingSetId_t nsid;
-        static_cast<std::string&>(nsid) = src.classification.netting_set_id;
-        domain::nettingSetGroup_group_t nsg;
-        nsg.NettingSetId = nsid;
-        domain::envelope env;
-        env.nettingSetGroup = nsg;
-        t.Envelope = env;
+/**
+ * @brief Reads the name of a document's root element.
+ *
+ * The reader is chosen from the root element alone. Searching the header
+ * for a keyword instead would read a curve configuration that names a
+ * conventions block in its opening lines as a conventions document, and
+ * rewrite it as an empty one.
+ */
+std::string read_root_element(const std::filesystem::path& file) {
+    const auto header = read_header(file);
+    auto at = header.find('<');
+    while (at != std::string::npos) {
+        if (header.compare(at, 4, "<!--") == 0) {
+            const auto end = header.find("-->", at + 4);
+            if (end == std::string::npos)
+                return {};
+            at = header.find('<', end + 3);
+            continue;
+        }
+        if (header.compare(at, 2, "<?") == 0 || header.compare(at, 2, "<!") == 0) {
+            const auto end = header.find('>', at + 2);
+            if (end == std::string::npos)
+                return {};
+            at = header.find('<', end + 1);
+            continue;
+        }
+        auto end = at + 1;
+        while (end < header.size() &&
+               (std::isalpha(static_cast<unsigned char>(header[end])) ||
+                header[end] == '_' || header[end] == ':'))
+            ++end;
+        return header.substr(at + 1, end - at - 1);
     }
+    return {};
+}
+
+void fill_envelope(domain::trade& t,
+                   const trading::domain::trade& src,
+                   const std::optional<trading::domain::trade_envelope_data>& env) {
+    static_cast<std::string&>(t.id) = src.identity.external_id;
+    if (env)
+        t.Envelope = domain::trade_mapper::reverse_envelope(*env);
+}
+
+// The generated domain exports to_string for every enumeration but no
+// parse. Scanning the spellings back through to_string keeps one source
+// of truth: a spelling the schema adds is parsed with no table here to
+// keep aligned with the generated one. The count is the size of the
+// generated oreTradeType table.
+constexpr int ore_trade_type_count = 115;
+
+std::optional<domain::oreTradeType> parse_ore_trade_type(const std::string& text) {
+    for (int i = 0; i < ore_trade_type_count; ++i) {
+        const auto candidate = static_cast<domain::oreTradeType>(i);
+        if (domain::to_string(candidate) == text)
+            return candidate;
+    }
+    return std::nullopt;
+}
+
+// The schema states the product data as optional, so a trade no reverse
+// mapper can rebuild still goes out as its type and its envelope. The
+// envelope is keyed by the trade, not the product, so dropping the whole
+// trade would lose it. Returns false when the type is not one the schema
+// names, which leaves no valid document to write.
+bool append_unmapped_trade(domain::portfolio& p,
+                           const trading::domain::trade& tr,
+                           const std::optional<trading::domain::trade_envelope_data>& env) {
+    const auto trade_type = parse_ore_trade_type(tr.classification.trade_type);
+    if (!trade_type)
+        return false;
+
+    domain::trade xsd_t;
+    xsd_t.TradeType = *trade_type;
+    fill_envelope(xsd_t, tr, env);
+    p.Trade.push_back(std::move(xsd_t));
+    return true;
 }
 
 } // namespace
@@ -106,6 +175,7 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
         const auto& tr = item.trade;
         const auto& tt = tr.classification.trade_type;
 
+        bool rebuilt = false;
         std::visit(
             [&](const auto& r) {
                 using T = std::decay_t<decltype(r)>;
@@ -226,6 +296,10 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                         xsd_t = bond_instrument_mapper::reverse_bond_trs(r);
                     else if (tt == "BondRepo")
                         xsd_t = bond_instrument_mapper::reverse_bond_repo(r);
+                    else if (tt == "BondFuture")
+                        xsd_t = bond_instrument_mapper::reverse_bond_future(r);
+                    else if (tt == "Ascot")
+                        xsd_t = bond_instrument_mapper::reverse_ascot(r);
                     else {
                         BOOST_LOG_SEV(lg(), debug) << "No reverse mapper for bond type: " << tt;
                         return;
@@ -387,10 +461,21 @@ exporter::export_portfolio(const std::vector<trading::messaging::trade_export_it
                     }
                 }
 
-                fill_envelope(xsd_t, tr);
+                fill_envelope(xsd_t, tr, item.envelope);
                 p.Trade.push_back(std::move(xsd_t));
+                rebuilt = true;
             },
-            item.instrument);
+            trading::domain::decode_instrument(item.instrument));
+
+        if (!rebuilt) {
+            if (append_unmapped_trade(p, tr, item.envelope))
+                BOOST_LOG_SEV(lg(), debug)
+                    << "Wrote trade as its type and envelope: " << tr.identity.external_id;
+            else
+                BOOST_LOG_SEV(lg(), warn)
+                    << "Dropping trade with no ORE trade type: " << tr.identity.external_id << " ("
+                    << tr.classification.trade_type << ")";
+        }
     }
 
     const std::string result = domain::save_data(p);
@@ -421,13 +506,11 @@ roundtrip_summary exporter::roundtrip(const std::filesystem::path& input_dir,
         const auto& file = entry.path();
         BOOST_LOG_SEV(lg(), trace) << "Processing: " << file;
 
-        const auto hdr = read_header(file);
-        const bool is_portfolio = hdr.find("<Portfolio>") != std::string::npos;
-        const bool is_currency = !is_portfolio && hdr.find("<CurrencyConfig>") != std::string::npos;
-        const bool is_calendar =
-            !is_portfolio && !is_currency && hdr.find("<CalendarAdjustments>") != std::string::npos;
-        const bool is_conventions = !is_portfolio && !is_currency && !is_calendar &&
-                                    hdr.find("<Conventions>") != std::string::npos;
+        const auto root = read_root_element(file);
+        const bool is_portfolio = root == "Portfolio";
+        const bool is_currency = root == "CurrencyConfig";
+        const bool is_calendar = root == "CalendarAdjustments";
+        const bool is_conventions = root == "Conventions";
 
         if (!is_portfolio && !is_currency && !is_calendar && !is_conventions) {
             BOOST_LOG_SEV(lg(), debug) << "Skipping unrecognised XML: " << file.filename();
@@ -447,7 +530,8 @@ roundtrip_summary exporter::roundtrip(const std::filesystem::path& input_dir,
                 for (const auto& item : import_items) {
                     trading::messaging::trade_export_item ei;
                     ei.trade = item.trade;
-                    ei.instrument = item.instrument;
+                    ei.instrument = trading::domain::encode_instrument(item.instrument);
+                    ei.envelope = item.envelope;
                     if (std::holds_alternative<std::monostate>(item.instrument))
                         ++summary.trades_passthrough;
                     else

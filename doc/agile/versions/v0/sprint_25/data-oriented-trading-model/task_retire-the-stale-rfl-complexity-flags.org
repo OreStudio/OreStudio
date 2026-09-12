@@ -1,0 +1,141 @@
+:PROPERTIES:
+:ID: 27FC1760-3BF2-4D46-B6F3-C42BB0A9EC83
+:END:
+#+title: Task: Retire the rfl complexity flags and close the variant traps
+#+description: The -fbracket-depth=1024 and /constexpr:depth100000 flags on ores.trading.api, and the comment naming rfl::AddTagsToVariants, were added for a variant-tagging change that was reverted. Measured: every TU on the export path compiles at bracket depth 128, so the flags are now unneeded there. Also records two traps: get_trade_instrument_response.instrument is still a std::variant, and bond_instrument_data reflects 28 fields, above the 19 that already tripped MSVC C1202 in sprint 19.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Remove the compiler flags and the comment that the reverted
+variant-tagging change left behind in =ores.trading.api=, and close the
+two traps that change opened: a response type that still carries a bare
+=std::variant=, and a container whose reflected field count is above the
+threshold that already broke MSVC once.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- =ores.trading.api/src/CMakeLists.txt= no longer names
+  =rfl::AddTagsToVariants=, and its flags are either removed or kept with
+  a comment that states what still needs them and why.
+- The removal is backed by a sweep, not by a sample: every TU that
+  compiles against =ores.trading.api= still compiles after the flags go.
+- =get_trade_instrument_response.instrument= either becomes an
+  =instrument_payload= or carries a comment naming the hazard and the
+  condition under which it fires.
+- The Windows risk on =bond_instrument_data= is either measured or
+  recorded with the field count and the sprint 19 precedent that sets the
+  threshold.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** The flags are now unneeded on the export path
+
+=projects/ores.trading/api/src/CMakeLists.txt= sets, PUBLIC:
+=/constexpr:depth100000= and =/constexpr:steps10000000= for MSVC, and
+=-fbracket-depth=1024= for =$<CXX_COMPILER_ID:Clang>=. The comment beside
+them names =rfl::AddTagsToVariants=, which is no longer called anywhere.
+
+Measured on this branch with =-fsyntax-only= and the flag overridden.
+Every TU on the export path compiles at bracket depth 128, and so at
+AppleClang's default of 256: =instrument_payload.cpp=,
+=domain_instrument_payload_tests.cpp=,
+=messaging_export_portfolio_codec_tests.cpp=, =registrar_trades.cpp=,
+=ClientManagerExportPortfolio.cpp= and =exporter.cpp=.
+
+So the flag is not what keeps macOS green any more. It is also not what
+keeps MSVC green: =/constexpr:depth= and =/constexpr:steps= have no
+effect on C1202, which is a limit on the template instantiation graph.
+The flags are harmless but they are now a claim about the code that the
+code no longer makes. Removable, subject to the full-consumer sweep in
+the acceptance.
+
+** =get_trade_instrument_response= still carries a variant
+
+=trade_protocol.hpp:100= still holds
+=ores::trading::domain::trade_instrument instrument=. This was left
+alone deliberately: its only consumer,
+=ores.qt.headless/parse_trade_instrument.cpp=, dispatches on
+=(product_type, trade_type)= and decodes one known concrete leaf per
+instrument, so it never asks reflect-cpp to guess an alternative, and
+converting it would force a Qt parser rewrite.
+
+The hazard is therefore latent, not live: any future consumer that
+decodes this response monolithically will get =std::monostate= for every
+instrument, silently. The sprint 25 defect was exactly that. Either
+convert it or say so at the declaration.
+
+** =bond_instrument_data= reflects 28 fields
+
+MSVC C1202 fires in =rfl/internal/no_duplicate_field_names.hpp= when the
+field count of a single reflected struct is large enough. The threshold
+is known from sprint 19 (PR #1031,
+[[id:C19E28EF-FA66-4A53-8958-7F3D7A093F46][Fix C1202 in
+ClientManagerExportPortfolio.cpp]]): =swap_leg= at 19 fields fired it in
+a clean TU, and was fixed by decomposing into three sub-structs of at
+most 9 fields behind =rfl::Flatten=.
+
+=bond_instrument_data= carries 28 members. It is reflected on the export
+path, because the payload encodes the whole leaf as JSON. That is above
+a count already known to be fatal, so Windows is expected to fail there.
+This was not introduced by the payload change: =trade_export_item= held
+the same variant, and therefore the same reflection, before it.
+
+Not measured, because nothing on this host runs MSVC, and Windows CI is
+out of scope for the round-trip work. The fix, if it is needed, is the
+sprint 19 one: split the container into sub-structs behind =rfl::Flatten=.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

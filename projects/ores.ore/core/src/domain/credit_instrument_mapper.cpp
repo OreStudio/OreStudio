@@ -104,11 +104,8 @@ legData credit_instrument_mapper::reverse_cds_leg(const credit_instrument& instr
     }
     if (!instr.schedule.start_date.empty() || !instr.schedule.maturity_date.empty()) {
         scheduleData_Rules_t rule;
-        if (!instr.schedule.start_date.empty()) {
-            date sd;
-            static_cast<std::string&>(sd) = instr.schedule.start_date;
-            rule.StartDate = xsd::optional<date>(sd);
-        }
+        if (!instr.schedule.start_date.empty())
+            rule.StartDate = instr.schedule.start_date;
         if (!instr.schedule.maturity_date.empty()) {
             date ed;
             static_cast<std::string&>(ed) = instr.schedule.maturity_date;

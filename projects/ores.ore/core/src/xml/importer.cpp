@@ -134,9 +134,8 @@ importer::import_portfolio_with_context(const std::filesystem::path& path) {
     for (const auto& t : p.Trade) {
         trade_import_item item;
         item.trade = domain::trade_mapper::map(t);
+        item.envelope = domain::trade_mapper::map_envelope(t);
         item.source_file = path;
-        if (t.Envelope && t.Envelope->CounterParty)
-            item.ore_counterparty_name = std::string(*t.Envelope->CounterParty);
 
         try {
             item.instrument = domain::trade_mapper::map_instrument(t);

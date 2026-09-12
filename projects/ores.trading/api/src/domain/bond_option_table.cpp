@@ -20,18 +20,34 @@
 #include "ores.trading.api/domain/bond_option_table.hpp"
 #include <boost/uuid/uuid_io.hpp>
 #include <fort.hpp>
+#include <sstream>
 
 namespace ores::trading::domain {
 
+namespace {
+template <typename T>
+std::string opt_str(const std::optional<T>& o) {
+    if (!o)
+        return {};
+    std::ostringstream s;
+    if constexpr (std::is_same_v<T, bool>)
+        s << std::boolalpha;
+    s << *o;
+    return s.str();
+}
+}
 
 std::string convert_to_table(const std::vector<bond_option>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "Type" << "Strike" << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "Type" << "Strike" << "Redemption" << "Price Type" << "Knocks Out"
+          << "Modified By" << "Version" << fort::endr;
 
     for (const auto& bo : v) {
-        table << bo.option_type << bo.option_strike << bo.modified_by << bo.version << fort::endr;
+        table << bo.option_type << bo.option_strike << opt_str(bo.redemption)
+              << opt_str(bo.price_type) << opt_str(bo.knocks_out) << bo.modified_by << bo.version
+              << fort::endr;
     }
     return table.to_string();
 }

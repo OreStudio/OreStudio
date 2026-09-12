@@ -24,7 +24,6 @@
 #include "ores.database/export.hpp"
 #include <boost/asio/awaitable.hpp>
 #include <boost/asio/cancellation_signal.hpp>
-#include <boost/asio/io_context.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
 #include <boost/log/trivial.hpp>
 #include <atomic>
@@ -54,7 +53,7 @@ namespace ores::database {
  *     });
  *
  *     // Start monitoring
- *     co_await monitor.run(io_context);
+ *     co_await monitor.run();
  * @endcode
  */
 class ORES_DATABASE_EXPORT health_monitor final {
@@ -119,11 +118,10 @@ public:
      * @brief Run the health monitor polling loop.
      *
      * This performs an initial check and then polls at the configured
-     * interval until stopped.
-     *
-     * @param io_context The io_context to run on.
+     * interval until stopped. The timer runs on the coroutine's own
+     * executor.
      */
-    boost::asio::awaitable<void> run(boost::asio::io_context& io_context);
+    boost::asio::awaitable<void> run();
 
     /**
      * @brief Stop the health monitor.

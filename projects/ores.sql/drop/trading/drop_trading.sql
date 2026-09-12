@@ -91,10 +91,44 @@
 \ir ./trading_bond_repos_drop.sql
 \ir ./trading_ascots_notify_trigger_drop.sql
 \ir ./trading_ascots_drop.sql
+\ir ./trading_bond_future_delivery_baskets_notify_trigger_drop.sql
+\ir ./trading_bond_future_delivery_baskets_drop.sql
+\ir ./trading_bond_forwards_notify_trigger_drop.sql
+\ir ./trading_bond_forwards_drop.sql
 \ir ./trading_bond_instruments_notify_trigger_drop.sql
 \ir ./trading_bond_instruments_drop.sql
 \ir ./trading_bond_issues_notify_trigger_drop.sql
 \ir ./trading_bond_issues_drop.sql
+
+-- Shared instrument-keyed tables and the trade envelope (task B753AD00)
+\ir ./trading_trade_envelope_additional_fields_notify_trigger_drop.sql
+\ir ./trading_trade_envelope_additional_fields_drop.sql
+\ir ./trading_trade_envelope_portfolio_ids_notify_trigger_drop.sql
+\ir ./trading_trade_envelope_portfolio_ids_drop.sql
+\ir ./trading_trade_envelopes_notify_trigger_drop.sql
+\ir ./trading_trade_envelopes_drop.sql
+\ir ./trading_instrument_strikes_notify_trigger_drop.sql
+\ir ./trading_instrument_strikes_drop.sql
+\ir ./trading_instrument_option_payment_dates_notify_trigger_drop.sql
+\ir ./trading_instrument_option_payment_dates_drop.sql
+\ir ./trading_instrument_option_exercise_fees_notify_trigger_drop.sql
+\ir ./trading_instrument_option_exercise_fees_drop.sql
+\ir ./trading_instrument_option_premiums_notify_trigger_drop.sql
+\ir ./trading_instrument_option_premiums_drop.sql
+\ir ./trading_instrument_options_notify_trigger_drop.sql
+\ir ./trading_instrument_options_drop.sql
+\ir ./trading_instrument_schedule_dates_notify_trigger_drop.sql
+\ir ./trading_instrument_schedule_dates_drop.sql
+\ir ./trading_instrument_schedules_notify_trigger_drop.sql
+\ir ./trading_instrument_schedules_drop.sql
+\ir ./trading_bond_leg_rates_notify_trigger_drop.sql
+\ir ./trading_bond_leg_rates_drop.sql
+\ir ./trading_bond_leg_amortizations_notify_trigger_drop.sql
+\ir ./trading_bond_leg_amortizations_drop.sql
+\ir ./trading_bond_leg_amounts_notify_trigger_drop.sql
+\ir ./trading_bond_leg_amounts_drop.sql
+\ir ./trading_bond_legs_notify_trigger_drop.sql
+\ir ./trading_bond_legs_drop.sql
 
 -- Credit instruments
 \ir ./trading_credit_instruments_notify_trigger_drop.sql

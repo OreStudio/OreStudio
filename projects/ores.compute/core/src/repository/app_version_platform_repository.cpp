@@ -289,6 +289,7 @@ void app_version_platform_repository::replace_by_app_version(
                                       app_version_id_str);
 
     for (auto app_version_platform : app_version_platforms) {
+        app_version_platform.tenant_id = tid;
         app_version_platform.modified_by = modified_by;
         app_version_platform.performed_by = performed_by;
         app_version_platform.change_reason_code = change_reason_code;

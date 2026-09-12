@@ -1,0 +1,178 @@
+:PROPERTIES:
+:ID: a49c7491-071b-46a3-8cf8-78bf8eede5cf
+:END:
+#+title: ores.trading.bond_leg_amount
+#+description: Codegen entity model for the trading =bond_leg_amount= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One numbered amount of a bond leg: a notional, a rate, a spread, a cap, a floor or a gearing, keyed to the leg and the role it plays.
+#+entity_singular: bond_leg_amount
+#+entity_plural: bond_leg_amounts
+#+entity_title: Bond Leg Amount
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per numbered amount a bond leg states, keyed to the leg, the
+role the amount plays and its ordinal in the document's list.
+
+The ORE schema spells the same pair of members six times: a value and
+the date it starts. A notional is one, and so are a fixed leg's rate,
+and a floating leg's spread, cap, floor and gearing. The rows differ
+only in the role they play, so one table holds all six lists and the
+role column names which one.
+
+The value is required on every one of the six, so the column is not
+null. The start date is optional on all of them and is nullable here.
+Both are an =std::optional= question in C++ only for the date, because
+the schema states the value unconditionally.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument this amount belongs to.
+
+** leg_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which leg list of the instrument the leg holding this amount belongs
+to: =bond=, =trs_funding=, =repo= or =ascot_swap=.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within its list, counting from one.
+
+** amount_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which of the leg's six amount lists this row belongs to: =notional=,
+=rate=, =spread=, =cap=, =floor= or =gearing=.
+
+The container's member names are the values, so a reader rebuilds each
+list from the role alone.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this amount within its list.
+
+The schema declares every one of the six lists unbounded, and a
+document's order is the order it stated. The ordinal preserves that
+order.
+
+** value
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: double
+:nullable: false
+:END:
+
+The amount, as a decimal.
+
+#+begin_src cpp :name generator
+0.0425
+#+end_src
+
+** start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the amount takes effect (ISO 8601 date string), when the document
+states one.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_leg_amounts_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_number" > 0                                            |
+| "sequence_number" > 0                                       |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_leg_amount
+:entity_plural_short:   bond_leg_amounts
+:entity_singular_words: bond leg amount
+:entity_plural_words:   bond leg amounts
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: amount
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| leg_role        | Role        |
+| leg_number      | Leg         |
+| amount_role     | Role        |
+| sequence_number | Sequence    |
+| value           | Value       |
+| start_date      | Start Date  |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

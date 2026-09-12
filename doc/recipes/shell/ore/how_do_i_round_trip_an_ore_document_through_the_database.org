@@ -1,0 +1,115 @@
+:PROPERTIES:
+:ID: 7302A9A4-8B64-4C92-8582-49FB5A2219A2
+:END:
+#+title: How do I round trip an ORE document through the database?
+#+description: Upload an ORE document, import it into the database, export it back to XML, and classify the difference against the source with the roundtrip checker.
+#+type: recipe
+#+level: cross
+#+filetags: :recipe:shell:ore:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+The three steps of the XML to database to XML path each have one shell
+verb, all in the shell's =ore= menu
+(=projects/ores.shell/src/app/commands/trading/ore_commands.cpp=).
+They talk to ~ores.ore~ and ~ores.trading~ over NATS, and to the object
+storage service over HTTP. The classifier that reads the result lives
+in =scripts/ore_mapper_roundtrip_diff.py=, and it is the gate this
+recipe exists to feed.
+
+* Question
+
+How do I round trip an ORE document through the database and check the
+result against the source?
+
+* Answer
+
+Recreate the database and provision the Acme Corporation tenant first
+(see the provisioning recipe under *See also*). The tenant holds the
+default party the import needs, and the export returns every trade in
+the database, so a database holding anything else cannot give a clean
+comparison.
+
+Stage the document under the name =portfolio_roundtrip.xml=. The
+directory scanner ~ores.ore~ uses for an import accepts only files
+named =currencyconfig.xml= or =portfolio*.xml=, and ignores every other
+name. Set =ORE_ROUNDTRIP_DIR= to a staging directory and
+=ORE_ROUNDTRIP_REQUEST_ID= to a fresh UUID. The script reads the source
+from =$ORE_ROUNDTRIP_DIR/source= and writes the result to
+=$ORE_ROUNDTRIP_DIR/output/portfolio_roundtrip.xml=.
+
+#+name: round-trip-ore-document
+#+begin_src ores-shell :exports none
+connect $ORES_NATS_URL
+login tenant_admin@acme_corporation Secure-Password-123
+ore upload $ORE_ROUNDTRIP_DIR/source --request-id $ORE_ROUNDTRIP_REQUEST_ID
+ore import $ORE_ROUNDTRIP_REQUEST_ID --parent-portfolio-name ore_roundtrip_${ORE_ROUNDTRIP_REQUEST_ID}
+ore export $ORE_ROUNDTRIP_DIR/output/portfolio_roundtrip.xml
+logout
+exit
+#+end_src
+
+=ore upload= packs the whole directory and puts it in the =ore-imports=
+bucket at ={request_id}.tar.gz=. The pack keeps the paths relative to
+the directory it is given, so the import reads the tree back exactly as
+staged. =ore import= sends the request on =workflow.v1.ore.import= and
+then waits for the workflow the handler returns. A failed step stops
+the script at that line, so the run cannot carry on past a broken
+import. =ore export= sends =export_portfolio_request= on
+=trading.v1.trades.portfolio.export= and writes what the ORE exporter
+makes of the returned items.
+
+The import uses its default choices and the logged-in account's default
+party. Pass =--choices-file= or =--party-id= to override either.
+
+=--parent-portfolio-name= names the portfolio that wraps the imported
+books. A book cannot stand without a portfolio above it, and a flat
+upload has no portfolio directory in its tree, so the name is what the
+import builds that portfolio from. The name carries the request id,
+because the database holds one live portfolio per name and party, and
+the script must stay runnable against a database that already holds a
+previous run's portfolio.
+
+The whole run, staging and diff included:
+
+#+begin_src sh :results output :wrap example
+export ORE_ROUNDTRIP_DIR=$(mktemp -d)
+export ORE_ROUNDTRIP_REQUEST_ID=$(uuidgen)
+mkdir -p $ORE_ROUNDTRIP_DIR/source $ORE_ROUNDTRIP_DIR/output
+cp external/ore/examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml \
+   $ORE_ROUNDTRIP_DIR/source/portfolio_roundtrip.xml
+./compass.sh shell -l projects/ores.shell/scripts/library/ore/how_do_i_round_trip_an_ore_document_through_the_database.ores
+python3 scripts/ore_mapper_roundtrip_diff.py \
+   --source-dir $ORE_ROUNDTRIP_DIR/source --output-dir $ORE_ROUNDTRIP_DIR/output
+#+end_src
+
+=compass shell= runs the binary with the repository root as its working
+directory and merges =.env= into the child environment, so the script's
+=$ORES_NATS_URL= reference resolves and every path in the run is
+relative to the root.
+
+The classifier pairs the source and the output by relative path, so the
+two staging directories must mirror each other. It reports the bond
+products and the trade envelope as the in-scope pair counts, and returns
+exit code 0 only when the in-scope lost and unexplained counts are both
+zero, with no document missing an output.
+
+* Script
+
+=projects/ores.shell/scripts/library/ore/how_do_i_round_trip_an_ore_document_through_the_database.ores=,
+generated from this recipe's =ores-shell= block by =compass build
+--direct tangle_shell_scripts=. Do not edit the generated =.ores= by
+hand.
+
+* Tested by
+
+Manual, against a recreated database with the Acme Corporation tenant
+provisioned. Stage one example document, run the script with
+=./compass.sh shell -l=, then run the classifier over the staged source
+directory and the output directory. The live result is recorded on the
+task that built the script.
+
+* See also
+
+- [[id:45B89A49-B2B8-4C1C-9BB7-09EB27E4D50C][How do I provision the system with Acme Corporation (holding group)?]]
+- [[id:438BECB1-0DF8-4350-9ABF-65F232CBB046][How do I import the TA002 IR Swap example market data?]]

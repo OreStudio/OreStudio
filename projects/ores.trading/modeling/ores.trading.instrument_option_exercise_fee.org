@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: 3888C37F-2243-4CAD-A2D0-872EA9997CFC
+:END:
+#+title: ores.trading.instrument_option_exercise_fee
+#+description: Codegen entity model for the trading =instrument_option_exercise_fee= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One entry of an option block's exercise fee list, keyed to the instrument and the entry's ordinal.
+#+entity_singular: instrument_option_exercise_fee
+#+entity_plural: instrument_option_exercise_fees
+#+entity_title: Instrument Option Exercise Fee
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per exercise fee an option block's list states, keyed to the
+instrument and the entry's ordinal.
+
+The schema states the amount as text with three attributes on the same
+element, and the container keeps the number and the attributes apart.
+The ordinal preserves the document's order.
+
+The amount is the only required member, so it is the only column here
+that cannot be null.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument whose option block stated this exercise fee.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this exercise fee within the option block's list.
+
+** amount
+:PROPERTIES:
+:type:          numeric(28, 10)
+:cpp_type:      double
+:nullable:      false
+:default_value: 0.0
+:END:
+
+Amount of the exercise fee.
+
+#+begin_src cpp :name generator
+100.0
+#+end_src
+
+** type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Kind of exercise fee the document states.
+
+** start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the exercise fee starts to apply.
+
+** currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency the exercise fee is stated in.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_option_exercise_fees_tbl
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: exercise_fee
+:entity_plural_short:   exercise_fees
+:entity_singular_words: instrument option exercise fee
+:entity_plural_words:   instrument option exercise fees
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: fee
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| amount          | Amount      |
+| type            | Type        |
+| start_date      | Start Date  |
+| currency        | Currency    |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:3BCB362D-83D2-4456-BE57-3B1716F5ED1F][ores.trading.instrument_option]] — the option block these fees belong to.

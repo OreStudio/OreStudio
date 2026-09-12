@@ -142,7 +142,7 @@ bool health_monitor::check_health() {
     }
 }
 
-boost::asio::awaitable<void> health_monitor::run(boost::asio::io_context& io_context) {
+boost::asio::awaitable<void> health_monitor::run() {
     BOOST_LOG_SEV(lg(), info) << "Starting database health monitor with poll interval of "
                               << poll_interval_.count() << " seconds";
 

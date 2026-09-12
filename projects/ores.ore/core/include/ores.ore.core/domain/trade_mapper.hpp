@@ -32,6 +32,7 @@
 #include "ores.ore.core/domain/swap_instrument_mapper.hpp"
 #include "ores.ore.core/export.hpp"
 #include "ores.trading.api/domain/trade.hpp"
+#include "ores.trading.api/domain/trade_envelope_data.hpp"
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include <optional>
 
@@ -58,6 +59,11 @@ namespace ores::ore::domain {
  * - portfolio_id (ORE PortfolioIds are string labels, not ORES UUIDs)
  * - counterparty_id (ORE CounterParty is a string name, not an ORES UUID)
  * - party_id (derived from book_id in ORES)
+ *
+ * The envelope is not mapped into the trade. map_envelope carries it whole,
+ * beside the trade, because it is keyed by the trade and not by the product.
+ * reverse_envelope puts it back. The NettingSetId projection above is a
+ * convenience column; the envelope stays the carrier of record.
  */
 class ORES_ORE_CORE_EXPORT trade_mapper {
 private:
@@ -110,8 +116,8 @@ public:
      * @brief Dispatches a bond-family trade to bond_instrument_mapper.
      *
      * Returns a populated result for Bond, ForwardBond, CallableBond,
-     * ConvertibleBond, BondOption, BondTRS and BondRepo. Returns empty
-     * for all other types.
+     * ConvertibleBond, BondOption, BondTRS, BondRepo, BondFuture and
+     * Ascot. Returns empty for all other types.
      */
     static std::optional<trading::domain::bond_instrument_data> map_bond_instrument(const trade& v);
 
@@ -154,6 +160,23 @@ public:
      * Callers should use std::visit to handle the result.
      */
     static trading::domain::trade_instrument map_instrument(const trade& v);
+
+    /**
+     * @brief Maps the ORE trade envelope to the trade-side carrier.
+     *
+     * Returns empty when the trade states no Envelope element. A stated
+     * element is carried whatever it holds, the empty ones included, so
+     * the writer can put back the element the document chose.
+     */
+    static std::optional<trading::domain::trade_envelope_data> map_envelope(const trade& v);
+
+    /**
+     * @brief Writes the trade-side envelope carrier back as an ORE envelope.
+     *
+     * The inverse of map_envelope: every engaged member is emitted, so an
+     * element held empty comes back as an empty element.
+     */
+    static envelope reverse_envelope(const trading::domain::trade_envelope_data& v);
 };
 
 }

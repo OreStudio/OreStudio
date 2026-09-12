@@ -22,6 +22,7 @@
 
 #include "ores.nats/domain/wire_codec.hpp"
 #include "ores.nats/service/nats_client.hpp"
+#include "ores.nats/service/timeouts.hpp"
 #include <chrono>
 #include <string>
 #include <string_view>
@@ -62,7 +63,7 @@ rfl::Result<Response>
 authenticated_request_and_decode(nats_client& session,
                                  std::string_view subject,
                                  const Request& req,
-                                 std::chrono::milliseconds timeout = std::chrono::seconds(30)) {
+                                 std::chrono::milliseconds timeout = default_request_timeout) {
     const auto& codec = default_wire_codec();
     const auto reply = session.authenticated_request(subject, codec.encode(req), timeout);
     return codec.decode<Response>(reply.data);
@@ -80,7 +81,7 @@ template <typename Request>
 rfl::Result<typename Request::response_type>
 request_and_decode(nats_client& session,
                    const Request& req,
-                   std::chrono::milliseconds timeout = std::chrono::seconds(30),
+                   std::chrono::milliseconds timeout = default_request_timeout,
                    bool authenticated = false) {
     using Response = typename Request::response_type;
     const auto& codec = default_wire_codec();

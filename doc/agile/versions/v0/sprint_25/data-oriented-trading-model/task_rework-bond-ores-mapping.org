@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
-#+branch:
-#+pr:
+#+branch: feature/rework-bond-ores-mapping
+#+pr: 2073
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-09
 #+updated: 2026-09-09
-#+environment:
+#+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
@@ -26,12 +26,12 @@ The ores.ore mapping rides the codegen reshape of the bond family: once the inst
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | BACKLOG                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-09                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-10                               |
 
 * Acceptance
 
@@ -47,7 +47,677 @@ The ores.ore mapping rides the codegen reshape of the bond family: once the inst
 are distilled into the parent story's =* Decisions= at close, but the
 plan itself stays — it is the historical record of what we did.)
 
+** The starting point
+
+Wave 1.5 left the mapper in a deliberate halfway state. One file
+(=bond_instrument_mapper=) carries forward and reverse for seven of
+the ten product codes. It targets the generated rows already. The
+container it returns (=bond_instrument_data=) is a handcrafted
+carrier: the instrument header, the issue row, one engaged fact row,
+and a document remainder (=option_expiry_date=). Wave 1.5 fixed the
+fidelity rule at "reverse emits exactly what it emits today", so the
+flattening survived the reshape. This task delivers the depth.
+
+** What the XSD carries against what the tables carry
+
+The ORE schema (=external/ore/xsd/instruments.xsd=) declares nine
+bond product structures: =bondData=, =forwardBondData=,
+=callableBondData=, =convertibleBondData=, =bondOptionData=,
+=bondTRSData=, =bondRepoData=, =bondFutureData= and =ascotData=.
+The schema declares no =positionData=. BondPosition therefore has no
+product document in the XML at all.
+
+Nine of the ten codes are importable. Two of the nine have no mapper
+today: BondFuture and Ascot. Both have a fact table waiting
+(=ores_trading_bond_futures_tbl= with its full contract column set,
+=ores_trading_ascots_tbl= with =ascot_option_type=), so both gain a
+mapper pair. BondPosition is the recorded uncovered product: no
+product structure in the XML, no fact table in the family, and the
+deliverable already records that it has no mapper. Its absence is a
+decision with evidence, not an omission, and the suite asserts it.
+
+** The flattening inventory
+
+Five items flatten today. Three have a destination row. Two do not.
+The difference decides the wave shape.
+
+- The call schedule and the conversion terms have destinations now.
+  =bond_issue_call_dates= is keyed =(issue_id, sequence_number)= and
+  carries =call_date=; =bond_issue_conversion_targets= carries
+  =underlying_id= and =conversion_ratio=. Both land as child rows.
+  The XSD expresses each as a =scheduleData= plus a styles list, and
+  =scheduleData= is a choice: an explicit =Dates/Date= list, or a
+  =Rules= block. An explicit date list maps to a row per date. A
+  rule-based schedule does not, because expanding a tenor against a
+  calendar is schedule generation, not mapping.
+- The full exercise date list, the funding leg's schedule and the
+  repo leg's dates have no destination in the nine tables. This is
+  the recorded wave 1.3 scope limit, not an oversight. The shared
+  instrument-keyed schedule and underlyings tables belong to the
+  parent story and are not part of this family. A bond-local schedule
+  table would create the per-family duplication the program exists to
+  remove, and the parent story would have to generalise or delete it
+  on arrival.
+
+The plan splits the five. The child rows land now. The items with no
+row stop flattening at the mapping boundary: the container carries
+the whole structure the document holds (every exercise date, the
+funding schedule, the repo dates), reverse re-emits it whole, and the
+residue is recorded against the parent story's shared tables. What
+the tables cannot store, the document keeps.
+
+** The coupon frequency corruption and the hardcoded TRS values
+
+The acceptance names both. They are different kinds of defect. The
+corruption (=forward_bond_repo= overwriting the issue's real tenor
+with the leg type) is already gone as a mechanical consequence of the
+shared issue row. What this task owes is the test that asserts a repo
+product's issue keeps its own tenor while the repo row carries the
+leg type. The TRS hardcoding is live code: =forward_bond_trs= writes
+="TotalReturn"= unconditionally, so a PriceReturn document imports as
+TotalReturn. The mapper reads the return side off the document and
+asserts both directions.
+
+** The waves
+
+Each wave ends green and is a commit.
+
+- 2.1, the survey. The per-product XSD field inventory, the ten-code
+  coverage decision, and the flattening inventory, into Notes.
+  Checks: docs class.
+- 2.2, the issue side. A =bond_issue= mapper and the find-or-create
+  boundary. The container mints a fresh issue per trade today, with
+  a comment that finding an existing issue is the database boundary
+  of this task. The assembler gains an explicit resolver seam, so
+  "found or created" is a real lookup at the boundary and a mint on
+  the miss. The DB path supplies the lookup; unit tests supply a
+  stub. The two child mappers (call dates, conversion targets) land
+  here, with the issue they hang off.
+- 2.3, the fact mappers and the assembler. One mapper pair per fact
+  entity over the five products, the two missing products
+  (BondFuture, Ascot) added, the container grown to carry them and
+  the per-product remainder, and the assembler that composes one
+  document into issue, instrument, fact and children and joins them
+  back.
+- 2.4, the suites. The mapper and golden roundtrip suites extended
+  for the new products and for the assertions the acceptance names
+  (the repair, the hardcoding, the whole exercise date list, the
+  child rows), plus the coverage assertion that names BondPosition.
+- 2.5, validation. Full build and ctest, the ores.ore roundtrip
+  suite, and the file-level check through =ores.cli=
+  (=exporter::roundtrip=) with =trades_mapped= counting the covered
+  products. Checks: code class, full build and ctest, plus the
+  ores.ore roundtrip suite.
+
+** Boundaries
+
+No new verb surface. The DB-bound import path stays
+=workflow.v1.ore.import= with its existing drivers, and the resolver
+seam is internal to the mapper. The container's full rework (one view
+per product, the wire protocol, the qt form) belongs to unit 3, which
+the parent plan sequences over the container grammar work. This task
+grows the container only as far as the mapper needs to carry what it
+maps. The shared schedule and underlyings tables of the parent story
+remain the destination for the three residues.
+
 * Notes
+
+** Wave 2.1, the survey
+
+*** The product structures and their destinations
+
+The ORE schema (=external/ore/xsd/instruments.xsd=) declares nine bond
+product structures. Each one maps to one row set.
+
+| XSD structure | Codes | Row destination | Residue with no column |
+|---------------+-------+-----------------+------------------------|
+| =bondData= | Bond, BondPosition | the issue row | the curve and credit links (CreditCurveId, CreditGroup, ReferenceCurveId, IncomeCurveId, VolatilityCurveId, Calendar, PriceQuoteMethod, PriceQuoteBaseValue, BondNotional, PriceType, Payer, CreditRisk, SubType), the leg list beyond its first leg, and the =legDataType= group of every leg |
+| =forwardBondData= | ForwardBond | the issue row | SettlementData, PremiumData, LongInForward and KnockOut |
+| =callableBondData= | CallableBond | the issue row plus call-date children | PutData |
+| =convertibleBondData= | ConvertibleBond | the issue row plus conversion-target children | DividendProtectionData, Detachable |
+| =bondOptionData= | BondOption | the issue row plus =bond_option= | optionData's exercise and payment data, Redemption, PriceType, KnocksOut |
+| =bondTRSData= | BondTRS | the issue row plus =bond_trs= | totalReturnData's schedule and payment dates |
+| =bondRepoData= | BondRepo | the issue row plus =bond_repo= | the repo leg's payment dates |
+| =bondFutureData= | BondFuture | the issue row plus =bond_futures= | DeliveryBasket |
+| =ascotData= | Ascot | the issue row plus =ascots= | the reference swap |
+| (none) | BondPosition | none | the whole product |
+
+=bondFutureData= matches =ores_trading_bond_futures_tbl= column for
+column: ContractName, ContractNotional, LongShort, Currency,
+ContractMonth, DeliverableGrade, FairPrice, Settlement,
+SettlementDirty, RootDate, ExpiryBasis, SettlementBasis, ExpiryLag,
+SettlementLag, LastTradingDate, LastDeliveryDate.
+
+*** The ten-code coverage decision
+
+Nine of the ten codes have a product structure and are covered by the
+import path. Three needed a decision.
+
+- *BondFuture and Ascot gain mappers.* Both have a structure and a
+  fact table waiting. Neither has one today.
+- *BondPosition stays uncovered, by decision.* The schema declares no
+  =positionData=, the family has no fact table, and the trade type
+  appears in no product document. The one example file that names it
+  (=Hybrid_GenericTRS_with_BondPosition.xml=) holds a single
+  =TotalReturnSwap= trade whose underlying is a bond, so it exercises
+  the TRS path, not a position. The trade type stays modelled and
+  persisted; only the XML import path is out of scope, and the
+  deliverable already records that it has no mapper.
+
+*** The flattening inventory
+
+Five items flatten today. Three have a destination row, two do not.
+
+Lands now, as child rows:
+
+- *The call schedule* (=callableBondData/CallData=,
+  =convertibleBondData/CallData=) to =bond_issue_call_dates=, keyed
+  =(issue_id, sequence_number)= with a =call_date= column.
+- *The conversion terms* (=convertibleBondData/ConversionData=) to
+  =bond_issue_conversion_targets=, which carries =underlying_id= and
+  =conversion_ratio=.
+
+The XSD expresses both as a =scheduleData= plus a styles list, and
+=scheduleData= (=external/ore/xsd/ore_types.xsd=) is a choice: an
+explicit =Dates/Date= list, or a =Rules= block. An explicit list maps
+one row per date. A rule-based schedule does not map, because
+expanding a tenor against a calendar is schedule generation, and the
+row shape the parent story stages is a rules row, not an expanded
+date list. The mapper maps the explicit form and records the rule
+form against the shared tables.
+
+Has no destination, records against the parent story:
+
+- *The full exercise date list* (optionData's exercise dates): the
+  option fact table carries =option_type= and =option_strike= only.
+  The exercise-schedule tables are the parent story's, recorded as a
+  wave 1.3 scope limit.
+- *The funding leg's schedule* (totalReturnData/ScheduleData): the
+  TRS fact table carries the leg type, the rate and the index.
+- *The repo leg's dates* (RepoData/LegData): the repo fact table
+  carries the type, the rate and the index.
+
+The container carries all three whole, so reverse re-emits what the
+document held. Nothing is dropped at the mapping boundary.
+
+*** The coverage vehicles
+
+The example documents under
+=external/ore/examples/Products/Example_Trades/= that exercise the
+family:
+
+| Code | Documents |
+|------+-----------|
+| Bond | Cash_Bonds.xml, Hybrid_GenericTRS_with_Bond.xml |
+| ForwardBond | Credit_Bond_Forward.xml, Hybrid_GenericTRS_with_BondForward_Futures.xml |
+| BondFuture | Hybrid_GenericTRS_with_BondForward_Futures.xml |
+| BondOption | BondOption_StrikePrice_StrikeYield.xml, Credit_BondOption.xml |
+| BondRepo | Cash_BondRepo_and_Bond.xml |
+| BondTRS | Credit_Bond_TRS.xml, Credit_Bond_TRS_with_Indexings.xml |
+| CallableBond | Credit_CallableBond.xml |
+| ConvertibleBond | Cash_ConvertibleBond.xml, Hybrid_GenericTRS_with_ConvertibleBond.xml |
+| Ascot | Cash_Ascot.xml |
+| BondPosition | (none) |
+
+The mapper and golden suites read these by path through
+=ores.testing::project_root=, and =ores.cli= walks a directory of them
+through =exporter::roundtrip=.
+
+** Wave 2.2, the issue side
+
+The assembler gained the find-or-create seam the plan named. All seven
+forward entry points take a =bond_issue_lookup=, a function that
+answers one question: does this security identifier already have an
+issue row? A hit adopts the row the security already has. A miss mints
+a fresh issue identifier. The mapper stays pure, because the lookup is
+a parameter and not a database handle. The import path supplies the
+real lookup, and the unit tests supply a stub.
+
+The two child mappers landed with the issue they hang off.
+=map_call_dates= writes one =bond_issue_call_dates= row per explicit
+date in the =Dates= choice, numbered from one.
+=map_conversion_targets= writes one =bond_issue_conversion_targets=
+row per positive ratio, and carries the underlying name. Both reverse
+functions rebuild the document structure the rows came from.
+
+The rule-based form of each schedule stays in the document. An
+explicit date list maps a row per date; a =Rules= block does not map,
+because expanding a tenor needs a calendar. The container carries the
+structure whole, and the parent story's shared schedule tables are the
+recorded destination.
+
+** Wave 2.3, the fact mappers and the assembler
+
+One mapper pair per fact entity now sits in the assembler, and the
+container grew to carry what the nine tables cannot store. The wave
+also added the two products the earlier waves left out, =BondFuture=
+and =Ascot=.
+
+The container gained the future and ascot fact rows,
+=option_exercise_dates= in place of the single =option_expiry_date=,
+=trs_price_type=, and three =bond_leg_data= members: the TRS funding
+leg, the repo leg and the ascot reference swap leg. A =bond_leg_data=
+holds the leg's payer flag and the schedule the leg's dates come from.
+
+The two legs of the round trip are now complete for every product.
+
+- =map_schedule= and =reverse_schedule= carry a =scheduleData= whole:
+  both the =Rules= blocks and the explicit =Dates= lists, with every
+  member of both.
+- =map_leg= and =reverse_leg= carry a leg's payer flag and schedule.
+- =map_exercise_dates= and =reverse_exercise_dates= carry the whole
+  exercise date list, not one date.
+- =parse_code= reads an enumeration spelling back. The generated
+  domain exports =to_string= for every enumeration but no parse, and
+  the generated =toNumber= helper is file-local to =domain.cpp=. The
+  scan over =to_string= keeps one source of truth: a spelling the
+  schema adds parses with no table here to keep aligned against.
+- =number_of=, =count_of= and =flag_of= read the fields the schema
+  states as strings. A value the parser cannot read leaves the column
+  at its default rather than failing the whole import.
+
+** The examples tree maps end to end
+
+Every =TradeType= in the examples tree now has a mapper. A sweep of
+all 115 =oreTradeType= enumerators against the dispatchers finds 45
+with no mapper, and no example document states any of them, so Ascot
+was the last uncovered document.
+
+That breaks =import_portfolio_with_context_unmapped_type_is_monostate=,
+which used =Cash_Ascot.xml= as its unmapped fixture. The guard still
+earns its place, so the test now builds the trade the tree cannot
+supply: a =BondPosition=, a sub-trade type that no document states on
+its own, checked straight against =trade_mapper::map_instrument=.
+
+** What the wave removed and what it did not
+
+The acceptance names two defects. Both are gone.
+
+- The coupon frequency corruption in =forward_bond_repo=. The old
+  mapper wrote the repo leg's schedule tenor into the issue's
+  =coupon_frequency_code= column, because no column held a leg
+  schedule. The leg's schedule now rides the container, and the issue
+  column keeps the bond's own frequency.
+- The hardcoded TRS values. =reverse_bond_trs= wrote =PriceType= as
+  =Dirty= and both legs wrote =Payer= as =false=, whatever the
+  document said. All three are gone: the price type and the payer
+  flags are carried and written back.
+
+Dropped fields remain dropped, and they are pre-existing scope limits
+rather than new losses. The =totalReturnData= fields other than
+=PriceType=, and the legs' currency, notional and day counter, were
+never mapped in either direction. Wave 2.4 records them as the
+remainder the parent story's tables take.
+
+Two normalisations are worth stating, because they change the bytes
+and not the meaning. A flag the document states as false and a flag
+the document omits carry the same value, so a false flag exports as
+an omitted element. A boolean re-exports in the canonical spelling
+(=Y=, =N=, =true=), so a document that spells it =TRUE= round trips
+value-equal and not spelling-equal.
+
+** BondFuture coverage: the plan's table is wrong
+
+The wave 2.1 coverage table named
+=Hybrid_GenericTRS_with_BondForward_Futures.xml= as the BondFuture
+vehicle. It is not one. A sweep of the whole examples tree found
+=bondFutureData= in zero documents; that file holds a
+=TotalReturnSwap= over a =ForwardBond= sub-trade. The schema still
+declares both =BondFutureData= (=instruments.xsd= line 48) and the
+=BondFuture= trade type (line 1381), and only
+=ORE-Python/ExampleScripts/portfolio2.py= mentions the type anywhere
+in the tree.
+
+The mapper is therefore written against the schema and unexercised by
+any example document. Wave 2.4 authors the fixture, as it does for
+the call dates and the conversion terms.
+
+** The future's issue row has no terms to find
+
+=instrument.issue_id= is NOT NULL, and =bondFutureData= carries no
+=bondData=. A future therefore mints an empty issue row, and the
+find-or-create lookup can never match one: there is no security
+identifier in the document to look up. The row is a placeholder that
+satisfies the foreign key. A future that later needs issue terms
+needs a schema field first.
+
+** The form carries one exercise date until unit 3
+
+=option_exercise_dates= is a list, and the container is right. The qt
+form has one =QDateEdit=, so =writeUiToInstrument= stages a
+single-element list and the load path shows =front()=. A document
+with three exercise dates round trips through the mapper intact and
+shows one date in the form. The reworked form is unit 3.
+
+** The TRS return type: the document cannot supply it
+
+The trs org tells the reworked mapper to read =return_type= from
+=TotalReturnData.PriceType=. The evidence contradicts that
+instruction.
+
+- The column check accepts two values.
+  =projects/ores.sql/create/trading/trading_bond_trs_create.sql= line
+  59 requires =return_type= to be =TotalReturn= or =PriceReturn=.
+- =PriceType= carries a different pair of values. The ORE User Guide
+  (=Docs/UserGuide/tradedata/bondTotalReturnSwap.tex= in the upstream
+  ORE repository) gives the allowable values as *Dirty* or *Clean*,
+  and states that the total return comprises the coupon, redemption
+  and amortisation payments of the bond plus a compensation payment
+  for the change of the clean bond value.
+- Every =BondTRS= document in the examples tree carries =Dirty=. So
+  does every =BondOption= document. =Dirty= names a price-quoting
+  convention, not a return type.
+
+An ORE =BondTRS= is a total return swap by construction, so no field
+in the document selects a return type. Two consequences follow.
+
+- Forward: =return_type= becomes a documented model default of
+  =TotalReturn=, with the User Guide as the evidence. The value is
+  correct for every document the schema can express.
+- Reverse: the real hardcoded value is =PriceType=, which
+  =reverse_bond_trs= writes as =Dirty= today. =PriceType= rides the
+  container remainder, so a document that carries =Clean= round trips
+  unchanged.
+
+The acceptance says the hardcoded TRS values disappear. They do, on
+the export side, where the value is real document data. The import
+side keeps a constant that the schema justifies, and the note here is
+the record of why.
+
+** Wave 2.4, the suites
+
+Three suites carry the wave's assertions.
+=xml_bond_fact_mapper_roundtrip_tests= is new and holds the per-product
+facts: the repo leg and the coupon frequency repair, the TRS price
+type and funding schedule, the future's seventeen columns and its
+delivery basket, the ascot row and its reference swap leg, the whole
+option exercise date list, the callable bond's call dates as child
+rows, the convertible bond's conversion ratios as child rows, and the
+ten-code coverage table.
+
+=xml_bond_source_fidelity_tests= is new and answers a different
+question. The golden suite compares our output to a stored copy of our
+own output, so it catches drift and nothing else. This suite reads the
+ORE documents themselves, canonicalises each one, reads the canonical
+form and canonicalises it again, and requires the two canonical forms
+to be identical. Eleven source documents state a bond trade and all
+eleven are stable. The suite reads the whole examples directory to
+find them, so the count is 132 documents scanned.
+
+The golden suite gains =Credit_CallableBond.xml=, the ninth bond
+product with a stored golden.
+
+** The exporter lost two products
+
+Wave 2.3 added the =BondFuture= and =Ascot= arms to the importer and
+left the exporter's reverse dispatch at seven bond types. A future or
+an ascot therefore counted in =trades_mapped= and never reached the
+output document, because the dispatch logged "No reverse mapper for
+bond type" and returned. No test covered it: the two products have no
+suite-level roundtrip case.
+
+Two exporter cases now cover them. =export_portfolio_ascot_roundtrip=
+drives =Cash_Ascot.xml= through the importer and the exporter and
+requires =AscotData= in the output.
+=export_portfolio_bond_future_roundtrip= builds the trade the tree
+cannot supply, maps it, exports it and requires =BondFutureData=.
+
+** What the diff against the source documents shows
+
+The acceptance asks for the written document to differ from the source
+only in ordering and representation. =scripts/ore_mapper_roundtrip_diff.py=
+is the check. It compares our output to the source document as a
+multiset of (element path, value) pairs, so ordering is invisible by
+construction, and it classifies every remaining pair.
+
+The comparison below runs the stored goldens against the sources they
+came from, which is the domain path
+(=save_data(load_data(document))=). The mapper path is a different
+pair of functions, and its diff belongs to wave 2.5, which runs
+=exporter::roundtrip= over the tree. What follows is the domain
+result, and it sets the baseline the mapper path has to meet.
+
+Over the 132 documents of the examples tree:
+
+- 543 pairs differ in numeric spelling only, with a worst relative
+  error of 5.15e-8. The ORE schema types these fields as =xs:float=
+  and the example documents state more digits than that type holds, so
+  the source over-specifies its own schema and our output is the
+  correctly typed value.
+- 25 pairs differ in boolean spelling only. The schema's =bool= type
+  enumerates =Y=, =YES=, =TRUE=, =True=, =true= and =1=; the examples
+  spell true as an empty element, which is not one of them. Our output
+  writes =Y=.
+- No pair is lost. No pair is unexplained.
+
+** Two inline fixtures were not schema valid
+
+The first run of the new suites failed two cases, both on the
+fixtures the suite authors rather than on the mapper. =CallData=
+requires =IncludeAccruals=, and =totalReturnData= requires
+=ScheduleData=. Both documents now carry them. The failures are worth
+recording because they show the generated parser enforces the
+schema's minimum occurrence rules, which is the property the fixtures
+rely on.
+
+** Wave 2.5, the validation
+
+*** What ran
+
+| Check | Result |
+|-------+--------|
+| Full build, =linux-clang-debug-make= | 100%, no error line in the log |
+| =ores.ore.core.tests= | 493 cases, 493 pass, 0 failures |
+| Full ctest, =linux-clang-debug-make= | 100% tests passed, 0 failed out of 71, 902.71 s |
+| File roundtrip, =exporter::roundtrip= | 1566 files found, 1023 skipped, 543 written, 2590 trades mapped, 40 passthrough, 1610 trades/s |
+| Mapper-path diff, =scripts/ore_mapper_roundtrip_diff.py= | 543 documents compared, 15 clean, counts below |
+| Site build, docs class | Build succeeded, this document published with no error |
+
+The file roundtrip ran over =external/ore/examples= into a scratch
+tree. It is the check this wave names: it walks every =Portfolio=
+document through the mapper, and =trades_mapped= counts the coverage.
+2590 mapped trades is that coverage count.
+
+The 543 written files decompose exactly, and each one has a source at
+the same relative path. Thirteen are currency documents, eight are
+calendars, 156 are conventions and 366 are portfolio documents. The
+366 are every =Portfolio= document in the source tree, the 13 are
+every =CurrencyConfig= and the 8 are every =CalendarAdjustments=.
+
+The 156 conventions files come from more than the =Conventions=
+documents alone. Sixty five of the 66 =Conventions= sources produce
+one, and so do 63 =CurveConfiguration= sources and 28
+=SensitivityAnalysis= sources, each of which carries a conventions
+section. One source has no output,
+=ORE-Python/Notebooks/Dependencies/conventions.xml=, and it is the
+only source of those four kinds without one. The walk therefore
+covers every product document in the tree.
+
+*** The two defects the run found
+
+**** Two date fields held a control byte
+
+=xsd::optional<T>= converts to =bool= and not to =T=. An assignment
+of an =xsd::optional<domain::date>= to a plain =std::string= field
+named =StartDate= therefore selected =std::string::operator=(char)=
+through =operator bool()= and stored a =0x01= byte. Nothing failed
+loudly. The import parsed its source, the field held a value, and the
+byte travelled out into the written document, which no longer parsed
+as XML at all.
+
+Two sites held the line, =bond_instrument_mapper.cpp= and
+=credit_instrument_mapper.cpp=. Both convert to =std::string= first
+now.
+
+Evidence: a roundtrip tree written before the fix holds a control byte
+in 43 of its 543 documents, and those 43 do not parse. The reader
+stops with =not well-formed (invalid token)=, at column 23 or 25 of
+the line that carries the field. Eighteen of the 43 sit under
+=Legacy=, nine under =Products=, and the rest across the risk and
+exposure trees. Both trees written after the fix parse whole, 543 of
+543.
+
+**** The coupon leg was rebuilt from the issue row
+
+=reverse_bond_data= assembled =bondData= from the =bond_issue= row
+alone, and it copied the issue date into the rule's =StartDate=. The
+example documents state an issue date and a schedule start that
+differ, so the rebuild moved the start date. The same rebuild forced
+the leg type to =Fixed= and dropped =Calendar=, =TermConvention=,
+=Rule=, =EndOfMonth=, =FirstDate= and =LastDate=.
+
+The container carries the leg whole, so the rebuild is guarded now. It
+runs only for a row set with no remainder, where the issue terms are
+all that is known. A document that came in carries its own leg back
+out.
+
+Evidence: =Products/Example_Trades/Cash_Bonds.xml= wrote a start date
+of =2025-02-01= for a source of =2025-02-03= before the fix, and writes
+the source date after it. =BondData/LegData/ScheduleData/Rules/Rule=
+fell from 280 lost pairs to 3, =Calendar= from 280 to 3,
+=TermConvention= from 278 to 3, and =EndOfMonth= from 278 to 3.
+
+*** The mapper-path diff, before and after
+
+The diff compares each written document against its source, leaf path
+to leaf value, over the 543 documents. The before column is a tree the
+mapper wrote with the control-byte fix in place and this fix absent.
+The after column is the tree this wave produced. Both trees parse
+whole, so the two columns compare. The tree from before the
+control-byte fix is left out, because 43 of its documents are not well
+formed and yield no counts.
+
+| Measure | Before | After |
+|---------+--------+-------|
+| documents written | 543 | 543 |
+| documents with no loss | 15 | 15 |
+| lost pairs | 116855 | 115572 |
+| unexplained pairs | 7441 | 7386 |
+| bond documents | 41 | 41 |
+| bond documents with no loss | 0 | 0 |
+| lost pairs in bond documents | 12945 | 11662 |
+| unexplained pairs in bond documents | 641 | 586 |
+
+Every unit of the improvement sits inside bond documents. Lost pairs
+fell by 1283 and lost pairs in bond documents fell by 1283.
+Unexplained pairs fell by 55 and unexplained pairs in bond documents
+fell by 55. The change touched nothing outside the bond family.
+
+*** The boolean count rose, and the rise is the repair
+
+Three trees were kept, one per state of the mapper, and the classifier
+run over each.
+
+| Tree | Documents parsed | Numeric pairs | Boolean pairs |
+|------+------------------+---------------+---------------|
+| before the control-byte fix | 500 of 543 | 1736 | 6 |
+| the control-byte fix alone | 543 of 543 | 2263 | 40 |
+| both fixes | 543 of 543 | 2263 | 346 |
+
+The first row is not comparable with the other two, because its 43
+unparsed documents yield no pairs at all. Its lower counts are an
+artefact of the control byte, not a better result. Between the two
+comparable rows, the control byte had hidden 527 pairs that read as
+numeric differences once the documents parse, and the coupon-leg fix
+moves 306 pairs from lost to boolean and leaves numeric alone.
+
+The rise is not a regression. An empty element is the examples'
+spelling of a true flag, and the repaired paths carry that flag to the
+output now.
+
+The 306 new pairs are exactly the =EndOfMonth= pairs the fix repaired:
+278 on the =BondData= path and 34 on the =ForwardBondData= path
+before, 3 and 3 after. 312 less 6 is 306.
+
+The mechanism, read from the generated code. The element getter
+=_get_scheduleData_Rules_t_EndOfMonth= at =domain.cpp= emplaces the
+optional with a value-initialised =domain::bool_()=, whose enumerator
+is index 0 and spells as =Y=. The xsdcpp parser calls a text setter
+only when text stands between the tags (=XmlParser.cpp=, line 597), so
+=<EndOfMonth/>= keeps that =Y=. The source spelling is empty, the
+output spelling is =Y=, and both mean true. The classifier pairs them
+as a boolean difference, which is the correct reading.
+
+*** What the run does not fix
+
+Five residues stay. Each one has no column in the current shape, and
+the parent story's shared schedule tables are their destination, per
+the boundaries above.
+
+- *A second coupon leg.* =bondData/LegData= is a list in the schema.
+  The container carries one coupon leg: the mapper reads
+  =LegData.front()= and the export writes one =legData= back. Three
+  documents lose a leg, =Legacy/Example_18/Input/portfolio.xml=,
+  =Products/Example_Trades/Cash_Bonds.xml= and
+  =Products/Input/portfolio.xml=, and each loses one =Bond= leg and
+  one =ForwardBond= leg. Evidence:
+  =Products/Example_Trades/Cash_Bonds.xml= states 21 =LegData=
+  elements and the output holds 19. Twenty-one trades across the tree
+  state either two legs or a floating leg.
+- *The leg's rate data.* A =legData= carries its rates in a
+  =legDataType= group, and the container has no member for that group.
+  The fixed leg's first rate reaches the issue row's coupon rate. A
+  floating leg's index, spreads and fixing days reach nothing.
+  =BondData/LegData/FloatingLegData= accounts for 12 lost pairs across
+  the tree and =ForwardBondData/BondData/LegData/FloatingLegData= for
+  9.
+- *The forward bond's settlement block.* =SettlementData= is schema
+  required and has no column, so the export writes the required
+  =ForwardMaturityDate= empty. That is the largest single unexplained
+  path in the bond set, 35 pairs at
+  =ForwardBondData/SettlementData/ForwardMaturityDate=.
+- *The forward bond's premium, flag and knock-out.* =PremiumData=,
+  =LongInForward= and =KnockOut= have no column. The residue table
+  above named =SettlementData= and =PremiumData= and omitted the other
+  two. That table is corrected in place.
+- *The trade envelope.* =Trade/Envelope=, =CounterParty=,
+  =AdditionalFields=, =party_id= and =valuation_date= are lost
+  throughout the tree, 2080 pairs in the bond documents alone. The
+  envelope belongs to the trade entity, which the parent story owns
+  and this task does not. It is recorded here because the fidelity
+  report names it, and a reader would otherwise look for it in this
+  task.
+
+The three documents of the first residue are the only bond documents
+that still lose a schedule rule, and the rule goes with the leg they
+lose.
+
+No bond document round trips with zero loss. Acceptance (d) asks that
+a document survive the round trip for every covered product. On the
+mapper path that is not met literally: 0 of 41 bond documents are loss
+free, and 15 of 543 documents across the tree are. What holds is that
+every loss is enumerated above with its cause, and that the two
+defects that corrupted values rather than dropping them are fixed.
+
+*** The committed baseline is stale
+
+=assets/test_data/domain_roundtrip/= is a committed snapshot of the
+same CLI output, 1474 files, refreshed by hand through the
+=ore-domain-roundtrip= target. It predates the bond program. The check
+compares that snapshot against the examples tree.
+
+| Measure | Committed baseline | Fresh run |
+|---------+--------------------+-----------|
+| missing outputs | 30 | 1 |
+| trades analysed | 2479 | 2578 |
+| full fidelity | 0 | 0 |
+| partial fidelity | 1733 (69.9%) | 2515 (97.6%) |
+| passthrough | 746 (30.1%) | 63 (2.4%) |
+
+The check is not strict, so it exits 0 either way and gates nothing.
+Decision: this wave does not regenerate the snapshot. A refresh writes
+1474 files and belongs in its own change, where the diff is
+reviewable. The gap is recorded for the port story.
+
+*** Notes for the next wave
+
+- The residue table above is corrected in place:
+  =forwardBondData='s residue column now names =LongInForward= and
+  =KnockOut=, and =bondData='s names the leg list beyond the first leg.
+- The classifier is =scripts/ore_mapper_roundtrip_diff.py=. It builds
+  a multiset of (path, value) pairs per document, so every count here
+  is a pair count. Two elements that share a path and share their text
+  count twice at that one path, and the path itself carries no index.
 
 * Test Scenarios
 
@@ -64,12 +734,81 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2073][#2073]] | [ore,trading] Round trip the bond products and envelope at zero loss |
 
 * Review
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | =count_of=/=number_of= return a default with no log trace | =bond_instrument_mapper.cpp= | Accept | Both catch blocks now log a =warn= with the raw text and the value used. |
+| 2 | =swap= and =fx= dispatch falls through to =else { return true; }= | =ore_import_execute_handler.cpp= | Decline | Pre-existing and one layer below this work: it reports success without saving. Not introduced here, and outside the bond scope. Recorded debt. |
+| 3 | =rate= marked present when no modelled alternative matched | =bond_instrument_mapper.cpp= | Accept | Scope-limit comment added above =map_rate_group=: eighteen substitution members, three with a container. |
+| 4 | Call-date round trip holds only =ScheduleData.Dates= | =bond_instrument_mapper.cpp= | Decline | Pre-existing and already a stated scope limit. Rule-based call schedules stay out of scope. |
+| 5 | The BondFuture default-value drop is not a committed test | =xml_bond_fact_mapper_roundtrip_tests.cpp= | Decline | The loss is real and tracked as task A3DA0BB5. A test written now would either assert the drop as correct or fail the suite, so it belongs with that task's presence-flag fix. |
+| 6 | Nine alternatives round-tripped by hard-coded index | =domain_instrument_payload_tests.cpp= | Accept | =static_assert(std::variant_size_v<trade_instrument> == 9)= added, so a tenth family fails the build. |
+| 7 | No test decodes an old-format payload blob | =instrument_payload.hpp= | Decline | Documented accepted risk: the services restart together and old blobs are re-imported. |
+| 8 | The fidelity suite header overstates what it checks | =xml_bond_source_fidelity_tests.cpp= | Accept | Header corrected. It checks idempotence, not fidelity, and it now names the roundtrip gate as the field-level check. |
+| 9 | =payer= and =payment_lag= types differ across the bond tables | =ores.sql/create/trading/*= | Decline | Confirmed against the XSD. The source elements genuinely differ: =Payer= is =xs:string= at bond level (=instruments.xsd:398=) and =xs:boolean= at leg level (=:928=); =paymentLag= is =xs:integer= at =conventions.xsd:104= but a period string at =instruments.xsd:932= (=ore_types.xsd:31=). The tables mirror the source. |
+| 10 | =request_helpers.hpp= keeps its own 30s literal | =ores.shell/app/request_helpers.hpp= | Accept | Both defaults now use =default_request_timeout=, so the unification holds. |
 
 * Result
+
+Waves 2.1 to 2.5 are complete. The branch carries the planning commit
+and one commit per wave.
+
+Acceptance, item by item.
+
+- *The mapper reads one XML product document into an issue (found or
+  created), an instrument row and its fact rows, and joins the rows
+  back into the product document.* Met. The mapper is one file of
+  forward and reverse functions per product, over the generated
+  entities, with =bond_instrument_data= as the container that carries
+  the rows. The find-or-create boundary is the resolver seam, with the
+  DB path supplying the lookup and the tests a stub.
+- *Flattening stops: the call schedule, the conversion terms, the full
+  exercise date list, the funding leg with its schedule and the repo
+  leg with its rate and dates map to their table destinations. The
+  coupon frequency corruption in forward_bond_repo and the hardcoded
+  TRS values disappear, with tests that assert it.* Met for the five
+  items. The call schedule and the conversion terms land as child
+  rows. The exercise date list, the funding schedule and the repo
+  dates have no table among the nine, so the container carries them
+  whole and reverse re-emits them; the flattening stops at the mapping
+  boundary, which is the plan's split. The coupon frequency corruption
+  is gone and asserted. The TRS hardcoding is gone and asserted.
+- *Product coverage spans the ten bond codes, with a recorded decision
+  for any product the import path does not cover.* Met. Nine are
+  importable and each has a mapper pair. BondPosition is the recorded
+  uncovered product: the schema declares no =positionData=, so no
+  product document exists for it. The suite asserts its absence.
+- *A document survives the round trip at the new shape for every
+  covered product.* Met for the suites and the counter; not met under
+  the literal reading of "survives". The golden and mapper roundtrip
+  suites pass, 493 cases with none failing, and the ores.cli XML
+  roundtrip walks the tree with =trades_mapped= counting 2590 trades
+  over 543 written documents. No bond document round trips at zero
+  loss on the mapper path: 0 of 41. Every loss is enumerated in the
+  wave 2.5 notes with its cause, and each belongs to a residue the
+  plan assigns to the parent story's shared tables. The domain path
+  (=save_data(load_data(document))=) does round trip at zero loss over
+  the 132 documents, per wave 2.4.
+- *The DB-bound import path stays the workflow.v1.ore.import service
+  with its existing drivers; no new import or export verb surface is
+  added anywhere.* Met. No verb, service or driver changed in this
+  task.
+
+The task closes with the residue position recorded rather than
+resolved. Five residues stay: a second coupon leg; the leg's
+=legDataType= rate group; the forward bond's =SettlementData=; its
+=PremiumData=, =LongInForward= and =KnockOut=; and the trade envelope.
+The first four are the parent story's shared schedule tables. The
+envelope is the trade entity, which the parent story owns.
+
+Wave 2.5 found and fixed two defects that corrupted values rather than
+dropping them. The first is a control byte in two date fields, where
+an =xsd::optional= assigned to a plain =std::string= selected
+=operator=(char)= through =operator bool()=; 43 of the 543 written
+documents were not well formed XML as a result. The second is a
+coupon leg rebuilt from the issue row, which moved a schedule start
+date and dropped the leg's calendar, conventions and date rules. Both
+are recorded in the wave 2.5 notes above.

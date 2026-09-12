@@ -36,8 +36,14 @@ namespace ores::trading::domain {
  * family references. The columns map one to one from bondData
  * (instruments.xsd lines 382-403): security_id, issuer, currency,
  * face_value, coupon_rate, coupon_frequency_code, day_count_code,
- * issue_date, maturity_date, settlement_days and the free description;
- * the coupon terms come from the coupon leg of the issue's LegData.
+ * issue_date and settlement_days. Only SecurityId is required by that
+ * schema; every other element is optional, so every other column is
+ * nullable and an absent element is stored as NULL rather than as an
+ * empty string or a zero.
+ *
+ * The coupon terms denormalise the first leg of the issue's LegData,
+ * which is itself optional: a document may identify a bond by its ISIN
+ * alone.
  */
 struct bond_issue final {
     /**
@@ -109,21 +115,38 @@ struct bond_issue final {
     std::string issue_date;
 
     /**
-     * @brief Maturity date of the bond (ISO 8601 date string).
-     *
-     * Must be after issue_date.
-     */
-    std::string maturity_date;
-
-    /**
      * @brief Settlement days of the bond, a market convention of the issue.
      */
     int settlement_days = 0;
 
     /**
-     * @brief Optional free-text description of the issue.
+     * @brief Calendar the issue's dates are adjusted against, when the document states one at the
+     * bond level rather than on a leg.
      */
-    std::string description;
+    std::optional<std::string> calendar;
+
+    /**
+     * @brief Credit curve the document names for the issue.
+     */
+    std::optional<std::string> credit_curve_id;
+
+    /**
+     * @brief Reference curve the document names for the issue.
+     */
+    std::optional<std::string> reference_curve_id;
+
+    /**
+     * @brief Income curve the document names for the issue.
+     */
+    std::optional<std::string> income_curve_id;
+
+    /**
+     * @brief Notional the document states at the bond level, as the document spells it.
+     *
+     * The column is text so that export re-emits the document's own spelling rather than a
+     * reformatted number.
+     */
+    std::optional<std::string> bond_notional;
 
     /**
      * @brief Username of the person who last modified this bond issue.

@@ -1,0 +1,116 @@
+:PROPERTIES:
+:ID: DA43BCDB-356E-4B39-A9B1-756BA6FF0D1D
+:END:
+#+title: Task: Seed every currency the refdata fixtures reference
+#+description: The codegen eventing-test template seeds a soft-FK parent's own mandatory soft FKs and its country sentinel, but not the currency the parent's insert trigger validates. A child of portfolio therefore writes a generated parent whose aggregation_ccy is X-0 with no X-0 row for the tenant. Add a parent_seed_currency block to the template and wire it through core.py.
+#+type: task
+#+level: s1
+#+filetags: :fix_refdata_fixture_currency_dependency:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-11
+#+updated: 2026-09-11
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:D0695476-CC9F-4F3C-8752-36321D163C1C][refdata fixtures depend on a currency row no fixture writes]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every refdata fixture that writes a generated book or portfolio seeds the currency that row's trigger validates, so the fixture passes or fails on its own actions and never on test order.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:D0695476-CC9F-4F3C-8752-36321D163C1C][refdata fixtures depend on a currency row no fixture writes]] |
+| Now          | Complete.                              |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing.                               |
+| Last touched | 2026-09-11                               |
+
+* Acceptance
+
+- The book and portfolio generator comments state the real rule: X-0 is a sentinel the fixtures seed, and no fixed code is valid on its own.
+- The eventing-test template seeds the currency a generated parent portfolio's trigger validates, and the book eventing test carries that seed before the parent write.
+- ores.refdata.core.tests passes and the full ctest suite passes.
+
+* Plan
+
+The fix belongs in codegen, not in the generated files. Three edits, no
+hand edits to generator or test output:
+
+1. =core.py=: carry the parent entity's =seed_currency= flag through
+   =_parent_entity_info=, stamp it on each FK as =parent_seed_currency=,
+   and aggregate it onto the domain entity as =seed_parent_currency=.
+   This mirrors the =seed_country_sentinel= / =parent_seed_country_sentinel=
+   pair that already handles the same shape of problem for calendar.
+2. =ores.cpp.eventing-integration-test.nats_integration_test.org=: add
+   the matching include, =using= and seed blocks. The seed writes a
+   synthetic currency stamped =iso_code = "X-0"= before the parent
+   portfolio write.
+3. Regenerate: =compass build --direct codegen_templates= to tangle the
+   org to =cpp_nats_integration_test.cpp.mustache=, then
+   =compass codegen entity generate book= and =portfolio=.
+
+The generator comments in =ores.refdata.book.org= and
+=ores.refdata.portfolio.org= also claimed that every test tenant's active
+set already holds X-0. The observed failure contradicts that, so both
+comments now state the real rule.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+The flake is fixed in codegen. No generated file was edited by hand.
+
+Delivered:
+
+1. =core.py= carries the parent entity's =seed_currency= flag through
+   =_parent_entity_info=, stamps it on each FK as =parent_seed_currency=,
+   and aggregates it onto the domain entity as =seed_parent_currency=.
+2. =ores.cpp.eventing-integration-test.nats_integration_test.org= emits
+   the matching include, =using= and seed blocks. The tangled mustache
+   gained 26 lines in the same three places.
+3. =book= and =portfolio= were regenerated from their orgs, generators
+   included. The generator comments now state the real rule: X-0 is a
+   sentinel the fixtures seed, and no fixed code is valid on its own.
+
+The new flag fires for one entity. =:seed_currency:= appears in two orgs,
+=portfolio= and =currency_pair_convention=, and =book= is the only entity
+in the tree with an FK to either. No other component's output changes.
+
+Evidence:
+
+- =compass build --preset linux-clang-debug-make= reached 100 percent.
+- =ores.refdata.core.tests= passed in 263.30 seconds.
+- The full ctest suite passed: 71 of 71 tests, 909.53 seconds.
+- The codegen drift check for refdata reports no drift beyond this
+  change set. The other 63 refdata entities regenerate byte-identical.

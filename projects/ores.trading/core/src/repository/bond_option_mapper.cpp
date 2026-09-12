@@ -37,6 +37,9 @@ domain::bond_option bond_option_mapper::map(const bond_option_entity& v) {
     r.instrument_id = boost::lexical_cast<boost::uuids::uuid>(v.instrument_id.value());
     r.option_type = v.option_type;
     r.option_strike = v.option_strike;
+    r.redemption = v.redemption;
+    r.price_type = v.price_type;
+    r.knocks_out = v.knocks_out;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -56,6 +59,9 @@ bond_option_entity bond_option_mapper::map(const domain::bond_option& v) {
     r.version = v.version;
     r.option_type = v.option_type;
     r.option_strike = v.option_strike;
+    r.redemption = v.redemption;
+    r.price_type = v.price_type;
+    r.knocks_out = v.knocks_out;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

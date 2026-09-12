@@ -1,0 +1,218 @@
+:PROPERTIES:
+:ID: AFB87F90-DA8A-45E1-8C84-CD4945B23485
+:END:
+#+title: ores.trading.bond_forward
+#+description: Codegen entity model for the trading =bond_forward= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The forward block a document states on a forward bond, keyed to the instrument.
+#+entity_singular: bond_forward
+#+entity_plural: bond_forwards
+#+entity_title: Bond Forward
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per forward bond instrument, keyed to the instrument.
+
+A forward bond states a bond block, a settlement block, an optional
+premium block and a long-in-forward flag. The bond block is the issue
+and the nine bond tables hold it; this table holds the other three,
+which no row holds.
+
+Each optional member is a nullable column. An empty string is not a
+null, so a member the document stated empty stays distinct from one it
+omitted, and a block is present exactly when its required member is not
+null.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the forward bond instrument this row extends.
+
+** long_in_forward
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Flag saying the holder is long the forward.
+
+The schema declares the member required, so an unengaged value means
+the container came from a row set rather than from a document.
+
+** forward_maturity_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Maturity date of the forward.
+
+The column is text because the schema states the member as a string,
+not as a date. The corpus spells it both ways, =20251220= and
+=2025-07-16=, and a date column would return the first as the second
+and break the round trip on those documents.
+
+The settlement block is present exactly when this member is not null,
+because the schema declares it the block's one required member.
+
+** forward_settlement_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the forward settles on.
+
+The column is text for the same reason as the maturity date beside it.
+
+** settlement
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Settlement type the forward pays under.
+
+** amount
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Amount the forward settles for.
+
+** lock_rate
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Rate the forward's value is locked at.
+
+** dv01
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+Sensitivity the document states alongside the lock rate.
+
+** lock_rate_day_counter
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Day counter the lock rate accrues under.
+
+** settlement_dirty
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Flag saying the settlement is dirty.
+
+The column is text because the schema spells the member as one of its
+own bool type's thirteen spellings, and the document's own spelling is
+what export re-emits.
+
+** premium_amount
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Amount of the forward's premium.
+
+The column is text because the schema states the amount as text. The
+premium block is present exactly when this member and the pay date are
+both not null, because the schema declares the two required together.
+
+** premium_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Date the forward's premium pays on.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_forwards_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_forward
+:entity_plural_short:   bond_forwards
+:entity_singular_words: bond forward
+:entity_plural_words:   bond forwards
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: forward
+:END:
+
+** Table display
+
+| column                  | header        |
+|-------------------------+---------------|
+| forward_maturity_date   | Maturity      |
+| forward_settlement_date | Settlement    |
+| long_in_forward         | Long/Short    |
+| premium_amount          | Premium       |
+| modified_by             | Modified By   |
+| version                 | Version       |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

@@ -39,6 +39,15 @@ the runnable script library (=projects/ores.shell/scripts/library/marketdata/=).
 - [[id:9BF3F080-6692-4676-884B-D10DF859D096][How do I import the MarketRisk HistSimVar example market data and fixings?]]
 - [[id:DD527011-4F5E-4716-97A2-6AA8C70F3BB6][How do I import the 2016-02-05 ORE reference vintage market data?]] (currently broken — see recipe)
 
+* ORE documents
+
+Non-interactive ORE XML round trips through the database, via the
+shell's =ore= menu (=ore upload=, =ore import=, =ore export=). Each is
+tangled into the runnable script library
+(=projects/ores.shell/scripts/library/ore/=).
+
+- [[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE document through the database?]]
+
 * Compute
 
 Compute grid verbs, speaking to =ores.compute= over NATS. Each is

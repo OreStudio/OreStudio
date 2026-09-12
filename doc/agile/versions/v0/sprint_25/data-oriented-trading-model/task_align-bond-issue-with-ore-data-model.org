@@ -1,0 +1,235 @@
+:PROPERTIES:
+:ID: F8D78E13-F2A7-47AD-90E2-7251D2FA7895
+:END:
+#+title: Task: Align bond_issue with the ORE data model
+#+description: The bond_issue entity carries only fields the ORE schema states, and every column an absent element leaves NULL rather than a sentinel, so a bond document that states only its ISIN imports and round trips.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/rework-bond-ores-mapping
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The =bond_issue= table models =bondData= and nothing else. Two fields
+the rework added have no source in the ORE schema, so the table drops
+them: =maturity_date=, which duplicates the schedule's end date and
+belongs to the leg, and =description=, which =instruments.xsd= attaches
+to =tranche= and not to a bond.
+
+Every element of =bondData= except =SecurityId= is optional, so every
+column except =security_id= becomes nullable and an absent element
+stores NULL. That is what stops a document that identifies a bond by
+its ISIN alone from being rejected on import, which is the loss the
+round trip measures.
+
+The work is normalisation and denormalisation only: the columns are the
+schema's own elements, plus the coupon terms the first leg denormalises
+onto the issue row.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- Every column of =ores_trading_bond_issues_tbl= has a source in
+  =bondData= (=instruments.xsd= lines 382-403), or is the denormalised
+  first-leg coupon terms, or is an envelope column the codegen adds.
+- =security_id= is the only NOT NULL domain column; the rest admit NULL
+  and the mapper writes NULL for an absent value rather than an empty
+  string or a zero.
+- No CHECK constraint rejects a row because a document omitted an
+  element.
+- A bond document that states only =SecurityId= and =BondNotional=
+  imports without error.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** What the schema states
+
+=bondData= (=external/ore/xsd/instruments.xsd= lines 382-403) holds
+eighteen elements. Only =SecurityId= is required; the other seventeen
+are =minOccurs="0"=. The table held two elements the schema does not
+state at all, and marked seven of the stated ones NOT NULL.
+
+The coupon terms the issue row carries are not =bondData= elements at
+all. They are the first leg's: =Currency=, =Notional=, =DayCounter=,
+the schedule's tenor and the fixed rate. The issue row denormalises
+them so that one row answers "what is this ISIN" without a join. That
+is a normalisation choice, not an invented field, and the schema is the
+arbiter of every value.
+
+** The two invented fields
+
+=maturity_date=. The rework wrote it from the schedule's first rule
+end date and read it back into the same place. The schema has no such
+element on =bondData=, and the date already has a home: the schedule
+rule's =EndDate=, on the leg, in the schedule table. The mapper now
+leaves it there in both directions.
+
+=description=. =instruments.xsd= line 2583 states =Description= on
+=tranche=, not on a bond. Nothing in the corpus supplies it.
+
+** Nullable, and what absence means
+
+An element the document omits has no value, so the column is NULL and
+the domain type keeps its plain C++ type with a sentinel: empty string
+for text, zero for a number. The entity mapper converts each way, and
+the entity entity type is where the ~std::optional~ lives; the domain
+struct is unchanged, so nothing ripples into the Qt form or the shell
+verbs.
+
+The sentinel is a real limit and it is recorded as such: a document
+that states =SettlementDays=0 or a zero coupon stores NULL, and reads
+back as an absent element. The alternative is a presence flag per
+member, which is the shape the container already uses where the
+distinction matters.
+
+~settlement_days~ lost its initialiser when the column became nullable.
+A NOT NULL column gets an implicit zero initialiser; a nullable one
+does not, so ~int settlement_days;~ was uninitialised and the reverse
+mapper's ~!= 0~ test read indeterminate memory. ~:default_value: 0~ in
+the org restores it.
+
+** The checks
+
+Three CHECK constraints rejected a row because the document omitted an
+element: ~"issuer" <> ''~, ~"currency" <> ''~ and ~"issue_date"= date
+with an empty string cast~. All three are gone. The two that remain
+hold only for a value the document stated, and a NULL comparison
+passes: ~"face_value" > 0~ and ~"coupon_rate" >= 0~. An issue that
+carries no notional is admitted; a stated non-positive one is not.
+
+** What this fixes on the round trip
+
+=Cash_BondRepo_and_Bond.xml= states a bond as =SecurityId= and
+=BondNotional= alone. The forward mapper left issuer, currency, issue
+date, face value and the coupon terms at their sentinels; the NOT NULL
+columns and the three checks rejected the row, and the whole instrument
+was lost on import. The export then wrote a trade with no =BondData= at
+all. With the columns nullable and the checks gone, the row saves.
+
+** Output regenerated
+
+Twelve facets by =compass codegen entity generate bond_issue --address
+<facet>=. =ores.cpp.qt= stays owed: it is in the entity's supported set
+but its files are not on disk and the cmake sources list does not carry
+them, so generating it would wire nothing and break the drift check.
+Unit 3 (3E14AEC0) holds the Qt bridge and stays BACKLOG. The generated
+comment for =minOccurs="0"= came out mangled, because the org markup
+collides with the quotes; the prose now says "optional".
+
+** Consumers updated
+
+- =bond_instrument_mapper.cpp=: the maturity mirror removed from
+  =map_bond_data= and =reverse_bond_data=.
+- =BondInstrumentForm.cpp= and its =.ui=: the two widgets removed.
+- =bond_instrument_commands.cpp= and its header: the two arguments
+  removed from =add=.
+- =service_bond_instrument_reader_tests.cpp=: the two assignments
+  removed. The compiler found this one; a grep for the member names did
+  not, because the fixture uses a local named ~r~.
+
+** Residue the gate will measure
+
+Eight =bondData= elements still have no column: =CreditGroup=,
+=VolatilityCurveId=, =PriceQuoteMethod=, =PriceQuoteBaseValue=,
+=PriceType=, =Payer=, =CreditRisk= and =SubType=. The corpus is not
+known to state any of them, so the mapper-path gate reads zero without
+them; if a document does state one, it is a loss and the gate will say
+so. They are not added here because nothing reads them yet, and a
+column no mapper fills is the shape this task exists to remove.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=bond_issue= now models =bondData= and nothing else.
+
+Two fields left the table because the schema has no source for them:
+=maturity_date=, which duplicated the schedule's end date and stayed on
+the leg, and =description=, which =instruments.xsd= states on =tranche=
+rather than on a bond. The reverse mapper no longer writes either, so
+the schedule rule's =EndDate= is the date's only home.
+
+Every column except =security_id= became nullable, because every
+element except =SecurityId= is optional in the schema, and the mapper
+now writes NULL for an absent element instead of a sentinel. Three
+CHECK constraints that rejected a row for an omitted element are gone:
+~"issuer" <> ''~, ~"currency" <> ''~ and the empty-string cast on
+=issue_date=. The two that remain, ~"face_value" > 0~ and
+~"coupon_rate" >= 0~, only fire on a value the document stated, since a
+NULL comparison passes.
+
+Verified against the generated schema, not against the intent:
+=trading_bond_issues_create.sql= reads =security_id text not null= and
+then =null= on every domain column, with the three checks absent and no
+=maturity_date= or =description= column. Acceptance items 1 to 3 hold.
+
+Acceptance item 4, that a document stating only =SecurityId= and
+=BondNotional= imports, was met by the live import of
+=Cash_BondRepo_and_Bond.xml= recorded in
+[[id:FCC206C0-D808-40CC-86E8-14F687B0AB57][Fix silent instrument loss
+from untagged variant serialisation]]. That document states the two
+elements alone, and before this change its row was rejected and the
+whole instrument was lost; the export then carried no =BondData=. The
+import path does not cross the message wire, so that evidence is
+unaffected by the codec change recorded there.
+
+Two limits stand and are recorded rather than fixed. Eight =bondData=
+elements still have no column (=CreditGroup=, =VolatilityCurveId=,
+=PriceQuoteMethod=, =PriceQuoteBaseValue=, =PriceType=, =Payer=,
+=CreditRisk=, =SubType=); the corpus states none of them, so the gate
+reads zero without them, and a column no mapper fills is the shape this
+task exists to remove. And the plain-C++-type-plus-sentinel rule cannot
+distinguish a stated zero from an absent element, so a document stating
+=SettlementDays=0 or a zero coupon reads back as an omitted element.
+
+The =ores.cpp.qt= facet stays owed: it is in the entity's supported set
+but its files are not on disk and the cmake sources list does not carry
+them, so generating it would wire nothing and break the drift check.
+Unit 3 (3E14AEC0) holds the Qt bridge and stays BACKLOG.

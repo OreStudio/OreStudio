@@ -1,0 +1,154 @@
+:PROPERTIES:
+:ID: ae3884f8-f6b1-465c-bf24-ef072a70c9d7
+:END:
+#+title: ores.trading.trade_envelope
+#+description: Codegen entity model for the trading =trade_envelope= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: The envelope a document states around a trade, keyed to the trade.
+#+entity_singular: trade_envelope
+#+entity_plural: trade_envelopes
+#+entity_title: Trade Envelope
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per trade whose document stated an envelope, keyed to the
+trade.
+
+The envelope is the block a document wraps around a trade. It names a
+counterparty, a netting set, a list of portfolios and a list of further
+fields the document states in its own vocabulary. The schema states all
+four as optional and the last as open content.
+
+The trade row already carries a counterparty and a netting set, but
+those are the trade's own attributes and the trade states them
+unconditionally. The envelope is the document's statement and may omit
+either. A row here holds what the document said, so a reader
+distinguishes an omitted member from a stated one.
+
+A scalar member needs no flag of its own: a null column says the
+document omitted it and an empty string says the document stated it
+empty. The two list members are not like that, because an omitted list
+and a stated empty list both write no child row. Each therefore carries
+a flag on this row that says the document stated it.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the trade this envelope wraps.
+
+** counter_party
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Counterparty name the document stated.
+
+The name is kept as the document spelled it rather than resolved to a
+counterparty row, so export re-emits the document's own text.
+
+** netting_set_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Netting set identifier the document stated.
+
+** has_portfolio_ids
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the document stated a portfolio list, empty or not.
+
+Without this flag an omitted list and a stated empty list would both
+write no child row and export would not know which to emit.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+** has_additional_fields
+:PROPERTIES:
+:type:     boolean
+:cpp_type: bool
+:nullable: false
+:END:
+
+True when the document stated an additional-fields list, empty or not.
+
+#+begin_src cpp :name generator
+true
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_envelopes_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_envelope
+:entity_plural_short:   trade_envelopes
+:entity_singular_words: trade envelope
+:entity_plural_words:   trade envelopes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: env
+:END:
+
+** Table display
+
+| column                | header          |
+|-----------------------+-----------------|
+| counter_party         | Counterparty    |
+| netting_set_id        | Netting Set     |
+| modified_by           | Modified By     |
+| version               | Version         |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

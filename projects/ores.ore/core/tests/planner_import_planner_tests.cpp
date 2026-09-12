@@ -31,8 +31,11 @@
 #include "ores.trading.api/domain/instrument.hpp"
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <filesystem>
 #include <set>
+#include <stdexcept>
 #include <variant>
 
 namespace {
@@ -76,6 +79,27 @@ ores::ore::planner::import_choices default_choices(const std::filesystem::path& 
     c.create_parent_portfolio = true;
     c.hierarchy_strip = {"Input"};
     return c;
+}
+
+// Copy one ORE example document into a fresh temporary directory at the
+// given path relative to that directory's root. The caller owns the
+// directory and removes it when done.
+std::filesystem::path stage_document(const std::filesystem::path& source,
+                                     const std::filesystem::path& relative) {
+    const auto root = std::filesystem::temp_directory_path() /
+                      ("ore_upload_" +
+                       boost::uuids::to_string(boost::uuids::random_generator()()));
+    std::filesystem::create_directories((root / relative).parent_path());
+    std::filesystem::copy_file(source, root / relative);
+    return root;
+}
+
+ores::ore::scanner::scan_result scan_one_portfolio(const std::filesystem::path& root,
+                                                   const std::filesystem::path& relative) {
+    ores::ore::scanner::scan_result sr;
+    sr.root = root;
+    sr.portfolio_files = {root / relative};
+    return sr;
 }
 
 }
@@ -201,17 +225,19 @@ TEST_CASE("plan_creates_portfolios_and_books_from_portfolio_files", tags) {
     CHECK(plan.books.size() >= sr.portfolio_files.size());
 }
 
+// A portfolio directory above the books is what gives every book a parent.
+// The wrapping parent portfolio sits above that directory, so it adds one
+// portfolio to the plan and nothing else.
 TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", tags) {
     auto lg(make_logger(test_suite));
 
-    const auto root = ore_path("examples/Legacy/Example_1");
-    auto sr = make_scan_result(root);
-    sr.root = root;
-
-    if (sr.portfolio_files.empty()) {
-        SUCCEED("No portfolio files — skipping");
+    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    if (!std::filesystem::exists(source)) {
+        SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
         return;
     }
+    const auto root = stage_document(source, "Books/portfolio_nested.xml");
+    const auto sr = scan_one_portfolio(root, "Books/portfolio_nested.xml");
 
     // Run once without parent portfolio
     auto choices_no_parent = default_choices(root);
@@ -231,6 +257,45 @@ TEST_CASE("plan_with_parent_portfolio_has_one_extra_portfolio", tags) {
                             << " portfolios.";
 
     CHECK(plan_with_parent.portfolios.size() == plan_no_parent.portfolios.size() + 1);
+
+    std::error_code ec;
+    std::filesystem::remove_all(root, ec);
+}
+
+// A flat upload holds its portfolio files at the root, so the hierarchy
+// builder makes book nodes with no portfolio above them. The wrapping
+// parent portfolio is the only thing that can give those books a parent,
+// and a book without one cannot be saved.
+TEST_CASE("plan_rejects_a_flat_upload_with_no_parent_portfolio", tags) {
+    auto lg(make_logger(test_suite));
+
+    const auto source = ore_path("examples/Products/Example_Trades/Cash_BondRepo_and_Bond.xml");
+    if (!std::filesystem::exists(source)) {
+        SUCCEED("No Cash_BondRepo_and_Bond.xml — skipping");
+        return;
+    }
+    const auto root = stage_document(source, "portfolio_flat.xml");
+    const auto sr = scan_one_portfolio(root, "portfolio_flat.xml");
+
+    auto choices = default_choices(root);
+    choices.parent_portfolio_name.clear();
+    choices.create_parent_portfolio = true;
+
+    ore_import_planner planner(sr, {}, choices);
+    CHECK_THROWS_AS(planner.plan(), std::runtime_error);
+
+    // Naming the portfolio is what the shell's --parent-portfolio-name
+    // supplies, and it is enough to make the same upload plan cleanly.
+    choices.parent_portfolio_name = "Flat Upload";
+    ore_import_planner named_planner(sr, {}, choices);
+    const auto plan = named_planner.plan();
+
+    REQUIRE(plan.portfolios.size() == 1);
+    REQUIRE(plan.books.size() == 1);
+    CHECK(plan.books.front().parent_portfolio_id == plan.portfolios.front().id);
+
+    std::error_code ec;
+    std::filesystem::remove_all(root, ec);
 }
 
 // =============================================================================

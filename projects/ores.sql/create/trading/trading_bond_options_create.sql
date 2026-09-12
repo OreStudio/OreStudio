@@ -25,12 +25,20 @@
  * Bond Option Table
  *
  * One row per bond option trade, keyed by the instrument row it
- * extends. The column set is final: the ER row names option_type and
- * option_strike, which map from optionData and the strikeGroup of
- * bondOptionData (instruments.xsd lines 2273-2282). The exercise
- * dates have no destination in the nine tables; they land as schedule
- * rows in the shared instrument-keyed schedule tables of the parent
- * story (recorded scope limit, task D7943D7E wave 1.3).
+ * extends. The ER row names option_type and option_strike, which map
+ * from optionData and the strikeGroup of bondOptionData
+ * (instruments.xsd lines 2273-2282).
+ *
+ * Three members of bondOptionData sit beside its option block rather
+ * than inside it: the redemption code, the price type and the knock-out
+ * flag. The shared option element states none of them, so an Ascot never
+ * writes them and no other table can hold them. They ride here, on the
+ * one row that is a bond option.
+ *
+ * The rest of the block lands elsewhere. The option element's own
+ * members go to instrument_option and its keyed children, and the
+ * exercise dates land as schedule rows in the shared instrument-keyed
+ * schedule tables, under the owner role option.
  */
 
 create table if not exists "ores_trading_bond_options_tbl" (
@@ -39,6 +47,9 @@ create table if not exists "ores_trading_bond_options_tbl" (
     "version" integer not null,
     "option_type" text not null,
     "option_strike" numeric(28, 10) not null,
+    "redemption" text null,
+    "price_type" text null,
+    "knocks_out" text null,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,

@@ -97,12 +97,10 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu,
                    std::string coupon_frequency_code,
                    std::string day_count_code,
                    std::string issue_date,
-                   std::string maturity_date,
                    std::string trs_return_type,
                    std::string trs_funding_leg_code,
                    std::string option_type,
                    std::string option_strike,
-                   std::string description,
                    std::string change_reason_code,
                    std::string change_commentary) {
             process_add_bond_instrument(std::ref(out),
@@ -116,22 +114,20 @@ void bond_instrument_commands::register_commands(cli::Menu& root_menu,
                                         std::move(coupon_frequency_code),
                                         std::move(day_count_code),
                                         std::move(issue_date),
-                                        std::move(maturity_date),
                                         std::move(trs_return_type),
                                         std::move(trs_funding_leg_code),
                                         std::move(option_type),
                                         std::move(option_strike),
-                                        std::move(description),
                                         std::move(change_reason_code),
                                         std::move(change_commentary));
         },
         "Add an Bond instrument (trade_type_code [security_id] issuer currency face_value "
-        "coupon_rate coupon_frequency_code [day_count_code] issue_date [maturity_date] "
-        "[trs_return_type] [trs_funding_leg_code] [option_type] [option_strike] description "
+        "coupon_rate coupon_frequency_code [day_count_code] issue_date "
+        "[trs_return_type] [trs_funding_leg_code] [option_type] [option_strike] "
         "change_reason_code \"change_commentary\")",
         {"trade_type_code security_id issuer currency face_value coupon_rate coupon_frequency_code "
-         "day_count_code issue_date maturity_date trs_return_type trs_funding_leg_code option_type "
-         "option_strike description change_reason_code change_commentary"});
+         "day_count_code issue_date trs_return_type trs_funding_leg_code option_type "
+         "option_strike change_reason_code change_commentary"});
 
     bond_instruments_menu->Insert("delete",
                                   [&session](std::ostream& out, std::string instrument_id) {
@@ -198,12 +194,10 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
                                                            std::string coupon_frequency_code,
                                                            std::string day_count_code,
                                                            std::string issue_date,
-                                                           std::string maturity_date,
                                                            std::string trs_return_type,
                                                            std::string trs_funding_leg_code,
                                                            std::string option_type,
                                                            std::string option_strike,
-                                                           std::string description,
                                                            std::string change_reason_code,
                                                            std::string change_commentary) {
     BOOST_LOG_SEV(lg(), debug) << "Initiating add Bond instrument request.";
@@ -261,8 +255,6 @@ void bond_instrument_commands::process_add_bond_instrument(std::ostream& out,
     issue.coupon_frequency_code = std::move(coupon_frequency_code);
     issue.day_count_code = (day_count_code == "-") ? "" : std::move(day_count_code);
     issue.issue_date = std::move(issue_date);
-    issue.maturity_date = (maturity_date == "-") ? "" : std::move(maturity_date);
-    issue.description = std::move(description);
     if (session_tenant)
         issue.tenant_id = *session_tenant;
     issue.modified_by = username;

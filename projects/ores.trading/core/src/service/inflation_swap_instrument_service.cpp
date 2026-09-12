@@ -75,7 +75,8 @@ void inflation_swap_instrument_service::save_inflation_swap_instrument(
     BOOST_LOG_SEV(lg(), debug) << "Saving inflation swap instrument. "
                                << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved inflation swap instrument. "
                               << "instrument_id: " << v.identity.instrument_id;
@@ -90,8 +91,10 @@ void inflation_swap_instrument_service::save_inflation_swap_instruments(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << inflation_swap_instruments.size()
                                << " inflation swap instruments";
     auto ts = inflation_swap_instruments;
-    for (auto& e : ts)
-        stamp(e, ctx_);
+    for (auto& e : ts) {
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

@@ -1,0 +1,44 @@
+:PROPERTIES:
+:ID: BBBD07EF-09E0-4FF6-A282-28534429264C
+:END:
+#+title: check_component_drift.py corrupts a branch that is behind main
+#+description: Running projects/ores.codegen/scripts/check_component_drift.py with the component flag on a branch whose codegen templates are older than main's regenerates the whole component in place from the stale templates. It rewrote 67 tracked files and materialized 44 untracked ones under ores.trading, reverting newer generated shapes (the trade sub-struct split) and dropping hand-written protocol types (export_portfolio_request). A build running concurrently then failed on the clobbered headers. The script is only safe for components in its KNOWN_DRIFT_FREE registry, which requires zero drift; any other component needs the single-entity compass codegen entity generate command instead. Recovered by stashing the fallout; a matching stash entry dated 2026-09-11 shows this has bitten before.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-12
+#+updated: 2026-09-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the codegen drift check refuse to overwrite a working tree it cannot
+prove is current. The check regenerates a component in place, so on a branch
+whose templates predate main it writes old code over new. Restrict it to the
+components listed in its drift-free registry, and fail with a clear message
+for any other component. Offer the single-entity generate command as the
+supported route instead.
+
+* Why
+
+The check exists to catch a forgotten regeneration. It must not be able to
+cause one. On a stale branch the two are indistinguishable to the script, so
+the guard has to come from outside the regeneration itself: either a preflight
+that compares the template revision against main's, or a dry run into a
+temporary tree that never touches the working copy.
+
+* References
+
+- ~projects/ores.codegen/scripts/check_component_drift.py~ — the script, its
+  ~KNOWN_DRIFT_FREE~ registry, and its pre-existing snapshot of untracked
+  files.
+- ~doc/recipes/codegen/how_do_i_regenerate_all_layers_for_a_domain_entity.org~
+  — states that single-entity work uses the entity generate command and not
+  the component regenerate.
+
+* See also
+
+- Drift fallout preserved in two stash entries tagged
+  ~bh-drift-fallout-20260912~ and ~bh-drift-untracked-20260912~, plus a
+  matching foreign entry dated 2026-09-11.

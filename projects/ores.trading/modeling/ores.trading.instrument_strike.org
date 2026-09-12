@@ -1,0 +1,151 @@
+:PROPERTIES:
+:ID: D4B2F23D-EC19-4D19-A478-3DD068044E16
+:END:
+#+title: ores.trading.instrument_strike
+#+description: Codegen entity model for the trading =instrument_strike= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: A strike a document states as a price, a yield or a bare number, keyed to the instrument.
+#+entity_singular: instrument_strike
+#+entity_plural: instrument_strikes
+#+entity_title: Instrument Strike
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per instrument whose document stated a strike as a price or as
+a yield, keyed to the instrument.
+
+The schema states the strike as a choice of three: a price with its
+currency, a yield with its compounding, or a number with an optional
+currency. A bare number reaches the bond option fact row instead, so
+this table holds the two richer spellings. The three pairs are mutually
+exclusive in a document, so at most one pair of columns is filled on a
+row and the other four are null.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument whose document stated this strike.
+
+** price_value
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The strike stated as a price.
+
+** price_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency the price strike is stated in.
+
+** yield_value
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The strike stated as a yield.
+
+** yield_compounding
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Compounding the yield strike is stated under.
+
+** bare_value
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The strike stated as a bare number, when it did not reach the option
+fact row.
+
+** bare_currency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Currency the bare strike is stated in.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_instrument_strikes_tbl
+:END:
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: instrument_strike
+:entity_plural_short:   instrument_strikes
+:entity_singular_words: instrument strike
+:entity_plural_words:   instrument strikes
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: strike
+:END:
+
+** Table display
+
+| column         | header       |
+|----------------+--------------|
+| price_value    | Price        |
+| price_currency | Price Ccy    |
+| yield_value    | Yield        |
+| modified_by    | Modified By  |
+| version        | Version      |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.
+- [[id:c7d2b157-2f5b-41f1-a504-ffa0347496a5][ores.trading.bond_option]] — the fact row the bare strike reaches.

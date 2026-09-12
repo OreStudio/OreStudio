@@ -75,7 +75,8 @@ void equity_swap_instrument_service::save_equity_swap_instrument(
     BOOST_LOG_SEV(lg(), debug) << "Saving equity swap instrument. "
                                << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved equity swap instrument. "
                               << "instrument_id: " << v.identity.instrument_id;
@@ -89,8 +90,10 @@ void equity_swap_instrument_service::save_equity_swap_instruments(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << equity_swap_instruments.size()
                                << " equity swap instruments";
     auto ts = equity_swap_instruments;
-    for (auto& e : ts)
-        stamp(e, ctx_);
+    for (auto& e : ts) {
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

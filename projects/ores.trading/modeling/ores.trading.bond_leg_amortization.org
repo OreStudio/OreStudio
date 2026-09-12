@@ -1,0 +1,193 @@
+:PROPERTIES:
+:ID: 6c6415ff-172f-47ea-8cc6-f293ee7af888
+:END:
+#+title: ores.trading.bond_leg_amortization
+#+description: Codegen entity model for the trading =bond_leg_amortization= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One step of a bond leg's amortization schedule, keyed to the leg and the step's ordinal.
+#+entity_singular: bond_leg_amortization
+#+entity_plural: bond_leg_amortizations
+#+entity_title: Bond Leg Amortization
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per step of a bond leg's amortization schedule, keyed to the
+leg and the step's ordinal.
+
+A step is not a bare amount. The schema states a type that says how
+the step amortizes, a value, the window it applies over, a frequency
+and an underflow flag, and the container mirrors all six. The step
+therefore has a table of its own rather than a role in the leg's
+number list.
+
+The type is required and the other five members are optional, so the
+type is not null here and the rest are nullable.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** instrument_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the instrument this amortization belongs to.
+
+** leg_role
+:PROPERTIES:
+:type:        text
+:cpp_type:    std::string
+:primary_key: true
+:END:
+
+Which leg list of the instrument the leg holding this step belongs to:
+=bond=, =trs_funding=, =repo= or =ascot_swap=.
+
+** leg_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of the leg within its list, counting from one.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this step within the leg's amortization list.
+
+** amortization_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+How the step amortizes, as the document spells it.
+
+#+begin_src cpp :name generator
+std::string("FixedAmount")
+#+end_src
+
+** value
+:PROPERTIES:
+:type:     numeric(28, 10)
+:cpp_type: std::optional<double>
+:nullable: true
+:END:
+
+The amount the step amortizes by.
+
+** start_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+First date of the step's window (ISO 8601 date string).
+
+** end_date
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Last date of the step's window (ISO 8601 date string).
+
+** frequency
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+How often the step's amount applies within its window.
+
+** underflow
+:PROPERTIES:
+:type:     boolean
+:cpp_type: std::optional<bool>
+:nullable: true
+:END:
+
+True when the step allows the notional to fall below zero.
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_bond_leg_amortizations_tbl
+:END:
+
+** Checks
+
+| expression                                                  |
+|-------------------------------------------------------------|
+| "leg_role" in ('bond', 'trs_funding', 'repo', 'ascot_swap') |
+| "leg_number" > 0                                            |
+| "sequence_number" > 0                                       |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: bond_leg_amortization
+:entity_plural_short:   bond_leg_amortizations
+:entity_singular_words: bond leg amortization
+:entity_plural_words:   bond leg amortizations
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <optional>
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: amort
+:END:
+
+** Table display
+
+| column            | header      |
+|-------------------+-------------|
+| leg_role          | Role        |
+| leg_number        | Leg         |
+| sequence_number   | Sequence    |
+| amortization_type | Type        |
+| value             | Value       |
+| modified_by       | Modified By |
+| version           | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

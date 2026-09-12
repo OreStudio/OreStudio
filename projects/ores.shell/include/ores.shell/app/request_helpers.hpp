@@ -21,6 +21,7 @@
 #define ORES_SHELL_APP_REQUEST_HELPERS_HPP
 
 #include "ores.nats/service/request_helpers.hpp"
+#include "ores.nats/service/timeouts.hpp"
 #include "ores.shell/app/command_feedback.hpp"
 #include <chrono>
 #include <optional>
@@ -63,8 +64,7 @@ std::optional<Response> do_request(std::ostream& out,
  * @brief Send an authenticated NATS request and decode its response.
  *
  * See do_request() -- same shape, plus a Bearer token from @p session and
- * an optional @p timeout (default 30s, matching the pre-existing
- * per-command-file copies' default).
+ * an optional @p timeout (default @c default_request_timeout).
  */
 template <typename Response, typename Request>
 std::optional<Response>
@@ -72,7 +72,8 @@ do_auth_request(std::ostream& out,
                 ores::nats::service::nats_client& session,
                 std::string_view subject,
                 const Request& req,
-                std::chrono::milliseconds timeout = std::chrono::seconds(30)) {
+                std::chrono::milliseconds timeout =
+                    ores::nats::service::default_request_timeout) {
     try {
         auto result = ores::nats::service::authenticated_request_and_decode<Response>(
             session, subject, req, timeout);
@@ -100,7 +101,7 @@ std::optional<typename Request::response_type>
 do_request(std::ostream& out,
            ores::nats::service::nats_client& session,
            const Request& req,
-           std::chrono::milliseconds timeout = std::chrono::seconds(30),
+           std::chrono::milliseconds timeout = ores::nats::service::default_request_timeout,
            bool authenticated = false) {
     try {
         auto result = ores::nats::service::request_and_decode(session, req, timeout, authenticated);

@@ -25,6 +25,12 @@
 #include "ores.trading.core/messaging/party_role_type_registrar.hpp"
 #include "ores.trading.core/messaging/registrar.hpp"
 #include "ores.trading.core/messaging/registrar_detail.hpp"
+#include "ores.trading.core/messaging/trade_envelope_additional_field_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/trade_envelope_additional_field_registrar.hpp"
+#include "ores.trading.core/messaging/trade_envelope_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/trade_envelope_portfolio_id_history_provider_registrar.hpp"
+#include "ores.trading.core/messaging/trade_envelope_portfolio_id_registrar.hpp"
+#include "ores.trading.core/messaging/trade_envelope_registrar.hpp"
 #include "ores.trading.core/messaging/trade_id_type_history_provider_registrar.hpp"
 #include "ores.trading.core/messaging/trade_id_type_registrar.hpp"
 #include "ores.trading.core/messaging/trade_identifier_history_provider_registrar.hpp"
@@ -77,6 +83,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     append(register_lifecycle_event_handlers(nats, ctx, verifier));
     append(register_trade_identifier_handlers(nats, ctx, verifier));
     append(register_trade_party_role_handlers(nats, ctx, verifier));
+    append(register_trade_envelope_handlers(nats, ctx, verifier));
+    append(register_trade_envelope_portfolio_id_handlers(nats, ctx, verifier));
+    append(register_trade_envelope_additional_field_handlers(nats, ctx, verifier));
 
     auto& hist_registry = history_registry();
     register_party_role_type_history_provider(hist_registry);
@@ -84,6 +93,9 @@ registrar::register_handlers(ores::nats::service::client& nats,
     register_lifecycle_event_history_provider(hist_registry);
     register_trade_identifier_history_provider(hist_registry);
     register_trade_party_role_history_provider(hist_registry);
+    register_trade_envelope_history_provider(hist_registry);
+    register_trade_envelope_portfolio_id_history_provider(hist_registry);
+    register_trade_envelope_additional_field_history_provider(hist_registry);
     register_trade_type_history_provider(hist_registry);
     subs.push_back(ores::history::messaging::register_history_handlers(
         nats, hist_registry, "trading", queue_group, ctx, verifier));

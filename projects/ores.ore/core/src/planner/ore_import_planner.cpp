@@ -26,6 +26,7 @@
 #include "ores.trading.api/domain/trade_instrument.hpp"
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
+#include <stdexcept>
 #include <unordered_set>
 
 namespace ores::ore::planner {
@@ -190,12 +191,20 @@ ore_import_plan ore_import_planner::plan() {
             continue;
         }
 
-        // Determine parent portfolio UUID for this book
+        // Determine parent portfolio UUID for this book.
+        // A book cannot stand without a portfolio above it: the database
+        // rejects a nil parent_portfolio_id, and a trade carries the same
+        // value as its portfolio_id.
         boost::uuids::uuid book_parent_id;
         if (node.parent_index) {
             book_parent_id = node_uuids[*node.parent_index];
         } else if (parent_portfolio_id) {
             book_parent_id = *parent_portfolio_id;
+        } else {
+            throw std::runtime_error("Book '" + node.name +
+                                     "' has no portfolio above it. Upload a tree with a portfolio "
+                                     "directory, or set create_parent_portfolio with a "
+                                     "parent_portfolio_name.");
         }
 
         refdata::domain::book b;

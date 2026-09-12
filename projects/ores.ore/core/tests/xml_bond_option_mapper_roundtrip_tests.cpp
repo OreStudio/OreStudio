@@ -77,7 +77,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option", tags) {
     REQUIRE(r.option.has_value());
     CHECK(r.option->option_type == "Call");
     CHECK(r.option->option_strike == Approx(1.0).epsilon(0.0001));
-    CHECK(r.option_expiry_date == "2025-04-16");
+    CHECK(r.option_exercise_dates == std::vector<std::string>{"2025-04-16"});
 
     // Reverse roundtrip
     const auto rt = bond_instrument_mapper::reverse_bond_option(r);
@@ -85,7 +85,10 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option", tags) {
     REQUIRE(rt.BondOptionData->OptionData.OptionType);
     CHECK(std::string(*rt.BondOptionData->OptionData.OptionType) == "Call");
     REQUIRE(rt.BondOptionData->strikeGroup.Strike);
-    CHECK(std::string(*rt.BondOptionData->strikeGroup.Strike) == "1.000000");
+    // The document states the strike as "1", and the writer states the
+    // shortest text that reads back as the same number, so the six-decimal
+    // form std::to_string writes is not what comes back.
+    CHECK(std::string(*rt.BondOptionData->strikeGroup.Strike) == "1");
 
     BOOST_LOG_SEV(lg, info) << "BondOption roundtrip passed. SecurityId: " << r.issue.security_id;
 }
@@ -97,7 +100,7 @@ TEST_CASE("bond_option_mapper_roundtrip_bond_option_strike", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondOption");
     REQUIRE(r.option.has_value());
     CHECK(r.option->option_type == "Call");
-    CHECK(r.option_expiry_date == "2028-02-02");
+    CHECK(r.option_exercise_dates == std::vector<std::string>{"2028-02-02"});
     // This fixture prices by StrikePrice/StrikeYield, which the mapper does
     // not read; the strike row value stays zero until that coverage lands.
     CHECK(r.option->option_strike == Approx(0.0).epsilon(0.0001));

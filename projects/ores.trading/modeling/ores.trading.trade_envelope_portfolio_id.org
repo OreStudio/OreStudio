@@ -1,0 +1,128 @@
+:PROPERTIES:
+:ID: 04716c71-490a-4472-9576-190e6a551368
+:END:
+#+title: ores.trading.trade_envelope_portfolio_id
+#+description: Codegen entity model for the trading =trade_envelope_portfolio_id= table. Drives the C++ domain class, mapper, repository, service, generator, Qt UI, and SQL schema generation from a single literate source.
+#+type: ores.codegen.entity
+#+component: trading
+#+filetags: :model:entity:trading:
+#+brief: One portfolio identifier of a trade envelope's list, keyed to the envelope and the identifier's ordinal.
+#+entity_singular: trade_envelope_portfolio_id
+#+entity_plural: trade_envelope_portfolio_ids
+#+entity_title: Trade Envelope Portfolio Identifier
+#+created: 2026-09-11
+#+updated: 2026-09-11
+
+One row per portfolio identifier a document stated in a trade's
+envelope, keyed to the envelope and the identifier's ordinal.
+
+The schema declares the list unbounded and a document's order is the
+order it stated. The ordinal preserves that order, so export re-emits
+the identifiers as the document held them.
+
+The identifier is text because the document states a name, not a
+reference to a portfolio row.
+
+A list the document omitted and a list it stated empty both write no
+row here. The envelope row's =has_portfolio_ids= flag tells the two
+apart.
+
+* Flags
+:PROPERTIES:
+:schema:           public
+:product:          ores
+:component:        trading
+:has_tenant_id:    true
+:END:
+
+* Columns
+
+** trade_id
+:PROPERTIES:
+:type:        uuid
+:cpp_type:    boost::uuids::uuid
+:primary_key: true
+:END:
+
+UUID of the trade whose envelope stated this identifier.
+
+** sequence_number
+:PROPERTIES:
+:type:        integer
+:cpp_type:    int
+:primary_key: true
+:END:
+
+Ordinal of this identifier within the envelope's list.
+
+** portfolio_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::string
+:nullable: false
+:END:
+
+The portfolio identifier, as the document spelled it.
+
+The column holds the document's own text, including an empty
+identifier, so export re-emits what the document stated.
+
+#+begin_src cpp :name generator
+std::string("PORTFOLIO-1")
+#+end_src
+
+* SQL
+
+** Flags
+:PROPERTIES:
+:tablename: ores_trading_trade_envelope_portfolio_ids_tbl
+:END:
+
+** Checks
+
+| expression            |
+|-----------------------|
+| "sequence_number" > 0 |
+
+* C++
+
+** Flags
+:PROPERTIES:
+:subcomponent:           api
+:generator_facet_name:   generator
+:END:
+
+** Repository
+:PROPERTIES:
+:entity_singular_short: trade_envelope_portfolio_id
+:entity_plural_short:   trade_envelope_portfolio_ids
+:entity_singular_words: trade envelope portfolio identifier
+:entity_plural_words:   trade envelope portfolio identifiers
+:END:
+
+** Domain includes
+
+#+begin_src cpp :name includes
+#include <string>
+#include <boost/uuid/uuid.hpp>
+#+end_src
+
+** Conventions
+:PROPERTIES:
+:iterator_var: portfolio_id
+:END:
+
+** Table display
+
+| column          | header      |
+|-----------------+-------------|
+| sequence_number | Sequence    |
+| portfolio_id    | Portfolio   |
+| modified_by     | Modified By |
+| version         | Version     |
+
+** Custom repository methods
+
+* See also
+
+- [[id:5C7A961E-D834-4B2F-AE15-F049B27361D8][ores.trading]] — component group overview.

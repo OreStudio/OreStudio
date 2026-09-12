@@ -63,7 +63,8 @@ void scripted_instrument_service::save_scripted_instrument(const domain::scripte
         t.identity.instrument_id = gen();
     }
     BOOST_LOG_SEV(lg(), debug) << "Saving scripted_instrument: " << t.identity.instrument_id;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved scripted_instrument: " << t.identity.instrument_id;
 }

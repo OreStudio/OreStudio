@@ -132,8 +132,62 @@
 \ir ./trading_bond_repos_create.sql
 \ir ./trading_bond_repos_notify_trigger_create.sql
 
+\ir ./trading_bond_forwards_create.sql
+\ir ./trading_bond_forwards_notify_trigger_create.sql
+
+\ir ./trading_bond_future_delivery_baskets_create.sql
+\ir ./trading_bond_future_delivery_baskets_notify_trigger_create.sql
+
 \ir ./trading_ascots_create.sql
 \ir ./trading_ascots_notify_trigger_create.sql
+
+-- Shared instrument-keyed tables (task B753AD00, waves B.1, B.2 and B.3):
+-- everything the nine bond tables cannot hold. The leg family carries a
+-- leg and its amounts, amortizations and rate group; the schedule tables
+-- carry a leg's schedules and their dates; the option tables carry the
+-- option block and its premiums, exercise fees and payment dates; the
+-- envelope tables carry the block a document wraps around a trade.
+\ir ./trading_bond_legs_create.sql
+\ir ./trading_bond_legs_notify_trigger_create.sql
+
+\ir ./trading_bond_leg_amounts_create.sql
+\ir ./trading_bond_leg_amounts_notify_trigger_create.sql
+
+\ir ./trading_bond_leg_amortizations_create.sql
+\ir ./trading_bond_leg_amortizations_notify_trigger_create.sql
+
+\ir ./trading_bond_leg_rates_create.sql
+\ir ./trading_bond_leg_rates_notify_trigger_create.sql
+
+\ir ./trading_instrument_schedules_create.sql
+\ir ./trading_instrument_schedules_notify_trigger_create.sql
+
+\ir ./trading_instrument_schedule_dates_create.sql
+\ir ./trading_instrument_schedule_dates_notify_trigger_create.sql
+
+\ir ./trading_instrument_options_create.sql
+\ir ./trading_instrument_options_notify_trigger_create.sql
+
+\ir ./trading_instrument_option_premiums_create.sql
+\ir ./trading_instrument_option_premiums_notify_trigger_create.sql
+
+\ir ./trading_instrument_option_exercise_fees_create.sql
+\ir ./trading_instrument_option_exercise_fees_notify_trigger_create.sql
+
+\ir ./trading_instrument_option_payment_dates_create.sql
+\ir ./trading_instrument_option_payment_dates_notify_trigger_create.sql
+
+\ir ./trading_instrument_strikes_create.sql
+\ir ./trading_instrument_strikes_notify_trigger_create.sql
+
+\ir ./trading_trade_envelopes_create.sql
+\ir ./trading_trade_envelopes_notify_trigger_create.sql
+
+\ir ./trading_trade_envelope_portfolio_ids_create.sql
+\ir ./trading_trade_envelope_portfolio_ids_notify_trigger_create.sql
+
+\ir ./trading_trade_envelope_additional_fields_create.sql
+\ir ./trading_trade_envelope_additional_fields_notify_trigger_create.sql
 
 -- Credit instruments (depends on reference data above)
 \ir ./trading_credit_instruments_create.sql

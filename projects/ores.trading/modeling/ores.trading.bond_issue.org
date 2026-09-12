@@ -11,14 +11,20 @@
 #+entity_plural: bond_issues
 #+entity_title: Bond Issue
 #+created: 2026-09-09
-#+updated: 2026-09-09
+#+updated: 2026-09-12
 
 One row per bond issue (ISIN), the stable row every instrument of the
 family references. The columns map one to one from =bondData=
 (instruments.xsd lines 382-403): security_id, issuer, currency,
 face_value, coupon_rate, coupon_frequency_code, day_count_code,
-issue_date, maturity_date, settlement_days and the free description;
-the coupon terms come from the coupon leg of the issue's =LegData=.
+issue_date and settlement_days. Only =SecurityId= is required by that
+schema; every other element is optional, so every other column is
+nullable and an absent element is stored as NULL rather than as an
+empty string or a zero.
+
+The coupon terms denormalise the first leg of the issue's =LegData=,
+which is itself optional: a document may identify a bond by its ISIN
+alone.
 
 * Flags
 :PROPERTIES:
@@ -65,7 +71,7 @@ std::string("US9128283M42")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
 Issuer of the bond.
@@ -78,7 +84,7 @@ std::string("US Treasury")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
 ISO 4217 currency code of the bond.
@@ -91,7 +97,7 @@ std::string("USD")
 :PROPERTIES:
 :type:          numeric(28, 10)
 :cpp_type:      double
-:nullable:      false
+:nullable:      true
 :default_value: 0.0
 :END:
 
@@ -105,7 +111,7 @@ Face value per unit of the bond.
 :PROPERTIES:
 :type:          numeric(28, 10)
 :cpp_type:      double
-:nullable:      false
+:nullable:      true
 :default_value: 0.0
 :END:
 
@@ -119,7 +125,7 @@ Coupon rate of the bond, as a decimal.
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
 Coupon payment frequency (Annual, SemiAnnual, Quarterly).
@@ -132,7 +138,7 @@ std::string("SemiAnnual")
 :PROPERTIES:
 :type:     text
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
 Day count convention of the bond (30/360, Actual/360, Actual/Actual).
@@ -145,7 +151,7 @@ std::string("30/360")
 :PROPERTIES:
 :type:     date
 :cpp_type: std::string
-:nullable: false
+:nullable: true
 :END:
 
 Issue date of the bond (ISO 8601 date string).
@@ -154,26 +160,12 @@ Issue date of the bond (ISO 8601 date string).
 std::string("2024-01-15")
 #+end_src
 
-** maturity_date
-:PROPERTIES:
-:type:     date
-:cpp_type: std::string
-:nullable: false
-:END:
-
-Maturity date of the bond (ISO 8601 date string).
-
-Must be after issue_date.
-
-#+begin_src cpp :name generator
-std::string("2034-01-15")
-#+end_src
-
 ** settlement_days
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
-:nullable: false
+:type:          integer
+:cpp_type:      int
+:nullable:      true
+:default_value: 0
 :END:
 
 Settlement days of the bond, a market convention of the issue.
@@ -182,18 +174,55 @@ Settlement days of the bond, a market convention of the issue.
 2
 #+end_src
 
-** description
+** calendar
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: std::optional<std::string>
 :nullable: true
 :END:
 
-Optional free-text description of the issue.
+Calendar the issue's dates are adjusted against, when the document
+states one at the bond level rather than on a leg.
 
-#+begin_src cpp :name generator
-std::string(faker::lorem::sentence())
-#+end_src
+** credit_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Credit curve the document names for the issue.
+
+** reference_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Reference curve the document names for the issue.
+
+** income_curve_id
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Income curve the document names for the issue.
+
+** bond_notional
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+Notional the document states at the bond level, as the document spells
+it.
+
+The column is text so that export re-emits the document's own spelling
+rather than a reformatted number.
 
 * SQL
 
@@ -204,13 +233,16 @@ std::string(faker::lorem::sentence())
 
 ** Checks
 
+Each check holds only for a value the document stated. An absent value
+is NULL, and a NULL comparison passes, so an issue that carries no
+notional is admitted while a stated non-positive one is not. The
+empty-string checks went with the columns that needed them: absence is
+now NULL, not an empty string.
+
 | expression                            |
 |---------------------------------------|
-| "maturity_date" > "issue_date"        |
 | "face_value" > 0                      |
 | "coupon_rate" >= 0                    |
-| "issuer" <> ''                        |
-| "currency" <> ''                      |
 
 ** Indexes
 
@@ -255,7 +287,6 @@ std::string(faker::lorem::sentence())
 | issuer       | Issuer       |
 | currency     | Currency     |
 | coupon_rate  | Coupon Rate  |
-| maturity_date | Maturity Date |
 | modified_by  | Modified By  |
 | version      | Version      |
 

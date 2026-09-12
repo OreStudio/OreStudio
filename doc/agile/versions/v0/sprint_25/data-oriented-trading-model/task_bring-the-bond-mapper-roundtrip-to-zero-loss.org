@@ -1,0 +1,2509 @@
+:PROPERTIES:
+:ID: B753AD00-86B2-4B04-822A-620B344DD2BB
+:END:
+#+title: Task: Bring the bond mapper roundtrip to zero loss
+#+description: No bond document round trips at zero loss on the mapper path: 5183 pairs are lost under the bond products and the trade envelope (3404 with a source-stated value, 1779 where the source stated an empty element) plus 47 unexplained. Fix both classes in the hand-written container and mappers, make the diff check product-aware, and deliver the shared schedule and underlyings tables so the database can hold what the container carries, per the user's answer to scope.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/rework-bond-ores-mapping
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-10
+#+updated: 2026-09-11
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The bond products and the trade envelope round trip at zero loss on the mapper path, and everything the container carries has a home in the database so the full XML to database to XML round trip can be lossless.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- =scripts/ore_mapper_roundtrip_diff.py= reports zero lost pairs and
+  zero unexplained pairs under the bond products and the trade
+  envelope, over every document in =external/ore/examples=.
+- The script reports the other instrument families as counted debt.
+  It does not fail the run for them.
+- The container carries every member the mapper needs, so the mapper
+  path loses nothing. The generated binding stays untouched.
+- Every member the container carries has a column or a keyed child
+  row, so the database can hold what the container holds.
+
+* Plan
+
+Four waves of container and mapper work, then the tables. Each wave
+ends green, and each wave is a commit.
+
+The mapper path is in-memory: =exporter::roundtrip= reads a document
+and maps it straight back out, with no database anywhere on the path.
+The container alone can therefore make the mapper path lossless.
+
+Two root causes hold the losses. The container flattens
+=xsd::optional<T>= into a plain member and tests =.empty()=, so an
+element the document states empty collapses into an absent element.
+And the container never held most of =legData=, so the reverse mappers
+rebuild a leg from the issue row and lose everything the row has no
+column for.
+
+| Wave | Scope | Pairs |
+|------+-------+-------|
+| A.1 | Presence pass: the container carries =std::optional=, the mappers emit on presence | 1,779 |
+| A.2 | =bond_leg_data= grows to mirror =legData=: the scalars, then the nested groups | ~780 |
+| A.3 | The bond-level residue: calendar, curve identifiers, =BondNotional= | ~990 |
+| A.4 | The trade envelope: =CounterParty=, =AdditionalFields=, =party_id=, =valuation_date= | 6,510 |
+| A.5 | The diff script separates the bond scope from the other families | gate |
+
+The container is the specification for the tables. Unit B authors the
+shared instrument-keyed schedule tables and the tables for the rest of
+the residue, as modeling orgs under =projects/ores.trading/modeling/=
+and generated, never hand-written. Unit B lands after the whole of the
+container growth, so one pass adds every table the container needs.
+
+The scope is measured now, not assumed. =bond_schedule_data= carries 136
+members and no table holds any of them: the only references to the type
+outside its own header are the two members of =bond_instrument_data=,
+so the schedule lives in memory alone. Of the 105 create scripts under
+=projects/ores.sql/create/trading/=, none names a schedule, an envelope,
+an amortization, a notional or a payment.
+
+The envelope already has a relational design, and it disagrees with the
+carrier wave A.4 built:
+
+| Carrier member | Schema today | Gap |
+|----------------+--------------+-----|
+| =netting_set_id= | =trades.netting_set_id= | closed |
+| =counter_party= | resolved through a party role to =refdata_counterparties= by INNER JOIN | a name that resolves to no counterparty row is dropped |
+| =portfolio_ids=, unbounded | one =trades.portfolio_id= | a document naming several loses all but one |
+| =additional_fields= | no table and no column | no home at all |
+
+=ores_trade_ore_envelope_vw=, in =trading_ore_envelope_view_create.sql=,
+is the existing statement of that design. Unit B reconciles it with the
+carrier rather than designing the envelope again from nothing.
+
+Two further facts fix the shape of the work. A field group flattens into
+its entity with =rfl::Flatten<T>=, so no list member can live in a field
+group and every list needs a keyed child table of its own. And the export
+handler builds =trade_export_item= from the trade row alone, so it cannot
+fill the carrier until those tables exist.
+
+Unit 3 of the story, the qt bridge, stays BACKLOG until this task
+closes.
+
+* Notes
+
+** Wave A.1, the presence pass
+
+*** The container carries =std::optional=
+
+Every member the schema declares optional is now an =std::optional=, so
+an element the document states empty stays distinct from one it omits.
+The reverse mappers emit on presence rather than on content, and a flag
+emits the canonical =Y= or =N= because the bool type has no empty
+spelling to hand back.
+
+The measured effect over =external/ore/examples=, both trees read with
+the same classifier:
+
+| Measure | Before | After |
+|---------+--------+-------|
+| In-scope lost pairs | 9,593 | 8,979 |
+| In-scope unexplained pairs | 47 | 47 |
+| =BondData/LegData/ScheduleData/Rules/FirstDate= | 278 | 3 |
+| =BondData/.../LastDate= | 278 | 3 |
+| =ForwardBondData/BondData/.../FirstDate= | 34 | 3 |
+| =ForwardBondData/BondData/.../LastDate= | 34 | 3 |
+
+The full by-path comparison shows no path got worse. Every other path
+holds the same count in both trees.
+
+*** A bool element the document states empty reads as on
+
+The generated reader pre-fills the value:
+=domain.cpp= =_get_scheduleData_Rules_t_EndOfMonth= emplaces
+=domain::bool_()=, whose value is index 0, =bool_::Y=. So an empty
+=EndOfMonth= already read as on before this wave, and the 307 pairs the
+classifier tolerates are correct. =flag_of(bool_)= now reads the empty
+spelling as on as well, so the two agree whatever the default becomes.
+The suite asserts the mechanism directly, in
+=an_empty_schedule_element_survives_the_round_trip=.
+
+=EndOfMonth= is the only =bool=-typed element the corpus exercises, at
+3,753 empty, 103 =false=, 12 =true= and 2 =N= across all documents. The
+other two (=AdjustEndDateToPreviousMonthEnd=, =IncludeDuplicateDates=)
+appear in no document. Wave A.3c re-measured this and corrects the
+empty count, which A.1 recorded as 3,442. The =false= and =true= counts
+reproduce exactly, so the corpus has not moved between the two waves.
+
+*** A leg with neither currency nor notional is a document the schema allows
+
+=Currency= and =Notionals= are =minOccurs="0"=, and the reverse mapper
+emitted the whole =LegData= only when one of them, or the issue's face
+value, was present. A leg the document carries with neither came back as
+no leg at all. The guard now asks the container whether it holds a leg,
+through =bond_leg_data::is_empty()=, so a member added to the leg
+reaches the guard in one place. The new test found this.
+
+*** Finding for A.2: the second leg of a bond
+
+Nine =BondData= blocks in three documents carry two =LegData= elements:
+=Cash_Bonds.xml=, =Legacy/Example_18/Input/portfolio.xml= and
+=Products/Input/portfolio.xml=. The container holds one leg and the
+issue row holds one leg's terms, so the second leg is dropped whole.
+The residual 3 lost pairs at each of the four schedule paths above are
+this class, and they are the visible tip: the second leg's other pairs
+match pairs other trades in the same document state, so the multiset
+comparison hides them.
+
+A "Fixed then Floating" bond is the shape: leg 0 is =Fixed= with a
+=EUR= notional to 2035, leg 1 is =Floating= from 2035 to 2040 with its
+own =FloatingLegData=. Giving the container a leg list is not enough;
+the nine tables have no home for a second leg's rate and currency, so
+the model needs a decision in Unit B.
+
+*** Latent bound: an empty convention, term convention or rule
+
+=Convention=, =TermConvention= and =Rule= are parsed into canonical
+enumeration spellings through =parse_code=, so a document that states
+one of them empty would still lose it. No document in the corpus does,
+and all 1,566 were checked.
+
+** Wave A.2a, the leg scalars
+
+*** The container mirrors the scalars =legData= states
+
+=bond_leg_data= held three members: the payer, the leg type and the
+schedule. It now holds eleven. The payment convention, the payment lag,
+the notional payment lag, the payment calendar, the day counter, the
+last period day counter and the strict notional dates join them, and
+every member is an optional.
+
+Two of the new members, the currency and the day counter, already had an
+issue column. The mapper mirrors them onto the row and the leg holds the
+document's own statement. Export prefers the document's value and falls
+back to the row, which is the path a payload built from a row set takes.
+The other two legs, the repo leg and the TRS funding leg and the ascot
+swap leg, have no issue row at all, so the leg is their only home.
+
+*** =map_leg= carries the leg type
+
+The three legs with no fact row dropped their type: =reverse_leg= wrote
+a default and the reverse mappers for the repo and the TRS then
+overwrote it from the fact row. The Ascot swap leg had neither, so a
+=Floating= swap leg came back as =Fixed=. =map_leg= now carries the
+type, and the repo and TRS reverse mappers assign from the row only when
+the container holds no leg.
+
+*** The issue row writes the day counter back
+
+=map_bond_data= mirrored the coupon leg's day counter onto the issue row
+and =reverse_bond_data= never read it back, so all 314 pairs were lost
+at the write. The reverse now reads it, and the currency with it.
+
+*** The measured effect
+
+Both trees were read with the same classifier.
+
+| Measure | A.1 | A.2a |
+|---------+-----+------|
+| In-scope lost pairs | 8,979 | 8,333 |
+| In-scope unexplained pairs | 47 | 44 |
+| =BondData/LegData/DayCounter= | 280 | 3 |
+| =BondData/LegData/PaymentConvention= | 280 | 3 |
+| =ForwardBondData/BondData/LegData/DayCounter= | 34 | 3 |
+| =ForwardBondData/BondData/LegData/PaymentConvention= | 34 | 3 |
+| =BondTRSData/FundingData/LegData/Currency= | 4 | 0 |
+| =BondRepoData/RepoData/LegData/Currency= | 2 | 0 |
+| =AscotData/ReferenceSwapData/LegData/LegType= | 3 | 0 |
+
+646 pairs came back, no path got worse, and ten paths left the list
+whole. The three unexplained pairs that came back are the Ascot leg type
+pairs, which were both lost and unexplained.
+
+The residual 3 at each of the four schedule paths is the second-leg
+class the A.1 note describes.
+
+*** Decision for A.2b: the container takes the leg list
+
+Three documents carry two =LegData= elements in one =BondData=, and the
+schema declares =LegData= unbounded. A container that holds one leg
+cannot round trip those documents, so the list belongs in unit A and not
+in the recorded debt. It waits for A.2b because the second leg's rate and
+index live in =legDataType=, which A.2b adds: a list without it would
+lose the second leg's rate anyway.
+
+The other three leg slots stay single. The schema declares one
+=FundingData/LegData=, one =RepoData/LegData= and one
+=ReferenceSwapData/LegData=.
+
+*** No generated code was touched
+
+=git status= lists three hand-written files: the container header, the
+mapper and the test suite. =projects/ores.ore/core/src/domain/domain.cpp=
+and every other xsdcpp output are untouched.
+
+** Wave A.2b, the leg groups
+
+*** The container takes the leg list
+
+=bond_instrument_data= held one =bond_leg_data=. It now holds
+=std::vector<bond_leg_data> bond_legs=, because the schema declares
+=LegData= unbounded and three documents state two legs.
+
+The issue row mirrors the first leg only. One row cannot hold two
+coupons, so =reverse_bond_data= writes one leg per element of the list,
+and falls back to the issue terms for a payload that came from a row set
+rather than from a document.
+
+That fallback also fixed two defects. The issue's face value and coupon
+rate were written over the leg's own notionals and rates, so a document
+that stated a list of either lost all but the first. Both now apply only
+when the leg is silent.
+
+The three other leg slots stay single, because the schema declares one
+each: =FundingData/LegData=, =RepoData/LegData= and
+=ReferenceSwapData/LegData=.
+
+*** The nested groups the leg states
+
+The scope rule mirrors a group whole when the corpus exercises it and
+its members are scalars or lists of scalars. A member that is itself a
+structured group is mirrored only when the corpus exercises it.
+
+=legData= gained these members, each with its own selectable type:
+=amortizations= (a list of =bond_amortization_data=), =notionals=,
+=payment_dates=, =indexings_from_asset_leg=, =payment_schedule=,
+=settlement= and =rate=. The =rate= member is a
+=bond_leg_rate_data=, a choice of three alternatives: fixed, floating and
+formula-based. The floating alternative carries the two stub
+interpolations, the two inner schedules and the four number lists.
+
+=is_empty= grew the new members in the same change, so a writer that
+skips an empty leg still sees the whole of what the leg holds.
+
+*** What A.2b does not carry
+
+Four bounds stay open, and the corpus exercises none of them:
+
+- The fifteen =legDataType= alternatives other than fixed, floating and
+  formula-based. A bond leg carries a coupon, and the corpus states
+  three of the eighteen.
+- =legData_Notionals_t/FXReset= and =Exchanges=. The corpus states
+  =Notional= only.
+- =legData_Indexings_t/Indexing=. The container carries =FromAssetLeg=
+  only. An =indexingData= row names a quantity and a fixing calendar that
+  the leg has no other home for.
+- =_FloatingLegData_t/HistoricalFixings=. Its date member is named
+  =fixingDate= and not =startDate=, so the shared number mapping does not
+  fit it. A container field would need its own name and its own mapper.
+
+One more case stays open by construction: an element the document states
+bare, as =<ScheduleData/>= with no =Rules= and no =Dates=. The container
+holds two lists and no presence flag, so it cannot tell that document
+from one that omits the element. No corpus document does this.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over =external/ore/examples=.
+
+| Measure | A.2a | A.2b |
+|---------+------+------|
+| In-scope lost pairs | 8,333 | 7,751 |
+| In-scope unexplained pairs | 44 | 44 |
+| In-scope lost paths | 152 | 65 |
+
+582 pairs came back and 87 paths left the list whole. No path got worse:
+the path diff holds removals only.
+
+Every =LegData= path left the list, for every product. What remains is
+the bond-level residue of A.3 and the trade envelope of A.4.
+
+*** No generated code was touched
+
+=git status= lists four hand-written files: the two container headers,
+the mapper and the test suite. =projects/ores.ore/core/src/domain/domain.cpp=
+and every other xsdcpp output are untouched.
+
+** Wave A.3a, the bond members the issue row has no column for
+
+=bondData= states eighteen members. The nine trading tables hold the
+terms =map_bond_data= reads. Five members had no home at all:
+=Calendar=, =CreditCurveId=, =ReferenceCurveId=, =IncomeCurveId= and
+=BondNotional=. The corpus states four of them on every bond product.
+
+*** The container carries the five whole
+
+=bond_instrument_data= grew five =std::optional<std::string>= members:
+=calendar=, =credit_curve_id=, =reference_curve_id=, =income_curve_id=
+and =bond_notional=. An unengaged member means the document omitted the
+element. That is the presence rule wave A.1 set.
+
+The five are =xsd::string= wrappers in the binding, so the map direction
+reads them as =std::string(*bd.Calendar)=. The reverse direction calls
+=set_present_text=, which emits on presence. It keeps the difference
+between an element the document states empty and one it omits.
+
+=BondNotional= is a string on both sides, not a number. The binding
+declares it =xsd:string= and the corpus spells it =8000000=.
+
+=bond_issue= holds no calendar, no curve identifier and no notional
+column, so the container is the only home for the five. Unit B adds
+those columns.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over =external/ore/examples=.
+
+| Measure | A.2b | A.3a |
+|---------+------+------|
+| In-scope lost pairs | 7,751 | 6,761 |
+| In-scope unexplained pairs | 44 | 44 |
+| In-scope lost paths | 65 | 50 |
+
+990 pairs came back and 15 paths left the list whole. No path got worse:
+the path diff holds removals only.
+
+Every =bondData= residue path left the list, for every product that
+carries one: =BondData=, =ForwardBondData/BondData=,
+=AscotData/ConvertibleBondData=, =BondOptionData=, =BondRepoData=,
+=BondTRSData=, =CallableBondData= and =ConvertibleBondData=. One
+=Calendar= path remains, =BondTRSData/TotalReturnData/ScheduleData/Dates/Calendar=,
+and that one belongs to wave A.3b.
+
+*** A defect in the gate, found while measuring
+
+=scripts/ore_mapper_roundtrip_diff.py= classifies a lost pair as a
+boolean spelling when either side is empty and the other side is one of
+the ORE bool spellings:
+
+#+begin_src python
+def is_boolean_pair(left: str, right: str) -> bool:        # lines 143-144
+    return (left == "" and right in ORE_TRUE) or (right == "" and left in ORE_TRUE)
+#+end_src
+
+The docstring gives the reason for one direction only: "the examples
+spell true as an empty element". The second clause is broader than that
+reason. It swallows a real loss whenever a string element happens to
+hold the text =true= and our output states it empty.
+
+Two such paths are in the corpus today, and the gate hides both:
+
+- =/Portfolio/Trade/ForwardBondData/LongInForward=, 35 pairs. The
+  schema declares it =xs:string= and required, and the corpus states
+  =true=.
+- =/Portfolio/Trade/BondTRSData/TotalReturnData/Payer=, 4 pairs. The
+  schema declares it a required string.
+
+A strict classifier, with the second clause removed, reports 39 more
+lost pairs and 39 more unexplained pairs on the same tree: 6,800 and 83
+in place of 6,761 and 44. The boolean class falls from 352 pairs to 313,
+which is the same 39.
+
+The gate now holds the one-directional rule. Re-running it over the same
+tree gives exactly those numbers, so the rule change moves the 39 pairs
+and nothing else.
+
+The prediction here was that A.3b restores 6,761 and 44. It carried the
+two hidden paths, so it did restore those, and it carried the
+ForwardBond and BondTRS residue as well. Both fell further.
+
+** Wave A.3b, the per-product residue
+
+Two products stated members that had no home in the container and no
+column in any row. A forward bond states a flag, a settlement block and
+a premium. A TRS states a payer, an initial price and a return schedule.
+The classifier reported all six, and two of them only after the
+previous wave made the boolean rule one-directional.
+
+*** The container carries the forward settlement and premium whole
+
+=bond_schedule_data.hpp= gained two types.
+=bond_forward_settlement= mirrors =settlementData=: the forward maturity
+date is required and the other seven members are optional, so a forward
+bond always states the first and the container keeps the difference for
+the rest. =bond_forward_premium= holds the amount and the date, both
+required strings. The schema spells the amount as text, not as a number.
+
+=bond_instrument_data= gained six members: =forward_long_in_forward=,
+=forward_settlement=, =forward_premium=, =trs_payer=,
+=trs_initial_price= and =trs_schedule=. The last is a
+=bond_schedule_data=, the type wave A.2b built for the legs, so the TRS
+return schedule costs no new type.
+
+The settlement block states its amount, lock rate and dv01 as =xs:float=.
+The container holds them as =double= and the two directions cast, the
+way =map_number= and =reverse_number= already do.
+
+The premium and the settlement block belong to the product and not to
+the issue, so they sit on the container beside the fact rows and not in
+the fact rows.
+
+*** The measured effect
+
+Both trees were read with the strict classifier, over
+=external/ore/examples=.
+
+| Measure | A.3a | A.3b |
+|---------+------+------|
+| In-scope lost pairs | 6,800 | 6,582 |
+| In-scope unexplained pairs | 83 | 9 |
+| In-scope lost paths | 50 | 38 |
+
+218 lost pairs came back and 12 paths left the list whole. No path got
+worse: the path diff holds removals only. The twelve are the five
+BondTRS total-return paths and the seven ForwardBond paths, which is
+every path this wave set out to carry.
+
+The unexplained class fell by 74, in two parts. The first is the 39
+pairs of the two hidden paths: the source states =true= in a required
+string and the committed mapper left the whole forward block unset apart
+from =BondData=, so our writer emitted =LongInForward= empty against a
+document that states it. The second is the remaining 35, and the cause
+is the same one: the settlement block is required, so the writer marked
+it with an empty forward maturity date on every forward bond in the
+corpus.
+
+Under the rule the gate used before this wave, the A.3a tree read 6,761
+and 44. The A.3b tree reads below both, so the wave clears the two
+hidden paths and carries the product residue as well.
+
+*** What remains in scope
+
+The 6,582 lost pairs and the 38 lost paths fall into two groups, and
+between them they account for every one of the 6,582.
+
+- The option block, 72 pairs over 24 paths, shared by BondOptionData and
+  AscotData. =OptionData/LongShort= is nine of them, six on
+  BondOptionData and three on AscotData: the source states =Long= and
+  our output states the element empty, so each is a lost pair as well as
+  an unexplained one. The rest is =Style=, =Settlement=, =Redemption=,
+  =PriceType=, =KnocksOut=, the strike group (=StrikePrice= with its
+  value and currency, =StrikeYield= with its yield and compounding) and
+  the Ascot premium list. This is wave A.3c.
+- The trade envelope, 6,510 pairs over 14 paths, from
+  =Envelope/CounterParty= down to the =AdditionalFields= extras. This
+  is wave A.4.
+
+*** The full suite, and one failure that is not this wave's
+
+=compass build= is clean and =compass test run= reads 71 of 71 passing.
+
+The first run of the suite failed =ores.reporting.core.tests= on the
+temporal exclusion constraint for report definitions. The second run
+passed the same test with no code change between them.
+
+The cause sits in that component's own test.
+=report_definition_eventing_integration_tests.cpp= waits for a NATS
+notification after a write, and when the notification does not arrive it
+re-drives =repo.write(party_ctx, v)= up to four times, passing the same
+version object each time. The comment on that loop says the re-drive
+makes a new version row. It does not:
+=ores.database/repository/bitemporal_operations.hpp= implements
+=execute_write_query= as a plain insert, with no version bump and no
+upsert, so the second insert repeats the first row and the exclusion
+constraint rejects it.
+
+The retry therefore cannot work on any path it is taken, and load is
+what decides whether it is taken. That is why it reads as a flake. It is
+a defect in =ores.reporting= and this wave does not fix it. It is
+recorded here because it makes every later full-suite gate in this work
+unreliable until someone does.
+
+*** No generated code was touched
+
+The four files this wave changes are the two container headers, the
+mapper and the mapper's test suite. =domain.hpp= and =domain.cpp= are
+untouched.
+
+** Wave A.3c, the option block
+
+The option block was 72 pairs over 24 paths, shared by =BondOptionData=
+and =AscotData=, and it was the last bond-product residue in scope.
+This wave closes it: the in-scope reading now holds no bond path at all.
+
+*** The schema's bool type is not the XML boolean
+
+The generated header spells the schema's own bool =domain::bool_=, and
+the type enumerates thirteen spellings: =Y=, =YES=, =TRUE=, =True=,
+=true=, =1=, =N=, =NO=, =FALSE=, =False=, =false=, =0= and the empty
+string. The generated writer emits whichever spelling the reader
+stored.
+
+The container held a C++ =bool= instead, so the mapper could reach two
+of the thirteen and eleven could not survive a round trip. The corpus
+states six =<KnocksOut>false</KnocksOut>= and two
+=<AutomaticExercise>true</AutomaticExercise>=, so the loss was real and
+not theoretical, and the gate counted each one twice: once as a lost
+pair, because our output dropped the value, and once as unexplained,
+because our output stated the element empty against a document that
+states it.
+
+Two of the block's flags were already immune. =MidCouponExercise= and
+=PayOffAtExpiry= are =xsd::string= types in the generated header, so
+the container had always carried their text verbatim. This wave makes
+the other five match those two. That is the schema's own idiom rather
+than a new one.
+
+*** The empty spelling is unreachable, and that is worth recording
+
+The obvious reading of the generated table is wrong, so it goes on the
+record. =_bool__Values= carries a null terminator after the thirteen,
+and entry 12 is the empty string, so =toNumeric= would map =""= to
+index 12 if it were ever called with an empty string. It never is.
+
+The element reader runs the text setter only when the element held
+text. The guard is =if (context.pos.pos != start && ...addText)=, and
+=skipText= consumes nothing for an empty element, so =pos= is unchanged
+and =addText= does not run. The getter then engages the optional with a
+default-constructed value, =parent->EndOfMonth = domain::bool_()=,
+which is index 0, =Y=.
+
+So a stated-empty bool element reads as =Y= and writes back as =Y=, and
+=bool_::_= cannot be reached by parsing at all. The corpus states the
+element empty 3,753 times, as =<EndOfMonth/>= 3,734 times and as
+=<EndOfMonth />= with a space 19 times, and the gate's boolean rule
+accepts empty against any true spelling, which is why none of those
+pairs appeared as a loss.
+
+*** The rest of the block
+
+The bool type was the largest part but not all of it. The block's
+nested groups had no container type, so the mapper reached only the
+scalars it already knew. =bond_schedule_data.hpp= gained seven types:
+
+- =bond_option_settlement=, the pay currency, the FX index and the
+  fixing date. The schema spells the same three members twice, under
+  the option and under each premium, so one type serves both.
+- =bond_option_premium=, an amount, a currency, a pay date and an
+  optional settlement block.
+- =bond_option_exercise_fee=, an amount with three attributes on the
+  same element.
+- =bond_option_exercise=, a date and an optional price.
+- =bond_option_payment_rules=, a lag, a calendar, a convention and an
+  optional relative-to.
+- =bond_option_payment_data=, the payment dates as a list or as a rule.
+- =bond_option_data=, the block whole, at 25 members, and
+  =bond_strike_data=, the strike as a price, as a yield or as a bare
+  value.
+
+=bond_instrument_data= already carried =option_data= and =strike_data=
+from wave A.2b's container growth, so this wave fills them rather than
+adding them.
+
+*** Numbers the corpus states as text
+
+The strike values and the premium amount are =xs:float= in the schema,
+and the container holds them as =double=. Each direction needs its own
+rule. On the way in the mapper parses the text. On the way out it
+writes the shortest text that reads back as the same double, which is
+what =std::to_chars= produces and =std::to_string= does not: the latter
+writes six fixed decimals, so a corpus value below =1e-6= would come
+back as =0.000000=.
+
+The strike suite's expectation moved from a double comparison to a
+check on the text, because the value now has to survive as text.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over
+=external/ore/examples=.
+
+| Measure | A.3b | A.3c |
+|---------+------+------|
+| In-scope lost pairs | 6,582 | 6,510 |
+| In-scope unexplained pairs | 9 | 0 |
+| In-scope lost paths | 38 | 14 |
+
+The 72 pairs and the 24 paths are the option block exactly, which is
+what this wave set out to carry. No path got worse: the path diff holds
+removals only.
+
+The unexplained class is now empty. Every in-scope difference the
+classifier reports is a pair the source stated and our output did not,
+with nothing left over that the classifier cannot account for.
+
+*** What remains in scope
+
+The 6,510 lost pairs and the 14 lost paths all sit under
+=/Portfolio/Trade/Envelope=, and they are the enumeration wave A.4
+already carried.
+
+| Path | Pairs |
+|------+-------|
+| =Envelope/CounterParty= | 2,628 |
+| =Envelope/AdditionalFields= | 2,591 |
+| =Envelope/AdditionalFields/valuation_date= | 318 |
+| =Envelope/AdditionalFields/party_id= | 318 |
+| =Envelope/PortfolioIds= | 204 |
+| =Envelope/PortfolioIds/PortfolioId= | 160 |
+| =Envelope/NettingSetId= | 137 |
+| =Envelope= | 137 |
+| the six AdditionalFields extras | 17 |
+
+No bond product appears in that list. On the product paths the mapper
+is now lossless across the whole corpus.
+
+*** No generated code was touched
+
+The five files this wave changes are the two container headers, the
+mapper and two test suites. =domain.hpp= and =domain.cpp= are
+untouched.
+
+** Wave A.4, the trade envelope
+
+*** The envelope is keyed by the trade, not by the product
+
+=envelope= is an =xs:all= of four members: =CounterParty=,
+=nettingSetGroup=, =PortfolioIds= and =AdditionalFields=. The story's
+fourth decision assigns it to the trade entity and not to the
+instrument family, and the schema agrees: every product carries one,
+and nothing inside it is product-specific.
+
+=AdditionalFields= is the fourth member and it is open content. The
+schema states it as =xs:any processContents="lax"= with
+=maxOccurs="unbounded"=, so it names no field and no generated type can
+enumerate one. The binding carries the block as a list of name and
+value pairs. This wave had to carry that list whole.
+
+The wave was 6,510 pairs over 14 paths, from =Envelope/CounterParty=
+down to the six additional fields the corpus states.
+
+*** The carrier and the mapper pair
+
+=trade_envelope_data= is new, in =ores.trading.api=, and it holds four
+optionals, one per member. =trade_envelope_field= holds one additional
+field as a name and a value. Every member is an optional for the reason
+wave A.1 set: an element the document states empty must stay distinct
+from one it omits. =CounterParty= and =nettingSetGroup= are already
+optionals in the binding. =PortfolioIds= and =AdditionalFields= are
+not, so their optionals carry presence alone.
+
+=trade_mapper::map_envelope= returns nothing when the trade states no
+=Envelope=, and a carrier when it does, holding whatever the members
+hold. =reverse_envelope= is its inverse and emits every engaged member,
+so a held-empty element comes back as an empty element.
+
+One bound stays open. The schema heads the netting set group with an
+abstract element and gives it two substitution-group members:
+=NettingSetId=, a string, and =NettingSetDetails=, which holds a
+NettingSetId of its own plus =AgreementType=, =CallType=,
+=InitialMarginType= and =LegalEntityId=. The carrier holds the first
+form only, so a document that stated the second would lose four
+members. No corpus document states it, and the one mention of the name
+in =external/ore= is inside a Python script and not an XML document, so
+nothing exercises the bound.
+
+The carrier rides beside the trade and not inside it.
+=trade_import_item= in =ores.ore.core= and =trade_export_item= in
+=ores.trading.api= both gained a
+=std::optional<trade_envelope_data> envelope= member, and
+=export_portfolio= takes the envelope from the item rather than
+rebuilding one from the trade's =netting_set_id= column. That column
+stays a projection: it holds the text of =NettingSetId= and none of the
+presence, so the envelope is the carrier of record.
+
+The new member replaces =ore_counterparty_name= in =trade_import_item=,
+which held one string of the envelope and dropped the other three
+members whole. The qt import dialog reads the counterparty through the
+envelope now.
+
+*** The shell writes the trades no reverse mapper can rebuild
+
+The 6,510 pairs fell to 310 once the carrier was in place, and all 310
+sat on 63 trades the exporter dropped whole. The exporter visits the
+instrument variant and returns without writing anything in two cases: a
+=std::monostate=, and a type that reaches a family but no branch inside
+it. =InflationSwap= is the second kind. It dispatches to the swap family
+and falls into that family's =else=, so it counts as mapped and is then
+dropped.
+
+The schema makes the drop unnecessary. =trade= is a sequence of
+=TradeType=, an optional =Envelope=, an optional =TradeActions= and an
+optional =oreTradeData= group, over a required =id= attribute. A trade
+that states only its type and its envelope is therefore a valid
+document. The writer now falls back to exactly that: it parses the type
+string back to the generated enumeration and writes the trade with its
+envelope and no product data. The envelope is keyed by the trade and not
+by the product, so dropping the trade whole would lose envelope pairs
+that no other trade states.
+
+A type the schema does not name leaves no valid document to write, and
+that trade is still dropped, with a warning.
+
+*** The count that has to be maintained by hand
+
+=domain.hpp= exports =to_string= for every enumeration and no parse for
+any of them. The generated =_oreTradeType_Values= table and
+=xsdcpp::toNumeric= are of internal linkage, so the exporter cannot
+reach them.
+
+The new =parse_ore_trade_type= scans the spellings through =to_string=,
+which keeps one source of truth: a spelling the generated table adds is
+parsed with no table here to keep in step. That needs an upper bound,
+and =ore_trade_type_count = 115= is it. The number is not a guess. The
+generated =to_string(oreTradeType)= passes =115= to
+=xsdcpp::to_string= as its own count, and =_oreTradeType_Values= holds
+115 spellings, so the constant is the same number the generated code
+states and a regeneration can be checked against it.
+
+This is still the hazard the =bond_instrument_mapper= =*_count=
+constants already carry: the count is correct for the generated code of
+today, and a regeneration that adds a type would silently stop finding
+it. It is recorded here rather than left implicit.
+
+*** The measured effect
+
+Both trees were read with the same classifier, over
+=external/ore/examples=. The carrier alone moved 6,510 to 310, and the
+shell emission moved 310 to nothing.
+
+| Measure | A.3c | A.4, carrier | A.4, shell |
+|---------+------+--------------+------------|
+| In-scope lost pairs | 6,510 | 310 | 0 |
+| In-scope unexplained pairs | 0 | 0 | 0 |
+
+Every path under =/Portfolio/Trade/Envelope= left the list whole, and
+no bond product path returned to it.
+
+The 310 decomposed exactly, and every pair of it sat on the 63 trades
+the exporter dropped:
+
+| Path | Pairs |
+|------+-------|
+| =Envelope= | 63 |
+| =Envelope/AdditionalFields= | 63 |
+| =Envelope/CounterParty= | 63 |
+| =Envelope/NettingSetId= | 63 |
+| =Envelope/PortfolioIds= | 38 |
+| =Envelope/AdditionalFields/party_id= | 10 |
+| =Envelope/AdditionalFields/valuation_date= | 10 |
+
+Two tests guard the change.
+=export_portfolio_unmapped_trade_keeps_its_type_and_envelope= writes a
+monostate item and checks the type and the envelope reach the output and
+no product block does.
+=export_portfolio_unknown_type_is_skipped= checks that a type the schema
+does not name is still dropped. The test the first one replaces asserted
+the opposite, that a monostate item is skipped, and it was deleted.
+
+*** The trade count now matches the written documents
+
+The roundtrip writes 543 documents and skips 1,023, all 1,566 read.
+Across the 543, the counters read 2,590 trades mapped and 40
+passthrough, and the output tree holds 2,630 =<Trade>= elements. The
+tree before this wave held 2,567, so 63 is exactly the difference and
+every trade in a written document now reaches the output.
+
+The 40 is the monostate class. The 23 trades that reach a family and no
+branch inside it were never counted anywhere, because the counter asks
+only whether the variant is monostate. That is a defect in the counter
+and not in the writer, since it measures dispatch and not output, and
+after this wave both classes are written anyway.
+
+*** The literal diff is ordering, tag spelling and number formatting
+
+The classifier normalises values before it compares them, so a separate
+literal text diff was run on =Cash_Bonds.xml= to see what a byte-level
+comparison reports. Four classes appear, and none of them is a loss.
+
+- Element order inside =LegData=. The schema declares =legData= as
+  =xs:all=, so any order is valid. Our writer emits in the order the
+  container declares and the document states its own.
+- An element the document states empty comes back as =<NettingSetId/>=
+  or as =<NettingSetId></NettingSetId>=, whichever the writer picks.
+  Both are the same infoset.
+- Numbers. =10000000= comes back as =10000000.000000=, and =0.05= as
+  =0.0500000007=. Both stay inside the =1e-6= tolerance, and the worst
+  relative error over the whole corpus is 5.660e-8.
+- Booleans. =<EndOfMonth/>= comes back as =<EndOfMonth>Y</EndOfMonth>=.
+  The generated reader holds the two as the same value and the
+  classifier compares them as such.
+
+This is the allowance the user set: a diff is acceptable when it is
+ordering or the like, and not when it is a loss.
+
+*** The database still has no home for the envelope
+
+The carrier closes the mapper path. It does not close the database path.
+=trade_export_item= is built from the trade row alone at the service
+boundary, so the envelope stays absent on the way out of the database.
+=ores.trading.core/messaging/trade_handler.hpp= builds its items with
+designated initialisers in two places, one for a single trade and one
+paged over the trades of a book, and then populates the instrument from
+the trade's facts. Neither reads an envelope, because no table holds
+one.
+
+So the full XML to database to XML round trip loses the envelope until
+unit B gives it a home and the export handler reads it back. That is the
+acceptance line "every member the container carries has a column or a
+keyed child row", and the carrier is now its complete specification:
+four members, one of them an open list of name and value pairs.
+
+The designated initialisers are also why the new member broke nothing.
+Both call sites set =trade= by name, so =instrument= and =envelope=
+default and the existing code compiles unchanged.
+
+*** The full suite is green, and the flake did not recur
+
+=compass build= is clean and =compass test run= reads 71 of 71 passing,
+0 failed, in 910 seconds. =ores.ore.core.tests= passed in 4.13 seconds,
+which carries the new envelope suite and the two exporter tests.
+
+The =ores.reporting= temporal exclusion flake A.3b recorded did not
+recur. That is luck and not a fix: the retry path it describes still
+cannot work, and the suite stays unreliable until someone repairs it.
+
+*** No generated code was touched
+
+The twelve files this wave changes are four headers, three sources,
+two test sources, two build files and the qt dialog. =domain.hpp= and
+=domain.cpp= are untouched, and the two =component_files.cmake= files
+were regenerated rather than edited.
+
+*** What the gate's exit code counts, and why it is not zero
+
+=main()= returns 1 if any document is MISSING, UNPARSED, or DIFFERENT
+with an in-scope loss. On the A.4 output tree that is 1023 MISSING, 0
+UNPARSED and 0 DIFFERENT, so the script exits 1 while the in-scope
+counters read zero. The two statements are both true and they measure
+different things.
+
+The 1023 are the documents =roundtrip()= never writes, because their
+header matches none of its four markers. They are pricing engines,
+market data configs and the like. Not one of them contains a =<Trade>=
+element: counting =<Trade>= across all 1023 source documents returns
+zero. A trade-bearing document is a =<Portfolio>= document, and every
+=Portfolio= document is written and compared.
+
+So no trade escapes the comparison by going missing, and the in-scope
+lost and unexplained counters are the predicate. A reader who wants a
+green exit code has to decide what the tool should do with documents it
+does not handle at all, which is the same decision the sniff finding
+below raises.
+
+*** Finding: the puml generator cannot reach the nested components
+
+=build/scripts/generate_component_puml.py= discovers components by
+scanning =projects/*/include=, so it sees the flat layout only. The
+regroup commit 164255805d moved most components to
+=projects/<group>/<component>=, and their puml files have been frozen
+since 2026-06-02. A dry run today finds 18 projects, reports 13 would
+change, and refuses =ores.ore.core= with "No include/ directory found".
+
+The thirteen changes are drift unrelated to this wave, so no
+regeneration was run. The consequence for this wave is that
+=ores.ore.core.puml= still names =ore_counterparty_name=, a member this
+wave deleted. The file was left alone rather than hand-patched: the
+sentinel in it declares everything above the manual line generated, and
+waves A.1 to A.3c set the same precedent by leaving the puml files of
+the components they changed untouched. The repair belongs to whoever
+teaches the generator the nested layout, and it will correct this puml
+and the other twelve in one pass.
+
+*** Finding: the roundtrip classifies a document by substring, and rewrites what it misfiles
+
+=read_header= in =exporter.cpp= peeks the first 4096 bytes of a
+document, and =roundtrip()= picks the importer by looking for one of
+four markers in that window: =<Portfolio>=, =<CurrencyConfig>=,
+=<CalendarAdjustments>=, =<Conventions>=. A =<CurveConfiguration>=
+document is none of the four, so it falls through to the conventions
+branch whenever the word =<Conventions>= appears inside the window,
+which it does in every curve configuration that names a convention.
+
+The result is data loss under a name that does not announce it.
+=Academy/FC003_Reporting_Currency/Input/curveconfig.xml= is 21,505
+bytes and holds a curve configuration; its =<Conventions>= element sits
+at byte offset 457. The roundtrip reads it as a conventions document
+and writes 15 bytes of =<Conventions/>= to the same relative path. 91
+output documents are under 64 bytes where their source is more than ten
+times larger, and every one of them is a curve configuration.
+
+This is not this wave's doing. The sniff is untouched by the wave's
+diff, and the pretree =/tmp/ore_rt_a4= holds a byte-identical 15-byte
+file. The conventions path is also neither the bond products nor the
+envelope, so it sits outside the declared scope and is recorded rather
+than repaired here.
+
+It does bound one thing this wave wanted. A second pass over the output
+tree cannot serve as an idempotence check, because the tree holds
+documents whose content contradicts their filename: pass 2 reads 543
+files, skips 120, and writes 423, and =diff -rq= against its own output
+reports 125 differences. The check is contaminated at the source, not
+by the mapper, and the mapper path was measured instead against
+=external/ore/examples=, which is the input the directive names.
+
+The repair is to classify by root element and to refuse a document
+whose root is none of the four, rather than to trust a substring. That
+change belongs to a task of its own, since it decides what the tool
+does with the documents it cannot currently name at all.
+
+** Wave B.1 and B.2, the tables that hold what the container carries
+
+Unit A grew the container until it held every member a bond document
+states. Unit B builds the homes. This wave is the first half: nine
+tables and five columns.
+
+*** Three families, and each one is keyed for any instrument
+
+The nine tables are not nine unrelated shapes. They fall into three
+families, and every key is written so that a family other than the bond
+can use the table without a migration.
+
+| Family   | Tables                                                                                              | Key beyond the instrument or trade   |
+|----------+-----------------------------------------------------------------------------------------------------+--------------------------------------|
+| Leg      | =bond_legs=, =bond_leg_amounts=, =bond_leg_amortizations=, =bond_leg_rates=                         | =leg_role=, =leg_number=             |
+| Schedule | =instrument_schedules=, =instrument_schedule_dates=                                                 | =leg_role=, =leg_number=, =schedule_role= |
+| Envelope | =trade_envelopes=, =trade_envelope_portfolio_ids=, =trade_envelope_additional_fields=              | the trade, not the instrument        |
+
+The leg role is one of =bond=, =trs_funding=, =repo= or =ascot_swap=,
+stated as a set in the check rather than as a single value. Those four
+are the four the container carries: the =bond_legs= list and the three
+single legs =trs_funding_leg=, =repo_leg= and =ascot_swap_leg=.
+
+The amount table is one table and not six. =amount_role= names which of
+the container's six lists a row belongs to, and the six are =notional=,
+=rate=, =spread=, =cap=, =floor= and =gearing=. The check on that
+column says only that it is not empty, because the list is the
+container's shape and not the schema's.
+
+The envelope family is keyed by =trade_id= and not by =instrument_id=.
+The story's fourth decision gives the envelope to the trade, and the
+key follows the decision.
+
+*** The five columns on the issue row
+
+=BondData= states five things at the bond level that no row held:
+=Calendar=, =CreditCurveId=, =ReferenceCurveId=, =IncomeCurveId= and
+=BondNotional=. They are five nullable columns on
+=ores_trading_bond_issues_tbl=.
+
+Four of them name a thing the document spelled. The fifth is text for
+the same reason as the other four: export re-emits the document's own
+spelling, and a numeric column would give =10000000= back as
+=10000000.000000=.
+
+*** Finding: the schedule tables cannot yet hold what they were built for
+
+=scheduleData= is a choice of =Rules= and =Dates=, unbounded and
+interleaved. One =bond_schedule_data= can hold several rules entries
+and several dates entries, and the generated key allows one row per
+=(instrument_id, leg_role, leg_number, schedule_role)=. The dates arm
+also states five members (=Calendar=, =Convention=, =Tenor=,
+=EndOfMonth=, =IncludeDuplicateDates=) that no column anywhere holds.
+
+So the schedule tables ship in the shape the leg family needs, and not
+yet in the shape the schedule data needs. The reshape is small and it
+belongs to wave B.3: rename the owner columns to =owner_role= and
+=owner_number=, put =sequence_number= in the parent key, add the five
+flags to the parent, and put =schedule_sequence_number= in the child
+key ahead of the child's own ordinal.
+
+The tables still ship now because nothing writes a schedule row until
+B.5, so the rename costs no data and no caller.
+
+*** No generated file was edited by hand
+
+Every C++ file this wave changes is generated. The eight under
+=projects/ores.trading/= are a domain class, an entity header, two
+mappers, a history field mapper and three =component_files.cmake=
+files. The three cmake files came from
+=regenerate_cmake_component_files.py=; the rest came from the entity
+generator reading the modeling org.
+
+Written by hand: the ten modeling orgs and the two =ores.sql= aggregate
+scripts that list the new files in create and drop order. Nothing
+generated was opened in an editor.
+
+*** The tables are empty until B.5
+
+This wave gives the nine tables a home in the schema. It does not fill
+them. =trade_export_item= is still built from the trade row alone, and
+no code reads or writes a row of the nine. That switch-over is wave
+B.5, and the database path keeps losing what the mapper path keeps
+until it lands.
+
+*** Wave B.1 and B.2 landed
+
+The nine tables and the five columns on the issue row shipped, and the
+component builds and tests clean.
+
+| Check | Result |
+|-------+--------|
+| =compass build --preset linux-clang-debug-make= | green, reached 100% |
+| =compass test run --preset linux-clang-debug-make= | 70 of 71 suites passed |
+| =ores.trading.api.tests=, =ores.trading.core.tests=, =ores.trading.service.tests= | passed |
+| =ores.ore.core.tests=, =ores.ore.api.tests=, =ores.ore.service.tests= | passed |
+
+The one failing suite is =ores.refdata.core.tests=, and it is not this
+wave's. The test =write_book_publishes_nats_changed_event= raises
+=Invalid currency: X-0= from =ores_refdata_validate_currency_fn=. The
+book generator hardcodes =functional_currency = "X-0"=, a choice that
+landed in commit =38a60de6c9= and is already in =main=. The validator
+lists the writing tenant's active currencies, and that list held =X-1=
+through =X-17= but not =X-0=.
+
+The currency is not missing. =X-0= spans twelve tenants and twenty
+seven rows. The rows written during the failing run open and close
+inside 0.2 seconds and leave no open version for that tenant, which is
+what the validator saw. The suite passes in isolation with zero
+failures, so the defect is a temporal-validity race in the refdata
+eventing fixtures that test order and accumulated database state
+expose. It is recorded as its own task and does not gate this wave.
+
+** Wave B.3, the schedule reshape and the option block
+
+Wave B.1 and B.2 shipped the tables in the shape the leg family
+needs. This wave gives the schedule tables the shape the schedule data
+needs, and gives the option block the homes no bond table had. Eight
+entities are generated: two reshaped schedule tables, one grown fact
+table, and five new ones.
+
+*** The reshape is three changes in the key
+
+The parent gains =sequence_number=. The schema states a schedule as an
+unbounded choice of =Rules= and =Dates=, and a document interleaves
+the two arms, so one owner can state several entries under one role.
+The role alone did not identify a row.
+
+The pair =leg_role= and =leg_number= becomes =owner_role= and
+=owner_number=. Two of the six values name an owner that is not a leg.
+=option= is the exercise schedule an option block states, and =trs= is
+the return schedule a total return swap states. The other four,
+=bond=, =trs_funding=, =repo= and =ascot_swap=, do name a leg.
+
+The child gains =schedule_sequence_number=, which is the parent's
+=sequence_number= under its own name. A date stays bound to the entry
+that holds it when one owner states several entries under one role.
+
+The parent key is now =(tenant_id, instrument_id, owner_role,
+owner_number, schedule_role, sequence_number, valid_from, valid_to)=.
+The child's key is that key with =schedule_sequence_number= ahead of
+the child's own ordinal.
+
+No code reads either column yet. Nothing writes a schedule row until
+B.5, so the rename costs no data and no caller outside the generated
+stack. A search of the repository found no consumer of the renamed
+columns outside =ores.trading=.
+
+*** Finding: the five dates-arm columns already existed
+
+The B.1 section above records that the dates arm states five members
+(=Calendar=, =Convention=, =Tenor=, =EndOfMonth= and
+=IncludeDuplicateDates=) that no column holds. That text was written
+before the tables shipped, and B.3 adds none of the five.
+
+B.1 and B.2 added all five. The parent already carries =tenor=,
+=calendar=, =convention=, =end_of_month= and
+=include_duplicate_dates=. The earlier text stands as the record of
+what B.1 measured, and this paragraph corrects it.
+
+*** Six columns typed text that hold a date
+
+Comparing every column of the reshaped and the new tables against the
+generated schema member types found six columns typed =text= whose
+member the schema types as a date.
+
+| Table                        | Columns                                             |
+|------------------------------+-----------------------------------------------------|
+| =instrument_schedules=       | =start_date=, =end_date=, =first_date=, =last_date= |
+| =instrument_options=         | =exercise_date=                                     |
+| =instrument_option_premiums= | =pay_date=                                          |
+
+All six become =date=. The generated reader parses the member before
+the mapper sees it, and the writer re-emits a canonical form, so a
+date column carries the member whole.
+
+Five columns that look the same stay =text=, and the schema says why.
+=premium_pay_date= is an =xsd::string=. Both =settlement_fixing_date=
+columns are =xsd::string=. The exercise fee's =start_date= is an
+optional string attribute on a numeric element. Their documents spell
+dates the schema never typed as dates.
+
+*** The option block, and where the container's members land
+
+=bondOptionData= states three members beside its option block rather
+than inside it: the redemption code, the price type and the knock-out
+flag. The shared =optionData= element states none of the three, so an
+Ascot never writes them and no other row can hold them. They ride on
+=bond_options=, the one row that is a bond option.
+
+=knocks_out= is text. The schema types the member as its own bool,
+which enumerates thirteen spellings, and the corpus states =false=. A
+decoded boolean would lose the spelling on every document that
+carries one.
+
+The block itself is the element every product states, so it gets the
+shared treatment. Five tables carry it.
+
+| Table                             | What it holds                                              |
+|-----------------------------------+------------------------------------------------------------|
+| =instrument_options=              | the block's own members, and a flag per optional sub-block |
+| =instrument_option_premiums=      | the =Premium= list                                         |
+| =instrument_option_exercise_fees= | the =ExerciseFees= list                                    |
+| =instrument_option_payment_dates= | the =PaymentData/Dates= list                               |
+| =instrument_strikes=              | the strike group                                           |
+
+=bond_option_data= carries twenty five members. Every one of them has
+a column or a keyed child row once the option row is read with its
+three child tables, so the container is the specification for the
+tables and the count closes.
+
+Three members are themselves groups whose every member is optional. A
+set of null columns could not say whether the document stated the
+group and left it bare or omitted it, so each group carries a flag on
+the option row: =has_exercise_data=, =has_payment_data= and
+=has_settlement_data=.
+
+Every other member is text, and the text is the document's own
+spelling. The schema types the premium amount, the exercise price list
+and the several flags as text or as its own bool, so a decoded form
+would not re-emit what the document held.
+
+*** The tables stay empty until B.5
+
+This wave gives the option block and the schedule data a home in the
+schema. It does not fill them. =trade_export_item= is still built from
+the trade row alone, and no code reads or writes a row of the fourteen
+shared tables. That switch-over is B.5, and the database path keeps
+losing what the mapper path keeps until it lands.
+
+*** No generated file was edited by hand
+
+Every C++ file this wave changes is generated. The modeling orgs are
+hand written: three edited for the reshape and the residue columns,
+and five new for the option tables and the strike table. The two
+=ores.sql= aggregate scripts are hand written too, and they list the
+new files in create order and in reverse drop order.
+
+The three =component_files.cmake= files came from
+=regenerate_cmake_component_files.py --all=, run with the codegen
+venv. Nothing generated was opened in an editor.
+
+** Wave B.4, the forward, the future basket and the TRS residue
+
+B.3 gave the option block and the schedule data their homes. This wave
+closes the last three gaps a document in the corpus can reach: the
+return side of a total return swap, the forward block a forward bond
+states, and the delivery basket a bond future names. One entity is
+grown and two are new.
+
+*** The return side states three members no row held
+
+=totalReturnData= states =Payer=, =PriceType= and =InitialPrice=
+beside the return schedule and the funding leg. The schedule lands in
+the shared schedule table under the =trs= owner role B.3 opened, and
+the funding leg lands in the shared leg family. The three remaining
+members had no home, so =bond_trs= grows them.
+
+| Column          | Type              | Why                              |
+|-----------------+-------------------+----------------------------------|
+| =payer=         | =text=            | the schema types it =xs:string=  |
+| =price_type=    | =text=            | the schema types it =xs:string=  |
+| =initial_price= | =numeric(28, 10)= | the schema types it =xs:float=   |
+
+Neither text column is a decoded boolean or a decoded enumeration. The
+document states its own spelling and export re-emits that spelling.
+=payer= is also not =return_type=. The row already carried
+=return_type=, which names the return side of the swap; =price_type=
+names how the price is quoted.
+
+The return side states nine more members that no table holds:
+=ObservationLag=, =ObservationConvention=, =ObservationCalendar=,
+=PaymentLag=, =PaymentConvention=, =PaymentCalendar=, =PaymentDates=,
+=FXConversion= and =FXTerms=. The corpus states none of them, so the
+round trip is whole without them. They stay a recorded scope limit.
+
+*** Finding: the forward's two date columns were typed as dates
+
+The forward org was first authored with =forward_maturity_date= and
+=forward_settlement_date= as =:type: date=. The schema says otherwise:
+=settlementData= declares =ForwardMaturityDate= as =xs:string=, and
+=ForwardSettlementDate= likewise.
+
+The corpus settles it. =ForwardMaturityDate= appears thirty seven times:
+thirty three spelled =20160808=, =20160909=, =20251220=, =20160304= and
+=20160205= in basic form, and four spelled =2025-07-16= and =2025-08-22=
+in ISO 8601. A date column returns the basic form as =2026-08-08= and
+breaks the round trip on the thirty three documents that state one. The
+settlement date is stated nowhere in the corpus, and follows the schema
+alone.
+
+Both columns are =text= now. The C++ member type was
+=std::optional<std::string>= either way, so the change reaches the SQL
+and not the API. The defect was found by reading the schema and
+surveying the corpus before the entity was generated, so no generated
+file had to be corrected.
+
+*** The forward block, member by member
+
+=bond_forward= is keyed to the instrument, one row per forward bond. It
+carries the settlement block's seven members, the premium block's two,
+and the long-in-forward flag, because no other row holds them. The bond
+block is the issue, and the nine bond tables hold it.
+
+A block is present exactly when its required member is not null. The
+schema declares =ForwardMaturityDate= the settlement block's one
+required member, and the premium's =Amount= and =Date= required
+together, so a null required member means the document stated no block.
+
+The premium amount is text because the schema types it =xs:string=.
+The settlement amount, the lock rate and the dv01 are =numeric(28, 10)=
+because the schema types those three as =xs:float=. The settlement
+type and the lock rate's day counter are text.
+
+=KnockOut= is stated on =forwardBondData= and the mapper does not carry
+it. The corpus states none, so the round trip is whole without it. It
+is a recorded scope limit, not fixed in this wave.
+
+*** The delivery basket is a keyed child table
+
+=deliveryBasket= is an unbounded list of =Id= elements. A bond future
+names several deliverable identifiers and the order is the document's,
+so =bond_future_delivery_baskets= carries one row per identifier, keyed
+to the instrument and the identifier's ordinal. The shape is the one
+the shared schedule tables use.
+
+The identifier is text because the document states a name, not a
+reference to a bond row.
+
+*** Finding: the new tables had no row-level security
+
+=projects/ores.sql/utility/validate_schemas.sh --strict= checks that
+every table carrying =tenant_id= has an =alter table ... enable row
+level security= statement in some create file, and that every file
+under =create/= is reachable from its aggregator.
+
+The check reported sixteen tables with no policy: the three envelope
+tables, the four leg tables, the two schedule tables, the five option
+tables, and this wave's two. Fourteen of the sixteen came from B.1 and
+B.2 and from B.3, so the gate has been red since B.1 and no wave
+recorded it. The two from this wave would have made it seventeen.
+
+The cause is that =trading_rls_policies_create.sql= is hand maintained
+and lists its tables one at a time. The entity generator does not emit
+it, so a table arrives without a policy and nothing reports the gap
+until the validator runs with =--strict=.
+
+All sixteen now carry the tenant isolation policy their neighbours
+carry, and the matching drops are in
+=trading_rls_policies_drop.sql=. The validator reads two hundred and
+ninety nine tables, zero warnings, and exits 0. Every new entity that
+carries =tenant_id= still has to be added to the file by hand.
+
+*** The tables stay empty until B.5
+
+This wave gives the forward block, the delivery basket and the three
+return-side members a home in the schema. It does not fill them.
+=trade_export_item= is still built from the trade row alone, and no
+code reads or writes a row of any table this program added. That
+switch-over is B.5, and the database path keeps losing what the mapper
+path keeps until it lands.
+
+*** No generated file was edited by hand
+
+Every C++ file this wave changes is generated. The three modeling orgs
+are hand written: one edited for the three columns, and two new. The
+two =ores.sql= aggregate scripts are hand written too, and they carry
+the new files in the create block and in the drop block.
+
+The three =component_files.cmake= files came from
+=regenerate_cmake_component_files.py=, run with the codegen venv.
+Nothing generated was opened in an editor.
+
+** Wave B.5, the mapper switch-over to the tables
+
+Waves B.1 to B.4 gave every member the container carries a column or a
+keyed child row. This wave points the database path at them, so import
+writes what the container holds and export rebuilds it.
+
+Two surfaces change, and both are hand written. The write side is
+=ore_import_execute_handler.cpp=, which saves the bond header row and
+nothing else. The read side is =populate_instruments_for_trades= in
+=trade_handler.hpp=, which rebuilds the header, the issue and the
+option, TRS and repo fact rows, and rebuilds neither the envelope nor
+any child list.
+
+*** Finding: the sixteen new tables have no nats surface
+
+Each of the sixteen entities has a generated protocol, handler and
+registrar. None of the sixteen registrars is called. =registrar.cpp=
+wires eight product aggregators, and =registrar_bond.cpp= carries the
+eight bond tables of the pilot. The sixteen new ones are absent from
+both, so no subject reaches any of the sixteen tables and a running
+service cannot read or write one of them. The history providers are
+absent from the dispatch registry for the same reason.
+
+The import handler writes over nats, so the write path needs the
+registrars wired before it can save a single child row.
+
+*** Finding: the read path needs a query shape the generator does not emit
+
+A child table is keyed by its parent and by the child's own ordinal,
+and export holds the parent keys. It needs every child row of a set of
+parents.
+
+The generated repository offers an exact primary key read, a paged read
+of the whole table, and a batch read over the full primary key. None of
+the three answers the question. The batch read takes one vector per key
+column and filters exact key tuples in C++, so a caller that does not
+already know the ordinals cannot use it.
+
+The trading component already meets this gap once:
+=fra_instrument_service::get_swap_legs_batch= takes instrument ids and
+returns legs. That method is not in the regenerated output, so it was
+written into a generated file by hand. This wave does not repeat that.
+The reads go in a new hand-written file that reuses the generated
+entity and mapper types, so no entity file is edited.
+
+*** Finding: =trade_handler.hpp= is a generated path kept by hand
+
+The generator renders =messaging/<entity>_handler.hpp= from
+=cpp_nats_handler.hpp.mustache= for each domain entity, so
+=trade_handler.hpp= is in its write list. The committed file is not what
+the template emits. It carries =ORES_TRADING_CORE_EXPORT= on the class
+and the activity-type, instrument and two export methods the template
+has no source for, and the regenerated form carries none of them and a
+different handler set. The trading component sits outside the drift
+checker's known-drift-free registry for reasons of this kind.
+
+The file is therefore a generated path whose content the team maintains
+by hand and does not regenerate. The switch-over needs one call site in
+it, because the export paths and the read helper they call all live
+there and no hand-written seam exists. A new hand-written helper called
+from the generated file would edit the same file at the same place. The
+wave takes the call-site edit and records it here.
+
+The durable fix is the template's paste mechanism. The mustache carries
+=<<paste:UUID>>= markers, and a hand-written fragment pasted at a marker
+survives regeneration. Moving the hand-written body behind a marker
+would let the file regenerate from its model. That is a wave of its own.
+
+*** Finding: the sixteen tables are absent from the development database
+
+A create script writes a table only when the database is built or
+rebuilt from the scripts. This database was last restored on 2026-09-10
+from an earlier commit, so it carried none of the sixteen tables B.1 to
+B.5a added. =compass db status= reports the schema a day behind head.
+
+Nothing had exercised them, so nothing had noticed. The write path this
+wave wires would have failed at the first =save_trade_envelope=
+request, and the read path at the first query, with the table missing
+rather than the code wrong.
+
+The tables were applied in place rather than by a database rebuild,
+because a rebuild drops the loaded data and the connections of a running
+environment. The trading create aggregate is idempotent, so re-running
+it created the sixteen and skipped the forty nine already present, and
+the row-level security blocks for the sixteen were applied after it.
+=information_schema= now reports all sixty five trading tables, each of
+the sixteen with row-level security enabled and one tenant-isolation
+policy.
+
+*** The switch-over lands in four parts
+
+=** B.5a= takes the trade envelope, because it is the second half of the
+scope and because it is the smallest part that exercises the whole
+shape: three tables, one of them the parent and two keyed children, on
+the trade side rather than the instrument side.
+
+=** B.5b= takes the issue row, its call dates and its conversion
+targets, and the five product fact rows.
+
+=** B.5c= takes the leg tables and the shared schedule, amount, rate and
+amortization tables below them.
+
+=** B.5d= takes the option block, the strike, the exercise schedule, the
+forward, the delivery basket and the three return-side members.
+
+*** Wave B.5b, the identity on the write path
+
+The import handler saves the two halves of a bond trade that no earlier
+wave wrote: the issue row, with its call dates and its conversion
+targets, and the product's fact row. The read path in
+=trade_handler.hpp= rebuilds the same three things, so a stored bond
+instrument comes back as the container the mapper expects.
+
+*** Decision: an issue is found by security id, never minted per trade
+
+=bond_issues_security_idx= is unique on =(tenant_id, security_id)=
+among the current rows. The mapper mints a fresh identifier inside
+=resolve_issue=, and =trade_mapper.cpp= passes no lookup, so two trades
+of one ISIN arrive at the handler holding two different issue
+identifiers. Saving both rows would violate the index on the second,
+and a re-import would violate it on the first.
+
+The handler pages the stored issues once per run into a map keyed by
+security id, two hundred rows to a page and five hundred pages at most.
+A hit adopts the stored identifier and rewrites the instrument's
+=issue_id= to match. A miss saves the issue row and records the minted
+identifier, but only after the save returns success. A failed save
+therefore leaves the security id out of the map, and the next trade of
+it tries the issue again rather than opening an instrument against a
+row that is not there.
+
+The read is lazy. It runs at the first bond instrument of the run, and
+a failure stops the run with the response's own message.
+
+*** The container holds no second copy of a bond-level member
+
+Five members the issue row holds as columns were also on
+=bond_instrument_data=: =calendar=, =credit_curve_id=,
+=reference_curve_id=, =income_curve_id= and =bond_notional=. Both
+mapper directions now point at the issue row, and the five were
+deleted. The container and the tables hold one list rather than two
+views of it kept in step by hand.
+
+*** Finding: no case covered the two new child readers
+
+The wave adds no test case. =parent_scoped_queries= gained
+=read_call_dates_by_issue_ids= and
+=read_conversion_targets_by_issue_ids=, and the header and the handler
+were their only callers. Compilation was the whole of their coverage,
+and it stayed so only until the extraction below.
+
+The envelope path of B.5a took the other shape:
+=trade_envelope_reader= is a service, and
+=service_trade_envelope_reader_tests.cpp= drives it against a database
+with four cases. The bond read assembly sat inline in
+=populate_instruments_for_trades= instead. The two readers wanted the
+same treatment, and the assembly wanted the same home, before Unit C
+depended on either.
+
+*** Finding: the fact row is chosen by the instrument's type code
+
+=save_bond_instrument= writes one fact row, chosen by
+=trade_type_code= and gated on the matching member being present. A
+document whose type code and payload disagree therefore writes no fact
+row, and the block is lost on export. The mapper produces both from one
+source, so a round trip cannot reach that state, but a container built
+by hand can.
+
+*** What B.5b does not carry
+
+The leg tables and the shared schedule, amount, rate and amortization
+tables below them stay empty, which is B.5c. The option block, the
+strike, the exercise schedule, the forward, the delivery basket and the
+three return-side members stay as they were, which is B.5d. The two
+readers of the finding above are the debt this wave records against
+Unit C, and the extraction below paid it before B.5c began.
+
+*** No generated file was edited by hand
+
+Six of the seven files this wave changes are hand written. The seventh,
+=trade_handler.hpp=, is the generated path already recorded as kept by
+hand; this wave deepens that debt rather than opening it. No file is
+added or removed, so no =component_files.cmake= list changes.
+
+*** The bond read assembly becomes a reader service
+
+The finding above left two pieces of debt: the two child readers had no
+case, and the bond assembly sat inline in =trade_handler.hpp=, the
+generated path kept by hand. B.5c and B.5d both grow that assembly, so
+it was settled before either landed rather than after.
+
+=populate_instruments_for_trades= now calls =bond_instrument_reader=,
+which mirrors =trade_envelope_reader=: a service under
+=ores.trading.core/service/= that takes instrument identifiers and
+returns the containers keyed by them. It reads the headers in one
+batch, each distinct issue once rather than once per instrument, the
+two child lists in one query each, and the fact row of each instrument
+from that instrument's type code. The inline block and the nine
+includes it needed are gone from the handler, which keeps one call site
+in the generated file where it held sixty lines.
+
+=service_bond_instrument_reader_tests.cpp= drives it against a database
+with four cases: children read back in ordinal order after being
+written out of it, one issue serving two instruments, an instrument
+with no header row absent from the result, and a fact row read only for
+the instrument whose type code names it.
+
+No generated file was edited by hand in this pass. The handler edit is
+a call site on the path already recorded as kept by hand, and it
+narrows that debt rather than widening it.
+
+*** Finding: the case for two instruments of one issue caught a real defect
+
+The handler built one container per instrument and never shared anything
+between them. The reader does: the issue-keyed child rows are read once
+and held in a cache that every instrument of that issue reads from. The
+first version moved the two child lists out of the cache and into the
+container, so the second instrument of an issue found a cache entry that
+was present and empty. Its call dates and conversion targets vanished
+with no error raised.
+
+=read_instruments_gives_two_instruments_the_one_issue= fails against that
+version, and it is the case written for exactly this shape. The lists are
+now copied. =trade_envelope_reader= has the same read-one-batch shape and
+never had the bug, because it pushes each child straight into the
+container named by that child's own trade id, so no container is ever
+built from a cache another container also reads.
+
+*** Finding: the in-place refresh cannot add a column to an existing table
+
+B.5 recorded that the sixteen new tables were absent from this database
+and applied the trading create aggregate in place to add them. That
+procedure cannot add a column: =create table if not exists= skips a table
+that is already there, and every column in it.
+
+Eleven columns were in that state. =calendar=, =credit_curve_id=,
+=reference_curve_id=, =income_curve_id= and =bond_notional= on
+=bond_issue=; =knocks_out=, =price_type= and =redemption= on
+=bond_option=; =initial_price=, =payer= and =price_type= on =bond_trs=.
+Every one was added by A.2 to B.4 to a table that predated it. The
+database reported all sixty five trading tables present, and the B.5
+finding's own check passed, while all eleven were missing.
+
+Nothing failed until the reader tests wrote an issue row, which is the
+first write to that table since the columns were modelled. The first
+error named a missing column and the second a violated check constraint,
+and neither names drift.
+
+=scripts/ore_schema_column_drift.py= reads the column list out of every
+create script and diffs it against =information_schema=, over all two
+hundred and seventy six declared tables rather than the trading family
+alone. It exits 1 on a gap and prints the statements that close it under
+=--emit-alters=, with each column's definition taken verbatim from its
+create script rather than retyped. The eleven were applied and the check
+now reads clean.
+
+** Wave B.5c, the leg family and the shared schedule tables
+
+B.5b wrote the identity of a bond trade: the issue row and the product's
+fact row. This wave writes the instrument's own terms. Seven files
+change, and six of the seven are hand written.
+
+*** The six tables get a surface
+
+The sixteen tables B.1 to B.4 added have generated protocols, handlers
+and registrars, and no registrar was called, so no subject reached any
+of them. Six of the sixteen are this wave's: the four leg tables and the
+two schedule tables. =registrar_bond.cpp= wires all six, so a running
+service can read and write them.
+
+The other ten stay unwired. B.5a wired the three envelope tables, and
+B.5d takes the seven that remain.
+
+*** The six reads the generated repository does not offer
+
+=parent_scoped_queries= gains one batch read per table, on the pattern
+B.5b set for the issue's two child lists: legs, amounts, rates,
+amortizations, schedules and schedule dates.
+
+Each read filters on the instrument identifiers and the current
+bitemporal version, and orders by the columns the container's own member
+order needs, so a reader walks the rows in document order without
+sorting again. The orders are =(instrument_id, leg_role, leg_number)=
+for the legs and for the rates, that key plus =sequence_number= for the
+amortizations, that key plus =amount_role= and =sequence_number= for the
+amounts, and =(instrument_id, owner_role, owner_number, schedule_role,
+sequence_number)= for the schedules, with the child adding
+=schedule_sequence_number= ahead of its own ordinal.
+
+=read_schedules_by_instrument_ids= reads every owner rather than the legs
+alone. A schedule row's owner is a leg, an option block or a return
+block, and one query serves all three, so B.5d reuses it as it stands.
+
+*** The reader rebuilds the legs
+
+=bond_instrument_reader= now returns the leg family. The six row sets
+are read once for the whole batch and grouped by instrument, and each
+header row whose instrument appears in the group becomes a
+=bond_leg_data=.
+
+The role decides the destination. A =bond= row appends to the leg list,
+because the schema declares =LegData= unbounded. The other three fill the
+single leg the schema declares, which is =trs_funding=, =repo= or
+=ascot_swap=. A row whose role is none of the four is read and dropped,
+because the container has no member for it.
+
+A leg's schedule is found by its role. =schedule_for= selects the rows
+whose owner matches the leg and whose schedule role names the member, so
+one lookup serves the leg schedule, the payment schedule, the two inner
+schedules of a floating rate and the synthesized payment dates block.
+
+=bond_leg_rate_data= is a choice of three alternatives, and the rate row
+carries the discriminator. =to_rate_data= builds the alternative the
+=rate_kind= column names, and falls through to the fixed case, which is
+the only one with no rate row members of its own: its numbers live in the
+amount table under the =rate= role.
+
+*** The writer saves the legs
+
+=save_leg= writes one leg whole. It returns immediately when
+=bond_leg_data::is_empty()= holds, which is the shape a container built
+from a row set has, so an absent leg writes no row and reads back as an
+absent leg.
+
+Otherwise it writes the leg row, the amount lists, the rate row, the
+amortizations and the schedules in that order, and stops at the first
+failure with the response's own message.
+
+The amount lists are written under the role that names them, numbered
+from one within each role, so the reader's own ordering reassembles the
+lists. A fixed leg writes its rates under the =rate= role, and a floating
+leg writes =spread=, =cap=, =floor= and =gearing=.
+
+=save_bond_instrument= calls =save_leg= once per bond leg in list order,
+then once for each of the three single legs. The leg number is the
+ordinal, counted from one.
+
+*** Finding: =payment_dates= is a fifth schedule role
+
+=bond_leg_data= carries a =payment_dates= list of dates. No table holds a
+bare date list: the shared schedule table holds an entry, and an entry of
+the dates kind holds a child row per date. So the writer synthesizes one
+dates entry holding the list, under the schedule role =payment_dates=.
+
+=instrument_schedule.org= names four schedule roles in its prose and
+states the rule that binds them: "The container's member names are the
+values". The container's member is =payment_dates=, so the fifth value
+follows from the model's own rule. The column carries no check
+constraint, so no schema change is needed.
+
+The prose is now shorter than the rule it states, which is a defect in
+the org and not in this wave. Correcting it means regenerating the
+=instrument_schedule= entity, and the text is what a reader consults
+rather than what the code executes, so it is recorded here rather than
+changed in a wave whose subject is the switch-over.
+
+*** Two type wrinkles at the column boundary
+
+The =fixing_days= column is signed and the container member is not. A
+negative column value would wrap rather than fail, so the reader engages
+the member only when the value is zero or more. The writer casts back.
+
+=indexings_from_asset_leg= is one optional flag in the container, and the
+schema states =Indexings= as an unbounded list of a choice. The container
+holds the =FromAssetLeg= member alone, which is the bound wave A.2b
+recorded. The leg row carries the flag as a column, so a leg writes one
+entry and reads one back.
+
+*** What B.5c does not carry
+
+The option block, the strike, the exercise schedule, the forward, the
+delivery basket and the three return-side members stay unwired, which is
+B.5d.
+
+Two behaviours of the write path stay as B.5b recorded them, and this
+wave extends both to the legs. A re-import writes new rows rather than
+updating the existing ones, because the generated save handler is a
+bitemporal insert. And a leg the second import of a document no longer
+states keeps its row from the first, because nothing deletes a child row
+the new container omits. Neither is reachable from a document the mapper
+produced, and both are the same shape across every child table this
+program added.
+
+*** No generated file was edited by hand
+
+Six of the seven files are hand written: the queries header and source,
+the reader's header and source, the import handler and the test file.
+The seventh, =trade_handler.hpp=, is the generated path already recorded
+as kept by hand, and this wave changes no call site in it.
+
+No file is added or removed, so no =component_files.cmake= list changes.
+
+** Wave B.5d, the option block, the forward and the residue
+
+B.5c wrote the legs and the shared schedules below them. This wave
+writes the last of what the container carries, and closes the two
+defects the gate surfaced while it was measured. The predicate this
+task was opened for is met: the in-scope counters read zero.
+
+*** The seven tables get a surface
+
+The sixteen tables B.1 to B.4 added have generated protocols, handlers
+and registrars, and no registrar was called, so no subject reached any
+of them. B.5a wired the three envelope tables and B.5c the six leg and
+schedule tables. This wave wires the seven that remain:
+=instrument_options=, =instrument_option_premiums=,
+=instrument_option_exercise_fees=, =instrument_option_payment_dates=,
+=instrument_strikes=, =bond_forwards= and
+=bond_future_delivery_baskets=.
+
+All sixteen now have a subject, so a running service can read and write
+every table this program added.
+
+*** The seven reads the generated repository does not offer
+
+=parent_scoped_queries= gains one batch read per table, on the pattern
+B.5b and B.5c set. Each filters on the instrument identifiers and the
+current bitemporal version, and orders by the columns the container's
+own member order needs, so the reader walks the rows in document order
+without sorting again.
+
+Three of the seven are one row per instrument rather than a list: the
+option row, the strike and the forward. Those read into a single
+optional, so a second row for one instrument would be dropped rather
+than appended. No key allows one.
+
+*** The reader rebuilds the option block and the residue
+
+=bond_instrument_reader= now returns the option block, its three child
+lists, the two spellings of its exercise schedule, the strike, the
+forward and the delivery basket.
+
+=schedule_for= no longer takes a leg. B.5c gave it the leg because the
+legs were its only caller. The option block states an exercise schedule
+and a list of exercise dates, and both are owned by =option= and not by
+a leg, so the lookup now takes an owner role and an owner number. The
+schedule role names the member in both cases, which is the rule
+B.5c recorded.
+
+The payment rule block is present exactly when the row states one of
+its three required members, because a document that stated the rule
+stated all three. The two arms of the payment data exclude each other,
+so a row with none of the three stated the date list instead.
+
+Real members and optional blocks share the option row, and the two
+cannot be told apart by a null test. A flag per optional sub-block says
+whether the document stated the block and left it bare or omitted it,
+which is the decision B.3 recorded on the row.
+
+*** Three members live on the fact row and nowhere else
+
+The mapper writes the option type and the strike to the product's fact
+row and leaves the redemption, the price type and the knock-out flag
+nowhere, so a stored row carries them only because the writer put them
+there. The same is true of the return side's payer, price type and
+initial price.
+
+Those six are copied back from the fact row rather than read from a
+column of their own table, which is why the reader applies them after
+the fact row is read rather than beside the option block. The option
+block itself is written for every product that states one, and not only
+for the product whose fact row carries the type and the strike.
+
+*** The writer saves them
+
+=save_option_block= writes the option row, the two child lists that
+carry an ordinal, the payment dates and the two spellings of the
+exercise dates. It writes nothing when the container holds no option
+block, which is the shape a container built from a row set has.
+
+=save_strike=, =save_forward= and =save_delivery_basket= follow it.
+The forward returns without a request when the container states none of
+its three members, so an absent forward writes no row and reads back as
+an absent forward.
+
+Each stops at the first failure with the response's own message, which
+is the shape B.5c set for the legs.
+
+*** The gate reads zero, and it exits zero
+
+Both trees were read with the same classifier, over
+=external/ore/examples=, after the two repairs below.
+
+#+begin_example
+Documents: 1566  Failures: 0  Skipped: 1113
+Classified: numeric 2330, boolean 313
+In scope, bond products and the trade envelope: lost 0, unexplained 0
+Out of scope, the other instrument families: lost 81432, unexplained 9917
+Worst relative error on a numeric pair: 5.660e-8 (tolerance 0.000001)
+EXIT=0
+#+end_example
+
+The in-scope counters are the acceptance line, and both read zero over
+every document in the corpus. The out-of-scope counters are the other
+instrument families, which this programme does not own, and they are
+counted rather than failed, which is the second acceptance line.
+
+The exit code is zero now as well. The A.4 section records why it was
+not: the script counted every source document with no output as a
+failure, and 1,023 of them are configuration documents the exporter
+skips by design. The script now applies the exporter's own rule.
+
+*** Finding: the check counted a document the exporter never writes
+
+=is_exported= reads the source's root element and fails only when the
+exporter is meant to write that document. The four roots are the ones
+the exporter handles: =Portfolio=, =CurrencyConfig=,
+=CalendarAdjustments= and =Conventions=. The rule is the exporter's own,
+expressed again in Python, so the two agree on which documents have an
+output to compare.
+
+A skipped document is counted and not failed. A document the exporter
+does write, and which produced no output, is still a failure: the write
+was attempted and did not happen.
+
+*** Finding: the currency maps were missing two codes
+
+Applying that rule left exactly one genuine MISSING:
+=ORE-Python/Notebooks/Dependencies/conventions.xml=. Bisection found the
+child that causes it, the FX pair =AUD-SKK=, whose target currency is
+=SKK=.
+
+=parse_currency_code= is a hand-written lookup in every =*_mapper.cpp=,
+and the generated =currencyCode= enumeration has 191 values. Five of the
+six maps held 189: =SKK= and =SSP= were absent from the commodity,
+composite, equity, fx and conventions mappers. The sixth, the swap
+instrument mapper, already held all 191.
+
+A currency the map does not name parses to nothing, so the pair is
+dropped and the document it sits in produces no output. Both codes are
+now in all six, in alphabetical position.
+
+This is a defect in hand-written code that mirrors generated code, and
+nothing enforces the mirror. The map is a lookup table duplicated six
+ways against an enumeration that is generated once, so a regeneration
+that adds a currency silently stops six files from parsing it. It is
+recorded as debt rather than repaired here.
+
+*** Finding: the exporter classified a document by substring
+
+With the maps complete, 91 documents were still written wrong. A
+=CurveConfiguration= document came back as an empty =<Conventions/>=.
+
+=read_header= peeks the first 4,096 bytes and =roundtrip()= chose an
+importer by looking for one of four markers in that window. A curve
+configuration is none of the four, so it fell through to the
+conventions branch whenever the word =<Conventions>= appeared in the
+window, which it does in every curve configuration that names a
+convention.
+
+=Academy/FC003_Reporting_Currency/Input/curveconfig.xml= is 21,505
+bytes and holds a curve configuration; its =<Conventions>= element sits
+at byte offset 457. The roundtrip read it as a conventions document and
+wrote 15 bytes to the same relative path. 89 curve configurations and 2
+sensitivity analyses were rewritten as empty conventions files.
+
+The A.4 section found this and recorded it as belonging to a task of its
+own, because the repair decides what the tool does with the documents it
+cannot name. The repair is in this wave, because the gate cannot read
+zero over the corpus while the exporter rewrites 91 documents the corpus
+contains. =read_root_element= skips comments, processing instructions
+and declarations, and returns the name of the first element. The reader
+is then chosen by that name alone, and a document whose root is none of
+the four is refused rather than filed under a branch it does not belong
+to.
+
+The drift check in the diff script mirrors the same parse, so the two
+agree by construction and not by coincidence.
+
+*** Finding: the exporter's classification has no test
+
+=exporter::roundtrip= has one caller, the =ores.cli= roundtrip command,
+and no test. =read_root_element= is in an anonymous namespace inside
+=exporter.cpp=, so no unit test can reach it, and the four-way choice it
+feeds is reachable only by walking a directory.
+
+The defect above therefore had two lives: one before this wave, when the
+substring rule rewrote 91 documents with no error raised, and one after,
+where it is repaired but still unguarded. What caught it was the corpus
+gate, because a misrouted document produces no output and the gate
+counts that as a failure once the document's root says the exporter
+should have written it.
+
+The gate is the system-level coverage and it does hold the behaviour.
+The gap is a case at the unit level, and it is recorded here rather than
+written now: =roundtrip()= writes to a directory, so the case needs a
+temporary corpus, an output tree and an assertion about which documents
+were written. That is a small test but not a free one, and the wave
+already carries the change it would guard.
+
+*** What the two repairs moved, and what they did not
+
+The repairs changed which documents are written and not what any
+document holds, so every pair count is unchanged. Only the file counts
+moved.
+
+| Measure            | Before | After |
+|--------------------+--------+-------|
+| Outputs written    |    544 |   453 |
+| Documents skipped  |  1,022 | 1,113 |
+| Convention files   |    157 |    66 |
+
+Every column closes: 544 - 91 = 453 written, 1,022 + 91 = 1,113
+skipped, 157 - 91 = 66 convention files. The 91 documents moved from
+written to skipped, and no other document moved.
+
+*** What B.5d does not carry
+
+Two bounds stay open on the read path, and both are recorded rather than
+repaired.
+
+A re-import writes new rows rather than updating the existing ones,
+because the generated save handler is a bitemporal insert. And a child
+row the second import no longer states keeps its row from the first,
+because nothing deletes a child row the new container omits. Neither is
+reachable from a document the mapper produced, and both are the shape
+B.5b and B.5c recorded across every child table this program added.
+
+The full XML to database to XML path is not yet exercised. This wave
+wires the write and read sides and covers the read side with cases, but
+no test drives a document through the database and back out. That is
+unit C, and it is the next unit of this task.
+
+*** No generated file was edited by hand
+
+Every file this wave changes is hand written: the queries header and
+source, the registrar, the reader's source, the import handler, the test
+file, the five currency maps, the exporter, and the diff script. Three
+of them sit under =projects/ores.ore/core/src/domain/=, which is
+hand-written code and not xsdcpp output; =domain.cpp= and =domain.hpp=
+are untouched.
+
+No file is added or removed, so no =component_files.cmake= list changes.
+
+** Verification
+
+Each wave records its build and suite result here. A wave that models a
+table or a column also runs =scripts/ore_schema_column_drift.py= first,
+because the database is restored at a commit and the create aggregate
+cannot add a column to a table that is already there.
+
+*** Wave B.5d, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit code 0, and the log ends at
+=[100%] Built target ores.qt.exe=. The seven registrars, the seven batch
+reads, the reader rebuild, the handler and the four new cases all
+compiled and linked on that pass.
+
+The sweep reads 70 of 71 suites passing, in 3456.50 seconds. The one
+failure is =ores.refdata.core.tests=, and the section below records why
+it is not this wave's. The host carried a build in another worktree for
+the length of the sweep, which is why the total is the largest this task
+records.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.10 s  |
+| ores.trading.core.tests    | passed |  15.90 s  |
+| ores.trading.service.tests | passed |   0.58 s  |
+| ores.ore.core.tests        | passed |   4.51 s  |
+| ores.ore.api.tests         | passed |   0.51 s  |
+| ores.ore.service.tests     | passed |   0.58 s  |
+
+=ores.trading.core.tests= carries the wave's four new cases. It reads
+15.90 seconds against the 19.57 of the B.5c sweep and the 15.20 of the
+B.5c re-run.
+
+The six readings come from a re-run of those suites on their own, and
+not from the sweep. A =compass test run= writes one host-wide slot log,
+so the next run overwrites the last, and the sweep's per-suite lines
+were gone before they were read. The sweep total, its result and the
+failing suite are read from the sweep's own summary, which was captured
+first.
+
+=ores.database.tests= passed in the sweep at 10.82 seconds. The wave's
+own earlier sweep failed it at 163.52 seconds, while another worktree
+ran =compass db recreate= against the shared database. The two runs
+together settle that failure as environmental.
+
+No modeling file changed, so no schema drift applies and no codegen
+drift is expected. The codegen drift check was run anyway and reads "No
+drift: regenerated output matches the checked-in tree", and
+=regenerate_cmake_component_files.py --all --check= reports every
+=component_files.cmake= up to date, which follows from the wave adding
+and removing no file.
+
+*** Finding: the refdata core suite dies on its own failure path
+
+=ores.refdata.core.tests= failed in the sweep at 271.51 seconds. It is
+not this wave's. The failing case includes =ores.database=,
+=ores.eventing=, =ores.nats=, =ores.refdata=, =ores.testing= and
+=ores.utility=, and nothing from =ores.trading= or =ores.ore=, which is
+all this wave changes.
+
+It is the flake this task already records. B.1 and B.2 found
+=write_book_publishes_nats_changed_event= failing on a temporal-validity
+race in the refdata eventing fixtures, and recorded it as its own task.
+The case that took the suite down here is a sibling of it.
+
+The Catch2 XML carries the evidence. It holds 152 case elements. The
+last, =write_calendar_event_publishes_nats_changed_event=, opens and
+never closes, and the file has no =OverallResults= element. The suite
+died inside its final eventing case and Catch2 never wrote a summary.
+The suite's own per-case report stops at the case before it, which is
+=regenerate_is_extend_only_and_does_not_rewrite_existing_watermark= at
+43.004 seconds.
+
+That case writes a calendar event, waits for its NATS notification, and
+reports a lost notification when its budget runs out. The budget is four
+attempts of twenty five polls at one hundred milliseconds, or ten
+seconds. The suite cost about nine seconds more than its completed cases
+and their per-case overhead explain, so the case spent its budget and
+the process ended as the case reported.
+
+The suite passes on its own, 152 cases in 263.90 seconds against the
+262.85 this task measured before. The flake is load sensitive, and a
+build ran in another worktree through both the sweep and the re-run,
+which is the load it needs.
+
+Two defects in the harness were read from source while this failure was
+investigated. Neither explains it: no case in this suite's run came near
+the sixty second watchdog default, so the watchdog did not fire. They are
+recorded here because they belong to =ores.testing= and not to this
+task. The watchdog's =test_running_= flag is a plain =bool= that the
+main thread writes and the watchdog thread reads. The watchdog also logs
+through Boost.Log before it reaches its =std::cerr= banner and its
+=std::_Exit=, so a thread that holds the logging lock can stall the exit
+path the timeout depends on.
+
+*** Wave B.5c, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit code 0, and the log ends at
+=[100%] Built target ores.qt.exe=. The reader, the writer and the three
+new cases compiled and linked on that pass.
+
+The sweep reads 70 of 71 suites passing. The one failure is not this
+wave's, and the section below records why.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.09 s  |
+| ores.trading.core.tests    | passed |  19.57 s  |
+| ores.trading.service.tests | passed |   0.55 s  |
+| ores.ore.core.tests        | passed |   4.08 s  |
+| ores.ore.api.tests         | passed |   0.45 s  |
+| ores.ore.service.tests     | passed |   0.73 s  |
+
+=ores.trading.core.tests= carries the wave's three new cases and reads
+19.57 seconds against the 13.38 of the wave before.
+
+The whole sweep took 2179.50 seconds, which is longer than the 884.80 of
+B.5b and is the one second per test case the watchdog join costs.
+
+=scripts/ore_schema_column_drift.py= reads clean against this database:
+two hundred and seventy six declared tables, every declared column
+present. No modeling file changed, so no codegen drift check applies.
+=regenerate_cmake_component_files.py --all --check= reports every
+=component_files.cmake= up to date, which follows from the wave adding
+and removing no file.
+
+*** Finding: the listener loss-window test fails under load
+
+=ores.database.tests= failed in the sweep, on
+=postgres_listener_service_reconnect_surfaces_loss_window= at
+=postgres_listener_service_tests.cpp:367=.
+
+The case terminates the listener's backend, sends a notification into
+the window it believes is open, and then requires that the only
+notification to arrive is the one it sends after the listener is back.
+It received the one sent during the window instead.
+
+The test's own comment states the assumption the failure breaks:
+"PostgreSQL delivers NOTIFY only to live LISTEN sessions, so everything
+sent from here until the reconnect is a lost window." The listener
+reconnects on its own schedule. =expect_gone= proves the old backend has
+gone and nothing more, so the reconnect can complete and reissue LISTEN
+before the test sends the notification it intends to lose. That
+notification is then delivered, and the follow-up wait for exactly one
+received message is satisfied by the very message the test meant to lose.
+
+The suite is a timing race over a reconnect, and it is not this wave's.
+=ores.database.tests= links =ores.database.lib=, =ores.testing.lib= and
+=ores.logging.lib=, so the seven files this wave changes are outside its
+link closure and nothing in the component depends on =ores.trading= or
+=ores.ore=. The suite passes alone in 20.60 seconds against the 159.70 it
+took in the sweep, which is the load sensitivity the race predicts.
+
+The reconnect path the test leans on was given an exponential backoff
+policy in four =ores.database= commits that are all in this branch's
+history, so the window the test measures has moved recently. The repair
+is to close the race rather than to widen the sleeps: establish that the
+reissued LISTEN has landed before sending, and wait for the notification
+the test wants rather than for a count of one.
+
+This is the third suite defect this task records. A.3b found the
+=ores.reporting= retry that cannot work, and B.3 the =ores.refdata=
+currency race. Each belongs to the suite it sits in, and together they
+are why a green sweep is not on its own evidence that a wave is sound.
+
+*** The reader extraction, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the pass ends at
+=[100%] Built target ores.trading.core.tests= with no error line. The
+three new files, the handler, and the two regenerated lists all compiled
+and linked on that pass.
+
+The suite did not pass first time, and what it caught is the value of
+this wave. The first sweep failed four cases in the new file, all on
+=column "calendar" does not exist=, which is the drift finding above.
+With the eleven columns applied, the second failed two: a second fixture
+that left =conversion_ratio= at its zero default and so broke the
+=conversion_ratio > 0= check, and the shared-cache defect. The reader's
+mock was the only mock in the file that was wrong; the defect was real.
+
+The final sweep is 100% tests passed, 0 failed out of 71, in 913.40
+seconds. =ores.trading.core.tests= is 90 cases, all passing, and carries
+the four reader cases.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.09 s  |
+| ores.trading.core.tests    | passed |  15.20 s  |
+| ores.trading.service.tests | passed |   0.59 s  |
+| ores.ore.core.tests        | passed |   4.14 s  |
+| ores.ore.api.tests         | passed |   0.52 s  |
+| ores.ore.service.tests     | passed |   0.56 s  |
+
+=scripts/ore_schema_column_drift.py= reads clean against this database:
+two hundred and seventy six declared tables, every declared column
+present.
+
+*** Wave B.5b, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the log ends at
+=[100%] Built target ores.qt.exe= with no error line. The three
+translation units this wave edited that carry logic compiled and linked
+on that pass: =bond_instrument_mapper.cpp= in =ores.ore.core=,
+=parent_scoped_queries.cpp= in =ores.trading.core=, and
+=ore_import_execute_handler.cpp= in =ores.ore.service=.
+
+All seventy one suites pass, in one =ctest= run rather than the ranges
+the earlier waves used, in 884.80 seconds. =ctest= reports 100% tests
+passed, 0 tests failed out of 71.
+
+| suite                      | result | wall time |
+|----------------------------+--------+-----------|
+| ores.trading.api.tests     | passed |   0.09 s  |
+| ores.trading.core.tests    | passed |  13.38 s  |
+| ores.trading.service.tests | passed |   0.57 s  |
+| ores.ore.core.tests        | passed |   4.45 s  |
+| ores.ore.api.tests         | passed |   0.46 s  |
+| ores.ore.service.tests     | passed |   0.58 s  |
+
+=ores.trading.core.tests= carries the four envelope reader cases of
+B.5a and reads 13.38 seconds against the 14.35 of the wave before.
+=ores.ore.core.tests= carries the mapper round trip suite whose
+assertions this wave repointed, and reads 4.45 seconds against 4.64.
+Both suites passed on the first run, so the not-yet-covered readers of
+the finding above did not fail anything.
+
+The build took about an hour of wall time because two builds ran at
+once on this host, this worktree's and another's, each on a different
+worktree. The suite was unaffected and ran alone.
+
+=git status= lists seven modified files and no new file, so no
+=component_files.cmake= list changes and no codegen drift check applies
+to this wave. Six of the seven are hand written; the seventh,
+=trade_handler.hpp=, is the generated path already recorded as kept by
+hand.
+
+*** Wave B.5a, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the log ends at
+=[100%] Built target ores.qt.exe= with no error. The five files this
+wave added compiled and linked on that pass.
+
+All seventy one suites pass over those binaries, in eight ctest ranges.
+
+| range  | result | wall time |
+|--------+--------+-----------|
+| 1-24   | 24/24  | 237.08 s  |
+| 25-27  |  3/3   | 246.13 s  |
+| 28-31  |  4/4   | 262.63 s  |
+| 32-34  |  3/3   |  14.92 s  |
+| 35-37  |  3/3   |  30.14 s  |
+| 38-50  | 13/13  |  20.02 s  |
+| 51-56  |  6/6   |  10.68 s  |
+| 57-71  | 15/15  |  88.32 s  |
+
+=ctest= reports 100% tests passed, 0 tests failed out of 71, in 909.97
+seconds.
+
+The three trading suites are the wave's own, at 0.09, 14.35 and 0.48
+seconds. The three ore suites carry the mapper path, at 4.64, 0.55 and
+0.71 seconds. =ores.trading.core.tests= carries the wave's four new
+envelope-reader cases, which is why it reads 14.35 seconds against the
+14.50 of the wave before.
+
+The first run of that suite failed, and the failure was the database
+rather than the code. Four cases read =permission denied for table
+ores_trading_trade_envelopes_tbl=, because the sixteen tables had been
+created in place rather than through =setup_schema.sql= and so carried
+no grants. Once the grants were copied from a sibling trading table the
+suite passed 86 of 86 in 13.32 seconds, and the sweep above followed.
+
+=projects/ores.sql/utility/validate_schemas.sh --strict= reads two
+hundred and ninety nine tables and exits 0 with no warning.
+
+=regenerate_cmake_component_files.py --all --check= reports all
+component_files.cmake up to date, so the five new files are registered.
+
+No generated file was edited by hand. =git status= lists five new
+hand-written files, the two headers and two sources plus one test,
+three hand-written files edited, and the two =component_files.cmake=
+lists the registrar script rewrote.
+
+*** Wave B.4, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with exit 0, and the log ends at
+=[100%] Built target ores.qt.exe= with no error. The two new entities'
+generated files compiled and linked on that pass.
+
+All seventy one suites pass over those binaries, in eight ctest ranges.
+
+| range  | result | wall time |
+|--------+--------+-----------|
+| 1-24   | 24/24  | 203.40 s  |
+| 25-27  |  3/3   | 222.41 s  |
+| 28-31  |  4/4   | 263.49 s  |
+| 32-34  |  3/3   |  15.35 s  |
+| 35-37  |  3/3   |  31.09 s  |
+| 38-50  | 13/13  |  19.60 s  |
+| 51-56  |  6/6   |   9.59 s  |
+| 57-71  | 15/15  |  80.57 s  |
+
+The three trading suites are the wave's own, at 0.21, 14.50 and 0.62
+seconds. The three ore suites carry the mapper path, at 4.58, 0.70 and
+1.22 seconds.
+
+=projects/ores.sql/utility/validate_schemas.sh --strict= reads two
+hundred and ninety nine tables and exits 0 with no warning, after the
+row-level security fix recorded above.
+
+*** Wave B.3, the build and the sweep
+
+The build ran clean: =./compass.sh build --preset
+linux-clang-debug-make= finished with no error, and the log ends at
+=[100%] Built target ores.qt.exe=.
+
+Two findings came out of the verification. Both are older than this
+wave.
+
+*** The trading component is not drift free
+
+=check_component_drift.py= holds a registry of the components whose
+regeneration leaves the tree clean. That registry carries refdata,
+reporting, marketdata, compute-cpp, iam, iam-cpp and synthetic. It does
+not carry trading-cpp, and the script's own header explains why a
+component outside the registry cannot pass: a committed tree that
+predates a template takes the newer per-entity families as untracked
+files, and =git diff= cannot see untracked files.
+
+Regenerating trading-cpp did exactly that. It rewrote sixty eight
+tracked files that no part of this wave touches: the whole
+=projects/ores.qt/trading= set, the =trade= entity's generated family,
+nine equity instrument services, seven fx instrument services,
+nineteen eventing integration tests, and =trading_trades_create.sql=.
+Those files went back to a shape HEAD has moved past. The trade table
+alone lost seven indexes.
+
+The run also materialised a hundred and eight untracked files.
+
+Every one of the sixty eight was reverted before this wave's commit.
+The wave's own files regenerate unchanged, so the verdict is about the
+component and not about this wave.
+
+The drift gate cannot read zero for trading until someone brings the
+whole component to the templates. That is a separate pass, sized well
+past one wave, so this task records the position and leaves it.
+
+*** The new files had to be registered, and the component overshoots
+
+=src/component_files.cmake= is the explicit source list CMakeLists.txt
+includes, so a generated file that is not in the list is never
+compiled. The api and service lists took the wave's new files. The core
+list did not, because the run that produced the other two happened
+before the core files existed.
+
+Re-running the generator for the core list exposed a second effect of
+the same drift. The generator scans the directory, so it also picked up
+the hundred and eight files the drift run had just materialised, and
+wrote them into the list. Committing that list would point the build at
+files that are in no commit.
+
+So the hundred and eight came out first. They are generated files, the
+orgs that produce them are on disk, and a copy went to
+=/tmp/drift_byproducts_1429.tar.gz= before the removal. The untracked
+count returned to its pre-drift figure of a hundred and sixty seven,
+which is the check that the removal took exactly what the drift run had
+created.
+
+The three lists were then regenerated. They carry the wave's files, and
+they carry no entry whose file is absent.
+
+The regeneration also registered files the earlier waves had left out:
+the =trade_envelope= family, which B.1+B.2 committed but never added to
+the api, core or service lists. Eighty four generated files were
+tracked and never compiled. One hand-written header, the container,
+was the family's only registered member.
+
+The lists changed, so the build had to prove them. The rebuild compiled
+seventy five core files, fifty five api files and ten service files
+that had never been compiled, plus the eighty four envelope files, and
+it finished at =[100%] Built target ores.qt.exe= with no error.
+
+*** A test case costs one second of dead time
+
+=ores.testing/test_timeout_listener.hpp= starts a watchdog thread in
+=testCaseStarting= and joins it in =testCaseEnded=. The watchdog sleeps
+in one second steps, so a join waits out the rest of the current
+second, and every test case pays that second whether it needs it or
+not.
+
+The cost is one second per test case, on every suite that registers the
+listener. Measured: =ores.iam.core.tests= has ninety six test cases and
+took 97.69 seconds, =ores.shell.tests= has twenty six and took 26.66,
+and =ores.cli.tests= has a hundred and twenty five and took 125.72. The
+whole sweep therefore costs about one second per case, which for this
+tree is tens of minutes.
+
+It also makes a normal per-test timeout look like a hang. =ores.cli.tests=
+failed at a 120 second limit and passed at 480, and a stack sample
+taken while it "hung" showed the main thread inside
+=std::thread::join= in =testCaseEnded= and the watchdog inside
+=sleep_for=. No test was running at the time.
+
+This is a defect in the harness and not in any test. It is not fixed
+here, because the fix is to wake the watchdog on a condition variable
+instead of polling, and that change belongs with the harness and not
+with the bond tables.
+
+*** The sweep is green, all seventy one suites
+
+The whole suite ran over the rebuilt binaries, in eight ctest ranges.
+The rebuild matters to the verdict: the trading libraries now carry the
+files the source lists had left out, and every suite that links them
+ran against the larger build.
+
+| range  | wall time |
+|--------+-----------|
+| 1-24   | 197.58 s  |
+| 25-27  | 249.02 s  |
+| 28-31  | 263.52 s  |
+| 32-34  |  14.25 s  |
+| 35-37  |  30.07 s  |
+| 38-50  |  18.95 s  |
+| 51-56  |   9.33 s  |
+| 57-71  |  79.05 s  |
+
+The three trading suites are the wave's own: =ores.trading.api.tests=
+at 0.09 seconds, =ores.trading.core.tests= at 13.63 and
+=ores.trading.service.tests= at 0.51.
+
+=ores.refdata.core.tests= passed at 262.85 seconds. The flake recorded
+against it did not recur, which is the second clean run since the fix.
+
+Most of the fourteen minutes is the one second per test case the
+watchdog join costs, and not test work.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | A stated element whose value equals its type's default is dropped on export: =SettlementDirty= =N=, =FairPrice= =0= and =ExpiryLag= =0= all vanished from a crafted bond future probe. | =bond_instrument_mapper.cpp= (=reverse_bond_future=) | Decline in this branch | The fix is a presence flag per member in the generated =bond_future= container, so it is a modeling and codegen change, not a mapper edit. Filed as [[id:A3DA0BB5-FDB4-4C18-B738-3BE87CA8BC31][Keep stated but default-valued elements in the bond export]]. The corpus cannot measure the class: no document in =external/ore/examples= is a BondFuture trade. |
+| 2 | =format_number= writes =1e+05= for =100000.0=, because =std::to_chars= defaults to the shortest round-trip form. Reaches =ContractNotional= and =FairPrice= on the future, and =option_strike= on the option. | =bond_instrument_mapper.cpp= (=format_number=) | Decline | The value reparses to the same double, and the acceptance predicate counts a numeric spelling difference as classified rather than lost. Recorded debt. A fix must not trade =1e+05= for =100000.000000=, which the same schema reads back as a different string. |
+| 3 | Two call sites read a schema-declared string with a bare =std::stoi= and =std::stod= while the same file defines =count_of= and =number_of= for that job. The bare calls throw; the importer catches per trade, so one malformed value leaves the trade with an empty instrument and no product block. | =bond_instrument_mapper.cpp= (=map_bond_data=, =map_bond_option=) | Accept | Fixed in =611dcb81b3=. Both call sites now go through the helpers, which is the policy the file already documents for a string-typed numeric field. |
+
+* Result
+
+The bond products and the trade envelope round trip at zero loss on the
+mapper path, and every member the container carries has a column or a
+keyed child row, so the database holds what the container holds.
+
+The gate reads zero over the whole corpus:
+
+#+begin_example
+Documents: 1566  Failures: 0  Skipped: 1113
+Classified: numeric 2330, boolean 313
+In scope, bond products and the trade envelope: lost 0, unexplained 0
+Out of scope, the other instrument families: lost 81432, unexplained 9917
+Worst relative error on a numeric pair: 5.660e-8 (tolerance 0.000001)
+EXIT=0
+#+end_example
+
+** The reading was retaken, and the later reading is the one that stands
+
+The gate above was first read when wave B.5d landed. It was read again
+after the untagged-variant codec was replaced by =instrument_payload=,
+and the two readings agree on every number.
+
+The second reading is the one this Result rests on, because the payload
+sits on the mapper path. =exporter::roundtrip= encodes the instrument on
+the way in and decodes it on the way out, so the B.5d reading verified a
+codec that is no longer in the tree: it was taken with variant tagging
+present, and tagging is what made every instrument decode as
+=std::monostate=.
+
+** The four acceptance lines, and what answered each
+
+- Zero lost and zero unexplained in scope, over every document in
+  =external/ore/examples=. The reading above is that, over all 1,566
+  documents.
+- The other families counted and not failed. The out-of-scope line
+  carries the 81,432 lost and the 9,917 unexplained pairs of the other
+  instrument families, and the run exits zero.
+- The container carries every member the mapper needs, and the generated
+  binding stays untouched. Waves A.1 to A.4 grew the container, and each
+  one records that =domain.hpp= and =domain.cpp= were not opened.
+- Every member the container carries has a column or a keyed child row.
+  Waves B.1 to B.4 built the sixteen tables and the columns, and B.5a to
+  B.5d pointed the read and write paths at them.
+
+** What closed the losses
+
+Four classes, in the order they were closed. The container flattened
+=xsd::optional<T>= into a plain member and tested =.empty()=, so an
+element the document stated empty collapsed into an absent one; the
+container now holds =std::optional= and the mappers emit on presence. The
+container never held most of =legData=, and it held one leg where the
+schema declares =LegData= unbounded. Five =bondData= members had no home
+at all. And the whole trade envelope had no carrier, which wave A.4 gave
+it, keyed by the trade rather than by the product.
+
+The gate itself needed two repairs before its exit code meant anything:
+it counted a document the exporter never writes as a failure, and its
+boolean rule swallowed a real loss whenever a string element held the
+text =true=.
+
+** The bounds that stay open
+
+Each is recorded in its own wave and none is exercised by the corpus, so
+none shows in the reading above. The fifteen =legDataType= alternatives
+other than fixed, floating and formula-based. The =FXReset= and
+=Exchanges= members of =Notionals=. The =Indexing= member of =Indexings=,
+where the container carries =FromAssetLeg= alone. =HistoricalFixings=,
+whose date member is named =fixingDate= rather than =startDate=. An
+element the document states bare, as =<ScheduleData/>= with no =Rules=
+and no =Dates=. The =NettingSetDetails= substitution group, which the
+envelope carries in its =NettingSetId= form alone. Nine
+=totalReturnData= members. =KnockOut= on a forward bond. And the eight
+=bondData= elements with no column anywhere, which
+[[id:F8D78E13-F2A7-47AD-90E2-7251D2FA7895][Align bond_issue with the ORE
+data model]] records.
+
+Two hazards are worth carrying rather than closing. =parse_ore_trade_type=
+scans 115 spellings through a hand-held count, so a regeneration that
+adds a type would silently stop finding it. And a re-import writes new
+rows rather than updating the existing ones, because the generated save
+handler is a bitemporal insert.

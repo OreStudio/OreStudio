@@ -22,6 +22,7 @@
 
 #include "ores.utility/uuid/tenant_id.hpp"
 #include <boost/uuid/uuid.hpp>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -35,10 +36,19 @@ namespace ores::trading::domain {
  * it extends. The columns fix the ER row ("return type, funding index
  * or rate") from the return side (totalReturnData, instruments.xsd
  * lines 2313-2336) and the funding leg (fundingData lines 2297-2301
- * wrapping one legData). The funding payment dates and the leg
- * schedules have no destination in the nine tables; they land in the
- * shared instrument-keyed schedule tables of the parent story (recorded
- * scope limit, task D7943D7E wave 1.3).
+ * wrapping one legData).
+ *
+ * Three members of the return side ride here because no other row holds
+ * them: the payer flag, the price type and the initial price. The return
+ * schedule lands as schedule rows in the shared instrument-keyed
+ * schedule tables, under the owner role trs, and the funding leg's own
+ * terms land in the shared leg family.
+ *
+ * The return side states nine more members that no table holds:
+ * ObservationLag, ObservationConvention, ObservationCalendar,
+ * PaymentLag, PaymentConvention, PaymentCalendar, PaymentDates,
+ * FXConversion and FXTerms. The corpus states none of them, so the
+ * round trip is whole without them, and they are a recorded scope limit.
  */
 struct bond_trs final {
     /**
@@ -81,6 +91,31 @@ struct bond_trs final {
      * @brief Index code of the funding leg, when the leg is floating.
      */
     std::string funding_index;
+
+    /**
+     * @brief Flag saying the seller pays the total return.
+     *
+     * The schema declares the member required on the return side, so a row built from a document
+     * always states it. The column is text because the document states its own spelling and export
+     * re-emits that spelling rather than a decoded boolean.
+     */
+    std::optional<std::string> payer;
+
+    /**
+     * @brief Price type the total return is struck on (Dirty, Clean).
+     *
+     * The schema declares the member required. It is not the return_type column beside it: that one
+     * names the return side of the swap, and this one names how the price is quoted.
+     */
+    std::optional<std::string> price_type;
+
+    /**
+     * @brief Initial price of the total return.
+     *
+     * The schema states the member as a float and declares it optional, so an unengaged column
+     * means the document omitted it.
+     */
+    std::optional<double> initial_price;
 
     /**
      * @brief Username of the person who last modified this bond trs.

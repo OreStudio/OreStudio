@@ -1399,6 +1399,9 @@ void {{name_singular}}_repository::replace_by_{{left.column_short}}(
         {{#left.is_uuid}}{{left.column}}_str{{/left.is_uuid}}{{^left.is_uuid}}{{left.column}}{{/left.is_uuid}});
 
     for (auto {{name_singular_short}} : {{name_short}}) {
+{{#has_tenant_id}}
+        {{name_singular_short}}.tenant_id = tid;
+{{/has_tenant_id}}
         {{name_singular_short}}.modified_by = modified_by;
         {{name_singular_short}}.performed_by = performed_by;
         {{name_singular_short}}.change_reason_code = change_reason_code;
@@ -1457,6 +1460,9 @@ void {{name_singular}}_repository::replace_by_{{right.column_short}}(
         {{#right.is_uuid}}{{right.column}}_str{{/right.is_uuid}}{{^right.is_uuid}}{{right.column}}{{/right.is_uuid}});
 
     for (auto {{name_singular_short}} : {{name_short}}) {
+{{#has_tenant_id}}
+        {{name_singular_short}}.tenant_id = tid;
+{{/has_tenant_id}}
         {{name_singular_short}}.modified_by = modified_by;
         {{name_singular_short}}.performed_by = performed_by;
         {{name_singular_short}}.change_reason_code = change_reason_code;

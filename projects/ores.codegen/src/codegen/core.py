@@ -1424,10 +1424,10 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
 
     Loaded once per parent org per process (cached): the eventing-test
     template's per-FK seeding blocks need the parent's entity name,
-    generator facet, audit-group status, component and mandatory-FK
-    list. Returns None when the org cannot be loaded (cross-component or
-    non-codegen tables resolve to no modeling org and are skipped by the
-    caller).
+    generator facet, audit-group status, component, seed flags and
+    mandatory-FK list. Returns None when the org cannot be loaded
+    (cross-component or non-codegen tables resolve to no modeling org
+    and are skipped by the caller).
     """
     if org_path is None:
         return None
@@ -1442,6 +1442,7 @@ def _parent_entity_info(org_path: Path | None) -> dict[str, Any] | None:
         'has_audit_group': bool(de.get('domain_audit_group')),
         'has_identity_group': bool(de.get('domain_identity_group')),
         'seed_country_sentinel': bool(de.get('seed_country_sentinel')),
+        'seed_currency': bool(de.get('seed_currency')),
         'component': de.get('component'),
         'mandatory_fks': [
             f for f in de.get('foreign_keys') or [] if not f.get('nullable', False)
@@ -2648,6 +2649,11 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 fk['parent_has_audit_group'] = parent['has_audit_group']
                 fk['parent_has_identity_group'] = parent['has_identity_group']
                 fk['parent_seed_country_sentinel'] = parent['seed_country_sentinel']
+                # The parent's insert trigger may validate a currency the
+                # parent's generator hardcodes (portfolio's aggregation_ccy):
+                # the child's test then seeds the sentinel currency too, or
+                # the parent's insert fails before the child is written.
+                fk['parent_seed_currency'] = parent['seed_currency']
                 # The parent may itself have a mandatory party_id FK (e.g.
                 # portfolio -- session-set in production): the template then
                 # seeds a party too, so the parent's own insert passes its
@@ -2686,6 +2692,8 @@ def generate_from_model(model_path, data_dir, templates_dir, output_dir, is_proc
                 for fk in fks)
             domain_entity['seed_parent_country_sentinel'] = any(
                 fk.get('parent_seed_country_sentinel') for fk in fks)
+            domain_entity['seed_parent_currency'] = any(
+                fk.get('parent_seed_currency') for fk in fks)
         # Compute index_name_prefix: use sql.index_prefix when set, else entity_plural
         sql_section = domain_entity.get('sql', {})
         validate_rls_isolation(domain_entity)

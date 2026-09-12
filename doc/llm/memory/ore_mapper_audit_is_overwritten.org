@@ -1,0 +1,17 @@
+:PROPERTIES:
+:ID: E00A69DD-9F42-45D2-89F4-2787A990CABB
+:END:
+#+title: The ORE mappers audit identity is overwritten by the service stamp
+#+description: The hand-written ORE mappers set modified_by and performed_by to the literal ores; the shared ores.service stamp overwrites both before any write, so the value never reaches storage
+#+type: memory
+#+memory_subtype: reference
+#+level: cross
+#+filetags: :memory:reference:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+
+Every hand-written ORE mapper sets modified_by and performed_by to the literal =ores=. That value is dead. The =stamp()= helper in =ores.service/messaging/handler_helpers.hpp= overwrites both from the request context before any write: modified_by takes =ctx.actor()=, performed_by takes =ctx.service_account()=. From the mapper only =change_reason_code=, which stamp fills only when empty, and =change_commentary=, which stamp never touches, survive to the row.
+
+*Why:* A grep for modified_by under ores.trading finds no overwrite, which reads as a live defect: rows stamped with an account that does not exist. It is not. The stamping lives in the shared ores.service handler helper, not in the trading component. Measured on the C.3 round-trip rows: stored modified_by is tenant_admin and performed_by is ores_brave_hopper_trading_service, while change_reason_code stayed system.external_data_import and change_commentary stayed Imported from ORE XML.
+
+*How to apply:* Before treating a hardcoded audit field in a mapper or a generator as a defect, read the stamp helper first. It is the single place that makes tenant_id, party_id, modified_by and performed_by server-authoritative, and it compiles for any domain type through if constexpr, so a component-local grep will miss it. Two habits follow: check that a directory exists before trusting a grep that returned nothing, and confirm a suspected defect against stored rows before changing code.

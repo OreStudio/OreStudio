@@ -1,0 +1,1944 @@
+/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+ *
+ * Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 3 of the License, or (at your option) any later
+ * version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
+#include "ores.logging/make_logger.hpp"
+#include "ores.ore.core/domain/bond_instrument_mapper.hpp"
+#include "ores.ore.core/domain/domain.hpp"
+#include "ores.ore.core/domain/trade_mapper.hpp"
+#include "ores.platform/filesystem/file.hpp"
+#include "ores.testing/project_root.hpp"
+#include <catch2/catch_approx.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <utility>
+#include <vector>
+
+/**
+ * @file xml_bond_fact_mapper_roundtrip_tests.cpp
+ * @brief Fact-row fidelity tests for the bond mapper: the repo leg, the
+ * TRS funding leg, the future row, the ascot row, the whole exercise
+ * date list and the issue's child rows.
+ *
+ * The example documents state one exercise date, and none of them
+ * states a call schedule, a conversion ratio list or a future, so the
+ * shapes the acceptance names are authored inline, after the
+ * reference-data documents that carry them.
+ */
+
+namespace {
+
+const std::string_view test_suite("ores.ore.bond.fact.mapper.roundtrip.tests");
+const std::string tags("[ore][xml][mapper][roundtrip][bond][fact]");
+
+using ores::ore::domain::bond_instrument_mapper;
+using ores::ore::domain::oreTradeType;
+using ores::ore::domain::portfolio;
+using ores::ore::domain::trade_mapper;
+using ores::trading::domain::bond_instrument_data;
+using namespace ores::logging;
+using Catch::Approx;
+
+std::filesystem::path example_path(const std::string& filename) {
+    return ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades/" +
+                                                filename);
+}
+
+bond_instrument_data map_example(const std::string& filename, std::size_t index) {
+    using ores::platform::filesystem::file;
+    const std::string content = file::read_content(example_path(filename));
+    portfolio p;
+    ores::ore::domain::load_data(content, p);
+    REQUIRE(p.Trade.size() > index);
+    auto r = trade_mapper::map_bond_instrument(p.Trade[index]);
+    REQUIRE(r.has_value());
+    return *r;
+}
+
+bond_instrument_data map_inline(const std::string& xml) {
+    portfolio p;
+    ores::ore::domain::load_data(xml, p);
+    REQUIRE(p.Trade.size() == 1);
+    auto r = trade_mapper::map_bond_instrument(p.Trade.front());
+    REQUIRE(r.has_value());
+    return *r;
+}
+
+} // namespace
+
+// =============================================================================
+// The coupon leg keeps its own schedule
+// =============================================================================
+
+TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The issue date and the leg's schedule start are two data, and the
+    // corpus holds documents where they differ. A rebuild from the issue
+    // terms writes the issue date as the schedule start, and an
+    // xsd::optional assigned to the plain date member compiles as
+    // operator=(char) and stores a control byte. The dates here differ,
+    // so a rebuild shows up.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Schedule_Mirror">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <IssueDate>2025-02-01</IssueDate>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>1000000</Notional>
+        </Notionals>
+        <DayCounter>ACT/ACT</DayCounter>
+        <PaymentConvention>F</PaymentConvention>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-02-03</StartDate>
+            <EndDate>2035-02-03</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>EUR</Calendar>
+            <Convention>MF</Convention>
+            <TermConvention>MF</TermConvention>
+            <Rule>Forward</Rule>
+            <EndOfMonth>true</EndOfMonth>
+          </Rules>
+        </ScheduleData>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.05</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    CHECK(r.issue.issue_date == "2025-02-01");
+    CHECK(r.issue.coupon_frequency_code == "1Y");
+
+    REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
+    const auto& carried = r.bond_legs.front().schedule.rules.front();
+    CHECK(carried.start_date == "2025-02-03");
+    CHECK(carried.end_date == "2035-02-03");
+    CHECK(carried.calendar == "EUR");
+    CHECK(carried.term_convention == "MF");
+    CHECK(carried.rule == "Forward");
+    REQUIRE(carried.end_of_month);
+    CHECK(*carried.end_of_month == "true");
+    REQUIRE(r.bond_legs.front().leg_type);
+    CHECK(*r.bond_legs.front().leg_type == "Fixed");
+    REQUIRE(r.bond_legs.front().currency);
+    CHECK(*r.bond_legs.front().currency == "EUR");
+    REQUIRE(r.bond_legs.front().day_counter);
+    CHECK(*r.bond_legs.front().day_counter == "ACT/ACT");
+    REQUIRE(r.bond_legs.front().payment_convention);
+    CHECK(*r.bond_legs.front().payment_convention == "F");
+    REQUIRE(r.bond_legs.front().payer);
+    CHECK(!*r.bond_legs.front().payer);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData->Rules.size() == 1);
+    const auto& rule = rt.BondData->LegData.front().ScheduleData->Rules.front();
+    CHECK(rule.StartDate == "2025-02-03");
+    REQUIRE(rule.EndDate);
+    CHECK(std::string(*rule.EndDate) == "2035-02-03");
+    CHECK(std::string(rule.Tenor) == "1Y");
+    REQUIRE(rule.Calendar);
+    CHECK(std::string(*rule.Calendar) == "EUR");
+    REQUIRE(rule.TermConvention);
+    CHECK(to_string(*rule.TermConvention) == "MF");
+    REQUIRE(rule.Rule);
+    CHECK(to_string(*rule.Rule) == "Forward");
+    CHECK(rt.BondData->LegData.front().LegType == ores::ore::domain::legType::Fixed);
+
+    BOOST_LOG_SEV(lg, info)
+        << "The coupon leg keeps a start date the issue date does not hold.";
+}
+
+// =============================================================================
+// An element the document states empty is not an element it omits
+// =============================================================================
+
+TEST_CASE("an_empty_schedule_element_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Every member here is optional in the schema, and the corpus states
+    // some of them empty. Presence is itself data: a document that states
+    // an empty FirstDate, one that omits it and one that states a date are
+    // three documents, and the container has to tell them apart.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Empty_Elements">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <ScheduleData>
+          <Rules>
+            <StartDate>2025-02-03</StartDate>
+            <Tenor>1Y</Tenor>
+            <Convention>MF</Convention>
+            <EndOfMonth/>
+            <FirstDate/>
+            <LastDate/>
+          </Rules>
+        </ScheduleData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
+    const auto& carried = r.bond_legs.front().schedule.rules.front();
+    REQUIRE(carried.first_date);
+    CHECK(carried.first_date->empty());
+    REQUIRE(carried.last_date);
+    CHECK(carried.last_date->empty());
+    CHECK(!carried.end_date);
+    CHECK(!carried.calendar);
+    // The generated reader engages a bool element it finds empty with the
+    // default spelling and runs no text setter, so an empty EndOfMonth
+    // reads as on and the writer states it as "Y".
+    REQUIRE(carried.end_of_month);
+    CHECK(*carried.end_of_month == "Y");
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData);
+    REQUIRE(rt.BondData->LegData.front().ScheduleData->Rules.size() == 1);
+    const auto& rule = rt.BondData->LegData.front().ScheduleData->Rules.front();
+    CHECK(rule.FirstDate == "");
+    CHECK(rule.LastDate == "");
+    CHECK(!rule.EndDate);
+    CHECK(!rule.Calendar);
+    REQUIRE(rule.EndOfMonth);
+    CHECK(to_string(*rule.EndOfMonth) == "Y");
+
+    BOOST_LOG_SEV(lg, info) << "An empty schedule element survives the round trip.";
+}
+
+TEST_CASE("a_legs_payment_terms_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The payment terms, the payment calendar and the two flags have no
+    // column in the nine tables, so the leg is their only home on the
+    // mapper path. LegType belongs to the same group: a leg with no fact
+    // row takes its type from the document, not from the Fixed default.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Leg_Terms">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Payer>true</Payer>
+        <Currency>GBP</Currency>
+        <PaymentConvention>MF</PaymentConvention>
+        <PaymentLag>2D</PaymentLag>
+        <NotionalPaymentLag>3</NotionalPaymentLag>
+        <PaymentCalendar>GBP</PaymentCalendar>
+        <DayCounter>A365</DayCounter>
+        <LastPeriodDayCounter>ACT/ACT</LastPeriodDayCounter>
+        <StrictNotionalDates>true</StrictNotionalDates>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.front().leg_type);
+    CHECK(*r.bond_legs.front().leg_type == "Floating");
+    REQUIRE(r.bond_legs.front().payer);
+    CHECK(*r.bond_legs.front().payer);
+    REQUIRE(r.bond_legs.front().currency);
+    CHECK(*r.bond_legs.front().currency == "GBP");
+    REQUIRE(r.bond_legs.front().payment_convention);
+    CHECK(*r.bond_legs.front().payment_convention == "MF");
+    REQUIRE(r.bond_legs.front().payment_lag);
+    CHECK(*r.bond_legs.front().payment_lag == "2D");
+    REQUIRE(r.bond_legs.front().notional_payment_lag);
+    CHECK(*r.bond_legs.front().notional_payment_lag == 3);
+    REQUIRE(r.bond_legs.front().payment_calendar);
+    CHECK(*r.bond_legs.front().payment_calendar == "GBP");
+    REQUIRE(r.bond_legs.front().day_counter);
+    CHECK(*r.bond_legs.front().day_counter == "A365");
+    REQUIRE(r.bond_legs.front().last_period_day_counter);
+    CHECK(*r.bond_legs.front().last_period_day_counter == "ACT/ACT");
+    REQUIRE(r.bond_legs.front().strict_notional_dates);
+    CHECK(*r.bond_legs.front().strict_notional_dates);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    const auto& leg = rt.BondData->LegData.front();
+    CHECK(leg.LegType == ores::ore::domain::legType::Floating);
+    CHECK(leg.Payer);
+    REQUIRE(leg.Currency);
+    CHECK(std::string(*leg.Currency) == "GBP");
+    REQUIRE(leg.PaymentConvention);
+    CHECK(to_string(*leg.PaymentConvention) == "MF");
+    REQUIRE(leg.PaymentLag);
+    CHECK(std::string(*leg.PaymentLag) == "2D");
+    REQUIRE(leg.NotionalPaymentLag);
+    CHECK(*leg.NotionalPaymentLag == 3);
+    REQUIRE(leg.PaymentCalendar);
+    CHECK(std::string(*leg.PaymentCalendar) == "GBP");
+    REQUIRE(leg.DayCounter);
+    CHECK(to_string(*leg.DayCounter) == "A365");
+    REQUIRE(leg.LastPeriodDayCounter);
+    CHECK(to_string(*leg.LastPeriodDayCounter) == "ACT/ACT");
+    REQUIRE(leg.StrictNotionalDates);
+    CHECK(*leg.StrictNotionalDates);
+
+    BOOST_LOG_SEV(lg, info) << "A leg's payment terms survive the round trip.";
+}
+
+TEST_CASE("the_issue_row_stands_in_for_a_leg_a_row_set_holds", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The issue row mirrors the coupon leg's currency and day counter, and
+    // the document's own statement wins when there is one. A payload built
+    // from a row set holds no leg, so the row is all there is to go on.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_From_Row">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>SEK</Currency>
+        <DayCounter>A365</DayCounter>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.front().currency);
+    CHECK(*r.bond_legs.front().currency == "SEK");
+    REQUIRE(r.bond_legs.front().day_counter);
+    CHECK(*r.bond_legs.front().day_counter == "A365");
+
+    auto from_row = r;
+    from_row.bond_legs.clear();
+
+    const auto rt = bond_instrument_mapper::reverse_bond(from_row);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    const auto& leg = rt.BondData->LegData.front();
+    REQUIRE(leg.Currency);
+    CHECK(std::string(*leg.Currency) == "SEK");
+    REQUIRE(leg.DayCounter);
+    CHECK(to_string(*leg.DayCounter) == "A365");
+
+    BOOST_LOG_SEV(lg, info) << "The issue row stands in for a leg a row set holds.";
+}
+
+// =============================================================================
+// The leg groups the fact rows do not hold
+// =============================================================================
+
+TEST_CASE("an_amortization_block_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The nine tables carry one face value and no amortization block, so
+    // the leg is the only home for the schedule that steps it down.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Amortizing">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Amortizations>
+          <AmortizationData>
+            <Type>RelativeToInitialNotional</Type>
+            <Value>0.25</Value>
+            <StartDate>2027-01-01</StartDate>
+            <EndDate>2030-01-01</EndDate>
+            <Frequency>1Y</Frequency>
+            <Underflow>true</Underflow>
+          </AmortizationData>
+          <AmortizationData>
+            <Type>Annuity</Type>
+            <Value>500000</Value>
+          </AmortizationData>
+        </Amortizations>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 1);
+    const auto& mapped = r.bond_legs.front().amortizations;
+    REQUIRE(mapped.size() == 2);
+    CHECK(mapped.front().type == "RelativeToInitialNotional");
+    REQUIRE(mapped.front().value);
+    CHECK(*mapped.front().value == Approx(0.25));
+    REQUIRE(mapped.front().start_date);
+    CHECK(*mapped.front().start_date == "2027-01-01");
+    REQUIRE(mapped.front().end_date);
+    CHECK(*mapped.front().end_date == "2030-01-01");
+    REQUIRE(mapped.front().frequency);
+    CHECK(*mapped.front().frequency == "1Y");
+    REQUIRE(mapped.front().underflow);
+    CHECK(*mapped.front().underflow);
+    CHECK(mapped.back().type == "Annuity");
+    CHECK(!mapped.back().start_date);
+    CHECK(!mapped.back().underflow);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().Amortizations);
+    const auto& rows = rt.BondData->LegData.front().Amortizations->AmortizationData;
+    REQUIRE(rows.size() == 2);
+    CHECK(to_string(rows.front().Type) == "RelativeToInitialNotional");
+    REQUIRE(rows.front().Value);
+    CHECK(static_cast<double>(*rows.front().Value) == Approx(0.25));
+    REQUIRE(rows.front().StartDate);
+    CHECK(std::string(*rows.front().StartDate) == "2027-01-01");
+    REQUIRE(rows.front().EndDate);
+    CHECK(std::string(*rows.front().EndDate) == "2030-01-01");
+    REQUIRE(rows.front().Frequency);
+    CHECK(std::string(*rows.front().Frequency) == "1Y");
+    REQUIRE(rows.front().Underflow);
+    CHECK(*rows.front().Underflow);
+    CHECK(to_string(rows.back().Type) == "Annuity");
+    CHECK(!rows.back().StartDate);
+
+    BOOST_LOG_SEV(lg, info) << "An amortization block survives the round trip.";
+}
+
+TEST_CASE("a_floating_legs_rate_group_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The TRS and the repo rows carry one index or one rate. The rest of
+    // the rate group has no column anywhere, so the leg carries it.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Floating_Leg">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Payer>true</Payer>
+        <Currency>EUR</Currency>
+        <FloatingLegData>
+          <Index>EUR-EURIBOR-6M</Index>
+          <IsInArrears>true</IsInArrears>
+          <FixingDays>2</FixingDays>
+          <Spreads>
+            <Spread>0.02</Spread>
+          </Spreads>
+          <Floors>
+            <Floor>0.001</Floor>
+          </Floors>
+        </FloatingLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 1);
+    REQUIRE(r.bond_legs.front().rate);
+    REQUIRE(r.bond_legs.front().rate->floating);
+    const auto& mapped = *r.bond_legs.front().rate->floating;
+    CHECK(mapped.index == "EUR-EURIBOR-6M");
+    REQUIRE(mapped.is_in_arrears);
+    CHECK(*mapped.is_in_arrears);
+    REQUIRE(mapped.fixing_days);
+    CHECK(*mapped.fixing_days == 2);
+    REQUIRE(mapped.spreads.size() == 1);
+    CHECK(mapped.spreads.front().value == Approx(0.02));
+    REQUIRE(mapped.floors.size() == 1);
+    CHECK(mapped.floors.front().value == Approx(0.001));
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    REQUIRE(rt.BondData->LegData.front().legDataType);
+    REQUIRE(rt.BondData->LegData.front().legDataType->FloatingLegData);
+    const auto& f = *rt.BondData->LegData.front().legDataType->FloatingLegData;
+    CHECK(std::string(f.Index) == "EUR-EURIBOR-6M");
+    REQUIRE(f.IsInArrears);
+    CHECK(*f.IsInArrears);
+    REQUIRE(f.FixingDays);
+    CHECK(*f.FixingDays == 2);
+    REQUIRE(f.Spreads);
+    REQUIRE(f.Spreads->Spread.size() == 1);
+    CHECK(static_cast<double>(f.Spreads->Spread.front()) == Approx(0.02));
+    REQUIRE(f.Floors);
+    REQUIRE(f.Floors->Floor.size() == 1);
+    CHECK(static_cast<double>(f.Floors->Floor.front()) == Approx(0.001));
+
+    BOOST_LOG_SEV(lg, info) << "A floating leg's rate group survives the round trip.";
+}
+
+TEST_CASE("a_fixed_legs_rate_and_notional_lists_survive_the_round_trip", tags) {
+    auto log(make_logger(test_suite));
+
+    // The issue row holds one coupon rate and one face value, so a leg
+    // that states a list loses all but the first without the container.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Rate_List">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>1000000</Notional>
+          <Notional>500000</Notional>
+        </Notionals>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.03</Rate>
+            <Rate>0.04</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 1);
+    REQUIRE(r.bond_legs.front().notionals.size() == 2);
+    CHECK(r.bond_legs.front().notionals.front().value == Approx(1000000.0));
+    CHECK(r.bond_legs.front().notionals.back().value == Approx(500000.0));
+    REQUIRE(r.bond_legs.front().rate);
+    REQUIRE(r.bond_legs.front().rate->fixed);
+    REQUIRE(r.bond_legs.front().rate->fixed->rates.size() == 2);
+    CHECK(r.bond_legs.front().rate->fixed->rates.front().value == Approx(0.03));
+    CHECK(r.bond_legs.front().rate->fixed->rates.back().value == Approx(0.04));
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 1);
+    const auto& ld = rt.BondData->LegData.front();
+    REQUIRE(ld.Notionals);
+    REQUIRE(ld.Notionals->Notional.size() == 2);
+    CHECK(static_cast<double>(ld.Notionals->Notional.front()) == Approx(1000000.0));
+    CHECK(static_cast<double>(ld.Notionals->Notional.back()) == Approx(500000.0));
+    REQUIRE(ld.legDataType);
+    REQUIRE(ld.legDataType->FixedLegData);
+    REQUIRE(ld.legDataType->FixedLegData->Rates.Rate.size() == 2);
+    CHECK(static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front()) == Approx(0.03));
+    CHECK(static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.back()) == Approx(0.04));
+
+    BOOST_LOG_SEV(log, info) << "A fixed leg's rate and notional lists survive.";
+}
+
+TEST_CASE("a_bonds_second_leg_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema declares LegData unbounded and three documents in the
+    // corpus state two legs. The issue row mirrors the first leg only,
+    // so a container that holds one leg drops the second whole.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Two_Legs">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <LegData>
+        <LegType>Fixed</LegType>
+        <Payer>false</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>1000000</Notional>
+        </Notionals>
+        <DayCounter>A360</DayCounter>
+        <FixedLegData>
+          <Rates>
+            <Rate>0.03</Rate>
+          </Rates>
+        </FixedLegData>
+      </LegData>
+      <LegData>
+        <LegType>Floating</LegType>
+        <Payer>true</Payer>
+        <Currency>EUR</Currency>
+        <Notionals>
+          <Notional>250000</Notional>
+        </Notionals>
+        <DayCounter>A365</DayCounter>
+        <FloatingLegData>
+          <Index>EUR-EURIBOR-6M</Index>
+        </FloatingLegData>
+      </LegData>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.bond_legs.size() == 2);
+    CHECK(r.issue.currency == "EUR");
+    CHECK(r.issue.face_value == Approx(1000000.0));
+    CHECK(r.issue.coupon_rate == Approx(0.03));
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->LegData.size() == 2);
+    const auto& second = rt.BondData->LegData.back();
+    CHECK(second.LegType == ores::ore::domain::legType::Floating);
+    CHECK(second.Payer);
+    REQUIRE(second.Notionals);
+    REQUIRE(second.Notionals->Notional.size() == 1);
+    CHECK(static_cast<double>(second.Notionals->Notional.front()) == Approx(250000.0));
+    REQUIRE(second.DayCounter);
+    CHECK(to_string(*second.DayCounter) == "A365");
+    REQUIRE(second.legDataType);
+    REQUIRE(second.legDataType->FloatingLegData);
+    CHECK(std::string(second.legDataType->FloatingLegData->Index) == "EUR-EURIBOR-6M");
+
+    BOOST_LOG_SEV(lg, info) << "A bond's second leg survives the round trip.";
+}
+
+TEST_CASE("a_forward_bonds_coupon_leg_keeps_its_own_schedule", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Every forward bond in the corpus states an issue date and a
+    // schedule start that differ, so this product is where the rebuild
+    // showed. The forward path assembles the same container. The
+    // schema requires LongInForward, and the forward bond's settlement
+    // block and that flag ride nowhere yet, so the fixture states them
+    // and the test asserts only on the schedule.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="FwdBond_Schedule">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <IssuerId>CPTY_C</IssuerId>
+        <SecurityId>SECURITY_1</SecurityId>
+        <IssueDate>2025-02-01</IssueDate>
+        <LegData>
+          <LegType>Fixed</LegType>
+          <Payer>false</Payer>
+          <Currency>EUR</Currency>
+          <Notionals>
+            <Notional>10000000</Notional>
+          </Notionals>
+          <DayCounter>ACT/ACT</DayCounter>
+          <PaymentConvention>F</PaymentConvention>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-02-03</StartDate>
+              <EndDate>2035-02-03</EndDate>
+              <Tenor>1Y</Tenor>
+              <Calendar>TARGET</Calendar>
+              <Convention>F</Convention>
+              <TermConvention>F</TermConvention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.05</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>20160808</ForwardMaturityDate>
+        <Amount>6300000.00</Amount>
+        <SettlementDirty>true</SettlementDirty>
+      </SettlementData>
+      <LongInForward>true</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    CHECK(r.instrument.identity.trade_type_code == "ForwardBond");
+    CHECK(r.issue.issue_date == "2025-02-01");
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    REQUIRE(rt.ForwardBondData->BondData.LegData.size() == 1);
+    REQUIRE(rt.ForwardBondData->BondData.LegData.front().ScheduleData);
+    REQUIRE(rt.ForwardBondData->BondData.LegData.front().ScheduleData->Rules.size() == 1);
+    const auto& rule = rt.ForwardBondData->BondData.LegData.front().ScheduleData->Rules.front();
+    CHECK(rule.StartDate == "2025-02-03");
+    REQUIRE(rule.Calendar);
+    CHECK(std::string(*rule.Calendar) == "TARGET");
+
+    BOOST_LOG_SEV(lg, info) << "A forward bond's coupon leg keeps its own schedule.";
+}
+
+// =============================================================================
+// The repo leg and the coupon frequency repair
+// =============================================================================
+
+TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
+    auto lg(make_logger(test_suite));
+    const auto r = map_example("Cash_BondRepo_and_Bond.xml", 0);
+
+    CHECK(r.instrument.identity.trade_type_code == "BondRepo");
+    CHECK(r.issue.security_id == "ISIN:US912828X703");
+
+    // The repo leg's schedule is not the issue's coupon frequency. The
+    // issue states no terms of its own here, so it takes none from the
+    // leg either.
+    CHECK(r.issue.coupon_frequency_code.empty());
+    CHECK(r.issue.currency.empty());
+    CHECK(r.issue.face_value == 0.0);
+
+    REQUIRE(r.repo);
+    CHECK(r.repo->repo_type == "Fixed");
+    CHECK(r.repo->repo_rate == Approx(0.0178).epsilon(0.0001));
+
+    REQUIRE(r.repo_leg.payer);
+    CHECK(*r.repo_leg.payer);
+    REQUIRE(r.repo_leg.schedule.rules.size() == 1);
+    const auto& rule = r.repo_leg.schedule.rules.front();
+    CHECK(rule.tenor == "1Y");
+    CHECK(rule.start_date == "2024-02-12");
+    CHECK(rule.end_date == "2026-05-14");
+    CHECK(rule.calendar == "US");
+    CHECK(rule.convention == "MF");
+    CHECK(rule.rule == "Forward");
+
+    // A repo leg has no issue row to mirror these onto, so the leg itself
+    // is their only home.
+    REQUIRE(r.repo_leg.currency);
+    CHECK(*r.repo_leg.currency == "USD");
+    REQUIRE(r.repo_leg.day_counter);
+    CHECK(*r.repo_leg.day_counter == "A360");
+    REQUIRE(r.repo_leg.payment_convention);
+    CHECK(*r.repo_leg.payment_convention == "F");
+
+    const auto rt = bond_instrument_mapper::reverse_bond_repo(r);
+    REQUIRE(rt.BondRepoData);
+
+    // No phantom coupon leg: the issue holds no terms to emit one.
+    CHECK(rt.BondRepoData->BondData.LegData.empty());
+
+    const auto& leg = rt.BondRepoData->RepoData.LegData;
+    CHECK(leg.Payer);
+    CHECK(leg.LegType == ores::ore::domain::legType::Fixed);
+    REQUIRE(leg.Currency);
+    CHECK(std::string(*leg.Currency) == "USD");
+    REQUIRE(leg.DayCounter);
+    CHECK(to_string(*leg.DayCounter) == "A360");
+    REQUIRE(leg.PaymentConvention);
+    CHECK(to_string(*leg.PaymentConvention) == "F");
+    REQUIRE(leg.ScheduleData);
+    REQUIRE(leg.ScheduleData->Rules.size() == 1);
+    CHECK(std::string(leg.ScheduleData->Rules.front().Tenor) == "1Y");
+    REQUIRE(leg.legDataType);
+    REQUIRE(leg.legDataType->FixedLegData);
+    REQUIRE(!leg.legDataType->FixedLegData->Rates.Rate.empty());
+    CHECK(static_cast<double>(leg.legDataType->FixedLegData->Rates.Rate.front()) ==
+          Approx(0.0178).epsilon(0.0001));
+
+    BOOST_LOG_SEV(lg, info) << "BondRepo fact row and leg schedule mapped.";
+}
+
+// =============================================================================
+// The TRS funding leg and the price type
+// =============================================================================
+
+TEST_CASE("bond_trs_carries_the_price_type_and_the_funding_schedule", tags) {
+    auto lg(make_logger(test_suite));
+    const auto r = map_example("Credit_Bond_TRS.xml", 0);
+
+    CHECK(r.instrument.identity.trade_type_code == "BondTRS");
+    REQUIRE(r.trs);
+
+    // No schema field selects a return type, so TotalReturn is the model
+    // default the column check admits rather than a value read from the
+    // document.
+    CHECK(r.trs->return_type == "TotalReturn");
+    CHECK(r.trs->funding_leg_type == "Fixed");
+    CHECK(r.trs->funding_rate == Approx(-0.0055).epsilon(0.0001));
+
+    CHECK(r.trs_price_type == "Dirty");
+    REQUIRE(r.trs_funding_leg.payer);
+    CHECK(!*r.trs_funding_leg.payer);
+    REQUIRE(r.trs_funding_leg.schedule.rules.size() == 1);
+    const auto& rule = r.trs_funding_leg.schedule.rules.front();
+    CHECK(rule.tenor == "3M");
+    CHECK(rule.start_date == "2025-02-13");
+    CHECK(rule.end_date == "2025-05-17");
+    CHECK(rule.calendar == "TARGET");
+    CHECK(rule.convention == "F");
+    CHECK(rule.rule == "Forward");
+
+    const auto rt = bond_instrument_mapper::reverse_bond_trs(r);
+    REQUIRE(rt.BondTRSData);
+    CHECK(std::string(rt.BondTRSData->TotalReturnData.PriceType) == "Dirty");
+    CHECK(!rt.BondTRSData->FundingData.LegData.Payer);
+    REQUIRE(rt.BondTRSData->FundingData.LegData.ScheduleData);
+    REQUIRE(rt.BondTRSData->FundingData.LegData.ScheduleData->Rules.size() == 1);
+    CHECK(std::string(rt.BondTRSData->FundingData.LegData.ScheduleData->Rules.front().Tenor) ==
+          "3M");
+
+    BOOST_LOG_SEV(lg, info) << "BondTRS fact row and funding schedule mapped.";
+}
+
+TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The example document states Dirty and a payer of false, so a Clean
+    // price type and a payer of true prove neither value is fixed.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="TRS_Clean">
+    <TradeType>BondTRS</TradeType>
+    <BondTRSData>
+      <BondData>
+        <SecurityId>ISIN:XS1234567890</SecurityId>
+      </BondData>
+      <TotalReturnData>
+        <Payer>false</Payer>
+        <InitialPrice>109.712</InitialPrice>
+        <PriceType>Clean</PriceType>
+        <ScheduleData>
+          <Dates>
+            <Calendar>GBP</Calendar>
+            <Dates>
+              <Date>2025-01-15</Date>
+              <Date>2025-07-15</Date>
+            </Dates>
+          </Dates>
+        </ScheduleData>
+      </TotalReturnData>
+      <FundingData>
+        <LegData>
+          <LegType>Fixed</LegType>
+          <Payer>true</Payer>
+          <Currency>GBP</Currency>
+          <Notionals>
+            <Notional>500000</Notional>
+          </Notionals>
+          <ScheduleData>
+            <Rules>
+              <StartDate>2025-01-15</StartDate>
+              <EndDate>2026-01-15</EndDate>
+              <Tenor>6M</Tenor>
+              <Calendar>GBP</Calendar>
+              <Convention>MF</Convention>
+              <Rule>Forward</Rule>
+            </Rules>
+          </ScheduleData>
+          <DayCounter>A360</DayCounter>
+          <PaymentConvention>F</PaymentConvention>
+          <FixedLegData>
+            <Rates>
+              <Rate>0.0125</Rate>
+            </Rates>
+          </FixedLegData>
+        </LegData>
+      </FundingData>
+    </BondTRSData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    CHECK(r.instrument.identity.trade_type_code == "BondTRS");
+    CHECK(r.trs_price_type == "Clean");
+    REQUIRE(r.trs_funding_leg.payer);
+    CHECK(*r.trs_funding_leg.payer);
+    REQUIRE(r.trs_funding_leg.schedule.rules.size() == 1);
+    CHECK(r.trs_funding_leg.schedule.rules.front().tenor == "6M");
+    REQUIRE(r.trs);
+    CHECK(r.trs->funding_leg_type == "Fixed");
+    CHECK(r.trs->funding_rate == Approx(0.0125).epsilon(0.0001));
+
+    // The total return block carries three members of its own. The payer
+    // is a required string the corpus spells as text, the initial price
+    // is a number and the schedule states its dates as a list.
+    REQUIRE(r.trs_payer);
+    CHECK(*r.trs_payer == "false");
+    REQUIRE(r.trs_initial_price);
+    CHECK(*r.trs_initial_price == Approx(109.712));
+    REQUIRE(r.trs_schedule.dates.size() == 1);
+    REQUIRE(r.trs_schedule.dates.front().calendar);
+    CHECK(*r.trs_schedule.dates.front().calendar == "GBP");
+    REQUIRE(r.trs_schedule.dates.front().dates.size() == 2);
+    CHECK(r.trs_schedule.dates.front().dates[0] == "2025-01-15");
+    CHECK(r.trs_schedule.dates.front().dates[1] == "2025-07-15");
+
+    const auto rt = bond_instrument_mapper::reverse_bond_trs(r);
+    REQUIRE(rt.BondTRSData);
+    CHECK(std::string(rt.BondTRSData->TotalReturnData.PriceType) == "Clean");
+    CHECK(std::string(rt.BondTRSData->TotalReturnData.Payer) == "false");
+    REQUIRE(rt.BondTRSData->TotalReturnData.InitialPrice);
+    CHECK(*rt.BondTRSData->TotalReturnData.InitialPrice == Approx(109.712f));
+    REQUIRE(rt.BondTRSData->TotalReturnData.ScheduleData.Dates.size() == 1);
+    REQUIRE(rt.BondTRSData->TotalReturnData.ScheduleData.Dates.front().Calendar);
+    CHECK(std::string(*rt.BondTRSData->TotalReturnData.ScheduleData.Dates.front().Calendar) == "GBP");
+    CHECK(rt.BondTRSData->FundingData.LegData.Payer);
+
+    BOOST_LOG_SEV(lg, info) << "BondTRS price type and payer read from the document.";
+}
+
+// =============================================================================
+// The future row
+// =============================================================================
+
+TEST_CASE("bond_future_maps_every_fact_column_and_the_basket", tags) {
+    auto lg(make_logger(test_suite));
+
+    // No example document states a BondFuture, so the trade is authored
+    // after the schema's bondFutureData.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Future">
+    <TradeType>BondFuture</TradeType>
+    <BondFutureData>
+      <ContractName>Euro-Bund-Future</ContractName>
+      <ContractNotional>100000</ContractNotional>
+      <LongShort>Long</LongShort>
+      <Currency>EUR</Currency>
+      <ContractMonth>2026-03</ContractMonth>
+      <DeliverableGrade>Bund</DeliverableGrade>
+      <FairPrice>132.45</FairPrice>
+      <Settlement>Physical</Settlement>
+      <SettlementDirty>true</SettlementDirty>
+      <RootDate>2026-03-10</RootDate>
+      <ExpiryBasis>Annual</ExpiryBasis>
+      <SettlementBasis>Annual</SettlementBasis>
+      <ExpiryLag>2</ExpiryLag>
+      <SettlementLag>3</SettlementLag>
+      <LastTradingDate>2026-03-06</LastTradingDate>
+      <LastDeliveryDate>2026-03-10</LastDeliveryDate>
+      <DeliveryBasket>
+        <Id>DE0001102325</Id>
+        <Id>DE0001102333</Id>
+      </DeliveryBasket>
+    </BondFutureData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    CHECK(r.instrument.identity.trade_type_code == "BondFuture");
+    REQUIRE(r.future);
+    const auto& f = *r.future;
+    CHECK(f.contract_name == "Euro-Bund-Future");
+    CHECK(f.contract_notional == Approx(100000.0));
+    CHECK(f.long_short == "Long");
+    CHECK(f.currency == "EUR");
+    CHECK(f.contract_month == "2026-03");
+    CHECK(f.deliverable_grade == "Bund");
+    CHECK(f.fair_price == Approx(132.45));
+    CHECK(f.settlement == "Physical");
+    CHECK(f.settlement_dirty);
+    CHECK(f.root_date == "2026-03-10");
+    CHECK(f.expiry_basis == "Annual");
+    CHECK(f.settlement_basis == "Annual");
+    CHECK(f.expiry_lag == 2);
+    CHECK(f.settlement_lag == 3);
+    CHECK(f.last_trading_date == "2026-03-06");
+    CHECK(f.last_delivery_date == "2026-03-10");
+    CHECK(f.modified_by == "ores");
+    CHECK(f.change_reason_code == "system.external_data_import");
+
+    // A future carries no bond terms, so the issue row its NOT NULL
+    // issue_id points at is minted empty.
+    CHECK(r.issue.security_id.empty());
+    CHECK(r.instrument.issue_id == r.issue.issue_id);
+    CHECK(r.future_delivery_basket == std::vector<std::string>{"DE0001102325", "DE0001102333"});
+
+    const auto rt = bond_instrument_mapper::reverse_bond_future(r);
+    REQUIRE(rt.BondFutureData);
+    CHECK(std::string(rt.BondFutureData->ContractName) == "Euro-Bund-Future");
+    CHECK(std::string(rt.BondFutureData->LongShort) == "Long");
+    CHECK(std::stod(std::string(rt.BondFutureData->ContractNotional)) == Approx(100000.0));
+    REQUIRE(rt.BondFutureData->Currency);
+    CHECK(ores::ore::domain::to_string(*rt.BondFutureData->Currency) == "EUR");
+    REQUIRE(rt.BondFutureData->SettlementDirty);
+    CHECK(std::string(*rt.BondFutureData->SettlementDirty) == "true");
+    REQUIRE(rt.BondFutureData->DeliveryBasket);
+    REQUIRE(rt.BondFutureData->DeliveryBasket->Id.size() == 2);
+    CHECK(std::string(rt.BondFutureData->DeliveryBasket->Id[0]) == "DE0001102325");
+    CHECK(std::string(rt.BondFutureData->DeliveryBasket->Id[1]) == "DE0001102333");
+
+    BOOST_LOG_SEV(lg, info) << "BondFuture fact row and delivery basket mapped.";
+}
+
+// =============================================================================
+// The ascot row and its swap leg
+// =============================================================================
+
+TEST_CASE("ascot_row_option_type_and_swap_leg_survive", tags) {
+    auto lg(make_logger(test_suite));
+    const auto r = map_example("Cash_Ascot.xml", 0);
+
+    CHECK(r.instrument.identity.trade_type_code == "Ascot");
+    REQUIRE(r.ascot);
+    CHECK(r.ascot->ascot_option_type == "Call");
+    CHECK(r.option_exercise_dates == std::vector<std::string>{"2030-10-08"});
+
+    // The document states no conversion terms, so no target rows exist.
+    CHECK(r.conversion_targets.empty());
+
+    REQUIRE(r.ascot_swap_leg.payer);
+    CHECK(!*r.ascot_swap_leg.payer);
+    REQUIRE(r.ascot_swap_leg.schedule.rules.size() == 1);
+    const auto& rule = r.ascot_swap_leg.schedule.rules.front();
+    CHECK(rule.tenor == "3M");
+    CHECK(rule.start_date == "2021-10-08");
+    CHECK(rule.end_date == "2030-10-08");
+    CHECK(rule.calendar == "TARGET");
+    CHECK(rule.convention == "ModifiedFollowing");
+    CHECK(rule.rule == "Backward");
+
+    const auto rt = bond_instrument_mapper::reverse_ascot(r);
+    REQUIRE(rt.AscotData);
+    REQUIRE(rt.AscotData->OptionData.OptionType);
+    CHECK(std::string(*rt.AscotData->OptionData.OptionType) == "Call");
+    REQUIRE(rt.AscotData->OptionData.exerciseDatesGroup);
+    REQUIRE(rt.AscotData->OptionData.exerciseDatesGroup->ExerciseDates);
+    REQUIRE(rt.AscotData->OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.size() == 1);
+    CHECK(std::string(
+              rt.AscotData->OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate.front()) ==
+          "2030-10-08");
+    CHECK(!rt.AscotData->ReferenceSwapData.LegData.Payer);
+    REQUIRE(rt.AscotData->ReferenceSwapData.LegData.ScheduleData);
+    CHECK(std::string(rt.AscotData->ReferenceSwapData.LegData.ScheduleData->Rules.front().Tenor) ==
+          "3M");
+
+    BOOST_LOG_SEV(lg, info) << "Ascot fact row and reference swap leg mapped.";
+}
+
+// =============================================================================
+// The whole exercise date list
+// =============================================================================
+
+TEST_CASE("bond_option_keeps_every_exercise_date", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The example document states one exercise date; the schedule's full
+    // list is what the container carries, in document order.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Call_Option">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>Bermudan</Style>
+        <ExerciseDates>
+          <ExerciseDate>2026-01-15</ExerciseDate>
+          <ExerciseDate>2027-01-15</ExerciseDate>
+          <ExerciseDate>2028-01-15</ExerciseDate>
+        </ExerciseDates>
+      </OptionData>
+      <Strike>102.5</Strike>
+      <BondData>
+        <SecurityId>ISIN:US912828X703</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    CHECK(r.instrument.identity.trade_type_code == "BondOption");
+    REQUIRE(r.option);
+    CHECK(r.option->option_type == "Call");
+    CHECK(r.option->option_strike == Approx(102.5));
+    CHECK(r.option_exercise_dates ==
+          std::vector<std::string>{"2026-01-15", "2027-01-15", "2028-01-15"});
+
+    const auto rt = bond_instrument_mapper::reverse_bond_option(r);
+    REQUIRE(rt.BondOptionData);
+    REQUIRE(rt.BondOptionData->OptionData.exerciseDatesGroup);
+    REQUIRE(rt.BondOptionData->OptionData.exerciseDatesGroup->ExerciseDates);
+    const auto& dates =
+        rt.BondOptionData->OptionData.exerciseDatesGroup->ExerciseDates->ExerciseDate;
+    REQUIRE(dates.size() == 3);
+    CHECK(std::string(dates[0]) == "2026-01-15");
+    CHECK(std::string(dates[1]) == "2027-01-15");
+    CHECK(std::string(dates[2]) == "2028-01-15");
+
+    BOOST_LOG_SEV(lg, info) << "BondOption exercise date list mapped whole.";
+}
+
+// =============================================================================
+// The option block
+// =============================================================================
+
+TEST_CASE("the_option_block_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // bondOptionData and AscotData hold the same optionData element, and
+    // the nine tables carry the option's type and its strike and nothing
+    // else the option states, so the container carries the block whole.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Full_Block">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Short</LongShort>
+        <OptionType>Put</OptionType>
+        <PayoffType>Vanilla</PayoffType>
+        <PayoffType2>Digital</PayoffType2>
+        <Style>Bermudan</Style>
+        <NoticePeriod>5D</NoticePeriod>
+        <NoticeCalendar>TARGET</NoticeCalendar>
+        <NoticeConvention>MF</NoticeConvention>
+        <MidCouponExercise>true</MidCouponExercise>
+        <Settlement>Cash</Settlement>
+        <SettlementMethod>ParYieldCurve</SettlementMethod>
+        <PayOffAtExpiry>false</PayOffAtExpiry>
+        <PremiumAmount>12500</PremiumAmount>
+        <PremiumCurrency>USD</PremiumCurrency>
+        <PremiumPayDate>2025-03-01</PremiumPayDate>
+        <Premiums>
+          <Premium>
+            <Amount>12500</Amount>
+            <Currency>USD</Currency>
+            <PayDate>2025-03-01</PayDate>
+            <SettlementData>
+              <PayCurrency>USD</PayCurrency>
+              <FXIndex>FX-USD-EUR</FXIndex>
+              <FixingDate>2025-02-27</FixingDate>
+            </SettlementData>
+          </Premium>
+        </Premiums>
+        <ExercisePrices>100;105</ExercisePrices>
+        <ExerciseFees>
+          <ExerciseFee type="Percentage" startDate="2026-01-01" currency="USD">0.25</ExerciseFee>
+        </ExerciseFees>
+        <ExerciseFeeSettlementPeriod>2D</ExerciseFeeSettlementPeriod>
+        <ExerciseFeeSettlementCalendar>TARGET</ExerciseFeeSettlementCalendar>
+        <ExerciseFeeSettlementConvention>MF</ExerciseFeeSettlementConvention>
+        <AutomaticExercise>true</AutomaticExercise>
+        <ExerciseData>
+          <Date>2026-06-15</Date>
+          <Price>101.25</Price>
+        </ExerciseData>
+        <PaymentData>
+          <Rules>
+            <Lag>2</Lag>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+            <RelativeTo>Exercise</RelativeTo>
+          </Rules>
+        </PaymentData>
+        <SettlementData>
+          <PayCurrency>EUR</PayCurrency>
+          <FXIndex>FX-EUR-USD</FXIndex>
+        </SettlementData>
+      </OptionData>
+      <StrikeData>
+        <StrikePrice>
+          <Value>1</Value>
+          <Currency>EUR</Currency>
+        </StrikePrice>
+      </StrikeData>
+      <Redemption>100.00</Redemption>
+      <PriceType>Dirty</PriceType>
+      <KnocksOut>false</KnocksOut>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    REQUIRE(r.option_data);
+    const auto& o = *r.option_data;
+    CHECK(o.long_short == "Short");
+    CHECK(o.option_type == "Put");
+    CHECK(o.payoff_type == "Vanilla");
+    CHECK(o.payoff_type_2 == "Digital");
+    CHECK(o.style == "Bermudan");
+    CHECK(o.notice_period == "5D");
+    CHECK(o.notice_calendar == "TARGET");
+    CHECK(o.notice_convention == "MF");
+    CHECK(o.mid_coupon_exercise == "true");
+    CHECK(o.settlement == "Cash");
+    CHECK(o.settlement_method == "ParYieldCurve");
+    CHECK(o.pay_off_at_expiry == "false");
+    CHECK(o.premium_amount == "12500");
+    CHECK(o.premium_currency == "USD");
+    CHECK(o.premium_pay_date == "2025-03-01");
+    REQUIRE(o.premiums.size() == 1);
+    CHECK(o.premiums.front().amount == Approx(12500.0));
+    CHECK(o.premiums.front().currency == "USD");
+    CHECK(o.premiums.front().pay_date == "2025-03-01");
+    REQUIRE(o.premiums.front().settlement);
+    CHECK(o.premiums.front().settlement->pay_currency == "USD");
+    CHECK(o.premiums.front().settlement->fx_index == "FX-USD-EUR");
+    CHECK(o.premiums.front().settlement->fixing_date == "2025-02-27");
+    CHECK(o.exercise_prices == "100;105");
+    REQUIRE(o.exercise_fees.size() == 1);
+    CHECK(o.exercise_fees.front().amount == Approx(0.25));
+    CHECK(o.exercise_fees.front().type == "Percentage");
+    CHECK(o.exercise_fees.front().start_date == "2026-01-01");
+    CHECK(o.exercise_fees.front().currency == "USD");
+    CHECK(o.exercise_fee_settlement_period == "2D");
+    CHECK(o.exercise_fee_settlement_calendar == "TARGET");
+    CHECK(o.exercise_fee_settlement_convention == "MF");
+    REQUIRE(o.automatic_exercise);
+    CHECK(*o.automatic_exercise == "true");
+    REQUIRE(o.exercise_data);
+    CHECK(o.exercise_data->date == "2026-06-15");
+    REQUIRE(o.exercise_data->price);
+    CHECK(*o.exercise_data->price == Approx(101.25));
+    REQUIRE(o.payment_data);
+    CHECK(o.payment_data->dates.empty());
+    REQUIRE(o.payment_data->rules);
+    CHECK(o.payment_data->rules->lag == 2);
+    CHECK(o.payment_data->rules->calendar == "TARGET");
+    CHECK(o.payment_data->rules->convention == "MF");
+    CHECK(o.payment_data->rules->relative_to == "Exercise");
+    REQUIRE(o.settlement_data);
+    CHECK(o.settlement_data->pay_currency == "EUR");
+    CHECK(o.settlement_data->fx_index == "FX-EUR-USD");
+    CHECK_FALSE(o.settlement_data->fixing_date);
+    CHECK(r.option_redemption == "100.00");
+    CHECK(r.option_price_type == "Dirty");
+    REQUIRE(r.option_knocks_out);
+    CHECK(*r.option_knocks_out == "false");
+    CHECK(r.option->option_strike == Approx(0.0));
+
+    const auto rt = bond_instrument_mapper::reverse_bond_option(r);
+    REQUIRE(rt.BondOptionData);
+    const auto& ro = rt.BondOptionData->OptionData;
+    CHECK(std::string(ro.LongShort) == "Short");
+    REQUIRE(ro.OptionType);
+    CHECK(std::string(*ro.OptionType) == "Put");
+    REQUIRE(ro.PayoffType);
+    CHECK(std::string(*ro.PayoffType) == "Vanilla");
+    REQUIRE(ro.PayoffType2);
+    CHECK(std::string(*ro.PayoffType2) == "Digital");
+    REQUIRE(ro.Style);
+    CHECK(std::string(*ro.Style) == "Bermudan");
+    REQUIRE(ro.NoticePeriod);
+    CHECK(std::string(*ro.NoticePeriod) == "5D");
+    REQUIRE(ro.NoticeCalendar);
+    CHECK(std::string(*ro.NoticeCalendar) == "TARGET");
+    REQUIRE(ro.NoticeConvention);
+    CHECK(std::string(*ro.NoticeConvention) == "MF");
+    REQUIRE(ro.MidCouponExercise);
+    CHECK(std::string(*ro.MidCouponExercise) == "true");
+    REQUIRE(ro.Settlement);
+    CHECK(*ro.Settlement == ores::ore::domain::settlementType::Cash);
+    REQUIRE(ro.SettlementMethod);
+    CHECK(*ro.SettlementMethod == ores::ore::domain::settlementMethod::ParYieldCurve);
+    REQUIRE(ro.PayOffAtExpiry);
+    CHECK(std::string(*ro.PayOffAtExpiry) == "false");
+    REQUIRE(ro.PremiumAmount);
+    CHECK(std::string(*ro.PremiumAmount) == "12500");
+    REQUIRE(ro.PremiumCurrency);
+    CHECK(std::string(*ro.PremiumCurrency) == "USD");
+    REQUIRE(ro.PremiumPayDate);
+    CHECK(std::string(*ro.PremiumPayDate) == "2025-03-01");
+    REQUIRE(ro.Premiums);
+    REQUIRE(ro.Premiums->Premium.size() == 1);
+    CHECK(static_cast<double>(ro.Premiums->Premium.front().Amount) == Approx(12500.0));
+    CHECK(std::string(ro.Premiums->Premium.front().Currency) == "USD");
+    CHECK(std::string(ro.Premiums->Premium.front().PayDate) == "2025-03-01");
+    REQUIRE(ro.Premiums->Premium.front().SettlementData);
+    CHECK(ores::ore::domain::to_string(ro.Premiums->Premium.front().SettlementData->PayCurrency) ==
+          "USD");
+    CHECK(std::string(ro.Premiums->Premium.front().SettlementData->FXIndex) == "FX-USD-EUR");
+    REQUIRE(ro.ExercisePrices);
+    CHECK(std::string(*ro.ExercisePrices) == "100;105");
+    REQUIRE(ro.ExerciseFees);
+    REQUIRE(ro.ExerciseFees->ExerciseFee.size() == 1);
+    CHECK(static_cast<double>(ro.ExerciseFees->ExerciseFee.front()) == Approx(0.25));
+    REQUIRE(ro.ExerciseFees->ExerciseFee.front().type);
+    CHECK(std::string(*ro.ExerciseFees->ExerciseFee.front().type) == "Percentage");
+    REQUIRE(ro.ExerciseFees->ExerciseFee.front().startDate);
+    CHECK(std::string(*ro.ExerciseFees->ExerciseFee.front().startDate) == "2026-01-01");
+    REQUIRE(ro.ExerciseFees->ExerciseFee.front().currency);
+    CHECK(std::string(*ro.ExerciseFees->ExerciseFee.front().currency) == "USD");
+    REQUIRE(ro.ExerciseFeeSettlementPeriod);
+    CHECK(std::string(*ro.ExerciseFeeSettlementPeriod) == "2D");
+    REQUIRE(ro.ExerciseFeeSettlementCalendar);
+    CHECK(std::string(*ro.ExerciseFeeSettlementCalendar) == "TARGET");
+    REQUIRE(ro.ExerciseFeeSettlementConvention);
+    CHECK(std::string(*ro.ExerciseFeeSettlementConvention) == "MF");
+    REQUIRE(ro.AutomaticExercise);
+    CHECK(ores::ore::domain::to_string(*ro.AutomaticExercise) == "true");
+    REQUIRE(ro.ExerciseData);
+    CHECK(std::string(ro.ExerciseData->Date) == "2026-06-15");
+    REQUIRE(ro.ExerciseData->Price);
+    CHECK(*ro.ExerciseData->Price == Approx(101.25));
+    REQUIRE(ro.PaymentData);
+    CHECK_FALSE(ro.PaymentData->Dates);
+    REQUIRE(ro.PaymentData->Rules);
+    CHECK(ro.PaymentData->Rules->Lag == 2);
+    CHECK(std::string(ro.PaymentData->Rules->Calendar) == "TARGET");
+    CHECK(ro.PaymentData->Rules->Convention ==
+          ores::ore::domain::businessDayConvention::MF);
+    REQUIRE(ro.PaymentData->Rules->RelativeTo);
+    CHECK(*ro.PaymentData->Rules->RelativeTo == ores::ore::domain::optionPayRelativeTo::Exercise);
+    REQUIRE(ro.SettlementData);
+    CHECK(ores::ore::domain::to_string(ro.SettlementData->PayCurrency) == "EUR");
+    CHECK(std::string(ro.SettlementData->FXIndex) == "FX-EUR-USD");
+    CHECK_FALSE(ro.SettlementData->FixingDate);
+    REQUIRE(rt.BondOptionData->Redemption);
+    CHECK(std::string(*rt.BondOptionData->Redemption) == "100.00");
+    REQUIRE(rt.BondOptionData->PriceType);
+    CHECK(std::string(*rt.BondOptionData->PriceType) == "Dirty");
+    REQUIRE(rt.BondOptionData->KnocksOut);
+    CHECK(ores::ore::domain::to_string(*rt.BondOptionData->KnocksOut) == "false");
+
+    BOOST_LOG_SEV(lg, info) << "BondOption option block mapped whole.";
+}
+
+TEST_CASE("the_three_strike_spellings_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema states the element form as a choice of three: a price
+    // with its currency, a yield with its compounding, and a bare number
+    // with an optional currency.
+    const std::string yield_xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Yield_Strike">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StrikeData>
+        <StrikeYield>
+          <Yield>0.055</Yield>
+          <Compounding>SimpleThenCompounded</Compounding>
+        </StrikeYield>
+      </StrikeData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto y = map_inline(yield_xml);
+    REQUIRE(y.strike_data);
+    CHECK_FALSE(y.strike_data->price_value);
+    REQUIRE(y.strike_data->yield_value);
+    CHECK(*y.strike_data->yield_value == Approx(0.055).epsilon(1e-6));
+    CHECK(y.strike_data->yield_compounding == "SimpleThenCompounded");
+
+    const auto y_rt = bond_instrument_mapper::reverse_bond_option(y);
+    REQUIRE(y_rt.BondOptionData);
+    REQUIRE(y_rt.BondOptionData->strikeGroup.StrikeData);
+    const auto& ys = *y_rt.BondOptionData->strikeGroup.StrikeData;
+    CHECK_FALSE(ys.StrikePrice);
+    REQUIRE(ys.StrikeYield);
+    CHECK(static_cast<double>(ys.StrikeYield->Yield) == Approx(0.055).epsilon(1e-6));
+    REQUIRE(ys.StrikeYield->Compounding);
+    CHECK(*ys.StrikeYield->Compounding == ores::ore::domain::compounding::SimpleThenCompounded);
+
+    const std::string bare_xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Bare_Strike">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+      </OptionData>
+      <StrikeData>
+        <Value>98.75</Value>
+        <Currency>GBP</Currency>
+      </StrikeData>
+      <BondData>
+        <SecurityId>ISIN:IE00BH3SQ895</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto b = map_inline(bare_xml);
+    REQUIRE(b.strike_data);
+    CHECK_FALSE(b.strike_data->price_value);
+    CHECK_FALSE(b.strike_data->yield_value);
+    REQUIRE(b.strike_data->bare_value);
+    CHECK(*b.strike_data->bare_value == Approx(98.75));
+    CHECK(b.strike_data->bare_currency == "GBP");
+
+    const auto b_rt = bond_instrument_mapper::reverse_bond_option(b);
+    REQUIRE(b_rt.BondOptionData);
+    REQUIRE(b_rt.BondOptionData->strikeGroup.StrikeData);
+    const auto& bs = *b_rt.BondOptionData->strikeGroup.StrikeData;
+    CHECK_FALSE(bs.StrikePrice);
+    CHECK_FALSE(bs.StrikeYield);
+    REQUIRE(bs.Value);
+    CHECK(static_cast<double>(*bs.Value) == Approx(98.75));
+    REQUIRE(bs.Currency);
+    CHECK(std::string(*bs.Currency) == "GBP");
+
+    BOOST_LOG_SEV(lg, info) << "All three strike spellings mapped whole.";
+}
+
+TEST_CASE("an_ascot_carries_the_option_block", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The corpus states the option terms on an Ascot as it does on a
+    // BondOption, and the ascot row carries only the option type, so the
+    // same block serves both products.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Ascot">
+    <TradeType>Ascot</TradeType>
+    <AscotData>
+      <ConvertibleBondData>
+        <BondData>
+          <SecurityId>ISIN:DE000A3H2WP2</SecurityId>
+        </BondData>
+      </ConvertibleBondData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <Style>American</Style>
+        <Settlement>Physical</Settlement>
+        <ExerciseDates>
+          <ExerciseDate>2030-10-08</ExerciseDate>
+        </ExerciseDates>
+        <Premiums>
+          <Premium>
+            <Amount>166000</Amount>
+            <Currency>EUR</Currency>
+            <PayDate>2021-10-10</PayDate>
+          </Premium>
+        </Premiums>
+      </OptionData>
+      <ReferenceSwapData>
+        <LegData>
+          <LegType>Floating</LegType>
+          <Payer>false</Payer>
+          <Currency>EUR</Currency>
+        </LegData>
+      </ReferenceSwapData>
+    </AscotData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    REQUIRE(r.option_data);
+    CHECK(r.option_data->long_short == "Long");
+    CHECK(r.option_data->option_type == "Call");
+    CHECK(r.option_data->style == "American");
+    CHECK(r.option_data->settlement == "Physical");
+    REQUIRE(r.option_data->premiums.size() == 1);
+    CHECK(r.option_data->premiums.front().amount == Approx(166000.0));
+    CHECK(r.option_data->premiums.front().currency == "EUR");
+    CHECK(r.option_data->premiums.front().pay_date == "2021-10-10");
+    CHECK(r.option_exercise_dates == std::vector<std::string>{"2030-10-08"});
+
+    const auto rt = bond_instrument_mapper::reverse_ascot(r);
+    REQUIRE(rt.AscotData);
+    const auto& ro = rt.AscotData->OptionData;
+    CHECK(std::string(ro.LongShort) == "Long");
+    REQUIRE(ro.OptionType);
+    CHECK(std::string(*ro.OptionType) == "Call");
+    REQUIRE(ro.Style);
+    CHECK(std::string(*ro.Style) == "American");
+    REQUIRE(ro.Settlement);
+    CHECK(*ro.Settlement == ores::ore::domain::settlementType::Physical);
+    REQUIRE(ro.Premiums);
+    REQUIRE(ro.Premiums->Premium.size() == 1);
+    CHECK(static_cast<double>(ro.Premiums->Premium.front().Amount) == Approx(166000.0));
+    CHECK(std::string(ro.Premiums->Premium.front().Currency) == "EUR");
+    CHECK(std::string(ro.Premiums->Premium.front().PayDate) == "2021-10-10");
+
+    BOOST_LOG_SEV(lg, info) << "Ascot option block mapped whole.";
+}
+
+TEST_CASE("the_option_exercise_schedule_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The group is a choice: a date list, which the member beside this
+    // one holds, or a schedule, which this one does.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Option_Schedule">
+    <TradeType>BondOption</TradeType>
+    <BondOptionData>
+      <OptionData>
+        <LongShort>Long</LongShort>
+        <OptionType>Call</OptionType>
+        <ExerciseSchedule>
+          <Rules>
+            <StartDate>2026-01-01</StartDate>
+            <EndDate>2028-01-01</EndDate>
+            <Tenor>1Y</Tenor>
+            <Calendar>TARGET</Calendar>
+            <Convention>MF</Convention>
+          </Rules>
+        </ExerciseSchedule>
+      </OptionData>
+      <Strike>102.5</Strike>
+      <BondData>
+        <SecurityId>ISIN:US912828X703</SecurityId>
+      </BondData>
+    </BondOptionData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    CHECK(r.option_exercise_dates.empty());
+    REQUIRE(r.option_exercise_schedule);
+    REQUIRE(r.option_exercise_schedule->rules.size() == 1);
+    CHECK(r.option_exercise_schedule->rules.front().start_date == "2026-01-01");
+    CHECK(r.option_exercise_schedule->rules.front().end_date == "2028-01-01");
+    CHECK(r.option_exercise_schedule->rules.front().tenor == "1Y");
+    CHECK(r.option_exercise_schedule->rules.front().calendar == "TARGET");
+    CHECK(r.option_exercise_schedule->rules.front().convention == "MF");
+
+    const auto rt = bond_instrument_mapper::reverse_bond_option(r);
+    REQUIRE(rt.BondOptionData);
+    REQUIRE(rt.BondOptionData->OptionData.exerciseDatesGroup);
+    const auto& group = *rt.BondOptionData->OptionData.exerciseDatesGroup;
+    CHECK_FALSE(group.ExerciseDates);
+    REQUIRE(group.ExerciseSchedule);
+    REQUIRE(group.ExerciseSchedule->Rules.size() == 1);
+    CHECK(std::string(group.ExerciseSchedule->Rules.front().StartDate) == "2026-01-01");
+    CHECK(std::string(*group.ExerciseSchedule->Rules.front().EndDate) == "2028-01-01");
+    CHECK(std::string(group.ExerciseSchedule->Rules.front().Tenor) == "1Y");
+
+    BOOST_LOG_SEV(lg, info) << "BondOption exercise schedule mapped whole.";
+}
+
+TEST_CASE("a_number_below_the_sixth_decimal_keeps_its_value", tags) {
+    auto lg(make_logger(test_suite));
+
+    // std::to_string writes six fixed decimals, so it turns this value
+    // into "0.000000" and the number is gone. The writer states the
+    // shortest text that reads back as the same value.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Future_Tiny_Notional">
+    <TradeType>BondFuture</TradeType>
+    <BondFutureData>
+      <ContractName>RX-2026-03</ContractName>
+      <ContractNotional>0.0000001</ContractNotional>
+      <LongShort>Long</LongShort>
+    </BondFutureData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    REQUIRE(r.future);
+    CHECK(r.future->contract_notional == Approx(1e-7));
+
+    const auto rt = bond_instrument_mapper::reverse_bond_future(r);
+    REQUIRE(rt.BondFutureData);
+    const std::string text(rt.BondFutureData->ContractNotional);
+    CHECK(text != "0.000000");
+    CHECK(std::stod(text) == Approx(1e-7));
+
+    BOOST_LOG_SEV(lg, info) << "Small number written as " << text;
+}
+
+// =============================================================================
+// The issue's child rows
+// =============================================================================
+
+TEST_CASE("callable_bond_call_dates_become_rows", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Credit_CallableBond.xml states no CallData, so the call schedule is
+    // authored after the reference-data document that carries one.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Callable">
+    <TradeType>CallableBond</TradeType>
+    <CallableBondData>
+      <BondData>
+        <SecurityId>ISIN:XS9988776655</SecurityId>
+      </BondData>
+      <CallData>
+        <ScheduleData>
+          <Dates>
+            <Calendar/>
+            <Tenor/>
+            <Dates>
+              <Date>2024-05-01</Date>
+              <Date>2027-04-01</Date>
+            </Dates>
+          </Dates>
+        </ScheduleData>
+        <Styles>
+          <Style>American</Style>
+        </Styles>
+        <Prices>
+          <Price>1</Price>
+        </Prices>
+        <PriceTypes>
+          <PriceType>Clean</PriceType>
+        </PriceTypes>
+        <IncludeAccruals>
+          <IncludeAccrual>true</IncludeAccrual>
+        </IncludeAccruals>
+      </CallData>
+    </CallableBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    CHECK(r.instrument.identity.trade_type_code == "CallableBond");
+    REQUIRE(r.call_dates.size() == 2);
+    CHECK(r.call_dates[0].sequence_number == 1);
+    CHECK(r.call_dates[0].call_date == "2024-05-01");
+    CHECK(r.call_dates[1].sequence_number == 2);
+    CHECK(r.call_dates[1].call_date == "2027-04-01");
+    CHECK(r.call_dates[0].issue_id == r.issue.issue_id);
+    CHECK(r.call_dates[1].issue_id == r.issue.issue_id);
+    CHECK(r.call_dates[0].modified_by == "ores");
+    CHECK(r.call_dates[0].change_reason_code == "system.external_data_import");
+
+    const auto rt = bond_instrument_mapper::reverse_callable_bond(r);
+    REQUIRE(rt.CallableBondData);
+    REQUIRE(rt.CallableBondData->CallData);
+    const auto& blocks = rt.CallableBondData->CallData->ScheduleData.Dates;
+    REQUIRE(blocks.size() == 1);
+    REQUIRE(blocks.front().Dates.Date.size() == 2);
+    CHECK(std::string(blocks.front().Dates.Date[0]) == "2024-05-01");
+    CHECK(std::string(blocks.front().Dates.Date[1]) == "2027-04-01");
+
+    BOOST_LOG_SEV(lg, info) << "Callable bond call dates mapped to issue child rows.";
+}
+
+TEST_CASE("convertible_conversion_ratios_become_rows", tags) {
+    auto lg(make_logger(test_suite));
+
+    // Cash_ConvertibleBond.xml states no ConversionData, so the ratio
+    // list is authored after the reference-data document that carries one.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Convertible">
+    <TradeType>ConvertibleBond</TradeType>
+    <ConvertibleBondData>
+      <BondData>
+        <SecurityId>ISIN:US531229AR32</SecurityId>
+      </BondData>
+      <ConversionData>
+        <ConversionRatios>
+          <ConversionRatio>0.0188796</ConversionRatio>
+          <ConversionRatio>0.5</ConversionRatio>
+        </ConversionRatios>
+        <Underlying>
+          <Type>Equity</Type>
+          <Name>RIC:ON.O</Name>
+        </Underlying>
+      </ConversionData>
+    </ConvertibleBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+
+    CHECK(r.instrument.identity.trade_type_code == "ConvertibleBond");
+    REQUIRE(r.conversion_targets.size() == 2);
+    CHECK(r.conversion_targets[0].sequence_number == 1);
+    CHECK(r.conversion_targets[0].underlying_id == "RIC:ON.O");
+    CHECK(r.conversion_targets[0].conversion_ratio == Approx(0.0188796).epsilon(0.0001));
+    CHECK(r.conversion_targets[1].sequence_number == 2);
+    CHECK(r.conversion_targets[1].underlying_id == "RIC:ON.O");
+    CHECK(r.conversion_targets[1].conversion_ratio == Approx(0.5));
+    CHECK(r.conversion_targets[0].issue_id == r.issue.issue_id);
+    CHECK(r.conversion_targets[0].performed_by == "ores");
+
+    const auto rt = bond_instrument_mapper::reverse_convertible_bond(r);
+    REQUIRE(rt.ConvertibleBondData);
+    REQUIRE(rt.ConvertibleBondData->ConversionData);
+    REQUIRE(rt.ConvertibleBondData->ConversionData->ConversionRatios);
+    const auto& ratios = rt.ConvertibleBondData->ConversionData->ConversionRatios->ConversionRatio;
+    REQUIRE(ratios.size() == 2);
+    CHECK(static_cast<double>(ratios[0]) == Approx(0.0188796).epsilon(0.0001));
+    CHECK(static_cast<double>(ratios[1]) == Approx(0.5));
+    REQUIRE(rt.ConvertibleBondData->ConversionData->Underlying);
+    CHECK(std::string(rt.ConvertibleBondData->ConversionData->Underlying->Name) == "RIC:ON.O");
+
+    BOOST_LOG_SEV(lg, info) << "Convertible conversion ratios mapped to issue child rows.";
+}
+
+// =============================================================================
+// The bond members the issue row holds
+// =============================================================================
+
+TEST_CASE("a_bonds_calendar_curves_and_notional_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The corpus states all four on every bond. They land on the issue
+    // row, which is what the database path persists and rebuilds them
+    // from.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Bond_Level_Residue">
+    <TradeType>Bond</TradeType>
+    <BondData>
+      <SecurityId>ISIN:XS1234567890</SecurityId>
+      <ReferenceCurveId>BENCHMARK_EUR</ReferenceCurveId>
+      <CreditCurveId>CRV_EUR_ISSUER</CreditCurveId>
+      <Calendar>TARGET</Calendar>
+      <BondNotional>8000000</BondNotional>
+    </BondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.issue.calendar);
+    CHECK(*r.issue.calendar == "TARGET");
+    REQUIRE(r.issue.credit_curve_id);
+    CHECK(*r.issue.credit_curve_id == "CRV_EUR_ISSUER");
+    REQUIRE(r.issue.reference_curve_id);
+    CHECK(*r.issue.reference_curve_id == "BENCHMARK_EUR");
+    REQUIRE(r.issue.bond_notional);
+    CHECK(*r.issue.bond_notional == "8000000");
+    CHECK(!r.issue.income_curve_id);
+
+    const auto rt = bond_instrument_mapper::reverse_bond(r);
+    REQUIRE(rt.BondData);
+    REQUIRE(rt.BondData->Calendar);
+    CHECK(std::string(*rt.BondData->Calendar) == "TARGET");
+    REQUIRE(rt.BondData->CreditCurveId);
+    CHECK(std::string(*rt.BondData->CreditCurveId) == "CRV_EUR_ISSUER");
+    REQUIRE(rt.BondData->ReferenceCurveId);
+    CHECK(std::string(*rt.BondData->ReferenceCurveId) == "BENCHMARK_EUR");
+    REQUIRE(rt.BondData->BondNotional);
+    CHECK(std::string(*rt.BondData->BondNotional) == "8000000");
+    CHECK(!rt.BondData->IncomeCurveId);
+
+    BOOST_LOG_SEV(lg, info) << "Bond calendar, curve identifiers and notional survived.";
+}
+
+TEST_CASE("a_forward_bonds_income_curve_survives_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // IncomeCurveId is the one of the four that only a ForwardBond
+    // states, and the forward arm builds its own bondData.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Forward_Bond_Income_Curve">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:XS1234567890</SecurityId>
+        <IncomeCurveId>EUR-EURIBOR-6M</IncomeCurveId>
+        <Calendar>TARGET</Calendar>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>2025-12-20</ForwardMaturityDate>
+      </SettlementData>
+      <LongInForward>true</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.issue.income_curve_id);
+    CHECK(*r.issue.income_curve_id == "EUR-EURIBOR-6M");
+    REQUIRE(r.issue.calendar);
+    CHECK(*r.issue.calendar == "TARGET");
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    REQUIRE(rt.ForwardBondData->BondData.IncomeCurveId);
+    CHECK(std::string(*rt.ForwardBondData->BondData.IncomeCurveId) == "EUR-EURIBOR-6M");
+    REQUIRE(rt.ForwardBondData->BondData.Calendar);
+    CHECK(std::string(*rt.ForwardBondData->BondData.Calendar) == "TARGET");
+
+    BOOST_LOG_SEV(lg, info) << "Forward bond income curve survived.";
+}
+
+// =============================================================================
+// The per-product residue no row holds
+// =============================================================================
+
+TEST_CASE("a_forward_bonds_settlement_premium_and_flag_survive_the_round_trip", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The schema declares the flag, the settlement block and its maturity
+    // date required, so a forward bond always states them, and no row of
+    // the nine tables holds any of the three. The corpus spells the flag
+    // and the settlement dirty flag as text.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Forward_Bond_Settlement">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:XS1234567890</SecurityId>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>2025-12-20</ForwardMaturityDate>
+        <ForwardSettlementDate>2025-12-24</ForwardSettlementDate>
+        <Settlement>Cash</Settlement>
+        <Amount>1000000</Amount>
+        <LockRate>0.025</LockRate>
+        <dv01>123.45</dv01>
+        <LockRateDayCounter>A360</LockRateDayCounter>
+        <SettlementDirty>true</SettlementDirty>
+      </SettlementData>
+      <PremiumData>
+        <Amount>2500</Amount>
+        <Date>2025-01-15</Date>
+      </PremiumData>
+      <LongInForward>true</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    REQUIRE(r.forward_long_in_forward);
+    CHECK(*r.forward_long_in_forward == "true");
+    REQUIRE(r.forward_settlement);
+    CHECK(r.forward_settlement->forward_maturity_date == "2025-12-20");
+    REQUIRE(r.forward_settlement->forward_settlement_date);
+    CHECK(*r.forward_settlement->forward_settlement_date == "2025-12-24");
+    REQUIRE(r.forward_settlement->settlement);
+    CHECK(*r.forward_settlement->settlement == "Cash");
+    REQUIRE(r.forward_settlement->amount);
+    CHECK(*r.forward_settlement->amount == Approx(1000000.0));
+    REQUIRE(r.forward_settlement->lock_rate);
+    CHECK(*r.forward_settlement->lock_rate == Approx(0.025));
+    REQUIRE(r.forward_settlement->dv01);
+    CHECK(*r.forward_settlement->dv01 == Approx(123.45));
+    REQUIRE(r.forward_settlement->lock_rate_day_counter);
+    CHECK(*r.forward_settlement->lock_rate_day_counter == "A360");
+    REQUIRE(r.forward_settlement->settlement_dirty);
+    CHECK(*r.forward_settlement->settlement_dirty == "true");
+    REQUIRE(r.forward_premium);
+    CHECK(r.forward_premium->amount == "2500");
+    CHECK(r.forward_premium->date == "2025-01-15");
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    CHECK(std::string(rt.ForwardBondData->LongInForward) == "true");
+    CHECK(std::string(rt.ForwardBondData->SettlementData.ForwardMaturityDate) == "2025-12-20");
+    REQUIRE(rt.ForwardBondData->SettlementData.ForwardSettlementDate);
+    CHECK(std::string(*rt.ForwardBondData->SettlementData.ForwardSettlementDate) == "2025-12-24");
+    REQUIRE(rt.ForwardBondData->SettlementData.Amount);
+    CHECK(*rt.ForwardBondData->SettlementData.Amount == Approx(1000000.0f));
+    REQUIRE(rt.ForwardBondData->SettlementData.SettlementDirty);
+    CHECK(std::string(*rt.ForwardBondData->SettlementData.SettlementDirty) == "true");
+    REQUIRE(rt.ForwardBondData->PremiumData);
+    CHECK(std::string(rt.ForwardBondData->PremiumData->Amount) == "2500");
+    CHECK(std::string(rt.ForwardBondData->PremiumData->Date) == "2025-01-15");
+
+    BOOST_LOG_SEV(lg, info) << "Forward bond settlement, premium and flag survived.";
+}
+
+TEST_CASE("a_forward_bond_without_a_premium_omits_the_element", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The premium is the one optional member of the three, so a document
+    // that omits it must come back without it.
+    const std::string xml = R"(
+<Portfolio>
+  <Trade id="Forward_Bond_No_Premium">
+    <TradeType>ForwardBond</TradeType>
+    <ForwardBondData>
+      <BondData>
+        <SecurityId>ISIN:XS1234567890</SecurityId>
+      </BondData>
+      <SettlementData>
+        <ForwardMaturityDate>2025-12-20</ForwardMaturityDate>
+      </SettlementData>
+      <LongInForward>false</LongInForward>
+    </ForwardBondData>
+  </Trade>
+</Portfolio>
+)";
+    const auto r = map_inline(xml);
+    CHECK(!r.forward_premium);
+    REQUIRE(r.forward_settlement);
+    CHECK(!r.forward_settlement->settlement);
+    CHECK(!r.forward_settlement->forward_settlement_date);
+
+    const auto rt = bond_instrument_mapper::reverse_forward_bond(r);
+    REQUIRE(rt.ForwardBondData);
+    CHECK(!rt.ForwardBondData->PremiumData);
+
+    BOOST_LOG_SEV(lg, info) << "Forward bond without a premium came back without one.";
+}
+
+// =============================================================================
+// Product coverage
+// =============================================================================
+
+TEST_CASE("bond_product_coverage_names_every_code", tags) {
+    auto lg(make_logger(test_suite));
+
+    // The ten bond codes of the deliverable's coverage findings. Nine
+    // have an import arm, and the example tree states each of them but
+    // for BondFuture, which the mapper suite authors. BondPosition is the
+    // recorded exception: no document states it on its own, because ORE
+    // carries it as a sub-trade of another type.
+    const std::vector<std::pair<oreTradeType, std::string>> covered = {
+        {oreTradeType::Bond, "Bond"},
+        {oreTradeType::ForwardBond, "ForwardBond"},
+        {oreTradeType::BondFuture, "BondFuture"},
+        {oreTradeType::BondOption, "BondOption"},
+        {oreTradeType::BondTRS, "BondTRS"},
+        {oreTradeType::BondRepo, "BondRepo"},
+        {oreTradeType::CallableBond, "CallableBond"},
+        {oreTradeType::ConvertibleBond, "ConvertibleBond"},
+        {oreTradeType::Ascot, "Ascot"}};
+
+    for (const auto& [code, name] : covered) {
+        ores::ore::domain::trade t;
+        t.TradeType = code;
+        const auto r = trade_mapper::map_bond_instrument(t);
+        INFO("Bond code: " << name);
+        REQUIRE(r.has_value());
+        CHECK(r->instrument.identity.trade_type_code == name);
+    }
+
+    ores::ore::domain::trade position;
+    position.TradeType = oreTradeType::BondPosition;
+    CHECK(!trade_mapper::map_bond_instrument(position).has_value());
+
+    BOOST_LOG_SEV(lg, info) << "Bond product coverage covers nine of the ten codes.";
+}

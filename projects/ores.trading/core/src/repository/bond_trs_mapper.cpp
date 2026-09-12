@@ -39,6 +39,9 @@ domain::bond_trs bond_trs_mapper::map(const bond_trs_entity& v) {
     r.funding_leg_type = v.funding_leg_type;
     r.funding_rate = v.funding_rate.value_or(0);
     r.funding_index = v.funding_index.value_or("");
+    r.payer = v.payer;
+    r.price_type = v.price_type;
+    r.initial_price = v.initial_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;
@@ -60,6 +63,9 @@ bond_trs_entity bond_trs_mapper::map(const domain::bond_trs& v) {
     r.funding_leg_type = v.funding_leg_type;
     r.funding_rate = v.funding_rate == 0 ? std::nullopt : std::optional(v.funding_rate);
     r.funding_index = v.funding_index.empty() ? std::nullopt : std::optional(v.funding_index);
+    r.payer = v.payer;
+    r.price_type = v.price_type;
+    r.initial_price = v.initial_price;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

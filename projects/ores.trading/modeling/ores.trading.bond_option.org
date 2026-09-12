@@ -14,12 +14,20 @@
 #+updated: 2026-09-09
 
 One row per bond option trade, keyed by the instrument row it
-extends. The column set is final: the ER row names option_type and
-option_strike, which map from =optionData= and the =strikeGroup= of
-=bondOptionData= (instruments.xsd lines 2273-2282). The exercise
-dates have no destination in the nine tables; they land as schedule
-rows in the shared instrument-keyed schedule tables of the parent
-story (recorded scope limit, task D7943D7E wave 1.3).
+extends. The ER row names option_type and option_strike, which map
+from =optionData= and the =strikeGroup= of =bondOptionData=
+(instruments.xsd lines 2273-2282).
+
+Three members of =bondOptionData= sit beside its option block rather
+than inside it: the redemption code, the price type and the knock-out
+flag. The shared option element states none of them, so an Ascot never
+writes them and no other table can hold them. They ride here, on the
+one row that is a bond option.
+
+The rest of the block lands elsewhere. The option element's own
+members go to =instrument_option= and its keyed children, and the
+exercise dates land as schedule rows in the shared instrument-keyed
+schedule tables, under the owner role =option=.
 
 * Flags
 :PROPERTIES:
@@ -71,6 +79,39 @@ Strike price of the option. Non-negative.
 2800.0
 #+end_src
 
+** redemption
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The redemption code the document states.
+
+** price_type
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The price type the document states.
+
+** knocks_out
+:PROPERTIES:
+:type:     text
+:cpp_type: std::optional<std::string>
+:nullable: true
+:END:
+
+The document's spelling of the knock-out flag.
+
+The schema types this member as its own bool, which enumerates
+thirteen spellings including the empty one. The column holds the
+spelling the document chose rather than a decoded boolean, so export
+re-emits the same text. The corpus states =false=, so a decoded column
+would lose the spelling on every document that carries one.
+
 * SQL
 
 ** Flags
@@ -104,6 +145,7 @@ Strike price of the option. Non-negative.
 ** Domain includes
 
 #+begin_src cpp :name includes
+#include <optional>
 #include <string>
 #include <boost/uuid/uuid.hpp>
 #+end_src
@@ -115,12 +157,15 @@ Strike price of the option. Non-negative.
 
 ** Table display
 
-| column        | header    |
-|---------------+-----------|
-| option_type   | Type      |
-| option_strike | Strike    |
+| column        | header      |
+|---------------+-------------|
+| option_type   | Type        |
+| option_strike | Strike      |
+| redemption    | Redemption  |
+| price_type    | Price Type  |
+| knocks_out    | Knocks Out  |
 | modified_by   | Modified By |
-| version       | Version   |
+| version       | Version     |
 
 ** Custom repository methods
 

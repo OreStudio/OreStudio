@@ -1,0 +1,210 @@
+:PROPERTIES:
+:ID: FCC206C0-D808-40CC-86E8-14F687B0AB57
+:END:
+#+title: Task: Fix silent instrument loss from untagged variant serialisation
+#+description: reflect-cpp writes a std::variant untagged and reads it back by trying the alternatives in declaration order, so std::monostate -- the first alternative of ores.trading.domain.trade_instrument -- parsed from every payload. Every instrument decoded as monostate and was dropped, on both the NATS wire and the storage blob.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch: feature/rework-bond-ores-mapping
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Make the wire codec name the active alternative of every variant it
+writes, so a variant decodes back to the alternative that was written,
+whatever the order the alternatives are declared in. No instrument may
+be lost in silence.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- The four reflect-cpp calls in =ores.nats::wire_codec= encode and
+  decode with =rfl::AddTagsToVariants=, for both json and msgpack.
+- The one direct reflect-cpp call on the trading storage path writes
+  with the same processor.
+- A unit case round-trips a variant whose first alternative is
+  =std::monostate=, in both formats, and checks the index of each
+  alternative rather than only that decoding succeeded.
+- The full round trip test reads zero lost pairs under the bond
+  products and the trade envelope.
+
+* Plan
+
+=ores.trading.domain.trade_instrument= is a =std::variant= that lists
+=std::monostate= first. reflect-cpp 0.25.0 wrote every variant untagged,
+naming no alternative, and read a variant back by trying the
+alternatives in declaration order and taking the first that parsed.
+=std::monostate= parses from any payload, so it always won, and every
+instrument decoded as monostate.
+
+The fix is one processor applied at every reflect-cpp call site that
+carries a variant: the four in =wire_codec=, plus the storage blob in
+=trade_handler.hpp=, which is written directly and does not go through
+the codec. Measured with a standalone reflect-cpp probe before touching
+the tree, then by the full round trip.
+
+* Notes
+
+- The defect was silent in two stages. The decode produced a monostate
+  instrument, and the exporter logged =Skipping unmapped trade= at
+  =debug=, which the service never prints. A 653-byte export with no
+  product block was the only visible sign.
+- Sweep of the tree for other bypasses: exactly one direct msgpack
+  write exists (=market_series_handler.hpp=), and =market_series= has
+  no variant members. Three direct json message handlers read payloads
+  outside the codec, and all three message types are flat. The codec is
+  the only variant-carrying path today.
+- The generated =api/src/domain/*_json_io.cpp= helpers still call bare
+  =rfl::json::write=. They are logging helpers and carry no variant
+  today, but they would degrade a variant the same way if one were ever
+  added.
+- No test anywhere round-tripped a protocol type through the codec.
+  That gap is why a codec-level defect reached a live round trip.
+- The tag changes the wire shape, so the two directions are not
+  symmetric across versions. Measured with a standalone probe:
+  an untagged blob read by this code fails loudly (=Could not parse
+  rfl::Variant, could not match field named 'currency'=), which is a
+  visible failure and not a loss. A tagged blob read by the old code
+  still decodes as =monostate= in silence. A deployment that mixes
+  versions across the change loses data on the new-to-old direction, so
+  the services must be restarted together. Blobs already in storage
+  from before the change must be re-imported.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=reflect-cpp 0.25.0 writes a std::variant untagged=, and reads it back
+by trying the alternatives in declaration order. =std::monostate= is the
+first alternative of =ores.trading.domain.trade_instrument= and parses
+from any payload, so every instrument decoded as monostate and was
+dropped, on both the NATS wire and the storage blob. The exporter then
+logged =Skipping unmapped trade= at debug and emitted a =Trade= element
+with no product block.
+
+The tagged fix this task delivered was reverted. It does not build on
+macOS or Windows. =rfl::AddTagsToVariants= makes reflect-cpp build an
+=rfl::Literal= over the union of every field name reachable through the
+variant, 502 of them for =trade_instrument=. Reproduced locally at
+=-fbracket-depth=256=: =fatal error: instantiating fold expression with
+502 arguments exceeded expression nesting limit of 256=. AppleClang
+applies that limit by default and the tree's =-fbracket-depth=1024= is
+scoped to =$<CXX_COMPILER_ID:Clang>=, which AppleClang does not match.
+MSVC fails separately in =rfl/internal/no_duplicate_field_names.hpp=
+with C1202, which no flag addresses. Tagging also broke
+=ores.qt.headless.tests=: that parser decodes one concrete leaf per
+=(product_type, trade_type)= pair and does not accept the tag.
+
+The replacement names the alternative without a tag, in
+=ores.trading.api= rather than in the codec: =trade_export_item= carries
+an =instrument_payload { std::string type; std::string body; }=, where
+=type= is the leaf's name and =body= is that leaf encoded as JSON text.
+No =std::variant= reaches the wire, so no alternative can be lost to
+declaration order, and no fold over the variant's whole field-name set
+is ever instantiated. The encode and decode pair is hand-written in
+=instrument_payload.cpp= and covers all 30 leaves.
+
+Verification of the reverted approach, which this record keeps because
+the measurements stand:
+
+1. A standalone reflect-cpp probe reproduced the loss and then the fix
+   before the tree was touched.
+2. =ores.nats.tests= carries a case that round-trips a variant whose
+   first alternative is =std::monostate=, in json and msgpack, asserting
+   the index of each alternative.
+3. Two live full round trips, each on a fresh database with its own
+   provisioning, both reading zero lost and zero unexplained.
+
+| Document | Request id | Export | In scope | Worst relative error |
+|----------+------------+--------+----------+----------------------|
+| =Cash_BondRepo_and_Bond.xml= | =a4f3433a-521b-40b2-ae25-279af93fcad2= | 1775 bytes | lost 0, unexplained 0 | 2.247e-8 |
+| =BondOption_StrikePrice_StrikeYield.xml= | =1b016671-221d-4aaa-96b1-c333535f2bcb= | 2169 bytes | lost 0, unexplained 0 | 5.455e-9 |
+
+Both runs classified =Documents: 1  Failures: 0  Skipped: 0=, with
+out-of-scope losses also at zero. The first document had previously
+exported 653 bytes with no product block and 27 lost pairs in scope.
+
+The only remaining differences are element order, which the classifier
+is order-blind to, and two numerics collapsing to =xs:float= precision
+(=28371509.989758= to =28371510=, =0.0178= to =0.0177999996=), both
+classified =numeric=.
+
+The second document was chosen to exercise a different product family:
+the option block, the strike group and the exercise dates. Two of two
+clean, so the result is not specific to the BondRepo plus Bond pair.
+
+Those two runs were taken with tagging in the tree, so they verify the
+tagged build and not the payload that replaced it. A live run over the
+payload is owed, and is tracked by the round-trip task on this story.
+
+* Decisions
+
+- Name the alternative on the wire rather than tag the variant. The
+  choice is forced: tagging does not compile on two of the three
+  platforms the project builds on.
+- Put the payload in =ores.trading.api=, not in =wire_codec=. The codec
+  is a transport detail and must stay free of trading types, and the
+  same payload is also written to the storage blob, which never goes
+  through the codec.
+- Encode the body with =rfl::json= directly, not through the codec. The
+  payload then works under both the json and the msgpack outer formats
+  and needs no nats dependency in =ores.trading.api=.
+- Leave =get_trade_instrument_response.instrument= as a variant. Its
+  only consumer decodes one concrete leaf per =product_type=, and the
+  change would force a Qt parser rewrite and re-expose MSVC C1202.
+  Recorded as debt.
+
+* Notes
+
+- The generated =api/src/domain/*_json_io.cpp= helpers still call bare
+  =rfl::json::write=. They are logging helpers and carry no variant
+  today, but they would degrade a variant the same way if one were ever
+  added.
+- No test anywhere round-tripped a protocol type through the codec
+  before this work. That gap is why a codec-level defect reached a live
+  round trip. The codec case added here closes it for the export path.
+- =projects/ores.trading/api/src/CMakeLists.txt= still carries the
+  =-fbracket-depth=1024= and =/constexpr:depth100000= flags and a
+  comment naming =rfl::AddTagsToVariants=. The comment is now stale and
+  whether the flags are still needed is unmeasured.

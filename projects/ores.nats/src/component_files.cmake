@@ -53,4 +53,5 @@ set(HEADERS
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/retry.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/session_expired_error.hpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/subscription.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../include/ores.nats/service/timeouts.hpp"
 )

@@ -50,6 +50,32 @@ def test_a_longer_identifier_is_not_a_match():
     assert _headers_for_types(["cron_expression_list"]) == []
 
 
+def test_a_colliding_earlier_column_does_not_hide_a_later_real_one():
+    """The first occurrence of a name is not the only one that counts.
+
+    Scanning one joined string and boundary-checking only its leftmost
+    hit dropped the header here: asset_class_id comes first, fails the
+    check, and the genuine asset_class column after it was never seen.
+    """
+    headers = _headers_for_types(["domain::asset_class_id",
+                                  "domain::asset_class"])
+    assert headers == ['"ores.marketdata.api/domain/asset_class.hpp"']
+
+
+def test_a_different_namespace_is_a_different_type():
+    """A preceding :: is a boundary, or one component's type resolves to
+    another's header without the one-type-one-header check ever seeing
+    the collision."""
+    assert _headers_for_types(["other::ns::product_type"]) == []
+
+
+def test_each_spelling_in_use_has_its_own_row():
+    trading = '"ores.trading.api/domain/product_type.hpp"'
+    assert _headers_for_types(["domain::product_type"]) == [trading]
+    assert _headers_for_types(
+        ["ores::trading::domain::product_type"]) == [trading]
+
+
 def test_injection_adds_only_what_is_missing():
     includes = {"domain": ["<string>"]}
     _with_registered_headers(includes, [{"cpp_type": "cron_expression"}])

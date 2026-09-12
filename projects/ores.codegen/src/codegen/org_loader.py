@@ -173,23 +173,35 @@ def _load_custom_type_headers() -> tuple[tuple[str, str], ...]:
 def _headers_for_types(cpp_types: list[str]) -> list[str]:
     """Registered headers the given column types need, in registry order.
 
-    Matches wrapped forms too: ``std::optional<cron_expression>`` needs
-    the same header as ``cron_expression``, because the wrapper is not
-    what needs including. Matching on the token rather than on equality
-    is what makes that work, and the delimiters guard against a
-    substring hit inside a longer identifier.
+    Matches a registered name as a whole type name inside each column's
+    declared type, so ``std::optional<cron_expression>`` needs the same
+    header as ``cron_expression`` -- the wrapper is not what needs
+    including.
+
+    Two boundary rules make that safe. A neighbouring identifier
+    character rules the occurrence out, so ``asset_class_id`` is not a
+    use of ``asset_class``. A preceding ``::`` rules it out too, so the
+    bare ``domain::product_type`` does not match inside
+    ``ores::trading::domain::product_type``: a name qualified by a
+    different namespace is a different type, and matching it here would
+    resolve it to another component's header without the registry's
+    one-type-one-header check ever seeing the collision. Each spelling
+    in use therefore earns its own row.
+
+    Every column is searched, and every occurrence within it. An
+    earlier column that merely contains a registered name must not hide
+    a later column that actually declares it.
     """
-    joined = " ".join(cpp_types)
+    pattern_cache = [
+        (header, re.compile(
+            r"(?<![A-Za-z0-9_:])" + re.escape(name) + r"(?![A-Za-z0-9_])"))
+        for name, header in _load_custom_type_headers()
+    ]
     out: list[str] = []
-    for name, header in _load_custom_type_headers():
-        if name not in joined:
+    for header, pattern in pattern_cache:
+        if header in out:
             continue
-        before = joined[joined.index(name) - 1] if joined.index(name) else " "
-        after_at = joined.index(name) + len(name)
-        after = joined[after_at] if after_at < len(joined) else " "
-        if before.isalnum() or before == "_" or after.isalnum() or after == "_":
-            continue
-        if header not in out:
+        if any(pattern.search(t) for t in cpp_types):
             out.append(header)
     return out
 

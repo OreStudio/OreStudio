@@ -83,7 +83,12 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The matching rule tests only the leftmost occurrence, so a column containing a registered name inside a longer identifier hides a later column that genuinely declares it | org_loader.py | Accept | A real bug. Each column is now searched separately and every occurrence within it, which removes the failure by construction rather than patching the index arithmetic. Regression test added with the reviewer's exact case |
+| 2 | My own test could not have caught it: it only ever put one type in the list, so the hidden-later-occurrence path was untested | test_custom_type_headers.py | Accept | The more useful half of the finding. The test proved the rule on cases I had already thought of |
+| 3 | =::= is not a boundary, so a bare =domain::product_type= matches inside any longer namespace ending the same way, and such a collision is invisible to the one-type-one-header check | org_loader.py | Accept | Fixed rather than documented. A preceding =::= now rules the occurrence out, so a name qualified by another namespace is a different type. That also makes the =ores::trading::domain::product_type= row load-bearing instead of redundant |
+| 4 | The delete-the-include experiment is a valid proof that the registry supplies a missing header, and does not happen to exercise the matching bug | — | Accept | No change. Worth recording that the two findings sit on different axes: the experiment proves the mechanism acts, and says nothing about which names it matches |
+| 5 | Ambiguity as a hard error is a reasonable trade against per-component scoping | — | Accept | No change |
+| 6 | The audit-ordering change reads consistently across both documents | — | Accept | No change |
 
 * Result
 
@@ -106,9 +111,19 @@ model and regenerating =marketdata= left the generated header
 unchanged and still including it — the registry supplied what the
 model stopped declaring, which the byte-identical run cannot show.
 
-Nine tests cover it. One earned its place on the first run: checking
+Twelve tests cover it. One earned its place on the first run: checking
 that every registered header exists on disk caught that a simple
 component nests one level shallower than a part of a composite.
+
+Review found a real bug in the matching rule and a second, subtler
+one. The rule tested only the leftmost occurrence of a registered
+name across an entity's types joined into one string, so a column
+holding a longer identifier could hide a later column that genuinely
+declared the type. Each column is now searched separately, and every
+occurrence within it. A preceding =::= also counts as a boundary now,
+so a name qualified by another namespace is a different type rather
+than an incidental substring match that would resolve to the wrong
+component's header.
 
 The registry rejects binding one type to two headers. A bare
 =domain::= name is component-relative rather than globally unique, so

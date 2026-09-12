@@ -159,13 +159,6 @@ int count_of(const std::string& text, int fallback) {
     }
 }
 
-// The schema states a boolean as a string in several spellings. This is
-// the same set the generated bool_ enumeration carries.
-bool flag_of(const std::string& text) {
-    return text == "Y" || text == "YES" || text == "TRUE" || text == "True" || text == "true" ||
-           text == "1";
-}
-
 // A generated wrapper derives from the string type it carries, and a
 // std::string does not convert to a derived type, so the reverse
 // direction writes through the base reference.
@@ -1452,35 +1445,15 @@ bond_instrument_data bond_instrument_mapper::forward_bond_future(
     future.contract_name = d.ContractName;
     future.contract_notional = number_of(d.ContractNotional, 0.0);
     future.long_short = d.LongShort;
-    if (d.Currency)
-        future.currency = to_string(*d.Currency);
-    if (d.ContractMonth)
-        future.contract_month = *d.ContractMonth;
-    if (d.DeliverableGrade)
-        future.deliverable_grade = *d.DeliverableGrade;
-    if (d.FairPrice)
-        future.fair_price = number_of(*d.FairPrice, 0.0);
-    if (d.Settlement)
-        future.settlement = *d.Settlement;
-    if (d.SettlementDirty)
-        future.settlement_dirty = flag_of(*d.SettlementDirty);
-    if (d.RootDate)
-        future.root_date = *d.RootDate;
-    if (d.ExpiryBasis)
-        future.expiry_basis = *d.ExpiryBasis;
-    if (d.SettlementBasis)
-        future.settlement_basis = *d.SettlementBasis;
-    if (d.ExpiryLag)
-        future.expiry_lag = count_of(*d.ExpiryLag, 0);
-    if (d.SettlementLag)
-        future.settlement_lag = count_of(*d.SettlementLag, 0);
-    if (d.LastTradingDate)
-        future.last_trading_date = *d.LastTradingDate;
-    if (d.LastDeliveryDate)
-        future.last_delivery_date = *d.LastDeliveryDate;
-    if (d.DeliveryBasket)
-        for (const auto& id : d.DeliveryBasket->Id)
-            result.future_delivery_basket.push_back(id);
+    // v17 moved the contract's own terms out of the trade and into the
+    // BondFutureReferenceData datum keyed by ContractName: currency,
+    // contract month, deliverable grade, settlement and its basis,
+    // expiry basis, the two lags, root date, last trading and delivery
+    // dates, and the delivery basket. They are properties of the
+    // contract rather than of a trade on it, which is why they moved.
+    // Nothing reads them here because the reference data document is
+    // not yet parsed; the fields stay unset rather than being invented
+    // from the trade. FairPrice is not in v17 at all.
     stamp_audit(future);
     result.future = future;
     return result;
@@ -1692,33 +1665,13 @@ trade bond_instrument_mapper::reverse_bond_future(const bond_instrument_data& da
         set_text(d.ContractName, f.contract_name);
         set_text(d.ContractNotional, format_number(f.contract_notional));
         set_text(d.LongShort, f.long_short);
-        if (!f.currency.empty())
-            d.Currency = parse_code(f.currency, currency_code_count, currencyCode::USD);
-        set_optional_text(d.ContractMonth, f.contract_month);
-        set_optional_text(d.DeliverableGrade, f.deliverable_grade);
-        if (f.fair_price != 0.0)
-            set_optional_text(d.FairPrice, format_number(f.fair_price));
-        set_optional_text(d.Settlement, f.settlement);
-        if (f.settlement_dirty)
-            set_optional_text(d.SettlementDirty, "true");
-        set_optional_text(d.RootDate, f.root_date);
-        set_optional_text(d.ExpiryBasis, f.expiry_basis);
-        set_optional_text(d.SettlementBasis, f.settlement_basis);
-        if (f.expiry_lag != 0)
-            set_optional_text(d.ExpiryLag, std::to_string(f.expiry_lag));
-        if (f.settlement_lag != 0)
-            set_optional_text(d.SettlementLag, std::to_string(f.settlement_lag));
-        set_optional_text(d.LastTradingDate, f.last_trading_date);
-        set_optional_text(d.LastDeliveryDate, f.last_delivery_date);
-    }
-    if (!data.future_delivery_basket.empty()) {
-        deliveryBasket basket;
-        for (const auto& id : data.future_delivery_basket) {
-            deliveryBasket_Id_t entry;
-            static_cast<std::string&>(entry) = id;
-            basket.Id.push_back(std::move(entry));
-        }
-        d.DeliveryBasket = std::move(basket);
+        // The contract's own terms belong to the BondFutureReferenceData
+        // datum in v17, not to the trade, so there is nowhere here to
+        // write currency, contract month, deliverable grade, settlement
+        // and its basis, expiry basis, the lags, root date, or the last
+        // trading and delivery dates. Writing them would produce a
+        // document the schema rejects. They are exported once the
+        // reference data document is emitted alongside the portfolio.
     }
     t.BondFutureData = std::move(d);
     return t;

@@ -86,13 +86,23 @@ written.
   no test reference. It predates v17. The coverage test added here fails
   on any such gap from now on, and this file's golden is committed with it.
 - =assets/test_data/domain_roundtrip/= is the second derived artefact of
-  the examples tree, and it is now out of step with it.
-  =scripts/ore_domain_roundtrip_check.py= reports 30 source documents with
-  no round-trip output. Twelve of those are new upstream examples that
-  this sync introduced, so the sync caused them. The other eighteen,
-  including =Products/Example_Trades/Credit_CallableBond.xml=, were
-  already missing before the sync. The check is not run with =--strict= in
-  CI, so none of this fails a build today.
+  the examples tree, and it is now out of step with it. A fresh run of
+  =ores.cli ore roundtrip= against the new examples tree writes 566
+  files; the committed dataset holds 1474. Regenerating would change
+  about 1190 paths: 961 deletions, 53 additions and 177 changes. The
+  deletions are 946 empty =Portfolio= stubs that an older build wrote
+  for every XML it could not parse, plus 15 orphans for
+  =Products/SupportedTrades/=, a directory upstream removed. The
+  additions are the examples this sync introduced. The changes are
+  mostly =conventions.xml= and =curveconfig.xml=.
+- That regeneration is deliberately not part of this task. It would
+  dominate the diff and bury the sync. It also cannot be decided on its
+  own, because =golden_dataset= duplicates this dataset and sprint 17
+  claimed to have deleted it. Tracked by
+  [[id:2E4FFE8F-3804-400F-BCB2-6DAA6987A498][Regenerate or retire the domain round-trip dataset]].
+- =scripts/ore_domain_roundtrip_check.py= is the only consumer, and CI
+  runs it without =--strict= while =assets/**= sits in that workflow's
+  =paths-ignore=. So the staleness fails no build and triggers no run.
 
 - The XSD regeneration broke the build in three places.
   =commodityOptionData= replaced its inline =Strike= element with the

@@ -1,0 +1,88 @@
+:PROPERTIES:
+:ID: 2E4FFE8F-3804-400F-BCB2-6DAA6987A498
+:END:
+#+title: Regenerate or retire the domain round-trip dataset
+#+description: assets/test_data/domain_roundtrip/ is the second derived artefact of external/ore/examples/ and it is badly out of step. A fresh v17 round-trip writes 566 files; the committed dataset holds 1474. Regenerating would delete 961 files: 946 are empty Portfolio stubs that an older build wrote for every XML it could not parse, and 15 are orphans for Products/SupportedTrades/, a directory upstream has since removed. It would add 53 outputs for examples the v17 sync introduced, including Products/Example_Trades/Credit_CallableBond.xml, and change 177 more, mostly conventions.xml and curveconfig.xml where the v17 schema moved. The dataset also duplicates assets/test_data/golden_dataset/, which the sprint_17 story said it had replaced; the retire task is marked DONE but golden_dataset is alive and named by 13 files. Decide which of the two is canonical before regenerating either.
+#+type: capture
+#+level: cross
+#+filetags: :ore:testing:coverage:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Decide whether =assets/test_data/domain_roundtrip/= is the live
+round-trip dataset or a legacy artefact, and then either regenerate it
+from the current examples tree or delete it.
+
+* Why
+
+The dataset is derived from =external/ore/examples/=, and the v17 sync
+moved that tree. The two are now badly out of step. A fresh run of
+
+#+begin_src sh
+ores.cli ore roundtrip external/ore/examples --output-dir <dir>
+#+end_src
+
+writes 566 files. The committed dataset holds 1474. Regenerating would
+change about 1190 paths:
+
+- *961 deletions.* 946 are an empty =Portfolio= element and nothing
+  else. An older build wrote that stub for every XML it could not parse,
+  so these are noise rather than data. The other 15 are outputs for
+  =Products/SupportedTrades/=, a directory upstream has since removed
+  from the examples tree, so their sources no longer exist.
+- *53 additions.* These are the examples the v17 sync introduced, and
+  the check script already reports every one of them as missing. They
+  include =Products/Example_Trades/Credit_CallableBond.xml=.
+- *177 changes.* Mostly =conventions.xml= and =curveconfig.xml=, where
+  the v17 schema moved. 336 of the 513 files the run reproduces are
+  byte-identical, so the change is not a wholesale reformat.
+
+That size is why this is a capture and not a line item on the sync task.
+The regeneration is correct but it would dominate the sync diff and make
+it unreadable.
+
+The second question has to be answered first. Sprint 17 built this
+dataset to replace =assets/test_data/golden_dataset/, and its task
+=task_add_ore_roundtrip_command_and_retire= is marked DONE with the
+closing note "Deletes =ore_coverage_check.py= and the
+=assets/test_data/golden_dataset/= tree". The script did go: there is no
+=scripts/ore_coverage_check.py=. The tree did not: =golden_dataset= is
+still committed, 12 golden round-trip suites read it, and the example
+coverage test added with the v17 sync writes into it. So the repository
+carries two round-trip datasets and a task that says one of them is
+gone.
+
+That matters because the two answer the same question in different
+ways. =golden_dataset= holds one canonical serialization per example and
+is enforced by Catch2 suites, so it fails a build. =domain_roundtrip=
+holds a full mirrored tree and is checked by a Python script that CI
+runs without =--strict=, and =assets/**= is in that workflow's
+=paths-ignore=, so a change to the dataset does not even trigger it.
+Only one of them can gate anything.
+
+* Open question
+
+Which dataset is canonical? If =golden_dataset= is, the answer here is
+to delete =domain_roundtrip= and the check script with it. If
+=domain_roundtrip= is, the answer is to regenerate it, retire
+=golden_dataset=, and re-point the 12 suites and the example coverage
+test at the new tree. Doing neither leaves a dataset that claims to be
+checked but cannot fail.
+
+* References
+
+- =scripts/ore_domain_roundtrip_check.py=, the checker. Run in
+  =.github/workflows/ore_coverage.yml= without =--strict=.
+- =assets/test_data/domain_roundtrip/=, the committed dataset.
+- =assets/test_data/golden_dataset/=, the dataset it was meant to
+  replace.
+- =doc/agile/versions/v0/sprint_17/ore_domain_roundtrip/task_add_ore_roundtrip_command_and_retire.org=,
+  the task marked DONE that claims the deletion.
+
+* See also
+
+- [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]], the sync that measured this.

@@ -129,6 +129,15 @@ constexpr int rounding_type_count = 5;
 constexpr int settlement_method_count = 4;
 constexpr int settlement_type_count = 2;
 
+// The class carries its own logger for its members. The helpers below are
+// free functions, so they reach the same channel through this one.
+inline std::string_view logger_name = "ores.ore.domain.bond_instrument_mapper";
+
+auto& lg() {
+    static auto instance = make_logger(logger_name);
+    return instance;
+}
+
 // The schema states the future's price and lag fields as strings. A
 // value the parser cannot read leaves the column at its default rather
 // than failing the whole import.
@@ -136,6 +145,7 @@ double number_of(const std::string& text, double fallback) {
     try {
         return std::stod(text);
     } catch (const std::exception&) {
+        BOOST_LOG_SEV(lg(), warn) << "Unreadable number '" << text << "', using " << fallback;
         return fallback;
     }
 }
@@ -144,6 +154,7 @@ int count_of(const std::string& text, int fallback) {
     try {
         return std::stoi(text);
     } catch (const std::exception&) {
+        BOOST_LOG_SEV(lg(), warn) << "Unreadable count '" << text << "', using " << fallback;
         return fallback;
     }
 }
@@ -602,6 +613,10 @@ _FormulaBasedLegData_t reverse_formula_leg(const bond_formula_based_leg_data& le
     return result;
 }
 
+// legDataType is a substitution group of eighteen members. Three of them
+// have a container here; a document that states one of the other fifteen
+// leaves the group present with no member set, and the reverse mapper then
+// writes an empty legDataType element.
 bond_leg_rate_data map_rate_group(const legDataType_group_t& g) {
     bond_leg_rate_data result;
     if (g.FixedLegData)

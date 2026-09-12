@@ -29,13 +29,17 @@
 
 /**
  * @file xml_bond_source_fidelity_tests.cpp
- * @brief Fidelity of our writing against the ORE documents we read.
+ * @brief Stability of the round trip over the ORE source documents.
  *
  * The golden suite compares our output to a stored copy of our own
  * output. That catches drift, but it cannot catch a write the reader
- * does not read back the same way. This suite closes the gap over the
- * source documents in external/ore: a document canonicalises to a form
- * that re-reads to itself, so the read and the write lose nothing.
+ * does not read back the same way. This suite closes that gap over the
+ * source documents in external/ore: a canonicalised document re-reads
+ * to itself, so a second pass changes nothing.
+ *
+ * Idempotence is not fidelity. A first parse that already drops a field
+ * still agrees with its second pass, so the field-level check lives in
+ * scripts/ore_mapper_roundtrip_diff.py instead.
  */
 
 namespace {

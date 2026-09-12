@@ -55,6 +55,9 @@ void check_alternative_survives() {
 TEST_CASE("instrument_payload_round_trips_every_alternative", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
+    // A new instrument family must fail the build here, not pass silently
+    // through the list below.
+    static_assert(std::variant_size_v<trade_instrument> == 9);
     check_alternative_survives<0>();
     check_alternative_survives<1>();
     check_alternative_survives<2>();

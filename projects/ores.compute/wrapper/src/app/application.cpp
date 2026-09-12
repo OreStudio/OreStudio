@@ -688,8 +688,8 @@ boost::asio::awaitable<void> application::run(boost::asio::io_context& io_ctx,
         io_ctx,
         nats,
         service_name,
-        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group](
-            auto& n, auto /*verifier*/) {
+        [&nats, &cfg, raw_reporter, &work_subject, &durable_name, &queue_group](auto& n,
+                                                                                auto /*verifier*/) {
             auto sub = n.js_queue_subscribe(
                 work_subject,
                 durable_name,

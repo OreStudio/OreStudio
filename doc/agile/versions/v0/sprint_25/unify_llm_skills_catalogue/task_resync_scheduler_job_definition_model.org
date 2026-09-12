@@ -48,56 +48,103 @@ plan itself stays — it is the historical record of what we did.)
 
 * Notes
 
-** The breaks, measured
+** Columns the model had wrong, now fixed
 
-Three of the five column divergences were the model being wrong, and
-they are fixed:
+=schedule_expression= was =std::string= where the code has
+=cron_expression=. The model now declares only the type and the
+custom-type registry supplies the header, which is that mechanism's
+first real use. =action_type= and =action_payload= carried SQL
+defaults but no C++ member default, so the generated struct dropped
+="execute_sql"= and ="{}"=; both now declare =:default_value:=.
 
-- =schedule_expression= was =std::string= where the code has
-  =cron_expression=. The model now declares the type and nothing
-  else; the custom-type registry supplies the header. The generated
-  domain header is identical to the hand-written line, which is this
-  mechanism's first real use.
-- =action_type= and =action_payload= carried SQL defaults but no
-  C++ member default, so the generated struct lost
-  ="execute_sql"= and ="{}"=. Both now declare =:default_value:=.
+** is_active: one type across the board, and it is bool
 
-Two are not model defects, and neither can be fixed by editing the
-model alone.
+Boolean is the established convention — 42 =boolean= columns against a
+handful of integer-flag outliers, of which =is_active= is one.
 
-=is_active= is =integer= in SQL, =int= in the repository entity, and
-=bool= in the domain struct, with =job_definition_mapper.cpp=
-converting at the boundary. The model can give a column one
-=cpp_type=, so it cannot say "int in storage, bool in the domain".
-Three ways out: align the domain on =int= and change the struct;
-change the SQL column to =boolean= and migrate; or teach codegen that
-storage and domain types can differ. The first is the smallest and
-matches what the model already says.
+The codebase already agrees on =bool=: the domain struct, the protocol
+struct, the Qt model and monitor window, the generator and the status
+handler all use it. Only three places disagree, and they are the
+storage side: the SQL column (=integer not null default 1=), the
+repository entity (=int is_active = 1=), and this model. The mapper
+converts between them.
 
-=tenant_id= is =std::optional<boost::uuids::uuid>= in the code, and
-codegen emits =utility::uuid::tenant_id= defaulting to =system()= for
-any entity with =has_tenant_id=. =nullable_tenant_id: true= does not
-change that — it affects the SQL primary key only, and
-=synthetic.market_data_generation_config= sets the same flag and gets
-the strong type. So the code, not the model, is the outlier. Changing
-it means the mapper's presence branches, the builder's member, and
-every consumer.
+So the change is to storage, not to the domain: the column becomes
+=boolean not null default true=, the model declares =boolean= /
+=bool=, the entity becomes =bool=, and the mapper conversion goes
+away. Two populate scripts write the column and have to move with it.
 
-** What regeneration would still destroy
+** tenant_id: a correction, and a defect it exposed
 
-Fixing the columns does not make the component safe to regenerate.
-=job_definition_repository.cpp= loses 134 lines and
-=job_definition_handler.hpp= 120: =read_all_active=, =find_by_name=
-twice, =schedule=, =schedule_batch=, =unschedule=, and a =history=
-whose shape differs from the generic one. Their protocol structs live
-in a hand-maintained header consumed cross-component by
-=ores.reporting=. The Qt controllers and dialogs bind to that same
-header.
+An earlier note here said the hand-written =std::optional= was the
+outlier and codegen's strong type was the convention to adopt. That
+was wrong, and the DDL settles it: the column is ="tenant_id" uuid=
+with no =not null=, so it is nullable, and a nullable column should be
+optional.
 
-Those facets have to be disabled explicitly before any of this can
-regenerate, which the =* Physical space= table does, one row per
-address. Clearing the columns is necessary and nowhere near
-sufficient.
+The reason codegen's type is not equivalent is that
+=utility::uuid::tenant_id::system()= is the max UUID from RFC 9562 — a
+real, distinct tenant identity, not an absence. Its own header says
+the type exists to prevent a nil UUID being confused with the system
+tenant. So SQL NULL and =system()= denote different things, and
+emitting a non-optional type for a nullable column conflates them.
+
+=nullable_tenant_id: true= only makes the SQL column nullable. It does
+not change the domain or entity type, which exposes a live defect in
+the other entity that sets it: =synthetic.market_data_generation_config=
+has =std::string tenant_id= in its entity and a mapper that calls
+=from_string(v.tenant_id).value()=. =from_string= rejects nil and
+=.value()= throws on an error, so a NULL tenant row crashes the
+mapper. That is a registry component, and the bug is reachable from
+the schema as it stands.
+
+** The six hand-written operations are all live
+
+- =read_all_active= — =scheduler_loop.cpp:82= loads every job it must
+  fire, across tenants. The scheduling loop does not run without it.
+- =find_by_name= twice — an overload pair, the one-argument form
+  delegating to the tenant-scoped one. =job_definition_service.cpp:56=
+  uses it so a save with an existing name updates in place instead of
+  violating the unique constraint.
+- =schedule= and =unschedule= — used cross-component by
+  =ores.reporting='s =report_scheduling_service=, over NATS.
+- =schedule_batch= — registered as a subscription in
+  =registrar.cpp:51=.
+
+None is cruft. Removing any of them breaks something that runs.
+
+** The custom history is broken, not merely custom
+
+=job_definition_handler.hpp:200= calls
+=svc.get_definition_history(...)=, discards the result, and replies
+=get_job_history_response{.success = true}=. The response carries
+=std::vector<job_instance> instances=, which is never populated, so
+every caller receives success and an empty list. The handler's own
+comment says instance execution history is not implemented, and it
+conflates two things: the service returns definition version history
+while the response is shaped for execution records.
+
+=JobDefinitionAuditDialog.cpp:133= sends this request, so the audit
+dialog shows an empty history and reports no error.
+
+This is the strongest candidate for the generic history provider
+rather than for modelling as-is: there is no working behaviour to
+preserve.
+
+** What this means for sequencing
+
+The protocol requirement is already met: =scheduler_protocol.hpp=
+lives in =ores.scheduler.api/messaging/= and =ores.reporting= includes
+it from there, so the cross-component types are in =api= already.
+
+Codegen has the mechanism the hand-written operations need. Paste
+blocks (=<<paste:KIND_UUID>>=, substituted from the entity's
+paste-point blocks) let generated files carry hand-written regions, so
+the operations can be modelled and pasted rather than lost.
+
+Nothing here may be removed before its replacement is modelled. The
+removal and the modelling belong in the same change, or the tree
+builds against operations that no longer exist.
 
 * Test Scenarios
 

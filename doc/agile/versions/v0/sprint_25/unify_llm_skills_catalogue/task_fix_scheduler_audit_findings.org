@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 9FE3FA66-514B-4C67-83E7-11973B8E520E
+:END:
+#+title: Task: Clear the ores.scheduler component audit findings
+#+description: The audit found a generator facet name that disagrees with the tree, an uncatalogued builder folder, three registered handlers with no subject row, and a documented history behaviour that does not exist.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+ores.scheduler passes the component architecture audit's manual checklist.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- generator_facet_name agrees with the directory on disk, so regenerating does not create a second generator folder beside the existing one.
+- core/src/builder is either added to the signed-off folder catalogue with its meaning or its content moves to a catalogued facet.
+- schedule_jobs_batch, get_job_instances and get_scheduler_status have subject rows in the messaging reference.
+- The history subject's description matches what the handler does, or the handler is fixed to match the description.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

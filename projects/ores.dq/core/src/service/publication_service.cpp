@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.core/service/publication_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include <boost/graph/adjacency_list.hpp>
@@ -484,7 +485,7 @@ publication_service::list_bundle_publishable_datasets(const std::string& bundle_
             try {
                 auto id = boost::lexical_cast<boost::uuids::uuid>(*row[0]);
                 member_ids.push_back(id);
-                optional_by_id[id] = row[1].has_value() && *row[1] == "t";
+                optional_by_id[id] = database::repository::text_to_bool(row[1]);
             } catch (const std::exception& e) {
                 BOOST_LOG_SEV(lg(), warn)
                     << "Invalid dataset_id in bundle " << bundle_code << ": " << e.what();

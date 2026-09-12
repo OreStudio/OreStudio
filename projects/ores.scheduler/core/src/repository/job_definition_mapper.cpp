@@ -50,7 +50,7 @@ domain::job_definition job_definition_mapper::map(const job_definition_entity& v
     r.schedule_expression = std::move(*expr);
     r.action_type = v.action_type;
     r.action_payload = v.action_payload;
-    r.is_active = (v.is_active != 0);
+    r.is_active = v.is_active;
     r.version = v.version;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
@@ -82,7 +82,7 @@ job_definition_entity job_definition_mapper::map(const domain::job_definition& v
     r.schedule_expression = v.schedule_expression.to_string();
     r.action_type = v.action_type;
     r.action_payload = v.action_payload;
-    r.is_active = v.is_active ? 1 : 0;
+    r.is_active = v.is_active;
     r.modified_by = v.modified_by;
     r.performed_by = v.performed_by;
     r.change_reason_code = v.change_reason_code;

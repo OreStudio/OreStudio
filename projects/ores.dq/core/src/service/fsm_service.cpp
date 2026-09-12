@@ -17,6 +17,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.dq.core/service/fsm_service.hpp"
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/service/tenant_context.hpp"
@@ -44,9 +45,9 @@ domain::fsm_state row_to_state(const std::vector<std::optional<std::string>>& ro
     if (row.size() > 2 && row[2])
         s.name = *row[2];
     if (row.size() > 3 && row[3])
-        s.is_initial = (*row[3] == "1" || *row[3] == "t" || *row[3] == "true");
+        s.is_initial = database::repository::text_to_bool(row[3]);
     if (row.size() > 4 && row[4])
-        s.is_terminal = (*row[4] == "1" || *row[4] == "t" || *row[4] == "true");
+        s.is_terminal = database::repository::text_to_bool(row[4]);
     if (row.size() > 5 && row[5])
         s.tenant_id = ores::utility::uuid::tenant_id::from_string(*row[5]).value_or(
             ores::utility::uuid::tenant_id::system());

@@ -32,7 +32,7 @@ insert into ores_scheduler_job_definitions_tbl (
     '* * * * *',
     'execute_sql',
     '{}',
-    1,
+    true,
     'system', 'system', 'system.new_record', '',
     current_timestamp, ores_utility_infinity_timestamp_fn()
 );

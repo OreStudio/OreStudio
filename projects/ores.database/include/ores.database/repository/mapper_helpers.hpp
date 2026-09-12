@@ -25,7 +25,10 @@
 #include "ores.platform/time/datetime.hpp"
 #include "ores.platform/time/time_utils.hpp"
 #include <chrono>
+#include <optional>
 #include <sqlgen/postgres.hpp>
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace ores::database::repository {
@@ -85,6 +88,33 @@ std::vector<Dest> map_vector(const std::vector<Source>& source,
  * @example
  * auto tp = timestamp_to_timepoint("2026-03-30 12:34:56+00"); // UTC input → UTC tp
  */
+/**
+ * @brief Reads a PostgreSQL boolean column returned as text.
+ *
+ * @details A boolean read through the text protocol arrives as
+ * @c t or @c f, never as @c true or @c 0. Both of those turn up
+ * anyway: @c true from a column a query casts to text explicitly, and
+ * @c 1 from one cast to integer or still stored as an integer flag.
+ * All three true spellings are accepted so a caller need not know
+ * which its query produces. Anything else is false, including a null
+ * column — a boolean that is absent is not true.
+ *
+ * Takes the optional a text-protocol row holds rather than a string,
+ * so there is one signature and no ambiguity at the call site.
+ *
+ * Exists so that reading a boolean is spelled one way. It was spelled
+ * three before: a bare @c "t" comparison, a three-way comparison, and
+ * @c std::stoi, which throws on the @c t PostgreSQL actually returns.
+ *
+ * @example
+ * entity.is_active = text_to_bool(row[10]);
+ */
+inline bool text_to_bool(const std::optional<std::string>& text) {
+    if (!text)
+        return false;
+    return *text == "t" || *text == "true" || *text == "1";
+}
+
 inline std::chrono::system_clock::time_point
 timestamp_to_timepoint(std::string_view timestamp_str) {
     return platform::time::datetime::from_iso8601_utc(std::string{timestamp_str});

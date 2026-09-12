@@ -99,7 +99,7 @@ SQL command to execute (used when action_type = execute_sql).
 ** schedule_expression
 :PROPERTIES:
 :type:     text
-:cpp_type: std::string
+:cpp_type: cron_expression
 :nullable: false
 :END:
 
@@ -111,6 +111,7 @@ Cron expression defining the schedule.
 :cpp_type: std::string
 :nullable: false
 :default:  'execute_sql'
+:default_value: "execute_sql"
 :END:
 
 Execution mode: execute_sql or nats_publish.
@@ -121,16 +122,17 @@ Execution mode: execute_sql or nats_publish.
 :cpp_type: std::string
 :nullable: false
 :default:  '{}'::jsonb
+:default_value: "{}"
 :END:
 
 Payload for nats_publish action type.
 
 ** is_active
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
+:type:     boolean
+:cpp_type: bool
 :nullable: false
-:default:  1
+:default:  true
 :END:
 
 1 = active, 0 = paused.

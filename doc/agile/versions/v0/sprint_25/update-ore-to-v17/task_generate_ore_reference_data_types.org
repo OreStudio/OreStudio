@@ -8,7 +8,7 @@
 #+filetags: :update-ore-to-v17:sprint_25:v0:
 #+owner: marco
 #+branch: feature/generate-ore-reference-data-types
-#+pr:
+#+pr: 2076
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-12
@@ -108,7 +108,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2076][#2076]] | [ores.ore] Map only what the v17 trade schema holds for a bond future |
 
 * Review
 

@@ -5,3 +5,4 @@
 ^./.packages
 ^./projects/ores.org-js/graph
 ^./projects/ores.compass/venv
+^./projects/ores.codegen/venv

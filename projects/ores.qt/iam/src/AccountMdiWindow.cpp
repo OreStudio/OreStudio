@@ -277,8 +277,7 @@ void AccountMdiWindow::onDataLoaded() {
 
     pagination_widget_->update_state(loaded, total);
 
-    const bool has_more =
-        total > 0 && total <= 1000 && loaded < static_cast<int>(total);
+    const bool has_more = total > 0 && total <= 1000 && loaded < static_cast<int>(total);
     BOOST_LOG_SEV(lg(), debug) << "onDataLoaded: loaded=" << loaded << ", total=" << total
                                << ", has_more=" << has_more;
     pagination_widget_->set_load_all_enabled(has_more);

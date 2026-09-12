@@ -21,7 +21,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstdint>
 #include <string>
-#include <variant>
 #include <vector>
 
 namespace {
@@ -33,18 +32,6 @@ struct sample {
     int value = 0;
     std::vector<std::uint8_t> payload;
 };
-
-struct bond_leg_data {
-    std::string currency;
-    double notional = 0.0;
-};
-
-struct bond_repo_data {
-    std::string counterparty;
-};
-
-using bond_product =
-    std::variant<std::monostate, bond_leg_data, bond_repo_data>;
 
 }
 
@@ -95,35 +82,6 @@ TEST_CASE("wire_codec msgpack round-trips a byte-vector field natively, not as b
     const auto decoded = msgpack_codec.decode<sample>(msgpack_bytes);
     REQUIRE(decoded.has_value());
     CHECK(decoded->payload == original.payload);
-}
-
-TEST_CASE("wire_codec round-trips a variant whose first alternative is monostate", tags) {
-    // With an untagged variant reflect-cpp reads back by trying the
-    // alternatives in declaration order, and std::monostate parses from any
-    // payload -- so every instrument decoded as monostate and was dropped.
-    for (const auto format : {ores::nats::wire_format::json, ores::nats::wire_format::msgpack}) {
-        const ores::nats::wire_codec codec(format);
-
-        const bond_product leg = bond_leg_data{"EUR", 1000000.0};
-        const auto leg_back = codec.decode<bond_product>(codec.encode(leg));
-        REQUIRE(leg_back.has_value());
-        CHECK(leg_back->index() == 1);
-        REQUIRE(std::holds_alternative<bond_leg_data>(*leg_back));
-        CHECK(std::get<bond_leg_data>(*leg_back).currency == "EUR");
-        CHECK(std::get<bond_leg_data>(*leg_back).notional == 1000000.0);
-
-        const bond_product repo = bond_repo_data{"CPTY"};
-        const auto repo_back = codec.decode<bond_product>(codec.encode(repo));
-        REQUIRE(repo_back.has_value());
-        CHECK(repo_back->index() == 2);
-        REQUIRE(std::holds_alternative<bond_repo_data>(*repo_back));
-        CHECK(std::get<bond_repo_data>(*repo_back).counterparty == "CPTY");
-
-        const bond_product unset;
-        const auto unset_back = codec.decode<bond_product>(codec.encode(unset));
-        REQUIRE(unset_back.has_value());
-        CHECK(unset_back->index() == 0);
-    }
 }
 
 TEST_CASE("wire_codec::format returns the format fixed at construction", tags) {

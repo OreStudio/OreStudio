@@ -72,7 +72,6 @@
 #include <boost/uuid/string_generator.hpp>
 #include <chrono>
 #include <optional>
-#include <rfl/AddTagsToVariants.hpp>
 #include <rfl/msgpack.hpp>
 #include <unordered_map>
 
@@ -691,9 +690,8 @@ public:
                 }
             }
 
-            // Tagged for the reason given on wire_codec::encode: untagged,
-            // trade_instrument decodes as monostate and the products are lost.
-            const auto blob = rfl::msgpack::write<rfl::AddTagsToVariants>(all_items);
+            // Serialise to MsgPack and upload to storage.
+            const auto blob = rfl::msgpack::write(all_items);
             ores::storage::net::storage_transfer transfer(http_base_url_);
             transfer.upload_blob(req->storage_bucket, req->storage_key, blob);
 

@@ -8,7 +8,7 @@
 #+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
 #+branch: feature/resync-scheduler-job-definition-model
-#+pr:
+#+pr: 2075
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
@@ -161,7 +161,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2075][#2075]] | [scheduler] Make is_active a boolean everywhere |
 
 * Review
 

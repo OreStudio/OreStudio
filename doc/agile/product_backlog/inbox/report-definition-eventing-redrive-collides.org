@@ -1,0 +1,64 @@
+:PROPERTIES:
+:ID: 87D60BBE-575F-4346-BC75-6C2571CDD589
+:END:
+#+title: The report-definition eventing re-drive collides with the temporal exclusion constraint
+#+description: Under a fully parallel ctest run, the notification wait in write_report_definition_publishes_nats_changed_event times out, and the re-drive that is meant to rescue it throws an exclusion-constraint error instead.
+#+type: capture
+#+level: cross
+#+filetags: 
+#+created: 2026-09-12
+#+updated: 2026-09-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+=write_report_definition_publishes_nats_changed_event= waits for a NATS
+notification, and re-drives its write when none arrives. The re-drive
+throws instead of retrying: the second write hits =conflicting key value
+violates exclusion constraint
+"ores_reporting_report_definitions_t_tenant_id_id_tstzrange_excl"=. A
+delayed notification therefore becomes a hard failure.
+
+* Why
+
+Found on 2026-09-12 during the ORE v17 sync's CDash experimental run
+(commit =e605427fa0=). That run passes tests in parallel
+(=ctest_test(PARALLEL_LEVEL nproc)= in =CTest.cmake=, 8 cores here),
+while =ctest --preset= runs them serially. The serial run passes 71/71.
+The parallel run failed this one suite.
+
+The test passes on its own and under a six-binary load, so the trigger
+is the fully parallel run, not the change under test. The branch that
+found it touches no =ores.reporting= file, and =git merge-base= puts the
+re-drive loop on =origin/main= since =e99dead591= (2026-08-25).
+
+The test's own comment says the re-drive is meant to add "a new version
+row" so the notify trigger fires again. The constraint proves it does
+not: =report_definition_repository::write= maps a =const
+domain::report_definition&=, so the retry sends the same =version= and
+the same temporal range as the first write. The second write can only
+collide.
+
+Two questions to settle before fixing:
+
+- Should the repository close the prior version and open a new one on a
+  repeat write, or should the caller bump the version? =e99dead591= is a
+  =[codegen]= commit, so the re-drive is templated and every eventing
+  suite that has it carries the same exposure. Fix the template, not the
+  one test.
+- The 2.5 s per-attempt budget is tight for a machine running 71 test
+  binaries. A longer budget only hides the first problem, so fix the
+  re-drive first.
+
+* References
+
+- =projects/ores.reporting/core/tests/report_definition_eventing_integration_tests.cpp=
+  (lines 139-158 for the write and the re-drive loop).
+- =projects/ores.reporting/core/src/repository/report_definition_repository.cpp=.
+- =CTest.cmake= line 341, =ctest_test(PARALLEL_LEVEL ${nproc})=.
+- Local log: =build/output/linux-clang-debug-make/Testing/Temporary/LastTest_20260912-0124.log=.
+
+* See also
+
+-

@@ -115,6 +115,10 @@ public:
 
 private:
     static barrierData make_barrier(const std::string& type, double level);
+
+    static barrierData make_barrier_group(const std::string& type,
+                                          const std::optional<double>& lower,
+                                          const std::optional<double>& upper);
 };
 
 }

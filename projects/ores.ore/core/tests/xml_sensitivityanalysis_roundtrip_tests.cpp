@@ -37,8 +37,11 @@ using namespace ores::logging;
 
 void require_sensitivityanalysis_equal(const sensitivityanalysis& original,
                                        const sensitivityanalysis& roundtripped) {
-    CHECK(roundtripped.DiscountCurves.DiscountCurve.size() ==
-          original.DiscountCurves.DiscountCurve.size());
+    CHECK(static_cast<bool>(roundtripped.DiscountCurves) ==
+          static_cast<bool>(original.DiscountCurves));
+    if (original.DiscountCurves)
+        CHECK(roundtripped.DiscountCurves->DiscountCurve.size() ==
+              original.DiscountCurves->DiscountCurve.size());
     CHECK(static_cast<bool>(roundtripped.IndexCurves) == static_cast<bool>(original.IndexCurves));
     if (original.IndexCurves)
         CHECK(roundtripped.IndexCurves->IndexCurve.size() ==

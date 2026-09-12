@@ -1,0 +1,58 @@
+:PROPERTIES:
+:ID: 41FB0924-C9F6-4884-BA8C-BEAC71A6B6AD
+:END:
+#+title: --reset-goldens deletes the golden dataset and nothing recreates it
+#+description: Twelve golden round-trip suites under projects/ores.ore/core/tests/ print "Golden file missing (run with --reset-goldens to bootstrap)" when a golden is absent. The flag is real, but it lives on projects/ores.codegen/scripts/xsdcpp_generate_ore.sh, not on the test binary, and all it does is delete assets/test_data/golden_dataset/Products. No suite writes a golden back: each one calls REQUIRE(std::filesystem::exists(gpath)) and fails. So following the message destroys the dataset it points at, and the message never names the command it means. Only xml_example_coverage_tests.cpp writes missing goldens, and only when ORES_BOOTSTRAP_GOLDENS is set. Pick one: give the flag a bootstrap mode the twelve suites honour, or change the message to name the command that recreates the dataset.
+#+type: capture
+#+level: cross
+#+filetags: :ore:testing:codegen:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Resolve the broken loop around =--reset-goldens=. Either teach the twelve
+golden suites to write a golden that is missing when the flag is set, or
+stop telling the reader to run it.
+
+* Why
+
+The message reads as an instruction a developer can follow. It is not.
+The flag sits on the codegen script that regenerates the domain types,
+and it only removes the dataset:
+
+#+begin_src sh
+# projects/ores.codegen/scripts/xsdcpp_generate.sh
+if [ -n "$RESET_GOLDENS" ]; then
+    rm -rf "${GIT_ROOT}/${RESET_GOLDENS}"
+fi
+#+end_src
+
+Nothing then writes the goldens back. Every one of the twelve suites
+fails on the next run with =REQUIRE(exists(gpath))= instead of
+bootstrapping, which the script's own help text promises: "Delete DIR
+before regenerating, so golden tests re-bootstrap on next test run".
+
+The gap matters most on an XSD bump, which is exactly when the message
+appears. The regeneration change makes the goldens stale, so the
+workflow wants to reset them; resetting them empties the directory; the
+suite then has no way to refill it.
+
+=xml_example_coverage_tests.cpp= closes the loop for its own dataset
+with =ORES_BOOTSTRAP_GOLDENS=1=, and that mechanism already fills gaps
+only, so an existing golden is always compared. Whichever way this is
+resolved, that test's behaviour is the shape to copy: a missing golden
+is written, a present golden is compared, and the mode is explicit
+rather than implied.
+
+* References
+
+- =projects/ores.codegen/scripts/xsdcpp_generate.sh=, the =--reset-goldens= handler.
+- =projects/ores.codegen/scripts/xsdcpp_generate_ore.sh=, the ORE wrapper that hard-codes the dataset path.
+- =projects/ores.ore/core/tests/xml_*_golden_roundtrip_tests.cpp=, the twelve suites that print the message.
+
+* See also
+
+- [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]], the story that hit this.

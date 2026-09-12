@@ -249,7 +249,13 @@ commodity_instrument_mapper::forward_commodity_option(const trade& t) {
     result.terms.commodity_code = std::string(d.Name);
     result.terms.currency = to_string(d.Currency);
     result.terms.quantity = static_cast<double>(d.Quantity);
-    result.option.strike_price = static_cast<double>(d.Strike);
+    if (d.strikeGroup.Strike) {
+        const std::string s(*d.strikeGroup.Strike);
+        if (!s.empty())
+            result.option.strike_price = std::stod(s);
+    } else if (d.strikeGroup.StrikeData && d.strikeGroup.StrikeData->Value) {
+        result.option.strike_price = static_cast<double>(*d.strikeGroup.StrikeData->Value);
+    }
     result.option.option_type = extract_option_type(d.OptionData);
     result.option.exercise_type = extract_exercise_style(d.OptionData);
     result.terms.maturity_date = first_exercise_date(d.OptionData);
@@ -400,7 +406,9 @@ trade commodity_instrument_mapper::reverse_commodity_option(const commodity_inst
     d.OptionData = make_option_data(instr);
     static_cast<std::string&>(d.Name) = instr.terms.commodity_code;
     d.Currency = parse_currency_code(instr.terms.currency);
-    d.Strike = static_cast<float>(instr.option.strike_price.value_or(0.0));
+    _Strike_t s;
+    static_cast<std::string&>(s) = std::to_string(instr.option.strike_price.value_or(0.0));
+    d.strikeGroup.Strike = std::move(s);
     d.Quantity = static_cast<float>(instr.terms.quantity);
     t.CommodityOptionData = std::move(d);
     return t;

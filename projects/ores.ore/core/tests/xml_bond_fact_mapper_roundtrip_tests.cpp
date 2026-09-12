@@ -89,11 +89,11 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
     auto lg(make_logger(test_suite));
 
     // The issue date and the leg's schedule start are two data, and the
-    // corpus holds documents where they differ. Export used to rebuild
-    // the schedule from the issue terms, which wrote the issue date as
-    // the schedule start. An xsd::optional assigned to the plain date
-    // member made that worse: it compiles as operator=(char) and stores
-    // a control byte. The dates here differ, so a rebuild shows up.
+    // corpus holds documents where they differ. A rebuild from the issue
+    // terms writes the issue date as the schedule start, and an
+    // xsd::optional assigned to the plain date member compiles as
+    // operator=(char) and stores a control byte. The dates here differ,
+    // so a rebuild shows up.
     const std::string xml = R"(
 <Portfolio>
   <Trade id="Bond_Schedule_Mirror">
@@ -249,8 +249,8 @@ TEST_CASE("a_legs_payment_terms_survive_the_round_trip", tags) {
 
     // The payment terms, the payment calendar and the two flags have no
     // column in the nine tables, so the leg is their only home on the
-    // mapper path. LegType belongs to the same group: a leg that has no
-    // fact row used to come back as Fixed whatever the document said.
+    // mapper path. LegType belongs to the same group: a leg with no fact
+    // row takes its type from the document, not from the Fixed default.
     const std::string xml = R"(
 <Portfolio>
   <Trade id="Bond_Leg_Terms">
@@ -718,9 +718,9 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     CHECK(r.instrument.identity.trade_type_code == "BondRepo");
     CHECK(r.issue.security_id == "ISIN:US912828X703");
 
-    // The repo leg's schedule used to land in the issue's coupon
-    // frequency. The issue states no terms of its own here, so it takes
-    // none from the leg either.
+    // The repo leg's schedule is not the issue's coupon frequency. The
+    // issue states no terms of its own here, so it takes none from the
+    // leg either.
     CHECK(r.issue.coupon_frequency_code.empty());
     CHECK(r.issue.currency.empty());
     CHECK(r.issue.face_value == 0.0);

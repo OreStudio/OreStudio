@@ -108,6 +108,9 @@ node_modules/
 # compass tool local cache (generated at repo root)
 /.compass.db*
 
+# ores.shell runtime log, written at the repo root
+/log/
+
 # LaTeX intermediate artefacts from deploy_manual
 doc/manual/user_guide/user_manual.tex
 doc/manual/user_guide/user_manual.aux

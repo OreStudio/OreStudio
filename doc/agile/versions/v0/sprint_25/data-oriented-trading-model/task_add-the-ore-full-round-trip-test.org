@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-10
-#+updated: 2026-09-10
+#+updated: 2026-09-12
 #+environment: brave_hopper
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -26,12 +26,12 @@ One command drives an ORE XML document through the database and back, and the ou
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
-| Last touched | 2026-09-10                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                             |
 
 * Acceptance
 
@@ -61,7 +61,14 @@ Carried over from the parent story, the binding scope answers:
 - Content that no table holds must survive the round trip, so the
   shared tables land first.
 
-* Notes
+The first live run of this test failed, and the cause was not in the
+container or the tables. reflect-cpp wrote every variant untagged and
+read it back by declaration order, so =trade_instrument= decoded as
+=std::monostate= on both the wire and the storage blob, and the export
+carried no product block at all. See
+[[id:FCC206C0-D808-40CC-86E8-14F687B0AB57][Fix silent instrument loss
+from untagged variant serialisation]]. This test is what surfaced it:
+the mapper path never crosses the codec, so no earlier test could.
 
 * Test Scenarios
 
@@ -87,3 +94,48 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+=projects/ores.shell/scripts/library/ore/how_do_i_round_trip_an_ore_document_through_the_database.ores=
+drives one ORE example document through the database and back, using
+only =ores.shell= verbs: =ore upload=, =ore import=, =ore export=. It
+is tangled from the recipe at
+[[id:7302A9A4-8B64-4C92-8582-49FB5A2219A2][How do I round trip an ORE
+document through the database]], so the prose and the script stay one
+artefact.
+
+=scripts/ore_mapper_roundtrip_diff.py= classifies the source against
+the output, order-blind. It exits 0 only when the bond products and the
+trade envelope read zero lost and zero unexplained, with no document
+missing an output.
+
+Two live runs, each on a fresh database with its own provisioning and
+its own request id:
+
+| Document | Request id | Export | In scope | Out of scope | Worst relative error |
+|----------+------------+--------+----------+--------------+----------------------|
+| =Cash_BondRepo_and_Bond.xml= | =a4f3433a-521b-40b2-ae25-279af93fcad2= | 1775 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 2.247e-8 |
+| =BondOption_StrikePrice_StrikeYield.xml= | =1b016671-221d-4aaa-96b1-c333535f2bcb= | 2169 bytes | lost 0, unexplained 0 | lost 0, unexplained 0 | 5.455e-9 |
+
+Both runs classified =Documents: 1  Failures: 0  Skipped: 0=. The
+second document exercises a different product family: the option block,
+the strike group and the exercise dates.
+
+The only differences left are element order, which the classifier is
+order-blind to, and two numerics collapsing to =xs:float= precision
+(=28371509.989758= to =28371510=, and =0.0178= to =0.0177999996=),
+both classified =numeric=.
+
+The first run failed before the codec defect was fixed: the same
+document exported 653 bytes with no product block and 27 lost pairs in
+scope. The export is now 1775 bytes and carries both products whole.
+
+Recorded debt:
+
+- The export returns every trade in the database, so the test needs one
+  document per fresh database. The classifier compares one document.
+- The import's book creation is not request-id-scoped, so a second
+  import for the same party violates =books_party_id_name_uniq_idx=.
+  The script works around it with a per-request portfolio name; the
+  index collision itself is not fixed.
+- Two documents is not the bond corpus. A per-document sweep across all
+  50 bond-carrying example documents is not measured.

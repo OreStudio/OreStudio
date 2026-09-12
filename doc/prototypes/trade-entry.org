@@ -118,7 +118,9 @@ The site build copies the directory through =ores-deploy-web-app=, which
 already deploys the other static apps.
 
 Open either page with =?selfcheck=1= to run the checks on the strategy
-invariants and the schedule generator.
+invariants and the schedule generator. The booking screen runs all
+twenty-one. The pricing screen runs seventeen and names the four that
+read =booking.js=, which it does not load.
 
 ** Reading the prototype
 

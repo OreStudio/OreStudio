@@ -164,10 +164,10 @@ via its "Verifies task" field.
 
 * Review
 
-Three rounds. Rows 1 to 11 are the local review pass, before the PR. Rows 12
+Four rounds. Rows 1 to 11 are the local review pass, before the PR. Rows 12
 to 17 are the user's review of the published prototype. Rows 18 to 20 are the
-on-demand review of the pull request. Each row is a defect found and the
-decision taken.
+first on-demand review of the pull request. Rows 21 and 22 are the second,
+which ran on the fixed head. Each row is a finding and the decision taken.
 
 | # | Finding | File | Decision | Notes |
 |---+---------+------+----------+-------|
@@ -191,6 +191,8 @@ decision taken.
 | 18 | The side chip wrote the field's own text into a =class= attribute. The generic form lets the reader type anything into =longShort=, so a value such as =x"><img src=x onerror=alert(1)>= left the attribute and injected markup. Every other interpolated value in the two files goes through =esc()=, so this was the one gap. | booking.js | Accepted | The class comes from a known pair now: =side-buy= for a long, =side-sell= for a short, and nothing for anything else. A self-check holds it there. The same change closes a second defect the review did not name: the chip emitted =side-long= and =side-short=, which no rule in the stylesheet matches, while =side-buy= and =side-sell= were defined and unused. The chip carries a colour for the first time. |
 | 19 | The self-check count in the PR body and on this page did not match the code. Both said nineteen assertions passed under node, and node never runs them, because the guard reads =window.location=. | task record, PR body | Accepted | Both say twenty in headless Chrome. Corrected before this round. |
 | 20 | =field()= carried a =select= branch that no caller reaches. =selectField()= is the helper for that, and =field()= is only ever given =text=, =number= or =date=. | booking.js | Accepted | Removed. |
+| 21 | =runSelfCheck()= called =sectionsFor=, =blankComponent= and =allComponents= with no guard. All three live in =booking.js=, which =pricing.html= does not load, so =pricing.html?selfcheck=1= threw =Uncaught ReferenceError= and printed no verdict at all, while the docs claimed the check ran on either page. | catalogue.js | Accepted | A =bookingLoaded= flag gates the four checks that need =booking.js=. A skipped check is named in the console and never passed, because a skip that reads as a pass is worth nothing. |
+| 22 | A stray sentence fragment said to sit on line 191 of this page. | this page | Declined | Line 191 is one complete table row and reads end to end. The reviewer recorded that its grep printed the line as "[Omitted long matching line]", so the fragment is the grep's truncation, not the text. |
 
 * Result
 
@@ -266,11 +268,17 @@ describes the prototype and links to it.
 
 ** Verification
 
-- Twenty-one self-check assertions pass. Open either page with =?selfcheck=1=
-  to run them; the console reports =all passed=. Four are new: every
+- The booking screen passes all twenty-one self-check assertions. The
+  pricing screen passes the seventeen it can run and names the four it
+  cannot, because those read =booking.js=, which it does not load. Open
+  either page with =?selfcheck=1=; the console reports =all passed= on one
+  and =all passed, 4 skipped= on the other. Four assertions are new: every
   widget splits into named sections, no economics section carries a
   trade-header field, a premium is a sub-leg with its own identifier, and
   a side chip takes its class from a known pair.
+- The pricing page was shown to reach its verdict. Before the guard it
+  threw =Uncaught ReferenceError: sectionsFor is not defined= and printed
+  nothing at all.
 - The split check was shown to fail. Adding a counterparty field back to
   the generic instrument form reported =1 failed=, so the check catches
   the defect it names rather than passing on any input. A check that

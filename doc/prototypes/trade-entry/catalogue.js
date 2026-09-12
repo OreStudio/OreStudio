@@ -443,14 +443,30 @@ function schedulePeriods(rules) {
  * split between the trade header and the instrument carry the prototype's
  * non-trivial logic, so they get a check. Open either page with
  * ?selfcheck=1 to run it; it fails loudly in the console and returns the
- * count of failures.
+ * count of failures. Four of the checks read helpers that only booking.js
+ * defines, so the pricing page reports them as skipped.
  */
 
 function runSelfCheck() {
     const failures = [];
+    const skipped = [];
 
     const check = (name, condition) => {
         if (!condition) failures.push(name);
+    };
+
+    /* The booking screen loads booking.js and the pricing screen does not, so
+     * four checks have no helper to run against on the pricing page. They are
+     * skipped by name, never passed: a skip that reads as a pass is worth
+     * nothing. The condition is a thunk, so its helpers are not called at all
+     * when the file is absent. */
+    const bookingLoaded = typeof sectionsFor === 'function'
+        && typeof blankComponent === 'function'
+        && typeof allComponents === 'function'
+        && typeof sideClass === 'function';
+    const checkWith = (loaded, name, condition) => {
+        if (loaded) check(name, condition());
+        else skipped.push(name);
     };
 
     const leg = (optionType, longShort, strike, expiry, notional) => ({
@@ -525,30 +541,32 @@ function runSelfCheck() {
                     blankComponent(productType, tradeTypeCode, []))
             .map(section => section.html).join('');
 
-    check('every widget splits into named sections',
-        widgets.every(w => sectionsFor(widgetFor(w[0], w[1]),
-                                       blankComponent(w[0], w[1], [])).length > 0));
-    check('no economics section carries a trade-header field',
-        widgets.every(w => fieldKeys(instrumentHtml(w))
+    checkWith(bookingLoaded, 'every widget splits into named sections',
+        () => widgets.every(w => sectionsFor(widgetFor(w[0], w[1]),
+                                             blankComponent(w[0], w[1], [])).length > 0));
+    checkWith(bookingLoaded, 'no economics section carries a trade-header field',
+        () => widgets.every(w => fieldKeys(instrumentHtml(w))
             .every(k => headerFields.indexOf(k) === -1)));
 
     /* A premium is a trade in its own right, not a field on the option. */
-    check('a premium is a sub-leg with its own identifier',
-        allComponents().filter(c => c.premium).every(c =>
+    checkWith(bookingLoaded, 'a premium is a sub-leg with its own identifier',
+        () => allComponents().filter(c => c.premium).every(c =>
             c.premium.id && c.premium.id !== c.id
             && !Object.prototype.hasOwnProperty.call(c.fields, 'premiumAmount')));
 
     /* The side chip writes its class into an attribute, so the class is a
      * known pair and never the field's own text. */
-    check('a side chip takes its class from a known pair',
-        typeof sideClass === 'function'
-        && sideClass('Long') === 'side-buy' && sideClass('Short') === 'side-sell'
-        && sideClass('x"><img src=x onerror=alert(1)>') === '');
+    checkWith(bookingLoaded, 'a side chip takes its class from a known pair',
+        () => sideClass('Long') === 'side-buy' && sideClass('Short') === 'side-sell'
+            && sideClass('x"><img src=x onerror=alert(1)>') === '');
 
     if (failures.length) {
         console.error(`prototype self-check: ${failures.length} failed`, failures);
     } else {
-        console.info('prototype self-check: all passed');
+        console.info(`prototype self-check: all passed${skipped.length ? `, ${skipped.length} skipped` : ''}`);
+    }
+    if (skipped.length) {
+        console.info('prototype self-check: skipped (booking.js not loaded on this page)', skipped);
     }
     return failures.length;
 }

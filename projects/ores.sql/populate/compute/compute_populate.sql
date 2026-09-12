@@ -35,7 +35,7 @@ select
     '* * * * *',
     'nats_publish',
     '{"subject":"compute.v1.work.reap"}',
-    1,
+    true,
     current_user, current_user, 'system.new_record', '',
     current_timestamp, ores_utility_infinity_timestamp_fn()
 where not exists (

@@ -1,0 +1,75 @@
+:PROPERTIES:
+:ID: 07494555-8EDB-48C2-8425-CB86EE366FDC
+:END:
+#+title: Task: Model the scheduler's hand-written operations and remove them together
+#+description: read_all_active, find_by_name twice, schedule, schedule_batch and unschedule are live and hand-written; they must be modelled in the same change that stops hand-maintaining them, or the tree builds against operations that no longer exist.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every hand-written job_definition operation is either modelled or carried in a paste block, and scheduler-cpp regenerates without losing behaviour.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- read_all_active is modelled or pasted; scheduler_loop still loads jobs across tenants.
+- Both find_by_name overloads survive; saving a definition with an existing name still updates in place rather than violating the unique index.
+- schedule, schedule_batch and unschedule survive; ores.reporting's report_scheduling_service still compiles against the same protocol types in api.
+- The modelling and the removal land in one change — no commit removes an operation before its replacement exists.
+- The facets that remain unsafe are disabled explicitly in the model's Physical space table, each with its reason.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

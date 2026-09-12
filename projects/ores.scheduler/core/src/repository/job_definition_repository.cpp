@@ -90,7 +90,8 @@ parse_rows(const std::vector<std::vector<std::optional<std::string>>>& rows) {
         if (row[9])
             entity.action_payload = *row[9];
         if (row[10])
-            entity.is_active = std::stoi(*row[10]);
+            entity.is_active =
+                (*row[10] == "1" || *row[10] == "t" || *row[10] == "true");
         if (row[11])
             entity.modified_by = *row[11];
         if (row[12])
@@ -154,7 +155,7 @@ std::vector<domain::job_definition> job_definition_repository::read_all_active(c
 
     // Query all active jobs across all tenants (no tenant filter).
     const std::string sql = std::string(SELECT_COLS) +
-                            "WHERE is_active = 1 "
+                            "WHERE is_active = true "
                             "  AND valid_to = ores_utility_infinity_timestamp_fn() "
                             "ORDER BY id";
 

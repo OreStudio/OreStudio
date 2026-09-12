@@ -26,6 +26,28 @@
  *
  * Metadata overlay for a pg_cron cron.job entry. Tracks the job name,
  * cron expression, SQL command, target database, and active state.
+ *
+ * DO NOT regenerate this entity at all -- every facet is out of sync with
+ * the hand-maintained C++ (the model's own tenant_id/schedule_expression/
+ * is_active column shapes don't match the hand-written job_definition
+ * struct's actual types: std::optional<boost::uuids::uuid>, cron_expression,
+ * bool. A regenerated tenant_id would come out as the codegen
+ * utility::uuid::tenant_id wrapper, not the hand-written std::optional
+ * type, so even the "safe" domain/repository-entity/mapper facets would
+ * regenerate *wrong types*, not just wrong formatting) on top of the
+ * deeper repository/service/messaging divergence documented under
+ * ** Custom repository methods below.
+ * None of this is modeled here yet; regenerating clobbers it with a
+ * generic CRUD-only stack (and silently wrong column types) that breaks
+ * all of the above. This model needs a proper resync -- correcting the
+ * column shapes to match the hand-written struct, then re-adding
+ * repository/messaging support for the four hand-written operations --
+ * before any facet of it can be regenerated safely. The Qt facet is
+ * equally excluded: its generated controllers/dialogs bind to the
+ * hand-maintained scheduler_protocol.hpp classes, so a Qt regen would
+ * emit code against a protocol surface that does not exist. Mirrors
+ * party's hand-maintained-SQL treatment in the refdata drift-fix task,
+ * but wider in scope (no facet is currently safe, not just SQL).
  */
 
 create table if not exists "ores_scheduler_job_definitions_tbl" (
@@ -39,7 +61,7 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
     "schedule_expression" text not null,
     "action_type" text not null default 'execute_sql',
     "action_payload" jsonb not null default '{}'::jsonb,
-    "is_active" integer not null default 1,
+    "is_active" boolean not null default true,
     "modified_by" text not null,
     "performed_by" text not null,
     "change_reason_code" text not null,
@@ -52,11 +74,7 @@ create table if not exists "ores_scheduler_job_definitions_tbl" (
         tstzrange(valid_from, valid_to) WITH &&
     ),
     check ("valid_from" < "valid_to"),
-    check ("id" <> ores_utility_nil_uuid_fn()),
-    check ("job_name" <> ''),
-    check (action_type in ('execute_sql','nats_publish')),
-    check (action_type != 'execute_sql' or "command" <> ''),
-    check ("schedule_expression" <> '')
+    check ("id" <> ores_utility_nil_uuid_fn())
 );
 
 -- Version uniqueness for optimistic concurrency
@@ -72,20 +90,6 @@ create index if not exists job_definitions_tenant_idx
 on "ores_scheduler_job_definitions_tbl" (tenant_id)
 where valid_to = ores_utility_infinity_timestamp_fn();
 
-create unique index if not exists job_definitions_name_tenant_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (tenant_id, job_name)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and tenant_id is not null;
-
-create unique index if not exists job_definitions_name_system_uniq_idx
-on "ores_scheduler_job_definitions_tbl" (job_name)
-where valid_to = ores_utility_infinity_timestamp_fn()
-  and tenant_id is null;
-
-create index if not exists job_definitions_party_idx
-on "ores_scheduler_job_definitions_tbl" (tenant_id, party_id)
-where valid_to = ores_utility_infinity_timestamp_fn();
-
 create or replace function ores_scheduler_job_definitions_insert_fn()
 returns trigger as $$
 declare
@@ -94,19 +98,6 @@ begin
     -- Validate tenant_id only when set (system records have NULL tenant_id)
     if NEW.tenant_id is not null then
         NEW.tenant_id := ores_iam_validate_tenant_fn(NEW.tenant_id);
-    end if;
-
-    -- Validate party_id (optional soft FK to ores_refdata_parties_tbl)
-    if NEW.party_id is not null then
-        if not exists (
-            select 1 from ores_refdata_parties_tbl
-            where tenant_id = NEW.tenant_id
-              and id = NEW.party_id
-              and valid_to = ores_utility_infinity_timestamp_fn()
-        ) then
-            raise exception 'Invalid party_id: %. No active party found with this id.', NEW.party_id
-                using errcode = '23503';
-        end if;
     end if;
 
     -- Validate change_reason_code
@@ -127,18 +118,22 @@ begin
                 using errcode = 'P0002';
         end if;
         NEW.version = current_version + 1;
-
+        -- clock_timestamp(), not current_timestamp: current_timestamp is
+        -- frozen for the whole transaction, so a same-transaction
+        -- multi-write to this row (e.g. a composite entity's parent
+        -- touched twice by two different children in one transaction)
+        -- would collide with itself. clock_timestamp() always advances.
         update "ores_scheduler_job_definitions_tbl"
-        set valid_to = current_timestamp
+        set valid_to = clock_timestamp()
         where (tenant_id = NEW.tenant_id or (tenant_id is null and NEW.tenant_id is null))
           and id = NEW.id
           and valid_to = ores_utility_infinity_timestamp_fn()
-          and valid_from < current_timestamp;
+          and valid_from < clock_timestamp();
     else
         NEW.version = 1;
     end if;
 
-    NEW.valid_from = current_timestamp;
+    NEW.valid_from = clock_timestamp();
     NEW.valid_to = ores_utility_infinity_timestamp_fn();
     NEW.modified_by := ores_iam_validate_account_username_fn(NEW.modified_by);
     NEW.performed_by = coalesce(ores_iam_current_service_fn(), current_user);
@@ -152,9 +147,10 @@ before insert on "ores_scheduler_job_definitions_tbl"
 for each row execute function ores_scheduler_job_definitions_insert_fn();
 
 create or replace rule ores_scheduler_job_definitions_delete_rule as
-on delete to "ores_scheduler_job_definitions_tbl" do instead
+on delete to "ores_scheduler_job_definitions_tbl" do instead (
     update "ores_scheduler_job_definitions_tbl"
-    set valid_to = current_timestamp
+    set valid_to = clock_timestamp()
     where (tenant_id = OLD.tenant_id or (tenant_id is null and OLD.tenant_id is null))
       and id = OLD.id
       and valid_to = ores_utility_infinity_timestamp_fn();
+);

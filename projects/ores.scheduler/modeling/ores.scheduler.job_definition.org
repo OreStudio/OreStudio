@@ -129,10 +129,10 @@ Payload for nats_publish action type.
 
 ** is_active
 :PROPERTIES:
-:type:     integer
-:cpp_type: int
+:type:     boolean
+:cpp_type: bool
 :nullable: false
-:default:  1
+:default:  true
 :END:
 
 1 = active, 0 = paused.

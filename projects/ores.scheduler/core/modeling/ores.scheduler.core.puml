@@ -62,7 +62,7 @@ namespace ores #F2F2F2 {
                 +command : string
                 +schedule_expression : string
                 +action_type : string
-                +is_active : int
+                +is_active : bool
                 +modified_by : string
                 +performed_by : string
                 +change_reason_code : string

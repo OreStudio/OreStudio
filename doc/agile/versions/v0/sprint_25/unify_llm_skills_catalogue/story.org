@@ -113,6 +113,9 @@ Tasks are listed in intended execution order.
 | [[id:4B43941A-957B-4FC9-82BD-AB131F541825][Register composite parts in their component CMakeLists]] | DONE | 2026-09-11 | 2026-09-11 | Eighteen composites still register each part in projects/CMakeLists.txt; the target shape adds the component there and its parts in the component's own CMakeLists. |
 | [[id:9747E4C5-734E-4F75-AD8B-CEB4C9089B76][Give every composite a group model]] | BACKLOG | | | Eight composites have no group-level component_overview.org, so codegen cannot generate their root CMakeLists and their parts are undeclared. |
 | [[id:3B57DD4B-E6CB-48CC-803A-74834270AB9E][Bind custom C++ types to the headers that define them]] | DONE | 2026-09-12 | 2026-09-12 | A column can declare any cpp_type but its header is listed separately by hand, so the two can drift apart or the include can be forgotten entirely. |
+| [[id:B69BF02C-9E16-4DAF-BC0C-C5DBE0EC1BF4][Make a nullable tenant column an optional type]] | BACKLOG | | | nullable_tenant_id makes the SQL column nullable but codegen still emits a non-optional tenant_id, and system() is a real tenant rather than an absence, so NULL and system are conflated; synthetic's mapper throws on a NULL tenant row. |
+| [[id:07494555-8EDB-48C2-8425-CB86EE366FDC][Model the scheduler's hand-written operations and remove them together]] | BACKLOG | | | read_all_active, find_by_name twice, schedule, schedule_batch and unschedule are live and hand-written; they must be modelled in the same change that stops hand-maintaining them, or the tree builds against operations that no longer exist. |
+| [[id:6110D479-CAF3-4915-8A64-698193893402][Replace the scheduler's custom history with the generic provider]] | BACKLOG | | | The custom history handler discards the service result and replies success with an empty instances vector, so the audit dialog shows nothing and reports no error. |
 
 * Decisions
 

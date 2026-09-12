@@ -117,6 +117,7 @@ Tasks are listed in intended execution order.
 | [[id:07494555-8EDB-48C2-8425-CB86EE366FDC][Model the scheduler's hand-written operations and remove them together]] | BACKLOG | | | read_all_active, find_by_name twice, schedule, schedule_batch and unschedule are live and hand-written; they must be modelled in the same change that stops hand-maintaining them, or the tree builds against operations that no longer exist. |
 | [[id:6110D479-CAF3-4915-8A64-698193893402][Replace the scheduler's custom history with the generic provider]] | BACKLOG | | | The custom history handler discards the service result and replies success with an empty instances vector, so the audit dialog shows nothing and reports no error. |
 | [[id:9FE3FA66-514B-4C67-83E7-11973B8E520E][Clear the ores.scheduler component audit findings]] | BACKLOG | | | The audit found a generator facet name that disagrees with the tree, an uncatalogued builder folder, three registered handlers with no subject row, and a documented history behaviour that does not exist. |
+| [[id:DA77CBDB-6C6C-4033-8794-53A35C1FD2CB][Convert the remaining integer flags to boolean]] | BACKLOG | | | Three columns are still integer flags where the schema's convention is boolean, and an integer flag reads differently through the text protocol. |
 
 * Decisions
 

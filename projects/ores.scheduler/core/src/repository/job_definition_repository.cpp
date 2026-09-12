@@ -21,6 +21,7 @@
 #include "ores.database/repository/bitemporal_operations.hpp"
 #include "ores.database/repository/db_types.hpp"
 #include "ores.database/repository/helpers.hpp"
+#include "ores.database/repository/mapper_helpers.hpp"
 #include "ores.platform/time/datetime.hpp"
 #include "ores.scheduler.api/domain/job_definition_json_io.hpp" // IWYU pragma: keep.
 #include "ores.scheduler.core/repository/job_definition_entity.hpp"
@@ -90,8 +91,7 @@ parse_rows(const std::vector<std::vector<std::optional<std::string>>>& rows) {
         if (row[9])
             entity.action_payload = *row[9];
         if (row[10])
-            entity.is_active =
-                (*row[10] == "1" || *row[10] == "t" || *row[10] == "true");
+            entity.is_active = database::repository::text_to_bool(row[10]);
         if (row[11])
             entity.modified_by = *row[11];
         if (row[12])

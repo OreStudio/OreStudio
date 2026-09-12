@@ -52,6 +52,32 @@ domain sub-prefix:
 | =ores_telemetry_*= | Telemetry logs and samples |
 | =ores_scheduler_*= | Job definitions and instances |
 
+* Column types
+
+** Booleans
+
+A flag is =boolean=, not an integer. The schema has 42 boolean columns
+and a handful of integer flags that predate the rule; the integer ones
+are the exception being worked off, not a second valid style.
+
+The reason to care is that the two do not read alike. Through the text
+protocol a =boolean= arrives as =t= or =f=, so code that parses it
+with =std::stoi= throws the moment the column is what it should have
+been, and a predicate written =where is_active = 1= stops matching.
+Both were live in =ores.scheduler= until its column was corrected.
+
+Read one through
+[[proj:projects/ores.database/include/ores.database/repository/mapper_helpers.hpp][=text_to_bool=]],
+which takes the optional a row holds and accepts =t=, =true= and =1=,
+so a caller need not know whether its query casts. It exists because
+the same read had been spelled three ways: a bare =t= comparison, a
+three-way comparison, and =std::stoi=. A null column is false — a
+boolean that is absent is not true.
+
+Model a flag as =:type: boolean= with =:cpp_type: bool=, and the same
+=bool= reaches the repository entity, so nothing converts at the
+mapper.
+
 * Roles and users
 
 ORE Studio uses a least-privilege role model.  Every service runs as a

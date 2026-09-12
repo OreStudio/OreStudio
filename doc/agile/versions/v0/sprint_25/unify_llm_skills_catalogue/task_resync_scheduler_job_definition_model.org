@@ -7,13 +7,13 @@
 #+level: s1
 #+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
 #+owner: marco
-#+branch:
+#+branch: feature/resync-scheduler-job-definition-model
 #+pr:
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
 #+updated: 2026-09-11
-#+environment:
+#+environment: bright_faraday
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
 This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.

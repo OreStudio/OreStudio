@@ -76,7 +76,8 @@ void fx_vanilla_option_instrument_service::save_fx_vanilla_option_instrument(
     BOOST_LOG_SEV(lg(), debug) << "Saving FX vanilla option instrument. "
                                << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved FX vanilla option instrument. "
                               << "instrument_id: " << v.identity.instrument_id;
@@ -91,8 +92,10 @@ void fx_vanilla_option_instrument_service::save_fx_vanilla_option_instruments(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_vanilla_option_instruments.size()
                                << " FX vanilla option instruments";
     auto ts = fx_vanilla_option_instruments;
-    for (auto& e : ts)
-        stamp(e, ctx_);
+    for (auto& e : ts) {
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

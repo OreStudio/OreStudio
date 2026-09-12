@@ -76,7 +76,8 @@ void fx_variance_swap_instrument_service::save_fx_variance_swap_instrument(
     BOOST_LOG_SEV(lg(), debug) << "Saving FX variance swap instrument. "
                                << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved FX variance swap instrument. "
                               << "instrument_id: " << v.identity.instrument_id;
@@ -91,8 +92,10 @@ void fx_variance_swap_instrument_service::save_fx_variance_swap_instruments(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << fx_variance_swap_instruments.size()
                                << " FX variance swap instruments";
     auto ts = fx_variance_swap_instruments;
-    for (auto& e : ts)
-        stamp(e, ctx_);
+    for (auto& e : ts) {
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

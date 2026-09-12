@@ -72,7 +72,8 @@ void swaption_instrument_service::save_swaption_instrument(const domain::swaptio
     BOOST_LOG_SEV(lg(), debug) << "Saving swaption instrument. "
                                << "instrument_id: " << v.identity.instrument_id;
     auto t = v;
-    stamp(t, ctx_);
+    stamp(t.identity, ctx_);
+    stamp(t.audit, ctx_);
     repo_.write(ctx_, t);
     BOOST_LOG_SEV(lg(), info) << "Saved swaption instrument. "
                               << "instrument_id: " << v.identity.instrument_id;
@@ -87,8 +88,10 @@ void swaption_instrument_service::save_swaption_instruments(
     BOOST_LOG_SEV(lg(), debug) << "Saving " << swaption_instruments.size()
                                << " swaption instruments";
     auto ts = swaption_instruments;
-    for (auto& e : ts)
-        stamp(e, ctx_);
+    for (auto& e : ts) {
+        stamp(e.identity, ctx_);
+        stamp(e.audit, ctx_);
+    }
     repo_.write(ctx_, ts);
 }
 

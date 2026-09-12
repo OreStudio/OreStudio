@@ -118,6 +118,9 @@ Tasks are listed in intended execution order.
 | [[id:6110D479-CAF3-4915-8A64-698193893402][Replace the scheduler's custom history with the generic provider]] | BACKLOG | | | The custom history handler discards the service result and replies success with an empty instances vector, so the audit dialog shows nothing and reports no error. |
 | [[id:9FE3FA66-514B-4C67-83E7-11973B8E520E][Clear the ores.scheduler component audit findings]] | BACKLOG | | | The audit found a generator facet name that disagrees with the tree, an uncatalogued builder folder, three registered handlers with no subject row, and a documented history behaviour that does not exist. |
 | [[id:DA77CBDB-6C6C-4033-8794-53A35C1FD2CB][Convert the remaining integer flags to boolean]] | BACKLOG | | | Three columns are still integer flags where the schema's convention is boolean, and an integer flag reads differently through the text protocol. |
+| [[id:4AF1BDC5-0711-4EF7-ACEF-0E81DF074409][Converge the two SQL type spellings]] | BACKLOG | | | integer and int, and timestamp with time zone and timestamptz, are each spelled two ways across the models, so anything grouping columns by type sees two populations where there is one. |
+| [[id:3E099614-7B88-49F5-8A9B-E91C55AB9890][Give calendar dates a date type in C++]] | BACKLOG | | | 49 date columns pair with std::string against 4 with year_month_day, so most dates are unvalidated strings that every consumer reparses. |
+| [[id:4C97BB89-71E9-479A-BC04-4BA00D006052][Decide how an exact decimal is represented in C++]] | BACKLOG | | | 55 financial columns are numeric(28,10) for exactness and pair with double, which cannot represent most decimal fractions and holds fewer digits than the column. |
 
 * Decisions
 

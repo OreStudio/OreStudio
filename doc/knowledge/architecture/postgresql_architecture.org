@@ -54,6 +54,47 @@ domain sub-prefix:
 
 * Column types
 
+A column states its SQL type in =:type:= and its C++ type in
+=:cpp_type:=. The entity meta-model says what those two properties
+are; this section says which values to give them. Both layers use
+whatever the model declares, so a pairing chosen here is the one the
+generated DDL, the repository entity and the domain type all get.
+
+** The pairings in use
+
+One row per pairing the corpus actually uses. A column outside this
+table is not forbidden, but it should be added here before it spreads.
+
+| SQL type | C++ type | Notes |
+|----------+----------+-------|
+| =text= | =std::string= | The string type. There is no =varchar= in the schema and none should appear: PostgreSQL stores them identically and =varchar(n)= only adds a length check that a =check= constraint states better. |
+| =uuid= | =boost::uuids::uuid= | Surrogate keys and foreign keys. A tenant column is the exception — see [[* Tenancy columns]]. |
+| =integer= | =int= | Counts and orders. Not flags. |
+| =bigint= | =std::int64_t= | When =integer= cannot hold the range. |
+| =boolean= | =bool= | Flags — see [[* Booleans]]. |
+| =numeric(28, 10)= | =double= | Financial quantities — see [[* Decimals]]. |
+| =double precision= | =double= | Quantities where binary floating point is the intended representation, such as model parameters. |
+| =timestamp with time zone= | =std::chrono::system_clock::time_point= | Instants. Never a bare =timestamp=. |
+| =date= | =std::chrono::year_month_day= | Calendar dates — see [[* Dates]]. |
+| =jsonb= | =std::string= | Opaque payloads. =jsonb= rather than =json= so the value is parsed and indexable; the C++ side holds the serialised form because nothing yet needs to query into it. |
+
+A nullable column takes the optional of its C++ type, and only a
+nullable column does. An optional against a =not null= column claims
+an absence the database will never produce.
+
+** One spelling per type
+
+PostgreSQL accepts aliases; the corpus should not. Two are currently
+spelled both ways, and both should converge on the long form the
+table above gives:
+
+- =integer= against =int=, 87 columns to 7.
+- =timestamp with time zone= against =timestamptz=, 15 to 5.
+
+The cost of two spellings is not aesthetic. Anything that groups or
+audits columns by type sees two populations where there is one, which
+is how the boolean inconsistency below went unnoticed.
+
 ** Booleans
 
 A flag is =boolean=, not an integer. The schema has 42 boolean columns
@@ -77,6 +118,51 @@ boolean that is absent is not true.
 Model a flag as =:type: boolean= with =:cpp_type: bool=, and the same
 =bool= reaches the repository entity, so nothing converts at the
 mapper.
+
+** Decimals
+
+A financial quantity is =numeric(28, 10)=: notionals, prices, rates,
+barriers, face values — 55 columns. =numeric= is chosen because it is
+exact, which is the whole reason not to store money in binary
+floating point.
+
+The C++ side then declares =double=, which gives that guarantee back.
+A =double= holds about 15–17 significant decimal digits against
+=numeric(28, 10)='s 28, and cannot represent most decimal fractions
+exactly, so a value can round on the way through C++ and be written
+back changed.
+
+This is recorded rather than resolved. Nothing here relies on exact
+decimal arithmetic in C++ today — the values are carried and
+displayed rather than accumulated — but the pairing is a known
+weakness rather than a considered design, and anything that starts
+summing these in C++ should fix the representation first.
+
+** Dates
+
+A calendar date is =date= paired with =std::chrono::year_month_day=.
+
+Most of the corpus does not do this yet: 49 columns pair =date= with
+=std::string= against 4 with the typed form. A date held as a string
+is a date nothing validates, and every consumer reparses it or
+compares it lexically and hopes the format never changes.
+
+New columns take the typed form. Converting the existing ones is
+worth doing and is not free, since each one's consumers parse the
+string today.
+
+** Tenancy columns
+
+A tenant column is declared through =has_tenant_id= rather than as an
+ordinary =uuid= column, which is what gives it the
+=utility::uuid::tenant_id= wrapper instead of a bare UUID. The wrapper
+exists so a default-constructed nil UUID cannot be mistaken for the
+system tenant, which is the max UUID rather than a nil one.
+
+=nullable_tenant_id= makes the column nullable in SQL. It does not
+currently make the C++ type optional, so a nullable tenant column and
+its domain type disagree; that is a known defect with its own task
+rather than a convention to copy.
 
 * Roles and users
 

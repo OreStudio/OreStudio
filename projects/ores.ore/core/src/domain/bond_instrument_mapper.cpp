@@ -1046,11 +1046,8 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
         issue.issuer = std::string(*bd.IssuerId);
     if (bd.IssueDate)
         issue.issue_date = std::string(*bd.IssueDate);
-    if (bd.SettlementDays) {
-        const std::string settlement_days_str(*bd.SettlementDays);
-        if (!settlement_days_str.empty())
-            issue.settlement_days = std::stoi(settlement_days_str);
-    }
+    if (bd.SettlementDays)
+        issue.settlement_days = count_of(*bd.SettlementDays, 0);
 
     if (bd.Calendar)
         issue.calendar = std::string(*bd.Calendar);
@@ -1333,11 +1330,8 @@ bond_instrument_data bond_instrument_mapper::forward_bond_option(
     bond_option option;
     if (d.OptionData.OptionType)
         option.option_type = std::string(*d.OptionData.OptionType);
-    if (d.strikeGroup.Strike) {
-        const std::string s(*d.strikeGroup.Strike);
-        if (!s.empty())
-            option.option_strike = std::stod(s);
-    }
+    if (d.strikeGroup.Strike)
+        option.option_strike = number_of(*d.strikeGroup.Strike, 0.0);
     stamp_audit(option);
     result.option = option;
 

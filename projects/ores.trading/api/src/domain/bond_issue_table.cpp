@@ -28,12 +28,12 @@ std::string convert_to_table(const std::vector<bond_issue>& v) {
     fort::char_table table;
     table.set_border_style(FT_BASIC_STYLE);
 
-    table << fort::header << "ISIN" << "Issuer" << "Currency" << "Coupon Rate" << "Maturity Date"
-          << "Modified By" << "Version" << fort::endr;
+    table << fort::header << "ISIN" << "Issuer" << "Currency" << "Coupon Rate" << "Modified By"
+          << "Version" << fort::endr;
 
     for (const auto& bi : v) {
-        table << bi.security_id << bi.issuer << bi.currency << bi.coupon_rate << bi.maturity_date
-              << bi.modified_by << bi.version << fort::endr;
+        table << bi.security_id << bi.issuer << bi.currency << bi.coupon_rate << bi.modified_by
+              << bi.version << fort::endr;
     }
     return table.to_string();
 }

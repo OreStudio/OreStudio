@@ -28,8 +28,14 @@
  * family references. The columns map one to one from bondData
  * (instruments.xsd lines 382-403): security_id, issuer, currency,
  * face_value, coupon_rate, coupon_frequency_code, day_count_code,
- * issue_date, maturity_date, settlement_days and the free description;
- * the coupon terms come from the coupon leg of the issue's LegData.
+ * issue_date and settlement_days. Only SecurityId is required by that
+ * schema; every other element is optional, so every other column is
+ * nullable and an absent element is stored as NULL rather than as an
+ * empty string or a zero.
+ *
+ * The coupon terms denormalise the first leg of the issue's LegData,
+ * which is itself optional: a document may identify a bond by its ISIN
+ * alone.
  */
 
 create table if not exists "ores_trading_bond_issues_tbl" (
@@ -37,16 +43,14 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     "tenant_id" uuid not null,
     "version" integer not null,
     "security_id" text not null,
-    "issuer" text not null,
-    "currency" text not null,
-    "face_value" numeric(28, 10) not null,
-    "coupon_rate" numeric(28, 10) not null,
-    "coupon_frequency_code" text not null,
-    "day_count_code" text not null,
-    "issue_date" date not null,
-    "maturity_date" date not null,
-    "settlement_days" integer not null,
-    "description" text null,
+    "issuer" text null,
+    "currency" text null,
+    "face_value" numeric(28, 10) null,
+    "coupon_rate" numeric(28, 10) null,
+    "coupon_frequency_code" text null,
+    "day_count_code" text null,
+    "issue_date" date null,
+    "settlement_days" integer null,
     "calendar" text null,
     "credit_curve_id" text null,
     "reference_curve_id" text null,
@@ -67,11 +71,8 @@ create table if not exists "ores_trading_bond_issues_tbl" (
     ),
     check ("valid_from" < "valid_to"),
     check ("issue_id" <> ores_utility_nil_uuid_fn()),
-    check ("maturity_date" > "issue_date"),
     check ("face_value" > 0),
-    check ("coupon_rate" >= 0),
-    check ("issuer" <> ''),
-    check ("currency" <> '')
+    check ("coupon_rate" >= 0)
 );
 
 -- Version uniqueness for optimistic concurrency

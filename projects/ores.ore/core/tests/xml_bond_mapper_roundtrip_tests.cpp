@@ -76,8 +76,10 @@ TEST_CASE("mapper_roundtrip_bond_forward", tags) {
     CHECK(instr.issue.currency == "EUR");
     CHECK(instr.issue.face_value == Approx(10000000.0).epsilon(0.001));
     CHECK(instr.issue.coupon_rate == Approx(0.05).epsilon(0.0001));
-    CHECK(instr.issue.maturity_date == "2035-02-03");
     CHECK(instr.issue.coupon_frequency_code == "1Y");
+    REQUIRE(!instr.bond_legs.empty());
+    REQUIRE(!instr.bond_legs.front().schedule.rules.empty());
+    CHECK(instr.bond_legs.front().schedule.rules.front().end_date == "2035-02-03");
     BOOST_LOG_SEV(lg, info) << "Bond forward-mapper test passed";
 }
 

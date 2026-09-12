@@ -126,8 +126,7 @@ bond_issue make_issue(const stamps& s, const std::string& security_id) {
     r.coupon_frequency_code = "Annual";
     r.day_count_code = "ACT/365";
     r.issue_date = "2024-01-15";
-    r.maturity_date = "2034-01-15";
-    r.description = "Test issue";
+    r.settlement_days = 2;
     return r;
 }
 

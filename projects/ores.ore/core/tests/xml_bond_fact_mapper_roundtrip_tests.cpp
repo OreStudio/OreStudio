@@ -134,12 +134,12 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
 )";
     const auto r = map_inline(xml);
     CHECK(r.issue.issue_date == "2025-02-01");
-    CHECK(r.issue.maturity_date == "2035-02-03");
     CHECK(r.issue.coupon_frequency_code == "1Y");
 
     REQUIRE(r.bond_legs.front().schedule.rules.size() == 1);
     const auto& carried = r.bond_legs.front().schedule.rules.front();
     CHECK(carried.start_date == "2025-02-03");
+    CHECK(carried.end_date == "2035-02-03");
     CHECK(carried.calendar == "EUR");
     CHECK(carried.term_convention == "MF");
     CHECK(carried.rule == "Forward");
@@ -724,7 +724,6 @@ TEST_CASE("bond_repo_leg_keeps_the_tenor_the_issue_does_not_take", tags) {
     CHECK(r.issue.coupon_frequency_code.empty());
     CHECK(r.issue.currency.empty());
     CHECK(r.issue.face_value == 0.0);
-    CHECK(r.issue.maturity_date.empty());
 
     REQUIRE(r.repo);
     CHECK(r.repo->repo_type == "Fixed");

@@ -93,12 +93,10 @@ public:
                                             std::string coupon_frequency_code,
                                             std::string day_count_code,
                                             std::string issue_date,
-                                            std::string maturity_date,
                                             std::string trs_return_type,
                                             std::string trs_funding_leg_code,
                                             std::string option_type,
                                             std::string option_strike,
-                                            std::string description,
                                             std::string change_reason_code,
                                             std::string change_commentary);
 

@@ -1085,11 +1085,6 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
             issue.coupon_rate =
                 static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());
 
-        if (ld.ScheduleData && !ld.ScheduleData->Rules.empty()) {
-            const auto& rule = ld.ScheduleData->Rules.front();
-            if (rule.EndDate)
-                issue.maturity_date = std::string(*rule.EndDate);
-        }
     }
 }
 
@@ -1155,18 +1150,12 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
                 // A container that came from a document carries the leg
                 // whole, so this rebuild runs only for a row set with no
                 // remainder: the issue terms are then the whole of what is
-                // known, and the issue date is the closest stand-in the row
-                // holds for a schedule start.
-                if (!ld.ScheduleData &&
-                    (!issue.maturity_date.empty() || !issue.coupon_frequency_code.empty())) {
+                // known. The schedule's end date is not among them, because
+                // the issue row does not hold it; it lives in the schedule
+                // table and is read from there.
+                if (!ld.ScheduleData && !issue.coupon_frequency_code.empty()) {
                     scheduleData_Rules_t rule;
-                    if (!issue.maturity_date.empty()) {
-                        domain::date d;
-                        static_cast<std::string&>(d) = issue.maturity_date;
-                        rule.EndDate = xsd::optional<domain::date>(d);
-                    }
-                    if (!issue.coupon_frequency_code.empty())
-                        static_cast<std::string&>(rule.Tenor) = issue.coupon_frequency_code;
+                    static_cast<std::string&>(rule.Tenor) = issue.coupon_frequency_code;
                     if (!issue.issue_date.empty())
                         rule.StartDate = issue.issue_date;
                     scheduleData sched;

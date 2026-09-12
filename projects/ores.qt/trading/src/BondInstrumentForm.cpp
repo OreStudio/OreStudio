@@ -63,10 +63,8 @@ void BondInstrumentForm::setupConnections() {
     connect(ui_->issuerEdit, &QLineEdit::textChanged, this, markChanged);
     connect(ui_->currencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->issueDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
-    connect(ui_->maturityDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->couponFrequencyCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->dayCountCombo, &QComboBox::currentTextChanged, this, markChangedStr);
-    connect(ui_->descriptionEdit, &QPlainTextEdit::textChanged, this, markChanged);
     connect(ui_->optionTypeCombo, &QComboBox::currentTextChanged, this, markChangedStr);
     connect(ui_->optionExpiryDateEdit, &QDateEdit::dateChanged, this, markChangedDate);
     connect(ui_->trsReturnTypeCombo, &QComboBox::currentTextChanged, this, markChangedStr);
@@ -151,9 +149,7 @@ void BondInstrumentForm::setReadOnly(bool readOnly) {
     ui_->couponFrequencyCombo->setEnabled(!readOnly);
     ui_->dayCountCombo->setEnabled(!readOnly);
     ui_->issueDateEdit->setReadOnly(readOnly);
-    ui_->maturityDateEdit->setReadOnly(readOnly);
     ui_->settlementDaysSpinBox->setReadOnly(readOnly);
-    ui_->descriptionEdit->setReadOnly(readOnly);
     ui_->optionTypeCombo->setEnabled(!readOnly);
     ui_->optionExpiryDateEdit->setReadOnly(readOnly);
     ui_->optionStrikeSpinBox->setReadOnly(readOnly);
@@ -182,9 +178,7 @@ void BondInstrumentForm::writeUiToInstrument() {
         InstrumentFormUtils::getComboValue(ui_->couponFrequencyCombo);
     data_.issue.day_count_code = InstrumentFormUtils::getComboValue(ui_->dayCountCombo);
     data_.issue.issue_date = ui_->issueDateEdit->isoDate();
-    data_.issue.maturity_date = ui_->maturityDateEdit->isoDate();
     data_.issue.settlement_days = ui_->settlementDaysSpinBox->value();
-    data_.issue.description = ui_->descriptionEdit->toPlainText().trimmed().toStdString();
     // The form carries one exercise date; the container carries the
     // whole list a document can hold. The reworked form is unit 3.
     const std::string option_expiry_date = ui_->optionExpiryDateEdit->isoDate();
@@ -238,9 +232,7 @@ void BondInstrumentForm::populateFromInstrument() {
         ui_->couponFrequencyCombo->blockSignals(b);
         ui_->dayCountCombo->blockSignals(b);
         ui_->issueDateEdit->blockSignals(b);
-        ui_->maturityDateEdit->blockSignals(b);
         ui_->settlementDaysSpinBox->blockSignals(b);
-        ui_->descriptionEdit->blockSignals(b);
         ui_->optionTypeCombo->blockSignals(b);
         ui_->optionExpiryDateEdit->blockSignals(b);
         ui_->optionStrikeSpinBox->blockSignals(b);
@@ -259,9 +251,7 @@ void BondInstrumentForm::populateFromInstrument() {
                                        data_.issue.coupon_frequency_code);
     InstrumentFormUtils::setComboValue(ui_->dayCountCombo, data_.issue.day_count_code);
     ui_->issueDateEdit->setIsoDate(data_.issue.issue_date);
-    ui_->maturityDateEdit->setIsoDate(data_.issue.maturity_date);
     ui_->settlementDaysSpinBox->setValue(data_.issue.settlement_days);
-    ui_->descriptionEdit->setPlainText(QString::fromStdString(data_.issue.description));
     ui_->optionExpiryDateEdit->setIsoDate(data_.option_exercise_dates.empty()
                                               ? std::string()
                                               : data_.option_exercise_dates.front());

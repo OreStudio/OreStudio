@@ -12,7 +12,7 @@
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-11
-#+updated: 2026-09-11
+#+updated: 2026-09-12
 #+environment: eager_maxwell
 #+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
 
@@ -31,9 +31,9 @@ upstream hand-patches must survive the sync. Report whether
 |--------------+----------------------------------------|
 | State        | STARTED                              |
 | Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
-| Now          | All three compile breaks from the XSD regeneration are fixed, and every =ores.ore= source and test unit type-checks. Nothing has run yet. |
-| Waiting on   | A free build-lock slot. Another worktree holds both with a full-repo build. |
-| Next         | Build and run =ores.ore.core.tests=, then bootstrap the missing golden for =Credit_CallableBond.xml=. |
+| Now          | The build is green and =ores.ore.core.tests= passes: 479 test cases, 428882 assertions. The example coverage test covers all 132 examples in =Products/Example_Trades=. |
+| Waiting on   | Nothing.                               |
+| Next         | Raise the PR. The domain round-trip dataset is still out of step; it is tracked separately. |
 | Last touched | 2026-09-12                               |
 
 * Acceptance

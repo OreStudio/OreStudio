@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/rework-bond-ores-mapping
-#+pr:
+#+pr: 2073
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-09
@@ -734,7 +734,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2073][#2073]] | [ore,trading] Round trip the bond products and envelope at zero loss |
 
 * Review
 

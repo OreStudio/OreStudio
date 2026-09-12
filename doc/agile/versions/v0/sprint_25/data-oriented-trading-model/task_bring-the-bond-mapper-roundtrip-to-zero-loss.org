@@ -2421,7 +2421,9 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | A stated element whose value equals its type's default is dropped on export: =SettlementDirty= =N=, =FairPrice= =0= and =ExpiryLag= =0= all vanished from a crafted bond future probe. | =bond_instrument_mapper.cpp= (=reverse_bond_future=) | Decline in this branch | The fix is a presence flag per member in the generated =bond_future= container, so it is a modeling and codegen change, not a mapper edit. Filed as [[id:A3DA0BB5-FDB4-4C18-B738-3BE87CA8BC31][Keep stated but default-valued elements in the bond export]]. The corpus cannot measure the class: no document in =external/ore/examples= is a BondFuture trade. |
+| 2 | =format_number= writes =1e+05= for =100000.0=, because =std::to_chars= defaults to the shortest round-trip form. Reaches =ContractNotional= and =FairPrice= on the future, and =option_strike= on the option. | =bond_instrument_mapper.cpp= (=format_number=) | Decline | The value reparses to the same double, and the acceptance predicate counts a numeric spelling difference as classified rather than lost. Recorded debt. A fix must not trade =1e+05= for =100000.000000=, which the same schema reads back as a different string. |
+| 3 | Two call sites read a schema-declared string with a bare =std::stoi= and =std::stod= while the same file defines =count_of= and =number_of= for that job. The bare calls throw; the importer catches per trade, so one malformed value leaves the trade with an empty instrument and no product block. | =bond_instrument_mapper.cpp= (=map_bond_data=, =map_bond_option=) | Accept | Fixed in =611dcb81b3=. Both call sites now go through the helpers, which is the policy the file already documents for a string-typed numeric field. |
 
 * Result
 

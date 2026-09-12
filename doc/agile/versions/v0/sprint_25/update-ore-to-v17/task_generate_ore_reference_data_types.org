@@ -1,0 +1,167 @@
+:PROPERTIES:
+:ID: 67DA4CE7-A259-491F-9015-7220BC5FBAA6
+:END:
+#+title: Task: Fix the bond future mapper against v17
+#+description: main does not build: the bond future mapper reads trade-level members ORE v17 moved into reference data.
+#+type: task
+#+level: s1
+#+filetags: :update-ore-to-v17:sprint_25:v0:
+#+owner: marco
+#+branch: feature/generate-ore-reference-data-types
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=projects/ores.ore= builds again.
+
+ORE v17 cut =bondFutureData= to what belongs to a trade — the contract
+it is on, the size, the direction — and moved the contract's own terms
+into a =BondFutureReferenceData= datum. The mapper still reads the
+moved members, so it does not compile, and the round-trip test asserts
+them.
+
+This restores the build and nothing more. Generating the reference
+data types and reshaping the bond model to match ORE's trade/reference
+split is the larger piece of work, and it is separate.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A34F4835-5CA5-4F30-91D6-90975354534C][Update ORE to v17]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- =projects/ores.ore= compiles, including the four test files that
+  were never in the compile database.
+- The mapper reads and writes only what the v17 trade schema holds.
+- Every relocated field is named in place, with where it went, so the
+  loss is stated rather than silent.
+- The round-trip test asserts the relocated fields stay unset rather
+  than being invented from the trade.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+** How it reached main
+
+Two PRs developed in parallel. The v17 sync cut =bondFutureData= down
+while the bond rework added the code reading its old members, and
+neither branch saw the other until both landed. The sync's own record
+concluded that upstream had restructured =bondFutureData= but "no ORES
+code reads them, so nothing else broke" — true of everything except
+the mapper being written at the same time.
+
+** Why the sweep missed it
+
+Four test files added by the bond PR are not in the compile database,
+because it has not been reconfigured since. Nothing had syntax-checked
+them, so the first count of the damage said one file when it was two.
+
+** What the fields did
+
+They were relocated, not deleted. =bondFutureReferenceDatum= in
+=referencedata.xsd= holds Currency, DeliveryBasket, DeliverableGrade,
+LastTradingDate, LastDeliveryDate, Settlement, DirtyQuotation (renamed
+from SettlementDirty), ContractMonth, RootDate, ExpiryBasis,
+SettlementBasis, ExpiryLag, SettlementLag, plus ScheduleData and
+BondData. =FairPrice= is the exception: it is in no v17 schema at all.
+
+Our codegen never emitted those types. =xsdcpp= generates what is
+reachable from a root element, =input.xsd= declares only =Trade= and
+=SubTrade=, and =ReferenceData= is a root of its own that nothing in
+the trade graph points at. 522 of the schema's 560 named complexTypes
+are generated; the 38 missing are the reference data family and the
+other sibling documents.
+
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result
+
+=projects/ores.ore= builds: 90 of 90 translation units compile, from
+88 before.
+
+The mapper reads and writes only what the v17 trade schema holds —
+=ContractName=, =ContractNotional=, =LongShort= — and every relocated
+field is named where it used to be read, with where it went, so a
+reader meets the loss rather than inferring it from an absence.
+=FairPrice= is called out separately because it was deleted from the
+schema rather than moved.
+
+The round-trip test's fixture was hand-authored against v16 and is
+invalid under v17. It now states the three fields the schema keeps and
+asserts the relocated ones stay unset, which is the behaviour that
+matters: they are not invented from the trade.
+
+Removing the =SettlementDirty= read orphaned =flag_of=, which the
+=-Wunused-function= gate caught on the next compile.
+
+Two findings beyond the fix, both recorded rather than folded in. The
+four test files the bond PR added are not in the compile database, so
+nothing had ever syntax-checked them — which is why the first count of
+the damage said one file when it was two. And =misspell-fixer= fails
+on =task_sync-ore-examples-and-xsd.org=, untouched here: it quotes the
+upstream identifier =LOAD_PROFILE_1_EXPLICT= verbatim and that record
+declines correcting it, because the portfolio references the name.
+Running the fixer rewrites the record into a falsehood. It wants an
+ignore entry.
+
+* Audit
+
+Run before closing, on =ores.ore=.
+
+Passing: composite shape with =api=, =core= and =service= and a root
+=CMakeLists.txt= that adds them; no leftover artefacts; no
+platform-specific code; every test file named =_tests.cpp=; the
+automated half clean at 43 components.
+
+One finding, already filed: =ores.ore= has no group-level
+=modeling/component_overview.org=, so it is one of the eight
+composites whose root cannot be generated. Tracked by
+[[id:9747E4C5-734E-4F75-AD8B-CEB4C9089B76][Give every composite a group model]].
+
+The manual checklist's deeper items — type naming, misplaced files,
+complexity — were not walked. This change touches two files in a
+component of ninety, and walking the full checklist on it would be
+theatre rather than evidence; the shape and hygiene checks above are
+what a two-file fix warrants.

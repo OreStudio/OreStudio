@@ -8,7 +8,7 @@
 #+filetags: :sprint_25:v0:
 #+created: 2026-09-11
 #+updated: 2026-09-11
-#+environment: eager_maxwell
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -60,6 +60,7 @@ version it wants and we can compare the two on live jobs.
 | [[id:E6AD2AD9-2EF9-4F3E-8D10-526E0B60232A][Build and vendor the ORE v1.8.17.0 engine package]] | DONE | 2026-09-11 | 2026-09-12 | Build the v1.8.17.0 engine into one self-contained package with external/ore/tools/package_ore.sh, self-test it against TA002, and commit it beside the v1.8.16.0 package. |
 | [[id:ADA8C792-C844-485E-81EE-8BA4073FF3F8][Publish both ORE engine versions during provisioning]] | STARTED | 2026-09-11 | | Register both engine versions in the compute seed and publish both packages during ACME provisioning, so a grid job can run on v1.8.16.0 or v1.8.17.0. |
 | [[id:64CB13D8-4848-4C66-8B6B-5946A4F4D8FF][Cover the seven new ORE v1.8.17.0 trade types]] | BACKLOG | | | Add mapper and round-trip coverage for the trade types that appear for the first time in v1.8.17.0, none of which maps into an ORES trading type today. |
+| [[id:67DA4CE7-A259-491F-9015-7220BC5FBAA6][Generate the ORE reference data types and fix the bond future mapper]] | DONE | 2026-09-12 | 2026-09-12 | main does not build: ORE v17 moved the bond future's contract terms from the trade into reference data, which codegen never emitted because xsdcpp only generates types reachable from the Trade root. |
 
 * Decisions
 

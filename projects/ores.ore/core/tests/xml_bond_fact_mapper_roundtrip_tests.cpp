@@ -920,11 +920,18 @@ TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
 // The future row
 // =============================================================================
 
-TEST_CASE("bond_future_maps_every_fact_column_and_the_basket", tags) {
+TEST_CASE("bond_future_maps_the_trade_level_facts", tags) {
     auto lg(make_logger(test_suite));
 
     // No example document states a BondFuture, so the trade is authored
-    // after the schema's bondFutureData.
+    // after the schema's bondFutureData. In v17 that type holds only
+    // what belongs to the trade: the contract it is on, the size, and
+    // the direction. The contract's own terms — currency, month,
+    // deliverable grade, settlement and its basis, expiry basis, the
+    // lags, root date, last trading and delivery dates, and the
+    // delivery basket — moved to the BondFutureReferenceData datum
+    // keyed by ContractName, and are covered once that document is
+    // parsed. FairPrice was dropped from the schema outright.
     const std::string xml = R"(
 <Portfolio>
   <Trade id="Future">
@@ -933,23 +940,6 @@ TEST_CASE("bond_future_maps_every_fact_column_and_the_basket", tags) {
       <ContractName>Euro-Bund-Future</ContractName>
       <ContractNotional>100000</ContractNotional>
       <LongShort>Long</LongShort>
-      <Currency>EUR</Currency>
-      <ContractMonth>2026-03</ContractMonth>
-      <DeliverableGrade>Bund</DeliverableGrade>
-      <FairPrice>132.45</FairPrice>
-      <Settlement>Physical</Settlement>
-      <SettlementDirty>true</SettlementDirty>
-      <RootDate>2026-03-10</RootDate>
-      <ExpiryBasis>Annual</ExpiryBasis>
-      <SettlementBasis>Annual</SettlementBasis>
-      <ExpiryLag>2</ExpiryLag>
-      <SettlementLag>3</SettlementLag>
-      <LastTradingDate>2026-03-06</LastTradingDate>
-      <LastDeliveryDate>2026-03-10</LastDeliveryDate>
-      <DeliveryBasket>
-        <Id>DE0001102325</Id>
-        <Id>DE0001102333</Id>
-      </DeliveryBasket>
     </BondFutureData>
   </Trade>
 </Portfolio>
@@ -962,43 +952,28 @@ TEST_CASE("bond_future_maps_every_fact_column_and_the_basket", tags) {
     CHECK(f.contract_name == "Euro-Bund-Future");
     CHECK(f.contract_notional == Approx(100000.0));
     CHECK(f.long_short == "Long");
-    CHECK(f.currency == "EUR");
-    CHECK(f.contract_month == "2026-03");
-    CHECK(f.deliverable_grade == "Bund");
-    CHECK(f.fair_price == Approx(132.45));
-    CHECK(f.settlement == "Physical");
-    CHECK(f.settlement_dirty);
-    CHECK(f.root_date == "2026-03-10");
-    CHECK(f.expiry_basis == "Annual");
-    CHECK(f.settlement_basis == "Annual");
-    CHECK(f.expiry_lag == 2);
-    CHECK(f.settlement_lag == 3);
-    CHECK(f.last_trading_date == "2026-03-06");
-    CHECK(f.last_delivery_date == "2026-03-10");
     CHECK(f.modified_by == "ores");
     CHECK(f.change_reason_code == "system.external_data_import");
+
+    // The relocated terms have no source in the trade, so they stay at
+    // their defaults rather than being invented from it.
+    CHECK(f.currency.empty());
+    CHECK(f.contract_month.empty());
+    CHECK(f.deliverable_grade.empty());
+    CHECK(r.future_delivery_basket.empty());
 
     // A future carries no bond terms, so the issue row its NOT NULL
     // issue_id points at is minted empty.
     CHECK(r.issue.security_id.empty());
     CHECK(r.instrument.issue_id == r.issue.issue_id);
-    CHECK(r.future_delivery_basket == std::vector<std::string>{"DE0001102325", "DE0001102333"});
 
     const auto rt = bond_instrument_mapper::reverse_bond_future(r);
     REQUIRE(rt.BondFutureData);
     CHECK(std::string(rt.BondFutureData->ContractName) == "Euro-Bund-Future");
     CHECK(std::string(rt.BondFutureData->LongShort) == "Long");
     CHECK(std::stod(std::string(rt.BondFutureData->ContractNotional)) == Approx(100000.0));
-    REQUIRE(rt.BondFutureData->Currency);
-    CHECK(ores::ore::domain::to_string(*rt.BondFutureData->Currency) == "EUR");
-    REQUIRE(rt.BondFutureData->SettlementDirty);
-    CHECK(std::string(*rt.BondFutureData->SettlementDirty) == "true");
-    REQUIRE(rt.BondFutureData->DeliveryBasket);
-    REQUIRE(rt.BondFutureData->DeliveryBasket->Id.size() == 2);
-    CHECK(std::string(rt.BondFutureData->DeliveryBasket->Id[0]) == "DE0001102325");
-    CHECK(std::string(rt.BondFutureData->DeliveryBasket->Id[1]) == "DE0001102333");
 
-    BOOST_LOG_SEV(lg, info) << "BondFuture fact row and delivery basket mapped.";
+    BOOST_LOG_SEV(lg, info) << "BondFuture trade-level facts mapped.";
 }
 
 // =============================================================================

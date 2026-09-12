@@ -38,8 +38,11 @@ Return to [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]].
 
 A component audit runs every so often, and always on these triggers:
 
-- A component reaches zero codegen drift. Audit it right after its
-  drift-baseline story closes, while the component is fresh.
+- A component reaches zero codegen drift. Audit it /before/ the task
+  that cleared it closes, not after. Clearing drift says the generated
+  tree matches the generator and nothing more, so closing on that
+  alone declares a component sound on evidence nobody gathered. The
+  close-task skill carries this as its first step.
 - The component's folder layout or codegen templates change.
 - A new sub-component is added to a composite.
 - Any doubt appears about a component's shape or structure.

@@ -134,6 +134,96 @@ def _load_profile_assignments(slug: str) -> tuple[tuple[str, Any], ...]:
     return tuple(out)
 
 
+@lru_cache(maxsize=None)
+def _load_custom_type_headers() -> tuple[tuple[str, str], ...]:
+    """Parse projects/modeling/cpp_custom_types.org into (type, header) pairs.
+
+    A column's ``:cpp_type:`` may name a type the domain-header template
+    cannot derive an include for -- a domain enum, a value type such as
+    ``cron_expression``. The registry binds each to the header that
+    defines it so the model states the type once instead of stating the
+    type and remembering the header separately.
+
+    Rejects a registry that binds one type to two headers: a bare
+    ``domain::`` name is component-relative rather than globally unique,
+    so an ambiguity introduced later must fail rather than resolve to
+    whichever row happens to come first.
+    """
+    path = _PROFILES_DIR / "cpp_custom_types.org"
+    if not path.is_file():
+        return ()
+    doc = parse_org(path.read_text(encoding="utf-8"))
+    section = _section(doc.root, "The registry")
+    if not section:
+        return ()
+    out: dict[str, str] = {}
+    for row in _parse_org_table_rows(section):
+        name = row.get("Type", "").strip().strip("=")
+        header = row.get("Header", "").strip().strip("=")
+        if not name or not header:
+            continue
+        if name in out and out[name] != header:
+            raise ValueError(
+                f"cpp_custom_types.org binds '{name}' to both "
+                f"{out[name]} and {header}; a type must name one header")
+        out[name] = header
+    return tuple(sorted(out.items()))
+
+
+def _headers_for_types(cpp_types: list[str]) -> list[str]:
+    """Registered headers the given column types need, in registry order.
+
+    Matches a registered name as a whole type name inside each column's
+    declared type, so ``std::optional<cron_expression>`` needs the same
+    header as ``cron_expression`` -- the wrapper is not what needs
+    including.
+
+    Two boundary rules make that safe. A neighbouring identifier
+    character rules the occurrence out, so ``asset_class_id`` is not a
+    use of ``asset_class``. A preceding ``::`` rules it out too, so the
+    bare ``domain::product_type`` does not match inside
+    ``ores::trading::domain::product_type``: a name qualified by a
+    different namespace is a different type, and matching it here would
+    resolve it to another component's header without the registry's
+    one-type-one-header check ever seeing the collision. Each spelling
+    in use therefore earns its own row.
+
+    Every column is searched, and every occurrence within it. An
+    earlier column that merely contains a registered name must not hide
+    a later column that actually declares it.
+    """
+    pattern_cache = [
+        (header, re.compile(
+            r"(?<![A-Za-z0-9_:])" + re.escape(name) + r"(?![A-Za-z0-9_])"))
+        for name, header in _load_custom_type_headers()
+    ]
+    out: list[str] = []
+    for header, pattern in pattern_cache:
+        if header in out:
+            continue
+        if any(pattern.search(t) for t in cpp_types):
+            out.append(header)
+    return out
+
+
+def _with_registered_headers(includes: dict, columns: list) -> None:
+    """Add the headers the columns' registered custom types need.
+
+    Appends rather than reorders, and only what is missing, so a model
+    that already lists the header by hand is untouched -- which is what
+    keeps regeneration byte-identical for every entity that predates the
+    registry. Order does not matter in the output: codegen runs
+    clang-format, and .clang-format sorts and merges include blocks.
+    """
+    types = [str(c.get("cpp_type", "")) for c in columns if c.get("cpp_type")]
+    if not types:
+        return
+    domain = includes.setdefault("domain", [])
+    for header in _headers_for_types(types):
+        if header not in domain:
+            domain.append(header)
+
+
 def _parse_physical_space_table(root: OrgNode) -> dict[str, bool]:
     """Parse a ``* Physical space`` heading's ``| Address | Enabled |`` table
     (if present) into ``{address: enabled}`` -- the same shape
@@ -1314,6 +1404,7 @@ def org_document_to_model(doc: OrgDocument) -> dict[str, Any]:
                     if t not in _ENTITY_HEADER_STANDARD_INCLUDES
                 ] if ent else [],
             }
+            _with_registered_headers(cpp_out["includes"], de.get("columns", []))
         conv = _section(cpp_section, "Conventions")
         if conv:
             for k, v in conv.properties.items():
@@ -1720,6 +1811,7 @@ def load_org_junction_model(path: Path | str) -> dict[str, Any]:
                     if t not in _ENTITY_HEADER_STANDARD_INCLUDES
                 ] if ent else [],
             }
+            _with_registered_headers(cpp_out["includes"], columns)
         conv = _section(cpp_section, "Conventions")
         if conv:
             for k, v in conv.properties.items():

@@ -1,0 +1,146 @@
+:PROPERTIES:
+:ID: 3B57DD4B-E6CB-48CC-803A-74834270AB9E
+:END:
+#+title: Task: Bind custom C++ types to the headers that define them
+#+description: A column can declare any cpp_type but its header is listed separately by hand, so the two can drift apart or the include can be forgotten entirely.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch: feature/bind-custom-types-to-headers
+#+pr: 2071
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment: bright_faraday
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Declaring a registered custom type in a column is enough; codegen supplies the header that defines it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                                |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Nothing. |
+| Waiting on   | Nothing.                               |
+| Next         | Nothing. |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- A registry declares each custom domain type and the header that defines it.
+- A column whose cpp_type is a registered type pulls that header into the entity's includes without the model repeating it.
+- Wrapped forms of a registered type, such as an optional or a vector of it, resolve to the same header.
+- Regenerating every component in the drift registry stays byte-identical.
+- cron_expression is registered, proving the mechanism on the type that motivated it.
+
+* Plan
+
+Find out whether the mechanism is needed before designing one. The
+survey settled it: eight custom types are already in use across the
+corpus — four domain enums, the =tenant_id= value type,
+=year_month_day=, and both spellings of =product_type= — and each one
+has its header written out by hand in the entity that uses it. The
+loader's own comment already named the case it could not derive.
+
+Design for byte-identity. Anything that reorders existing include
+lists rewrites 171 models, so the mechanism adds only what is missing.
+That also makes the first verification meaningful: if regeneration is
+unchanged, the registry agrees with every include a human wrote.
+
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2071][#2071]] | [codegen] Bind custom C++ types to the headers that define them |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The matching rule tests only the leftmost occurrence, so a column containing a registered name inside a longer identifier hides a later column that genuinely declares it | org_loader.py | Accept | A real bug. Each column is now searched separately and every occurrence within it, which removes the failure by construction rather than patching the index arithmetic. Regression test added with the reviewer's exact case |
+| 2 | My own test could not have caught it: it only ever put one type in the list, so the hidden-later-occurrence path was untested | test_custom_type_headers.py | Accept | The more useful half of the finding. The test proved the rule on cases I had already thought of |
+| 3 | =::= is not a boundary, so a bare =domain::product_type= matches inside any longer namespace ending the same way, and such a collision is invisible to the one-type-one-header check | org_loader.py | Accept | Fixed rather than documented. A preceding =::= now rules the occurrence out, so a name qualified by another namespace is a different type. That also makes the =ores::trading::domain::product_type= row load-bearing instead of redundant |
+| 4 | The delete-the-include experiment is a valid proof that the registry supplies a missing header, and does not happen to exercise the matching bug | — | Accept | No change. Worth recording that the two findings sit on different axes: the experiment proves the mechanism acts, and says nothing about which names it matches |
+| 5 | Ambiguity as a hard error is a reasonable trade against per-component scoping | — | Accept | No change |
+| 6 | The audit-ordering change reads consistently across both documents | — | Accept | No change |
+
+* Result
+
+All five acceptance criteria are met.
+
+=projects/modeling/cpp_custom_types.org= registers nine types against
+the headers that define them. A column declaring a registered type
+pulls its header in, and wrapped forms resolve to the same header
+because the wrapper is not what needs including.
+
+Eight of the nine were already in use and had their headers written
+out by hand. =cron_expression= is the ninth, registered for the
+scheduler resync that motivated the task.
+
+Verified two ways, because either alone proves half of it.
+Regenerating all eight registry components is byte-identical, so the
+registry agrees with every include a human wrote and nothing existing
+moved. Then deleting the =asset_class= include from =feed_binding='s
+model and regenerating =marketdata= left the generated header
+unchanged and still including it — the registry supplied what the
+model stopped declaring, which the byte-identical run cannot show.
+
+Twelve tests cover it. One earned its place on the first run: checking
+that every registered header exists on disk caught that a simple
+component nests one level shallower than a part of a composite.
+
+Review found a real bug in the matching rule and a second, subtler
+one. The rule tested only the leftmost occurrence of a registered
+name across an entity's types joined into one string, so a column
+holding a longer identifier could hide a later column that genuinely
+declared the type. Each column is now searched separately, and every
+occurrence within it. A preceding =::= also counts as a boundary now,
+so a name qualified by another namespace is a different type rather
+than an incidental substring match that would resolve to the wrong
+component's header.
+
+The registry rejects binding one type to two headers. A bare
+=domain::= name is component-relative rather than globally unique, so
+an ambiguity introduced later has to fail rather than resolve to
+whichever row comes first.
+
+* Audit
+
+Run before closing, per the trigger this task tightened.
+
+The components touched are =ores.codegen= and =projects/modeling=.
+=ores.codegen= is a tool component, and the audit is explicit that
+tool components keep their own documented trees rather than the
+api/core/service shape its checklist governs, so the C++ component
+checklist does not apply to it. The automated half passes: 43
+components, no findings. =projects/modeling= is a modeling directory
+rather than a component and the audit does not cover it.
+
+No C++ domain component was touched, so no component audit was due
+beyond this.

@@ -279,6 +279,9 @@ TEST_CASE("export_portfolio_ascot_roundtrip", tags) {
 TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
     auto lg(make_logger(test_suite));
 
+    // The trade-side BondFutureData holds only these three required
+    // elements. The currency, the contract month and the delivery basket
+    // sit on the bond future reference datum, keyed by contract name.
     const std::string doc = R"(
 <Portfolio>
   <Trade id="RoundtripBondFuture001">
@@ -287,11 +290,6 @@ TEST_CASE("export_portfolio_bond_future_roundtrip", tags) {
       <ContractName>Euro-Bund-Future</ContractName>
       <ContractNotional>100000</ContractNotional>
       <LongShort>Long</LongShort>
-      <Currency>EUR</Currency>
-      <ContractMonth>2026-03</ContractMonth>
-      <DeliveryBasket>
-        <Id>DE0001102325</Id>
-      </DeliveryBasket>
     </BondFutureData>
   </Trade>
 </Portfolio>

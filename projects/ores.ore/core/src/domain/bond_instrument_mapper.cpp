@@ -1479,7 +1479,7 @@ bond_instrument_data bond_instrument_mapper::forward_ascot(const trade& t,
     if (d.OptionData.OptionType)
         row.ascot_option_type = *d.OptionData.OptionType;
     stamp_audit(row);
-    result.ascot = row;
+    result.ascot_row = row;
 
     map_exercise_dates(d.OptionData, result.option_exercise_dates);
     result.option_exercise_schedule = map_exercise_schedule(d.OptionData);
@@ -1690,9 +1690,9 @@ trade bond_instrument_mapper::reverse_ascot(const bond_instrument_data& data) {
     }
     if (data.option_data)
         reverse_option_data(*data.option_data, d.OptionData);
-    else if (data.ascot && !data.ascot->ascot_option_type.empty()) {
+    else if (data.ascot_row && !data.ascot_row->ascot_option_type.empty()) {
         optionData_OptionType_t ot;
-        static_cast<std::string&>(ot) = data.ascot->ascot_option_type;
+        static_cast<std::string&>(ot) = data.ascot_row->ascot_option_type;
         d.OptionData.OptionType = std::move(ot);
     }
     reverse_exercise_dates(

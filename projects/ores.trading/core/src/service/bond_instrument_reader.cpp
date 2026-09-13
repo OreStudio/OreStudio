@@ -611,7 +611,7 @@ bond_instrument_reader::read_instruments(
         else if (ttc == "BondFuture")
             data.future = future_svc.get_future(id);
         else if (ttc == "Ascot")
-            data.ascot = ascot_svc.get_ascot(id);
+            data.ascot_row = ascot_svc.get_ascot(id);
 
         apply_option_residue(data);
         if (family != leg_family.end())

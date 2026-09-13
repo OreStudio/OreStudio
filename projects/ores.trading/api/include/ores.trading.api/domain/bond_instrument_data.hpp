@@ -105,8 +105,11 @@ struct bond_instrument_data final {
 
     /**
      * @brief The ascot fact row, engaged for Ascot products.
+     *
+     * The name carries the _row suffix because gcc rejects a member whose
+     * name repeats its own type name (-Wchanges-meaning).
      */
-    std::optional<ascot> ascot;
+    std::optional<ascot> ascot_row;
 
     /**
      * @brief Every exercise date the option's schedule lists, in document order.
@@ -229,8 +232,8 @@ inline void stamp_ids(bond_instrument_data& data,
         data.repo->instrument_id = instrument_id;
     if (data.future)
         data.future->instrument_id = instrument_id;
-    if (data.ascot)
-        data.ascot->instrument_id = instrument_id;
+    if (data.ascot_row)
+        data.ascot_row->instrument_id = instrument_id;
 }
 
 }

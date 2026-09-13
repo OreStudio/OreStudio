@@ -925,9 +925,9 @@ save_bond_instrument(Nats& nats,
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || !fact_resp->success)
             return error.empty() ? "save_bond_future failed" : error;
-    } else if (ttc == "Ascot" && data.ascot) {
+    } else if (ttc == "Ascot" && data.ascot_row) {
         save_ascot_request fact_req;
-        fact_req.data = *data.ascot;
+        fact_req.data = *data.ascot_row;
         fact_req.data.instrument_id = instrument.identity.instrument_id;
         auto fact_resp = nats_call(nats, fact_req, error);
         if (!fact_resp || !fact_resp->success)

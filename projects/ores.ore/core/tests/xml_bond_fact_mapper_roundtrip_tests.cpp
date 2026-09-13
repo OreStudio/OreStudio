@@ -174,8 +174,7 @@ TEST_CASE("the_coupon_leg_keeps_a_start_date_the_issue_date_does_not_hold", tags
     CHECK(to_string(*rule.Rule) == "Forward");
     CHECK(rt.BondData->LegData.front().LegType == ores::ore::domain::legType::Fixed);
 
-    BOOST_LOG_SEV(lg, info)
-        << "The coupon leg keeps a start date the issue date does not hold.";
+    BOOST_LOG_SEV(lg, info) << "The coupon leg keeps a start date the issue date does not hold.";
 }
 
 // =============================================================================
@@ -910,7 +909,8 @@ TEST_CASE("bond_trs_price_type_and_payer_come_from_the_document", tags) {
     CHECK(*rt.BondTRSData->TotalReturnData.InitialPrice == Approx(109.712f));
     REQUIRE(rt.BondTRSData->TotalReturnData.ScheduleData.Dates.size() == 1);
     REQUIRE(rt.BondTRSData->TotalReturnData.ScheduleData.Dates.front().Calendar);
-    CHECK(std::string(*rt.BondTRSData->TotalReturnData.ScheduleData.Dates.front().Calendar) == "GBP");
+    CHECK(std::string(*rt.BondTRSData->TotalReturnData.ScheduleData.Dates.front().Calendar) ==
+          "GBP");
     CHECK(rt.BondTRSData->FundingData.LegData.Payer);
 
     BOOST_LOG_SEV(lg, info) << "BondTRS price type and payer read from the document.";
@@ -1288,8 +1288,7 @@ TEST_CASE("the_option_block_survives_the_round_trip", tags) {
     REQUIRE(ro.PaymentData->Rules);
     CHECK(ro.PaymentData->Rules->Lag == 2);
     CHECK(std::string(ro.PaymentData->Rules->Calendar) == "TARGET");
-    CHECK(ro.PaymentData->Rules->Convention ==
-          ores::ore::domain::businessDayConvention::MF);
+    CHECK(ro.PaymentData->Rules->Convention == ores::ore::domain::businessDayConvention::MF);
     REQUIRE(ro.PaymentData->Rules->RelativeTo);
     CHECK(*ro.PaymentData->Rules->RelativeTo == ores::ore::domain::optionPayRelativeTo::Exercise);
     REQUIRE(ro.SettlementData);

@@ -137,20 +137,33 @@ std::optional<Variant> decode_flat(const instrument_payload& payload) {
     return found;
 }
 
+/**
+ * The generic-lambda fold expression this replaces segfaults clang 19 and
+ * AppleClang 16 inside TransformCXXFoldExpr, so the trial is spelled as the
+ * same recursive helper pair decode_flat uses.
+ */
+template <typename Variant, typename Leg, std::size_t I>
+void try_one_with_legs(const instrument_payload& payload,
+                       std::optional<with_legs<Variant, Leg>>& found) {
+    using Leaf = std::variant_alternative_t<I, Variant>;
+    if (found || payload.type != leaf_name<Leaf>())
+        return;
+    if (auto r = read_as<with_legs<Leaf, Leg>>(payload))
+        found = with_legs<Variant, Leg>{Variant(std::move(r->instrument)), std::move(r->legs)};
+}
+
+template <typename Variant, typename Leg, std::size_t... Is>
+void try_each_with_legs(const instrument_payload& payload,
+                        std::optional<with_legs<Variant, Leg>>& found,
+                        std::index_sequence<Is...>) {
+    (try_one_with_legs<Variant, Leg, Is>(payload, found), ...);
+}
+
 template <typename Variant, typename Leg>
 std::optional<with_legs<Variant, Leg>> decode_with_legs(const instrument_payload& payload) {
     std::optional<with_legs<Variant, Leg>> found;
-    [&]<std::size_t... Is>(std::index_sequence<Is...>) {
-        (([&] {
-             using Leaf = std::variant_alternative_t<Is, Variant>;
-             if (found || payload.type != leaf_name<Leaf>())
-                 return;
-             if (auto r = read_as<with_legs<Leaf, Leg>>(payload))
-                 found = with_legs<Variant, Leg>{Variant(std::move(r->instrument)),
-                                                 std::move(r->legs)};
-         }()),
-         ...);
-    }(std::make_index_sequence<std::variant_size_v<Variant>>{});
+    try_each_with_legs<Variant, Leg>(
+        payload, found, std::make_index_sequence<std::variant_size_v<Variant>>{});
     return found;
 }
 

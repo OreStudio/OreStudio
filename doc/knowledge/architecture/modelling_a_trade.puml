@@ -31,7 +31,7 @@ skinparam object {
     BorderColor #4C7A44
 }
 
-package "The three scopes" {
+package "The data model" {
     class "product type" as pt {
         code : TradeType  <<key>>
         asset class

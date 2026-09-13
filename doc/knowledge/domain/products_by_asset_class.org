@@ -21,18 +21,18 @@ notes lives in the Knowledge hub, in the Products section.
 ORE's rates catalogue covers the swap family, caps and floors, digitals, and
 the amortising and barrier structures.
 
-| Product | Description |
-|---------+-------------|
-| [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]] | An amortising swap that follows the prepayments of a reference security; ORE's BalanceGuaranteedSwap product. |
-| [[id:0EE613F9-9A1F-4B03-A1B2-FB4791D6C2EE][Callable Swap]] | A swap one party can cancel on set dates; ORE's CallableSwap product. |
-| [[id:3DCC5F43-9728-4E67-8720-AE307E780CBF][Cap/Floor]] | A strip of interest rate caplets or floorlets bounding a floating leg; ORE's CapFloor product. |
-| [[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]] | A swap with an option to cut the notional toward a lower bound; ORE's FlexiSwap product. |
-| [[id:11714B3F-A790-4797-BE01-41426289E7C7][Forward Rate Agreement]] | A single-period lock on a future interest rate; ORE's ForwardRateAgreement product. |
-| [[id:37689AC9-DBA5-41AA-866E-19522F733D2E][Knock Out Swap]] | A swap that terminates when a rate fixing breaches a barrier; ORE's KnockOutSwap product. |
-| [[id:94B1DBE3-33AB-44F5-B9F1-B71E34A58123][Rate Digital Option]] | A fixed-payout option on an interest rate fixing; ORE's RateDigitalOption product. |
-| [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]] | An interest rate swap exchanges streams of interest payments between two parties on a notional; ORE's swap family. |
-| [[id:FCC37EB3-D654-4333-B110-3BF4AFA3A237][Swaption]] | An option to enter an interest rate swap; ORE's Swaption product. |
-| [[id:D0F2BDFE-AA84-4472-86E5-AB273E1A8EEC][Zero Coupon Swap]] | An interest rate swap whose zero-coupon leg pays one final amount at maturity; ORE's ZeroCouponSwap product. |
+| Product                 | Description                                                                                                        |
+|-------------------------+--------------------------------------------------------------------------------------------------------------------|
+| [[id:EE7D0A97-FD6D-46AA-9419-C6F01275F7E2][Balance Guaranteed Swap]] | An amortising swap that follows the prepayments of a reference security; ORE's BalanceGuaranteedSwap product.      |
+| [[id:0EE613F9-9A1F-4B03-A1B2-FB4791D6C2EE][Callable Swap]]           | A swap one party can cancel on set dates; ORE's CallableSwap product.                                              |
+| [[id:3DCC5F43-9728-4E67-8720-AE307E780CBF][Cap/Floor]]               | A strip of interest rate caplets or floorlets bounding a floating leg; ORE's CapFloor product.                     |
+| [[id:A4785FCB-5001-46DF-8F65-F63BB12526F3][Flexi Swap]]              | A swap with an option to cut the notional toward a lower bound; ORE's FlexiSwap product.                           |
+| [[id:11714B3F-A790-4797-BE01-41426289E7C7][Forward Rate Agreement]]  | A single-period lock on a future interest rate; ORE's ForwardRateAgreement product.                                |
+| [[id:37689AC9-DBA5-41AA-866E-19522F733D2E][Knock Out Swap]]          | A swap that terminates when a rate fixing breaches a barrier; ORE's KnockOutSwap product.                          |
+| [[id:94B1DBE3-33AB-44F5-B9F1-B71E34A58123][Rate Digital Option]]     | A fixed-payout option on an interest rate fixing; ORE's RateDigitalOption product.                                 |
+| [[id:28DFC605-9F3D-470D-A45B-347EBA4B45B7][Swap]]                    | An interest rate swap exchanges streams of interest payments between two parties on a notional; ORE's swap family. |
+| [[id:FCC37EB3-D654-4333-B110-3BF4AFA3A237][Swaption]]                | An option to enter an interest rate swap; ORE's Swaption product.                                                  |
+| [[id:D0F2BDFE-AA84-4472-86E5-AB273E1A8EEC][Zero Coupon Swap]]        | An interest rate swap whose zero-coupon leg pays one final amount at maturity; ORE's ZeroCouponSwap product.       |
 
 * FX derivatives
 
@@ -168,13 +168,13 @@ scripted trade module.
 ORE prices bond structures with embedded equity and credit features, and
 bundles component trades into one composite trade.
 
-| Product | Description |
-|---------+-------------|
-| [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]] | An American-style option to buy back a convertible bond; ORE's Ascot product. |
-| [[id:4E78B88B-432F-445D-9FEA-9DBE80718DBF][Callable Bond]] | A bond with issuer call and investor put rights; ORE's CallableBond product. |
-| [[id:F8341BB7-33FE-4441-8C2D-56B8DDDCA91C][Collateral Bond Obligation]] | A tranched securitisation of a portfolio of corporate bonds or loans; ORE's CBO product. |
-| [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]] | A hybrid position bundling multiple component trades; ORE's CompositeTrade product. |
-| [[id:F5D8E0C4-EC67-4210-AF1C-B664246810C9][Convertible Bond]] | A bond that converts into a prespecified number of shares; ORE's ConvertibleBond product. |
+| Product                    | Description                                                                               |
+|----------------------------+-------------------------------------------------------------------------------------------|
+| [[id:DBC183E7-9AB4-481A-8A27-A70966EE4D48][Ascot]]                      | An American-style option to buy back a convertible bond; ORE's Ascot product.             |
+| [[id:4E78B88B-432F-445D-9FEA-9DBE80718DBF][Callable Bond]]              | A bond with issuer call and investor put rights; ORE's CallableBond product.              |
+| [[id:F8341BB7-33FE-4441-8C2D-56B8DDDCA91C][Collateral Bond Obligation]] | A tranched securitisation of a portfolio of corporate bonds or loans; ORE's CBO product.  |
+| [[id:2D1B9342-FC33-49DF-8F23-5B2248968156][Composite Trade]]            | A hybrid position bundling multiple component trades; ORE's CompositeTrade product.       |
+| [[id:F5D8E0C4-EC67-4210-AF1C-B664246810C9][Convertible Bond]]           | A bond that converts into a prespecified number of shares; ORE's ConvertibleBond product. |
 
 * See also
 

@@ -1,0 +1,74 @@
+:PROPERTIES:
+:ID: 08B4D983-5972-49D2-8639-46A475710CA3
+:END:
+#+title: Task: Mark generated output in every technical space, not just SQL
+#+description: Generated SQL says AUTO-GENERATED DO NOT EDIT; generated C++, CMake, doc and oresmd say nothing, so 106 of 133 templates produce files a reader cannot tell are generated.
+#+type: task
+#+level: s1
+#+filetags: :unify_llm_skills_catalogue:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Every generated file states that it is generated and which template produced it.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:2FCD10F0-E7B5-4CBA-A7C7-E28845DB8AAC][Unify the LLM skills catalogue]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- The C++, CMake, doc and oresmd templates emit the same marker the SQL templates already emit, naming the template.
+- The marker is emitted as output text, not as a mustache comment, which is stripped at render.
+- Regenerating every component in the drift registry is byte-identical apart from the added marker lines.
+- A check rejects a template whose output carries no marker, so the gap cannot reopen.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

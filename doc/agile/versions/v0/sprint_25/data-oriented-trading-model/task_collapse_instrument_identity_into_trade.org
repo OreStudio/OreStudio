@@ -1,0 +1,139 @@
+:PROPERTIES:
+:ID: 7B23DB0F-243D-4101-81C8-9AE01AB00FB2
+:END:
+#+title: Task: Collapse the instrument identity into the trade
+#+description: A trade and its instrument point at each other through two nullable soft links with no referential integrity, where ORE has a single trade id; the third identity is why fields drift between the trade and the security.
+#+type: task
+#+level: s1
+#+filetags: :data-oriented-trading-model:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-12
+#+updated: 2026-09-12
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+An instrument is identified by its trade, so the model carries ORE's two identities — trade and security — and no third.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DISCOVERED                              |
+| Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-12                               |
+
+* Acceptance
+
+- instrument_id is gone from instrument_identity_field_group and from every entity that inherits or references it.
+- trade.instrument_id is gone, so the two directions of a one-to-one relationship cannot disagree.
+- Instrument tables are keyed by trade_id, not null, with a real foreign key to the trade rather than a soft link.
+- An instrument with no real trade behind it is represented by a trade of a reserved type, so there is one shape rather than two.
+- The ORE round trip stays at zero loss and the import planner still links every instrument to its trade.
+
+* Plan
+
+** What ORE has
+
+=componentTrade= is a =TradeType=, an =Envelope=, =TradeActions= and
+the trade-data group, with one identity: the =id= attribute. No
+instrument concept is named anywhere in =instruments.xsd=. The
+instrument /is/ the trade data. The only other identity is
+=SecurityId=, and that names a security in reference data.
+
+So ORE has two identities, trade and security. We have three.
+
+** What we have instead
+
+=trade.instrument_id= is a nullable uuid pointing at the instrument,
+and the instrument's =trade_id= is a nullable uuid pointing back.
+Neither is a foreign key: the trades table carries an index and the
+instrument's own comment calls its side a soft link.
+
+A one-to-one relationship is therefore modelled as two nullable
+pointers facing each other, with nothing able to guarantee they agree.
+Trade A can name instrument X while instrument X names trade B, and
+the database will accept it.
+
+The trade-less case the nullability exists for is never exercised. The
+import planner always sets =trade_id=, and =planner_import_planner_tests=
+requires it.
+
+** Why this blocks the security split
+
+Three identities is why fields drift. With trade, instrument and
+security there is no obvious home for a field, and =instrument= sits
+in the middle collecting things that belong at either end — which is
+how a bond future's contract terms and a bond's coupon schedule ended
+up stored once per trade. With two, the question answers itself: a
+field is keyed by the trade or by the security.
+
+Doing the security split first would mean reshaping the same tables
+twice.
+
+** The change
+
+=instrument_identity_field_group= is the leverage point: it declares
+=instrument_id=, =trade_type_code=, =party_id= and =trade_id=, and 27
+models inherit it. Removing =instrument_id= there and making
+=trade_id= the non-nullable key carries most of the change. The
+remaining entities keyed on =instrument_id= — the per-product and
+child tables, 47 in all — take the renamed key.
+
+=trade.instrument_id= goes with it. The link is the child's
+=trade_id=, and a real foreign key replaces the soft one.
+
+An instrument with no real trade gets a trade of a reserved type
+rather than a null link, so every instrument is reached the same way.
+
+** Sequence
+
+Model first, then regenerate, then the hand-written callers, then the
+SQL migration. Nothing removes a column before its replacement exists.
+The component audit runs before the task closes.
+
+** A finding to carry separately
+
+The generated C++ in =ores.trading= carries no generated marker, where
+the generated SQL says so plainly. Nothing tells a reader that
+=domain/ascot.hpp= is codegen output, which is how a generated file
+gets hand-edited. It also made this change hard to size: of 815 files
+referencing =instrument_id=, the split between generated and
+hand-written cannot be read off the files.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

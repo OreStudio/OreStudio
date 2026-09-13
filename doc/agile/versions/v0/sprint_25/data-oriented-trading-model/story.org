@@ -8,7 +8,7 @@
 #+filetags: :trading:data-model:codegen:data-oriented:sprint_25:v0:
 #+created: 2026-09-08
 #+updated: 2026-09-08
-#+environment: brave_hopper
+#+environment: bright_faraday
 #+todo: BACKLOG STARTED | DONE ABANDONED
 
 This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
@@ -96,6 +96,10 @@ component.
 | [[id:FCC206C0-D808-40CC-86E8-14F687B0AB57][Fix silent instrument loss from untagged variant serialisation]] | DONE | 2026-09-12 | 2026-09-12 | reflect-cpp writes a std::variant untagged and reads it back by trying the alternatives in declaration order, so std::monostate -- the first alternative of ores.trading.domain.trade_instrument -- parsed from every payload. Every instrument decoded as monostate and was dropped, on both the NATS wire and the storage blob. |
 | [[id:27FC1760-3BF2-4D46-B6F3-C42BB0A9EC83][Retire the rfl complexity flags and close the variant traps]] | BACKLOG | | | The -fbracket-depth=1024 and /constexpr:depth100000 flags on ores.trading.api, and the comment naming rfl::AddTagsToVariants, were added for a variant-tagging change that was reverted. Measured: every TU on the export path compiles at bracket depth 128, so the flags are now unneeded there. Also records two traps: get_trade_instrument_response.instrument is still a std::variant, and bond_instrument_data reflects 28 fields, above the 19 that already tripped MSVC C1202 in sprint 19. |
 | [[id:A3DA0BB5-FDB4-4C18-B738-3BE87CA8BC31][Keep stated but default-valued elements in the bond export]] | BACKLOG | | | A bond future states SettlementDirty, FairPrice and ExpiryLag, each with a value equal to its type default, and the export drops all three. The reverse mapper tests the value instead of the presence, so the container needs a presence flag per member. That is a modeling and codegen change to ores.trading.bond_future, not a mapper edit. |
+| [[id:0C525D24-F52E-49AB-8301-47BE637C10A2][Split the bond security from the trade, following ORE]] | BACKLOG | | | Bond static data — the issue, its legs, and a future's contract terms — is stored once per trade because every bond table hangs off instrument_id, which carries trade_id; ORE holds the same data once per security in a reference datum. |
+| [[id:7B23DB0F-243D-4101-81C8-9AE01AB00FB2][Collapse the instrument identity into the trade]] | BACKLOG | | | A trade and its instrument point at each other through two nullable soft links with no referential integrity, where ORE has a single trade id; the third identity is why fields drift between the trade and the security. |
+| [[id:6FE5251D-C860-41F7-8F1E-9F5825F751FF][Document the product identity scheme]] | STARTED | 2026-09-12 | | There is no document explaining the trade envelope against the product, the trade type catalogue is behind v17, and the product index links through a hardcoded host address. |
+| [[id:F628C22E-E488-43EF-8B0C-9C6FA5893E9A][Add a product short code to trade type]] | BACKLOG | | | Add a short mnemonic code to trade_type, mint one for each of the 119 product types, and correct the identifiers table on every product knowledge page. |
 
 * Decisions
 

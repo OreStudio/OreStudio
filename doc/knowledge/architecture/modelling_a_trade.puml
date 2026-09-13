@@ -1,0 +1,98 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+!pragma layout smetana
+
+title Modelling a trade
+
+hide circle
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #D6E8FA
+    BorderColor #2C5C8A
+}
+skinparam object {
+    BackgroundColor #EDF6EC
+    BorderColor #4C7A44
+}
+
+package "The three scopes" {
+    class "product type" as pt {
+        code : TradeType  <<key>>
+        asset class
+    }
+
+    class security {
+        id  <<key>>
+        product type
+        terms fixed at issue
+    }
+
+    class trade {
+        trade id  <<key>>
+        product type
+        security [optional]
+        envelope
+    }
+
+    class "instrument\n(the economics)" as instr #E8F0D8 {
+        trade id  <<key>>
+        notional, direction
+        schedule, strike, rate
+    }
+
+    pt "1" -- "0..*" security : classifies
+    security "1" -- "0..*" trade : is dealt by
+    pt "1" -- "0..*" trade : classifies
+    trade "1" -- "1" instr : keyed by trade id
+}
+
+note bottom of instr #E8F0D8
+  Modelled per product type, as
+  bond_instrument and its siblings.
+  It holds no identity of its own:
+  its terms differ per deal, so the
+  trade id keys them.
+end note
+
+package "Exemplar: a bond, which has a security" {
+    object "Bond : product type" as ex_bond_pt
+    object "UKT 4.25% 2032 : security" as ex_bond_sec
+    object "TRD-00871 : trade" as ex_bond_trd
+    object "TRD-00871 : instrument" as ex_bond_instr
+
+    ex_bond_pt -- ex_bond_sec
+    ex_bond_sec -- ex_bond_trd
+    ex_bond_trd -- ex_bond_instr
+}
+
+package "Exemplar: a swaption, which has none" {
+    object "Swaption : product type" as ex_swp_pt
+    object "TRD-00912 : trade" as ex_swp_trd
+    object "TRD-00912 : instrument" as ex_swp_instr
+
+    ex_swp_pt -- ex_swp_trd
+    ex_swp_trd -- ex_swp_instr
+}
+
+note bottom of ex_swp_instr
+  No security exists to name, so the
+  trade carries every economic term.
+end note
+
+@enduml

@@ -1,0 +1,102 @@
+:PROPERTIES:
+:ID: CB93E961-E1D9-403B-83C0-1E15CBA13667
+:END:
+#+title: Security identifiers
+#+description: ISIN, CUSIP and SEDOL: the codes that identify a security, who assigns them, and how they differ.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:identity:refdata:
+#+created: 2026-09-13
+#+updated: 2026-09-13
+
+* Summary
+
+A security identifier names one tradeable instrument: a specific bond
+issue, a specific listed share. Three schemes carry most of the
+traffic. ISIN is the international standard, CUSIP covers the United
+States and Canada, and SEDOL covers the United Kingdom and Ireland.
+
+These codes identify the security, which is one of the three scopes in
+[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][modelling a trade]]. They say nothing about a deal, and
+[[id:E080E32B-5E53-4AB7-903F-145D070C045C][trade identifiers]] answer that separate question.
+
+* ISIN
+
+ISO 6166 defines the International Securities Identification Number.
+An ISIN is twelve characters: a two-letter country code from ISO
+3166-1, a nine-character national security identifier, and one check
+digit.
+
+A National Numbering Agency assigns ISINs for its own jurisdiction,
+and the Association of National Numbering Agencies coordinates the
+agencies. The country prefix therefore records which agency issued the
+code rather than where the security trades. Securities issued into the
+international market through Euroclear or Clearstream carry the
+prefix =XS=, which belongs to no single country.
+
+An ISIN identifies the security and not the listing. The same ISIN
+appears on every venue where the security trades, so an ISIN alone
+cannot say which venue a price came from.
+[[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] covers the schemes that answer that
+question.
+
+* CUSIP
+
+The Committee on Uniform Security Identification Procedures gives the
+scheme its name. A CUSIP is nine characters: six identifying the
+issuer, two identifying the issue, and one check digit. It covers the
+United States and Canada, and CUSIP Global Services assigns codes on
+behalf of the American Bankers Association.
+
+A CUSIP is the national security identifier inside a United States
+ISIN, so the two codes carry the same nine characters, and the ISIN
+adds the country prefix and its own check digit. The CINS extension
+applies the same format to securities outside North America.
+
+* SEDOL
+
+The Stock Exchange Daily Official List gives the scheme its name. A
+SEDOL is seven alphanumeric characters, the last of which is a check
+digit. The London Stock Exchange assigns SEDOLs and acts as the
+National Numbering Agency for the United Kingdom and Ireland, so a
+SEDOL forms the national security identifier inside a =GB= ISIN.
+
+Unlike an ISIN, a SEDOL is assigned per listing rather than per
+security, so one security listed on several venues has several SEDOLs.
+
+* Which code a bond carries
+
+A bond issue is the case where these codes do the most work. An issuer
+sells a tranche of debt under fixed terms, and the ISIN is what the
+market quotes and settles against. [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] sets out the
+mechanics of the issue itself.
+
+Issuers re-open existing lines rather than always creating new ones. A
+re-opened tranche carries the ISIN of the line it joins, which is why
+an ISIN identifies a security rather than a single sale event.
+
+* What the model holds
+
+ORE names a security through =ReferenceData=. A bond trade points at
+its reference datum through =BondData/SecurityId=, and the value there
+is the security identifier.
+
+We do not yet hold a coding scheme registry for security identifiers.
+The data quality coding scheme table registers party identifiers, such
+as LEI, BIC and MIC, and the securities schemes on this page have no
+equivalent entry.
+
+* Sources
+
+The three schemes are described from their defining standards and from
+the assigning bodies' published material: ISO 6166 for ISIN, CUSIP
+Global Services for CUSIP, and the London Stock Exchange for SEDOL.
+This page cites no edition or clause for any of them.
+
+* See also
+
+- [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — the codes that name a deal rather than a security.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Modelling a trade]] — the three scopes; these codes identify the security.
+- [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] — what an issue is, and why re-openings share an ISIN.
+- [[id:F3010EA7-6A0E-405C-81FA-1EF051749B5E][External market data identifiers]] — the venue-aware schemes an ISIN cannot replace.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

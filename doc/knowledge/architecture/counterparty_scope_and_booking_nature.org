@@ -1,0 +1,307 @@
+:PROPERTIES:
+:ID: 03C12558-69AC-4925-AAE1-85FFF75B10BA
+:END:
+#+title: Counterparty scope and booking nature
+#+description: Why no single flag says what a trade contributes to, how counterparty scope and booking nature select a state machine, and what the machine cannot decide on its own.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:lifecycle:modeling:
+#+created: 2026-09-12
+#+updated: 2026-09-13
+
+* Summary
+
+A client trade held pending carries risk but does not settle. A profit
+remittance settles and reconciles but produces no P&L. A summary trade
+stays out of P&L and inside cash balances. Each of these three fails
+to count, and each fails differently.
+
+No single flag can say whether a trade is real. Two dimensions can.
+=counterparty_scope= says who the firm faces. =booking_nature= says
+whether anything happened to cause the booking. Together they select
+the state machine the trade runs through, and what the trade
+contributes to follows from what that machine can do.
+
+Exclusion is then the default. A machine that holds no confirmation
+transition cannot confirm, so no report has to filter it out.
+
+This page says *trade* for the record and *booking* for the act that
+creates it.
+
+* The question
+
+Does this trade contribute, and to what? Contribution is not one
+predicate. A trade may stay out of P&L and inside risk, inside cash
+and out of settlement, visible to operations and invisible to traders.
+
+* Why one flag cannot answer it
+
+Three cases rule out a single boolean. All three occur routinely.
+
+- A *pending client trade* does not settle and sends no confirmation.
+  It does reach the trader's book, so the desk manages its risk from
+  the start.
+- The firm executes and settles a *profit remittance*, and it appears
+  in cash reconciliation. P&L and the ledger both exclude it.
+- A *summary trade* replaces many trades with one. P&L reporting
+  excludes it and cash balances include it. It is safe because the
+  book's cash balance does not change.
+
+Any one boolean gets at least one of these wrong.
+
+* Three different things, often confused
+
+A taxonomy of non-contributing trades mixes three kinds of thing, and
+each needs a different mechanism.
+
+| It is a | Examples | Mechanism |
+|---------+----------+-----------|
+| *Classification* — what the trade is, fixed for its life | internal risk transfer, test trade, hypothetical | Selects the state machine |
+| *State* — where a real trade has got to | pre-live, held over, unauthorised, pending | A state within its machine |
+| *Event* — something that happened to a real trade | null amend, valuation change, undo, book move | A transition, named and audited |
+
+A pre-live trade is not a kind of trade. It is a client trade that
+nobody has admitted yet, and it becomes a normal one by moving state.
+A null amend is not a trade at all.
+
+Market data scenarios are a fourth thing, and they are not trades. A
+perturbed curve is a new element with its own identity, and it
+declares its source and the perturbation applied. It belongs to the
+valuation environment rather than to this taxonomy.
+
+* Counterparty scope
+
+=counterparty_scope= says who the firm faces, and therefore what
+obligation the booking creates. [[id:8FB6949F-05C1-4867-91F3-B9B6FA2329EC][=counterparty=]] models the party
+itself, and this dimension records the firm's relationship to that
+party.
+
+| Value | Meaning | Obligation |
+|-------+---------+-----------|
+| =external= | A party outside the group | A real obligation to a third party |
+| =inter_entity= | Another legal entity of the same group | A real obligation between two entities, netting to zero at group level |
+| =intra_entity= | Another book in the same legal entity and branch | No new obligation; risk moves and nothing is owed |
+
+The dimension is deliberately not a boolean. A book move escapes
+external consequence only inside one legal entity and branch. Across
+entities it is a real trade that must confirm and settle, even though
+the group nets flat. A boolean would permit an inter-entity transfer to
+skip confirmation.
+
+* Booking nature
+
+=booking_nature= says whether anything happened to cause the booking.
+
+| Value | Meaning |
+|-------+---------|
+| =actual= | The firm did a deal, and the booking records it |
+| =test= | The booking exercises the system and records nothing |
+| =hypothetical= | The booking answers a question and records nothing |
+
+Traders say "hypo" for the third value. The stored value is
+=hypothetical=, and the shorthand belongs in the user interface rather
+than in the data.
+
+* Why two dimensions and not one
+
+A single fused enumeration looks as though it would make invalid
+states unrepresentable. It would not, because every combination means
+something.
+
+An external hypothetical is the main pre-deal case, a what-if against
+a named client, which is what a potential future exposure calculation
+asks. An external test exercises the settlement and confirmation paths
+end to end, and those paths exist only for external trades.
+
+The two dimensions also grow at different rates. Counterparty scope
+may gain values as the legal entity structure becomes more granular. Booking
+nature will not. A fused enumeration multiplies that growth, and it
+turns "every internal booking" into an =in= list that someone must
+revisit whenever a value appears.
+
+* The dimensions select the machine
+
+Together the two dimensions determine the lifecycle a trade can have.
+
+- An *external, actual* trade confirms, settles, and contributes to
+  P&L, risk, the ledger and regulatory reporting.
+- An *intra-entity, actual* trade — a desk transfer, a sweep, a risk
+  move — is a real booking that takes no external position. It never
+  confirms and never settles.
+- A *test* trade exercises the system. It affects no position, no
+  ledger and no downstream feed, and it must stay isolated from the
+  main books while controls can still see it.
+- A *hypothetical* trade answers a question. The same machinery values
+  it as a real trade, and it contributes to nothing but the question.
+
+Each combination gets its own machine, so the difference lives in
+which transitions exist rather than in which reports remember to
+filter. An intra-entity trade cannot settle by accident, because its
+machine holds no transition that would settle it.
+
+We already hold the machinery. The
+[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade status state machine]] runs on =ores_dq_fsm_machines_tbl=,
+=ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=, its
+transitions carry a guard function, and a
+[[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][=trade=]] already holds a state in one of those machines. The model
+lacks the two dimensions, and the rule that they pick the machine.
+
+* What the machine cannot decide on its own
+
+One machine per combination cannot express the partial cases, and the
+profit remittance shows why: it settles and it produces no P&L. A
+machine that decided everything would have to treat settling and
+producing no P&L as contradictory states.
+
+Calypso resolves this by giving trades, payments and messages their
+own workflows. The trade's machine does not decide settlement. It
+decides whether a transfer is ever created, and the transfer carries
+its own lifecycle. Confirmation works the same way, because a message
+either exists or does not.
+
+Contribution therefore divides in two.
+
+- *Derived* — settlement and confirmation follow from whether the
+  downstream object exists at all. Nothing needs a flag, because
+  nothing needs excluding.
+- *Declared* — P&L and ledger eligibility are not objects with
+  lifecycles, so they need a rule. Murex states this directly: a
+  contract in a status of "candidate for official P&L" enters official
+  P&L.
+
+Deriving whatever can be derived keeps the declared set small enough
+to audit.
+
+* Where the values come from, and whether they change
+
+Both dimensions belong to the trade, because they select the machine
+and the machine must hold for the trade's life. Booking derives them
+rather than asking for them: the counterparty's legal entity gives the
+scope, and a test book gives the nature.
+
+That answers a question these taxonomies usually leave open, which is
+whether exclusion is configured at book, party, entity or trade level.
+Those four are not competing levels. They are different reasons, each
+living where its reason lives, and the booked trade records the
+conclusion.
+
+Neither dimension changes after booking. A hypothetical that someone
+then deals is not a hypothetical that became actual. It is a new
+trade, linked to the hypothetical that justified it, and the link
+preserves the pre-deal audit trail that what-if tooling normally
+loses.
+
+* Promotion
+
+Most of what looks like promotion is not. A draft becoming live, a
+pre-live trade being admitted, a held-over trade being released: each
+is an external actual trade moving *state* within one machine. The
+machine is working, and no classification changes.
+
+Genuine promotion is rare, and one case accounts for most of it: a
+hypothetical that someone then deals. Changing the nature in place is
+possible, but it destroys the record the hypothetical was created to
+hold. The machine would have to
+migrate, the audit trail would say a question became a position, and
+the trade would overwrite the record of what was asked before anyone
+dealt it.
+
+A new actual trade linked to the hypothetical keeps both the question
+that was asked and the position that followed.
+
+The other directions should not be possible at all. A test trade
+becoming actual is the abuse that isolation exists to prevent, and a
+change of counterparty scope changes who the firm owes. A book move
+across legal entities is not a move. It is a cancellation and a
+rebooking.
+
+* What the mechanism costs
+
+Each of these machines puts something in the system that does not
+behave like a normal trade, so each one invites abuse: test books that
+hold losses across a period end, internal counterparties that
+represent a hedge the firm has not made, trades left against a
+placeholder counterparty long after onboarding should have finished. Structural exclusion does not remove
+that risk. It concentrates the risk in the choice of machine.
+
+Four countermeasures answer it. *Isolation* keeps these trades away
+from the official position. *Visibility* keeps controls able to see
+them, because isolation is not invisibility. *Ageing* catches the
+usual signal, which is how long something has stayed in a state it
+should have left. *Permissioning* keeps the power to create a trade
+that does not count away from the people whose reported results it
+would improve.
+
+* What other systems do
+
+Calypso runs trades, payments and messages through separate workflows,
+and each stage is a status. A trade the front office creates starts
+Pending and becomes FO_Confirmed on execution. Because the workflows
+are separate, what a trade settles or confirms is a fact about its
+transfers and messages rather than a property of the trade.
+
+Murex selects contracts into official P&L by status, so eligibility
+for a downstream process keys off lifecycle position rather than off a
+reality flag.
+
+Both point the same way: lifecycle first, per-process eligibility
+second, and no global boolean. Both descriptions come from vendor
+documentation rather than from a published standard, and this page
+cites no edition or page for either, so they corroborate the design
+without establishing it.
+
+* Naming
+
+Each candidate name must clear a use that already exists in the model.
+
+[[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][=trade_type=]] already means the *product* — =Bond=, =Swap=,
+=BondFuture= — and carries ORE's =TradeType= codes. A second dimension
+named anything adjacent to "type" or "kind" would be indistinguishable
+from it in code and in conversation, which rules out =trade_kind= and
+=booking_type=.
+
+Naming a dimension after its consequence fails for a different reason.
+=booking_effect= and =booking_consequence= promise to say what the
+trade contributes to, and they cannot. Contribution is a pattern
+across several downstream consumers, derived from both dimensions
+together with state, so a name that promises one answer invites an
+implementer to encode one.
+
+Two further candidates collide with model elements that already exist.
+=ores.dq= holds an origin dimension, whose values are =Primary= and
+=Derived=, so =booking_origin= is taken. =ores.dq= also registers
+=live= as a trade state in the state machine, so =live= cannot also be
+a nature.
+
+=nature= is the word this model already uses for the question, asked
+of a different entity. The data quality nature dimension classifies a
+dataset as =Actual=, =Synthetic= or =Mock=, and its own description
+records that =Actual= was chosen over =Real=. The two dimensions ask the same
+question of different entities: is this thing real, or does it exist
+because the firm created it?
+
+The value sets stay separate. The data quality dimension classifies
+how a dataset was produced, and =booking_nature= classifies why a
+trade exists. Same question, different entities, different
+enumerations.
+
+* Open questions
+
+- Whether one machine per combination suffices, or whether products
+  with their own lifecycle events (exercise, trigger, fixing) need
+  their own machines, and whether transition guards can carry that
+  variation instead.
+- Whether a hypothetical persists at all. Pre-deal tooling is
+  described both as never booking and as entering the trade into the
+  system, and the answer decides whether hypotheticals live in these
+  tables or outside them.
+- Whether =counterparty_scope= needs a fourth value for a branch of
+  the same legal entity, which some jurisdictions treat separately for
+  reporting.
+
+* See also
+
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Modelling a trade]] — the three scopes a trade is modelled in; this page is the other axis.
+- [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — the machinery these dimensions select.
+- [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — explicit variation over inheritance webs.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

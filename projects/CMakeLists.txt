@@ -61,6 +61,11 @@ add_compile_options(
     $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Werror>
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
     $<$<CXX_COMPILER_ID:MSVC>:/WX>
+    # C4251 fires on every exported class that carries a std::string or a
+    # container, which is most of them. Every consumer is an in-tree target
+    # built by this same toolchain against these same headers, so the ABI
+    # mismatch the warning exists to catch cannot arise here.
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4251>
     # /FS forces synchronous PDB writes so sccache can cache /Zi compilations.
     # Without it, parallel cl.exe invocations race on the shared .pdb file.
     $<$<CXX_COMPILER_ID:MSVC>:/FS>)

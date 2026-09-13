@@ -27,15 +27,28 @@ target_compile_definitions(${lib_target_name} PRIVATE ORES_ORE_CORE_LIBRARY)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(${lib_target_name} PRIVATE
         -fvisibility=hidden -fvisibility-inlines-hidden)
-
-    # domain.cpp is 104k lines emitted by xsdcpp from ORE's schemas. It
-    # declares per-element info tables, three of which no generated code
-    # references. The fix belongs upstream in the generator, so the
-    # warning is silenced for that one file rather than the tree.
-    set_source_files_properties(
-        ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
-        PROPERTIES COMPILE_OPTIONS "-Wno-unused-const-variable")
 endif()
+
+# domain.cpp is 104k lines emitted by xsdcpp from ORE's schemas. It
+# declares per-element info tables, three of which no generated code
+# references, and nine serialization helpers marked XSDCPP_MAYBE_UNUSED.
+# That macro resolves to the unused attribute only under __GNUC__, which
+# clang defines for every target except the MSVC one, so the Windows
+# compilers see the nine as ordinary unused functions and -Werror rejects
+# them. The fix belongs upstream in xsdcpp, so the warnings are silenced
+# for that one file rather than the tree.
+set(domain_cpp_warnings "")
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    list(APPEND domain_cpp_warnings "-Wno-unused-const-variable")
+    if(WIN32)
+        list(APPEND domain_cpp_warnings "-Wno-unused-function")
+    endif()
+elseif(MSVC)
+    list(APPEND domain_cpp_warnings "/wd4505")
+endif()
+set_source_files_properties(
+    ${CMAKE_CURRENT_SOURCE_DIR}/domain/domain.cpp
+    PROPERTIES COMPILE_OPTIONS "${domain_cpp_warnings}")
 set_target_properties(${lib_target_name} PROPERTIES
     OUTPUT_NAME ${lib_binary_name})
 set_target_properties(${lib_target_name}

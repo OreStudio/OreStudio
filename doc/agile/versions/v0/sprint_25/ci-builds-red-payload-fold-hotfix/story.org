@@ -1,0 +1,59 @@
+:PROPERTIES:
+:ID: 8D65A290-92C2-4C02-85DE-88C78A7C66E8
+:END:
+#+title: Story: Hotfix: CI builds red across all OSs on the payload decode fold and the ascot member
+#+description: Main's GitHub Actions builds are red on every OS for five independent reasons: gcc rejects the name collision between the ascot member and its ascot type in bond_instrument_data; clang segfaults in TransformCXXFoldExpr while instantiating decode_with_legs; MSVC promotes C4251 to an error on ores.platform's exported exception classes; clang on Windows reports nine unused generated functions in ores.ore domain.cpp because the generated XSDCPP_MAYBE_UNUSED macro gives the attribute only to __GNUC__; and the Nightly Include Hygiene job cannot configure because it never installs Qt6. One PR carries the fix for all of them.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:ci:trading:platform:sprint_25:v0:
+#+created: 2026-09-13
+#+updated: 2026-09-13
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Main's GitHub Actions builds are red on every OS. Five independent defects sit behind that, and one PR carries the fix for all of them.
+
+The Linux gcc and Nightly Build jobs fail with -Wchanges-meaning: bond_instrument_data declares a member named ascot whose type is also named ascot, and gcc 16 rejects the collision. The member is renamed to ascot_row.
+
+The Linux clang, macOS AppleClang and Nightly Build clang jobs segfault the compiler itself, inside clang's TransformCXXFoldExpr, while instantiating decode_with_legs for the rates family. That function folds a fold expression over an immediately-invoked generic lambda; rewriting it as the recursive helper pair the neighbouring decode_flat already uses removes the crash and keeps the behaviour identical.
+
+The Windows MSVC jobs fail with C4251 promoted to C2220 on ores.platform's exported exception classes, which carry a std::string member. Every consumer is in-tree and built by the same toolchain, so the warning is disabled for MSVC alone, with the reason recorded in the build file.
+
+The Windows clang jobs fail with nine -Werror,-Wunused-function diagnostics on the generated ores.ore domain.cpp. The generated XSDCPP_MAYBE_UNUSED macro expands to the unused attribute only under __GNUC__, so clang on Windows loses it. The file is generated, so the fix is a per-file Windows-scoped suppression that names xsdcpp as the home of the real fix.
+
+Two supporting defects round out the set. The .clang-tidy config carries a Warnings key that is not part of the schema, so every clang-tidy invocation aborts, and the Nightly Include Hygiene job is exactly such an invocation. That same workflow never installs Qt6, so its configure step fails before any check runs.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-13                               |
+
+* Acceptance
+
+- The renamed ascot_row member and its call sites build clean under gcc, with the -Wchanges-meaning diagnostic gone.
+- decode_with_legs no longer crashes clang 19 or AppleClang, and it decodes the same payloads as before.
+- The Windows MSVC and Windows clang jobs get past the C4251 and unused-function errors.
+- The .clang-tidy config parses, so clang-tidy runs, and the Nightly Include Hygiene job reaches its include check.
+- The local build, ctest, roundtrip and site build stay green on Linux, and the continuous CI on every OS returns to green after the merge.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:1D2C0DD2-EC91-4807-9EFD-1FDFAA3A96DC][Implement Hotfix: CI builds red across all OSs on the payload decode fold and the ascot member]] | STARTED | 2026-09-13 | | Rename the ascot member of bond_instrument_data and update its call sites; rewrite decode_with_legs as the recursive helper pair; disable C4251 for MSVC and the unused-function warning for Windows clang; repair the .clang-tidy config; install Qt6 in the nightly include-hygiene job. Verify with the full build and ctest, then raise the single hotfix PR. |
+
+* Decisions
+
+* Out of scope
+
+-

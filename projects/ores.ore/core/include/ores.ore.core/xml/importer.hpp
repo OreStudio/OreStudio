@@ -48,7 +48,8 @@ namespace ores::ore::xml {
  */
 struct trade_import_item {
     trading::domain::trade trade;
-    std::optional<trading::domain::trade_envelope_data> envelope; ///< absent when the document states no Envelope
+    std::optional<trading::domain::trade_envelope_data>
+        envelope;                                 ///< absent when the document states no Envelope
     std::filesystem::path source_file;            ///< ORE XML file this trade was read from
     trading::domain::trade_instrument instrument; ///< monostate if trade type not yet mapped
 };

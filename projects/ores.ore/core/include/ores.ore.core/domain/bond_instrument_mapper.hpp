@@ -38,8 +38,8 @@ namespace ores::ore::domain {
  * an issue row points at that row instead of minting a second one.
  * An empty lookup mints a fresh issue for every mapped trade.
  */
-using bond_issue_lookup = std::function<std::optional<ores::trading::domain::bond_issue>(
-    const std::string& security_id)>;
+using bond_issue_lookup =
+    std::function<std::optional<ores::trading::domain::bond_issue>(const std::string& security_id)>;
 
 /**
  * @brief Maps ORE XSD bond trade types to ORES domain rows and back.
@@ -77,8 +77,9 @@ private:
                                boost::uuids::uuid issue_id,
                                std::vector<ores::trading::domain::bond_issue_call_date>& dates);
 
-    static void reverse_call_dates(const std::vector<ores::trading::domain::bond_issue_call_date>& dates,
-                                   callableBondCallData& call_data);
+    static void
+    reverse_call_dates(const std::vector<ores::trading::domain::bond_issue_call_date>& dates,
+                       callableBondCallData& call_data);
 
     static void map_conversion_targets(
         const cbConversionData& conversion_data,
@@ -90,24 +91,24 @@ private:
         cbConversionData& conversion_data);
 
 public:
-    static trading::domain::bond_instrument_data forward_bond(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_forward_bond(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_callable_bond(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_convertible_bond(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_bond_option(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_bond_trs(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_bond_repo(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_bond_future(
-        const trade& t, const bond_issue_lookup& lookup = {});
-    static trading::domain::bond_instrument_data forward_ascot(
-        const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data forward_bond(const trade& t,
+                                                              const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_forward_bond(const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_callable_bond(const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_convertible_bond(const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_bond_option(const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_bond_trs(const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_bond_repo(const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_bond_future(const trade& t, const bond_issue_lookup& lookup = {});
+    static trading::domain::bond_instrument_data
+    forward_ascot(const trade& t, const bond_issue_lookup& lookup = {});
 
     static trade reverse_bond(const trading::domain::bond_instrument_data& data);
     static trade reverse_forward_bond(const trading::domain::bond_instrument_data& data);

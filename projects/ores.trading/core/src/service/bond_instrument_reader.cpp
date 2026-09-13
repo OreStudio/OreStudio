@@ -260,16 +260,14 @@ domain::bond_leg_rate_data to_rate_data(domain::bond_leg_rate row,
         floating.local_cap_floor = row.local_cap_floor;
         floating.fixing_schedule = std::move(fixing_schedule);
         floating.reset_schedule = std::move(reset_schedule);
-        floating.front_stub_interpolation =
-            to_interpolation(row.front_stub_short_index,
-                             row.front_stub_long_index,
-                             row.front_stub_rounding_type,
-                             row.front_stub_rounding_precision);
-        floating.back_stub_interpolation =
-            to_interpolation(row.back_stub_short_index,
-                             row.back_stub_long_index,
-                             row.back_stub_rounding_type,
-                             row.back_stub_rounding_precision);
+        floating.front_stub_interpolation = to_interpolation(row.front_stub_short_index,
+                                                             row.front_stub_long_index,
+                                                             row.front_stub_rounding_type,
+                                                             row.front_stub_rounding_precision);
+        floating.back_stub_interpolation = to_interpolation(row.back_stub_short_index,
+                                                            row.back_stub_long_index,
+                                                            row.back_stub_rounding_type,
+                                                            row.back_stub_rounding_precision);
         floating.stub_use_original_curve = row.stub_use_original_curve;
         floating.observation_shift = row.observation_shift;
         rate.floating = std::move(floating);
@@ -302,8 +300,8 @@ domain::bond_leg_data build_leg(const instrument_rows& rows, const domain::bond_
     leg.strict_notional_dates = row.strict_notional_dates;
     leg.indexings_from_asset_leg = row.indexings_from_asset_leg;
     if (row.settlement_fx_index)
-        leg.settlement = domain::bond_settlement_data{*row.settlement_fx_index,
-                                                      row.settlement_fixing_date};
+        leg.settlement =
+            domain::bond_settlement_data{*row.settlement_fx_index, row.settlement_fixing_date};
 
     const auto amounts = collect_amounts(rows, row);
     leg.notionals = amounts.notional;
@@ -321,8 +319,7 @@ domain::bond_leg_data build_leg(const instrument_rows& rows, const domain::bond_
 
     leg.schedule = schedule_for(rows, row.leg_role, row.leg_number, "schedule");
     leg.payment_schedule = schedule_for(rows, row.leg_role, row.leg_number, "payment_schedule");
-    const auto payment_dates =
-        schedule_for(rows, row.leg_role, row.leg_number, "payment_dates");
+    const auto payment_dates = schedule_for(rows, row.leg_role, row.leg_number, "payment_dates");
     for (const auto& block : payment_dates.dates)
         for (const auto& date : block.dates)
             leg.payment_dates.push_back(date);
@@ -354,8 +351,7 @@ void apply_leg_family(domain::bond_instrument_data& data, const instrument_rows&
     }
 }
 
-std::optional<domain::bond_schedule_data>
-optional_schedule(domain::bond_schedule_data schedule) {
+std::optional<domain::bond_schedule_data> optional_schedule(domain::bond_schedule_data schedule) {
     if (schedule.rules.empty() && schedule.dates.empty())
         return std::nullopt;
     return schedule;
@@ -416,14 +412,13 @@ void apply_option_block(domain::bond_instrument_data& data, const instrument_row
         block.premium_pay_date = row.premium_pay_date;
 
         for (const auto& premium : rows.option_premiums)
-            block.premiums.push_back(
-                {premium.amount,
-                 premium.currency,
-                 premium.pay_date,
-                 to_option_settlement(premium.has_settlement,
-                                      premium.settlement_pay_currency,
-                                      premium.settlement_fx_index,
-                                      premium.settlement_fixing_date)});
+            block.premiums.push_back({premium.amount,
+                                      premium.currency,
+                                      premium.pay_date,
+                                      to_option_settlement(premium.has_settlement,
+                                                           premium.settlement_pay_currency,
+                                                           premium.settlement_fx_index,
+                                                           premium.settlement_fixing_date)});
 
         block.exercise_prices = row.exercise_prices;
         for (const auto& fee : rows.option_exercise_fees)
@@ -541,8 +536,7 @@ bond_instrument_reader::bond_instrument_reader(context ctx)
     : ctx_(std::move(ctx)) {}
 
 std::unordered_map<std::string, domain::bond_instrument_data>
-bond_instrument_reader::read_instruments(
-    const std::vector<std::string>& instrument_ids) const {
+bond_instrument_reader::read_instruments(const std::vector<std::string>& instrument_ids) const {
     std::unordered_map<std::string, domain::bond_instrument_data> result;
     if (instrument_ids.empty())
         return result;

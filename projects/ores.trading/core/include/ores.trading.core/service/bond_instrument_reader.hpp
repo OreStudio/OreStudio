@@ -45,8 +45,7 @@ namespace ores::trading::service {
  */
 class ORES_TRADING_CORE_EXPORT bond_instrument_reader {
 private:
-    inline static std::string_view logger_name =
-        "ores.trading.service.bond_instrument_reader";
+    inline static std::string_view logger_name = "ores.trading.service.bond_instrument_reader";
 
     [[nodiscard]] static auto& lg() {
         using namespace ores::logging;

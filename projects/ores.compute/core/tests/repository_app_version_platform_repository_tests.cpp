@@ -250,12 +250,8 @@ TEST_CASE("replace_by_app_version_stamps_the_context_tenant", tags) {
     b.tenant_id.clear();
 
     app_version_platform_repository repo(h.context());
-    CHECK_NOTHROW(repo.replace_by_app_version(av_id,
-                                              {a, b},
-                                              h.db_user(),
-                                              h.db_user(),
-                                              "system.new_record",
-                                              "stamp"));
+    CHECK_NOTHROW(repo.replace_by_app_version(
+        av_id, {a, b}, h.db_user(), h.db_user(), "system.new_record", "stamp"));
 
     const auto expected = h.tenant_id().to_string();
     const auto listed = repo.read_latest_by_app_version(av_id);

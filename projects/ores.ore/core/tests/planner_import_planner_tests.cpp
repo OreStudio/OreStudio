@@ -29,9 +29,9 @@
 #include "ores.ore.core/planner/ore_import_planner.hpp"
 #include "ores.testing/project_root.hpp"
 #include "ores.trading.api/domain/instrument.hpp"
+#include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/uuid/random_generator.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <filesystem>
 #include <set>
@@ -87,8 +87,7 @@ ores::ore::planner::import_choices default_choices(const std::filesystem::path& 
 std::filesystem::path stage_document(const std::filesystem::path& source,
                                      const std::filesystem::path& relative) {
     const auto root = std::filesystem::temp_directory_path() /
-                      ("ore_upload_" +
-                       boost::uuids::to_string(boost::uuids::random_generator()()));
+                      ("ore_upload_" + boost::uuids::to_string(boost::uuids::random_generator()()));
     std::filesystem::create_directories((root / relative).parent_path());
     std::filesystem::copy_file(source, root / relative);
     return root;

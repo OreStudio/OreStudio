@@ -123,11 +123,10 @@ public:
      * timeout or transport error. Suitable for Qt/shell client code that
      * is not running on an ASIO executor.
      */
-    [[nodiscard]] message
-    request_sync(std::string_view subject,
-                 std::span<const std::byte> data,
-                 std::unordered_map<std::string, std::string> headers = {},
-                 std::chrono::milliseconds timeout = default_request_timeout);
+    [[nodiscard]] message request_sync(std::string_view subject,
+                                       std::span<const std::byte> data,
+                                       std::unordered_map<std::string, std::string> headers = {},
+                                       std::chrono::milliseconds timeout = default_request_timeout);
 
     /**
      * @brief Asynchronous request/reply (ASIO coroutine).

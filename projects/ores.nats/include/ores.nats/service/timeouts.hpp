@@ -32,8 +32,7 @@ namespace ores::nats::service {
  * a different overload or passed its payload as bytes instead of a string.
  * Callers that must wait longer, or fail faster, pass their own timeout.
  */
-inline constexpr std::chrono::milliseconds default_request_timeout =
-    std::chrono::seconds(30);
+inline constexpr std::chrono::milliseconds default_request_timeout = std::chrono::seconds(30);
 
 }
 

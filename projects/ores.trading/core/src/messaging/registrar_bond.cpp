@@ -85,8 +85,7 @@ register_bond_handlers(ores::nats::service::client& nats,
                 std::make_move_iterator(bond_leg_rate_subs.begin()),
                 std::make_move_iterator(bond_leg_rate_subs.end()));
 
-    auto bond_leg_amortization_subs =
-        register_bond_leg_amortization_handlers(nats, ctx, verifier);
+    auto bond_leg_amortization_subs = register_bond_leg_amortization_handlers(nats, ctx, verifier);
     subs.insert(subs.end(),
                 std::make_move_iterator(bond_leg_amortization_subs.begin()),
                 std::make_move_iterator(bond_leg_amortization_subs.end()));

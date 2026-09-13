@@ -15,6 +15,20 @@ commodity and interest-rate underlyings in any combination. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Double Digital Option |
+| Short name              | Double Digital Option |
+| ORE Studio product code | =DoubleDigitalOption= |
+| Asset class             | =scripted= |
+| ORE trade data node     | =DoubleDigitalOptionData= |
+| ORE documentation       | =doubledigitaloption.tex= |
+
 * Summary
 
 The double digital is a binary option on two underlyings. Each

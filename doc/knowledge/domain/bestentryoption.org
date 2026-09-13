@@ -15,6 +15,20 @@ best observed level during a window. ORE prices it on FX, equity and
 commodity underlyings. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Best Entry Option |
+| Short name              | Best Entry Option |
+| ORE Studio product code | =FxBestEntryOption=, =EquityBestEntryOption=, =CommodityBestEntryOption= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| ORE trade data node     | =FxBestEntryOptionData=, =EquityBestEntryOptionData=, =CommodityBestEntryOptionData= |
+| ORE documentation       | =bestentryoption.tex= |
+
 * Summary
 
 The product is an option on a single underlying. Its payoff depends

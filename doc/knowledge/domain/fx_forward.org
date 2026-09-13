@@ -14,6 +14,20 @@ today on a rate at which they will exchange two currencies on a future
 date. ORE models it as the trade type =FxForward=. This note records
 the domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Forward |
+| Short name              | FX Forward |
+| ORE Studio product code | =FxForward= |
+| Asset class             | =fx= |
+| ORE trade data node     | =FxForwardData= |
+| ORE documentation       | =fxforward.tex= |
+
 * Summary
 
 An FX forward locks the exchange rate for a future exchange of one

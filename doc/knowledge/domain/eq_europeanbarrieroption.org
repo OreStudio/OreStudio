@@ -15,6 +15,20 @@ ORE models it with the trade type =EquityEuropeanBarrierOption=. This
 note records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity European Barrier Option |
+| Short name              | Equity European Barrier Option |
+| ORE Studio product code | =EquityEuropeanBarrierOption= |
+| Asset class             | =equity= |
+| ORE trade data node     | =EquityEuropeanBarrierOptionData= |
+| ORE documentation       | =eq_europeanbarrieroption.tex= |
+
 * Summary
 
 An equity European barrier option gives the buyer the right to buy a

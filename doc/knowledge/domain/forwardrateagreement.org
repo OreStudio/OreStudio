@@ -14,6 +14,20 @@ period. The lock is benchmarked to a reference IBOR index. ORE models
 it with the trade type =ForwardRateAgreement=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Forward Rate Agreement |
+| Short name              | FRA |
+| ORE Studio product code | =ForwardRateAgreement= |
+| Asset class             | =swap= |
+| ORE trade data node     | =ForwardRateAgreementData= |
+| ORE documentation       | =forwardrateagreement.tex= |
+
 * Summary
 
 A forward rate agreement sets a fixed forward rate against a

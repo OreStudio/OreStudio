@@ -14,6 +14,20 @@ underlying over a set period. The averaging smooths the payoff. ORE
 models it with the trade type =EquityAsianOption=. This note records
 the domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Asian Option |
+| Short name              | Equity Asian Option |
+| ORE Studio product code | =EquityAsianOption= |
+| Asset class             | =equity= |
+| ORE trade data node     | =EquityAsianOptionData= |
+| ORE documentation       | =eq_asianoption.tex= |
+
 * Summary
 
 An equity Asian option is a path-dependent option whose payoff depends

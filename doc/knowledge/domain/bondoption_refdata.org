@@ -16,6 +16,20 @@ taken from reference data. This note records the reference-data form,
 as ORE documents it in its product catalogue. The container node is
 =BondOptionData=.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond Option (Reference Data) |
+| Short name              | Bond Option (Reference Data) |
+| ORE Studio product code | =BondOption= |
+| Asset class             | =bond= |
+| ORE trade data node     | =BondOptionData= |
+| ORE documentation       | =bondoption_refdata.tex= |
+
 * Summary
 
 A bond option provides the buyer with the right, but not the

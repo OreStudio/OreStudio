@@ -14,6 +14,20 @@ funding leg. ORE models it with the trade type =BondTRS=. The
 container node is =BondTRSData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond Total Return Swap |
+| Short name              | Bond TRS |
+| ORE Studio product code | =BondTRS= |
+| Asset class             | =bond= |
+| ORE trade data node     | =BondTRSData= |
+| ORE documentation       | =bondTotalReturnSwap.tex= |
+
 * Summary
 
 A total return swap is a derivative contract in which one

@@ -15,6 +15,20 @@ models the product as a =Swap= with one leg of type
 =ZeroCouponFixed=. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Zero Coupon Swap |
+| Short name              | Zero Coupon Swap |
+| ORE Studio product code | none; not a product in its own right |
+| Asset class             | — |
+| ORE trade data node     | =ZeroCouponFixedLegData= on a =Swap= |
+| ORE documentation       | =zerocouponswap.tex= |
+
 * Summary
 
 A zero coupon swap has at least one zero-coupon leg. The leg makes no

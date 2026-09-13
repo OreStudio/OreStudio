@@ -15,6 +15,20 @@ to a trigger level. ORE prices it on equity, FX and commodity
 underlyings. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Autocallable Type 01 |
+| Short name              | Autocallable Type 01 |
+| ORE Studio product code | =ScriptedTrade= |
+| Asset class             | =scripted= |
+| ORE trade data node     | =ScriptedTradeData= |
+| ORE documentation       | =autocallable_01.tex= |
+
 * Summary
 
 The product is characterised by a notional, a determination level, a

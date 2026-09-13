@@ -15,6 +15,20 @@ return or dividends. ORE models the family with the trade type
 =EquitySwap=. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Swap |
+| Short name              | Equity Swap |
+| ORE Studio product code | =EquitySwap= |
+| Asset class             | =equity= |
+| ORE trade data node     | =EquitySwapData= |
+| ORE documentation       | =equityswap.tex= |
+
 * Summary
 
 An equity swap has one leg of type =Equity= and one funding leg of

@@ -15,6 +15,20 @@ second underlying. ORE prices it with American or European barrier
 monitoring. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | European Option Contingent on a Barrier |
+| Short name              | European Option Contingent on a Barrier |
+| ORE Studio product code | =EuropeanOptionBarrier= |
+| Asset class             | =scripted= |
+| ORE trade data node     | =EuropeanOptionBarrierData= |
+| ORE documentation       | =europeanoptioncontingentonabarrier.tex= |
+
 * Summary
 
 The product pairs a vanilla European option with a knock-in or

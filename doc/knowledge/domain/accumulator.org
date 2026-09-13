@@ -15,6 +15,20 @@ decumulator is its mirror image: a periodic forward sale. ORE offers
 both for FX, equity and commodity underlyings. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Accumulator |
+| Short name              | Accumulator |
+| ORE Studio product code | =FxAccumulator=, =EquityAccumulator=, =CommodityAccumulator= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| ORE trade data node     | =FxAccumulatorData=, =EquityAccumulatorData=, =CommodityAccumulatorData= |
+| ORE documentation       | =accumulator.tex= |
+
 * Summary
 
 An accumulator obliges the investor to buy a fixed amount of an

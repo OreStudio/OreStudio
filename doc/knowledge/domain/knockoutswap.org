@@ -15,6 +15,20 @@ swap. ORE models it with the trade type =KnockOutSwap=. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Knock Out Swap |
+| Short name              | Knock Out Swap |
+| ORE Studio product code | =KnockOutSwap= |
+| Asset class             | =swap= |
+| ORE trade data node     | =KnockOutSwapData= |
+| ORE documentation       | =knockoutswap.tex= |
+
 * Summary
 
 A knock out swap is a vanilla fixed-versus-floating interest rate

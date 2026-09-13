@@ -15,6 +15,20 @@ ORE models it with the trade type =FxDoubleTouchOption=. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Double Touch Option |
+| Short name              | FX Double Touch Option |
+| ORE Studio product code | =FxDoubleTouchOption= |
+| Asset class             | =fx= |
+| ORE trade data node     | =FxDoubleTouchOptionData= |
+| ORE documentation       | =fx_doubletouchoption.tex= |
+
 * Summary
 
 An FX double touch option combines two continuously monitored

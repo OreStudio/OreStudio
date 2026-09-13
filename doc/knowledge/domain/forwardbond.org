@@ -14,6 +14,20 @@ at an agreed price. ORE models it with the trade type =ForwardBond=.
 The container node is =ForwardBondData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Forward Bond |
+| Short name              | Forward Bond |
+| ORE Studio product code | =ForwardBond= |
+| Asset class             | =bond= |
+| ORE trade data node     | =ForwardBondData= |
+| ORE documentation       | =forwardbond.tex= |
+
 * Summary
 
 A forward bond establishes an agreement to buy or sell an underlying

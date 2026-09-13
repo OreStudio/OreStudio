@@ -14,6 +14,20 @@ exchange currencies now and reverse the exchange later. ORE models it
 with the trade type =FxSwap=. This note records the domain grounding,
 as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Swap |
+| Short name              | FX Swap |
+| ORE Studio product code | =FxSwap= |
+| Asset class             | =fx= |
+| ORE trade data node     | =FxSwapData= |
+| ORE documentation       | =fxswap.tex= |
+
 * Summary
 
 An FX swap exchanges a set amount of one currency for another at the

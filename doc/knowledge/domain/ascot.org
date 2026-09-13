@@ -14,6 +14,20 @@ ORE models it with the trade type =Ascot=. The container node is
 =AscotData=. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Ascot |
+| Short name              | Ascot |
+| ORE Studio product code | =Ascot= |
+| Asset class             | =bond= |
+| ORE trade data node     | =AscotData= |
+| ORE documentation       | =ascot.tex= |
+
 * Summary
 
 An Ascot, or a convertible bond option, gives the holder the right to

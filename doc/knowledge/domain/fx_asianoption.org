@@ -14,6 +14,20 @@ payoff depends on the average of an exchange rate over a period. ORE
 models it with the trade type =FxAsianOption=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX Asian Option |
+| Short name              | FX Asian Option |
+| ORE Studio product code | =FxAsianOption= |
+| Asset class             | =fx= |
+| ORE trade data node     | =FxAsianOptionData= |
+| ORE documentation       | =fx_asianoption.tex= |
+
 * Summary
 
 An FX Asian option pays on the averaged foreign exchange rate over a

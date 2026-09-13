@@ -14,6 +14,20 @@ The right is a physically settled swaption embedded in the swap. ORE
 models it with the trade type =CallableSwap=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Callable Swap |
+| Short name              | Callable Swap |
+| ORE Studio product code | =CallableSwap= |
+| Asset class             | =swap= |
+| ORE trade data node     | =CallableSwapData= |
+| ORE documentation       | =callableswap.tex= |
+
 * Summary
 
 A callable swap can be terminated by one of the parties on specific

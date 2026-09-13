@@ -14,6 +14,20 @@ trades. ORE models it with the trade type =CompositeTrade=. The
 container node is =CompositeTradeData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Composite Trade |
+| Short name              | Composite Trade |
+| ORE Studio product code | =CompositeTrade= |
+| Asset class             | =composite= |
+| ORE trade data node     | =CompositeTradeData= |
+| ORE documentation       | =compositetrade.tex= |
+
 * Summary
 
 A composite trade bundles several component trades into one position.

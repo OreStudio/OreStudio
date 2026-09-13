@@ -15,6 +15,20 @@ supported. ORE models the family with the trade type =EquityOption=.
 This note records the domain grounding, as ORE documents it in its
 product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Option |
+| Short name              | Equity Option |
+| ORE Studio product code | =EquityOption= |
+| Asset class             | =equity= |
+| ORE trade data node     | =EquityOptionData= |
+| ORE documentation       | =equityoption.tex= |
+
 * Summary
 
 An equity option gives the buyer the right, but not the obligation, to

@@ -15,6 +15,20 @@ as a building block inside other products. ORE models it with the
 trade type =EquityPosition=. This note records the domain grounding, as
 ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Position |
+| Short name              | Equity Position |
+| ORE Studio product code | =EquityPosition= |
+| Asset class             | =equity= |
+| ORE trade data node     | =EquityPositionData= |
+| ORE documentation       | =equityposition.tex= |
+
 * Summary
 
 An equity position holds one equity underlying or several weighted

@@ -15,6 +15,20 @@ models it with the trade type =CommodityVarianceSwap=. This note
 records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Commodity Variance Swap |
+| Short name              | Commodity Variance Swap |
+| ORE Studio product code | =CommodityVarianceSwap= |
+| Asset class             | =commodity= |
+| ORE trade data node     | =CommodityVarianceSwapData= |
+| ORE documentation       | =commodityvarianceswap.tex= |
+
 * Summary
 
 A commodity variance or volatility swap has a payoff that depends on

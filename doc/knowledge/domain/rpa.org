@@ -14,6 +14,20 @@ counterparty. ORE models it with the trade type
 =RiskParticipationAgreement=. This note records the domain grounding,
 as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Risk Participation Agreement |
+| Short name              | RPA |
+| ORE Studio product code | =RiskParticipationAgreement= |
+| Asset class             | =swap= |
+| ORE trade data node     | =RiskParticipationAgreementData= |
+| ORE documentation       | =rpa.tex= |
+
 * Summary
 
 A risk participation agreement (RPA) is a credit derivative between

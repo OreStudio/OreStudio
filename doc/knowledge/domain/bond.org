@@ -15,6 +15,20 @@ product is both a stand-alone trade and a building block for bond
 derivatives. This note records the domain grounding, as ORE documents
 it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond |
+| Short name              | Bond |
+| ORE Studio product code | =Bond= |
+| Asset class             | =bond= |
+| ORE trade data node     | =BondData= |
+| ORE documentation       | =bond.tex= |
+
 * Summary
 
 A bond is a security that evidences a loan from the holder to the

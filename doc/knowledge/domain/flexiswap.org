@@ -14,6 +14,20 @@ further. The cut can go down to a lower bound in each period. ORE
 models it with the trade type =FlexiSwap=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Flexi Swap |
+| Short name              | Flexi Swap |
+| ORE Studio product code | =FlexiSwap= |
+| Asset class             | =swap= |
+| ORE trade data node     | =FlexiSwapData= |
+| ORE documentation       | =flexiswap.tex= |
+
 * Summary
 
 A flexi swap is an amortising swap in which one party has the option

@@ -15,6 +15,20 @@ are supported. ORE models it with the trade type =EquityVarianceSwap=.
 This note records the domain grounding, as ORE documents it in its
 product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Variance Swap |
+| Short name              | Equity Variance Swap |
+| ORE Studio product code | =EquityVarianceSwap= |
+| Asset class             | =equity= |
+| ORE trade data node     | =EquityVarianceSwapData= |
+| ORE documentation       | =equityvarianceswap.tex= |
+
 * Summary
 
 An equity variance swap has a payoff that depends on the volatility of

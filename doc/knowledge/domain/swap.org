@@ -15,6 +15,20 @@ vanilla fixed-vs-floating, basis, OIS, BMA, and CMS structures. This
 note records the domain grounding for the whole family, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Swap |
+| Short name              | Swap |
+| ORE Studio product code | =Swap= |
+| Asset class             | =swap= |
+| ORE trade data node     | =SwapData= |
+| ORE documentation       | =swap.tex= |
+
 * Summary
 
 An interest rate swap (IRS) is a bilateral contract. It exchanges a

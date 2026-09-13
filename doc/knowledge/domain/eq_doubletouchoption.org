@@ -14,6 +14,20 @@ by two barrier levels on the equity spot. ORE models it with the trade
 type =EquityDoubleTouchOption=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Equity Double Touch Option |
+| Short name              | Equity Double Touch Option |
+| ORE Studio product code | =EquityDoubleTouchOption= |
+| Asset class             | =equity= |
+| ORE trade data node     | =EquityDoubleTouchOptionData= |
+| ORE documentation       | =eq_doubletouchoption.tex= |
+
 * Summary
 
 An equity double touch option has two continuously monitored barriers

@@ -15,6 +15,20 @@ exchange. ORE models it with the trade type =CommodityForward=. This
 note records the domain grounding, as ORE documents it in its product
 catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Commodity Forward |
+| Short name              | Commodity Forward |
+| ORE Studio product code | =CommodityForward= |
+| Asset class             | =commodity= |
+| ORE trade data node     | =CommodityForwardData= |
+| ORE documentation       | =commodityforward.tex= |
+
 * Summary
 
 A commodity forward is an agreement to buy or sell a set amount of a

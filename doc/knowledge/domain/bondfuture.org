@@ -15,6 +15,20 @@ with the trade type =BondFuture=. The container node is
 =BondFutureData=. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond Future |
+| Short name              | Bond Future |
+| ORE Studio product code | =BondFuture= |
+| Asset class             | =bond= |
+| ORE trade data node     | =BondFutureData= |
+| ORE documentation       | =bondfuture.tex= |
+
 * Summary
 
 A bond future is a contract that establishes an agreement to buy or

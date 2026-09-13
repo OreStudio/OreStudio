@@ -14,6 +14,20 @@ rate. ORE models it with the =InflationSwap= trade type, or as a
 =Swap= with a CPI leg. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | CPI Swap |
+| Short name              | CPI Swap |
+| ORE Studio product code | none; not a product in its own right |
+| Asset class             | — |
+| ORE trade data node     | =CPILegData= on a =Swap= |
+| ORE documentation       | =cpiswap.tex= |
+
 * Summary
 
 A CPI swap is the standard inflation derivative. One leg pays a real

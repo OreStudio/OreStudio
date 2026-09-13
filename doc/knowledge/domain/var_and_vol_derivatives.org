@@ -15,6 +15,20 @@ form. ORE documents the family in one catalogue section with fifteen
 variations, each with its own payoff script. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Exotic Variance and Volatility Derivatives |
+| Short name              | Exotic Variance and Volatility Derivatives |
+| ORE Studio product code | =FxVarianceSwap=, =FxPairwiseVarianceSwap=, =FxBasketVarianceSwap=, =EquityVarianceSwap=, =EquityPairwiseVarianceSwap=, =EquityBasketVarianceSwap=, =CommodityVarianceSwap=, =CommodityPairwiseVarianceSwap=, =CommodityBasketVarianceSwap= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| ORE trade data node     | =FxVarianceSwapData=, =FxPairwiseVarianceSwapData=, =FxBasketVarianceSwapData=, =EquityVarianceSwapData=, =EquityPairwiseVarianceSwapData=, =EquityBasketVarianceSwapData=, =CommodityVarianceSwapData=, =CommodityBasketVarianceSwapData= |
+| ORE documentation       | =var_and_vol_derivatives.tex= |
+
 * Summary
 
 The family starts from the variance swap, which pays the realised

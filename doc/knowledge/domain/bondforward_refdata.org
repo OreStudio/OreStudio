@@ -16,6 +16,20 @@ bond taken from reference data. This note records the reference-data
 form, as ORE documents it in its product catalogue. The container node
 is =ForwardBondData=.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Bond Forward (Reference Data) |
+| Short name              | Bond Forward (Reference Data) |
+| ORE Studio product code | =ForwardBond= |
+| Asset class             | =bond= |
+| ORE trade data node     | =ForwardBondData= |
+| ORE documentation       | =bondForward_refdata.tex= |
+
 * Summary
 
 A forward bond, or bond forward, is an agreement to buy or sell an

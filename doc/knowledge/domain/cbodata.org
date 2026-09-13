@@ -14,6 +14,20 @@ portfolio of corporate bonds or loans. ORE models it with the trade
 type =CBO=. The container node is =CBOData=. This note records the
 domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Collateral Bond Obligation |
+| Short name              | Collateral Bond Obligation |
+| ORE Studio product code | =CBO= |
+| Asset class             | =credit= |
+| ORE trade data node     | =CBOData= |
+| ORE documentation       | =cbodata.tex= |
+
 * Summary
 
 A collateral bond obligation, also called a cashflow CDO, is a

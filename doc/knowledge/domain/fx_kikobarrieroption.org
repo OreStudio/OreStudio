@@ -14,6 +14,20 @@ knock-out barrier. It is the hybrid of the FX barrier family. ORE
 models it with the trade type =FxKIKOBarrierOption=. This note records
 the domain grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | FX KIKO Barrier Option |
+| Short name              | FX KIKO Barrier Option |
+| ORE Studio product code | =FxKIKOBarrierOption= |
+| Asset class             | =fx= |
+| ORE trade data node     | =FxKIKOBarrierOptionData= |
+| ORE documentation       | =fx_kikobarrieroption.tex= |
+
 * Summary
 
 An FX KIKO barrier option carries both a knock-out and a knock-in

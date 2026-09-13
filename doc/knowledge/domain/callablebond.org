@@ -14,6 +14,20 @@ ORE models it with the trade type =CallableBond=. The container node
 is =CallableBondData=. This note records the domain grounding, as ORE
 documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Callable Bond |
+| Short name              | Callable Bond |
+| ORE Studio product code | =CallableBond= |
+| Asset class             | =bond= |
+| ORE trade data node     | =CallableBondData= |
+| ORE documentation       | =callablebond.tex= |
+
 * Summary
 
 A callable bond is a bond with issuer call and investor put rights.

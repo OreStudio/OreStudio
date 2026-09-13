@@ -23,6 +23,14 @@
  *
  * Seeds the database with all ORE instrument type codes.
  * The list is derived from the oreTradeType enum in domain.hpp / domain.cpp.
+ *
+ * One enum value is deliberately absent. 'Failed' is not a product: it is
+ * the trade type ORE gives to the placeholder it substitutes for a trade it
+ * could not load or build, so that one bad trade does not stop a portfolio
+ * run. It carries no trade data and a trader cannot pick it, so it does not
+ * belong in a product catalogue. The count here is therefore one less than
+ * the enum's.
+ *
  * This script is idempotent.
  */
 
@@ -38,6 +46,15 @@ insert into ores_trading_trade_types_tbl (
      'composite', false, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     -- Rates
+    ('RateDigitalOption',                    ores_utility_system_tenant_id_fn(), 0, 'Rate Digital Option',
+     'swap', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
+    ('SwaptionStraddle',                     ores_utility_system_tenant_id_fn(), 0, 'Swaption Straddle',
+     'swap', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
+    ('ForwardVolatilityAgreement',           ores_utility_system_tenant_id_fn(), 0, 'Forward Volatility Agreement',
+     'swap', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     ('Swap',                              ores_utility_system_tenant_id_fn(), 0, 'Interest Rate Swap',
      'swap', false, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
@@ -73,6 +90,9 @@ insert into ores_trading_trade_types_tbl (
      'swap', false, true,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     -- FX
+    ('FxForwardVolatilityAgreement',         ores_utility_system_tenant_id_fn(), 0, 'FX Forward Volatility Agreement',
+     'fx', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     ('FxForward',                         ores_utility_system_tenant_id_fn(), 0, 'FX Forward',
      'fx', false, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
@@ -171,6 +191,9 @@ insert into ores_trading_trade_types_tbl (
      'credit', false, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     -- Fixed Income / Bond
+    ('BondFutureOption',                     ores_utility_system_tenant_id_fn(), 0, 'Bond Future Option',
+     'bond', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     ('Bond',                              ores_utility_system_tenant_id_fn(), 0, 'Fixed Income Bond',
      'bond', false, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
@@ -202,6 +225,12 @@ insert into ores_trading_trade_types_tbl (
      'bond', false, true,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     -- Equity
+    ('EquityAutoDeltaHedgedOption',          ores_utility_system_tenant_id_fn(), 0, 'Equity Auto Delta Hedged Option',
+     'equity', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
+    ('EquityForwardVolatilityAgreement',     ores_utility_system_tenant_id_fn(), 0, 'Equity Forward Volatility Agreement',
+     'equity', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     ('EquityOption',                      ores_utility_system_tenant_id_fn(), 0, 'Equity Option',
      'equity', true, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
@@ -290,6 +319,12 @@ insert into ores_trading_trade_types_tbl (
      'equity', true, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     -- Commodity
+    ('CommodityForwardVolatilityAgreement',  ores_utility_system_tenant_id_fn(), 0, 'Commodity Forward Volatility Agreement',
+     'commodity', true, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
+    ('IntradayPowerForward',                 ores_utility_system_tenant_id_fn(), 0, 'Intraday Power Forward',
+     'commodity', false, false,
+     'ores_trading_service', 'system.initial_load', 'Seed trade types'),
     ('CommodityForward',                  ores_utility_system_tenant_id_fn(), 0, 'Commodity Forward',
      'commodity', false, false,
      'ores_trading_service', 'system.initial_load', 'Seed trade types'),

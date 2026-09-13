@@ -14,6 +14,20 @@ a barrier decision date. ORE represents it as a scripted trade with
 the node =ExtendedAccumulatorData=. This note records the domain
 grounding, as ORE documents it in its product catalogue.
 
+* Identifiers
+
+What a trader books it as, and what to grep for. The codes are the
+trade type catalogue's, which is what the database enforces.
+
+| Field | Value |
+|-------+-------|
+| Full name               | Extended Accumulator |
+| Short name              | Extended Accumulator |
+| ORE Studio product code | =FxAccumulator=, =EquityAccumulator=, =CommodityAccumulator= |
+| Asset class             | =commodity=, =equity=, =fx= |
+| ORE trade data node     | =FxAccumulatorData=, =EquityAccumulatorData=, =CommodityAccumulatorData= |
+| ORE documentation       | =extendedaccumulator.tex= |
+
 * Summary
 
 An extended accumulator trades like an accumulator: at each regular

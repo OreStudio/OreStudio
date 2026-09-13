@@ -1,7 +1,7 @@
 :PROPERTIES:
 :ID: AB71AFF8-0B08-4610-9F12-C5A84D8AB892
 :END:
-#+title: Trade Modelling
+#+title: Trade Modeling
 #+description: The entities a trade is built from — product type, security, trade and instrument — the relationships between them, and the correspondence each must keep with the ORE representation.
 #+type: knowledge
 #+level: cross
@@ -14,10 +14,10 @@
 Trades are a key concept in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. It is modelled as four distinct entities
 with separate responsibilities:
 
-- *Product Type*:The class of contract that can be traded.
+- *Product Type*: The class of contract that can be traded.
 - *Security*: A particular tradable instance of such a class, where one exists.
-- *Trade:*: An agreement struck on a product type, and on a security where there
-  is one.
+- *Trade:*: An agreement struck on a product type and on a security, where
+  there is one.
 - *Instrument*: The economic terms of that agreement.
 
 The relationships between these entities are as follows. A product type
@@ -30,7 +30,7 @@ can cross between the two representations without loss.
 
 This document describes these entities in detail, their relationships, the prior
 art that was considered during their modeling and any other considerations
-regarding the modelling process.
+regarding the modeling process.
 
 #+begin_note
 The wider trading vocabulary — economic value, price, the bid, ask and traded
@@ -96,7 +96,7 @@ deal the same security many times.
 
 A *bond issue* is one such instance. An issuer sells a specific tranche of debt
 under fixed terms — coupon, maturity, currency, size — and an ISIN or CUSIP
-identifies it. [[id:CB93E961-E1D9-403B-83C0-1E15CBA13667][Security identifiers]] covers those schemes. The issuer is the
+identifies it. [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] covers those schemes. The issuer is the
 borrower: a sovereign debt office, a corporate, an agency, a supranational. A
 central bank may run the auction, but it does not issue the government's debt.
 
@@ -167,13 +167,13 @@ designing this model.
 
 ** Messaging standards
 
-FIX and MDDL meet this model only at the identifier. FIX carries an =Instrument=
+[[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][FIX]] and [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][MDDL]] meet this model only at the identifier. FIX carries an =Instrument=
 component block that names a security by =SecurityID= with a =SecurityIDSource=
 saying which scheme the value belongs to, and MDDL wraps any existing scheme in
 a controlled vocabulary. Neither proposes a persistent model of a trade: both
 describe a message on the wire. They matter here only because they confirm that
 a security identifier is meaningless without the scheme that issued it, which is
-the point [[id:CB93E961-E1D9-403B-83C0-1E15CBA13667][security identifiers]] makes. See [[id:C7B36E6D-F30F-4E2C-BB5B-27B1D4516DF1][FIX]] and [[id:0FF6A2DC-EE01-4C3C-AF86-A0D08FD93925][MDDL]].
+the point [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][standard financial identifiers]] makes.
 
 ** FpML
 
@@ -207,7 +207,7 @@ counterparty roles to Party1 and Party2, so that "the same product can now be
 defined in a party-agnostic way and used to represent transactions between
 potentially many different parties". A product definition is therefore
 instantiated many times, which is the fungibility observation stated as a
-modelling rule.
+modeling rule.
 
 CDM appears at first to contradict the fourth observation, which holds that
 nothing in the domain lets two trades share a set of economic terms. CDM lets
@@ -275,7 +275,7 @@ the domain gives, which is why our model keeps it.
 Both the reference datum payload and the trade-data group are choices
 discriminated by type. An XML schema expresses a choice directly; a relational
 model expresses it as a table per type. The two sides of the ORE model therefore
-have the same shape as each other, and one modelling approach covers both.
+have the same shape as each other, and one modeling approach covers both.
 
 *** The correspondence
 
@@ -294,7 +294,7 @@ data is a child element of the trade and needs none. Our =instrument_id= is
 therefore a divergence from ORE rather than a reflection of it, and it is the
 one place where the correspondence above does not hold.
 
-* Additional Modelling Notes
+* Additional Modeling Notes
 
 The next sections contain assorted notes on the modeling process.
 
@@ -359,7 +359,7 @@ or page.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — who the firm faces, and whether anything happened.
 - [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregate over deals, which has no identity of its own.
 - [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, one per =TradeType=.
-- [[id:CB93E961-E1D9-403B-83C0-1E15CBA13667][Security identifiers]] — ISIN, CUSIP and SEDOL, which identify a security.
+- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — ISIN, CUSIP and SEDOL, which identify a security, alongside the entity, venue and market data schemes.
 - [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — UTI and USI, which identify a trade.
 - [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] — what an issue is.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — identity by key, and explicit variation over inheritance webs.

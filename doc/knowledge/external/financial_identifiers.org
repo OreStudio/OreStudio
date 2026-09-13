@@ -89,8 +89,26 @@ derivatives, and other tradeable securities.
 The ISIN is the globally accepted primary identifier for securities
 and the one required by most regulatory reporting frameworks (MiFID
 II RTS 2, EMIR). It maps to the underlying national identifier
-(CUSIP for US, SEDOL for UK, etc.) via the issuing NNA. OreStudio
-uses ISINs as the primary instrument identifier in trade records.
+(CUSIP for US, SEDOL for UK, etc.) via the issuing NNA. Securities
+issued into the international market through Euroclear or Clearstream
+carry the prefix =XS=, which belongs to no single country.
+
+An ISIN identifies the security and not the listing. The same ISIN
+appears on every venue where the security trades, so an ISIN alone
+cannot say which venue a price came from; the market data identifiers
+below answer that.
+
+Issuers re-open existing lines rather than always creating new ones,
+and a re-opened tranche carries the ISIN of the line it joins. An
+ISIN therefore identifies a security rather than a single sale event.
+See [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]].
+
+In ORE Studio an ISIN identifies a security, which is one of the four
+entities in [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modelling]]. It does not identify a trade: that is
+the trade id, with [[id:E080E32B-5E53-4AB7-903F-145D070C045C][trade identifiers]] covering the regulatory codes
+two counterparties share. ORE names a security through
+=ReferenceData=, and a bond trade points at its datum with
+=BondData/SecurityId=.
 
 *** CUSIP — Committee on Uniform Security Identification Procedures
 
@@ -117,6 +135,10 @@ SEDOL is the primary identifier for securities listed on UK and
 Irish exchanges. It is widely used in European fund administration
 and is embedded in the ISIN for UK securities (=GB= + SEDOL-derived).
 
+Unlike an ISIN, a SEDOL is assigned per listing rather than per
+security, so one security listed on several venues has several
+SEDOLs.
+
 *** FIGI — Financial Instrument Global Identifier
 
 - *Standard*: Open standard (Object Management Group)
@@ -130,6 +152,14 @@ OTC derivatives that have no ISIN. Unlike CUSIP and SEDOL, the
 FIGI registry is public and downloadable. Each unique combination
 of instrument, exchange, and currency gets a distinct FIGI. The
 GLEIF DQ pipeline maps LEIs to FIGIs for OTC instrument identification.
+
+*** What the model holds
+
+The data quality coding scheme table registers the identifiers on a
+party: LEI, BIC, MIC, MPID, DTCC_PARTICIPANT_ID and NATIONAL_ID. The
+instrument schemes on this page have no equivalent entry, so a
+security identifier is currently stored without a registered scheme
+saying which authority issued it.
 
 ** Market and Venue Identifiers
 
@@ -183,6 +213,9 @@ instruments by their BBG ticker. Bloomberg also issues FIGIs
 
 * See also
 
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modelling]] — the four entities a trade is built from; these codes identify the security.
+- [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — UTI and USI, which identify a deal rather than a security.
+- [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] — what an issue is, and why a re-opened tranche keeps its ISIN.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — the FpML URI-tagged scheme mechanism that
   OreStudio uses to store multiple identifiers per party.
 - [[https://www.gleif.org/en/lei-data/gleif-golden-copy][GLEIF Golden Copy]] — full LEI registry download (open data).

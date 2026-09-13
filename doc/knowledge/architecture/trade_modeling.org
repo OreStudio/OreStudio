@@ -2,7 +2,7 @@
 :ID: AB71AFF8-0B08-4610-9F12-C5A84D8AB892
 :END:
 #+title: Trade Modeling
-#+description: The entities a trade is built from — product type, security, trade and instrument — the relationships between them, and the correspondence each must keep with the ORE representation.
+#+description: The entities a trade is built from — product type, security issue, trade and instrument — the relationships between them, and the correspondence each must keep with the ORE representation.
 #+type: knowledge
 #+level: cross
 #+filetags: :trading:identity:modeling:
@@ -11,17 +11,20 @@
 
 * Summary
 
-Trades are a key concept in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. It is modelled as four distinct entities
-with separate responsibilities:
+Trades are a key concept in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. Through the application of [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data Oriented
+Programming]] principles we decided to model them as four distinct entities with
+separate responsibilities:
 
 - *Product Type*: The class of contract that can be traded.
-- *Security*: A particular tradable instance of such a class, where one exists.
-- *Trade:* An agreement struck on a product type and on a security, where there
+- *Security Issue*: A particular tradable instance of such a class, where one
+  exists.
+- *Trade:* An agreement struck on a product type and on a security issue, where there
   is one.
 - *Instrument*: The economic terms of that agreement.
 
 The relationships between these entities are as follows. A product type
-classifies many securities and many trades. A security is dealt by many trades.
+classifies many security issues and many trades. A security issue is dealt by
+many trades.
 A trade holds exactly one set of economic terms.
 
 Significantly, [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] models this domain and its representation is the ground
@@ -51,9 +54,10 @@ The following UML diagram captures the key entities and their relationships.
 [[proj:doc/knowledge/architecture/trade_modeling.png]]
 
 Note that a trade names its product type directly rather than reaching it
-through a security, because a product type may have no associated security
-(/e.g./ in the OTC case). That is why the diagram carries an association from
-product type to trade as well as the path through the security.
+through a security issue, because a product type may have no associated
+security issue (/e.g./ in the OTC case). That is why the diagram carries an
+association from product type to trade as well as the path through the security
+issue.
 
 The next sections provide details of each entity.
 
@@ -76,26 +80,27 @@ is a closed list, so a trade whose type is absent cannot be booked. Within ORE
 Studio it is modelled as [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][=trade_type=]], whose =code= column carries the
 catalogue's identifier.
 
-** Security
+** Security Issue
 
 Wikipedia defines a security as "a tradable financial asset", and adds that in a
 fungible security "all holdings of the security are treated identically and are
-interchangeable". Fungibility is what makes the security an entity in its own
-right: every holder of one unit holds the same thing, so the terms belong to the
-security and not to any one holding of it.
+interchangeable". A *security issue* is one such asset as put into the market by
+its issuer. Fungibility is what makes it an entity in its own right: every
+holder of one unit holds the same thing, so the terms belong to the security
+issue and not to any one holding of it.
 
 That is to say, some contracts are defined once and traded many times, and every
 holder holds the identical thing. For example, an issuer fixes a bond's coupon
 and maturity, and two traders dealing that bond negotiate neither. Their trades
 share terms that neither party chose. /Fungibility/ is the observation that all
 holdings of the security are interchangeable, so the terms belong to the /thing/
-held - the security - rather than to any holding of it. Without it, an issuer's
+held - the security issue - rather than to any holding of it. Without it, an issuer's
 terms would be copied onto every trade in the issue, and the copies could
 disagree.
 
-A security is therefore one tradable instance of a product type: this bond
-issue, this futures contract. One product type has many securities, and traders
-deal the same security many times.
+A security issue is therefore one tradable instance of a product type: this
+bond issue, this futures contract. One product type has many security issues,
+and traders deal the same security issue many times.
 
 A *bond issue* is one such instance. An issuer sells a specific tranche of debt
 under fixed terms — coupon, maturity, currency, size — and an ISIN or CUSIP
@@ -104,19 +109,19 @@ borrower: a sovereign debt office, a corporate, an agency, a supranational. A
 central bank may run the auction, but it does not issue the government's debt.
 
 Issuers re-open existing lines rather than always creating new ones. An issue
-therefore reads best as /the security its ISIN identifies/ rather than as a
+therefore reads best as /the security issue its ISIN identifies/ rather than as a
 single sale event. [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] sets out the mechanics, and [[id:6c67bf4c-ad4e-446e-a55e-d7aa43735903][=bond_issue=]] models
 the entity.
 
-** Relationship between Product Types and Securities
+** Relationship between Product Types and Security Issues
 
-The relationship from product type to security is optional, and many product
+The relationship from product type to security issue is optional, and many product
 types exercise that option. Two parties strike a vanilla OTC option between
 themselves, and no official issue exists because nobody defines the option once
 and trades it many times. A bond has an issue, a bond future has a contract, and
 a swaption has neither.
 
-We therefore model securities per product type as we reach each one, starting
+We therefore model security issues per product type as we reach each one, starting
 with the bond issue. The absence is a fact about the product type, not missing
 data for a later task to supply.
 
@@ -158,7 +163,7 @@ them empty.
 The variation is structural, which is why the economics are an entity per
 product type rather than a wider =trade= table. However, the economic terms are
 properties of one agreement: a notional, a direction, a schedule and a strike
-all belong to that deal, and two trades on the same security carry different
+all belong to that deal, and two trades on the same security issue carry different
 ones. The relationship between trade and instrument is therefore one to one, and
 the trade id identifies both.
 
@@ -190,7 +195,7 @@ economic terms vary in shape by product rather than in value alone.
 
 Its limitation is scope. FpML addresses OTC derivatives, so it says little about
 securities defined once by an issuer and traded many times, which is where our
-security entity earns its place.
+security issue entity earns its place.
 
 ** The Common Domain Model
 
@@ -219,7 +224,7 @@ economic terms are parametric mechanics — payouts, date methodologies,
 termination rules — and carry no price, quantity or party. Those arrive only at
 the tradable product. What this model calls the instrument is the per-deal half:
 the notional, the direction, the strike. CDM's reusable half corresponds to our
-product type and security, and its tradable product corresponds to our trade.
+product type and security issue, and its tradable product corresponds to our trade.
 Both models therefore cut at price and quantity, and differ only in where they
 draw the boundary of the word "product".
 
@@ -228,7 +233,7 @@ draw the boundary of the word "product".
 Calypso separates Trade from Product. A product, in its terms, is a financial
 instrument that can be held or traded, defined once and traded many times, and
 it manages product holdings independently of trades. Calypso's Product is the
-definition — a bond, a future contract, a stock — which is the security here.
+definition — a bond, a future contract, a stock — which is the security issue here.
 
 Murex builds a trade from Financial Contract Components, its elementary unit for
 P&L and sensitivity, and those components cannot live independently. A Financial
@@ -262,7 +267,7 @@ permitted values are the =oreTradeType= enumeration. Each product page in [[id:C
 Products by Asset Class]] states its =TradeType=, so the catalogue and the
 documentation can be read against each other.
 
-ORE models securities as =ReferenceData=, a list of =ReferenceDatum= elements.
+ORE models security issues as =ReferenceData=, a list of =ReferenceDatum= elements.
 Each element carries an =id= attribute, an optional =validFrom=, a =Type=
 discriminator, and one payload chosen from a closed list: bond, bond future,
 convertible bond, callable bond, CBO, bond basket, equity, equity index,
@@ -310,29 +315,29 @@ an entity further down.
 - The *asset class* is the same for every bond trade anywhere, so it is a
   property of the product type.
 - The *coupon rate* is the same for every trade on one bond issue, so it is a
-  property of the security.
+  property of the security issue.
 - The *notional* differs from one deal to the next, so it is a property of the
   trade.
 
 A misplaced attribute fails in one of two ways. Attached too far down, it is
 duplicated on every row that shares it and the copies can disagree: a coupon
 rate stored per trade is rewritten on each deal in the same issue. Attached too
-far up, it has one row where it needs many: a notional stored on the security
+far up, it has one row where it needs many: a notional stored on the security issue
 would hold only the most recent trade's size.
 
-** Securities held without a trade
+** Security Issues Held Without a Trade
 
 One case argues for a fifth entity, and it is worth answering directly: a
-security the firm holds without a corresponding trade, for valuation, a
+security issue the firm holds without a corresponding trade, for valuation, a
 scenario, or a pricing exercise.
 
-That security is a security, and nothing more. It exists whether or not anyone
+It is a security issue, and nothing more. It exists whether or not anyone
 has traded it, which is Calypso's "defined once, traded many times" with the
 count at zero. We already model it that way: =bond_issue= exists independently
 of any trade.
 
 The genuinely hypothetical *trade* is a separate case, an exposure someone wants
-priced that nobody has dealt. It has a product type, it may name a security, and
+priced that nobody has dealt. It has a product type, it may name a security issue, and
 it holds economic terms of its own, so it is a trade like any other.
 
 A hypothesis is not a product type, because it says nothing about what was
@@ -361,7 +366,7 @@ or page.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — who the firm faces, and whether anything happened.
 - [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregate over deals, which has no identity of its own.
 - [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, one per =TradeType=.
-- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — ISIN, CUSIP and SEDOL, which identify a security, alongside the entity, venue and market data schemes.
+- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — ISIN, CUSIP and SEDOL, which identify a security issue, alongside the entity, venue and market data schemes.
 - [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — UTI and USI, which identify a trade.
 - [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] — what an issue is.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — identity by key, and explicit variation over inheritance webs.

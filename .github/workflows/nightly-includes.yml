@@ -48,6 +48,18 @@ jobs:
       - name: get-cmake
         uses: lukka/get-cmake@v4.4.2
 
+      - name: Install dev packages
+        run: ./projects/ores.compass/compass.sh env install-packages
+
+      - name: Install Qt
+        # The build requires Qt6 and it does not come from vcpkg, so
+        # configure fails without it. Same version as continuous-linux.
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          modules: 'qtcharts'
+          cache: true
+
       - name: Cache vcpkg binary packages
         # Same key the continuous-linux workflow uses, so the nightly
         # run reuses the main CI's cache instead of rebuilding deps.

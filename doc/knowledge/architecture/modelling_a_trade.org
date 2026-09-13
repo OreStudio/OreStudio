@@ -16,8 +16,8 @@ with separate responsibilities:
 
 - *Product Type*: The class of contract that can be traded.
 - *Security*: A particular tradable instance of such a class, where one exists.
-- *Trade:*: An agreement struck on a product type and on a security, where
-  there is one.
+- *Trade:* An agreement struck on a product type and on a security, where there
+  is one.
 - *Instrument*: The economic terms of that agreement.
 
 The relationships between these entities are as follows. A product type
@@ -32,13 +32,16 @@ This document describes these entities in detail, their relationships, the prior
 art that was considered during their modeling and any other considerations
 regarding the modeling process.
 
+A related concept this document does not cover is the *position*. A position is
+an aggregate over trades: what the firm is left holding once every trade
+touching some dimension has been added up. It is not a fifth entity, because it
+has no identity, no counterparty and no version of its own, and it is computed
+rather than recorded. See [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][positions]].
+
 #+begin_note
 The wider trading vocabulary — economic value, price, the bid, ask and traded
 price, financial quotation, and the market maker — is defined in the [[https://mcraveiro.github.io/ore_studio/musings/trading.html][trading
 musings]], which takes the same definitions from the same sources.
-
-A *position* is not one of these entities. A position is an aggregate over
-deals, with no identity of its own, and [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][positions]] covers it.
 #+end_note
 
 * Key Entities and Relationships
@@ -209,17 +212,16 @@ potentially many different parties". A product definition is therefore
 instantiated many times, which is the fungibility observation stated as a
 modeling rule.
 
-CDM appears at first to contradict the fourth observation, which holds that
-nothing in the domain lets two trades share a set of economic terms. CDM lets
-exactly that happen, by putting =economicTerms= on the reusable product. The two
-agree once the seam is located precisely. CDM's economic terms are parametric
-mechanics — payouts, date methodologies, termination rules — and carry no price,
-quantity or party. Those arrive only at the tradable product. What this model
-calls the instrument is the per-deal half: the notional, the direction, the
-strike. CDM's reusable half corresponds to our product type and security, and
-its tradable product corresponds to our trade. Both models therefore cut at
-price and quantity, and differ only in where they draw the boundary of the word
-"product".
+CDM appears at first to contradict the prior observation that stated that
+nothing in the domain lets two trades share a set of economic terms; CDM allows
+for this by placing =economicTerms= on the reusable product. However, CDM's
+economic terms are parametric mechanics — payouts, date methodologies,
+termination rules — and carry no price, quantity or party. Those arrive only at
+the tradable product. What this model calls the instrument is the per-deal half:
+the notional, the direction, the strike. CDM's reusable half corresponds to our
+product type and security, and its tradable product corresponds to our trade.
+Both models therefore cut at price and quantity, and differ only in where they
+draw the boundary of the word "product".
 
 ** Vendor platforms
 

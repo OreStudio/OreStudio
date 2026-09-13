@@ -48,7 +48,7 @@ musings]], which takes the same definitions from the same sources.
 
 The following UML diagram captures the key entities and their relationships.
 
-[[proj:doc/knowledge/architecture/modelling_a_trade.png]]
+[[proj:doc/knowledge/architecture/trade_modeling.png]]
 
 Note that a trade names its product type directly rather than reaching it
 through a security, because a product type may have no associated security

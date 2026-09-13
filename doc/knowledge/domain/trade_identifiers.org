@@ -18,7 +18,7 @@ two reports against each other. UTI and USI are the codes that serve
 that purpose.
 
 These codes identify the trade, which is one of the three scopes in
-[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][modelling a trade]]. They say nothing about what was
+[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]]. They say nothing about what was
 traded, and [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][standard financial identifiers]] answer that separate
 question.
 
@@ -87,6 +87,6 @@ for USI. This page cites no edition or clause for any of them.
 * See also
 
 - [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — the codes that name a security, a party or a venue rather than a deal.
-- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Modelling a trade]] — the three scopes; these codes identify the trade.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities; these codes identify the trade.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — the lifecycle the identified trade runs through.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

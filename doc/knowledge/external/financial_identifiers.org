@@ -104,7 +104,7 @@ ISIN therefore identifies a security rather than a single sale event.
 See [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]].
 
 In ORE Studio an ISIN identifies a security, which is one of the four
-entities in [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modelling]]. It does not identify a trade: that is
+entities in [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]]. It does not identify a trade: that is
 the trade id, with [[id:E080E32B-5E53-4AB7-903F-145D070C045C][trade identifiers]] covering the regulatory codes
 two counterparties share. ORE names a security through
 =ReferenceData=, and a bond trade points at its datum with
@@ -213,7 +213,7 @@ instruments by their BBG ticker. Bloomberg also issues FIGIs
 
 * See also
 
-- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modelling]] — the four entities a trade is built from; these codes identify the security.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; these codes identify the security.
 - [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — UTI and USI, which identify a deal rather than a security.
 - [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] — what an issue is, and why a re-opened tranche keeps its ISIN.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — the FpML URI-tagged scheme mechanism that

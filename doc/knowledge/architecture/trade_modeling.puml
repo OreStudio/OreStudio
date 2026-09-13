@@ -18,7 +18,7 @@
 @startuml
 !pragma layout smetana
 
-title Modelling a trade
+title Trade Modeling
 
 hide circle
 skinparam classAttributeIconSize 0

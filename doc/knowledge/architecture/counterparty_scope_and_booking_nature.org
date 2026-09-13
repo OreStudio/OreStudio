@@ -301,7 +301,7 @@ enumerations.
 
 * See also
 
-- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Modelling a trade]] — the three scopes a trade is modelled in; this page is the other axis.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; this page is the other axis.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Status State Machine]] — the machinery these dimensions select.
 - [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data-oriented design]] — explicit variation over inheritance webs.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

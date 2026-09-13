@@ -3,9 +3,9 @@
 :END:
 #+title: A data-oriented data model for ores.trading
 #+description: The compass-code-review-data-model review of the whole ores.trading data model: regime classification, per-family decision and invariant checks, the findings with causes, anchored scores, and the proposed data-oriented target model — a normalised relational model of atomised entities with keys and foreign keys and no object graph, the domain and the wire as projections, composite and versioning semantics preserved as per-table facts and temporal joins, container messages at the boundary, with the service-layer changes and PR sequencing.
-#+type: knowledge
-#+level: cross
-#+filetags: :knowledge:architecture:trading:data_model:data_oriented_design:codegen:
+#+type: design
+#+level: s2
+#+filetags: :design:trading:data_model:data_oriented_design:codegen:data_oriented_trading_model:sprint_25:v0:
 #+created: 2026-09-08
 #+updated: 2026-09-08
 

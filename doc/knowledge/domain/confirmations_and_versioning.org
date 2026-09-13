@@ -296,8 +296,7 @@ What exists:
   child changes, so "as of version N" is a temporal window join. See
   [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]].
 - Trading does not adopt that design. Each entity versions on its own
-  spine and the composite read is a temporal join over keys. See
-  [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]].
+  spine and the composite read is a temporal join over keys.
 - The blotter exposes the deal actions that produce versions: Amend,
   Cancel, Clone and Roll Forward. See
   [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]].
@@ -353,7 +352,5 @@ What is missing, and what development should add:
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the versioning
   spine our entities already carry.
-- [[id:dfe15809-ab5a-4eb7-8afb-251bf5d0b911][A data-oriented data model for ores.trading]] — the per-entity
-  versioning the trading component targets.
 - [[id:B50355E0-F016-4CA1-9932-404DAF83EA7A][P&L Attribution]] — trade activity categories, and why a version
   boundary matters to an attribution run.

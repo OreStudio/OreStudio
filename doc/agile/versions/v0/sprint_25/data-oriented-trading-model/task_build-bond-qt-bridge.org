@@ -20,7 +20,7 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-The qt bridge is the last of the three bond follow-up tasks staged by the deliverable trading_bond_relational_model.org. The instrument the forms edit is no longer one row: it is an instrument row, its issue, its fact rows and the issue's child rows, joined by keys. This task delivers the container over the generated part types (handcrafted first; codegen absorbs it only when the parent story's container grammar lands), the qt views over the new row shapes, the wire protocol and the reworked BondInstrumentForm. The deliverable lists the shared schedule and underlyings tables and the container grammar as dependencies of the parent story; the probe resolves with evidence whether the family's views need the shared tables at all, since the issue's child rows live in family tables per the approved answers.
+The qt bridge is the last of the three bond follow-up tasks staged by the deliverable design_bond_relational_model.org. The instrument the forms edit is no longer one row: it is an instrument row, its issue, its fact rows and the issue's child rows, joined by keys. This task delivers the container over the generated part types (handcrafted first; codegen absorbs it only when the parent story's container grammar lands), the qt views over the new row shapes, the wire protocol and the reworked BondInstrumentForm. The deliverable lists the shared schedule and underlyings tables and the container grammar as dependencies of the parent story; the probe resolves with evidence whether the family's views need the shared tables at all, since the issue's child rows live in family tables per the approved answers.
 
 * Status
 

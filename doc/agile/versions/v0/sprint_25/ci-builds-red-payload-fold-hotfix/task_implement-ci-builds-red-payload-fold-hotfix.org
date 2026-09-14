@@ -26,11 +26,11 @@ Apply the five fixes the story names, each verified by the class of its change, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:8D65A290-92C2-4C02-85DE-88C78A7C66E8][Hotfix: CI builds red across all OSs on the payload decode fold and the ascot member]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-13                               |
 
 * Acceptance
@@ -41,11 +41,65 @@ Apply the five fixes the story names, each verified by the class of its change, 
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+1. Read the failing CI logs on the red head and map each workflow to its
+   compile diagnostic. Five independent defects came out of that.
+2. Rename the =ascot= member to =ascot_row= in =bond_instrument_data= and
+   update its call sites, so gcc stops rejecting the collision between the
+   member name and its type name.
+3. Rewrite =decode_with_legs= as the =try_one_with_legs= /
+   =try_each_with_legs= helper pair, the shape =decode_flat= already uses,
+   so clang 19 and AppleClang 16 stop crashing in the fold expression.
+4. Disable C4251 for MSVC at the top of =projects/CMakeLists.txt=. Add the
+   Windows-scoped =-Wno-unused-function= and =/wd4505= for the generated
+   =domain.cpp= in =ores.ore/core/src/CMakeLists.txt=.
+5. Move =-performance-avoid-endl= out of the invalid =Warnings:= key and
+   into =Checks:= in =.clang-tidy=. Add the dev-package and Qt install
+   steps the Nightly Include Hygiene job was missing.
+6. Prove each fix locally where the compiler is available: gcc 16.2.0 and
+   clang 19.1.7 probes on the two failing translation units, and a
+   clang-tidy run with the fixed config.
+7. Run the class checks: full build, full ctest with a CDash experimental
+   submission, the roundtrip check, both drift checks, the site build and
+   the doc lint. The ctest run surfaced a sixth defect the build failures
+   had masked: the bond future exporter test document still carries the
+   pre-v17 shape. Fix the document and re-run.
+8. Raise one PR carrying all six fixes, and state which of them Linux
+   cannot verify.
 
 * Notes
+
+The red head is =e0a339a7=. Every workflow fails, and every failure is a
+compile or configure error:
+
+| Workflow | Jobs | Diagnostic |
+|----------+------+------------|
+| Continuous Linux | =linux-gcc-debug-ninja=, =linux-gcc-release-ninja= | =declaration of ... ascot ... changes meaning of 'ascot' [-Wchanges-meaning]= at =bond_instrument_data.hpp:109= |
+| Continuous Linux | =linux-clang-debug-ninja=, =linux-clang-release-ninja= | =clang frontend command failed with exit code 139= |
+| Continuous MacOS | =macos-clang-debug-ninja=, =macos-clang-release-ninja= | =unable to execute command: Segmentation fault: 11= |
+| Continuous Windows | =windows-msvc-debug-ninja=, =windows-msvc-release-ninja= | =error C2220= from =warning C4251= on =io_error.hpp(44)= |
+| Continuous Windows | =windows-clang-debug-ninja=, =windows-clang-release-ninja= | =error: unused function '_serialize_xsd__string' [-Werror,-Wunused-function]= at =domain.cpp:67769= |
+| Nightly Build | =linux-gcc-debug=, =linux-clang-debug= | the same two diagnostics as Continuous Linux |
+| Nightly Include Hygiene | =includes= | configure fails, =FindQt6.cmake= not found |
+
+Three things limit what the local runs can prove, and the PR says so.
+
+MSVC dies inside =ores.platform=, the first library of the build, so it
+never reaches the generated file. The =/wd4505= flag and the Windows-clang
+=-Wno-unused-function= are therefore predictions from the diagnostic text,
+not observations.
+
+The Nightly Include Hygiene job fails at configure, so it never reaches
+clang-tidy. The =.clang-tidy= defect is proven locally only, by running
+clang-tidy with the pre-fix and post-fix config.
+
+The sixth defect is pre-existing on main. The test file and the XSD are
+byte-identical on both sides of the branch point, and the failing parse
+sits in xsdcpp-generated code the branch never touches. CI runs ctest
+after the build, so the defect would have turned every job red again the
+moment the build fixes landed.
+
+The ORE domain bindings under =ores.ore= are xsdcpp output and the drift
+check regenerates them clean, so no generated file is edited by hand.
 
 * Test Scenarios
 
@@ -68,6 +122,42 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | The renamed member breaks the naming rhythm of its siblings (repo, future, option_data). | projects/ores.trading/api/include/ores.trading.api/domain/bond_instrument_data.hpp | Declined | gcc rejects a member whose name repeats its own type name (-Wchanges-meaning), and the rename is the smallest change that clears it. The Doxygen note records the reason and the roundtrip suite already uses the name. |
+| 2 | -Wno-unused-function silences the whole generated domain.cpp, not the nine functions CI names. | projects/ores.ore/core/src/CMakeLists.txt | Accepted | The file is generated, so the real fix belongs upstream in xsdcpp. The suppression is per-file and Windows-only, and the comment names the generator. |
+| 3 | /wd4251 disables the warning for every MSVC target, not just ores.platform. | projects/CMakeLists.txt | Accepted | Every consumer is in-tree and built by this same toolchain against these same headers, so the ABI mismatch the warning catches cannot arise. The reason sits next to the flag. |
+| 4 | Dropping the Warnings key could silently change the effective check set. | .clang-tidy | Declined | -performance-avoid-endl moved into Checks with its leading -, so the check stays off. A clang-tidy run with the fixed config exits 0 and no other key changes. |
+| 5 | The bond future test document was edited to match the schema, which could hide a mapper defect. | projects/ores.ore/core/tests/xml_exporter_tests.cpp | Accepted | The v17 schema moved Currency and ContractMonth to bondFutureReferenceDatum, and the loader rejects the old shape. The sibling mapper suite already uses the three-element document and asserts the relocated terms stay at their defaults rather than being invented. |
+| 6 | The two new nightly steps could drift from the ones continuous-linux uses. | .github/workflows/nightly-includes.yml | Declined | Both steps are byte-identical to the continuous-linux ones, so the nightly job gets the same toolchain. |
+| 7 | clang-format drift in the touched files. | projects/ores.ore/core/src/domain/bond_instrument_mapper.cpp and others | Declined | The flagged hunks are pre-existing and untouched by this change. The nightly format job fixes formatting in place and raises its own PR, so formatting is not a build gate. The misspell check is clean. |
+| 8 | Generated files must not be hand-edited. | whole diff | Declined | No generated file appears in the diff. domain.hpp, domain.cpp and the SQL artefacts are untouched, and the codegen drift check regenerates the tree clean. |
 
 * Result
+
+Six fixes sit on =feature/implement-ci-builds-red-payload-fold-hotfix=,
+one commit each.
+
+- gcc: the =ascot= member is renamed =ascot_row=, with its call sites
+  updated. A gcc 16.2.0 probe on the pre-fix header reproduces the CI
+  diagnostic, and the fixed header compiles clean.
+- clang: =decode_with_legs= is now the =try_one_with_legs= /
+  =try_each_with_legs= helper pair. clang 19.1.7 on the pre-fix file
+  reports =PLEASE submit a bug report= and exits 1; the fixed file exits 0.
+- MSVC: C4251 is disabled for MSVC alone.
+- Windows clang: the generated =domain.cpp= gets =-Wno-unused-function=,
+  and MSVC gets =/wd4505=, both scoped to that one file.
+- clang-tidy: the invalid =Warnings:= key is gone and the config parses.
+- Nightly Include Hygiene: the job installs the dev packages and Qt6
+  before it configures.
+- The bond future test document carries the three elements the v17 schema
+  keeps on the trade side.
+
+Class checks, all on the final tree: the full build under
+=linux-clang-debug-make= is clean; the full ctest passes 71 of 71 suites
+and the CDash experimental submission succeeds; =ore_domain_roundtrip_check.py=
+exits 0; the cmake-sources and codegen drift checks report no drift; the
+site build and the doc lint are clean.
+
+The first two acceptance criteria are met. The third is met in the PR
+body: the MSVC and Windows-clang fixes and the nightly Qt install cannot
+be verified on this machine, and a further Windows error may sit behind
+the first one.

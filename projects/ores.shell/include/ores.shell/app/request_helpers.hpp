@@ -72,8 +72,7 @@ do_auth_request(std::ostream& out,
                 ores::nats::service::nats_client& session,
                 std::string_view subject,
                 const Request& req,
-                std::chrono::milliseconds timeout =
-                    ores::nats::service::default_request_timeout) {
+                std::chrono::milliseconds timeout = ores::nats::service::default_request_timeout) {
     try {
         auto result = ores::nats::service::authenticated_request_and_decode<Response>(
             session, subject, req, timeout);

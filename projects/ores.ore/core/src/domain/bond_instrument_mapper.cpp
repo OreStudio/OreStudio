@@ -208,7 +208,8 @@ bond_schedule_data map_schedule(const scheduleData& sd) {
         if (r.EndDate)
             row.end_date = *r.EndDate;
         if (r.AdjustEndDateToPreviousMonthEnd)
-            row.adjust_end_date_to_previous_month_end = to_string(*r.AdjustEndDateToPreviousMonthEnd);
+            row.adjust_end_date_to_previous_month_end =
+                to_string(*r.AdjustEndDateToPreviousMonthEnd);
         row.tenor = r.Tenor;
         if (r.Calendar)
             row.calendar = *r.Calendar;
@@ -270,9 +271,8 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
         r.Convention =
             parse_code(row.convention, business_day_convention_count, businessDayConvention::F);
         if (row.term_convention)
-            r.TermConvention = parse_code(*row.term_convention,
-                                          business_day_convention_count,
-                                          businessDayConvention::F);
+            r.TermConvention = parse_code(
+                *row.term_convention, business_day_convention_count, businessDayConvention::F);
         if (row.rule)
             r.Rule = parse_code(*row.rule, date_rule_count, dateRule::Backward);
         if (row.end_of_month)
@@ -296,9 +296,8 @@ scheduleData reverse_schedule(const bond_schedule_data& sd) {
         if (row.calendar)
             d.Calendar = *row.calendar;
         if (row.convention)
-            d.Convention = parse_code(*row.convention,
-                                      business_day_convention_count,
-                                      businessDayConvention::F);
+            d.Convention = parse_code(
+                *row.convention, business_day_convention_count, businessDayConvention::F);
         set_present_text(d.Tenor, row.tenor);
         if (row.end_of_month)
             d.EndOfMonth = parse_code(*row.end_of_month, bool__count, bool_::N);
@@ -359,8 +358,7 @@ bond_amortization_data map_amortization(const amortizationData& a) {
 
 amortizationData reverse_amortization(const bond_amortization_data& row) {
     amortizationData result;
-    result.Type =
-        parse_code(row.type, amortization_type_count, amortizationType::FixedAmount);
+    result.Type = parse_code(row.type, amortization_type_count, amortizationType::FixedAmount);
     if (row.value)
         result.Value = static_cast<float>(*row.value);
     set_present_text(result.StartDate, row.start_date);
@@ -835,9 +833,8 @@ optionPaymentData_Rules_t reverse_option_payment_rules(const bond_option_payment
     result.Convention =
         parse_code(row.convention, business_day_convention_count, businessDayConvention::F);
     if (row.relative_to)
-        result.RelativeTo = parse_code(*row.relative_to,
-                                       option_pay_relative_to_count,
-                                       optionPayRelativeTo::Expiry);
+        result.RelativeTo =
+            parse_code(*row.relative_to, option_pay_relative_to_count, optionPayRelativeTo::Expiry);
     return result;
 }
 
@@ -934,9 +931,8 @@ void reverse_option_data(const bond_option_data& row, optionData& od) {
     if (row.settlement)
         od.Settlement = parse_code(*row.settlement, settlement_type_count, settlementType::Cash);
     if (row.settlement_method)
-        od.SettlementMethod = parse_code(*row.settlement_method,
-                                         settlement_method_count,
-                                         settlementMethod::PhysicalOTC);
+        od.SettlementMethod = parse_code(
+            *row.settlement_method, settlement_method_count, settlementMethod::PhysicalOTC);
     set_present_text(od.PayOffAtExpiry, row.pay_off_at_expiry);
     set_present_text(od.PremiumAmount, row.premium_amount);
     set_present_text(od.PremiumCurrency, row.premium_currency);
@@ -958,8 +954,7 @@ void reverse_option_data(const bond_option_data& row, optionData& od) {
     set_present_text(od.ExerciseFeeSettlementCalendar, row.exercise_fee_settlement_calendar);
     set_present_text(od.ExerciseFeeSettlementConvention, row.exercise_fee_settlement_convention);
     if (row.automatic_exercise)
-        od.AutomaticExercise =
-            parse_code(*row.automatic_exercise, bool__count, bool_::N);
+        od.AutomaticExercise = parse_code(*row.automatic_exercise, bool__count, bool_::N);
     if (row.exercise_data)
         od.ExerciseData = reverse_option_exercise(*row.exercise_data);
     if (row.payment_data)
@@ -1089,7 +1084,6 @@ void bond_instrument_mapper::map_bond_data(const bondData& bd, bond_instrument_d
             !ld.legDataType->FixedLegData->Rates.Rate.empty())
             issue.coupon_rate =
                 static_cast<double>(ld.legDataType->FixedLegData->Rates.Rate.front());
-
     }
 }
 
@@ -1140,9 +1134,8 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
                 if (!ld.Currency && !issue.currency.empty())
                     ld.Currency = issue.currency;
                 if (!ld.DayCounter && !issue.day_count_code.empty())
-                    ld.DayCounter = parse_code(issue.day_count_code,
-                                               day_counter_count,
-                                               dayCounter::A360);
+                    ld.DayCounter =
+                        parse_code(issue.day_count_code, day_counter_count, dayCounter::A360);
 
                 if (!ld.Notionals && issue.face_value != 0.0) {
                     legData_Notionals_t n;
@@ -1191,10 +1184,9 @@ bondData bond_instrument_mapper::reverse_bond_data(const bond_instrument_data& d
 // row per entry; a rule-based schedule stays in the document, because
 // expanding a tenor needs a calendar and the parent story's schedule
 // tables hold the rules rather than the expanded dates.
-void bond_instrument_mapper::map_call_dates(
-    const callableBondCallData& call_data,
-    boost::uuids::uuid issue_id,
-    std::vector<bond_issue_call_date>& dates) {
+void bond_instrument_mapper::map_call_dates(const callableBondCallData& call_data,
+                                            boost::uuids::uuid issue_id,
+                                            std::vector<bond_issue_call_date>& dates) {
     int sequence = 0;
     for (const auto& block : call_data.ScheduleData.Dates)
         for (const auto& d : block.Dates.Date) {
@@ -1207,9 +1199,8 @@ void bond_instrument_mapper::map_call_dates(
         }
 }
 
-void bond_instrument_mapper::reverse_call_dates(
-    const std::vector<bond_issue_call_date>& dates,
-    callableBondCallData& call_data) {
+void bond_instrument_mapper::reverse_call_dates(const std::vector<bond_issue_call_date>& dates,
+                                                callableBondCallData& call_data) {
     if (dates.empty())
         return;
     scheduleData_Dates_t block;
@@ -1245,8 +1236,7 @@ void bond_instrument_mapper::map_conversion_targets(
 }
 
 void bond_instrument_mapper::reverse_conversion_targets(
-    const std::vector<bond_issue_conversion_target>& targets,
-    cbConversionData& conversion_data) {
+    const std::vector<bond_issue_conversion_target>& targets, cbConversionData& conversion_data) {
     if (targets.empty())
         return;
     cbConversionData_ConversionRatios_t ratios;
@@ -1273,8 +1263,8 @@ bond_instrument_data bond_instrument_mapper::forward_bond(const trade& t,
     return result;
 }
 
-bond_instrument_data bond_instrument_mapper::forward_forward_bond(
-    const trade& t, const bond_issue_lookup& lookup) {
+bond_instrument_data bond_instrument_mapper::forward_forward_bond(const trade& t,
+                                                                  const bond_issue_lookup& lookup) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ForwardBond: " << std::string(t.id);
     bond_instrument_data result = make_base("ForwardBond");
     if (t.ForwardBondData) {
@@ -1289,8 +1279,8 @@ bond_instrument_data bond_instrument_mapper::forward_forward_bond(
     return result;
 }
 
-bond_instrument_data bond_instrument_mapper::forward_callable_bond(
-    const trade& t, const bond_issue_lookup& lookup) {
+bond_instrument_data
+bond_instrument_mapper::forward_callable_bond(const trade& t, const bond_issue_lookup& lookup) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping CallableBond: " << std::string(t.id);
     bond_instrument_data result = make_base("CallableBond");
     if (t.CallableBondData) {
@@ -1305,8 +1295,8 @@ bond_instrument_data bond_instrument_mapper::forward_callable_bond(
     return result;
 }
 
-bond_instrument_data bond_instrument_mapper::forward_convertible_bond(
-    const trade& t, const bond_issue_lookup& lookup) {
+bond_instrument_data
+bond_instrument_mapper::forward_convertible_bond(const trade& t, const bond_issue_lookup& lookup) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping ConvertibleBond: " << std::string(t.id);
     bond_instrument_data result = make_base("ConvertibleBond");
     if (t.ConvertibleBondData) {
@@ -1322,8 +1312,8 @@ bond_instrument_data bond_instrument_mapper::forward_convertible_bond(
     return result;
 }
 
-bond_instrument_data bond_instrument_mapper::forward_bond_option(
-    const trade& t, const bond_issue_lookup& lookup) {
+bond_instrument_data bond_instrument_mapper::forward_bond_option(const trade& t,
+                                                                 const bond_issue_lookup& lookup) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondOption: " << std::string(t.id);
     bond_instrument_data result = make_base("BondOption");
     if (!t.BondOptionData) {
@@ -1401,8 +1391,8 @@ bond_instrument_data bond_instrument_mapper::forward_bond_trs(const trade& t,
     return result;
 }
 
-bond_instrument_data bond_instrument_mapper::forward_bond_repo(
-    const trade& t, const bond_issue_lookup& lookup) {
+bond_instrument_data bond_instrument_mapper::forward_bond_repo(const trade& t,
+                                                               const bond_issue_lookup& lookup) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondRepo: " << std::string(t.id);
     bond_instrument_data result = make_base("BondRepo");
     if (!t.BondRepoData) {
@@ -1429,8 +1419,8 @@ bond_instrument_data bond_instrument_mapper::forward_bond_repo(
     return result;
 }
 
-bond_instrument_data bond_instrument_mapper::forward_bond_future(
-    const trade& t, const bond_issue_lookup& lookup) {
+bond_instrument_data bond_instrument_mapper::forward_bond_future(const trade& t,
+                                                                 const bond_issue_lookup& lookup) {
     BOOST_LOG_SEV(lg(), debug) << "Forward-mapping BondFuture: " << std::string(t.id);
     bond_instrument_data result = make_base("BondFuture");
     // A future carries no bond terms: the schema's bondFutureData holds
@@ -1472,8 +1462,9 @@ bond_instrument_data bond_instrument_mapper::forward_ascot(const trade& t,
     map_bond_data(d.ConvertibleBondData.BondData, result);
     resolve_issue(result, lookup);
     if (d.ConvertibleBondData.ConversionData)
-        map_conversion_targets(
-            *d.ConvertibleBondData.ConversionData, result.issue.issue_id, result.conversion_targets);
+        map_conversion_targets(*d.ConvertibleBondData.ConversionData,
+                               result.issue.issue_id,
+                               result.conversion_targets);
 
     ascot row;
     if (d.OptionData.OptionType)
@@ -1572,8 +1563,7 @@ trade bond_instrument_mapper::reverse_bond_option(const bond_instrument_data& da
         set_present_text(d.PriceType, data.option_price_type);
     if (data.option_knocks_out)
         d.KnocksOut = parse_code(*data.option_knocks_out, bool__count, bool_::N);
-    reverse_exercise_dates(
-        data.option_exercise_dates, data.option_exercise_schedule, d.OptionData);
+    reverse_exercise_dates(data.option_exercise_dates, data.option_exercise_schedule, d.OptionData);
     t.BondOptionData = std::move(d);
     return t;
 }
@@ -1695,8 +1685,7 @@ trade bond_instrument_mapper::reverse_ascot(const bond_instrument_data& data) {
         static_cast<std::string&>(ot) = data.ascot->ascot_option_type;
         d.OptionData.OptionType = std::move(ot);
     }
-    reverse_exercise_dates(
-        data.option_exercise_dates, data.option_exercise_schedule, d.OptionData);
+    reverse_exercise_dates(data.option_exercise_dates, data.option_exercise_schedule, d.OptionData);
     reverse_leg(data.ascot_swap_leg, d.ReferenceSwapData.LegData);
     t.AscotData = std::move(d);
     return t;

@@ -74,9 +74,8 @@ public:
      * object key is "{request_id}.tar.gz", as the import handler expects.
      * Marks command failure on an unreadable directory or a failed upload.
      */
-    static void process_upload(std::ostream& out,
-                               const std::string& src_dir,
-                               const std::string& request_id);
+    static void
+    process_upload(std::ostream& out, const std::string& src_dir, const std::string& request_id);
 
     /**
      * @brief Start the ORE import workflow and wait for its outcome.

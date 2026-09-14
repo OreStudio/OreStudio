@@ -102,15 +102,15 @@ TEST_CASE("instrument_payload_encodes_absence_as_empty", tags) {
 TEST_CASE("instrument_payload_refuses_an_unrecognised_type", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const auto decoded = decode_instrument(instrument_payload{.type = "not_an_instrument",
-                                                               .body = "{}"});
+    const auto decoded =
+        decode_instrument(instrument_payload{.type = "not_an_instrument", .body = "{}"});
     CHECK(std::holds_alternative<std::monostate>(decoded));
 }
 
 TEST_CASE("instrument_payload_refuses_a_body_that_does_not_parse", tags) {
     auto lg(ores::logging::make_logger(test_suite));
 
-    const auto decoded = decode_instrument(instrument_payload{.type = "bond_instrument_data",
-                                                               .body = "not json"});
+    const auto decoded =
+        decode_instrument(instrument_payload{.type = "bond_instrument_data", .body = "not json"});
     CHECK(std::holds_alternative<std::monostate>(decoded));
 }

@@ -322,9 +322,8 @@ void ImportTradeDialog::populateTradeTable() {
         // Column 3: per-row counterparty combo (populated after load)
         auto* cpCombo = new QComboBox();
         cpCombo->addItem(tr("-- None --"), QString());
-        const auto ore_name = item.envelope
-                                  ? item.envelope->counter_party.value_or(std::string())
-                                  : std::string();
+        const auto ore_name =
+            item.envelope ? item.envelope->counter_party.value_or(std::string()) : std::string();
         cpCombo->setProperty("ore_name", QString::fromStdString(ore_name));
         if (!is_valid)
             cpCombo->setEnabled(false);

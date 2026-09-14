@@ -32,8 +32,8 @@
 #include "ores.utility/rfl/reflectors.hpp" // IWYU pragma: keep.
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <cli/cli.h>
 #include <chrono>
+#include <cli/cli.h>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
@@ -58,9 +58,8 @@ std::string default_http_base_url() {
     return "http://localhost:" + environment::get_value_or_default("ORES_HTTP_PORT", "20600");
 }
 
-std::optional<boost::uuids::uuid> parse_uuid(std::ostream& out,
-                                             const std::string& value,
-                                             std::string_view what) {
+std::optional<boost::uuids::uuid>
+parse_uuid(std::ostream& out, const std::string& value, std::string_view what) {
     try {
         return boost::uuids::string_generator()(value);
     } catch (const std::exception&) {
@@ -91,56 +90,56 @@ void ore_commands::register_commands(cli::Menu& root_menu, nats_client& session)
         "Pack a directory of ORE documents and upload it to the ore-imports bucket",
         {"src_dir [--request-id <uuid>]"});
 
-    ore_menu->Insert(
-        "import",
-        [&session](std::ostream& out, std::vector<std::string> args) {
-            auto parsed = parse_args(args,
-                                     {{.name = "party-id", .requires_value = true},
-                                      {.name = "choices-file", .requires_value = true},
-                                      {.name = "parent-portfolio-name", .requires_value = true},
-                                      {.name = "timeout",
-                                       .requires_value = true,
-                                       .default_value = std::to_string(default_import_timeout.count())}});
-            if (!parsed) {
-                fail(out) << parsed.error() << std::endl;
-                return;
-            }
-            if (parsed->positionals.size() != 1) {
-                fail(out) << "Usage: ore import <request_id> [--party-id <uuid>] "
-                             "[--parent-portfolio-name <name>] [--choices-file <path>] "
-                             "[--timeout <seconds>]"
-                          << std::endl;
-                return;
-            }
+    ore_menu->Insert("import",
+                     [&session](std::ostream& out, std::vector<std::string> args) {
+                         auto parsed = parse_args(
+                             args,
+                             {{.name = "party-id", .requires_value = true},
+                              {.name = "choices-file", .requires_value = true},
+                              {.name = "parent-portfolio-name", .requires_value = true},
+                              {.name = "timeout",
+                               .requires_value = true,
+                               .default_value = std::to_string(default_import_timeout.count())}});
+                         if (!parsed) {
+                             fail(out) << parsed.error() << std::endl;
+                             return;
+                         }
+                         if (parsed->positionals.size() != 1) {
+                             fail(out)
+                                 << "Usage: ore import <request_id> [--party-id <uuid>] "
+                                    "[--parent-portfolio-name <name>] [--choices-file <path>] "
+                                    "[--timeout <seconds>]"
+                                 << std::endl;
+                             return;
+                         }
 
-            auto timeout = parse_positive_seconds(parsed->flag("timeout"));
-            if (!timeout) {
-                fail(out) << "Timeout must be a positive number of seconds: "
-                          << parsed->flag("timeout") << std::endl;
-                return;
-            }
+                         auto timeout = parse_positive_seconds(parsed->flag("timeout"));
+                         if (!timeout) {
+                             fail(out) << "Timeout must be a positive number of seconds: "
+                                       << parsed->flag("timeout") << std::endl;
+                             return;
+                         }
 
-            process_import(std::ref(out),
-                           std::ref(session),
-                           parsed->positionals.front(),
-                           parsed->flag("party-id"),
-                           parsed->flag("choices-file"),
-                           parsed->flag("parent-portfolio-name"),
-                           *timeout);
-        },
-        "Import an uploaded ORE tarball and wait for the workflow to finish",
-        {"request_id [--party-id <uuid>] [--parent-portfolio-name <name>] "
-         "[--choices-file <path>] [--timeout <seconds>]"});
+                         process_import(std::ref(out),
+                                        std::ref(session),
+                                        parsed->positionals.front(),
+                                        parsed->flag("party-id"),
+                                        parsed->flag("choices-file"),
+                                        parsed->flag("parent-portfolio-name"),
+                                        *timeout);
+                     },
+                     "Import an uploaded ORE tarball and wait for the workflow to finish",
+                     {"request_id [--party-id <uuid>] [--parent-portfolio-name <name>] "
+                      "[--choices-file <path>] [--timeout <seconds>]"});
 
     ore_menu->Insert(
         "export",
         [&session](std::ostream& out, std::vector<std::string> args) {
-            auto parsed = parse_args(
-                args,
-                {{.name = "node-id", .requires_value = true},
-                 {.name = "limit",
-                  .requires_value = true,
-                  .default_value = std::to_string(default_export_limit)}});
+            auto parsed = parse_args(args,
+                                     {{.name = "node-id", .requires_value = true},
+                                      {.name = "limit",
+                                       .requires_value = true,
+                                       .default_value = std::to_string(default_export_limit)}});
             if (!parsed) {
                 fail(out) << parsed.error() << std::endl;
                 return;
@@ -180,8 +179,9 @@ void ore_commands::process_upload(std::ostream& out,
         return;
     }
 
-    const auto effective_id =
-        request_id.empty() ? boost::uuids::to_string(boost::uuids::random_generator()()) : request_id;
+    const auto effective_id = request_id.empty() ?
+                                  boost::uuids::to_string(boost::uuids::random_generator()()) :
+                                  request_id;
     const auto bucket = std::string(ores::ore::net::ore_storage::bucket);
     const auto key = ores::ore::net::ore_storage::import_key(effective_id);
 
@@ -266,11 +266,11 @@ void ore_commands::process_import(std::ostream& out,
         return;
     }
 
-    BOOST_LOG_SEV(lg(), info) << "ORE import workflow dispatched: "
-                              << result->workflow_instance_id;
+    BOOST_LOG_SEV(lg(), info) << "ORE import workflow dispatched: " << result->workflow_instance_id;
     out << "workflow_instance_id: " << result->workflow_instance_id << std::endl;
 
-    if (!workflow_commands::wait_for_instance(out, session, result->workflow_instance_id, timeout, 1))
+    if (!workflow_commands::wait_for_instance(
+            out, session, result->workflow_instance_id, timeout, 1))
         fail(out) << "ORE import did not complete: see the steps above." << std::endl;
 }
 

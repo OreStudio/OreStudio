@@ -93,9 +93,8 @@ std::string read_root_element(const std::filesystem::path& file) {
             continue;
         }
         auto end = at + 1;
-        while (end < header.size() &&
-               (std::isalpha(static_cast<unsigned char>(header[end])) ||
-                header[end] == '_' || header[end] == ':'))
+        while (end < header.size() && (std::isalpha(static_cast<unsigned char>(header[end])) ||
+                                       header[end] == '_' || header[end] == ':'))
             ++end;
         return header.substr(at + 1, end - at - 1);
     }

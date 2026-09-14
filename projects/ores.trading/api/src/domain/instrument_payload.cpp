@@ -35,8 +35,9 @@ namespace {
  */
 template <typename Leaf>
 constexpr std::string_view leaf_name() {
-#define ORES_TRADING_LEAF_NAME(T) \
-    if constexpr (std::is_same_v<Leaf, T>) return #T;
+#define ORES_TRADING_LEAF_NAME(T)          \
+    if constexpr (std::is_same_v<Leaf, T>) \
+        return #T;
     ORES_TRADING_LEAF_NAME(fra_instrument)
     ORES_TRADING_LEAF_NAME(vanilla_swap_instrument)
     ORES_TRADING_LEAF_NAME(cap_floor_instrument)
@@ -94,7 +95,9 @@ void encode_flat(const Variant& variant, instrument_payload& out) {
  * struct, which is the family struct with the variant removed.
  */
 template <typename Leaf, typename Leg>
-void encode_leaf_with_legs(const Leaf& leaf, const std::vector<Leg>& legs, instrument_payload& out) {
+void encode_leaf_with_legs(const Leaf& leaf,
+                           const std::vector<Leg>& legs,
+                           instrument_payload& out) {
     out.type = std::string(leaf_name<Leaf>());
     out.body = rfl::json::write(with_legs<Leaf, Leg>{leaf, legs});
 }
@@ -146,8 +149,8 @@ std::optional<with_legs<Variant, Leg>> decode_with_legs(const instrument_payload
              if (found || payload.type != leaf_name<Leaf>())
                  return;
              if (auto r = read_as<with_legs<Leaf, Leg>>(payload))
-                 found = with_legs<Variant, Leg>{Variant(std::move(r->instrument)),
-                                                 std::move(r->legs)};
+                 found =
+                     with_legs<Variant, Leg>{Variant(std::move(r->instrument)), std::move(r->legs)};
          }()),
          ...);
     }(std::make_index_sequence<std::variant_size_v<Variant>>{});

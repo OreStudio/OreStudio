@@ -100,11 +100,11 @@ void write_additional_field(database_helper& h,
 TEST_CASE("read_envelopes_rebuilds_lists_in_ordinal_order", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    const stamps s{.trade_id = ctx.generate_uuid(),
-                   .tenant_id = h.tenant_id(),
-                   .user = ctx.env().get_or(
-                       std::string(ores::utility::generation::generation_keys::modified_by),
-                       "system")};
+    const stamps s{
+        .trade_id = ctx.generate_uuid(),
+        .tenant_id = h.tenant_id(),
+        .user = ctx.env().get_or(
+            std::string(ores::utility::generation::generation_keys::modified_by), "system")};
 
     write_envelope(h, s, true, true);
 
@@ -140,11 +140,11 @@ TEST_CASE("read_envelopes_rebuilds_lists_in_ordinal_order", tags) {
 TEST_CASE("read_envelopes_keeps_stated_empty_apart_from_omitted", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    const stamps s{.trade_id = ctx.generate_uuid(),
-                   .tenant_id = h.tenant_id(),
-                   .user = ctx.env().get_or(
-                       std::string(ores::utility::generation::generation_keys::modified_by),
-                       "system")};
+    const stamps s{
+        .trade_id = ctx.generate_uuid(),
+        .tenant_id = h.tenant_id(),
+        .user = ctx.env().get_or(
+            std::string(ores::utility::generation::generation_keys::modified_by), "system")};
 
     // Both lists are stated, and both are empty. No child row exists for
     // either, so only the parent's flags can say they were stated.
@@ -164,11 +164,11 @@ TEST_CASE("read_envelopes_keeps_stated_empty_apart_from_omitted", tags) {
 TEST_CASE("read_envelopes_omits_a_trade_that_stated_no_envelope", tags) {
     database_helper h;
     auto ctx = ores::testing::make_generation_context(h);
-    const stamps written{.trade_id = ctx.generate_uuid(),
-                         .tenant_id = h.tenant_id(),
-                         .user = ctx.env().get_or(
-                             std::string(ores::utility::generation::generation_keys::modified_by),
-                             "system")};
+    const stamps written{
+        .trade_id = ctx.generate_uuid(),
+        .tenant_id = h.tenant_id(),
+        .user = ctx.env().get_or(
+            std::string(ores::utility::generation::generation_keys::modified_by), "system")};
     const auto unwritten = ctx.generate_uuid();
 
     write_envelope(h, written, false, false);
@@ -192,12 +192,8 @@ TEST_CASE("read_envelopes_batches_more_than_one_trade", tags) {
     const auto user = ctx.env().get_or(
         std::string(ores::utility::generation::generation_keys::modified_by), "system");
 
-    const stamps first{.trade_id = ctx.generate_uuid(),
-                       .tenant_id = h.tenant_id(),
-                       .user = user};
-    const stamps second{.trade_id = ctx.generate_uuid(),
-                        .tenant_id = h.tenant_id(),
-                        .user = user};
+    const stamps first{.trade_id = ctx.generate_uuid(), .tenant_id = h.tenant_id(), .user = user};
+    const stamps second{.trade_id = ctx.generate_uuid(), .tenant_id = h.tenant_id(), .user = user};
 
     write_envelope(h, first, true, false);
     write_portfolio_id(h, first, 1, "F-1");

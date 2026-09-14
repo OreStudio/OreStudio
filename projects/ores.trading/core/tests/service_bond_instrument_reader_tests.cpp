@@ -179,8 +179,7 @@ bond_option make_option(const stamps& s, const boost::uuids::uuid& instrument_id
     return r;
 }
 
-instrument_option make_instrument_option(const stamps& s,
-                                         const boost::uuids::uuid& instrument_id) {
+instrument_option make_instrument_option(const stamps& s, const boost::uuids::uuid& instrument_id) {
     instrument_option r;
     stamp(r, s);
     r.instrument_id = instrument_id;
@@ -188,9 +187,8 @@ instrument_option make_instrument_option(const stamps& s,
     return r;
 }
 
-instrument_option_premium make_premium(const stamps& s,
-                                       const boost::uuids::uuid& instrument_id,
-                                       int sequence_number) {
+instrument_option_premium
+make_premium(const stamps& s, const boost::uuids::uuid& instrument_id, int sequence_number) {
     instrument_option_premium r;
     stamp(r, s);
     r.instrument_id = instrument_id;
@@ -201,9 +199,8 @@ instrument_option_premium make_premium(const stamps& s,
     return r;
 }
 
-instrument_option_exercise_fee make_exercise_fee(const stamps& s,
-                                                 const boost::uuids::uuid& instrument_id,
-                                                 int sequence_number) {
+instrument_option_exercise_fee
+make_exercise_fee(const stamps& s, const boost::uuids::uuid& instrument_id, int sequence_number) {
     instrument_option_exercise_fee r;
     stamp(r, s);
     r.instrument_id = instrument_id;
@@ -419,8 +416,8 @@ TEST_CASE("read_instruments_gives_two_instruments_the_one_issue", tags) {
     const auto second = make_instrument(s, issue.issue_id, "BondOption");
     bond_instrument_repository().write(ctx, first);
     bond_instrument_repository().write(ctx, second);
-    bond_issue_call_date_repository().write(
-        ctx, make_call_date(s, issue.issue_id, 1, "2028-01-15"));
+    bond_issue_call_date_repository().write(ctx,
+                                            make_call_date(s, issue.issue_id, 1, "2028-01-15"));
 
     const auto first_id = boost::uuids::to_string(first.identity.instrument_id);
     const auto second_id = boost::uuids::to_string(second.identity.instrument_id);
@@ -477,10 +474,10 @@ TEST_CASE("read_instruments_rebuilds_a_fixed_leg_from_its_rows", tags) {
         ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, 1000.0));
     // Written in reverse ordinal order, so the order read back is the
     // query's doing rather than the insert order's.
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "rate", 2, 5.0));
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "rate", 1, 4.0));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, instrument_id, "bond", 1, "rate", 2, 5.0));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, instrument_id, "bond", 1, "rate", 1, 4.0));
 
     bond_leg_rate_repository().write(ctx, make_rate(s, instrument_id, "bond", 1, "fixed"));
 
@@ -572,16 +569,16 @@ TEST_CASE("read_instruments_rebuilds_a_floating_leg_and_its_schedules", tags) {
 
     bond_leg_amount_repository().write(
         ctx, make_amount(s, instrument_id, "bond", 1, "notional", 1, 1000000.0));
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "spread", 2, 0.75));
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "spread", 1, 0.5));
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "cap", 1, 6.0));
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "floor", 1, 1.0));
-    bond_leg_amount_repository().write(
-        ctx, make_amount(s, instrument_id, "bond", 1, "gearing", 1, 1.5));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, instrument_id, "bond", 1, "spread", 2, 0.75));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, instrument_id, "bond", 1, "spread", 1, 0.5));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, instrument_id, "bond", 1, "cap", 1, 6.0));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, instrument_id, "bond", 1, "floor", 1, 1.0));
+    bond_leg_amount_repository().write(ctx,
+                                       make_amount(s, instrument_id, "bond", 1, "gearing", 1, 1.5));
 
     auto fixing = make_schedule(s, instrument_id, "bond", 1, "fixing_schedule", 1, "dates");
     fixing.convention = "Following";
@@ -770,9 +767,11 @@ TEST_CASE("read_instruments_rebuilds_the_option_block_and_its_children", tags) {
     auto dates = make_schedule(s, instrument_id, "option", 1, "exercise_dates", 1, "dates");
     instrument_schedule_repository().write(ctx, dates);
     instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, instrument_id, "option", 1, "exercise_dates", 1, 1, "2025-01-15"));
+        ctx,
+        make_schedule_date(s, instrument_id, "option", 1, "exercise_dates", 1, 1, "2025-01-15"));
     instrument_schedule_date_repository().write(
-        ctx, make_schedule_date(s, instrument_id, "option", 1, "exercise_dates", 1, 2, "2025-07-15"));
+        ctx,
+        make_schedule_date(s, instrument_id, "option", 1, "exercise_dates", 1, 2, "2025-07-15"));
 
     auto schedule = make_schedule(s, instrument_id, "option", 1, "exercise_schedule", 1, "rules");
     schedule.calendar = "TARGET";

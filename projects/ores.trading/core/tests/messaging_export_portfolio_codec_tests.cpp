@@ -55,8 +55,8 @@ trade_export_item make_bond_item(boost::uuids::uuid instrument_id, boost::uuids:
     trade_export_item item;
     item.trade.identity.external_id = "CodecBond001";
     item.trade.classification.trade_type = "Bond";
-    item.instrument = ores::trading::domain::encode_instrument(
-        ores::trading::domain::trade_instrument{bond});
+    item.instrument =
+        ores::trading::domain::encode_instrument(ores::trading::domain::trade_instrument{bond});
     return item;
 }
 
@@ -78,8 +78,7 @@ void check_bond_survives_the_codec(wire_format format) {
     // An untagged variant decodes as its first alternative, so a bond that
     // comes back as monostate is a silent loss, not an error: the codec
     // reports success either way. Assert the data, not the success.
-    const auto instrument =
-        ores::trading::domain::decode_instrument(decoded->items[0].instrument);
+    const auto instrument = ores::trading::domain::decode_instrument(decoded->items[0].instrument);
     REQUIRE(std::holds_alternative<bond_instrument_data>(instrument));
     const auto& bond = std::get<bond_instrument_data>(instrument);
     CHECK(bond.instrument.identity.instrument_id == instrument_id);

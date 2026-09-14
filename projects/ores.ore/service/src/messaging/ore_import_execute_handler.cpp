@@ -136,9 +136,10 @@ nats_call(ores::nats::service::nats_client& nats, const Req& request, std::strin
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
-std::string save_envelope(Nats& nats,
-                          const boost::uuids::uuid& trade_id,
-                          const std::optional<ores::trading::domain::trade_envelope_data>& envelope) {
+std::string
+save_envelope(Nats& nats,
+              const boost::uuids::uuid& trade_id,
+              const std::optional<ores::trading::domain::trade_envelope_data>& envelope) {
     if (!envelope)
         return {};
 
@@ -385,8 +386,8 @@ std::string save_leg(Nats& nats,
     if (!leg_resp || !leg_resp->success)
         return error.empty() ? "save_bond_leg failed" : error;
 
-    if (auto failure = save_leg_amounts(
-            nats, instrument_id, leg_role, leg_number, "notional", leg.notionals);
+    if (auto failure =
+            save_leg_amounts(nats, instrument_id, leg_role, leg_number, "notional", leg.notionals);
         !failure.empty())
         return failure;
 
@@ -450,13 +451,20 @@ std::string save_leg(Nats& nats,
         if (!rate_resp || !rate_resp->success)
             return error.empty() ? "save_bond_leg_rate failed" : error;
 
-        if (auto failure = save_schedule(
-                nats, instrument_id, leg_role, leg_number, "fixing_schedule",
-                floating.fixing_schedule);
+        if (auto failure = save_schedule(nats,
+                                         instrument_id,
+                                         leg_role,
+                                         leg_number,
+                                         "fixing_schedule",
+                                         floating.fixing_schedule);
             !failure.empty())
             return failure;
-        if (auto failure = save_schedule(
-                nats, instrument_id, leg_role, leg_number, "reset_schedule", floating.reset_schedule);
+        if (auto failure = save_schedule(nats,
+                                         instrument_id,
+                                         leg_role,
+                                         leg_number,
+                                         "reset_schedule",
+                                         floating.reset_schedule);
             !failure.empty())
             return failure;
     } else if (leg.rate && leg.rate->formula_based) {
@@ -781,10 +789,10 @@ std::string save_delivery_basket(Nats& nats,
  * @return An empty string on success, or the first failure.
  */
 template <typename Nats>
-std::string save_bond_instrument(
-    Nats& nats,
-    const ores::trading::domain::bond_instrument_data& data,
-    std::unordered_map<std::string, std::string>& issue_ids_by_security) {
+std::string
+save_bond_instrument(Nats& nats,
+                     const ores::trading::domain::bond_instrument_data& data,
+                     std::unordered_map<std::string, std::string>& issue_ids_by_security) {
     using ores::trading::messaging::save_ascot_request;
     using ores::trading::messaging::save_bond_future_request;
     using ores::trading::messaging::save_bond_instrument_request;
@@ -866,8 +874,7 @@ std::string save_bond_instrument(
         return failure;
 
     if (data.strike_data) {
-        if (auto failure = save_strike(nats, instrument_id, *data.strike_data);
-            !failure.empty())
+        if (auto failure = save_strike(nats, instrument_id, *data.strike_data); !failure.empty())
             return failure;
     }
 

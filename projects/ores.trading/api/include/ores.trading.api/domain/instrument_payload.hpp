@@ -50,8 +50,7 @@ struct instrument_payload {
 /**
  * @brief Encodes an instrument, naming its leaf type in the payload.
  */
-ORES_TRADING_API_EXPORT instrument_payload
-encode_instrument(const trade_instrument& instrument);
+ORES_TRADING_API_EXPORT instrument_payload encode_instrument(const trade_instrument& instrument);
 
 /**
  * @brief Decodes a payload back into an instrument.
@@ -60,8 +59,7 @@ encode_instrument(const trade_instrument& instrument);
  * unrecognised, or when the body does not parse as that type. A loss is
  * reported rather than guessed at.
  */
-ORES_TRADING_API_EXPORT trade_instrument
-decode_instrument(const instrument_payload& payload);
+ORES_TRADING_API_EXPORT trade_instrument decode_instrument(const instrument_payload& payload);
 
 }
 

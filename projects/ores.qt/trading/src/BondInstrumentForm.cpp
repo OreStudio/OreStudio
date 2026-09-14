@@ -252,9 +252,8 @@ void BondInstrumentForm::populateFromInstrument() {
     InstrumentFormUtils::setComboValue(ui_->dayCountCombo, data_.issue.day_count_code);
     ui_->issueDateEdit->setIsoDate(data_.issue.issue_date);
     ui_->settlementDaysSpinBox->setValue(data_.issue.settlement_days);
-    ui_->optionExpiryDateEdit->setIsoDate(data_.option_exercise_dates.empty()
-                                              ? std::string()
-                                              : data_.option_exercise_dates.front());
+    ui_->optionExpiryDateEdit->setIsoDate(
+        data_.option_exercise_dates.empty() ? std::string() : data_.option_exercise_dates.front());
     const bool has_option = data_.option.has_value();
     InstrumentFormUtils::setComboValue(ui_->optionTypeCombo,
                                        has_option ? data_.option->option_type : std::string());

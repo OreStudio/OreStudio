@@ -358,7 +358,8 @@ TEST_CASE("unmapped_trade_type_is_monostate", tags) {
     // own and no dispatcher covers.
     ores::ore::domain::trade t;
     t.TradeType = ores::ore::domain::oreTradeType::BondPosition;
-    CHECK(std::holds_alternative<std::monostate>(ores::ore::domain::trade_mapper::map_instrument(t)));
+    CHECK(
+        std::holds_alternative<std::monostate>(ores::ore::domain::trade_mapper::map_instrument(t)));
 
     BOOST_LOG_SEV(lg, info) << "Unmapped trade type correctly yields monostate";
 }

@@ -21,7 +21,6 @@
 #define ORES_TRADING_CORE_REPOSITORY_PARENT_SCOPED_QUERIES_HPP
 
 #include "ores.database/domain/context.hpp"
-#include "ores.trading.core/export.hpp"
 #include "ores.trading.api/domain/bond_forward.hpp"
 #include "ores.trading.api/domain/bond_future_delivery_basket.hpp"
 #include "ores.trading.api/domain/bond_issue_call_date.hpp"
@@ -40,6 +39,7 @@
 #include "ores.trading.api/domain/trade_envelope.hpp"
 #include "ores.trading.api/domain/trade_envelope_additional_field.hpp"
 #include "ores.trading.api/domain/trade_envelope_portfolio_id.hpp"
+#include "ores.trading.core/export.hpp"
 #include <string>
 #include <vector>
 
@@ -177,8 +177,7 @@ read_schedules_by_instrument_ids(context ctx, const std::vector<std::string>& in
  * @param instrument_ids UUIDs of the instruments whose schedule dates to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_schedule_date>
-read_schedule_dates_by_instrument_ids(context ctx,
-                                      const std::vector<std::string>& instrument_ids);
+read_schedule_dates_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
 
 /**
  * @brief Reads the option row of a set of instruments.
@@ -198,8 +197,7 @@ read_options_by_instrument_ids(context ctx, const std::vector<std::string>& inst
  * @param instrument_ids UUIDs of the instruments whose premiums to read.
  */
 ORES_TRADING_CORE_EXPORT std::vector<domain::instrument_option_premium>
-read_option_premiums_by_instrument_ids(context ctx,
-                                       const std::vector<std::string>& instrument_ids);
+read_option_premiums_by_instrument_ids(context ctx, const std::vector<std::string>& instrument_ids);
 
 /**
  * @brief Reads the exercise fees of a set of instruments' option rows.

@@ -58,8 +58,8 @@ bool bootstrapping() {
 
 std::vector<std::filesystem::path> example_files() {
     std::vector<std::filesystem::path> files;
-    const auto dir = ores::testing::project_root::resolve(
-        "external/ore/examples/Products/Example_Trades");
+    const auto dir =
+        ores::testing::project_root::resolve("external/ore/examples/Products/Example_Trades");
     for (const auto& entry : std::filesystem::directory_iterator(dir)) {
         if (entry.is_regular_file() && entry.path().extension() == ".xml")
             files.push_back(entry.path());

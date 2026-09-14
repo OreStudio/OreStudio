@@ -51,7 +51,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Install codegen dependencies
@@ -80,7 +80,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.13'
       - name: Check models agree with the profiles they bind to

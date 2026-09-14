@@ -985,8 +985,8 @@ TEST_CASE("ascot_row_option_type_and_swap_leg_survive", tags) {
     const auto r = map_example("Cash_Ascot.xml", 0);
 
     CHECK(r.instrument.identity.trade_type_code == "Ascot");
-    REQUIRE(r.ascot);
-    CHECK(r.ascot->ascot_option_type == "Call");
+    REQUIRE(r.ascot_row);
+    CHECK(r.ascot_row->ascot_option_type == "Call");
     CHECK(r.option_exercise_dates == std::vector<std::string>{"2030-10-08"});
 
     // The document states no conversion terms, so no target rows exist.

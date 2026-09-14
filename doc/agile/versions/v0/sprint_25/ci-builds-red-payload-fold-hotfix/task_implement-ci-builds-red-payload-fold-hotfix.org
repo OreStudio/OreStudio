@@ -157,6 +157,19 @@ and the CDash experimental submission succeeds; =ore_domain_roundtrip_check.py=
 exits 0; the cmake-sources and codegen drift checks report no drift; the
 site build and the doc lint are clean.
 
+The branch then rebased onto main =34ed6cf1=, which carries the
+clang-format merge, and every class check was re-run on the rebased tree:
+the build is clean, ctest passes 71 of 71 with the CDash submission
+successful, both drift checks report no drift, the roundtrip check exits
+0, the doc lint and the site build are clean, and the seven changed C++
+files are clang-format clean under clang-format 21.1.8.
+
+The first post-rebase ctest run was red, with 8 of 71 suites failing.
+All 117 failures carried one message, =NATS connect failed: No server
+available for connection=. The eventing integration suites need the
+environment's =nats-server-brave_hopper= unit, which was stopped at the
+time. With the unit up the run is 71 of 71. No failure was a code defect.
+
 The first two acceptance criteria are met. The third is met in the PR
 body: the MSVC and Windows-clang fixes and the nightly Qt install cannot
 be verified on this machine, and a further Windows error may sit behind

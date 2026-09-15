@@ -16,12 +16,13 @@ assets that have similar financial characteristics and behave
 similarly in the marketplace". It adds that assets in one class are
 often, though not always, subject to the same laws and regulations.
 
-In ORE Studio the grouping is by /the risk factor that drives value/.
-An interest rate product is priced off a yield curve, an equity
-product off a spot price and a volatility surface, a credit product
-off a hazard rate curve. That is what makes the classification useful
-to a pricing library rather than merely descriptive: the asset class
-says which market data a product needs.
+ORE defines neither the concept nor a rationale for its own values,
+and the ORE Studio descriptions characterise each class by /the risk
+factor that drives value/: an interest rate product is priced off a
+yield curve, an equity product off a spot price and a volatility
+surface, a credit product off a hazard rate curve. Each class is
+accordingly associated with a characteristic set of market data. That
+characterisation is ours; no upstream source states it.
 
 Eight asset classes are held, modelled as
 [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][=asset_class_code=]]: =fx=, =rates=, =credit=, =equity=, =commodity=,
@@ -200,6 +201,19 @@ value at all.
 ORE holds =enum class AssetClass { EQ, FX, COM, IR, INF, CR, BOND,
 BOND_INDEX, PORTFOLIO_DETAILS }= in =ored/utilities/parsers.hpp=.
 
+ORE does not define what an asset class is, and gives no rationale for
+its values. The user guide uses the term throughout but never
+definitionally: it says "depending on the underlying asset class" when
+explaining why a barrier option is an =FxGenericBarrierOption= or a
+=CommodityGenericBarrierOption=, and it constrains some products so
+that "all underlyings must be from the same asset class". The term
+consistently describes the underlying.
+
+The user guide also counts six asset classes, not nine. Its product
+coverage is IR, FX, EQ, COM, CR and INF, and the scripted trade module
+covers "five of the six asset classes covered in ORE". The remaining
+three enum values are not asset classes in that sense.
+
 It attaches that enum to *underlyings*, not to trades. =Trade= declares
 =virtual std::map<AssetClass, std::set<std::string>>
 underlyingIndices(...)=, so a trade reports the indices it requires
@@ -211,10 +225,10 @@ That is why ORE has no cross-asset value. A hybrid note on an equity
 index and an FX rate reports indices under =EQ= and =FX=, and the two
 entries say more than one spanning tag could.
 
-Two of ORE's values have no counterpart here because they are not
-asset classes in the usual sense. =BOND_INDEX= separates an index from
-a single bond, and =PORTFOLIO_DETAILS= is a marker for portfolio-level
-data rather than a market.
+=BOND_INDEX= separates an index from a single bond, and
+=PORTFOLIO_DETAILS= marks portfolio-level data rather than a market.
+Neither is an asset class in the user guide's sense, which is
+consistent with the guide counting six.
 
 ** How FpML models it
 
@@ -301,7 +315,10 @@ read from =ore_asset_class_artefact_populate.sql= and
 
 ORE's =AssetClass= enum and its use are read from
 =OREData/ored/utilities/parsers.hpp=, =parsers.cpp= and
-=OREData/ored/portfolio/trade.hpp=.
+=OREData/ored/portfolio/trade.hpp=. The user guide statements are read
+from =userguide_intro.tex=, =genericscriptedproducts.tex=,
+=generic_barrieroption.tex= and =var_and_vol_derivatives.tex=. No ORE
+source defines the concept or states a rationale for its values.
 
 * See also
 

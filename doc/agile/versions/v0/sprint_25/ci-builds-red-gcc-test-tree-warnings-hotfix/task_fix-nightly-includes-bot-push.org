@@ -1,0 +1,119 @@
+:PROPERTIES:
+:ID: E6490243-ACF6-42FE-B895-013E727B78BC
+:END:
+#+title: Task: Fix the nightly include-hygiene bot push rejection
+#+description: The Nightly Include Hygiene job fails when its bot PR step stages the whole workspace, so the LLVM install and the vcpkg cache ride into the commit and GitHub rejects the push for files over its 100 MB limit.
+#+type: task
+#+level: s1
+#+filetags: :ci-builds-red-gcc-test-tree-warnings-hotfix:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/ci-builds-red-gcc-test-tree-warnings-hotfix
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:906594EA-7716-4735-99D2-EDCF47041A7C][Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Nightly Include Hygiene job pushes its bot branch again. The bot
+commit holds only the sources the checker rewrites, not the build
+artefacts that live inside the checkout.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:906594EA-7716-4735-99D2-EDCF47041A7C][Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] |
+| Now          | Nothing. |
+| Waiting on   | The next nightly run, at 03:00 UTC.    |
+| Next         | Nothing. |
+| Last touched | 2026-09-15                               |
+
+* Acceptance
+
+- The bot commit stages only paths under =projects/=.
+- The nightly run pushes =bot/nightly-includes= and opens its pull request.
+- No file over GitHub's 100 MB limit enters the commit.
+
+* Plan
+
+The pull-request action stages the whole workspace when =add-paths=
+is unset. Two directories in that workspace are large and untracked:
+
+- =llvm/=, where =KyleMayes/install-llvm-action= unpacks LLVM 19 into
+  the checkout root.
+- =vcpkg-cache/=, the binary cache the workflow asks =actions/cache=
+  to keep inside the workspace.
+
+So the bot commit carries LLVM shared objects and vcpkg zips, and
+GitHub refuses the push.
+
+1. Pin =add-paths= to =projects/=. Every source the checker rewrites
+   and that belongs in a commit sits there. The few =build/= entries
+   in =compile_commands.json= are CMake-generated PCH stubs and a
+   generated =version.cpp=; the pin keeps those out of the commit.
+2. Say why in a comment, so the pin does not read as noise.
+
+The checkout stays as it is. Moving the LLVM install or the vcpkg
+cache out of the workspace would touch every other workflow that
+shares them.
+
+* Notes
+
+Evidence from run [[https://github.com/OreStudio/OreStudio/actions/runs/34945022191][34945022191]], job =misc-include-cleaner=,
+step "Create pull request if files changed":
+
+=Install location: /home/runner/work/OreStudio/OreStudio/llvm=
+
+=remote: error: File llvm/lib/libclang-cpp.so.19.1 is 226.14 MB; this
+exceeds GitHub's file size limit of 100.00 MB=
+
+=remote: error: GH001: Large files detected.=
+
+=error: failed to push some refs to 'https://github.com/OreStudio/OreStudio'=
+
+The job has failed on every nightly run since 2026-09-09. Earlier runs
+stopped earlier, in the configure step, before the Qt6 fix landed.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Stated that every =compile_commands.json= entry sits under =projects/=, so that path is the whole rewrite surface. | task_fix-nightly-includes-bot-push.org, nightly-includes.yml | Accepted | False: 37 of 4162 entries in the gcc debug tree sit under =build/=. They are generated PCH stubs and a generated =version.cpp=, so the pin still stages the right set. Corrected in 0d699527b3. |
+
+* Result
+
+=nightly-includes.yml= now passes =add-paths= to the pull-request
+action, so the bot commit holds =projects/= and nothing else. The YAML
+parses and the key reads back as =projects=.
+
+Two acceptance bullets hold by inspection: the pin limits staging to
+=projects/=, and no file over 100 MB can therefore enter the commit.
+
+The bullet that asks the nightly run to push =bot/nightly-includes= and
+open its pull request is not yet observed. The job runs on a cron
+schedule at 03:00 UTC and cannot be triggered from here, so that bullet
+is verified only on the next nightly run.

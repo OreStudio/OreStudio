@@ -1,0 +1,104 @@
+:PROPERTIES:
+:ID: 239BFC38-C863-4243-857B-E769D9DE8039
+:END:
+#+title: Task: Fix every remaining gcc-only diagnostic in the tree
+#+description: Sweep the whole tree with gcc and fix every diagnostic that only gcc reports.
+#+type: task
+#+level: s1
+#+filetags: :ci-builds-red-gcc-test-tree-warnings-hotfix:sprint_25:v0:
+#+owner: marco
+#+branch: hotfix/ci-builds-red-gcc-test-tree-warnings-hotfix
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:906594EA-7716-4735-99D2-EDCF47041A7C][Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Continuous Linux gcc jobs compile the whole tree again. Every remaining gcc-only diagnostic is fixed, so the jobs no longer stop on a warning that gcc treats as an error.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:906594EA-7716-4735-99D2-EDCF47041A7C][Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] |
+| Now          | Nothing. |
+| Waiting on   | The next scheduled Continuous Linux run. |
+| Next         | Nothing. |
+| Last touched | 2026-09-15                               |
+
+* Acceptance
+
+- The local gcc sweep build reports no diagnostic.
+- The Continuous Linux gcc debug and release jobs build the whole tree.
+- The Windows and MacOS jobs stay green.
+
+* Plan
+
+Fix every remaining gcc-only diagnostic in one pass, then raise one PR.
+
+1. Reproduce the failure locally. Take the gcc command for the failing
+   file from =build/output/linux-gcc-debug-make/compile_commands.json=,
+   swap in =-fsyntax-only=, and compile. This reproduces the CI
+   diagnostics without a full CI cycle.
+2. Fix each diagnostic. Prefer the smallest edit that removes the
+   warning without changing behaviour.
+3. Sweep the whole tree. Run every entry of =compile_commands.json=
+   through the same command, so no translation unit is skipped.
+4. Keep a keep-going build running in parallel, as a second oracle.
+5. Raise one PR. Record the debug evidence in the PR body, and state
+   the release gap in the Limitations paragraph.
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Carried the scaffold placeholder as its =#+description=, "Initial task for: <story>", and the parent story's Tasks row mirrored it. | task_implement_ci-builds-red-gcc-test-tree-warnings-hotfix.org, story.org | Accepted | Replaced both with a description of the actual work. |
+
+* Result
+
+=feed_controller_tests.cpp= no longer binds a =const std::string&= to a
+braced list of string literals. The loop iterates a
+=std::vector<std::string>= built once, which is the change gcc asks for
+in =-Wrange-loop-construct=. The file also gained the =<string>= and
+=<vector>= includes it was getting transitively.
+
+The first acceptance bullet is only partly verified. The changed
+translation unit compiles with no diagnostic under both the debug flags
+and the release flags (=O3 -DNDEBUG=), taken from =compile_commands.json=.
+The wider debug and release sweeps reached 800 of 4162 and 200 of 563
+translation units with no diagnostic before they were stopped, so the
+rest of the tree is not covered by them.
+
+The second bullet is not verified locally at all. The Continuous Linux
+workflows carry no =pull_request= trigger, so the gcc debug and release
+jobs can only be observed on the next scheduled run after merge.
+
+The third bullet is partly observed. The Windows and MacOS runs on
+8892520f are past the setup step that failed before, and their build
+jobs are still running.

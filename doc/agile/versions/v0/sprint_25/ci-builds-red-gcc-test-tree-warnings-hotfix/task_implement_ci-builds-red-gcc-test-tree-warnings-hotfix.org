@@ -26,11 +26,11 @@ The Continuous Linux gcc jobs compile the whole tree again. Every remaining gcc-
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:906594EA-7716-4735-99D2-EDCF47041A7C][Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] |
-| Now          | Not yet started.                       |
-| Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Now          | Nothing. |
+| Waiting on   | The next scheduled Continuous Linux run. |
+| Next         | Nothing. |
 | Last touched | 2026-09-15                               |
 
 * Acceptance
@@ -81,3 +81,24 @@ via its "Verifies task" field.
 | 1 | Carried the scaffold placeholder as its =#+description=, "Initial task for: <story>", and the parent story's Tasks row mirrored it. | task_implement_ci-builds-red-gcc-test-tree-warnings-hotfix.org, story.org | Accepted | Replaced both with a description of the actual work. |
 
 * Result
+
+=feed_controller_tests.cpp= no longer binds a =const std::string&= to a
+braced list of string literals. The loop iterates a
+=std::vector<std::string>= built once, which is the change gcc asks for
+in =-Wrange-loop-construct=. The file also gained the =<string>= and
+=<vector>= includes it was getting transitively.
+
+The first acceptance bullet is only partly verified. The changed
+translation unit compiles with no diagnostic under both the debug flags
+and the release flags (=O3 -DNDEBUG=), taken from =compile_commands.json=.
+The wider debug and release sweeps reached 800 of 4162 and 200 of 563
+translation units with no diagnostic before they were stopped, so the
+rest of the tree is not covered by them.
+
+The second bullet is not verified locally at all. The Continuous Linux
+workflows carry no =pull_request= trigger, so the gcc debug and release
+jobs can only be observed on the next scheduled run after merge.
+
+The third bullet is partly observed. The Windows and MacOS runs on
+8892520f are past the setup step that failed before, and their build
+jobs are still running.

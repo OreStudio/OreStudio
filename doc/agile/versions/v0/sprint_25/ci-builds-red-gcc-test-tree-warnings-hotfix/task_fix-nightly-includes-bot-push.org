@@ -28,11 +28,11 @@ artefacts that live inside the checkout.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:906594EA-7716-4735-99D2-EDCF47041A7C][Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] |
-| Now          | The workflow change is written.        |
-| Waiting on   | Nothing.                               |
-| Next         | Commit, then verify on the next nightly run. |
+| Now          | Nothing. |
+| Waiting on   | The next nightly run, at 03:00 UTC.    |
+| Next         | Nothing. |
 | Last touched | 2026-09-15                               |
 
 * Acceptance
@@ -105,3 +105,15 @@ via its "Verifies task" field.
 | 1 | Stated that every =compile_commands.json= entry sits under =projects/=, so that path is the whole rewrite surface. | task_fix-nightly-includes-bot-push.org, nightly-includes.yml | Accepted | False: 37 of 4162 entries in the gcc debug tree sit under =build/=. They are generated PCH stubs and a generated =version.cpp=, so the pin still stages the right set. Corrected in 0d699527b3. |
 
 * Result
+
+=nightly-includes.yml= now passes =add-paths= to the pull-request
+action, so the bot commit holds =projects/= and nothing else. The YAML
+parses and the key reads back as =projects=.
+
+Two acceptance bullets hold by inspection: the pin limits staging to
+=projects/=, and no file over 100 MB can therefore enter the commit.
+
+The bullet that asks the nightly run to push =bot/nightly-includes= and
+open its pull request is not yet observed. The job runs on a cron
+schedule at 03:00 UTC and cannot be triggered from here, so that bullet
+is verified only on the next nightly run.

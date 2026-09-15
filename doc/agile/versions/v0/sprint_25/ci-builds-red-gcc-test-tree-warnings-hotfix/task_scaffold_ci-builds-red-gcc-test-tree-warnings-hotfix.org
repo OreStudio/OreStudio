@@ -20,28 +20,33 @@ This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [
 
 * Goal
 
-(Describe what user-visible-or-internal change this task produces.)
+The hotfix exists as documents on the branch: the story, its tasks,
+and the sprint 25 wiring. The work itself rides the sibling tasks.
 
 * Status
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:906594EA-7716-4735-99D2-EDCF47041A7C][Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-15                               |
 
 * Acceptance
 
--
+- The story and its tasks exist under the sprint 25 directory.
+- The sprint table carries a STARTED row for the story.
+- The branch is pushed to the remote.
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Scaffold with =compass add story= and =compass add task=, never by
+hand. The story carries the goal and acceptance; the tasks carry the
+work. The sprint row is edited only to move the story off =BACKLOG=,
+because =compass= writes new story rows as =BACKLOG= and mirrors the
+task state into the story without touching the sprint table.
 
 * Notes
 
@@ -69,3 +74,8 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+The story and its three tasks are written and pushed on
+=hotfix/ci-builds-red-gcc-test-tree-warnings-hotfix=. The story holds
+the goal and the four acceptance bullets; the sprint table carries its
+row. Every acceptance bullet is met.

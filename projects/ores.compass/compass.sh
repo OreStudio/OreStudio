@@ -40,6 +40,24 @@ if [ ! -d "$VENV_PATH" ]; then
     fi
 fi
 
+# Resolve the venv interpreter by probe, not by name. A POSIX venv holds
+# `python3`, but the venv module always writes `python.exe` on Windows,
+# whatever name created it. The first candidate that exists wins, so this
+# is a no-op on Linux and macOS. Falls back to the POSIX name so a venv
+# that holds no interpreter fails the way it always did.
+resolve_venv_python() {
+    for candidate in "$VENV_BIN/python3" "$VENV_BIN/python3.exe" \
+                     "$VENV_BIN/python" "$VENV_BIN/python.exe"; do
+        if [ -f "$candidate" ]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    printf '%s\n' "$VENV_BIN/python3"
+}
+
+VENV_PYTHON="$(resolve_venv_python)"
+
 # Install/refresh requirements if they exist (future-proofing for NLP
 # packages), unless --no-deps requested a stdlib-only bootstrap. Re-syncs
 # whenever requirements.txt changes, not just on first venv creation, so a
@@ -50,13 +68,13 @@ if [ "$NO_DEPS" -eq 1 ]; then
     :
 elif [ -f "$REQUIREMENTS_FILE" ] && { [ ! -f "$STAMP_PATH" ] || [ "$REQUIREMENTS_FILE" -nt "$STAMP_PATH" ]; }; then
     echo "📦 Installing dependencies from requirements.txt..."
-    # Upgrade via `python -m pip`, not the `pip` executable directly: on
+    # Drive pip as an interpreter module, never through the `pip` shim: on
     # Windows, pip.exe cannot overwrite its own running binary and fails
     # with "ERROR: To modify pip, please run the following command:
     # ... -m pip install --upgrade pip" -- invoking through the
     # interpreter module sidesteps the self-lock.
-    "$VENV_BIN/python3" -m pip install --upgrade pip -q
-    "$VENV_BIN/pip" install -r "$REQUIREMENTS_FILE" -q
+    "$VENV_PYTHON" -m pip install --upgrade pip -q
+    "$VENV_PYTHON" -m pip install -r "$REQUIREMENTS_FILE" -q
     cp "$REQUIREMENTS_FILE" "$STAMP_PATH"
 fi
 
@@ -99,5 +117,7 @@ fi
 # --- Execute the Python CLI ---
 # Pass every argument straight through to compass.py, including --help/-h,
 # so the help shown is compass.py's own (complete, always-current) command
-# set rather than a hand-maintained copy that drifts out of date.
-python3 "$SCRIPT_DIR/src/compass.py" "$@"
+# set rather than a hand-maintained copy that drifts out of date. Run the
+# venv interpreter by path: after `activate` a bare `python3` still resolves
+# outside the venv on Windows, where the venv holds only `python.exe`.
+"$VENV_PYTHON" "$SCRIPT_DIR/src/compass.py" "$@"

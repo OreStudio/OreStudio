@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 3DDCE816-0099-4BD1-ABD0-B54714371CDB
+:END:
+#+title: Story: Hotfix: Continuous Windows red on the venv interpreter name in compass.sh
+#+description: Continuous Windows fails in the Setup Database step with exit 127. The compass.sh wrapper assumes a Windows virtual environment holds Scripts/python3, but the venv module always writes python.exe on Windows, whatever interpreter name created it, and the runner image moved its default Python from 3.12.10 to 3.14.7. The wrapper now resolves the interpreter by probe and drives both the pip install and the CLI through that path.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Main's Continuous Windows job is red. It stops in its =Setup Database=
+step with exit 127, at the line of =compass.sh= that installs the
+wrapper's Python dependencies. The wrapper assumes that a Windows virtual
+environment holds =Scripts/python3=, which is the POSIX name. CPython's
+=venv= module writes =python.exe= on Windows whatever interpreter name
+creates the environment, so that path never exists there.
+
+The defect was invisible until the runner image moved its default Python
+from 3.12.10 to 3.14.7. Two runs that differ only in that image detail
+differ in outcome: the older one installs the dependencies and builds,
+the newer one stops at exit 127. Nothing else changed in the wrapper or
+in the workflow.
+
+The fix resolves the venv interpreter once, by probe, and runs the pip
+upgrade, the requirements install and the compass CLI through it. Linux
+and macOS keep the =python3= they have today, so only Windows changes.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | The fix is written and verified locally. |
+| Waiting on    | Nothing.                               |
+| Next          | Run the python-tooling class checks, then raise one PR. |
+| Last touched  | 2026-09-15                               |
+
+* Acceptance
+
+- The Windows =Setup Database= step gets past the requirements install,
+  so the job reaches its build and test steps.
+- The wrapper holds no hard-coded venv interpreter name. It probes a
+  candidate list and uses the first candidate that exists.
+- Linux and macOS select the same interpreter as before, and the pip
+  branch behaves as before when the requirements stamp is current.
+- The python-tooling class checks pass: the compass test suite and the
+  drift checks.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:2C41B249-5380-4CD6-BF7A-935DD2B16DA5][Implement Hotfix: resolve the venv interpreter by probe in compass.sh]] | STARTED | 2026-09-15 | | Probe for the venv interpreter in compass.sh instead of assuming Scripts/python3, and drive both pip install lines and the compass CLI call through the resolved path. Verify with bash syntax check, simulated POSIX and Windows venv layouts, and a real compass run on Linux, then raise one PR with the Linux gcc fix. |
+
+* Decisions
+
+- The fix probes for the interpreter rather than branching on =OSTYPE=.
+  The wrapper already branches there for =Scripts= over =bin=, and a
+  second platform test would be a second thing to keep right. The probe
+  also covers a Windows venv that carries =python3.exe=, which an older
+  toolchain could leave behind.
+- The two pip install lines run through the interpreter module rather
+  than through the =pip= shim in =Scripts=. Sprint 24 chose that form for
+  the self-upgrade, because =pip.exe= cannot overwrite its own running
+  binary. Running both installs the same way needs no second assumption
+  about which shim names exist.
+- The one PR carries this fix and the Linux gcc fix from the sibling
+  story. Both are CI-red recovery on main, and one branch keeps the
+  recovery reviewable as one unit.
+
+* Out of scope
+
+-

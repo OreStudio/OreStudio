@@ -28,10 +28,20 @@ Eight asset classes are held, modelled as
 [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][=asset_class_code=]]: =fx=, =rates=, =credit=, =equity=, =commodity=,
 =inflation=, =bond= and =cross_asset=.
 
-Asset class is a property of the product type, which is one of the
-four entities in [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]]. It is the same for every trade of
-that kind, everywhere, which is why it belongs there and not on the
-trade.
+*The classification is primarily a market data taxonomy.* The typed
+enumeration is =ores::marketdata::api::domain::asset_class=, and every
+one of its values is documented in terms of market data: =rates= is
+"interest rate curves, vol surfaces and spreads", =equity= is "equity
+spot prices, forwards, dividends and vol surfaces", =cross_asset= is
+"cross-asset correlations". It is carried by =market_series= and
+=feed_binding=, where it is the coarse taxonomy used for filtering,
+and by =instrument_code=.
+
+It is not a property of the product type. =trade_type= carries
+=product_type=, not an asset class. A trade carries an optional
+=asset_class= in its classification group, described in the model as
+an override, so the value on a trade is an exception rather than the
+norm.
 
 * The eight asset classes
 
@@ -244,33 +254,44 @@ distinct product family in FpML rather than a distinct market.
 
 ** How ORE Studio models it
 
-Asset class here is a single-valued property of the product type,
-modelled as [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][=asset_class_code=]] and carried on =trade_type=.
+Asset class here classifies *market data series*, not products. The
+typed enumeration is =ores::marketdata::api::domain::asset_class=, and
+=market_series= and =feed_binding= carry it as the coarse taxonomy for
+filtering. =asset_class_code= is the reference data table behind it.
 
-That choice is what creates the need for =cross_asset=. A single value
-on the product type must name exactly one class, so an instrument that
-genuinely spans two has nowhere to go. =cross_asset= is the escape
-hatch for that case.
+A trade carries an optional =asset_class= in its classification field
+group, described in the model as an override. =trade_type= carries no
+asset class at all; its classification attribute is =product_type=,
+whose values are =swap=, =fx=, =bond=, =credit=, =equity=,
+=commodity=, =composite= and =scripted=.
 
-The alternatives are worth stating, because the choice is not
-obviously right.
+*** Why the count differs from ORE's
 
-- *Tag the underlyings instead of the product type*, as ORE does. The
-  spanning case resolves itself and no escape hatch is needed, but the
-  classification is then a derived property of a trade rather than a
-  catalogue fact, and the product catalogue could not be grouped by it
-  without evaluating every trade.
-- *Allow a set rather than a single value.* A hybrid would carry both
-  =equity= and =fx=. This keeps the classification on the product type
-  and removes the escape hatch, at the cost of every consumer handling
-  a set where it currently handles a value.
+The classification answers a different question from ORE's, so the
+two memberships are not comparable and neither is a subset of the
+other.
 
-The single value is kept because the classification's main job here is
-to group the product catalogue and to say which market data a product
-needs, and both work on a single tag for all but a handful of
-products. =cross_asset= is the price of that simplification, which is
-why it is defined as a category for genuinely spanning instruments and
-not as a default.
+ORE's =AssetClass= classifies the underlyings a trade references.
+Ours classifies the market data a series carries. A taxonomy of market
+data needs a value for data that relates two classes at once, and
+=cross_asset= is exactly that: the enumeration documents it as
+"cross-asset correlations". A correlation between an equity index and
+an FX rate is one series, and it belongs to neither class alone.
+
+ORE needs no such value because a correlation is not a trade
+underlying; it is an input a model consumes. The spanning case never
+reaches ORE's enumeration.
+
+The reverse holds too. ORE carries =BOND_INDEX= and
+=PORTFOLIO_DETAILS=, which have no counterpart here because they
+distinguish kinds of trade underlying rather than kinds of market
+data.
+
+So the eight values are not a claim that ORE Studio supports products
+ORE does not. The product catalogue is bounded by ORE's =TradeType=
+enumeration, and [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]] records that ORE is the ground truth
+for it. The asset class enumeration is bounded by the market data we
+publish, which is a different set with a different shape.
 
 ** The scheme named ORE is not ORE's enum
 
@@ -291,14 +312,16 @@ at every spelling.
 
 * Where the classification is used
 
-The asset class groups the product catalogue: every product page in
-[[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] sits under the class of its product type.
+Its primary use is filtering market data. =market_series= and
+=feed_binding= carry it, and the Qt interface drives a combo filter
+from the same values.
 
-It also determines which market data a product requires, which is what
-makes it load-bearing rather than descriptive. A rates curve is needed
-by everything; an equity product additionally needs a dividend curve
-and a volatility surface; a credit product needs a hazard rate curve
-and a recovery assumption.
+[[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] also groups the product pages by asset
+class, but that grouping is a documentation convention rather than a
+modelled attribute: no column on =trade_type= holds it. A product page
+states an asset class because a reader looking for bond products
+expects to find them together, not because the catalogue is keyed that
+way.
 
 * Sources
 
@@ -308,8 +331,12 @@ September 2026: [[https://en.wikipedia.org/wiki/Asset_classes][Asset classes]], 
 [[https://en.wikipedia.org/wiki/Commodity_market][Commodity market]], [[https://en.wikipedia.org/wiki/Inflation_derivative][Inflation derivative]], [[https://en.wikipedia.org/wiki/Bond_(finance)][Bond (finance)]] and
 [[https://en.wikipedia.org/wiki/Hybrid_security][Hybrid security]].
 
-What each class covers, and the market data it requires, is read from
-=refdata_asset_class_codes_populate.sql=. The two coding schemes are
+The typed enumeration and its per-value documentation are read from
+=ores.marketdata.api/domain/asset_class.hpp=. What each class covers
+is read from =refdata_asset_class_codes_populate.sql=. Where the
+classification is carried is read from the =market_series=,
+=feed_binding=, =instrument_code=, =trade_classification_field_group=
+and =trade_type= models. The two coding schemes are
 read from =ore_asset_class_artefact_populate.sql= and
 =fpml_asset_class_artefact_populate.sql=.
 

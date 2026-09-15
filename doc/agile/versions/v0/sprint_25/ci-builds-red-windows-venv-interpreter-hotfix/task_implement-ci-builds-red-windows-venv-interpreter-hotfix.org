@@ -1,0 +1,214 @@
+:PROPERTIES:
+:ID: 2C41B249-5380-4CD6-BF7A-935DD2B16DA5
+:END:
+#+title: Task: Implement Hotfix: resolve the venv interpreter by probe in compass.sh
+#+description: Probe for the venv interpreter in compass.sh instead of assuming Scripts/python3, and drive both pip install lines and the compass CLI call through the resolved path. Verify with bash syntax check, simulated POSIX and Windows venv layouts, and a real compass run on Linux, then raise one PR with the Linux gcc fix.
+#+type: task
+#+level: s1
+#+filetags: :ci-builds-red-windows-venv-interpreter-hotfix:sprint_25:v0:
+#+owner: marco
+#+branch: feature/implement-ci-builds-red-gcc-domain-warnings-hotfix
+#+pr: 2080
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:3DDCE816-0099-4BD1-ABD0-B54714371CDB][Hotfix: Continuous Windows red on the venv interpreter name in compass.sh]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The Continuous Windows job stops in its =Setup Database= step with exit
+127. The step runs =compass.sh db recreate=, and the wrapper reaches its
+requirements branch, which runs =$VENV_BIN/python3=. On Windows that path
+does not exist. The =venv= module writes =python.exe= on Windows whatever
+interpreter name creates the environment, so the hard-coded =python3= name
+is wrong there.
+
+The wrapper now resolves the interpreter once, by probe, and drives both
+pip install lines and the compass CLI call through the resolved path. On
+Linux and macOS the probe selects =python3= as before, so nothing changes
+for those platforms.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:3DDCE816-0099-4BD1-ABD0-B54714371CDB][Hotfix: Continuous Windows red on the venv interpreter name in compass.sh]] |
+| Now          | Nothing. |
+| Waiting on   | The python-tooling class checks.       |
+| Next         | Nothing. |
+| Last touched | 2026-09-15                               |
+
+* Acceptance
+
+- =compass.sh= names no venv interpreter directly. It probes a candidate
+  list and uses the first candidate that exists.
+- Both pip install lines and the CLI call run through the resolved path.
+- =bash -n= is clean, and the probe picks =python3= for a POSIX venv and
+  =python.exe= for a Windows venv that holds only that name.
+- The probe carries a test. =test_venv_python_probe.py= runs the probe
+  function taken from the wrapper against four venv layouts and against a
+  directory that holds no interpreter at all.
+- =compass= runs unchanged on Linux: same output, no pip install, no
+  change to the requirements stamp.
+- The python-tooling class checks pass: the compass test suite and the
+  drift checks.
+
+* Plan
+
+1. Root-cause the failure from the CI logs and the CPython =venv= source.
+   The failing line and the missing path are in the job log; the naming
+   rule is in =Lib/venv/__init__.py=, which writes =python.exe= on win32.
+   The previous fix in sprint 24 drove pip through the interpreter module
+   to dodge the pip self-lock, but it kept the =python3= name, which is
+   the part that Windows does not have.
+2. Add the probe after the venv bootstrap block, before the requirements
+   branch. Prefer =python3=, then =python3.exe=, then =python=, then
+   =python.exe=.
+3. Route the pip upgrade, the requirements install and the CLI call
+   through the resolved path.
+4. Verify with =bash -n=, with four simulated venv layouts, and with a
+   real =compass= run on Linux. Keep the layout cases as a test, so that
+   the probe cannot regress without a red suite.
+5. Run the python-tooling class checks.
+6. Close the task and story bookkeeping, then raise one PR that carries
+   this fix together with the Linux gcc fix.
+
+* Notes
+
+** The failure
+
+Continuous Windows, run on =d780d75eeb=, step =Setup Database=, exit 127:
+
+#+begin_example
+compass.sh: line 58: .../projects/ores.compass/venv/Scripts/python3: No such file or directory
+#+end_example
+
+The =Init environment= step created the venv on the same run, so the
+environment exists. Only the interpreter name is wrong.
+
+** The evidence for the trigger
+
+The runner image moved its default Python. Two runs, one green and one
+red, differ in nothing else:
+
+| Signal | Green run | Red run |
+|--------+-----------+---------|
+| Init environment =PATH= | identical | identical |
+| =pythonLocation= | 3.12.10 | 3.14.7 |
+| =Python_ROOT_DIR= | 3.12.10 | 3.14.7 |
+| =PKG_CONFIG_PATH= | 3.12.10 | 3.14.7 |
+
+=compass.sh= and =continuous-windows.yml= are byte-identical across the
+two runs, so the image change is the trigger.
+
+** Why the name differs
+
+CPython's =Lib/venv/__init__.py= creates the interpreter link under the
+name it was invoked as on POSIX, and hard-codes =python{_d}.exe= on
+win32. The Windows setup copies =python.exe= and =pythonw.exe= only. A
+Windows venv therefore never holds =Scripts/python3=.
+
+** Why the probe and not an =OSTYPE= branch
+
+The wrapper already branches on =OSTYPE= to pick =Scripts= over =bin=, so
+an =OSTYPE= branch for the name was the alternative. The probe is chosen
+instead because it needs no second platform test, and because a venv that
+does hold =python3.exe= (a Windows venv built by an older toolchain) then
+still works.
+
+** The last fix in this area
+
+Sprint 24's =windows_ci_pip_self_upgrade_fix= changed the pip upgrade to
+run =python -m pip= rather than =pip.exe=, because pip.exe cannot
+overwrite its own running binary. That fix kept both installs behind
+=$VENV_BIN/python3=, so it is the line this task repairs.
+
+** Local verification
+
+Four simulated layouts, with the snippet taken from the file itself:
+
+| Layout | Candidates present | Resolved |
+|--------+--------------------+----------|
+| POSIX venv | =bin/python3=, =bin/python= | =bin/python3= |
+| Windows venv | =Scripts/python.exe= | =Scripts/python.exe= |
+| Windows venv, older toolchain | =Scripts/python3.exe=, =python.exe= | =Scripts/python3.exe= |
+| Bare name only | =Scripts/python=, =python.exe= | =Scripts/python= |
+
+=compass fleet= on Linux prints the same table as before the change, and
+the requirements stamp is untouched, so the pip branch is not entered.
+
+** The test
+
+=projects/ores.compass/tests/test_venv_python_probe.py= holds the four
+layouts of the table above as cases, plus a fifth for a venv directory
+that holds no interpreter, so the fallback keeps the POSIX name. Each
+case reads the probe function out of =compass.sh= and runs it, so the
+candidate list under test is the list that ships. No Windows host is
+needed: the cases differ only in the file names present in the fake
+=Scripts= directory.
+
+** What cannot be verified here
+
+The Windows job itself. This host has no Windows toolchain, so the fix is
+exercised only through the simulated layouts above and through the
+Linux run. The next Continuous Windows run is the real proof.
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+| [[https://github.com/OreStudio/OreStudio/pull/2080][#2080]] | [ores.compass,ores.ore] Fix the red Continuous Windows and Linux gcc jobs |
+
+* Review
+
+Local review of the diff, per the code-review-pr pass.
+
+| # | Finding | File | Decision | Notes |
+|---+---------+------+----------+-------|
+| 1 | The wrapper fix had no test, and the checklist asks changed code to carry coverage. | =compass.sh= | Accepted | =test_venv_python_probe.py= runs the probe over the four layouts and the empty directory. The probe moved into =resolve_venv_python()= so the test has one seam to take hold of, rather than a loose loop to re-read. |
+| 2 | The probe tests that a file exists, not that it is executable. | =compass.sh= | Declined | A venv holds the interpreter and nothing else under that name: a symlink on POSIX, an =.exe= on Windows. An executability test would also refuse a valid interpreter on a mount that reports no execute bit. |
+| 3 | =resolve_venv_python= reads =VENV_BIN= from the caller's scope rather than taking it as an argument. | =compass.sh= | Declined | The wrapper sets =VENV_BIN= once at the top and calls the function once. An argument would suggest a reuse the script does not have. |
+| 4 | Both pip lines now run through the interpreter module, not through =Scripts/pip.exe=. | =compass.sh= | No change needed | Sprint 24's self-upgrade already went that way, because pip.exe cannot overwrite its own running binary. Driving both lines the same way removes a second assumption about which shim names exist. |
+| 5 | Does the CLI call change on Linux, where the old line ran bare =python3= after =activate=? | =compass.sh= | Verified | The venv's =bin/python3= is the interpreter that bare =python3= resolved to after =activate=, so the same file runs. =compass fleet= prints its table and the suite is green. |
+| 6 | misspell check. | all | No change needed | No hits in the changed paths. |
+
+* Result
+
+=compass.sh= no longer assumes that a virtual environment holds
+=python3=. The wrapper resolves the interpreter once, at
+=resolve_venv_python()=, and uses the first of =python3=,
+=python3.exe=, =python= and =python.exe= that exists. Both pip install
+lines and the compass CLI call run through the resolved path. On Linux
+and macOS the probe selects =python3=, so nothing changes there.
+
+=projects/ores.compass/tests/test_venv_python_probe.py= covers the
+probe. Each case lifts the function out of the wrapper and runs it
+against a fake venv, so the candidate list under test is the list that
+ships. Four layouts pass, plus a venv directory that holds no
+interpreter, which falls back to the POSIX name.
+
+Local verification: =bash -n= is clean, the simulated layouts resolve as
+the table above records, and =compass fleet= on Linux prints the same
+table as before the change.
+
+The python-tooling class checks passed: the compass suite is green, 164
+passed and 1 skipped, and the drift checks report no drift once the tree
+is committed.
+
+The Windows job itself is untested here, because this host has no
+Windows toolchain. The next Continuous Windows run is the proof.

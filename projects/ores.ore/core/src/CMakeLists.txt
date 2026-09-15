@@ -37,11 +37,23 @@ endif()
 # compilers see the nine as ordinary unused functions and -Werror rejects
 # them. The fix belongs upstream in xsdcpp, so the warnings are silenced
 # for that one file rather than the tree.
+#
+# GCC adds two diagnostics of its own on the same file, both from the
+# generated parser. One case label falls through to the default label
+# behind a "// no break" comment, which gcc does not accept as a
+# fallthrough marker. GCC 16 also reports a loop counter that is set but
+# never read. Both belong to the generator, so they are silenced here
+# with the file; clang raises neither, so the flags are GNU-only.
 set(domain_cpp_warnings "")
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     list(APPEND domain_cpp_warnings "-Wno-unused-const-variable")
     if(WIN32)
         list(APPEND domain_cpp_warnings "-Wno-unused-function")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        list(APPEND domain_cpp_warnings
+            "-Wno-implicit-fallthrough"
+            "-Wno-unused-but-set-variable")
     endif()
 elseif(MSVC)
     list(APPEND domain_cpp_warnings "/wd4505")

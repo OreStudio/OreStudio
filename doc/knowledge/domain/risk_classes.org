@@ -1,0 +1,286 @@
+:PROPERTIES:
+:ID: 327EFD17-5708-4A54-AF4B-52CF60E87C01
+:END:
+#+title: Risk Classes
+#+description: The set of asset classes a product is sensitive to: why it is a separate attribute from the product's own class, how it is modelled as a join, and what sits within a class.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:risk:taxonomy:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+
+* Summary
+
+A *risk class* is an asset class a product is sensitive to. A product
+has one asset class and many risk classes, and that difference in
+cardinality is why the two are separate attributes rather than one.
+
+A fixed-rate bond is one product whose asset class is =Bond=. Its risk
+classes are =InterestRate= and =Credit=, because its value moves with
+a discount curve and with an issuer spread. Neither risk class is its
+asset class, and neither can be derived from it by a rule.
+
+Both attributes draw their values from the same tree.
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] sets out that taxonomy. This page is about the second
+way of referencing it.
+
+* Why this is a separate attribute
+
+The test is cardinality, and it is decisive.
+
+A product has exactly one asset class, because the asset class says
+what kind of thing it is. A product has as many risk classes as it has
+kinds of sensitivity, because each sensitivity is to a different
+market.
+
+- A fixed-rate bond: asset class =Bond=, risk classes
+  =InterestRate= and =Credit=.
+- A cross-currency swap: asset class =InterestRate=, risk classes
+  =InterestRate= and =ForeignExchange=.
+- An equity option struck in a foreign currency: asset class
+  =Equity=, risk classes =Equity=, =InterestRate= and
+  =ForeignExchange=.
+
+One-to-one against one-to-many is a structural difference. A single
+field cannot hold both, so a model that tries will be wrong for one of
+them.
+
+Two independent sources corroborate this rather than merely allowing
+it.
+
+ORE states it in a signature. =Trade::underlyingIndices()= returns
+=std::map<AssetClass, std::set<std::string>>= — a map keyed by class,
+because one trade reaches into several. A classification that was a
+property of the trade would have returned a single value.
+
+ISDA SIMM states it by holding both at once. =ProductClass= and
+=RiskClass= are separate enumerations over the same trades in the same
+framework, and the framework needs both. One that could collapse them
+would have.
+
+* The model
+
+** A join between product type and asset class
+
+The risk classes of a product are a set, so they are a join.
+
+#+begin_example
+risk_class
+  product_type   -> trade_type.code
+  asset_class    -> asset_class.code
+#+end_example
+
+One row per sensitivity kind. A bond product type contributes two
+rows, one for =InterestRate= and one for =Credit=. A vanilla interest
+rate swap contributes one.
+
+The asset class of the product stays where it is, as a single-valued
+attribute of the product type. The join adds the second reference
+without disturbing the first.
+
+** What sits within a class
+
+A risk class names a market, not a particular curve or surface. Within
+=InterestRate= sit the individual risk factors: the USD SOFR curve,
+the EUR ESTR curve, each with its own tenor points. Within =Equity=
+sit the individual spot prices and volatility surfaces.
+
+Those instances are market data rather than taxonomy, and
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset classes]] records that market data series carry an asset class of
+their own. A sensitivity therefore resolves through two steps: the
+risk class says which market, and the risk factor says which series
+within it.
+
+** Why the values are the same tree
+
+Risk classes are asset classes. They are not a parallel vocabulary,
+and giving them one would mean maintaining two lists that have to
+agree.
+
+** ISDA SIMM
+
+SIMM holds three enumerations, and reading all three shows that its
+apparent extra asset classes are not asset classes at all.
+
+=ProductClass= carries =RatesFX=, =Credit=, =Equity= and =Commodity=
+as its substantive values, with =Rates= and =FX= separately for the IM
+Schedule extension.
+
+=RiskClass= carries =InterestRate=, =CreditQualifying=,
+=CreditNonQualifying=, =Equity=, =Commodity= and =FX=.
+
+=RiskType= is the one that explains the other two. Its SIMM values are
+=Commodity=, =CommodityVol=, =CreditNonQ=, =CreditQ=, =CreditVol=,
+=CreditVolNonQ=, =Equity=, =EquityVol=, =FX=, =FXVol=, =Inflation=,
+=IRCurve=, =IRVol= and =InflationVol=, alongside framework mechanics
+such as =BaseCorr=, =XCcyBasis=, =Notional= and =PV=.
+
+*** The values decompose
+
+Those risk types are not fourteen kinds of thing. They are a
+cross-product of three smaller ideas.
+
+| Dimension | Values |
+|-----------+--------|
+| Asset class | Commodity, Credit, Equity, FX, interest rate, inflation |
+| Sensitivity kind | delta (unsuffixed) and vol; =MarginType= adds curvature |
+| Qualifier | qualifying or non-qualifying, on credit only |
+
+=CommodityVol= is commodity with a vol sensitivity. =CreditVolNonQ= is
+credit, vol, non-qualifying. Nothing in the list is a market that the
+asset class taxonomy lacks.
+
+So SIMM's =CreditQualifying= and =CreditNonQualifying= are not
+subclasses of credit. They are credit carrying an additional property.
+Qualifying status describes the reference entity's eligibility under
+the framework's rules; it does not name a different market, is not
+observed from different data, and exists only because SIMM assigns the
+two different risk weights and correlations.
+
+=RiskClass= is then a flattening of asset class against that
+qualifier, built for one purpose: its declaration warns that "the
+ordering here matters. It is used in indexing in to correlation
+matrices for the correlation between risk classes". It is an index,
+not a taxonomy.
+
+=RatesFX= is a grouping for the same reason, because margin is
+computed on the pair together.
+
+*** What SIMM says about inflation
+
+The =RiskType= declaration carries a note: "the risk type inflation
+has to be treated as an additional, single tenor bucket in IRCurve".
+
+SIMM therefore treats inflation as a point on the interest rate curve
+rather than as a market beside it. That is the sharpest statement of
+the inflation question found in any of the surveyed material, and it
+argues for placing inflation beneath interest rate rather than next to
+it.
+
+
+* Prior art
+
+** ISDA SIMM
+
+SIMM holds three enumerations, and reading all three shows that its
+apparent extra asset classes are not asset classes at all.
+
+=ProductClass= carries =RatesFX=, =Credit=, =Equity= and =Commodity=
+as its substantive values, with =Rates= and =FX= separately for the IM
+Schedule extension.
+
+=RiskClass= carries =InterestRate=, =CreditQualifying=,
+=CreditNonQualifying=, =Equity=, =Commodity= and =FX=.
+
+=RiskType= is the one that explains the other two. Its SIMM values are
+=Commodity=, =CommodityVol=, =CreditNonQ=, =CreditQ=, =CreditVol=,
+=CreditVolNonQ=, =Equity=, =EquityVol=, =FX=, =FXVol=, =Inflation=,
+=IRCurve=, =IRVol= and =InflationVol=, alongside framework mechanics
+such as =BaseCorr=, =XCcyBasis=, =Notional= and =PV=.
+
+*** The values decompose
+
+Those risk types are not fourteen kinds of thing. They are a
+cross-product of three smaller ideas.
+
+| Dimension | Values |
+|-----------+--------|
+| Asset class | Commodity, Credit, Equity, FX, interest rate, inflation |
+| Sensitivity kind | delta (unsuffixed) and vol; =MarginType= adds curvature |
+| Qualifier | qualifying or non-qualifying, on credit only |
+
+=CommodityVol= is commodity with a vol sensitivity. =CreditVolNonQ= is
+credit, vol, non-qualifying. Nothing in the list is a market that the
+asset class taxonomy lacks.
+
+So SIMM's =CreditQualifying= and =CreditNonQualifying= are not
+subclasses of credit. They are credit carrying an additional property.
+Qualifying status describes the reference entity's eligibility under
+the framework's rules; it does not name a different market, is not
+observed from different data, and exists only because SIMM assigns the
+two different risk weights and correlations.
+
+=RiskClass= is then a flattening of asset class against that
+qualifier, built for one purpose: its declaration warns that "the
+ordering here matters. It is used in indexing in to correlation
+matrices for the correlation between risk classes". It is an index,
+not a taxonomy.
+
+=RatesFX= is a grouping for the same reason, because margin is
+computed on the pair together.
+
+*** What SIMM says about inflation
+
+The =RiskType= declaration carries a note: "the risk type inflation
+has to be treated as an additional, single tenor bucket in IRCurve".
+
+SIMM therefore treats inflation as a point on the interest rate curve
+rather than as a market beside it. That is the sharpest statement of
+the inflation question found in any of the surveyed material, and it
+argues for placing inflation beneath interest rate rather than next to
+it.
+
+** ORE
+
+=orea/engine/riskfilter.hpp= holds =enum class RiskClass { All,
+InterestRate, Inflation, Credit, Equity, FX, Commodity }=, used to
+filter sensitivities for reporting.
+
+Its six substantive values are a strict coarsening of ORE's
+=AssetClass=. Bond and bond index disappear, because a bond's
+sensitivity decomposes; portfolio details disappear, because they
+carry no risk. Inflation survives as a sibling of interest rate.
+
+ORE therefore takes the opposite position to SIMM on inflation, and
+the two agree that a risk classification is coarser than a product
+classification at the bond node.
+
+Note that ORE holds two enumerations named =RiskClass=, this one and
+SIMM's, with different values. The name predicts nothing; the header
+does.
+
+* Open questions
+
+- *Is the join keyed by product type or by trade?* Keying by product
+  type makes the risk classes a catalogue fact, known before pricing
+  and the same for every trade of that kind. That is true of most
+  cases, and false for at least one: an equity option carries FX risk
+  only relative to the book's base currency, so the same product type
+  is sensitive to =ForeignExchange= for one book and not for another.
+  Either the join is keyed by product type and accepts a conservative
+  superset, or it is keyed lower and stops being a catalogue fact.
+- *Is the set stored or derived?* A sensitivity run computes exactly
+  this set. Storing it duplicates the computation and risks
+  disagreement; deriving it means the classification is unavailable
+  before pricing, which defeats using it to route or to filter.
+- *How is a merged grouping expressed?* SIMM's =RatesFX= combines two
+  nodes. A cut selects nodes rather than combining them, so this needs
+  a grouping declared over the tree, or SIMM's product side is treated
+  as outside the taxonomy.
+- *Does the join need a degree?* A bond is sensitive to interest rate
+  and credit, but not equally. Nothing here records materiality, and a
+  consumer wanting principal risk rather than all risk cannot get it.
+- *Where do the framework properties live?* Qualifying status is a
+  SIMM concept, and sensitivity kind is common to every framework. The
+  first argues for a per-framework extension rather than a column on
+  the join; the second argues for a column. Nothing here settles which
+  of the two shapes a given property takes.
+
+* Sources
+
+ORE's enumerations are read from
+=OREAnalytics/orea/engine/riskfilter.hpp=,
+=OREAnalytics/orea/simm/simmconfiguration.hpp=,
+=OREAnalytics/orea/simm/crifrecord.hpp= and
+=OREData/ored/portfolio/trade.hpp=.
+
+No ORE or ISDA source defines the relationship between a product's
+class and its risk classes. The cardinality argument on this page is
+drawn from the signatures and enumerations rather than from a stated
+rationale.
+
+* See also
+
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy both attributes reference.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -247,6 +247,34 @@ which is coarsening, but splits credit in two, which is refinement.
 No flat list is simultaneously a subset and a superset of another, so
 the two cannot be reconciled by selecting values from one list.
 
+** What SIMM adds is properties, not classes
+
+SIMM appears to need two classes the others lack,
+=CreditQualifying= and =CreditNonQualifying=. Its =RiskType=
+enumeration shows that it does not.
+
+The SIMM risk types are =Commodity=, =CommodityVol=, =CreditNonQ=,
+=CreditQ=, =CreditVol=, =CreditVolNonQ=, =Equity=, =EquityVol=, =FX=,
+=FXVol=, =Inflation=, =IRCurve=, =IRVol= and =InflationVol=. They are
+a cross-product of an asset class, a sensitivity kind (delta or vol),
+and — on credit alone — a qualifying flag.
+
+Qualifying status names no market. It describes a reference entity's
+eligibility under the framework's rules, is observed from no different
+data, and exists because SIMM assigns two different risk weights.
+=RiskClass= flattens the class against that flag for one stated
+purpose: its declaration warns that "the ordering here matters. It is
+used in indexing in to correlation matrices". It is an index, not a
+taxonomy.
+
+The same holds for =RatesFX=, which is a grouping because margin is
+computed on the pair together.
+
+That removes one of the three disagreements below, and it removes the
+credit subclasses from the proposal. Where a framework appears to need
+a finer class, look for a property first. [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk classes]] carries the
+detail.
+
 ** What the disagreements actually are
 
 Stripped of naming differences, the substantive disagreements are
@@ -259,8 +287,8 @@ three.
   ISDA taxonomy because it is not a derivative, and absent from both
   risk classifications because a bond's risk decomposes into interest
   rate and credit.
-- *Credit subdivision*: atomic everywhere except SIMM, which splits it
-  by qualifying status.
+- *Credit subdivision*: apparent rather than real. SIMM's split is a
+  property on the sensitivity, not a finer class.
 
 Each disagreement is a use case needing a different depth, not a
 difference of opinion about the domain.
@@ -296,21 +324,20 @@ ForeignExchange
 Equity
 Commodity
 Credit
-  Credit.Qualifying
-  Credit.NonQualifying
 Bond
 #+end_example
 
-A consumer that wants the coarse view reads the root segment. A
-consumer that needs the SIMM split reads =Credit.Qualifying= and
-=Credit.NonQualifying=. A consumer that regards inflation as interest
-rate risk cuts at =InterestRate= and inherits its subclass; one that
-regards it as separate cuts at =InterestRate.Inflation= and
-=InterestRate=.
+A consumer that regards inflation as interest rate risk cuts at
+=InterestRate= and inherits its subclass. One that regards it as
+separate cuts at =InterestRate= and =InterestRate.Inflation=. The
+disagreement between FpML and ORE on one side and SIMM on the other
+stops being a disagreement and becomes two cuts of one tree.
 
-That is the property a flat list cannot provide: the inflation
-disagreement and the credit disagreement stop being disagreements and
-become different cuts of one tree.
+Inflation is the only node the surveyed material justifies nesting.
+SIMM settles its placement directly: its =RiskType= declaration notes
+that "the risk type inflation has to be treated as an additional,
+single tenor bucket in IRCurve", so inflation sits inside the interest
+rate curve rather than beside it.
 
 ** How each use case cuts it
 
@@ -320,14 +347,13 @@ become different cuts of one tree.
 | Market data filtering | The root, plus =InterestRate.Inflation= |
 | Risk reporting, ORE style | Root minus =Bond=, plus =InterestRate.Inflation= |
 | SIMM margin, product side | Root with =InterestRate= and =ForeignExchange= merged |
-| SIMM margin, risk side | Root minus =Bond= and inflation, with the credit subclasses |
+| SIMM margin, risk side | Root minus =Bond=, with inflation inside interest rate, plus a qualifying property on credit |
 | ISDA product taxonomy | Root minus =Bond=, then deeper product levels |
 
-Only one of these needs a node the others do not, and the merge of
-rates and FX for SIMM's product side is the single case the tree
-cannot express as a cut, because a cut selects nodes rather than
-combining them. That case needs a grouping declared over the tree
-rather than a node in it.
+Every use case but one is a cut of the same tree. The exception is
+SIMM's =RatesFX=, which merges two nodes, and a cut selects nodes
+rather than combining them. That needs a grouping declared over the
+tree rather than a node in it.
 
 ** Cross-asset is not a class
 
@@ -354,11 +380,12 @@ case the tree exists to handle.
 
 * Open questions
 
-- Whether inflation belongs under interest rate or beside it. The tree
-  places it beneath, which makes the SIMM and ISDA position the
-  default and the FpML and ORE position an explicit deeper cut. The
-  reverse arrangement is defensible and would invert which consumers
-  need to say more.
+- Whether one nested node justifies a hierarchy at all. Inflation is
+  the only nesting the material supports, now that the credit split
+  has turned out to be a property. A flat list plus a rule that
+  inflation sensitivity is reported as interest rate would serve every
+  surveyed use case, at the cost of stating that rule somewhere other
+  than in the taxonomy.
 - Whether =SecuritiesFinancing= should be a root class. FpML carries
   it; no other scheme here does. It depends on whether repo and
   securities lending become products in ORE Studio.
@@ -395,6 +422,7 @@ The FpML asset class values registered here are read from
 
 * See also
 
+- [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to, and why it is a second reference into this taxonomy.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.
 - [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, grouped by class.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — how a value records the scheme that issued it.

@@ -15,7 +15,8 @@ Trades are a key concept in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studi
 Programming]] principles, they were modeled as four distinct entities with the
 following responsibilities:
 
-- *Product Type*: The /class/ of financial contract that can be traded.
+- *Product Type*: The /class/ of financial contract that can be traded. Belongs
+  to an [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset class]].
 - *Security Issue*: A particular tradable instance of such a class, where one
   exists.
 - *Trade:* An agreement struck on a product type and on a security issue, where
@@ -68,7 +69,7 @@ any terms, and a firm may only enable or disable the trading of a subset of
 these. The risk engine can also only support a subset of the available kinds.
 
 The entity holds the properties that belong to the class rather than to any
-contract of it: a code, a description, and the asset class it groups under. It
+contract of it: a code, a description, and the [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset class]] it groups under. It
 is a closed list, so a trade whose type is absent cannot be booked. Within ORE
 Studio it is modelled as [[id:2BB5F81F-836F-4A10-AF9F-E202777B880A][=trade_type=]], whose =code= column carries the
 catalogue's identifier.
@@ -305,7 +306,7 @@ test catches an attribute attached to the wrong entity: hold the entity fixed
 and ask whether the value can still differ. If it can, the attribute belongs to
 an entity further down.
 
-- The *asset class* is the same for every bond trade anywhere, so it is a
+- The *[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset class]]* is the same for every bond trade anywhere, so it is a
   property of the product type.
 - The *coupon rate* is the same for every trade on one bond issue, so it is a
   property of the security issue.

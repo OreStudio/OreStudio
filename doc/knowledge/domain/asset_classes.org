@@ -189,6 +189,92 @@ an asset class value is meaningless without the scheme it belongs to.
 [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] sets out the mechanism that records which scheme a
 value came from.
 
+* Modeling notes
+
+The three systems attach the classification to different things, and
+that difference explains why only one of them needs a cross-asset
+value at all.
+
+** How ORE models it
+
+ORE holds =enum class AssetClass { EQ, FX, COM, IR, INF, CR, BOND,
+BOND_INDEX, PORTFOLIO_DETAILS }= in =ored/utilities/parsers.hpp=.
+
+It attaches that enum to *underlyings*, not to trades. =Trade= declares
+=virtual std::map<AssetClass, std::set<std::string>>
+underlyingIndices(...)=, so a trade reports the indices it requires
+grouped by asset class. One trade can therefore report indices under
+several asset classes at once, and ORE never has to decide which
+single class the trade belongs to.
+
+That is why ORE has no cross-asset value. A hybrid note on an equity
+index and an FX rate reports indices under =EQ= and =FX=, and the two
+entries say more than one spanning tag could.
+
+Two of ORE's values have no counterpart here because they are not
+asset classes in the usual sense. =BOND_INDEX= separates an index from
+a single bond, and =PORTFOLIO_DETAILS= is a marker for portfolio-level
+data rather than a market.
+
+** How FpML models it
+
+FpML publishes asset class as a coding scheme, and classifies the
+*product*. Its values are =ForeignExchange=, =InterestRate=, =Credit=,
+=Equity=, =Commodity=, =Inflation=, =Bond= and =SecuritiesFinancing=.
+
+FpML needs no cross-asset value either, for a different reason. A
+hybrid is classified by which product definition it is, and FpML has a
+product for it, so the spanning case never reaches the classification.
+=SecuritiesFinancing= exists because repo and securities lending are a
+distinct product family in FpML rather than a distinct market.
+
+** How ORE Studio models it
+
+Asset class here is a single-valued property of the product type,
+modelled as [[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][=asset_class_code=]] and carried on =trade_type=.
+
+That choice is what creates the need for =cross_asset=. A single value
+on the product type must name exactly one class, so an instrument that
+genuinely spans two has nowhere to go. =cross_asset= is the escape
+hatch for that case.
+
+The alternatives are worth stating, because the choice is not
+obviously right.
+
+- *Tag the underlyings instead of the product type*, as ORE does. The
+  spanning case resolves itself and no escape hatch is needed, but the
+  classification is then a derived property of a trade rather than a
+  catalogue fact, and the product catalogue could not be grouped by it
+  without evaluating every trade.
+- *Allow a set rather than a single value.* A hybrid would carry both
+  =equity= and =fx=. This keeps the classification on the product type
+  and removes the escape hatch, at the cost of every consumer handling
+  a set where it currently handles a value.
+
+The single value is kept because the classification's main job here is
+to group the product catalogue and to say which market data a product
+needs, and both work on a single tag for all but a handful of
+products. =cross_asset= is the price of that simplification, which is
+why it is defined as a category for genuinely spanning instruments and
+not as a default.
+
+** The scheme named ORE is not ORE's enum
+
+The coding scheme registered here as =ORE_ASSET_CLASS= holds =fx=,
+=rates=, =credit=, =equity=, =commodity=, =inflation=, =bond= and
+=cross_asset=. ORE's own =AssetClass= enum holds =EQ=, =FX=, =COM=,
+=IR=, =INF=, =CR=, =BOND=, =BOND_INDEX= and =PORTFOLIO_DETAILS=.
+
+The two differ in spelling throughout, and in membership at three
+points: we carry =cross_asset=, which ORE does not; ORE carries
+=BOND_INDEX= and =PORTFOLIO_DETAILS=, which we do not.
+
+The scheme therefore records the classification ORE Studio uses for
+market data series and trades, which was derived from ORE's
+vocabulary rather than taken from it. A reader who expects
+=ORE_ASSET_CLASS= to be ORE's enum will be wrong at three values and
+at every spelling.
+
 * Where the classification is used
 
 The asset class groups the product catalogue: every product page in
@@ -212,6 +298,10 @@ What each class covers, and the market data it requires, is read from
 =refdata_asset_class_codes_populate.sql=. The two coding schemes are
 read from =ore_asset_class_artefact_populate.sql= and
 =fpml_asset_class_artefact_populate.sql=.
+
+ORE's =AssetClass= enum and its use are read from
+=OREData/ored/utilities/parsers.hpp=, =parsers.cpp= and
+=OREData/ored/portfolio/trade.hpp=.
 
 * See also
 

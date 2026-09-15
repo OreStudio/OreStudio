@@ -22,6 +22,8 @@
 #include "ores.synthetic.api/feeds/fx_spot_feed.hpp"
 #include "ores.synthetic.api/feeds/ir_curve_feed.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <vector>
 
 namespace {
 
@@ -74,7 +76,8 @@ TEST_CASE("synthetic_producer_subject: sandboxed publishes on a distinct subject
 TEST_CASE("synthetic_producer_subject: same source_name never collides across binding modes, "
           "for a variety of source names",
           tags) {
-    for (const std::string& source : {"eur.usd", "eur-usd", "EUR_USD_2", "weird name!*>"}) {
+    const std::vector<std::string> sources{"eur.usd", "eur-usd", "EUR_USD_2", "weird name!*>"};
+    for (const auto& source : sources) {
         const auto bound = synthetic_producer_subject(source, binding_mode::bound);
         const auto sandboxed = synthetic_producer_subject(source, binding_mode::sandboxed);
         CHECK(bound != sandboxed);

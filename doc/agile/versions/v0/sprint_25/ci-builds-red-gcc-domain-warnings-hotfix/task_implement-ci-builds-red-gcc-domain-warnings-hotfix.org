@@ -8,7 +8,7 @@
 #+filetags: :ci-builds-red-gcc-domain-warnings-hotfix:sprint_25:v0:
 #+owner: marco
 #+branch: feature/implement-ci-builds-red-gcc-domain-warnings-hotfix
-#+pr:
+#+pr: 2080
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-15
@@ -158,7 +158,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2080][#2080]] | [ores.compass,ores.ore] Fix the red Continuous Windows and Linux gcc jobs |
 
 * Review
 

@@ -17,10 +17,10 @@ following responsibilities:
 
 - *Product Type*: The /class/ of financial contract that can be traded. Belongs
   to an [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset class]].
-- *Security Issue*: A particular tradable instance of such a class, where one
+- *Security Issue*: A particular tradable instance of a product type, where one
   exists.
-- *Trade:* An agreement struck on a product type and on a security issue, where
-  one exists.
+- *Trade:* An agreement struck on a product type and, where one exists, on a
+  security issue.
 - *Instrument*: The economic terms of that agreement.
 
 #+begin_note

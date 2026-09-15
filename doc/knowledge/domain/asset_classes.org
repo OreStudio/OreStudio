@@ -2,7 +2,7 @@
 :ID: 7F5EBFBD-FB8C-4E79-B386-7098104D3EDB
 :END:
 #+title: Asset Classes
-#+description: What an asset class is, the eight ORE Studio asset classes and what each covers, and how the ORE and FpML coding schemes differ.
+#+description: Six classifications call themselves asset class or risk class and none agree; an analysis of what each classifies, and a proposed hierarchical taxonomy that every use case can cut.
 #+type: knowledge
 #+level: cross
 #+filetags: :trading:refdata:taxonomy:
@@ -13,344 +13,390 @@
 
 Wikipedia defines an asset class as "a group of marketable financial
 assets that have similar financial characteristics and behave
-similarly in the marketplace". It adds that assets in one class are
-often, though not always, subject to the same laws and regulations.
+similarly in the marketplace". That definition is agreed. The
+enumerations built on it are not.
 
-ORE defines neither the concept nor a rationale for its own values,
-and the ORE Studio descriptions characterise each class by /the risk
-factor that drives value/: an interest rate product is priced off a
-yield curve, an equity product off a spot price and a volatility
-surface, a credit product off a hazard rate curve. Each class is
-accordingly associated with a characteristic set of market data. That
-characterisation is ours; no upstream source states it.
+Six classifications are in play across ORE, ISDA and ORE Studio. No
+two share a value set, they range from five values to nine, and they
+disagree in both directions: some omit classes the others carry, and
+one subdivides a class the others treat as atomic.
 
-Eight asset classes are held, modelled as
-[[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][=asset_class_code=]]: =fx=, =rates=, =credit=, =equity=, =commodity=,
-=inflation=, =bond= and =cross_asset=.
+The disagreement is not error. Each enumeration classifies a different
+thing — a product, a trade underlying, a market data series, a risk
+sensitivity — and each needs a different granularity. A single flat
+list cannot serve them all, which is why six of them exist.
 
-*The classification is primarily a market data taxonomy.* The typed
-enumeration is =ores::marketdata::api::domain::asset_class=, and every
-one of its values is documented in terms of market data: =rates= is
-"interest rate curves, vol surfaces and spreads", =equity= is "equity
-spot prices, forwards, dividends and vol surfaces", =cross_asset= is
-"cross-asset correlations". It is carried by =market_series= and
-=feed_binding=, where it is the coarse taxonomy used for filtering,
-and by =instrument_code=.
+One of the differences is a genuine requirement rather than an
+accident of naming. A product has one class; a trade's risk has as
+many classes as it has kinds of sensitivity. That cardinality
+difference cannot be collapsed.
 
-It is not a property of the product type. =trade_type= carries
-=product_type=, not an asset class. A trade carries an optional
-=asset_class= in its classification group, described in the model as
-an override, so the value on a trade is an exception rather than the
-norm.
+The proposal is therefore one hierarchical taxonomy, referenced once
+by a product and many times by a trade's risk, with each use case
+cutting the tree at the depth it needs.
 
-* The eight asset classes
+* The problem
 
-Each section opens with a general definition and then states what the
-class covers here, including the market data a product of that class
-requires.
+| Classification | Values | Classifies |
+|----------------+--------+------------|
+| ISDA product taxonomy | 5 top level, then nested | OTC derivative products |
+| FpML asset class scheme | 8 | Products |
+| ISDA SIMM =ProductClass= | 6 substantive | Products, for margin |
+| ISDA SIMM =RiskClass= | 6 | Risk sensitivities |
+| ORE =AssetClass= | 9 | Trade underlyings |
+| ORE =RiskClass= | 6 | Risk sensitivities, for reporting |
 
-** FX
+Every one of these is called an asset class, a product class or a risk
+class, and the names do not track the differences. Two things called
+=RiskClass= in the same codebase hold different values. Two things
+classifying products hold different values. The word alone predicts
+nothing.
 
-Wikipedia defines the foreign exchange market as "a global
-decentralized or over-the-counter (OTC) market for the trading of
-currencies".
+* State of the art
 
-Covers FX spot, forwards, swaps, and vanilla and exotic options, with
-the market data that prices them: spot rates, forward points, and
-volatility surfaces quoted by currency pair.
+** The ISDA product taxonomy
 
-FX is unique among the asset classes in that every trade inherently
-involves two currencies rather than one underlying. That is why FX
-risk appears as a cross-cutting concern in every other asset class: a
-USD-denominated equity option still carries FX risk for a EUR-based
-book.
+The ISDA product taxonomy, published as an FpML coding scheme, is
+hierarchical. Values are colon-separated paths that descend from an
+asset class through sub-category to instrument type and settlement
+method: =InterestRate:IRSwap:FixedFloat=,
+=Credit:SingleName:Corporate:NorthAmericanCorporate=,
+=Commodity:Agricultural:Dairy:Swap:Cash=,
+=ForeignExchange:SimpleExotic:Barrier=,
+=Equity:Option:ParameterReturnVolatility:SingleName=.
 
-** Rates
+Its five top-level classes are =Commodity=, =Credit=, =Equity=,
+=ForeignExchange= and =InterestRate=.
 
-Wikipedia defines an interest rate derivative as "a derivative whose
-payments are determined through calculation techniques where the
-underlying benchmark product is an interest rate, or set of different
-interest rates".
+Two properties matter here. The taxonomy is /open at the leaves/: a
+consumer that needs only the asset class reads the first segment and
+ignores the rest, while a consumer that needs the instrument type
+reads further. And it covers /OTC derivatives only/, which is why it
+has no bond class: a bond is a security rather than a derivative
+contract, and falls outside the scope ISDA set.
 
-Covers deposits, forward rate agreements, interest rate swaps and
-swaptions, caps and floors, and cross-currency swaps, together with
-the curve-construction market data: discount factors, zero rates, and
-forward rates bootstrapped from quoted instruments at standard tenors.
+** The FpML asset class scheme
 
-Rates is typically the first curve built in any pricing pipeline,
-because discounting and forward-rate projection for every other asset
-class ultimately depends on it.
+FpML publishes a separate, flat asset class scheme, which ORE Studio
+registers as =FPML_ASSET_CLASS=: =ForeignExchange=, =InterestRate=,
+=Credit=, =Equity=, =Commodity=, =Inflation=, =Bond= and
+=SecuritiesFinancing=.
 
-** Credit
+It extends the taxonomy's five in three places, and each extension
+marks a scope boundary rather than a disagreement. =Bond= appears
+because FpML covers securities as well as derivatives.
+=SecuritiesFinancing= appears because repo and securities lending are
+a product family FpML represents. =Inflation= appears as a sibling of
+=InterestRate= rather than beneath it.
 
-Wikipedia defines a credit derivative as any one of "various
-instruments and techniques designed to separate and then transfer the
-credit risk", moving default risk to a party other than the original
-lender or debt holder.
+That last one is the first real disagreement in the material, and it
+recurs. Inflation is treated as a top-level class by FpML, as a
+top-level class by ORE's risk filter, and as no class at all by the
+ISDA taxonomy and by SIMM.
 
-Covers credit default swaps, both single-name and index, credit-linked
-notes, and the underlying market data: CDS spreads, hazard rate curves
-bootstrapped from those spreads, and assumed recovery rates.
+** ISDA SIMM
 
-Credit curves are quoted per reference entity, or per index series,
-and combine with a rates curve to produce risky discount factors for
-defaultable cashflows.
+SIMM is the most instructive of the six, because it is the only one
+that holds /two/ classifications at once and states that they differ.
 
-** Equity
+=ProductClass= carries =RatesFX=, =Credit=, =Equity= and =Commodity=
+as its four substantive values, with =Rates= and =FX= as separate
+values for the IM Schedule extension, plus =Empty=, =Other= and two
+add-on markers.
 
-Wikipedia defines stock as consisting of "all the shares by which
-ownership of a corporation or company is divided".
+=RiskClass= carries =InterestRate=, =CreditQualifying=,
+=CreditNonQualifying=, =Equity=, =Commodity= and =FX=.
 
-Covers equity spot and forward positions, vanilla and exotic equity
-options including barrier, Asian and variance-swap structures, and the
-associated market data: spot prices, dividend yield curves, and
-implied volatility surfaces quoted by strike and expiry.
+Comparing the two within one framework isolates the reason
+classifications diverge. =ProductClass= /merges/ rates and FX into
+=RatesFX=, because margin is computed on the pair together.
+=RiskClass= /splits/ credit into qualifying and non-qualifying,
+because the two attract different risk weights and correlations.
 
-Equity derivatives pricing layers a dividend and borrow-cost forward
-curve and a volatility surface on top of the rates discount curve.
+So the same framework, over the same trades, needs a coarser
+classification for one purpose and a finer one for another. Neither is
+a subset of the other. The material is one taxonomy read at two
+depths, and SIMM expresses that with two enumerations because a flat
+enumeration cannot express it any other way.
 
-** Commodity
-
-Wikipedia defines a commodity market as "a market that trades in the
-primary economic sector rather than manufactured products".
-
-Covers commodity forwards, swaps, and options including Asian and
-spread structures, with forward curves and volatility surfaces per
-delivery point and contract month.
-
-Commodity forward curves differ in kind from FX and rates curves.
-They are often in backwardation or contango, driven by storage cost
-and convenience yield rather than by pure interest-rate parity.
-
-** Inflation
-
-Wikipedia defines an inflation derivative as "an over-the-counter and
-exchange-traded derivative that is used to transfer inflation risk
-from one counterparty to another".
-
-Covers zero-coupon and year-on-year inflation swaps, inflation caps
-and floors, and inflation-linked bonds, with the inflation fixing and
-index curve, both historical and forward-projected, and inflation
-volatility surfaces.
-
-The index curve carries a seasonality adjustment for the index's known
-within-year pattern, and inflation curves are built and discounted
-against the nominal rates curve for the same currency.
-
-** Bond
-
-Wikipedia defines a bond as "a type of security under which the issuer
-(debtor) owes the holder (creditor) a debt".
-
-Covers vanilla fixed and floating-rate bonds, callable and convertible
-bonds, and bond futures and options, with clean and dirty prices,
-yield to maturity, and issuer spread curves quoted over the risk-free
-or asset-swap curve.
-
-A bond's value derives from a discount curve plus an issuer-specific
-credit and liquidity spread. Government bonds are also a primary
-source instrument for bootstrapping the risk-free rates curve itself,
-so the class both consumes and supplies curve data.
-
-** Cross asset
-
-No single Wikipedia article defines this class, because it is a
-modelling category rather than a market. The nearest general concept
-is the hybrid security, which Wikipedia defines as one of "a broad
-group of securities that combine the characteristics of the two
-broader groups of securities, debt and equity".
-
-Covers instruments and risk measures that genuinely span more than one
-of the other classes: a hybrid note whose payoff depends jointly on an
-equity index and an FX rate, or a correlation or quanto adjustment
-that couples an equity or commodity underlying denominated in a
-foreign currency back to the book's base currency. The market data is
-cross-asset correlations and quanto adjustments.
-
-This category exists for the small set of cases that a single-asset
-tag would misrepresent. It is not a catch-all default, and a product
-that fits one class belongs in that class.
-
-* Two coding schemes
-
-Asset class is not one taxonomy. Two are registered as coding schemes,
-and they are close enough to be confused and different enough to
-matter.
-
-| ORE | FpML |
-|-----+------|
-| =fx= | =ForeignExchange= |
-| =rates= | =InterestRate= |
-| =credit= | =Credit= |
-| =equity= | =Equity= |
-| =commodity= | =Commodity= |
-| =inflation= | =Inflation= |
-| =bond= | =Bond= |
-| =cross_asset= | — |
-| — | =SecuritiesFinancing= |
-
-Six values correspond directly and differ only in spelling. Two do
-not. ORE carries =cross_asset=, which FpML has no equivalent for
-because FpML classifies a hybrid by its product rather than by a
-spanning category. FpML carries =SecuritiesFinancing= for repo and
-securities lending, which ORE has no equivalent for.
-
-A mapping between the two is therefore partial in both directions, and
-an asset class value is meaningless without the scheme it belongs to.
-[[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] sets out the mechanism that records which scheme a
-value came from.
-
-* Modeling notes
-
-The three systems attach the classification to different things, and
-that difference explains why only one of them needs a cross-asset
-value at all.
-
-** How ORE models it
+** ORE's AssetClass
 
 ORE holds =enum class AssetClass { EQ, FX, COM, IR, INF, CR, BOND,
 BOND_INDEX, PORTFOLIO_DETAILS }= in =ored/utilities/parsers.hpp=.
 
-ORE does not define what an asset class is, and gives no rationale for
-its values. The user guide uses the term throughout but never
-definitionally: it says "depending on the underlying asset class" when
-explaining why a barrier option is an =FxGenericBarrierOption= or a
-=CommodityGenericBarrierOption=, and it constrains some products so
-that "all underlyings must be from the same asset class". The term
-consistently describes the underlying.
-
-The user guide also counts six asset classes, not nine. Its product
-coverage is IR, FX, EQ, COM, CR and INF, and the scripted trade module
-covers "five of the six asset classes covered in ORE". The remaining
-three enum values are not asset classes in that sense.
-
-It attaches that enum to *underlyings*, not to trades. =Trade= declares
+It attaches this to /underlyings/, not to trades. =Trade= declares
 =virtual std::map<AssetClass, std::set<std::string>>
 underlyingIndices(...)=, so a trade reports the indices it requires
-grouped by asset class. One trade can therefore report indices under
-several asset classes at once, and ORE never has to decide which
-single class the trade belongs to.
+grouped by asset class, and one trade can report under several classes
+at once.
 
-That is why ORE has no cross-asset value. A hybrid note on an equity
-index and an FX rate reports indices under =EQ= and =FX=, and the two
-entries say more than one spanning tag could.
+ORE defines neither the concept nor a rationale for the values. The
+user guide uses the term only descriptively, as in "depending on the
+underlying asset class" when explaining why a barrier option is an
+=FxGenericBarrierOption= rather than a =CommodityGenericBarrierOption=,
+and constrains some products so that "all underlyings must be from the
+same asset class".
 
-=BOND_INDEX= separates an index from a single bond, and
+Three of the nine values are not asset classes in any other scheme
+here. =BOND_INDEX= separates an index from a single bond;
 =PORTFOLIO_DETAILS= marks portfolio-level data rather than a market.
-Neither is an asset class in the user guide's sense, which is
-consistent with the guide counting six.
+The user guide itself counts six asset classes, listing IR, FX, EQ,
+COM, CR and INF as ORE's product coverage and describing the scripted
+trade module as covering "five of the six asset classes covered in
+ORE". The enumeration and the prose do not agree, and nothing
+reconciles them.
 
-** How FpML models it
+** ORE's RiskClass
 
-FpML publishes asset class as a coding scheme, and classifies the
-*product*. Its values are =ForeignExchange=, =InterestRate=, =Credit=,
-=Equity=, =Commodity=, =Inflation=, =Bond= and =SecuritiesFinancing=.
+=orea/engine/riskfilter.hpp= holds =enum class RiskClass { All,
+InterestRate, Inflation, Credit, Equity, FX, Commodity }=, used to
+filter sensitivities for reporting.
 
-FpML needs no cross-asset value either, for a different reason. A
-hybrid is classified by which product definition it is, and FpML has a
-product for it, so the spanning case never reaches the classification.
-=SecuritiesFinancing= exists because repo and securities lending are a
-distinct product family in FpML rather than a distinct market.
+Its six substantive values are a strict coarsening of ORE's
+=AssetClass=: bond and bond index disappear, because a bond's
+sensitivity decomposes into interest rate and credit sensitivity
+rather than forming a risk class of its own, and portfolio details
+disappear because they carry no risk.
 
-** How ORE Studio models it
+Inflation survives as a sibling of interest rate, so ORE takes the
+same position as FpML and the opposite position to SIMM on the
+question the material keeps raising.
 
-Asset class here classifies *market data series*, not products. The
-typed enumeration is =ores::marketdata::api::domain::asset_class=, and
-=market_series= and =feed_binding= carry it as the coarse taxonomy for
-filtering. =asset_class_code= is the reference data table behind it.
+** The Common Domain Model
 
-A trade carries an optional =asset_class= in its classification field
-group, described in the model as an override. =trade_type= carries no
-asset class at all; its classification attribute is =product_type=,
-whose values are =swap=, =fx=, =bond=, =credit=, =equity=,
-=commodity=, =composite= and =scripted=.
+CDM defines a product from three attributes, one of which is a
+taxonomy that classifies it, alongside an identifier and the economic
+terms. It does not define its own asset class list, and delegates
+classification to a taxonomy reference.
 
-*** Why the count differs from ORE's
+That is the structural answer to the problem this page describes:
+classification is a property that points into an external scheme
+rather than an enumeration baked into the product. [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]]
+covers CDM more fully.
 
-The classification answers a different question from ORE's, so the
-two memberships are not comparable and neither is a subset of the
-other.
+* Analysis
 
-ORE's =AssetClass= classifies the underlyings a trade references.
-Ours classifies the market data a series carries. A taxonomy of market
-data needs a value for data that relates two classes at once, and
-=cross_asset= is exactly that: the enumeration documents it as
-"cross-asset correlations". A correlation between an equity index and
-an FX rate is one series, and it belongs to neither class alone.
+** Two dimensions of variation
 
-ORE needs no such value because a correlation is not a trade
-underlying; it is an input a model consumes. The spanning case never
-reaches ORE's enumeration.
+The six classifications differ along two independent dimensions, and
+conflating them is what makes the picture look like disorder.
 
-The reverse holds too. ORE carries =BOND_INDEX= and
-=PORTFOLIO_DETAILS=, which have no counterpart here because they
-distinguish kinds of trade underlying rather than kinds of market
-data.
+The first is *what is classified*. A product, a trade underlying, a
+market data series and a risk sensitivity are four different things,
+and a classification of one is not a classification of another. ORE's
+=AssetClass= and ORE's =RiskClass= differ mainly because the first
+classifies underlyings and the second classifies sensitivities.
 
-So the eight values are not a claim that ORE Studio supports products
-ORE does not. The product catalogue is bounded by ORE's =TradeType=
-enumeration, and [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]] records that ORE is the ground truth
-for it. The asset class enumeration is bounded by the market data we
-publish, which is a different set with a different shape.
+The second is *at what granularity*. SIMM demonstrates this within a
+single framework: =RatesFX= is one node where =InterestRate= and =FX=
+are two, and =Credit= is one node where =CreditQualifying= and
+=CreditNonQualifying= are two.
 
-** The scheme named ORE is not ORE's enum
+** Is risk class a genuine dimension?
 
-The coding scheme registered here as =ORE_ASSET_CLASS= holds =fx=,
-=rates=, =credit=, =equity=, =commodity=, =inflation=, =bond= and
-=cross_asset=. ORE's own =AssetClass= enum holds =EQ=, =FX=, =COM=,
-=IR=, =INF=, =CR=, =BOND=, =BOND_INDEX= and =PORTFOLIO_DETAILS=.
+Before proposing anything, the question has to be settled: is risk
+class a real requirement, or two names for one thing arrived at by
+accident?
 
-The two differ in spelling throughout, and in membership at three
-points: we carry =cross_asset=, which ORE does not; ORE carries
-=BOND_INDEX= and =PORTFOLIO_DETAILS=, which we do not.
+The test is cardinality. A product has exactly one product class. A
+trade has /as many/ risk classes as it has kinds of sensitivity.
 
-The scheme therefore records the classification ORE Studio uses for
-market data series and trades, which was derived from ORE's
-vocabulary rather than taken from it. A reader who expects
-=ORE_ASSET_CLASS= to be ORE's enum will be wrong at three values and
-at every spelling.
+- A fixed-rate bond is one product of class =Bond=. Its risk is
+  interest rate risk and credit risk, which is two classes.
+- A cross-currency swap is one product of class =InterestRate=. Its
+  risk is interest rate risk in two currencies and FX risk.
+- An equity option denominated in a foreign currency is one product of
+  class =Equity=. Its risk includes FX risk for a book based
+  elsewhere.
 
-* Where the classification is used
+One-to-one against one-to-many is a structural difference, not a
+naming one. No single attribute can be both, so a model that tries to
+serve both purposes with one field will be wrong for one of them.
 
-Its primary use is filtering market data. =market_series= and
-=feed_binding= carry it, and the Qt interface drives a combo filter
-from the same values.
+The corroboration is that SIMM holds both classifications at once,
+over the same trades, in the same framework, and needs both. A
+framework that could collapse them would have done so.
 
-[[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] also groups the product pages by asset
-class, but that grouping is a documentation convention rather than a
-modelled attribute: no column on =trade_type= holds it. A product page
-states an asset class because a reader looking for bond products
-expects to find them together, not because the catalogue is keyed that
-way.
+ORE says the same thing in its signature.
+=Trade::underlyingIndices()= returns =std::map<AssetClass,
+std::set<std::string>>=: a /map/ keyed by class, because one trade
+reaches into several. Had ORE regarded the classification as a
+property of the trade, the return type would have been a single value.
+
+So the dimension is a requirement. What is /not/ a requirement, and is
+a modeling error, is the surrounding disorder: two enumerations named
+=RiskClass= in one codebase with different values, an =AssetClass=
+enumeration carrying =PORTFOLIO_DETAILS=, which is not an asset class
+by any definition on this page, and the user guide counting six where
+the code holds nine.
+
+The conclusion that follows is narrower than it first appears. Risk
+classification and product classification are different /attributes/,
+with different cardinality. They are not necessarily different
+/taxonomies/. The proposal below takes that position: one taxonomy,
+referenced once by a product and many times by a trade's risk.
+
+** Neither subset nor superset
+
+A subset relation holds in one case and fails in the others. ORE's
+=RiskClass= is a strict coarsening of ORE's =AssetClass=, so risk
+reporting can be served by ignoring values it does not need.
+
+SIMM breaks the relation. Its =RiskClass= omits bond and inflation,
+which is coarsening, but splits credit in two, which is refinement.
+No flat list is simultaneously a subset and a superset of another, so
+the two cannot be reconciled by selecting values from one list.
+
+** What the disagreements actually are
+
+Stripped of naming differences, the substantive disagreements are
+three.
+
+- *Inflation*: a top-level class for FpML and ORE's risk filter, no
+  class at all for the ISDA taxonomy and SIMM, where inflation
+  sensitivity is interest rate sensitivity.
+- *Bond*: a class for FpML and ORE's =AssetClass=, absent from the
+  ISDA taxonomy because it is not a derivative, and absent from both
+  risk classifications because a bond's risk decomposes into interest
+  rate and credit.
+- *Credit subdivision*: atomic everywhere except SIMM, which splits it
+  by qualifying status.
+
+Each disagreement is a use case needing a different depth, not a
+difference of opinion about the domain.
+
+* A proposed taxonomy
+
+** One taxonomy, two cardinalities
+
+The proposal separates the taxonomy from what references it.
+
+- The *taxonomy* is one tree of asset classes, shared by every
+  consumer.
+- A *product* references exactly one node. That is its asset class.
+- A *risk sensitivity* references exactly one node, and a trade's risk
+  profile is therefore a set of nodes, one per sensitivity.
+
+Nothing is called a risk class. A risk class is what you get when you
+read the taxonomy from a sensitivity rather than from a product, and
+the cardinality difference is carried by the reference rather than by
+a second enumeration.
+
+** The shape
+
+One tree, with asset classes at the root and subclasses beneath, in
+the ISDA taxonomy's style. Every consumer selects a /cut/ through the
+tree: a set of nodes, at whatever depth it needs, such that no node is
+an ancestor of another.
+
+#+begin_example
+InterestRate
+  InterestRate.Inflation
+ForeignExchange
+Equity
+Commodity
+Credit
+  Credit.Qualifying
+  Credit.NonQualifying
+Bond
+#+end_example
+
+A consumer that wants the coarse view reads the root segment. A
+consumer that needs the SIMM split reads =Credit.Qualifying= and
+=Credit.NonQualifying=. A consumer that regards inflation as interest
+rate risk cuts at =InterestRate= and inherits its subclass; one that
+regards it as separate cuts at =InterestRate.Inflation= and
+=InterestRate=.
+
+That is the property a flat list cannot provide: the inflation
+disagreement and the credit disagreement stop being disagreements and
+become different cuts of one tree.
+
+** How each use case cuts it
+
+| Use case | Cut |
+|----------+-----|
+| Product classification | The root: six classes |
+| Market data filtering | The root, plus =InterestRate.Inflation= |
+| Risk reporting, ORE style | Root minus =Bond=, plus =InterestRate.Inflation= |
+| SIMM margin, product side | Root with =InterestRate= and =ForeignExchange= merged |
+| SIMM margin, risk side | Root minus =Bond= and inflation, with the credit subclasses |
+| ISDA product taxonomy | Root minus =Bond=, then deeper product levels |
+
+Only one of these needs a node the others do not, and the merge of
+rates and FX for SIMM's product side is the single case the tree
+cannot express as a cut, because a cut selects nodes rather than
+combining them. That case needs a grouping declared over the tree
+rather than a node in it.
+
+** Cross-asset is not a class
+
+ORE Studio currently holds =cross_asset= for market data that relates
+two classes, documented as "cross-asset correlations". The proposed
+taxonomy does not carry it, because a correlation between an equity
+index and an FX rate is not a third kind of thing: it is a relation
+between two classes.
+
+A correlation series should therefore reference /two/ asset classes
+rather than one special value. That removes the only value in the
+current market data enumeration that has no counterpart in any
+external scheme, and removes the need to explain it.
+
+** Bond stays
+
+Bond is absent from both risk classifications for a good reason: a
+bond's risk decomposes into interest rate and credit risk, so it earns
+no risk class of its own. It is nevertheless a product class in FpML
+and an underlying class in ORE, and ORE Studio holds 11 bond products.
+
+The tree keeps it, and the risk cuts drop it. That is precisely the
+case the tree exists to handle.
+
+* Open questions
+
+- Whether inflation belongs under interest rate or beside it. The tree
+  places it beneath, which makes the SIMM and ISDA position the
+  default and the FpML and ORE position an explicit deeper cut. The
+  reverse arrangement is defensible and would invert which consumers
+  need to say more.
+- Whether =SecuritiesFinancing= should be a root class. FpML carries
+  it; no other scheme here does. It depends on whether repo and
+  securities lending become products in ORE Studio.
+- How a grouping such as SIMM's =RatesFX= is declared. It is not a
+  node and not a cut, so it needs a third mechanism, or SIMM's product
+  side is treated as outside the taxonomy.
+- Whether a trade's risk profile is stored or derived. Storing it
+  duplicates what a sensitivity run computes; deriving it means the
+  classification is unavailable before pricing.
+- Whether the taxonomy should adopt the ISDA taxonomy's deeper levels
+  wholesale for products, rather than stopping at the asset class.
+  That would make the product classification and the ISDA taxonomy the
+  same object, at the cost of adopting a scheme that covers only OTC
+  derivatives.
 
 * Sources
 
-The general definitions are quoted from Wikipedia as retrieved on 15
-September 2026: [[https://en.wikipedia.org/wiki/Asset_classes][Asset classes]], [[https://en.wikipedia.org/wiki/Foreign_exchange_market][Foreign exchange market]],
-[[https://en.wikipedia.org/wiki/Interest_rate_derivative][Interest rate derivative]], [[https://en.wikipedia.org/wiki/Credit_derivative][Credit derivative]], [[https://en.wikipedia.org/wiki/Stock][Stock]],
-[[https://en.wikipedia.org/wiki/Commodity_market][Commodity market]], [[https://en.wikipedia.org/wiki/Inflation_derivative][Inflation derivative]], [[https://en.wikipedia.org/wiki/Bond_(finance)][Bond (finance)]] and
-[[https://en.wikipedia.org/wiki/Hybrid_security][Hybrid security]].
+The general definition is quoted from Wikipedia as retrieved on 15
+September 2026: [[https://en.wikipedia.org/wiki/Asset_classes][Asset classes]].
 
-The typed enumeration and its per-value documentation are read from
-=ores.marketdata.api/domain/asset_class.hpp=. What each class covers
-is read from =refdata_asset_class_codes_populate.sql=. Where the
-classification is carried is read from the =market_series=,
-=feed_binding=, =instrument_code=, =trade_classification_field_group=
-and =trade_type= models. The two coding schemes are
-read from =ore_asset_class_artefact_populate.sql= and
+The ISDA product taxonomy is read from the FpML coding scheme at
+[[https://www.fpml.org/coding-scheme/product-taxonomy][fpml.org]], retrieved on the same date.
+
+ORE's enumerations are read from
+=OREData/ored/utilities/parsers.hpp=, =OREData/ored/portfolio/trade.hpp=,
+=OREAnalytics/orea/engine/riskfilter.hpp=,
+=OREAnalytics/orea/simm/simmconfiguration.hpp= and
+=OREAnalytics/orea/simm/crifrecord.hpp=. The user guide statements are
+read from =userguide_intro.tex= and =genericscriptedproducts.tex=. No
+ORE source defines the concept or states a rationale for its values.
+
+The FpML asset class values registered here are read from
 =fpml_asset_class_artefact_populate.sql=.
-
-ORE's =AssetClass= enum and its use are read from
-=OREData/ored/utilities/parsers.hpp=, =parsers.cpp= and
-=OREData/ored/portfolio/trade.hpp=. The user guide statements are read
-from =userguide_intro.tex=, =genericscriptedproducts.tex=,
-=generic_barrieroption.tex= and =var_and_vol_derivatives.tex=. No ORE
-source defines the concept or states a rationale for its values.
 
 * See also
 
-- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; asset class is a property of the product type.
-- [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, grouped by these classes.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.
+- [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, grouped by class.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — how a value records the scheme that issued it.
-- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — the identifier schemes, which are classified the same way.
+- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — the identifier schemes.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

@@ -1,0 +1,48 @@
+:PROPERTIES:
+:ID: 906594EA-7716-4735-99D2-EDCF47041A7C
+:END:
+#+title: Story: Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics
+#+description: The gcc jobs on main fail again behind the suppressed generated parser. The jobs stop on diagnostics that only gcc reports. Clear every remaining one, then raise a single PR.
+#+type: story
+#+level: s2
+#+filetags: :sprint_25:v0:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The Continuous Linux gcc jobs compile the whole tree again. Every remaining gcc-only diagnostic is fixed, so the jobs no longer stop on a warning that gcc treats as an error.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Not yet started.                       |
+| Waiting on    | Nothing.                               |
+| Next          | Break the story into tasks.            |
+| Last touched  | 2026-09-15                               |
+
+* Acceptance
+
+- The local gcc sweep build reports no diagnostic.
+- The Continuous Linux gcc debug and release jobs build the whole tree.
+- The Windows and MacOS jobs stay green.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:00989631-D046-40BC-9A19-77125B9F141A][Scaffold story: Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] | STARTED | 2026-09-15 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
+| [[id:239BFC38-C863-4243-857B-E769D9DE8039][Fix every remaining gcc-only diagnostic in the tree]] | STARTED | 2026-09-15 | | Initial task for: Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics |
+
+* Decisions
+
+* Out of scope
+
+-

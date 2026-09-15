@@ -2,7 +2,7 @@
 :ID: 239BFC38-C863-4243-857B-E769D9DE8039
 :END:
 #+title: Task: Fix every remaining gcc-only diagnostic in the tree
-#+description: Initial task for: Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics
+#+description: Sweep the whole tree with gcc and fix every diagnostic that only gcc reports.
 #+type: task
 #+level: s1
 #+filetags: :ci-builds-red-gcc-test-tree-warnings-hotfix:sprint_25:v0:
@@ -78,6 +78,6 @@ via its "Verifies task" field.
 
 | # | Comment summary | File | Decision | Notes |
 |---+-----------------+------+----------+-------|
-|   |                 |      |          |       |
+| 1 | Carried the scaffold placeholder as its =#+description=, "Initial task for: <story>", and the parent story's Tasks row mirrored it. | task_implement_ci-builds-red-gcc-test-tree-warnings-hotfix.org, story.org | Accepted | Replaced both with a description of the actual work. |
 
 * Result

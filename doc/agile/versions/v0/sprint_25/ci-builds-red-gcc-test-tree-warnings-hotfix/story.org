@@ -40,7 +40,7 @@ The Continuous Linux gcc jobs compile the whole tree again. Every remaining gcc-
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:00989631-D046-40BC-9A19-77125B9F141A][Scaffold story: Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics]] | STARTED | 2026-09-15 | | Story scaffolding rides this task: documents, sprint wiring, and the scaffold PR. Close it before merging that PR. |
-| [[id:239BFC38-C863-4243-857B-E769D9DE8039][Fix every remaining gcc-only diagnostic in the tree]] | STARTED | 2026-09-15 | | Initial task for: Hotfix: Continuous Linux gcc jobs red on further gcc-only diagnostics |
+| [[id:239BFC38-C863-4243-857B-E769D9DE8039][Fix every remaining gcc-only diagnostic in the tree]] | STARTED | 2026-09-15 | | Sweep the whole tree with gcc and fix every diagnostic that only gcc reports. |
 | [[id:E6490243-ACF6-42FE-B895-013E727B78BC][Fix the nightly include-hygiene bot push rejection]] | STARTED | 2026-09-15 | | The Nightly Include Hygiene job fails when its bot PR step stages the whole workspace, so the LLVM install and the vcpkg cache ride into the commit and GitHub rejects the push for files over its 100 MB limit. |
 
 * Decisions

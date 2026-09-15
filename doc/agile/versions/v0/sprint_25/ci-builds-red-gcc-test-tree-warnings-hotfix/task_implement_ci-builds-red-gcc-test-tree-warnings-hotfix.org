@@ -41,9 +41,19 @@ The Continuous Linux gcc jobs compile the whole tree again. Every remaining gcc-
 
 * Plan
 
-(Implementation strategy. Written when work starts; key decisions
-are distilled into the parent story's =* Decisions= at close, but the
-plan itself stays — it is the historical record of what we did.)
+Fix every remaining gcc-only diagnostic in one pass, then raise one PR.
+
+1. Reproduce the failure locally. Take the gcc command for the failing
+   file from =build/output/linux-gcc-debug-make/compile_commands.json=,
+   swap in =-fsyntax-only=, and compile. This reproduces the CI
+   diagnostics without a full CI cycle.
+2. Fix each diagnostic. Prefer the smallest edit that removes the
+   warning without changing behaviour.
+3. Sweep the whole tree. Run every entry of =compile_commands.json=
+   through the same command, so no translation unit is skipped.
+4. Keep a keep-going build running in parallel, as a second oracle.
+5. Raise one PR. Record the debug evidence in the PR body, and state
+   the release gap in the Limitations paragraph.
 
 * Notes
 

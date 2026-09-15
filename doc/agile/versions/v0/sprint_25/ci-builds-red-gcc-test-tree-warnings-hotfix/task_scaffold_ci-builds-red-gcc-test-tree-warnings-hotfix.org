@@ -8,7 +8,7 @@
 #+filetags: :ci-builds-red-gcc-test-tree-warnings-hotfix:sprint_25:v0:
 #+owner: marco
 #+branch: hotfix/ci-builds-red-gcc-test-tree-warnings-hotfix
-#+pr:
+#+pr: 2081
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-15
@@ -65,7 +65,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2081][#2081]] | [ci] Clear the gcc-only warning and the include-hygiene push failure |
 
 * Review
 

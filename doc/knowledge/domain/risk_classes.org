@@ -123,12 +123,16 @@ cross-product of three smaller ideas.
 | Dimension | Values |
 |-----------+--------|
 | Asset class | Commodity, Credit, Equity, FX, interest rate, inflation |
-| Sensitivity kind | delta (unsuffixed) and vol; =MarginType= adds curvature |
+| Greek | delta, written unsuffixed, and vega, written =Vol= |
 | Qualifier | qualifying or non-qualifying, on credit only |
 
-=CommodityVol= is commodity with a vol sensitivity. =CreditVolNonQ= is
-credit, vol, non-qualifying. Nothing in the list is a market that the
-asset class taxonomy lacks.
+=CommodityVol= is commodity vega. =CreditVolNonQ= is credit vega,
+non-qualifying. Nothing in the list is a market that the asset class
+taxonomy lacks.
+
+FRTB, whose risk types sit in the same enumeration, drops the implicit
+spelling and names both segments: =GIRR_DELTA=, =EQ_VEGA=, =FX_CURV=.
+[[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The greeks]] sets out the decomposition and the greeks themselves.
 
 So SIMM's =CreditQualifying= and =CreditNonQualifying= are not
 subclasses of credit. They are credit carrying an additional property.
@@ -282,5 +286,6 @@ rationale.
 * See also
 
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy both attributes reference.
+- [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the named sensitivities, and why a risk type is a class crossed with a greek.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

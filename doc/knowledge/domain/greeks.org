@@ -1,0 +1,255 @@
+:PROPERTIES:
+:ID: 8448BEF2-026C-48D6-81A3-21B710FDE1BB
+:END:
+#+title: The Greeks
+#+description: A greek is a named sensitivity, defined by the input it moves rather than by the instrument; the greeks in use, how they are computed, and why a risk type is an asset class crossed with a greek.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:risk:pricing:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+
+* Summary
+
+A *sensitivity* is a partial derivative of value with respect to an
+input, almost always approximated numerically:
+
+122315\text{Greek} = \frac{PV(\text{input} + h) - PV(\text{input})}{h}122315
+
+A *greek* is a named sensitivity, conventionally denoted by a greek
+letter.
+
+Two properties follow, and both are load-bearing.
+
+*A sensitivity is defined by the input it moves, not by the
+instrument.* Vega means sensitivity to volatility whether the trade is
+a vanilla, a barrier or a structure. The greek set is therefore a
+property of the report rather than of the product.
+
+*A sensitivity is always local.* It is measured at the current market
+level and is valid only near it. Every use of a greek away from that
+level is an extrapolation.
+
+The first property is why a risk type decomposes. An input belongs to
+an [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset class]] and a greek names which derivative was taken, so a
+risk type is the pair.
+
+* What a sensitivity is
+
+** Structural and actual
+
+Two different questions hide behind "what is this sensitive to".
+
+The *structural* sensitivity is the set of inputs an instrument
+/could/ be sensitive to, independent of state or market data. It is a
+property of the product type and is used to slice the market data set.
+That is what [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][risk classes]] records.
+
+The *actual* sensitivity is the set of market data points the current
+book is measurably sensitive to. It is computed, it changes as the
+book changes, and it drives which data the firm needs to purchase and
+verify.
+
+** By order
+
+Sensitivities are ordered by how many derivatives were taken, and the
+order hierarchy follows from a Taylor expansion. Delta predicts where
+value will be after a move; if delta is itself changing, the
+prediction is wrong, and gamma corrects it:
+
+122315\Delta P\&L \approx (D_1 - D_0) \times \Delta + \tfrac{1}{2}(D_1 - D_0)^2 \times \Gamma122315
+
+The expansion continues in principle and stops in practice at second
+order, for a reason of utility rather than mathematics: there are no
+higher order greeks because traders do not find them useful.
+
+** By methodology
+
+The same conceptual quantity can be obtained three ways, and they must
+never be silently mixed.
+
+| Method | What it does | Limitation |
+|--------+--------------+------------|
+| Bumped | Revalue with a perturbed input and take the difference | Works for any product and model; costs a revaluation |
+| Analytic | Use a closed-form formula the model supplies | Faster and more precise; many models do not support it |
+| Model | The greek as produced by a specific model variant | A Black-Scholes delta and a smile delta are different numbers for the same trade and the same spot |
+
+Because the method changes the number, it is part of the
+configuration: each greek carries a setting for unbumped, bumped,
+analytic, weighted or model.
+
+* The greeks
+
+| Greek | Input moved | Order |
+|-------+-------------+-------|
+| Delta | Spot | First |
+| Gamma | Spot | Second |
+| Vega | Volatility | First |
+| Vomma | Volatility | Second |
+| Rega | Risk reversal, the skew | First |
+| Sega | Strangle, the wings | First |
+| Rho | Interest rates | First |
+| Theta | The passage of time | First |
+
+** Delta
+
+Sensitivity to spot, and the primary directional exposure.
+
+In FX it carries a complication worth stating, because spot appears
+twice: once as the underlying of the trade, and once as the rate that
+converts value into the reporting currency. A book's delta is composed
+of both and the two cannot be separated, so a desk that cares about
+conversion exposure cannot isolate it. Splitting delta into a position
+delta and a spot risk delta would resolve it, and is not done today.
+
+Delta also does double duty as a coordinate system. The FX volatility
+surface is parameterised in delta terms, with 10, 15 and 25 delta
+strikes, so delta is both a risk measure and an axis of the surface.
+
+** Gamma
+
+Second-order spot sensitivity, and the rate of change of delta. Its
+purpose is corrective: where gamma is large, a delta-only prediction
+is wrong, and the error grows with the square of the move.
+
+** Vega, rega and sega
+
+The volatility surface sensitivities.
+
+Vega carries a convention that changes what the number means: it is
+the bump of the /entire/ volatility term structure rather than a
+tenor-by-tenor measure. The tenor decomposition is a separate report,
+produced by bumping each tenor of each curve and stitching the results
+back into a term structure.
+
+Rega and sega are FX-specific and follow from how the surface is
+quoted. An FX volatility surface is quoted as at-the-money, risk
+reversal and strangle per tenor rather than as a strike grid, so the
+natural sensitivities are to those three quoted objects. That is why
+FX volatility reports come as triples rather than as a single vega.
+
+** Rho
+
+Interest rate sensitivity, computed separately for discount and
+projection curves, with rates bumped in absolute terms rather than
+relative. Its rates-desk analogue is DV01, the value change for a one
+basis point move.
+
+** Theta
+
+Sensitivity to the passage of time, and the most complicated of the
+greeks, because sensitivity to time is not one thing. It decomposes,
+and the user has to choose which measure they want.
+
+| Component | Meaning |
+|-----------+---------|
+| Time decay | The erosion of an option's time value, computed by moving time forward one day. Forwards show none |
+| Cost of carry | Interest earned on long positions less interest paid on short positions. Naturally book-level, because funding is done per book. In commodities it is storage cost |
+
+Theta also varies by how it is computed: rolling theta moves market
+data and deals forward a day, breakdown theta rolls one curve at a
+time and attributes the residual to cross effects, and backwards theta
+uses negative shifts.
+
+** Model greeks
+
+Sensitivity to a model parameter rather than to a market input,
+obtained by bumping the parameter's term structure. A model greek is
+meaningful only within the model that produced it.
+
+* Why a risk type is an asset class crossed with a greek
+
+Because a sensitivity is defined by the input it moves, and every
+input belongs to an asset class, a risk type is fully determined by
+the pair. Two regulatory frameworks say so in their own enumerations.
+
+** FRTB says it explicitly
+
+The FRTB risk types are named =<risk class>_<greek>=:
+
+=GIRR_DELTA=, =GIRR_VEGA=, =GIRR_CURV=, =EQ_DELTA=, =EQ_VEGA=,
+=EQ_CURV=, =COMM_DELTA=, =COMM_VEGA=, =COMM_CURV=, =FX_DELTA=,
+=FX_VEGA=, =FX_CURV=, and the credit spread family =CSR_NS_=,
+=CSR_SNC_= and =CSR_SC_= each with the same three suffixes.
+
+Nothing is left to inference. The class and the greek are separate
+segments of the name.
+
+** SIMM says it implicitly
+
+The SIMM risk types are =IRCurve=, =IRVol=, =Equity=, =EquityVol=,
+=FX=, =FXVol=, =Commodity=, =CommodityVol=, =Inflation=,
+=InflationVol=, =CreditQ=, =CreditNonQ=, =CreditVol= and
+=CreditVolNonQ=.
+
+The same decomposition is there under a different spelling. The
+unsuffixed values are deltas and the =Vol= suffix is vega. Curvature
+is not a risk type in SIMM; it appears in =MarginType= alongside delta
+and vega, so the third greek is carried on a different axis.
+
+** What that gives
+
+A risk type is therefore a table rather than an enumeration:
+
+#+begin_example
+risk_type
+  asset_class  -> asset_class.code
+  greek        -> greek.code
+#+end_example
+
+The framework-specific values that do not fit are not counter-examples
+but properties on that row. SIMM's qualifying flag on credit and
+FRTB's securitisation split on credit spread are attributes of the
+exposure, not new asset classes and not new greeks.
+[[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk classes]] covers that argument.
+
+* Conventions that change the number
+
+A greek is not comparable across configurations unless the
+configuration matches. Four things change the number without changing
+the name.
+
+- *The bump.* Its size, whether it is absolute or relative, and what
+  it targets. Rates are bumped absolutely, typically one basis point;
+  volatility defaults to a tenth of a volatility point.
+- *The method.* Bumped, analytic or model, as above.
+- *Surface reparameterisation.* A volatility surface may be restated
+  to a different delta, strangle convention, at-the-money flag or risk
+  reversal flag before bumping, and each choice changes what the
+  resulting greek means.
+- *The currency.* Greeks are converted into an aggregation currency,
+  and that conversion generates greeks of its own by design.
+
+* Open questions
+
+- *Can FX delta be split?* Position delta and spot risk delta are
+  conceptually distinct and currently conflated. Whether the split is
+  worth the modelling cost depends on the desk: it is small for most
+  and material for FX.
+- *Is cost of carry a deal-level quantity?* It is naturally
+  book-level, because funding is done per book. A theoretical
+  deal-level figure is possible, and nothing settles whether it is
+  useful.
+- *How are cross effects reported?* The sum of independently computed
+  sensitivities does not equal the true total, and the residual has to
+  go somewhere.
+- *Is curvature a greek or a margin type?* SIMM places it on
+  =MarginType= while FRTB gives it a risk type suffix. The two
+  frameworks disagree on which axis it belongs to.
+
+* Sources
+
+The definitions, conventions and open questions are drawn from
+internal analysis notes on risk sensitivities, which summarise
+requirements material. No external standard is cited for them.
+
+The FRTB and SIMM risk type enumerations are read from
+=OREAnalytics/orea/simm/crifrecord.hpp=, and the margin types from
+=OREAnalytics/orea/simm/simmconfiguration.hpp=.
+
+* See also
+
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy an input's class comes from.
+- [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to.
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

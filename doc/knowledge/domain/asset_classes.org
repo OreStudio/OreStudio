@@ -423,6 +423,7 @@ The FpML asset class values registered here are read from
 * See also
 
 - [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to, and why it is a second reference into this taxonomy.
+- [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the named sensitivities; a risk type is a class crossed with a greek.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.
 - [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, grouped by class.
 - [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — how a value records the scheme that issued it.

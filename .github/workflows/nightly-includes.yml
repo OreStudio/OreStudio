@@ -91,7 +91,7 @@ jobs:
           branch: bot/nightly-includes
           commit-message: '[format] Nightly include-cleaner run'
           title: '[format] Nightly include-cleaner run'
-          # Stage only the sources the checker rewrites. Without this the
+          # Stage only the project sources. Without this the
           # action stages the whole workspace, so the LLVM install at
           # ./llvm and the vcpkg cache at ./vcpkg-cache ride along and
           # GitHub rejects the push for files over its 100 MB limit.

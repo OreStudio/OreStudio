@@ -54,9 +54,10 @@ is unset. Two directories in that workspace are large and untracked:
 So the bot commit carries LLVM shared objects and vcpkg zips, and
 GitHub refuses the push.
 
-1. Pin =add-paths= to =projects/=. The checker reads its file list
-   from =compile_commands.json=, and every entry sits under
-   =projects/=, so that path is the whole rewrite surface.
+1. Pin =add-paths= to =projects/=. Every source the checker rewrites
+   and that belongs in a commit sits there. The few =build/= entries
+   in =compile_commands.json= are CMake-generated PCH stubs and a
+   generated =version.cpp=; the pin keeps those out of the commit.
 2. Say why in a comment, so the pin does not read as noise.
 
 The checkout stays as it is. Moving the LLVM install or the vcpkg

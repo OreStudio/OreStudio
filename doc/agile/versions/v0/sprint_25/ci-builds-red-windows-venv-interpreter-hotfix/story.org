@@ -36,11 +36,11 @@ and macOS keep the =python3= they have today, so only Windows changes.
 
 | Field         | Value                                  |
 |---------------+----------------------------------------|
-| State         | STARTED                              |
+| State         | DONE                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The fix is written and verified locally. |
+| Now           | Nothing. |
 | Waiting on    | Nothing.                               |
-| Next          | Run the python-tooling class checks, then raise one PR. |
+| Next          | Nothing. |
 | Last touched  | 2026-09-15                               |
 
 * Acceptance
@@ -58,7 +58,7 @@ and macOS keep the =python3= they have today, so only Windows changes.
 
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
-| [[id:2C41B249-5380-4CD6-BF7A-935DD2B16DA5][Implement Hotfix: resolve the venv interpreter by probe in compass.sh]] | STARTED | 2026-09-15 | | Probe for the venv interpreter in compass.sh instead of assuming Scripts/python3, and drive both pip install lines and the compass CLI call through the resolved path. Verify with bash syntax check, simulated POSIX and Windows venv layouts, and a real compass run on Linux, then raise one PR with the Linux gcc fix. |
+| [[id:2C41B249-5380-4CD6-BF7A-935DD2B16DA5][Implement Hotfix: resolve the venv interpreter by probe in compass.sh]] | DONE | 2026-09-15 | 2026-09-15 | Probe for the venv interpreter in compass.sh instead of assuming Scripts/python3, and drive both pip install lines and the compass CLI call through the resolved path. Verify with bash syntax check, simulated POSIX and Windows venv layouts, and a real compass run on Linux, then raise one PR with the Linux gcc fix. |
 
 * Decisions
 

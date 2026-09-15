@@ -36,11 +36,11 @@ for those platforms.
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | STARTED                              |
+| State        | DONE                              |
 | Parent story | [[id:3DDCE816-0099-4BD1-ABD0-B54714371CDB][Hotfix: Continuous Windows red on the venv interpreter name in compass.sh]] |
-| Now          | The fix is written, tested and verified locally. The python-tooling class checks are running. |
+| Now          | Nothing. |
 | Waiting on   | The python-tooling class checks.       |
-| Next         | Close the bookkeeping, then raise one PR with the gcc fix. |
+| Next         | Nothing. |
 | Last touched | 2026-09-15                               |
 
 * Acceptance
@@ -189,4 +189,26 @@ Local review of the diff, per the code-review-pr pass.
 
 * Result
 
-* Result
+=compass.sh= no longer assumes that a virtual environment holds
+=python3=. The wrapper resolves the interpreter once, at
+=resolve_venv_python()=, and uses the first of =python3=,
+=python3.exe=, =python= and =python.exe= that exists. Both pip install
+lines and the compass CLI call run through the resolved path. On Linux
+and macOS the probe selects =python3=, so nothing changes there.
+
+=projects/ores.compass/tests/test_venv_python_probe.py= covers the
+probe. Each case lifts the function out of the wrapper and runs it
+against a fake venv, so the candidate list under test is the list that
+ships. Four layouts pass, plus a venv directory that holds no
+interpreter, which falls back to the POSIX name.
+
+Local verification: =bash -n= is clean, the simulated layouts resolve as
+the table above records, and =compass fleet= on Linux prints the same
+table as before the change.
+
+The python-tooling class checks passed: the compass suite is green, 164
+passed and 1 skipped, and the drift checks report no drift once the tree
+is committed.
+
+The Windows job itself is untested here, because this host has no
+Windows toolchain. The next Continuous Windows run is the proof.

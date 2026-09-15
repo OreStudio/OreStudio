@@ -16,10 +16,10 @@ assets that have similar financial characteristics and behave
 similarly in the marketplace". That definition is agreed. The
 enumerations built on it are not.
 
-Six classifications are in play across ORE, ISDA and ORE Studio. No
-two share a value set, they range from five values to nine, and they
-disagree in both directions: some omit classes the others carry, and
-one subdivides a class the others treat as atomic.
+Seven classifications are in play across ORE, ISDA, Basel and ORE
+Studio. No two share a value set, they range from five values to nine,
+and they disagree in both directions: some omit classes the others
+carry, and some subdivide a class the others treat as atomic.
 
 The disagreement is not error. Each enumeration classifies a different
 thing — a product, a trade underlying, a market data series, a risk
@@ -43,6 +43,7 @@ cutting the tree at the depth it needs.
 | FpML asset class scheme | 8 | Products |
 | ISDA SIMM =ProductClass= | 6 substantive | Products, for margin |
 | ISDA SIMM =RiskClass= | 6 | Risk sensitivities |
+| FRTB risk classes | 6, with credit spread split three ways | Risk sensitivities, for regulatory capital |
 | ORE =AssetClass= | 9 | Trade underlyings |
 | ORE =RiskClass= | 6 | Risk sensitivities, for reporting |
 
@@ -118,6 +119,39 @@ classification for one purpose and a finer one for another. Neither is
 a subset of the other. The material is one taxonomy read at two
 depths, and SIMM expresses that with two enumerations because a flat
 enumeration cannot express it any other way.
+
+** FRTB
+
+The Basel market risk framework classifies for regulatory capital, and
+its sensitivities-based method uses six risk classes: general interest
+rate risk (=GIRR=), credit spread risk (=CSR=), equity (=EQ=),
+commodity (=COMM=) and FX.
+
+Two features of it bear on this taxonomy.
+
+Credit spread is split three ways, into non-securitisation
+(=CSR_NS=), securitisation outside the correlation trading portfolio
+(=CSR_SNC=) and securitisation within it (=CSR_SC=). That is the
+second framework to subdivide credit, after SIMM, and it subdivides it
+along a different axis: securitisation status rather than qualifying
+status. Two frameworks needing two /different/ credit subdivisions is
+strong evidence that neither belongs in the taxonomy, and that both
+are properties of the exposure.
+
+FRTB confirms this in its own record layout. A CRIF row carries
+=creditQuality=, =longShortInd=, =coveredBondInd=, =trancheThickness=
+and =bb_rw= as separate fields, so the framework already treats this
+kind of attribute as a column rather than as a class.
+
+Neither bond nor inflation is a class. Inflation is a risk factor
+within =GIRR=, which agrees with SIMM and against FpML and ORE's risk
+filter. Bond is absent for the reason every risk classification omits
+it: a bond's sensitivity decomposes.
+
+FRTB also carries two charges that are not sensitivities and so have
+no place in a sensitivity taxonomy: the default risk charge (=DRC=),
+itself split the same three ways as credit spread, and the residual
+risk add-on (=RRAO=).
 
 ** ORE's AssetClass
 
@@ -270,6 +304,13 @@ taxonomy.
 The same holds for =RatesFX=, which is a grouping because margin is
 computed on the pair together.
 
+FRTB makes the same point from the other direction. It subdivides
+credit too, but along securitisation status rather than qualifying
+status, and it carries =creditQuality=, =coveredBondInd= and
+=trancheThickness= as fields on the record. A class that two
+frameworks need to subdivide in two incompatible ways is not a class
+with subclasses; it is a class with properties.
+
 That removes one of the three disagreements below, and it removes the
 credit subclasses from the proposal. Where a framework appears to need
 a finer class, look for a property first. [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk classes]] carries the
@@ -287,8 +328,11 @@ three.
   ISDA taxonomy because it is not a derivative, and absent from both
   risk classifications because a bond's risk decomposes into interest
   rate and credit.
-- *Credit subdivision*: apparent rather than real. SIMM's split is a
-  property on the sensitivity, not a finer class.
+- *Credit subdivision*: apparent rather than real, and doubly so.
+  SIMM splits credit by qualifying status; FRTB splits it by
+  securitisation status. Two frameworks needing two different
+  subdivisions of one class means neither is a subclass. Both are
+  properties of the exposure.
 
 Each disagreement is a use case needing a different depth, not a
 difference of opinion about the domain.
@@ -348,6 +392,7 @@ rate curve rather than beside it.
 | Risk reporting, ORE style | Root minus =Bond=, plus =InterestRate.Inflation= |
 | SIMM margin, product side | Root with =InterestRate= and =ForeignExchange= merged |
 | SIMM margin, risk side | Root minus =Bond=, with inflation inside interest rate, plus a qualifying property on credit |
+| FRTB capital, sensitivities | Root minus =Bond=, with inflation inside interest rate, plus a securitisation property on credit |
 | ISDA product taxonomy | Root minus =Bond=, then deeper product levels |
 
 Every use case but one is a cut of the same tree. The exception is
@@ -416,6 +461,10 @@ ORE's enumerations are read from
 =OREAnalytics/orea/simm/crifrecord.hpp=. The user guide statements are
 read from =userguide_intro.tex= and =genericscriptedproducts.tex=. No
 ORE source defines the concept or states a rationale for its values.
+
+The FRTB risk types, the CRIF record fields and the curvature scenario
+are read from =OREAnalytics/orea/simm/crifrecord.hpp=.
+[[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The greeks]] covers the greek segment of those names.
 
 The FpML asset class values registered here are read from
 =fpml_asset_class_artefact_populate.sql=.

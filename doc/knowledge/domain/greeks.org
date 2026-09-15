@@ -175,6 +175,10 @@ The FRTB risk types are named =<risk class>_<greek>=:
 Nothing is left to inference. The class and the greek are separate
 segments of the name.
 
+Curvature is not one number in FRTB. =CurvatureScenario= carries an up
+shift and a down shift, because the framework requires both, so a
+curvature row needs a third coordinate that delta and vega do not.
+
 ** SIMM says it implicitly
 
 The SIMM risk types are =IRCurve=, =IRVol=, =Equity=, =EquityVol=,

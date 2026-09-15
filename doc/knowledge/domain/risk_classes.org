@@ -224,6 +224,34 @@ the inflation question found in any of the surveyed material, and it
 argues for placing inflation beneath interest rate rather than next to
 it.
 
+** FRTB
+
+The Basel market risk framework classifies sensitivities for
+regulatory capital, using six risk classes in its sensitivities-based
+method: =GIRR=, =CSR=, =EQ=, =COMM= and =FX=, with credit spread split
+three ways into non-securitisation, securitisation outside the
+correlation trading portfolio, and securitisation within it.
+
+It is the second framework to subdivide credit, and it does so along a
+different axis from SIMM: securitisation status rather than qualifying
+status. Two frameworks needing two incompatible subdivisions of one
+class is what settles the question. Neither subdivision is a subclass,
+and both are properties of the exposure.
+
+FRTB treats them that way itself. A CRIF row carries =creditQuality=,
+=longShortInd=, =coveredBondInd=, =trancheThickness= and =bb_rw= as
+fields alongside the risk type, so the framework already puts this
+kind of attribute in a column.
+
+Its greeks are named rather than implied, and curvature is not one
+number: =CurvatureScenario= carries an up shift and a down shift,
+because FRTB requires both.
+
+FRTB also carries two charges that are not sensitivities at all: the
+default risk charge, split the same three ways as credit spread, and
+the residual risk add-on. Neither belongs in a classification of
+sensitivities.
+
 ** ORE
 
 =orea/engine/riskfilter.hpp= holds =enum class RiskClass { All,
@@ -271,6 +299,9 @@ does.
   of the two shapes a given property takes.
 
 * Sources
+
+The FRTB risk types, the CRIF record fields and the curvature scenario
+are read from =OREAnalytics/orea/simm/crifrecord.hpp=.
 
 ORE's enumerations are read from
 =OREAnalytics/orea/engine/riskfilter.hpp=,

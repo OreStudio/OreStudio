@@ -1,0 +1,222 @@
+:PROPERTIES:
+:ID: 7F5EBFBD-FB8C-4E79-B386-7098104D3EDB
+:END:
+#+title: Asset Classes
+#+description: What an asset class is, the eight ORE Studio asset classes and what each covers, and how the ORE and FpML coding schemes differ.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:refdata:taxonomy:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+
+* Summary
+
+Wikipedia defines an asset class as "a group of marketable financial
+assets that have similar financial characteristics and behave
+similarly in the marketplace". It adds that assets in one class are
+often, though not always, subject to the same laws and regulations.
+
+In ORE Studio the grouping is by /the risk factor that drives value/.
+An interest rate product is priced off a yield curve, an equity
+product off a spot price and a volatility surface, a credit product
+off a hazard rate curve. That is what makes the classification useful
+to a pricing library rather than merely descriptive: the asset class
+says which market data a product needs.
+
+Eight asset classes are held, modelled as
+[[id:8F6EE5AE-8B49-4A4C-97F8-E0517BE53775][=asset_class_code=]]: =fx=, =rates=, =credit=, =equity=, =commodity=,
+=inflation=, =bond= and =cross_asset=.
+
+Asset class is a property of the product type, which is one of the
+four entities in [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][trade modeling]]. It is the same for every trade of
+that kind, everywhere, which is why it belongs there and not on the
+trade.
+
+* The eight asset classes
+
+Each section opens with a general definition and then states what the
+class covers here, including the market data a product of that class
+requires.
+
+** FX
+
+Wikipedia defines the foreign exchange market as "a global
+decentralized or over-the-counter (OTC) market for the trading of
+currencies".
+
+Covers FX spot, forwards, swaps, and vanilla and exotic options, with
+the market data that prices them: spot rates, forward points, and
+volatility surfaces quoted by currency pair.
+
+FX is unique among the asset classes in that every trade inherently
+involves two currencies rather than one underlying. That is why FX
+risk appears as a cross-cutting concern in every other asset class: a
+USD-denominated equity option still carries FX risk for a EUR-based
+book.
+
+** Rates
+
+Wikipedia defines an interest rate derivative as "a derivative whose
+payments are determined through calculation techniques where the
+underlying benchmark product is an interest rate, or set of different
+interest rates".
+
+Covers deposits, forward rate agreements, interest rate swaps and
+swaptions, caps and floors, and cross-currency swaps, together with
+the curve-construction market data: discount factors, zero rates, and
+forward rates bootstrapped from quoted instruments at standard tenors.
+
+Rates is typically the first curve built in any pricing pipeline,
+because discounting and forward-rate projection for every other asset
+class ultimately depends on it.
+
+** Credit
+
+Wikipedia defines a credit derivative as any one of "various
+instruments and techniques designed to separate and then transfer the
+credit risk", moving default risk to a party other than the original
+lender or debt holder.
+
+Covers credit default swaps, both single-name and index, credit-linked
+notes, and the underlying market data: CDS spreads, hazard rate curves
+bootstrapped from those spreads, and assumed recovery rates.
+
+Credit curves are quoted per reference entity, or per index series,
+and combine with a rates curve to produce risky discount factors for
+defaultable cashflows.
+
+** Equity
+
+Wikipedia defines stock as consisting of "all the shares by which
+ownership of a corporation or company is divided".
+
+Covers equity spot and forward positions, vanilla and exotic equity
+options including barrier, Asian and variance-swap structures, and the
+associated market data: spot prices, dividend yield curves, and
+implied volatility surfaces quoted by strike and expiry.
+
+Equity derivatives pricing layers a dividend and borrow-cost forward
+curve and a volatility surface on top of the rates discount curve.
+
+** Commodity
+
+Wikipedia defines a commodity market as "a market that trades in the
+primary economic sector rather than manufactured products".
+
+Covers commodity forwards, swaps, and options including Asian and
+spread structures, with forward curves and volatility surfaces per
+delivery point and contract month.
+
+Commodity forward curves differ in kind from FX and rates curves.
+They are often in backwardation or contango, driven by storage cost
+and convenience yield rather than by pure interest-rate parity.
+
+** Inflation
+
+Wikipedia defines an inflation derivative as "an over-the-counter and
+exchange-traded derivative that is used to transfer inflation risk
+from one counterparty to another".
+
+Covers zero-coupon and year-on-year inflation swaps, inflation caps
+and floors, and inflation-linked bonds, with the inflation fixing and
+index curve, both historical and forward-projected, and inflation
+volatility surfaces.
+
+The index curve carries a seasonality adjustment for the index's known
+within-year pattern, and inflation curves are built and discounted
+against the nominal rates curve for the same currency.
+
+** Bond
+
+Wikipedia defines a bond as "a type of security under which the issuer
+(debtor) owes the holder (creditor) a debt".
+
+Covers vanilla fixed and floating-rate bonds, callable and convertible
+bonds, and bond futures and options, with clean and dirty prices,
+yield to maturity, and issuer spread curves quoted over the risk-free
+or asset-swap curve.
+
+A bond's value derives from a discount curve plus an issuer-specific
+credit and liquidity spread. Government bonds are also a primary
+source instrument for bootstrapping the risk-free rates curve itself,
+so the class both consumes and supplies curve data.
+
+** Cross asset
+
+No single Wikipedia article defines this class, because it is a
+modelling category rather than a market. The nearest general concept
+is the hybrid security, which Wikipedia defines as one of "a broad
+group of securities that combine the characteristics of the two
+broader groups of securities, debt and equity".
+
+Covers instruments and risk measures that genuinely span more than one
+of the other classes: a hybrid note whose payoff depends jointly on an
+equity index and an FX rate, or a correlation or quanto adjustment
+that couples an equity or commodity underlying denominated in a
+foreign currency back to the book's base currency. The market data is
+cross-asset correlations and quanto adjustments.
+
+This category exists for the small set of cases that a single-asset
+tag would misrepresent. It is not a catch-all default, and a product
+that fits one class belongs in that class.
+
+* Two coding schemes
+
+Asset class is not one taxonomy. Two are registered as coding schemes,
+and they are close enough to be confused and different enough to
+matter.
+
+| ORE | FpML |
+|-----+------|
+| =fx= | =ForeignExchange= |
+| =rates= | =InterestRate= |
+| =credit= | =Credit= |
+| =equity= | =Equity= |
+| =commodity= | =Commodity= |
+| =inflation= | =Inflation= |
+| =bond= | =Bond= |
+| =cross_asset= | — |
+| — | =SecuritiesFinancing= |
+
+Six values correspond directly and differ only in spelling. Two do
+not. ORE carries =cross_asset=, which FpML has no equivalent for
+because FpML classifies a hybrid by its product rather than by a
+spanning category. FpML carries =SecuritiesFinancing= for repo and
+securities lending, which ORE has no equivalent for.
+
+A mapping between the two is therefore partial in both directions, and
+an asset class value is meaningless without the scheme it belongs to.
+[[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding schemes]] sets out the mechanism that records which scheme a
+value came from.
+
+* Where the classification is used
+
+The asset class groups the product catalogue: every product page in
+[[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] sits under the class of its product type.
+
+It also determines which market data a product requires, which is what
+makes it load-bearing rather than descriptive. A rates curve is needed
+by everything; an equity product additionally needs a dividend curve
+and a volatility surface; a credit product needs a hazard rate curve
+and a recovery assumption.
+
+* Sources
+
+The general definitions are quoted from Wikipedia as retrieved on 15
+September 2026: [[https://en.wikipedia.org/wiki/Asset_classes][Asset classes]], [[https://en.wikipedia.org/wiki/Foreign_exchange_market][Foreign exchange market]],
+[[https://en.wikipedia.org/wiki/Interest_rate_derivative][Interest rate derivative]], [[https://en.wikipedia.org/wiki/Credit_derivative][Credit derivative]], [[https://en.wikipedia.org/wiki/Stock][Stock]],
+[[https://en.wikipedia.org/wiki/Commodity_market][Commodity market]], [[https://en.wikipedia.org/wiki/Inflation_derivative][Inflation derivative]], [[https://en.wikipedia.org/wiki/Bond_(finance)][Bond (finance)]] and
+[[https://en.wikipedia.org/wiki/Hybrid_security][Hybrid security]].
+
+What each class covers, and the market data it requires, is read from
+=refdata_asset_class_codes_populate.sql=. The two coding schemes are
+read from =ore_asset_class_artefact_populate.sql= and
+=fpml_asset_class_artefact_populate.sql=.
+
+* See also
+
+- [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from; asset class is a property of the product type.
+- [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, grouped by these classes.
+- [[id:1A95DFA1-932C-B094-4653-BFCAD266C2AD][Coding Schemes]] — how a value records the scheme that issued it.
+- [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — the identifier schemes, which are classified the same way.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

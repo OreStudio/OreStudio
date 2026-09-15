@@ -12,40 +12,33 @@
 * Summary
 
 Trades are a key concept in [[id:D04D3476-D7C5-3954-A33B-C641EBCB43F6][ORE Studio]]. Through the application of [[id:BBD43BF2-9FEE-42B0-A667-9468AF759DC2][Data Oriented
-Programming]] principles we decided to model them as four distinct entities with
-separate responsibilities:
+Programming]] principles, they were modeled as four distinct entities with the
+following responsibilities:
 
-- *Product Type*: The class of contract that can be traded.
+- *Product Type*: The /class/ of financial contract that can be traded.
 - *Security Issue*: A particular tradable instance of such a class, where one
   exists.
-- *Trade:* An agreement struck on a product type and on a security issue, where there
-  is one.
+- *Trade:* An agreement struck on a product type and on a security issue, where
+  one exists.
 - *Instrument*: The economic terms of that agreement.
+
+#+begin_note
+A related concept this document does not cover is /[[id:886AAFB5-62F3-4AA3-B325-386665AFF926][position]]/. A position in ORE
+Studio is understood to be a well-defined aggregate over specified instruments.
+#+end_note
 
 The relationships between these entities are as follows. A product type
 classifies many security issues and many trades. A security issue is dealt by
-many trades.
-A trade holds exactly one set of economic terms.
+many trades. A trade holds exactly one set of economic terms.
 
-Significantly, [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] models this domain and its representation is the ground
-truth. Our entities must then correspond to ORE entities, so that a portfolio
-can cross between the two representations without loss.
+Additionally, [[id:1CBDEA40-5FAE-4F04-BD21-2BB29172B5AA][ORE]] models this domain and its representation is the ground truth.
+Our entities must then be a super set of the attributes in the related ORE
+entities, possibly normalised, so that a portfolio can round-trip between the
+two representations without data loss.
 
-This document describes these entities in detail, their relationships, the prior
-art that was considered during their modeling and any other considerations
+This document describes the above entities in detail, their relationships, the
+prior art that was considered during their modeling and any other considerations
 regarding the modeling process.
-
-A related concept this document does not cover is the *position*. A position is
-an aggregate over trades: what the firm is left holding once every trade
-touching some dimension has been added up. It is not a fifth entity, because it
-has no identity, no counterparty and no version of its own, and it is computed
-rather than recorded. See [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][positions]].
-
-#+begin_note
-The wider trading vocabulary — economic value, price, the bid, ask and traded
-price, financial quotation, and the market maker — is defined in the [[https://mcraveiro.github.io/ore_studio/musings/trading.html][trading
-musings]], which takes the same definitions from the same sources.
-#+end_note
 
 * Key Entities and Relationships
 
@@ -366,6 +359,7 @@ or page.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] — who the firm faces, and whether anything happened.
 - [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregate over deals, which has no identity of its own.
 - [[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] — the product pages, one per =TradeType=.
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the eight classes, what each covers, and the two coding schemes.
 - [[id:810AE48E-E180-42C6-B4F7-FA81826F3588][Standard financial identifiers]] — ISIN, CUSIP and SEDOL, which identify a security issue, alongside the entity, venue and market data schemes.
 - [[id:E080E32B-5E53-4AB7-903F-145D070C045C][Trade identifiers]] — UTI and USI, which identify a trade.
 - [[id:9754A325-F6FB-4F44-AB56-660D980A3F11][Bond issuance]] — what an issue is.

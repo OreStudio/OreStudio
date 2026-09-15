@@ -1,0 +1,73 @@
+:PROPERTIES:
+:ID: AE904D12-B82E-48AA-B270-589B91628953
+:END:
+#+title: Story: Hotfix: Continuous Linux gcc jobs red on two constructs in the generated domain.cpp
+#+description: The Continuous Linux gcc jobs fail on the generated parser in projects/ores.ore/core/src/domain/domain.cpp: a case label falls through to the default label behind a '// no break' comment, which gcc does not accept as a fallthrough marker, and gcc 16 also reports a loop counter that is set but never read. The tree has not compiled clean under gcc since -Wall and -Wextra were enabled on 2026-09-11, so further gcc-only fallout may sit behind this first error. The fix silences the two warnings for that one generated file, under gcc only.
+#+type: story
+#+level: s2
+#+filetags: :hotfix:build:codegen:sprint_25:v0:
+#+created: 2026-09-15
+#+updated: 2026-09-15
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+Main's Continuous Linux gcc jobs are red again, on a defect the previous
+hotfix could not reach. The ascot rename in PR #2079 cleared the first
+gcc error, and the build then failed inside the generated parser in
+=projects/ores.ore/core/src/domain/domain.cpp=. Two gcc-only diagnostics
+sit in that file. A case label falls through to the default label behind
+a =// no break= comment, which gcc does not accept as a fallthrough
+marker, and gcc 16 also reports a loop counter that is set but never
+read. Every clang job passes, because clang raises neither warning.
+
+The tree has not compiled clean under gcc since -Wall and -Wextra were
+enabled on 2026-09-11. The last successful Continuous Linux run is from
+2026-09-08, before those flags landed, so the gcc fallout of that change
+is largely unexplored and further errors may sit behind this one. This
+story fixes the two known diagnostics and states plainly what remains
+unproven.
+
+The fix silences the two warnings for that one generated file, under gcc
+only, in the same place and for the same reason as the existing
+suppressions for that file. The generator that emits the file lives
+outside this repository, so the generated file itself is not edited.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | DONE                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | Nothing. |
+| Waiting on    | Nothing.                               |
+| Next          | Nothing. |
+| Last touched  | 2026-09-15                               |
+
+* Acceptance
+
+- =domain.cpp= compiles clean under gcc with the compiler flags the tree
+  sets, both warnings silenced and the object file produced.
+- The clang jobs are unchanged. The new flags are GNU-only, so clang
+  compiles the file with exactly the flags it used before.
+- No generated file is hand-edited. The suppressions live in
+  =projects/ores.ore/core/src/CMakeLists.txt= beside the existing ones
+  for that file, with the reason recorded next to them.
+- The PR states plainly that the gcc tree has had no green run since
+  -Wall and -Wextra landed, and that further gcc-only fallout may sit
+  behind this error.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:4B10F3F0-4983-457D-89FC-22E59FD2A788][Implement Hotfix: silence the two gcc warnings in the generated domain.cpp]] | DONE | 2026-09-15 | 2026-09-15 | Add -Wno-implicit-fallthrough and -Wno-unused-but-set-variable for domain.cpp under GNU only, beside the existing per-file suppressions in projects/ores.ore/core/src/CMakeLists.txt, and record why. Verify by compiling the affected translation unit with gcc 16.2.0 and by the code-class checks on the clang tree, then raise one PR. |
+
+* Decisions
+
+* Out of scope
+
+-

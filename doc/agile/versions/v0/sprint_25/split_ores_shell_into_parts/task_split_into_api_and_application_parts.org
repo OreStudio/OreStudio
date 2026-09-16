@@ -1,0 +1,122 @@
+:PROPERTIES:
+:ID: 2915CF39-6936-4942-97C1-F0C11247F11E
+:END:
+#+title: Task: Split ores.shell into api and application parts
+#+description: Move the component's sources into an api part and an application part, each its own CMake target, and declare the composite so its root is generated.
+#+type: task
+#+level: s1
+#+filetags: :split_ores_shell_into_parts:sprint_25:v0:
+#+owner: marco
+#+branch: feature/split-ores-shell-into-parts
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A52DCD72-BEF4-4655-9987-A3103B288576][Split ores.shell into composable parts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+=ores.shell= holds its sources and its build in one target. A domain adapter
+therefore cannot link the shell plumbing without the REPL host, and codegen
+has no part to write a generated command unit into. Move the sources into an
+=api= part holding the shared plumbing and an =application= part holding the
+runnable host and the executable, then declare the component a codegen
+composite so its root =CMakeLists.txt= is generated like every other
+composite root.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A52DCD72-BEF4-4655-9987-A3103B288576][Split ores.shell into composable parts]] |
+| Now          | Done. Both parts build, the sweep is green and the consumers are fixed. |
+| Waiting on   | Nothing.                               |
+| Next          | Close and raise the PR.                |
+| Last touched | 2026-09-16                               |
+
+* Acceptance
+
+- =projects/ores.shell/api= and =projects/ores.shell/application= exist, each
+  with its own =CMakeLists.txt= and its own CMake target.
+- =libores.shell.api.a= and =libores.shell.application.a= build, and
+  =ores.shell.exe= is still produced.
+- The root =CMakeLists.txt= is codegen output, and regenerating it is a no-op.
+- Both part test suites pass.
+- Consumers of the old single target and the old header paths are fixed.
+
+* Plan
+
+1. Move the plumbing headers and sources into =api/=, and the host, the
+   config parser, the REPL loop, the script runner and the command units
+   into =application/=.
+2. Replace the single =CMakeLists.txt= with one per part, plus a composite
+   root that adds them.
+3. Declare =#+component_kind: composite= and
+   =#+parts: api application modeling= in the modeling org, then generate the
+   root.
+4. Regenerate =component_files.cmake= for both parts.
+5. Fix the consumers: =ores.qt='s application target, a prose path in
+   =ores.service=, and the System Model application page.
+
+* Notes
+
+- The gcc build of one =application= translation unit holds 6.76 GiB RSS, and
+  this worktree's build slice caps =memory.high= at 8 GiB. The kernel
+  therefore throttles the compiler into uninterruptible sleep, and no job
+  count avoids it, because a single unit crosses the cap by itself. clang
+  stays under the cap, so clang is the preset the green build and the sweep
+  used. The measured peak is recorded in the slice drop-in; the values are
+  unchanged, and re-deriving them is a separate decision.
+- =scripts/= stays at the component root. Moving it under =application= is
+  recorded as an open question in the component overview.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | The component is in no codegen registry: =regenerate --component shell= answers "Unknown component", and the drift gate does not cover it | projects/ores.codegen/library/component_catalogue.org, projects/ores.codegen/scripts/check_component_drift.py | Fixed | Added the =shell= catalogue row and the =KNOWN_DRIFT_FREE= entry. =--component shell= and =--all= exit 0; =--all= now covers 9 components. The root regenerates byte-identical, sha256 unchanged. |
+| 2 | Generating a part model on its own replaces its four hand-written build files with the flat scaffold, which would break the build | projects/ores.shell/api/modeling/component_overview.org | Deferred | The part declares no =#+component_kind=, so the flat archetype set applies, and no archetype matches an adapter part. The four files were restored byte-identical, and the composite path the gate runs leaves the parts alone. Recorded in the component overview; the fix belongs to the command codegen wave, which is the first work that must write into a part on purpose. |
+| 3 | Both part test binaries set the same log module name, so the two suites cannot be told apart in the logs | projects/ores.shell/api/tests/main.cpp, projects/ores.shell/application/tests/main.cpp | Fixed | Each now names its own binary: =ores.shell.api.tests= and =ores.shell.application.tests=, matching the =ores.trading=, =ores.refdata= and =ores.iam= convention. |
+| 4 | Live backlog items still name the pre-split paths | doc/agile/product_backlog/inbox/*.org, doc/agile/product_backlog/next/*.org | Deferred | Five inbox captures and one next story. The visibility item is moot now, since both parts are static and the component root has no =src/CMakeLists.txt=. Rewriting backlog content is a grooming decision, and the pattern recurs after every move. |
+
+* Result
+
+Shipped. =ores.shell= is a composite with =api= and =application= parts and a
+generated root. Both part libraries build, =ores.shell.exe= is still
+produced, and the consumers are fixed.
+
+Verified with =ctest --preset linux-clang-debug-make=: 100% tests passed, 0
+failed out of 72, with =ores.shell.api.tests= at 17.9 s and
+=ores.shell.application.tests= at 11.3 s.
+=regenerate_cmake_component_files.py --all --check= reports every
+=component_files.cmake= up to date.
+
+The local review of the change found four items. Two are fixed: the missing
+codegen registry entry, which left the generated root with no regeneration
+path, and the duplicate test module name. Two are deferred with their reasons:
+the part-generation trap, whose fix belongs to the command codegen wave, and
+stale paths in live backlog items, which are a grooming decision. The
+=* Review= table above carries the decision and the evidence for each.
+

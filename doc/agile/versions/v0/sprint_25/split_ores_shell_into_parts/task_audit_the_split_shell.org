@@ -1,0 +1,113 @@
+:PROPERTIES:
+:ID: 0EF917F2-9AFB-457D-BFD0-07C4E8B201A7
+:END:
+#+title: Task: Run the component architecture audit against the split shell
+#+description: Apply the 15-item component architecture checklist to ores.shell as split, fix the mechanical findings, and record the triage in the component overview.
+#+type: task
+#+level: s1
+#+filetags: :split_ores_shell_into_parts:sprint_25:v0:
+#+owner: marco
+#+branch: feature/split-ores-shell-into-parts
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:A52DCD72-BEF4-4655-9987-A3103B288576][Split ores.shell into composable parts]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+Apply the recurring component architecture checklist to =ores.shell= as it
+stands after the split, fix the findings that are mechanical, and record the
+triage of every finding in the component overview so the next run starts from
+a known position.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | DONE                              |
+| Parent story | [[id:A52DCD72-BEF4-4655-9987-A3103B288576][Split ores.shell into composable parts]] |
+| Now          | Done. The triage is written into the component overview. |
+| Waiting on   | Nothing.                               |
+| Next          | Two findings wait on a decision: the adapter include prefix and =scripts/=. |
+| Last touched | 2026-09-16                               |
+
+* Acceptance
+
+- All 15 checklist items ran against the composite as split.
+- The mechanical findings are fixed.
+- Every finding is recorded in the component overview with its triage.
+- The automated documentation check passes for every component.
+
+* Plan
+
+1. Walked the 15-item checklist against the composite as split into =api=
+   and =application=.
+2. Fixed the mechanical findings: five end-of-line comments in the
+   =application= sources, the System Model application page's description of
+   the component, and a prose path in =ores.service=.
+3. Ran the complexity measure and the comment check over both parts.
+4. Recorded the triage, including the findings that need a decision, in
+   =projects/ores.shell/modeling/component_overview.org=.
+
+* Notes
+
+- The test item could not run until both suites were green. It has now run,
+  and the record says so.
+- Two findings wait on a decision rather than a fix. The adapter include
+  prefix: the catalogue nests public headers as =include/ores.<full-name>/=,
+  and this component uses =include/ores.shell/= in both parts, which matches
+  15 of 16 =ores.qt= parts. Converging either side touches 153 files here and
+  709 in =ores.qt=. And =scripts/=: it sits at the component root, but
+  =application= consumes it and owns its install rule.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+| 1 | Local review round over the split's diff | — | No finding in scope | No item falls in this task's scope. The four findings of the round are on [[id:2915CF39-6936-4942-97C1-F0C11247F11E][the split task]], and the two that touch this component are in the =** Review round= section of its component overview. |
+
+* Result
+
+The audit record is in =projects/ores.shell/modeling/component_overview.org=,
+with every finding triaged as fixed, recorded, not run or pass.
+
+Fixed: five end-of-line comments moved above their statements, the System
+Model application page's description of this component, and a prose path in
+=ores.service=. Recorded for a later decision: the adapter include prefix, and
+the placement of =scripts/=. The command units hold every complexity warning,
+and they are the code the next wave replaces, so refactoring them by hand now
+would be thrown away.
+
+The local review round that preceded the pull request raised no finding inside
+this task's scope. Its four findings sit on the split task; the two that touch
+this component are also in the =** Review round= section of the component
+overview.
+
+The automated documentation check passes for all 43 components, up from 41,
+so it counts both new parts. The test item ran green: 100% tests passed, 0
+failed out of 72. The complexity measure is 21702 NLOC over 610 functions at
+an average CCN of 4.2, with 16 warnings, 15 of them in the =application=
+command units.
+

@@ -38,11 +38,14 @@ and [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]] covers the
 
 [[proj:doc/knowledge/domain/trade_status_lifecycle.png]]
 
-| State | Description | Initial | Terminal |
-|-------+-------------+---------+----------|
-| =live= | The agreement stands. | Yes | No |
-| =expired= | Contract ceased naturally: expired, matured, exercised. | No | Yes |
-| =cancelled= | Removed from the book. | No | Yes |
+| State | Description | Initial |
+|-------+-------------+---------|
+| =live= | The agreement stands. | Yes |
+| =expired= | Contract ceased naturally: expired, matured, exercised. | No |
+| =cancelled= | Removed from the book. | No |
+
+No state is terminal. A trade may end in =expired= or =cancelled=, but
+both are reversible, because either may have been recorded in error.
 
 The diagram shows =live= as a composite state containing
 =unauthorised= and =authorised=, because that is where the distinction
@@ -55,17 +58,42 @@ instead.
 | (initial) | =live= | New | Any trade-creating activity. |
 | =live= | =expired= | Expiry | The contract ceases naturally. |
 | =live= | =cancelled= | Cancellation | The trade is removed from the book. |
-| =live=, =expired=, =cancelled= | unchanged | Amend | A change to the deal. |
+| =expired= | =live= | Unexpire | The expiry was recorded in error. |
+| =cancelled= | =live= | Uncancel | The cancellation was recorded in error. |
+| =expired=, =cancelled= | unchanged | Amend | The record is corrected without being revived. |
+
+Within =live=, amendment interacts with the authorisation flag rather
+than with the state:
+
+| From | To | Event | Notes |
+|------+----+-------+-------|
+| =unauthorised= | =authorised= | Authorise | Operations releases the trade. |
+| =authorised= | =unauthorised= | Un-authorise | The release is withdrawn, with a reason. |
+| =authorised= | =unauthorised= | Amend | The released terms no longer stand. |
+| =unauthorised= | =unauthorised= | Amend | Nothing to withdraw; only the version moves. |
 
 Three states, and a trade is in the first of them from the moment it
 is booked. There is no state between booking and liveness, because the
 agreement exists as soon as it is struck.
 
-** Amendment leaves the state unchanged
+** Amendment never moves the state
 
-Amend is a self-transition on every state, including the terminal
-ones: a cancelled or expired trade can still be corrected, and
-correcting one does not revive it.
+Amend leaves =expired= and =cancelled= unchanged: a trade that has
+ceased can still have its record corrected, and correcting it does not
+revive it. Reviving one is a different event, and the next section
+covers it.
+
+Within =live=, amendment moves the authorisation flag rather than the
+state. An amendment to an authorised trade returns it to
+=unauthorised=, because the terms Operations released are no longer
+the terms on the book and the decision has to be taken again. An
+amendment to an unauthorised trade changes nothing but the version,
+since there is no release to withdraw.
+
+The confirmation lifecycle behaves the same way, and for the same
+reason: a confirmable amendment returns a =confirmed= trade to
+=unconfirmed=. Both are agreements about terms that an amendment
+invalidates. [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] covers that side.
 
 What an amendment produces is a version. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers what
 a version is and how the internal and external versions move, and
@@ -74,6 +102,17 @@ confirmable, and which are real.
 
 A change that cannot be made in place is not an amendment. Cancelling
 and rebooking produces two trades, each with its own lifecycle.
+
+** Expiry and cancellation are reversible
+
+Neither is terminal, because either may have been recorded in error: a
+cancellation booked against the wrong trade, an expiry driven by a
+fixing later corrected.
+
+Unexpire and uncancel correct the record rather than revive an
+agreement, and a trade returning to =live= arrives =unauthorised=. The
+release it previously carried was a decision about a trade that was
+then taken off the book, so it does not survive the return.
 
 ** The substates of live are a flag
 

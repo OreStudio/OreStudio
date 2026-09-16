@@ -48,6 +48,8 @@ state "live" as Live {
   [*] --> Unauthorised
   Unauthorised --> Authorised : Authorise
   Authorised --> Unauthorised : Un-authorise
+  Authorised --> Unauthorised : Amend
+  Unauthorised --> Unauthorised : Amend
 }
 
 state "expired" as Expired
@@ -59,16 +61,20 @@ Cancelled : Removed from the book
 [*] --> Live : New
 Live --> Expired : Expiry
 Live --> Cancelled : Cancellation
+Expired --> Live : Unexpire
+Cancelled --> Live : Uncancel
+Expired --> Expired : Amend
+Cancelled --> Cancelled : Amend
 Expired --> [*]
 Cancelled --> [*]
 
 note right of Live
-  Amend is a self-transition on every
-  state, including the terminal ones.
-  A cancelled or expired trade can be
-  corrected without being revived, and
-  what an amend produces is a version
-  rather than a different state.
+  Amending an authorised trade returns
+  it to unauthorised: the terms Ops
+  released are no longer the terms on
+  the book, so the decision must be
+  taken again. Amending an unauthorised
+  one changes nothing but the version.
 end note
 
 note bottom of Cancelled
@@ -80,6 +86,14 @@ note bottom of Cancelled
   lifecycle has four values, and
   contribution follows from combining
   the two.
+end note
+
+note left of Expired
+  Expiry and cancellation are
+  reversible. Unexpire and uncancel
+  correct a record rather than revive
+  an agreement, so a trade returning
+  to live arrives unauthorised.
 end note
 
 @enduml

@@ -91,12 +91,12 @@ in pinning down these domain terms. For our notes on securities, see [[https://m
 
 That is to say, some contracts are defined once and traded many times, and every
 holder holds the identical thing. For example, an issuer fixes a bond's coupon
-and maturity, and two traders dealing that bond negotiate neither. Their trades
-share terms that neither party chose. /Fungibility/ is the observation that all
-holdings of the security are interchangeable, so the terms belong to the /thing/
-held - the security issue - rather than to any holding of it. Without it, an
-issuer's terms would be copied onto every trade in the issue, and the copies
-could disagree.
+and maturity, and two traders dealing that bond cannot negotiate either. Their
+trades share terms that neither party chose. /Fungibility/ is the observation
+that all holdings of the security are interchangeable, so the terms belong to
+the /thing/ held - the security issue - rather than to any holding of it.
+Without it, an issuer's terms would be copied onto every trade in the issue, and
+the copies could disagree.
 
 A security issue is therefore one tradable instance of a product type: this
 bond issue, this futures contract. One product type has many security issues,

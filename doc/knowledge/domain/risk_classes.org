@@ -333,6 +333,7 @@ rationale.
 - [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory Frameworks]] — what SIMM, FRTB and SA-CCR each compute, and why their enumerations are prescriptive.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the individual inputs a class aggregates.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub for the requirement cluster.
+- [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — the regulatory sense of the term, treated separately.
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy both attributes reference.
 - [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the named sensitivities, and why a risk type is a class crossed with a greek.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.

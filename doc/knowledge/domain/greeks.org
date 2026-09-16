@@ -265,6 +265,7 @@ The FRTB and SIMM risk type enumerations are read from
 - [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory Frameworks]] — the frameworks whose enumerations name these greeks.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the input a sensitivity is taken with respect to.
 - [[id:FD427B5B-BDC5-4803-AFCD-97A59E31FE25][Market Data Requirements and Resolution]] — the hub for how a requirement resolves.
+- [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — the buckets a framework groups these sensitivities into.
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy an input's class comes from.
 - [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.

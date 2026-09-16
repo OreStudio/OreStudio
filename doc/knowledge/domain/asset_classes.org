@@ -2,7 +2,7 @@
 :ID: 7F5EBFBD-FB8C-4E79-B386-7098104D3EDB
 :END:
 #+title: Asset Classes
-#+description: Six classifications call themselves asset class or risk class and none agree; an analysis of what each classifies, and a proposed hierarchical taxonomy that every use case can cut.
+#+description: Several schemes classify products, underlyings and market data and none agree; an analysis of what each classifies, and a proposed hierarchical taxonomy that every use case can cut.
 #+type: knowledge
 #+level: cross
 #+filetags: :trading:refdata:taxonomy:
@@ -33,21 +33,25 @@ product and many times by a trade's risk, with each use case cutting the tree at
 the depth it needs.
 
 #+begin_note
-*Scope.* This document treats the taxonomy: the classes themselves, and the
-regulatory risk classes that bucket exposures into them. It does not treat
-individual risk sensitivities.
+*Scope.* This document treats the taxonomy: what the classes are and which
+values it should hold. Two neighbouring subjects are treated elsewhere, and
+both were examined before being set aside.
 
-The two operate at different grains and are settled by different evidence. A
-regulatory risk class names a bucket a framework weights and correlates, and is
-fixed by a published methodology. A sensitivity is taken with respect to one
-specific input, such as a named discount curve, and is determined by what a
-trade actually consumes. The first is the subject here; the second is the
-subject of [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]], with [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][the greeks]] covering the derivative
-taken with respect to such an input.
+The aggregation buckets that SIMM, FRTB and ORE's reporting filter publish are
+covered in [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][regulatory risk buckets]]. They call their values risk classes and
+draw on a similar vocabulary, but a bucket is fixed by a published methodology
+and exists to carry that framework's parameters, so it is evidence about a
+charge rather than about the domain.
 
-The two are related, and the relation is stated where it bears on the argument:
-a risk class is the asset class a requirement projects onto. Establishing how
-that projection is held is outside this document.
+Individual risk sensitivities are covered in [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]], with
+[[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][the greeks]] covering the derivative taken with respect to such an input. A
+sensitivity is taken with respect to one named curve or surface rather than a
+class, so it sits below this taxonomy rather than within it.
+
+One relation crosses both boundaries and is stated where it bears on the
+argument: the class a sensitivity falls into is the asset class its requirement
+projects onto. Establishing how that projection is held is outside this
+document.
 #+end_note
 
 * State of the Art
@@ -71,8 +75,13 @@ class", but the names bear little correspondence to the variation observed
 amongst them. For example =RiskClass= is used in two different meanings; the
 name is therefore not a reliable guide to a classification's subject or
 granularity. Therefore a detailed analysis is necessary to understand the
-semantics and perform an in depth taxonomic analysis. The next sections do that
-in turn.
+semantics and perform an in depth taxonomic analysis.
+
+Three of the seven classify risk sensitivities for a charge rather than
+classifying anything in the domain: SIMM's =RiskClass=, FRTB's risk classes and
+ORE's =RiskClass=. They are examined in [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][regulatory risk buckets]], and the
+reasoning that separates them from this taxonomy is summarised under Analysis
+below. The sections that follow treat the remaining four.
 
 ** The ISDA Product Taxonomy
 
@@ -125,65 +134,6 @@ There are issues with this approach to modeling. Inflation is treated as a
 top-level class by FpML, as a top-level class by ORE's risk filter, and as no
 class at all by the ISDA taxonomy and by SIMM.
 
-** ISDA SIMM
-
-SIMM (Standard Initial Margin Model) holds two classifications simultaneously
-and treats them as distinct.
-
-- =ProductClass=: Carries =RatesFX=, =Credit=, =Equity= and =Commodity= as its
-  four substantive values, with =Rates= and =FX= as separate values for the IM
-  Schedule extension, plus =Empty=, =Other= and two add-on markers.
-- =RiskClass= carries =InterestRate=, =CreditQualifying=, =CreditNonQualifying=,
-  =Equity=, =Commodity= and =FX=.
-
-=ProductClass= merges rates and FX into =RatesFX=, because margin is computed on
-the pair together. =RiskClass= distinguishes qualifying from non-qualifying
-credit, because the two attract different risk weights and correlations.
-
-The same framework, applied to the same trades, therefore requires a coarser
-classification for one purpose and a finer one for another, and neither
-enumeration is a subset of the other. The second of these differences is
-examined below and proves not to be a matter of granularity at all.
-
-** FRTB
-
-The Basel market risk framework classifies for regulatory capital, and its
-sensitivities-based method uses six risk classes:
-
-- =GIRR=: General Interest Rate Risk.
-- =CSR=: Credit Spread Risk.
-- =EQ=: Equity.
-- =COMM=: Commodity.
-- =FX=: Foreign Exchange.
-
-Two of its features bear on the taxonomy proposed below.
-
-Credit spread is divided three ways:
-
-- =CSR_NS=: Non-securitisation.
-- =CSR_SNC=: Securitisation outside the correlation trading portfolio.
-- =CSR_SC=: Securitisation within the correlation trading portfolio.
-
-As with SIMM, FRTB also subdivides credit, but along the axis of securitisation
-status rather than qualifying status. That two frameworks require two
-incompatible subdivisions of one class indicates that neither subdivision
-belongs in the taxonomy, and that both are properties of the exposure.
-
-FRTB confirms this in its own record layout. A CRIF row carries =creditQuality=,
-=longShortInd=, =coveredBondInd=, =trancheThickness= and =bb_rw= as separate
-fields, so the framework already treats this kind of attribute as a column
-rather than as a class.
-
-FRTB treats neither bond nor inflation as a class. Inflation is a risk factor
-within =GIRR=, which places FRTB with SIMM and against FpML and ORE's risk
-filter. Bond is absent for the reason common to every risk classification
-surveyed here, namely that a bond's sensitivity decomposes into interest rate
-and credit sensitivity.
-
-FRTB also carries two charges that are not sensitivities and so have no place in
-a sensitivity taxonomy: the default risk charge (=DRC=), itself split the same
-three ways as credit spread, and the residual risk add-on (=RRAO=).
-
 ** ORE's AssetClass
 
 ORE holds =enum class AssetClass { EQ, FX, COM, IR, INF, CR, BOND,
@@ -207,20 +157,6 @@ asset classes, listing IR, FX, EQ, COM, CR and INF as ORE's product coverage and
 describing the scripted trade module as covering "five of the six asset classes
 covered in ORE". The enumeration and the prose do not agree, and nothing
 reconciles them.
-
-** ORE's RiskClass
-
-Within ORE, =orea/engine/riskfilter.hpp= holds =enum class RiskClass { All,
-InterestRate, Inflation, Credit, Equity, FX, Commodity }=. These used to filter
-sensitivities for reporting.
-
-Its six substantive values are a strict coarsening of ORE's =AssetClass=: bond
-and bond index disappear, because a bond's sensitivity decomposes into interest
-rate and credit sensitivity rather than forming a risk class of its own, and
-portfolio details disappear because they carry no risk.
-
-Inflation remains a sibling of interest rate, which places ORE with FpML and
-against SIMM and FRTB on the placement of inflation.
 
 ** The Common Domain Model
 
@@ -251,46 +187,36 @@ framework: =RatesFX= is one node where =InterestRate= and =FX= are two. A second
 apparent instance, the division of credit, is examined below and proves to be a
 property rather than a finer granularity.
 
-** What a Regulatory Risk Class Is
+** Regulatory Risk Buckets Were Examined and Set Aside
 
-Before comparing risk class to asset class, the term itself requires a
-definition, because it is not a description of the market. It is an artefact of
-a calculation.
+SIMM, FRTB and ORE's reporting filter each publish an enumeration for grouping
+exposures before charging them, and each calls its values risk classes. Because
+those values resemble asset classes — =InterestRate=, =Equity=, =FX=,
+=Commodity=, =Credit= — they were examined as prior art for this taxonomy.
 
-SIMM computes initial margin from a portfolio's sensitivities. The calculation
-proceeds by bucketing those sensitivities, applying a published risk weight to
-each bucket, aggregating within a bucket, and then aggregating across buckets
-using a published correlation matrix. A *risk class* is the bucket at which that
-aggregation happens: =InterestRate=, =CreditQualifying=, =CreditNonQualifying=,
-=Equity=, =Commodity= and =FX=.
+They were found not to bear on it. A bucket exists to carry the parameters a
+framework applies, so its membership follows from which exposures that framework
+weights and correlates together rather than from which markets resemble one
+another. SIMM's own declaration makes the point: the enumeration's ordering
+"is used in indexing in to correlation matrices", so its values are positions in
+a published table. A framework may merge two asset classes, divide one, or omit
+one, and none of those decisions is evidence about the domain.
 
-The enumeration's own declaration states the consequence: "the ordering here
-matters. It is used in indexing in to correlation matrices for the correlation
-between risk classes". The values are positions in a published table, and their
-order is part of the framework's definition rather than an implementation
-detail.
+The two credit divisions settle it. SIMM divides credit by qualifying status and
+FRTB divides it by securitisation status, along incompatible axes, over the same
+trades. Neither division describes the credit market. Each describes which
+exposures its own framework charges together.
 
-Two properties follow, and both distinguish a risk class from a taxonomy of
-markets. A risk class exists to carry parameters, so its membership is
-determined by which exposures a framework wishes to weight and correlate
-together rather than by which markets are alike. And it is fixed by the
-methodology document, so it cannot be adjusted for modelling convenience and
-changes only when the framework publishes a new version.
+The buckets are therefore treated in [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][regulatory risk buckets]] rather than folded
+into the tree below. What the taxonomy owes them is a projection onto each
+enumeration, recorded in the correspondence table, not a change to its own
+membership.
 
-Three use cases appear in the surveyed material, each with its own
-enumeration. SIMM buckets sensitivities to compute initial margin on
-non-cleared derivatives. FRTB buckets them to compute market risk capital. ORE's
-=riskfilter.hpp= uses a third enumeration to filter sensitivities for reporting,
-which is the same bucketing applied to presentation rather than to a charge.
-[[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory frameworks]] sets out what each computes.
+** Cardinality: One Class per Product, Many per Trade
 
-** Risk Classes versus Asset Classes
-
-With the term defined, the first point to establish is if risk class constitutes
-a distinct requirement, or is a different name for the same concept. Here, we
-can make use of the cardinality abovementioned to help us determine the correct
-modeling. A product must have exactly one product class, whereas a trade carries
-as many risk classes as it has sensitivities:
+Setting the buckets aside leaves a second question, which does bear on the
+model. A product must have exactly one product class, whereas a trade carries as
+many classes as it has sensitivities:
 
 - A fixed-rate bond is a product of class =Bond=. It is sensitive to interest
   rate risk in one currency and credit risk.
@@ -300,89 +226,46 @@ as many risk classes as it has sensitivities:
   =Equity=. It is sensitive to FX risk for a book based on a business centre
   which is not the same as that of the option.
 
-Two independent sources corroborate this approach. SIMM holds both
-classifications simultaneously. ORE encodes the same distinction in a signature:
+ORE encodes the same distinction in a signature:
 =Trade::underlyingIndices()= returns =std::map<AssetClass,
 std::set<std::string>>=, a map keyed by class, because one trade reaches into
-several classes. It is also worth noting that ORE's =RiskClass= is a strict
-coarsening of its =AssetClass=, so risk reporting is served by omitting the
-values it does not require.
+several classes. A classification held as a property of the trade would have
+required a single return value.
 
-The dimension is therefore a requirement: risk classification and product
-classification are distinct attributes with distinct cardinality rather than
+The dimension is therefore a requirement: the class of a product and the classes
+its risk falls into are distinct attributes with distinct cardinality rather than
 distinct taxonomies. Thus, a single taxonomy referenced once by a product and
 many times by a trade's risk satisfies both use cases.
 
-Furthermore, if we look into SIMM and it's risk types, we have: =Commodity=,
-=CommodityVol=, =CreditNonQ=, =CreditQ=, =CreditVol=, =CreditVolNonQ=, =Equity=,
-=EquityVol=, =FX=, =FXVol=, =Inflation=, =IRCurve=, =IRVol= and =InflationVol=.
-These values form a cross-product of an asset class, a greek (delta or vega),
-and, on credit alone, a qualifying flag. For the present purposes we will ignore
-credit, which is handled by the next section.
-
 *** The ORE Studio realisation requires further analysis
 
-The preceding argument establishes that risk class is a distinct
-attribute, and that one taxonomy serves both it and product class. It
-does not establish how ORE Studio should hold it, and two observations
-indicate that the question belongs to a different body of work.
+The preceding argument establishes that a trade's risk references the taxonomy
+many times over. It does not establish how ORE Studio should hold those
+references, and two observations indicate that the question belongs to a
+different body of work.
 
-The first concerns granularity. A regulatory risk class names a market,
-whereas a sensitivity is taken with respect to a specific input: not
-interest rate risk in general, but the EUR discount curve. That input
-is a market data requirement, described in [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]].
-A risk class is therefore the asset class of a requirement, and the set
-of risk classes a trade carries is the projection of its requirements
-onto their asset classes.
+The first concerns granularity. A sensitivity is taken with respect to
+a specific input: not interest rate risk in general, but the EUR
+discount curve. That input is a market data requirement, described in
+[[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]]. The class a sensitivity falls into is
+therefore the asset class of a requirement, and the set of classes a
+trade's risk touches is the projection of its requirements onto their
+asset classes.
 
 The second concerns the shape of the underlying relation. [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The greeks]]
 records that a sensitivity is defined by the input it moves rather than
 by the instrument. A sensitivity is consequently a pairing of a
 requirement with a greek, and delta and gamma share one requirement
 because both are derivatives with respect to spot, differing only in
-order. SIMM's risk types are the same pairing stated at the coarser
-grain of asset class rather than of individual requirement.
+order.
 
 Both observations point to one relation, between a trade and the market
-data requirements it generates, from which risk classes and risk types
-are derived by projection and aggregation. Establishing that relation
-is the subject of the market data requirement work rather than of this
+data requirements it generates, from which the classes a trade's risk
+touches are derived by projection. Establishing that relation is the
+subject of the market data requirement work rather than of this
 taxonomy, and the taxonomy is complete without it: what remains is to
 determine how the derived attributes are stored, not which values they
 draw on.
-
-Before proceeding to the taxonomy itself, the SIMM treatment of credit
-requires examination, since it appears to contradict the single-taxonomy
-conclusion reached above.
-
-** Handling Credit Special Cases
-
-Within its taxonomy, SIMM distinguishes /qualifying/ from /non-qualifying/
-credit. On its face this is a subdivision of the credit class, and therefore an
-argument that the taxonomy requires subclasses. Examination of the enumeration
-in which those values sit shows otherwise.
-
-Qualifying status designates no market. It describes a reference entity's
-eligibility under the framework's rules, is observed from the same data as any
-other credit exposure, and exists because SIMM assigns the two categories
-different risk weights. =RiskClass= flattens class against flag for a purpose
-its own declaration states: "the ordering here matters. It is used in indexing
-in to correlation matrices". The enumeration therefore functions as an index
-rather than as a taxonomy.
-
-=RatesFX= admits the same reading, being a grouping adopted because
-margin is computed on the pair together.
-
-FRTB supports the conclusion from a different direction. It also
-divides credit, but by securitisation status rather than by qualifying
-status, and it carries =creditQuality=, =coveredBondInd= and
-=trancheThickness= as fields on the record. A class that two
-frameworks divide along two incompatible axes is better modelled as a
-class carrying properties than as a class with subclasses.
-
-This removes one of the three disagreements identified below, together
-with the credit subclasses proposed in earlier drafts of the taxonomy.
-[[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk classes]] examines the evidence in detail.
 
 ** What the disagreements actually are
 
@@ -591,6 +474,7 @@ The FpML asset class values registered here are read from
 
 * See also
 
+- [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — the aggregation buckets SIMM and FRTB charge against, examined here and set aside.
 - [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to, and why it is a second reference into this taxonomy.
 - [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the named sensitivities; a risk type is a class crossed with a greek.
 - [[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] — the four entities a trade is built from.

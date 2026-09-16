@@ -1,0 +1,234 @@
+:PROPERTIES:
+:ID: B0924035-22FE-4F5C-B5B0-C037BEB797C6
+:END:
+#+title: Regulatory Risk Buckets
+#+description: The aggregation buckets SIMM, FRTB and ORE's risk filter weight and correlate exposures into: what they are, why they are not a taxonomy of markets, and why they do not constrain the asset class taxonomy.
+#+type: knowledge
+#+level: cross
+#+filetags: :trading:risk:regulatory:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+* Summary
+
+Several regulatory frameworks group a portfolio's exposures before charging
+them. SIMM, FRTB and ORE's reporting filter each publish an enumeration for
+that grouping, and each calls its values risk classes.
+
+The values resemble asset classes — =InterestRate=, =Equity=, =FX=,
+=Commodity=, =Credit= — which invites the conclusion that they are an asset
+class taxonomy under another name. They are not. A bucket exists to carry the
+parameters a framework applies, so its membership follows from which exposures
+that framework weights and correlates together rather than from which markets
+resemble one another.
+
+This document uses *bucket* rather than the frameworks' own term, to keep the
+construct distinct from the taxonomy examined in [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset classes]]. Where a
+framework's own naming is quoted, its term is preserved.
+
+* What a bucket is
+
+SIMM computes initial margin from a portfolio's sensitivities. The calculation
+buckets those sensitivities, applies a published risk weight to each bucket,
+aggregates within a bucket, and then aggregates across buckets using a published
+correlation matrix.
+
+A bucket is the unit at which that aggregation happens. SIMM's are
+=InterestRate=, =CreditQualifying=, =CreditNonQualifying=, =Equity=,
+=Commodity= and =FX=.
+
+The enumeration's own declaration states the consequence: "the ordering here
+matters. It is used in indexing in to correlation matrices for the correlation
+between risk classes". The values are positions in a published table, and their
+order is part of the framework's definition rather than an implementation
+detail.
+
+Two properties follow, and both separate a bucket from a taxonomy of markets. A
+bucket exists to carry parameters, so its membership is determined by the
+framework's weighting and correlation decisions. And it is fixed by a
+methodology document, so it cannot be adjusted for modelling convenience and
+changes only when the framework publishes a new version.
+
+* The enumerations
+
+** ISDA SIMM
+
+
+SIMM (Standard Initial Margin Model) holds two classifications simultaneously
+and treats them as distinct.
+
+- =ProductClass=: Carries =RatesFX=, =Credit=, =Equity= and =Commodity= as its
+  four substantive values, with =Rates= and =FX= as separate values for the IM
+  Schedule extension, plus =Empty=, =Other= and two add-on markers.
+- =RiskClass= carries =InterestRate=, =CreditQualifying=, =CreditNonQualifying=,
+  =Equity=, =Commodity= and =FX=.
+
+=ProductClass= merges rates and FX into =RatesFX=, because margin is computed on
+the pair together. =RiskClass= distinguishes qualifying from non-qualifying
+credit, because the two attract different risk weights and correlations.
+
+The same framework, applied to the same trades, therefore requires a coarser
+classification for one purpose and a finer one for another, and neither
+enumeration is a subset of the other. The second of these differences is
+examined below and proves not to be a matter of granularity at all.
+
+** FRTB
+
+
+The Basel market risk framework classifies for regulatory capital, and its
+sensitivities-based method uses six risk classes:
+
+- =GIRR=: General Interest Rate Risk.
+- =CSR=: Credit Spread Risk.
+- =EQ=: Equity.
+- =COMM=: Commodity.
+- =FX=: Foreign Exchange.
+
+Two of its features bear on the taxonomy proposed below.
+
+Credit spread is divided three ways:
+
+- =CSR_NS=: Non-securitisation.
+- =CSR_SNC=: Securitisation outside the correlation trading portfolio.
+- =CSR_SC=: Securitisation within the correlation trading portfolio.
+
+As with SIMM, FRTB also subdivides credit, but along the axis of securitisation
+status rather than qualifying status. That two frameworks require two
+incompatible subdivisions of one class indicates that neither subdivision
+belongs in the taxonomy, and that both are properties of the exposure.
+
+FRTB confirms this in its own record layout. A CRIF row carries =creditQuality=,
+=longShortInd=, =coveredBondInd=, =trancheThickness= and =bb_rw= as separate
+fields, so the framework already treats this kind of attribute as a column
+rather than as a class.
+
+FRTB treats neither bond nor inflation as a class. Inflation is a risk factor
+within =GIRR=, which places FRTB with SIMM and against FpML and ORE's risk
+filter. Bond is absent for the reason common to every risk classification
+surveyed here, namely that a bond's sensitivity decomposes into interest rate
+and credit sensitivity.
+
+FRTB also carries two charges that are not sensitivities and so have no place in
+a sensitivity taxonomy: the default risk charge (=DRC=), itself split the same
+three ways as credit spread, and the residual risk add-on (=RRAO=).
+
+** ORE's reporting filter
+
+
+Within ORE, =orea/engine/riskfilter.hpp= holds =enum class RiskClass { All,
+InterestRate, Inflation, Credit, Equity, FX, Commodity }=. These used to filter
+sensitivities for reporting.
+
+Its six substantive values are a strict coarsening of ORE's =AssetClass=: bond
+and bond index disappear, because a bond's sensitivity decomposes into interest
+rate and credit sensitivity rather than forming a risk class of its own, and
+portfolio details disappear because they carry no risk.
+
+Inflation remains a sibling of interest rate, which places ORE with FpML and
+against SIMM and FRTB on the placement of inflation.
+
+* Why the enumerations disagree
+
+** Credit is divided twice, along two axes
+
+
+Within its taxonomy, SIMM distinguishes /qualifying/ from /non-qualifying/
+credit. On its face this is a subdivision of the credit class, and therefore an
+argument that the taxonomy requires subclasses. Examination of the enumeration
+in which those values sit shows otherwise.
+
+Qualifying status designates no market. It describes a reference entity's
+eligibility under the framework's rules, is observed from the same data as any
+other credit exposure, and exists because SIMM assigns the two categories
+different risk weights. =RiskClass= flattens class against flag for a purpose
+its own declaration states: "the ordering here matters. It is used in indexing
+in to correlation matrices". The enumeration therefore functions as an index
+rather than as a taxonomy.
+
+=RatesFX= admits the same reading, being a grouping adopted because
+margin is computed on the pair together.
+
+FRTB supports the conclusion from a different direction. It also
+divides credit, but by securitisation status rather than by qualifying
+status, and it carries =creditQuality=, =coveredBondInd= and
+=trancheThickness= as fields on the record. A class that two
+frameworks divide along two incompatible axes is better modelled as a
+class carrying properties than as a class with subclasses.
+
+This removes one of the three disagreements identified below, together
+with the credit subclasses proposed in earlier drafts of the taxonomy.
+[[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk classes]] examines the evidence in detail.
+
+** Bucketing is a decision about charging, not about markets
+
+The two credit divisions are the clearest case, because the same class is cut
+two incompatible ways by two frameworks that examine the same trades. Neither
+cut describes a property of the credit market. Each describes which exposures
+its own framework wishes to weight together.
+
+The same reading explains =RatesFX=, which merges two buckets because margin is
+computed on the pair together, and it explains why ORE's reporting filter drops
+bond while FpML retains it as a product class: a bond's sensitivity decomposes
+into interest rate and credit sensitivity, so it earns no bucket even though it
+is plainly a kind of asset.
+
+* Relation to the asset class taxonomy
+
+The buckets draw on a vocabulary that overlaps the asset class taxonomy, and
+that overlap is the source of the confusion this document exists to remove.
+
+The two are nevertheless different constructs, settled by different evidence. A
+bucket is fixed by a published methodology and changes when the methodology
+changes. An asset class is a statement about the domain and changes when the
+domain does. A framework may bucket two asset classes together, divide one, or
+omit one entirely, and none of those decisions is evidence about the taxonomy.
+
+The practical consequence is that the buckets do not constrain the taxonomy.
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset classes]] examines them as prior art and concludes that they should not be
+folded into the tree: the credit subdivisions are framework properties rather
+than subclasses, and the merges and omissions are cuts of convenience.
+
+What the taxonomy owes the buckets is a mapping. A framework's bucket has to be
+derivable from an exposure the system holds, so a projection from the taxonomy
+to each enumeration must exist. The correspondence table in
+[[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset classes]] records those projections.
+
+* What sits below a bucket
+
+A bucket groups sensitivities. A sensitivity is taken with respect to one
+specific input, such as a named discount curve rather than interest rates in
+general, and that input is a [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]].
+
+A bucket is therefore reached from an exposure in two steps: the requirement
+projects onto an asset class, and the asset class maps onto the framework's
+bucket. [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The greeks]] covers the derivative taken with respect to such an input,
+and why a framework's risk types are a bucket crossed with a greek.
+
+* Open questions
+
+- Whether ORE Studio holds any bucket enumeration directly, or maps onto each
+  framework's values only when producing a CRIF file. The second avoids
+  adopting a vocabulary that changes with a methodology version.
+- How a methodology version is recorded. Risk weights and correlations change
+  between versions, so a charge is meaningless without the version that
+  produced it.
+- Whether the framework properties that divide credit — qualifying status,
+  securitisation status — are held on the exposure or derived from reference
+  data about the reference entity.
+
+* Sources
+
+The SIMM and FRTB enumerations are read from
+=OREAnalytics/orea/simm/simmconfiguration.hpp= and
+=OREAnalytics/orea/simm/crifrecord.hpp=. ORE's reporting filter is read from
+=OREAnalytics/orea/engine/riskfilter.hpp=. The declaration quoted above is the
+doc comment on SIMM's =RiskClass=.
+
+* See also
+
+- [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy these buckets draw their vocabulary from, and do not constrain.
+- [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory Frameworks]] — what SIMM, FRTB and the others compute, and the CRIF record they exchange.
+- [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the sensitivities a bucket groups.
+- [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — the input a sensitivity is taken with respect to.
+- [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — the set of classes a product is sensitive to.
+- [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

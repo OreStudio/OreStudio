@@ -193,6 +193,7 @@ on a verified source and should be checked before being relied on.
 
 * See also
 
+- [[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][Regulatory Risk Buckets]] — the aggregation buckets these frameworks weight and correlate against.
 - [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][Asset Classes]] — the taxonomy these frameworks each cut differently.
 - [[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][Risk Classes]] — what a product is sensitive to.
 - [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][The Greeks]] — the sensitivity names these frameworks prescribe.

@@ -139,14 +139,19 @@ which transitions exist rather than in which reports remember to
 filter. An intra-entity trade cannot settle by accident, because its
 machine holds no transition that would settle it.
 
-We already hold the machinery, and one machine. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] sets
-out the states a trade takes — =new=, =live=, =expired= and
-=cancelled= — with Confirm as the only transition from =new= to
-=live=. That machine therefore describes an external, actual trade,
-and the combinations that never confirm cannot reach =live= within it.
-Reconciling the two is the first piece of work this page implies.
+[[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]] sets out two machines rather than one. The internal
+machine carries every trade from =booked= through =verified= to
+=live=; the external machine carries the confirmation state of a trade
+faced outward, from =unconfirmed= to =confirmed=.
 
-The [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][same machine]] runs on =ores_dq_fsm_machines_tbl=,
+The two dimensions on this page decide one thing in that arrangement,
+and it is the guard on the internal machine's Activate transition.
+Where a trade faces an external counterparty, Activate requires the
+external machine to have reached =confirmed=. Where it does not — an
+intra-entity transfer, a test booking, a hypothetical — Activate
+requires only verification, because nothing is agreed with anyone.
+
+The machinery runs on =ores_dq_fsm_machines_tbl=,
 =ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=, its
 transitions carry a guard function, and a
 [[id:73D2511B-0D9C-4D8B-96AC-7A7B1FD27F0D][=trade=]] already holds a state in one of those machines. The model

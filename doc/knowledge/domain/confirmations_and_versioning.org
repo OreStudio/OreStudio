@@ -290,14 +290,14 @@ confirmation more than on the trade. See
 We have the versioning primitives and we do not yet have the
 confirmation model.
 
-Confirmation already carries lifecycle weight even so. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]]
-makes Confirm the only transition from =new= to =live=, so a trade
-that is never confirmed never becomes active. That binds the
-confirmation model to the state machine more tightly than the missing
-pieces below suggest, and it is why a trade that does not confirm —
-an internal transfer, a test booking — needs either its own machine or
-another way into =live=. [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Counterparty scope and booking nature]] covers
-which trades those are.
+The two-version rule above has a counterpart in state. [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade lifecycle]]
+carries an external machine whose states are =unconfirmed=,
+=queried=, =affirmed= and =confirmed=, moving on the external version
+exactly as this rule describes, alongside an internal machine that
+moves on the internal version. The three steps distinguished above map
+onto them directly: verification is a transition in the internal
+machine, while affirmation and confirmation are transitions in the
+external one.
 
 What exists:
 

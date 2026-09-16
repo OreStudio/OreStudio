@@ -1,0 +1,77 @@
+' -*- mode: plantuml; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*-
+'
+' Copyright (C) 2026 Marco Craveiro <marco.craveiro@gmail.com>
+'
+' This program is free software; you can redistribute it and/or modify it under
+' the terms of the GNU General Public License as published by the Free Software
+' Foundation; either version 3 of the License, or (at your option) any later
+' version.
+'
+' This program is distributed in the hope that it will be useful, but WITHOUT
+' ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+' FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+'
+' You should have received a copy of the GNU General Public License along with
+' this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
+' Street, Fifth Floor, Boston, MA 02110-1301, USA.
+'
+@startuml
+!pragma layout smetana
+
+title Internal machine: the operational spine
+
+skinparam state {
+    BackgroundColor #D6E8FA
+    BorderColor #4A78A8
+    FontColor #1A1A1E
+    AttributeFontColor #3A3A3E
+    ArrowColor #4A78A8
+    ArrowFontColor #1A1A1E
+    StartColor #4A78A8
+    EndColor #4A78A8
+}
+skinparam note {
+    BackgroundColor #FBF3D3
+    BorderColor #C9A227
+    FontColor #1A1A1E
+}
+skinparam BackgroundColor white
+skinparam DefaultFontColor #1A1A1E
+
+state "booked" as Booked
+state "verified" as Verified
+state "live" as Live
+state "expired" as Expired
+state "cancelled" as Cancelled
+
+Booked : Recorded in our books
+Verified : Our record matches the execution
+Live : Contributing to risk and P&L
+Expired : Contract ceased naturally
+Cancelled : Removed from the book
+
+[*] --> Booked : Book
+Booked --> Verified : Verify
+Verified --> Live : Activate [guard]
+Live --> Expired : Expire / Mature / Exercise
+Booked --> Cancelled : Cancel
+Verified --> Cancelled : Cancel
+Live --> Cancelled : Cancel / Terminate
+Expired --> [*]
+Cancelled --> [*]
+
+note right of Verified
+  An unverified trade is an
+  internal control exception.
+end note
+
+note bottom of Live
+  The Activate guard is where the
+  two machines meet. Where an external
+  counterparty exists, it requires the
+  external machine to have reached
+  confirmed. Where none exists, it
+  requires only verification.
+end note
+
+@enduml

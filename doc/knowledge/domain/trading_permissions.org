@@ -112,10 +112,9 @@ and nothing holds a firm-wide or entity-wide constraint.
   produce a warning and a trade requiring escalation instead.
 - How a permission is evidenced when a regulator asks, given the
   source matters as much as the rule.
-- Whether the meta-authorisations recorded in [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational
-  authorisation]] belong here instead. A standing permission to trade FX
-  vanillas is a permission by the definition above, whatever the notes
-  call it.
+- Whether a permission is reference data on the product type and
+  counterparty, or an entity in its own right with its own lifecycle.
+  [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] raises the same question from its side.
 
 * Sources
 

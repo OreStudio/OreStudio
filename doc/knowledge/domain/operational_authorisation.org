@@ -93,22 +93,32 @@ This corpus therefore names the internal control *authorisation* and
 the bilateral steps *acknowledgment*, *affirmation* and
 *confirmation*, and does not use "verification" for either.
 
-* What else authorisation attaches to
+* Permissions are a different question
 
-Beyond a trade, authorisation may attach to a product type — whether
-the firm is permitted to trade this kind of thing at all — which
-matters most for ad-hoc structures.
+Whether the firm may trade a kind of thing at all, whether a book may
+hold a given underlying, whether a desk's mandate covers a product:
+none of these is operational authorisation. They are *permissions*,
+and [[id:33CCB50B-8697-49A1-8761-4DB873A93515][trading permissions]] covers them.
 
-** Meta-authorisations
+The notes call a standing permission a meta-authorisation, which
+suggests an authorisation covering many trades — the same kind of
+statement scaled up. It is not, and the difference is the rationale
+rather than the grain.
 
-A standing permission about a /class/ of activity is a different thing
-from a decision about a /specific/ deal. Being authorised to trade FX
-vanillas is established once and is not a fact about any particular
-trade.
+An authorisation asks /is this particular trade correct and real/, and
+is answered by examining the trade. A permission asks /may we do this
+kind of thing at all/, and is answered before any trade exists, by
+whoever holds the mandate: risk, compliance, or a licence. Nothing
+about a trade can establish a permission, and nothing about a
+permission settles whether a trade was booked correctly.
 
-The distinction has a direct consequence for messaging. A
-meta-authorisation must not be re-transmitted with every trade, which
-would be both wasteful and misleading about what was actually decided.
+They also fail differently. A booking that breaches a permission never
+becomes a trade. A trade that lacks an authorisation is in the book,
+contributing to nothing.
+
+One consequence holds whichever name is used. A permission must not be
+re-transmitted with every trade, which would be both wasteful and
+misleading about what was actually decided.
 
 ** The authoriser may be a system
 
@@ -185,9 +195,9 @@ the control auditable.
 - Whether credit line and market risk authorisations are separate
   kinds with their own queues, or the same control applied by
   different roles.
-- Whether a meta-authorisation is reference data on the product type
-  and counterparty, or an entity in its own right with its own
-  lifecycle.
+- Whether a permission is reference data on the product type and
+  counterparty, or an entity in its own right with its own lifecycle.
+  [[id:33CCB50B-8697-49A1-8761-4DB873A93515][Trading permissions]] carries the open questions on that side.
 - How an authorisation by a system party is distinguished from one by
   a person, given both must travel downstream with a capacity.
 
@@ -210,6 +220,7 @@ which fields it carries.
 * See also
 
 - [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]] — the Operations screen and the authorisation lifecycle.
+- [[id:33CCB50B-8697-49A1-8761-4DB873A93515][Trading Permissions]] — the standing rules about what may be booked, which this is not.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the trade's own states, which this control does not move.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the steps by which terms are agreed with a counterparty.
 - [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what does move a version, and why authorisation does not.

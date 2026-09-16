@@ -26,11 +26,11 @@ The three levels of product identity are documented, the catalogue matches v17, 
 
 | Field        | Value                                  |
 |--------------+----------------------------------------|
-| State        | DISCOVERED                              |
+| State        | DONE                              |
 | Parent story | [[id:688959F0-A1AB-4021-A57E-1103AD92773A][Redesign ores.trading on data-oriented principles]] |
-| Now          | Not yet started.                       |
+| Now          | Nothing. |
 | Waiting on   | Nothing.                               |
-| Next         | Begin implementation.                  |
+| Next         | Nothing. |
 | Last touched | 2026-09-12                               |
 
 * Acceptance
@@ -72,3 +72,51 @@ via its "Verifies task" field.
 |   |                 |      |          |       |
 
 * Result
+
+All four acceptance bullets are met.
+
+[[id:AB71AFF8-0B08-4610-9F12-C5A84D8AB892][Trade modeling]] derives the entities a trade is built from — product
+type, security issue, trade and instrument — from domain observations,
+and sets out how each is identified. The document went beyond the
+original three levels: the economic terms turned out to be a fourth
+entity, and the prior art survey covers the ISDA taxonomy, FpML, CDM,
+Calypso, Murex and ORE.
+
+The trade type catalogue carries all 119 v17 product types. =Failed= is
+excluded, with the reason recorded in the populate script itself: it is
+the trade type ORE gives to a placeholder substituted for a trade it
+could not load or build, so it carries no trade data and a trader
+cannot pick it.
+
+[[id:C5C95B29-2EF9-4DFC-9E04-428C41C1925D][ORE Products by Asset Class]] links through org-roam ids, replacing 89
+direct links to a hardcoded host.
+
+All 88 product pages carry an Identifiers table. An audit of those
+tables corrected 19 asset classes that had been taken from
+=product_type= rather than from the asset class taxonomy, and every
+page gained its product family.
+
+* What else the branch carries
+
+The task uncovered more than it scoped, and the branch documents the
+surrounding cluster rather than leaving the identity scheme isolated.
+
+[[id:24748A22-DB67-4E22-A52F-5D0FBA668D10][Trade]] is a new hub for the cluster. Classification is covered by
+[[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]], [[id:7F5EBFBD-FB8C-4E79-B386-7098104D3EDB][asset classes]], [[id:936ACDC4-830B-434E-82E7-A92276869869][product family]] and
+[[id:B0924035-22FE-4F5C-B5B0-C037BEB797C6][regulatory risk buckets]]. Lifecycle is covered by [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][trade lifecycle]],
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][confirmations]], [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][operational authorisation]] and its
+[[id:785C68A0-DD94-404A-BF16-57814554DA12][queue]], [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][trade versioning]] and [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]]. Risk is covered by
+[[id:327EFD17-5708-4A54-AF4B-52CF60E87C01][risk classes]], [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][the greeks]] and [[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][regulatory frameworks]]. [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]],
+[[id:E080E32B-5E53-4AB7-903F-145D070C045C][trade identifiers]] and [[id:33CCB50B-8697-49A1-8761-4DB873A93515][trading permissions]] complete it.
+
+Two documents moved out of =doc/knowledge= because they record a route
+from current to target state rather than durable knowledge, and one
+moved in from =projects=.
+
+* Follow-on work
+
+Two backlog items came out of it. A capture on
+[[id:D6D034ED-5E79-4CAC-93A8-F5098824DF95][unifying legal entity identity and modelling the calculation agent]],
+and a task to
+[[id:F628C22E-E488-43EF-8B0C-9C6FA5893E9A][add a product short code to trade type]], which the identifiers table
+currently labels as an ORE Studio product code without one existing.

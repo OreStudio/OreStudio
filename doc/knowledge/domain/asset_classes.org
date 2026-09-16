@@ -32,6 +32,24 @@ result proposal is therefore one hierarchical taxonomy, referenced once by a
 product and many times by a trade's risk, with each use case cutting the tree at
 the depth it needs.
 
+#+begin_note
+*Scope.* This document treats the taxonomy: the classes themselves, and the
+regulatory risk classes that bucket exposures into them. It does not treat
+individual risk sensitivities.
+
+The two operate at different grains and are settled by different evidence. A
+regulatory risk class names a bucket a framework weights and correlates, and is
+fixed by a published methodology. A sensitivity is taken with respect to one
+specific input, such as a named discount curve, and is determined by what a
+trade actually consumes. The first is the subject here; the second is the
+subject of [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][market data requirement]], with [[id:8448BEF2-026C-48D6-81A3-21B710FDE1BB][the greeks]] covering the derivative
+taken with respect to such an input.
+
+The two are related, and the relation is stated where it bears on the argument:
+a risk class is the asset class a requirement projects onto. Establishing how
+that projection is held is outside this document.
+#+end_note
+
 * State of the Art
 
 The current state was gleaned by analysing a selection of existing taxonomies
@@ -233,13 +251,46 @@ framework: =RatesFX= is one node where =InterestRate= and =FX= are two. A second
 apparent instance, the division of credit, is examined below and proves to be a
 property rather than a finer granularity.
 
+** What a Regulatory Risk Class Is
+
+Before comparing risk class to asset class, the term itself requires a
+definition, because it is not a description of the market. It is an artefact of
+a calculation.
+
+SIMM computes initial margin from a portfolio's sensitivities. The calculation
+proceeds by bucketing those sensitivities, applying a published risk weight to
+each bucket, aggregating within a bucket, and then aggregating across buckets
+using a published correlation matrix. A *risk class* is the bucket at which that
+aggregation happens: =InterestRate=, =CreditQualifying=, =CreditNonQualifying=,
+=Equity=, =Commodity= and =FX=.
+
+The enumeration's own declaration states the consequence: "the ordering here
+matters. It is used in indexing in to correlation matrices for the correlation
+between risk classes". The values are positions in a published table, and their
+order is part of the framework's definition rather than an implementation
+detail.
+
+Two properties follow, and both distinguish a risk class from a taxonomy of
+markets. A risk class exists to carry parameters, so its membership is
+determined by which exposures a framework wishes to weight and correlate
+together rather than by which markets are alike. And it is fixed by the
+methodology document, so it cannot be adjusted for modelling convenience and
+changes only when the framework publishes a new version.
+
+Three use cases appear in the surveyed material, each with its own
+enumeration. SIMM buckets sensitivities to compute initial margin on
+non-cleared derivatives. FRTB buckets them to compute market risk capital. ORE's
+=riskfilter.hpp= uses a third enumeration to filter sensitivities for reporting,
+which is the same bucketing applied to presentation rather than to a charge.
+[[id:4DF84F09-5FCF-4DF0-B30D-B62073E53807][Regulatory frameworks]] sets out what each computes.
+
 ** Risk Classes versus Asset Classes
 
-The first point to establish is if risk class constitutes a distinct
-requirement, or is a different name for the same concept. Here, we can make use
-of the cardinality abovementioned to help us determine the correct modeling. A
-product must have exactly one product class, whereas a trade carries as many
-risk classes as it has sensitivities:
+With the term defined, the first point to establish is if risk class constitutes
+a distinct requirement, or is a different name for the same concept. Here, we
+can make use of the cardinality abovementioned to help us determine the correct
+modeling. A product must have exactly one product class, whereas a trade carries
+as many risk classes as it has sensitivities:
 
 - A fixed-rate bond is a product of class =Bond=. It is sensitive to interest
   rate risk in one currency and credit risk.
@@ -254,7 +305,7 @@ classifications simultaneously. ORE encodes the same distinction in a signature:
 =Trade::underlyingIndices()= returns =std::map<AssetClass,
 std::set<std::string>>=, a map keyed by class, because one trade reaches into
 several classes. It is also worth noting that ORE's =RiskClass= is a strict
-coarsening of it's =AssetClass=, so risk reporting is served by omitting the
+coarsening of its =AssetClass=, so risk reporting is served by omitting the
 values it does not require.
 
 The dimension is therefore a requirement: risk classification and product

@@ -1,0 +1,81 @@
+:PROPERTIES:
+:ID: 824C610A-E8A9-4BE2-B8A0-59527458E66B
+:END:
+#+title: Task: Land the shell-command facet and the ores.shell.trading part
+#+description: Commit the five ores.cpp.shell-command templates with their output paths pointed at the new part, create projects/ores.shell/trading/ with its overview and build files, declare trading in the composite parts list, regenerate the composite root and the component file lists, and build the tree.
+#+type: task
+#+level: s1
+#+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
+#+owner: marco
+#+branch: feature/shell-command-facet-and-part
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment: brave_hopper
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The =ores.cpp.shell-command= facet exists as a probe but is not in the tree,
+and it writes into the shell root, which no longer owns a domain's units.
+Create =projects/ores.shell/trading/= as the third part of the =ores.shell=
+composite and point the facet's two archetypes at it, so the next task
+generates the trading units into the part that owns them.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | STARTED                              |
+| Parent story | [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-16                               |
+
+* Acceptance
+
+- The five =ores.cpp.shell-command= template files are in the tree: the facet
+  page, its two archetype pages, and the two tangled =.mustache= artefacts.
+- Both archetype output paths name =projects/ores.shell/trading/=.
+- =projects/ores.shell/trading/= holds a component overview and build files
+  matching the split parts, and the composite's =#+parts:= names =trading=.
+- The composite root and the component file lists regenerate with no
+  difference, and the tree builds.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

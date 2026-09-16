@@ -1,0 +1,82 @@
+:PROPERTIES:
+:ID: D1BC707D-3219-435E-BDED-D3513A9ABD18
+:END:
+#+title: Task: Generate the trading command units into ores.shell.trading
+#+description: Opt the trading entities in, generate their command units into the new part, replace the hand-written aggregator with the generated per-component registration, delete the 39 hand-written units from the application part, and prove the surface with a build, the suites, and a live check through the shell.
+#+type: task
+#+level: s1
+#+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The 39 hand-written trading command units in the =application= part are the
+trading surface the shell uses today. Generate the trading units from their
+entity models into =ores.shell.trading=, register them from one generated
+aggregator, and delete the hand-written units, so the trading surface is
+codegen output and adding an entity's verbs touches no shared file.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-16                               |
+
+* Acceptance
+
+- Every trading entity the hand-written surface serves has a generated unit in
+  =projects/ores.shell/trading/=.
+- The hand-written trading units and their headers are gone from the
+  =application= part, and no submenu is registered twice.
+- One call from the REPL host reaches every trading unit.
+- The full preset build and the ctest suite are green, and the codegen drift
+  gate reports no drift.
+- The trading surface answers the live checks as it did before the change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

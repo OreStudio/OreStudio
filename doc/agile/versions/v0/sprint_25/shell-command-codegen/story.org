@@ -1,0 +1,66 @@
+:PROPERTIES:
+:ID: 7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A
+:END:
+#+title: Story: Generate shell command units per component
+#+description: Land the ores.cpp.shell-command facet and generate each component's shell command units into its own adapter part, retiring the hand-written units component by component. ores.trading goes first.
+#+type: story
+#+level: s2
+#+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment: brave_hopper
+#+todo: BACKLOG STARTED | DONE ABANDONED
+
+This page documents a [[id:699A8D45-B67E-4D3E-9206-24FA17C51ADA][story]] in [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]]. It captures the goal, current status, acceptance criteria, and the tasks that compose it.
+
+* Goal
+
+The shell's per-entity command units are hand-written and hand-wired, and the shell has no part to receive generated ones. The ores.cpp.shell-command facet now emits one command unit from one entity model. Land that facet, give ores.shell a part per domain area, and generate the trading units into ores.shell.trading, so adding an entity's shell verbs becomes a codegen run that touches no shared file.
+
+* Status
+
+| Field         | Value                                  |
+|---------------+----------------------------------------|
+| State         | STARTED                              |
+| Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
+| Now           | The facet and the trading part are the first task. |
+| Waiting on    | Nothing.                               |
+| Next          | Land the facet and the part, then generate the trading units. |
+| Last touched  | 2026-09-16                               |
+
+* Acceptance
+
+- The =ores.cpp.shell-command= facet is in the template library, and its two
+  archetypes write into the adapter part of the entity's own component.
+- =ores.shell= is a composite whose parts include =trading=, and the composite
+  root and the part file lists regenerate with no difference.
+- The trading command units in =projects/ores.shell/trading/= are codegen
+  output, the hand-written units are gone from the =application= part, and the
+  shell's trading surface answers as it did before.
+- The full preset build and the ctest suite are green, and the codegen drift
+  gate covers the new part.
+
+* Tasks
+
+| Task | State | Start | End | Description |
+|------+-------+-------+-----+-------------|
+| [[id:824C610A-E8A9-4BE2-B8A0-59527458E66B][Land the shell-command facet and the ores.shell.trading part]] | STARTED | 2026-09-16 | | Commit the five ores.cpp.shell-command templates with their output paths pointed at the new part, create projects/ores.shell/trading/ with its overview and build files, declare trading in the composite parts list, regenerate the composite root and the component file lists, and build the tree. |
+| [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]] | BACKLOG | | | Opt the trading entities in, generate their command units into the new part, replace the hand-written aggregator with the generated per-component registration, delete the 39 hand-written units from the application part, and prove the surface with a build, the suites, and a live check through the shell. |
+
+* Decisions
+
+- *One part per domain area.* The generated unit lands in the part named after
+  the domain it projects, so only the adapter that owns the domain links the
+  domain's protocol types. This is the fractal naming rule in
+  [[id:F27E5DF7-6223-4B6F-80A5-CEFBEB1BC756][Component architecture]].
+- *The units replace, not join.* The hand-written unit for an entity is deleted
+  in the same change that generates its replacement, so the shell never carries
+  two units for one submenu.
+
+* Out of scope
+
+- The other adapter components. =ores.qt= and the remaining domains keep their
+  hand-written units until their own tasks land.
+- The adapter part build files. An adapter part still carries hand-written
+  CMake, because no =#+component_kind= matches one and the =flat= archetype set
+  drops the link libraries. Recorded in the =ores.shell= component overview.

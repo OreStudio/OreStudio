@@ -27,10 +27,10 @@ funds, branches, and other organised bodies.
 
 *** LEI — Legal Entity Identifier
 
-- *Standard*: ISO 17442
-- *Issuer*: GLEIF-accredited Local Operating Units (LOUs)
-- *Format*: 20 characters alphanumeric (e.g. =7H6GLXDRUGQFU57RNE97=)
-- *Scope*: Global; any legal entity participating in financial markets
+| Standard | ISO 17442                                                   |
+| Issuer   | GLEIF-accredited Local Operating Units (LOUs)               |
+| Format   | 20 characters alphanumeric (e.g. =7H6GLXDRUGQFU57RNE97=)    |
+| Scope    | Global; any legal entity participating in financial markets |
 
 The LEI is a globally unique identifier for legal entities. It was
 mandated by the G20 after the 2008 financial crisis to improve
@@ -48,10 +48,10 @@ hierarchy during tenant provisioning.
 
 *** BIC — Business Identifier Code
 
-- *Standard*: ISO 9362 (also called SWIFT BIC)
-- *Issuer*: SWIFT (Society for Worldwide Interbank Financial Telecommunication)
-- *Format*: 8 or 11 characters (e.g. =DEUTDEFF= or =DEUTDEDB=)
-- *Scope*: Banks and financial institutions with SWIFT membership
+| Standard | ISO 9362 (also called SWIFT BIC)                                    |
+| Issuer   | SWIFT (Society for Worldwide Interbank Financial Telecommunication) |
+| Format   | 8 or 11 characters (e.g. =DEUTDEFF= or =DEUTDEDB=)                  |
+| Scope    | Banks and financial institutions with SWIFT membership              |
 
 The BIC uniquely identifies a financial institution in the SWIFT
 messaging network. It encodes institution code (4 chars), country
@@ -63,10 +63,10 @@ resolved from their LEIs; OreStudio imports this mapping.
 
 *** CIK — Central Index Key
 
-- *Standard*: Proprietary (US SEC)
-- *Issuer*: US Securities and Exchange Commission (SEC)
-- *Format*: Up to 10 digits (e.g. =0000789019= for Microsoft)
-- *Scope*: Companies and individuals filing with the US SEC
+| Standard | Proprietary (US SEC)                              |
+| Issuer   | US Securities and Exchange Commission (SEC)       |
+| Format   | Up to 10 digits (e.g. =0000789019= for Microsoft) |
+| Scope    | Companies and individuals filing with the US SEC  |
 
 The CIK is the SEC's internal identifier for all EDGAR filers —
 public companies, fund managers, and individuals required to file
@@ -80,11 +80,10 @@ derivatives, and other tradeable securities.
 
 *** ISIN — International Securities Identification Number
 
-- *Standard*: ISO 6166
-- *Issuer*: National Numbering Agencies (NNAs) per jurisdiction
-- *Format*: 12 characters: 2-letter country code + 9-char NSIN + check digit
-  (e.g. =US0378331005= for Apple Inc.)
-- *Scope*: Global; primary identifier for equities, bonds, and derivatives
+| Standard | ISO 6166                                                                                              |
+| Issuer   | National Numbering Agencies (NNAs) per jurisdiction                                                   |
+| Format   | 12 characters: 2-letter country code + 9-char NSIN + check digit (e.g. =US0378331005= for Apple Inc.) |
+| Scope    | Global; primary identifier for equities, bonds, and derivatives                                       |
 
 The ISIN is the globally accepted primary identifier for securities
 and the one required by most regulatory reporting frameworks (MiFID
@@ -112,11 +111,10 @@ two counterparties share. ORE names a security issue through
 
 *** CUSIP — Committee on Uniform Security Identification Procedures
 
-- *Standard*: ANSI X9.6
-- *Issuer*: CUSIP Global Services (operated by FactSet)
-- *Format*: 9 characters: 6-char issuer + 2-char issue + check digit
-  (e.g. =037833100= for Apple Inc.)
-- *Scope*: US and Canadian equity and debt securities
+| Standard | ANSI X9.6                                                                                  |
+| Issuer   | CUSIP Global Services (operated by FactSet)                                                |
+| Format   | 9 characters: 6-char issuer + 2-char issue + check digit (e.g. =037833100= for Apple Inc.) |
+| Scope    | US and Canadian equity and debt securities                                                 |
 
 CUSIP is the dominant identifier for North American securities.
 The first 6 characters identify the issuer; the next 2 characters
@@ -125,11 +123,10 @@ An ISIN for a US security is =US= + CUSIP + check digit.
 
 *** SEDOL — Stock Exchange Daily Official List
 
-- *Standard*: Proprietary (London Stock Exchange Group)
-- *Issuer*: LSEG
-- *Format*: 7 characters alphanumeric: 6-char identifier + check digit
-  (e.g. =0263494= for BP plc)
-- *Scope*: UK and Irish securities; widely used internationally
+| Standard | Proprietary (London Stock Exchange Group)                                              |
+| Issuer   | LSEG                                                                                   |
+| Format   | 7 characters alphanumeric: 6-char identifier + check digit (e.g. =0263494= for BP plc) |
+| Scope    | UK and Irish securities; widely used internationally                                   |
 
 SEDOL is the primary identifier for securities listed on UK and
 Irish exchanges. It is widely used in European fund administration
@@ -141,10 +138,10 @@ SEDOLs.
 
 *** FIGI — Financial Instrument Global Identifier
 
-- *Standard*: Open standard (Object Management Group)
-- *Issuer*: Bloomberg (as the allocation agent)
-- *Format*: 12 characters alphanumeric (e.g. =BBG000B9XRY4= for Apple Inc.)
-- *Scope*: Global; instruments across all asset classes including OTC
+| Standard | Open standard (Object Management Group)                         |
+| Issuer   | Bloomberg (as the allocation agent)                             |
+| Format   | 12 characters alphanumeric (e.g. =BBG000B9XRY4= for Apple Inc.) |
+| Scope    | Global; instruments across all asset classes including OTC      |
 
 FIGI (formerly Bloomberg Global Identifier / BBGID) is an open,
 freely available identifier for financial instruments, including
@@ -165,11 +162,10 @@ saying which authority issued it.
 
 *** MIC — Market Identifier Code
 
-- *Standard*: ISO 10383
-- *Issuer*: SWIFT (on behalf of ISO)
-- *Format*: 4 characters alphanumeric (e.g. =XLON= for London Stock Exchange,
-  =XNYS= for New York Stock Exchange)
-- *Scope*: Global; exchanges and trading venues
+| Standard | ISO 10383                                                                                             |
+| Issuer   | SWIFT (on behalf of ISO)                                                                              |
+| Format   | 4 characters alphanumeric (e.g. =XLON= for London Stock Exchange, =XNYS= for New York Stock Exchange) |
+| Scope    | Global; exchanges and trading venues                                                                  |
 
 The MIC identifies a regulated exchange, trading platform, or
 systematic internaliser. MICs appear in trade reports (MiFID II
@@ -185,11 +181,10 @@ used in market data subscriptions rather than regulatory reporting.
 
 *** RIC — Reuters Instrument Code
 
-- *Standard*: Proprietary (LSEG / Refinitiv)
-- *Issuer*: London Stock Exchange Group (formerly Thomson Reuters)
-- *Format*: Variable length; ticker + exchange suffix
-  (e.g. =AAPL.O= for Apple on NASDAQ, =EUR=X= for EUR/USD spot)
-- *Scope*: Equities, FX, rates, commodities on LSEG data feeds
+| Standard | Proprietary (LSEG / Refinitiv)                                                                          |
+| Issuer   | London Stock Exchange Group (formerly Thomson Reuters)                                                  |
+| Format   | Variable length; ticker + exchange suffix (e.g. =AAPL.O= for Apple on NASDAQ, =EUR=X= for EUR/USD spot) |
+| Scope    | Equities, FX, rates, commodities on LSEG data feeds                                                     |
 
 The RIC is the primary instrument identifier on Refinitiv (LSEG)
 data terminals and APIs. It encodes both the instrument and the
@@ -199,11 +194,10 @@ workflows where a Reuters rate is the authoritative source.
 
 *** BBG — Bloomberg Ticker / Yellow Key
 
-- *Standard*: Proprietary (Bloomberg L.P.)
-- *Issuer*: Bloomberg
-- *Format*: Ticker + market sector (Yellow Key), e.g. =AAPL US Equity=,
-  =EUR Curncy=, =US0003M Index=
-- *Scope*: Instruments accessible on Bloomberg Terminal
+| Standard | Proprietary (Bloomberg L.P.)                                                              |
+| Issuer   | Bloomberg                                                                                 |
+| Format   | Ticker + market sector (Yellow Key), e.g. =AAPL US Equity=, =EUR Curncy=, =US0003M Index= |
+| Scope    | Instruments accessible on Bloomberg Terminal                                              |
 
 The Bloomberg ticker plus Yellow Key (asset class) uniquely
 identifies an instrument on the Bloomberg Terminal. OreStudio

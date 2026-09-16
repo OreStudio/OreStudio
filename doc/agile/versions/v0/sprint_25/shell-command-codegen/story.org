@@ -25,7 +25,7 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
 | Now           | The facet and the ores.shell.trading part are landed. Twenty-three trading units are generated into the part, the part is linked into the application, the superseded hand-written units are deleted, both documents are rewritten, and the build and the shell suites are green. Fourteen trading entities are excluded and named in the task Result, and each of the two that can be closed has its own task. |
 | Waiting on    | Nothing.                               |
-| Next          | Run the =shell= drift gate on the committed tree and take the live check through the shell, then raise the PR. The rates protocol migration and the trade field-group grammar follow in their own tasks. |
+| Next          | Raise the PR. The =shell= drift gate passes, and every one of the 23 units regenerates clean from its own model and the committed templates. The live check through the shell is the one item left open, because it needs the service fleet and the shell builds its menus after login. The rates protocol migration and the trade field-group grammar follow in their own tasks. |
 | Last touched  | 2026-09-16                               |
 
 * Acceptance

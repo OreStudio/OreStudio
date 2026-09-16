@@ -144,12 +144,15 @@ machine carries every trade from =booked= through =verified= to
 =live=; the external machine carries the confirmation state of a trade
 faced outward, from =unconfirmed= to =confirmed=.
 
-The two dimensions on this page decide one thing in that arrangement,
-and it is the guard on the internal machine's Activate transition.
-Where a trade faces an external counterparty, Activate requires the
-external machine to have reached =confirmed=. Where it does not — an
-intra-entity transfer, a test booking, a hypothetical — Activate
-requires only verification, because nothing is agreed with anyone.
+The two dimensions on this page decide one thing in that arrangement:
+which event carries a trade to =live=. A trade faced outward is
+confirmed, and Confirm advances both machines. A trade with nobody to
+agree with — an intra-entity transfer, a test booking, a hypothetical
+— never emits Confirm at all, so its external machine is never
+consulted and its internal machine reaches =live= on Activate instead.
+
+Neither machine inspects the other. The dimensions decide which events
+a trade emits, and the machines respond to the events they recognise.
 
 The machinery runs on =ores_dq_fsm_machines_tbl=,
 =ores_dq_fsm_states_tbl= and =ores_dq_fsm_transitions_tbl=, its

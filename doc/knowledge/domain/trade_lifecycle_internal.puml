@@ -42,7 +42,7 @@ state "booked" as Booked
 state "verified" as Verified
 state "live" as Live
 state "expired" as Expired
-state "cancelled" as Cancelled
+state "cancelled" as Cancelled #E8D9F0 ##[bold]7A4B93
 
 Booked : Recorded in our books
 Verified : Our record matches the execution
@@ -52,7 +52,8 @@ Cancelled : Removed from the book
 
 [*] --> Booked : Book
 Booked --> Verified : Verify
-Verified --> Live : Activate [guard]
+Verified --> Live : Confirm
+Verified --> Live : Activate
 Live --> Expired : Expire / Mature / Exercise
 Booked --> Cancelled : Cancel
 Verified --> Cancelled : Cancel
@@ -66,12 +67,17 @@ note right of Verified
 end note
 
 note bottom of Live
-  The Activate guard is where the
-  two machines meet. Where an external
-  counterparty exists, it requires the
-  external machine to have reached
-  confirmed. Where none exists, it
-  requires only verification.
+  Two events reach Live. Confirm, for a
+  trade whose terms a counterparty agrees.
+  Activate, for one with nobody to agree
+  with. The machine does not know which
+  kind of trade it carries.
+end note
+
+note right of Cancelled
+  Shared state. Cancel is
+  broadcast to both machines
+  and terminates each.
 end note
 
 @enduml

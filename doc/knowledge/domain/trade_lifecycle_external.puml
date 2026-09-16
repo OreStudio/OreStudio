@@ -39,34 +39,47 @@ skinparam BackgroundColor white
 skinparam DefaultFontColor #1A1A1E
 
 state "unconfirmed" as Unconfirmed
-state "affirmed" as Affirmed
 state "queried" as Queried
+state "affirmed" as Affirmed
 state "confirmed" as Confirmed
+state "cancelled" as Cancelled #E8D9F0 ##[bold]7A4B93
 
 Unconfirmed : Terms not yet agreed
-Affirmed : Both sides agree the terms
 Queried : The two records differ
+Affirmed : Both sides agree the terms
 Confirmed : Binding written record
+Cancelled : Nothing left to agree
 
 [*] --> Unconfirmed : Book
 Unconfirmed --> Affirmed : Affirm
 Unconfirmed --> Queried : Query
 Queried --> Affirmed : Resolve
 Affirmed --> Confirmed : Confirm
-Confirmed --> Unconfirmed : Confirmable amendment
+Confirmed --> Unconfirmed : Amend
+Unconfirmed --> Cancelled : Cancel
+Queried --> Cancelled : Cancel
+Affirmed --> Cancelled : Cancel
+Confirmed --> Cancelled : Cancel
+Cancelled --> [*]
 
 note right of Confirmed
   Confirmed as of an external version.
-  A confirmable amendment moves the
-  external version and returns the
-  trade here for re-confirmation.
+  A confirmable amendment moves that
+  version and returns the trade to
+  unconfirmed.
 end note
 
-note bottom of Unconfirmed
+note left of Unconfirmed
   An unconfirmed trade is a
   counterparty risk: the terms are
-  not yet enforceable in the form
-  the parties agreed.
+  not enforceable in the form the
+  parties agreed.
+end note
+
+note right of Cancelled
+  Shared state. Cancel is
+  broadcast to both machines
+  and terminates each.
 end note
 
 @enduml

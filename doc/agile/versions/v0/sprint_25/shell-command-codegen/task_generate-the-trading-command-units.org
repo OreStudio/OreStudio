@@ -8,7 +8,7 @@
 #+filetags: :ores.shell:codegen:trading:component:sprint_25:v0:
 #+owner: marco
 #+branch: feature/trading-command-units-codegen
-#+pr:
+#+pr: 2084
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-16
@@ -259,7 +259,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2084][#2084]] | [ores.shell] Generate the trading command units |
 
 * Review
 

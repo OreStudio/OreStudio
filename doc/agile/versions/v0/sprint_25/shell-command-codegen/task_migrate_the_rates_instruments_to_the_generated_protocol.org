@@ -1,0 +1,114 @@
+:PROPERTIES:
+:ID: C2678D6A-09BD-4ED1-8D64-CC8AB5C5E842
+:END:
+#+title: Task: Migrate the rates instruments to the generated protocol
+#+description: Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 23.
+#+type: task
+#+level: s1
+#+filetags: :shell-command-codegen:sprint_25:v0:
+#+owner: marco
+#+branch:
+#+pr:
+#+blocked_on:
+#+blocked_since:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+#+environment:
+#+todo: DISCOVERED BACKLOG STARTED BLOCKED | DONE ABANDONED
+
+This page documents a [[id:31C868B9-306E-4282-BA8C-07E647021B34][task]] in the [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] story. It captures the goal, current status, acceptance, and any notes or results.
+
+* Goal
+
+The nine rates instruments share one hand-written protocol header that differs from the generated contract in three ways. Its list payload member is the generic =instruments=, its history request key is =id=, and its save request carries no =from()= factory while adding a =swap_leg legs= member. A generated shell command unit against that header fails to compile, with 20 errors of the form =no member named 'balance_guaranteed_swap_instruments' in get_balance_guaranteed_swap_instruments_response=. Two mechanisms were tried and reverted: a generated per-entity protocol creates two definitions of the same fully-qualified names, and a second dialect in the template would bake a hand-written header's quirks into the facet. The shared header, the aggregate =rates_instrument_handler.hpp= and =registrar_rates.cpp= must migrate to the generated contract first.
+
+* Status
+
+| Field        | Value                                  |
+|--------------+----------------------------------------|
+| State        | BACKLOG                              |
+| Parent story | [[id:7C9B6A2E-F1D1-4BA2-9960-C36359B77B9A][Generate shell command units per component]] |
+| Now          | Not yet started.                       |
+| Waiting on   | Nothing.                               |
+| Next         | Begin implementation.                  |
+| Last touched | 2026-09-16                               |
+
+* Acceptance
+
+- Every rates instrument has its own generated protocol, and no fully-qualified name has two definitions.
+- The rates aggregate handler and registrar answer the same subjects as before the migration.
+- The nine rates shell command units generate, build and pass their tests.
+- The shell's rates surface answers the live checks as it did before the change.
+
+* Plan
+
+(Implementation strategy. Written when work starts; key decisions
+are distilled into the parent story's =* Decisions= at close, but the
+plan itself stays — it is the historical record of what we did.)
+
+* Notes
+
+The three dialect differences were measured against the generated contract on
+the =task_generate-the-trading-command-units= branch. The shared header is
+=projects/ores.trading/api/include/ores.trading.api/messaging/instrument_protocol.hpp=:
+
+| Difference | Shared header | Generated contract |
+|------------+---------------+--------------------|
+| List payload member | =instruments= (for example line 61) | ={{entity_plural_short}}= |
+| Save request factory | none | =static save_<entity>_request from(...)= |
+| History request key | =std::string id= (for example line 93) | the primary-key column name |
+| Save request extras | =std::vector<ores::trading::domain::swap_leg> legs= (line 339) | none |
+
+Opting =ores.trading.balance_guaranteed_swap_instrument= in and generating
+produced 20 clang errors of the form =no member named
+'balance_guaranteed_swap_instruments' in
+get_balance_guaranteed_swap_instruments_response=, then =too many errors
+emitted, stopping now [-ferror-limit]=. The generated files were deleted after
+the probe.
+
+The header is wider than the rates family. It serves 13 entities, which are
+the nine rates instruments plus the four modelless instruments
+(=commodity=, =composite=, =credit= and =scripted=, which have no model to
+generate from). It also has these consumers, so the migration reaches past the
+rates aggregate handler and registrar:
+
+| Consumer | Files |
+|----------+-------|
+| =ores.trading.core= handlers | =commodity_instrument_handler.hpp=, =composite_instrument_handler.hpp=, =credit_instrument_handler.hpp=, =rates_instrument_handler.hpp=, =scripted_instrument_handler.hpp= |
+| =ores.shell.application= units | the 13 hand-written trading units that stay |
+| =ores.qt.trading= | 16 files, including =ImportTradeDialog.cpp=, =OreImporter.cpp= and =SwapInstrumentForm.cpp= |
+| =ores.ore= service | =ore_import_execute_handler.cpp= |
+| =ores.trading.api= | =trade_protocol.hpp= includes it |
+
+Two mechanisms were tried and reverted. A generated per-entity protocol
+creates two definitions of the same fully-qualified names. A second dialect in
+the template would bake a hand-written header's quirks into the facet.
+
+=trades history --diff= is broken independently of this task. The unit calls
+=render_history_diff= for entity type =ores.trading.trade= and no provider is
+registered under that name.
+
+* Test Scenarios
+
+Manual QA scenarios (scaffolded via =compass add test_scenario=, run
+through the QA Validation Runner panel) that verify this task. Link
+new ones here as they're created; the scenario doc itself links back
+via its "Verifies task" field.
+
+| Scenario | State | Notes |
+|----------+-------+-------|
+|          |       |       |
+
+* PRs
+
+| PR | Title |
+|----+-------|
+|    |       |
+
+* Review
+
+| # | Comment summary | File | Decision | Notes |
+|---+-----------------+------+----------+-------|
+|   |                 |      |          |       |
+
+* Result

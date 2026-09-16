@@ -1,0 +1,49 @@
+:PROPERTIES:
+:ID: 051970D6-4C1E-4F8F-B95D-361D52C836FA
+:END:
+#+title: ctest can report green when a Catch2 binary fails to register its cases
+#+description: ORES_CATCH2_ARGS in projects/CMakeLists.txt passes --filenames-as-tags, and that flag takes a Catch2 code path which skips duplicate-test-case detection. A component suite with duplicated case names ran 16 cases and exited 0 under ctest, while the same binary refused to run under --list-tests and under a bare run. The estate has one test binary per component, so any registration fault can hide behind a green ctest.
+#+type: capture
+#+level: cross
+#+filetags:
+#+created: 2026-09-16
+#+updated: 2026-09-16
+
+This page is a [[id:671F18E4-E09C-4B3B-BD24-D33DF8AE38A6][capture]] in the *inbox* bucket of the product backlog — a pre-sprint idea, not yet pulled into a sprint as a story.
+
+* What
+
+Make the component test suites fail on a Catch2 registration fault. Either
+drop =--filenames-as-tags= from the common argument list and give the tag
+filter some other source, or add a cheap second invocation per suite that
+lists the cases and fails on a registration error. A gate in the build, not a
+habit, is what makes this safe.
+
+* Why
+
+A generated file per entity makes duplicate case names a live hazard. Every
+unit of one component lands in one test binary, and two units can pick the
+same name without either author seeing the other. Catch2 rejects the
+duplicate when it enumerates the cases, which is the work =--filenames-as-tags=
+lets it skip. The result is a suite that reports 100 per cent passed while it
+is running a different set of cases than its source declares, or none at all.
+The failure is silent in the direction that matters: ctest is the gate, and
+the gate says green.
+
+The measured case: the first draft of the shell-command tests archetype
+reused a hand-written file's case names verbatim. =ctest= passed and reported
+16 cases, while =--list-tests= on the same binary exited non-zero. Once the
+names carried a per-entity prefix, all three agreed on 16 cases and 30
+assertions.
+
+* References
+
+- ~projects/CMakeLists.txt:76~ — the shared argument list, with
+  ~--filenames-as-tags~ and ~--allow-running-no-tests~.
+- Every ~projects/ores.*/**/tests/CMakeLists.txt~ — two ~add_test~
+  registrations per suite, both passing ~${ORES_CATCH2_ARGS}~.
+
+* See also
+
+- The generated per-entity case-name prefix that avoids the collision is
+  recorded in [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]].

@@ -23,9 +23,9 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
 |---------------+----------------------------------------|
 | State         | STARTED                              |
 | Parent sprint | [[id:0E7321A7-A66D-4CE6-B3E7-89F2E35CA48B][Sprint 25]] |
-| Now           | The facet and the ores.shell.trading part are landed. The first generated unit is in the part, builds and passes its test. |
+| Now           | The facet and the ores.shell.trading part are landed. Twenty-three trading units are generated into the part, the part is linked into the application, the superseded hand-written units are deleted, both documents are rewritten, and the build and the shell suites are green. Fourteen trading entities are excluded and named in the task Result, and each of the two that can be closed has its own task. |
 | Waiting on    | Nothing.                               |
-| Next          | Generate the remaining trading units into the part, one entity at a time, then retire the hand-written units. |
+| Next          | Run the =shell= drift gate on the committed tree and take the live check through the shell, then raise the PR. The rates protocol migration and the trade field-group grammar follow in their own tasks. |
 | Last touched  | 2026-09-16                               |
 
 * Acceptance
@@ -45,7 +45,9 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
 | Task | State | Start | End | Description |
 |------+-------+-------+-----+-------------|
 | [[id:824C610A-E8A9-4BE2-B8A0-59527458E66B][Land the shell-command facet and the ores.shell.trading part]] | DONE | 2026-09-16 | 2026-09-16 | Commit the five ores.cpp.shell-command templates with their output paths pointed at the new part, create projects/ores.shell/trading/ with its overview and build files, declare trading in the composite parts list, regenerate the composite root and the component file lists, and build the tree. |
-| [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]] | BACKLOG | | | Opt the trading entities in, generate their command units into the new part, replace the hand-written aggregator with the generated per-component registration, delete the 39 hand-written units from the application part, and prove the surface with a build, the suites, and a live check through the shell. |
+| [[id:D1BC707D-3219-435E-BDED-D3513A9ABD18][Generate the trading command units into ores.shell.trading]] | DONE | 2026-09-16 | 2026-09-16 | Opt the trading entities in, generate their command units into the new part, link the part into the application so the hand-written aggregator reaches them, delete the hand-written units the generated ones replace, and prove the surface with a build, the suites, and a live check through the shell. |
+| [[id:C2678D6A-09BD-4ED1-8D64-CC8AB5C5E842][Migrate the rates instruments to the generated protocol]] | BACKLOG | | | Move the nine rates instruments off the shared hand-written instrument_protocol.hpp and onto the generated per-entity protocol, so their shell command units can be generated like the other 23. |
+| [[id:5BB7DD1E-1699-4249-97D3-F002E99D8B32][Give the trade model its field-group grammar]] | BACKLOG | | | Teach the trade entity model to state which field group each column belongs to, and teach the shell-command generator to read it, so the trade command unit can be generated. |
 
 * Decisions
 
@@ -85,6 +87,16 @@ The shell's per-entity command units are hand-written and hand-wired, and the sh
   the =shell= entry is drift-free. The rule is therefore: generate trading units
   one entity at a time, and never run
   =check_component_drift.py --component trading-cpp= on this branch.
+- *The component aggregator stays hand-written* (2026-09-16). One aggregator per
+  component wires the units to the REPL host. It lives in the application part
+  and carries one include and one =register_commands= call per entity. A
+  generated aggregator needs a render-time list of the component's opted-in
+  entities, which is the pattern the generator already uses for
+  =_COMPONENT_FILES_TEMPLATES=, and the facet has no component-scoped archetype
+  for it today. The wiring cost is one line per entity, so the archetype is not
+  worth its complexity yet. The consequence for the part is that the
+  application links =ores.shell.<component>.lib=; a static library's =PRIVATE=
+  dependency still reaches the executables.
 - *A new facet regenerates the physical-space inventories* (2026-09-16). The
   facet and archetype tables in the parent pages are generated from the
   children's frontmatter, and a facet that is absent from its parent's table is

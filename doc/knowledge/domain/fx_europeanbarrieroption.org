@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | FX European Barrier Option |
 | ORE Studio product code | =FxEuropeanBarrierOption= |
 | Asset class             | =fx= |
+| Family                  | Option |
 | ORE trade data node     | =FxEuropeanBarrierOptionData= |
 | ORE documentation       | =fx_europeanbarrieroption.tex= |
 
@@ -127,7 +128,7 @@ value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a long European call with an up-and-in barrier
 and a rebate:
 
-#+begin_example
+#+begin_src xml
 <FxEuropeanBarrierOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -151,7 +152,7 @@ and a rebate:
   <SoldCurrency>USD</SoldCurrency>
   <SoldAmount>1100000</SoldAmount>
 </FxEuropeanBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_europeanbarrieroption.tex][fx_europeanbarrieroption.tex]],
 listing =FX European Barrier Option data= (optional elements omitted).

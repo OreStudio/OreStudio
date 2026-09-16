@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Ascot |
 | ORE Studio product code | =Ascot= |
 | Asset class             | =bond= |
+| Family                  | Option |
 | ORE trade data node     | =AscotData= |
 | ORE documentation       | =ascot.tex= |
 
@@ -131,7 +132,7 @@ on the ORE engine.
 ORE's catalogue shows a long American call Ascot on a convertible
 bond, funded by a floating reference swap leg:
 
-#+begin_example
+#+begin_src xml
 <Trade id="Ascot">
   <TradeType>Ascot</TradeType>
   <Envelope>...</Envelope>
@@ -160,7 +161,7 @@ bond, funded by a floating reference swap leg:
     </ReferenceSwapData>
   </AscotData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/ascot.tex][ascot.tex]],
 listing =Ascot set up using reference data=. The source closes the

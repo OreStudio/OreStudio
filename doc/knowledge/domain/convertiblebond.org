@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Convertible Bond |
 | ORE Studio product code | =ConvertibleBond= |
 | Asset class             | =bond= |
+| Family                  | Security |
 | ORE trade data node     | =ConvertibleBondData= |
 | ORE documentation       | =convertiblebond.tex= |
 
@@ -213,7 +214,7 @@ engine.
 ORE's catalogue shows a convertible bond whose terms are set up in
 reference data:
 
-#+begin_example
+#+begin_src xml
 <Trade id="ConvertibleBond">
   <TradeType>ConvertibleBond</TradeType>
   <Envelope>...</Envelope>
@@ -224,7 +225,7 @@ reference data:
     </BondData>
   </ConvertibleBondData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/convertiblebond.tex][convertiblebond.tex]],
 listing =Convertible bond set up using reference data=. The source

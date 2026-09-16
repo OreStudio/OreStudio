@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Cash Position |
 | ORE Studio product code | =CashPosition= |
 | Asset class             | =equity= |
+| Family                  | Position |
 | ORE trade data node     | =CashPositionData= |
 | ORE documentation       | =cashposition.tex= |
 
@@ -103,12 +104,12 @@ structure.
 
 ORE's catalogue shows one million euro of cash:
 
-#+begin_example
+#+begin_src xml
 <CashPositionData>
     <Currency>EUR</Currency>
     <Amount>1000000</Amount>
 </CashPositionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cashposition.tex][cashposition.tex]],
 listing =Cash Position data=.

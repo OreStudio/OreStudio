@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Accumulator |
 | ORE Studio product code | =FxAccumulator=, =EquityAccumulator=, =CommodityAccumulator= |
 | Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Forward |
 | ORE trade data node     | =FxAccumulatorData=, =EquityAccumulatorData=, =CommodityAccumulatorData= |
 | ORE documentation       | =accumulator.tex= |
 
@@ -244,7 +245,7 @@ settlement per observation date. The barrier structure adds an
 American up-and-out at 1.5 and a fixing floor of two guaranteed
 fixings:
 
-#+begin_example
+#+begin_src xml
 <Trade id="FX_ACCUMULATOR">
   <TradeType>FxAccumulator</TradeType>
   <Envelope>
@@ -310,14 +311,14 @@ fixings:
     </Barriers>
   </FxAccumulatorData>
 </Trade>
-#+end_example
+#+end_src
 
 The catalogue then shows an equity decumulator of type 02. Its
 observation dates run daily over one year, its settlements take place
 on the pricing dates, and its down-and-out barrier sits at 3500 with
 a fixing floor of one guaranteed period:
 
-#+begin_example
+#+begin_src xml
 <Trade id="Equity_Decumulator">
   <TradeType>EquityAccumulator</TradeType>
   <Envelope>
@@ -392,7 +393,7 @@ a fixing floor of one guaranteed period:
     <KnockOutSettlementAtPeriodEnd>false<KnockOutSettlementAtPeriodEnd>
   </EquityAccumulatorData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/accumulator.tex][accumulator.tex]],
 the example FX accumulator and equity decumulator trades.

@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Index CDS |
 | ORE Studio product code | =IndexCreditDefaultSwap= |
 | Asset class             | =credit= |
+| Family                  | Swap |
 | ORE trade data node     | =IndexCreditDefaultSwapData= |
 | ORE documentation       | =indexcds.tex= |
 
@@ -117,7 +118,7 @@ index CDS to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows an index trade with its basket:
 
-#+begin_example
+#+begin_src xml
 <IndexCreditDefaultSwapData>
   <CreditCurveId>RED:2I65BRHH6</CreditCurveId>
   <SettlesAccrual>Y</SettlesAccrual>
@@ -140,7 +141,7 @@ ORE's catalogue shows an index trade with its basket:
     ...
   </BasketData>
 </IndexCreditDefaultSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/indexcds.tex][indexcds.tex]],
 listing =Index CreditDefaultSwap Data= (constituents abbreviated).

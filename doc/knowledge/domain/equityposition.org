@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Position |
 | ORE Studio product code | =EquityPosition= |
 | Asset class             | =equity= |
+| Family                  | Position |
 | ORE trade data node     | =EquityPositionData= |
 | ORE documentation       | =equityposition.tex= |
 
@@ -124,7 +125,7 @@ engine.
 ORE's catalogue shows an equity basket position with two European
 names, weighted equally:
 
-#+begin_example
+#+begin_src xml
 <Trade id="EquityPosition">
   <TradeType>EquityPosition</TradeType>
   <Envelope>...</Envelope>
@@ -148,7 +149,7 @@ names, weighted equally:
       </Underlying>
   </EquityPositionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityposition.tex][equityposition.tex]],
 listing =Equity position data=.

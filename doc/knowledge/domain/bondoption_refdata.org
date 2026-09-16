@@ -27,6 +27,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Bond Option (Reference Data) |
 | ORE Studio product code | =BondOption= |
 | Asset class             | =bond= |
+| Family                  | Option |
 | ORE trade data node     | =BondOptionData= |
 | ORE documentation       | =bondoption_refdata.tex= |
 
@@ -135,7 +136,7 @@ sensitivities on the ORE engine.
 ORE's catalogue shows a long European call bond option on a bond from
 reference data, with the strike per unit notional:
 
-#+begin_example
+#+begin_src xml
 <Trade id="...">
   <TradeType>BondOption</TradeType>
   <Envelope>
@@ -164,7 +165,7 @@ reference data, with the strike per unit notional:
     </BondData>
   </BondOptionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption_refdata.tex][bondoption_refdata.tex]],
 listing =Bond Option data using bond reference data=. The source

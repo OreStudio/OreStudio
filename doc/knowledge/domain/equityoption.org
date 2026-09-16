@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Option |
 | ORE Studio product code | =EquityOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityOptionData= |
 | ORE documentation       | =equityoption.tex= |
 
@@ -151,7 +152,7 @@ them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows an American call on the S&P 500 index:
 
-#+begin_example
+#+begin_src xml
 <EquityOptionData>
     <OptionData>
          <LongShort>Long</LongShort>
@@ -170,7 +171,7 @@ ORE's catalogue shows an American call on the S&P 500 index:
     <StrikeCurrency>USD</StrikeCurrency>
     <Quantity>17000</Quantity>
 </EquityOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityoption.tex][equityoption.tex]],
 listing =Equity Option data=.

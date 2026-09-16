@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity European Barrier Option |
 | ORE Studio product code | =EquityEuropeanBarrierOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityEuropeanBarrierOptionData= |
 | ORE documentation       | =eq_europeanbarrieroption.tex= |
 
@@ -133,7 +134,7 @@ them and run sensitivities on the ORE engine.
 ORE's catalogue shows an option on the S&P 500 index with a strike of
 3200 and a quantity of 1000:
 
-#+begin_example
+#+begin_src xml
 <EquityEuropeanBarrierOptionData>
     <OptionData>
         ...
@@ -150,7 +151,7 @@ ORE's catalogue shows an option on the S&P 500 index with a strike of
     </StrikeData>
     <Quantity>1000</Quantity>
 </EquityEuropeanBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_europeanbarrieroption.tex][eq_europeanbarrieroption.tex]],
 listing =Equity European Barrier Option data=. The source ends the

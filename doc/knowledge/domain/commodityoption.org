@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity Option |
 | ORE Studio product code | =CommodityOption= |
 | Asset class             | =commodity= |
+| Family                  | Option |
 | ORE trade data node     | =CommodityOptionData= |
 | ORE documentation       | =commodityoption.tex= |
 
@@ -110,7 +111,7 @@ engine.
 
 ORE's catalogue shows a short European put on crude oil:
 
-#+begin_example
+#+begin_src xml
 <CommodityOptionData>
   <OptionData>
     <LongShort>Short</LongShort>
@@ -134,7 +135,7 @@ ORE's catalogue shows a short European put on crude oil:
   <IsFuturePrice>true</IsFuturePrice>
   <FutureExpiryDate>2029-04-28</FutureExpiryDate>
 </CommodityOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoption.tex][commodityoption.tex]],
 listing =Commodity Option data= (closing tags normalised).

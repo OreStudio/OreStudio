@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Digital Option |
 | ORE Studio product code | =EquityDigitalOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityDigitalOptionData= |
 | ORE documentation       | =eq_digitaloption.tex= |
 
@@ -129,7 +130,7 @@ them and run sensitivities on the ORE engine.
 ORE's catalogue shows a long call digital on the S&P 500 index that
 pays 1000 per unit above strike 3300:
 
-#+begin_example
+#+begin_src xml
 <EquityDigitalOptionData>
     <OptionData>
         <LongShort>Long</LongShort>
@@ -146,7 +147,7 @@ pays 1000 per unit above strike 3300:
     <Name>RIC:.SPX</Name>
     <Quantity>1000</Quantity>
 </EquityDigitalOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_digitaloption.tex][eq_digitaloption.tex]],
 listing =Equity Digital Option data=.

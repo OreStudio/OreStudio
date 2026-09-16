@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Generic Barrier Option |
 | ORE Studio product code | =FxGenericBarrierOption=, =EquityGenericBarrierOption=, =CommodityGenericBarrierOption= |
 | Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Option |
 | ORE trade data node     | =FxGenericBarrierOptionData=, =EquityGenericBarrierOptionData=, =CommodityGenericBarrierOptionData= |
 | ORE documentation       | =generic_barrieroption.tex= |
 
@@ -243,7 +244,7 @@ with a full barrier structure. The trade monitors a down-and-out at
 1.1 and an up-and-in at 1.3 daily until expiry, and adds a
 Transatlantic up-and-out at 1.3:
 
-#+begin_example
+#+begin_src xml
 <FxGenericBarrierOptionData>
   <Underlying>
     <Type>FX</Type>
@@ -306,7 +307,7 @@ Transatlantic up-and-out at 1.3:
     </BarrierData>
   </TransatlanticBarrier>
 </FxGenericBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/generic_barrieroption.tex][generic_barrieroption.tex]],
 listing =Generic Barrier Option data (FX Underlying)=. The catalogue

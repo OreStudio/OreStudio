@@ -25,7 +25,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Knock Out Swap |
 | Short name              | Knock Out Swap |
 | ORE Studio product code | =KnockOutSwap= |
-| Asset class             | =swap= |
+| Asset class             | =rates= |
+| Family                  | Swap |
 | ORE trade data node     | =KnockOutSwapData= |
 | ORE documentation       | =knockoutswap.tex= |
 
@@ -128,7 +129,7 @@ sensitivities on the ORE engine.
 ORE's catalogue shows an up-and-out knock out swap. The trade ends
 when a floating fixing rises above 5 percent:
 
-#+begin_example
+#+begin_src xml
 <Trade id="194837232">
   <TradeType>KnockOutSwap</TradeType>
   <Envelope>...</Envelope>
@@ -152,7 +153,7 @@ when a floating fixing rises above 5 percent:
     </LegData>
   </KnockOutSwapData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/knockoutswap.tex][knockoutswap.tex]],
 listing =Knock Out Swap=.

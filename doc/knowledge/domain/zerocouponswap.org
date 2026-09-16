@@ -25,7 +25,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Zero Coupon Swap |
 | Short name              | Zero Coupon Swap |
 | ORE Studio product code | none; not a product in its own right |
-| Asset class             | — |
+| Asset class             | =rates= |
+| Family                  | Swap |
 | ORE trade data node     | =ZeroCouponFixedLegData= on a =Swap= |
 | ORE documentation       | =zerocouponswap.tex= |
 
@@ -116,7 +117,7 @@ and run sensitivities on the ORE engine.
 ORE's catalogue shows a swap with a floating leg and a zero-coupon
 fixed leg:
 
-#+begin_example
+#+begin_src xml
 <SwapData>
   <LegData>
     <LegType>Floating</LegType>
@@ -135,7 +136,7 @@ fixed leg:
     </ZeroCouponFixedLegData>
   </LegData>
 </SwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/zerocouponswap.tex][zerocouponswap.tex]],
 listing =Zero Coupon Swap Data=.

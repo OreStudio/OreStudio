@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Forward |
 | ORE Studio product code | =EquityForward= |
 | Asset class             | =equity= |
+| Family                  | Forward |
 | ORE trade data node     | =EquityForwardData= |
 | ORE documentation       | =equityforward.tex= |
 
@@ -122,7 +123,7 @@ forwards to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a long US dollar forward on the S&P 500 index:
 
-#+begin_example
+#+begin_src xml
 <EquityForwardData>
   <LongShort>Long</LongShort>
   <Maturity>2018-06-30</Maturity>
@@ -132,7 +133,7 @@ ORE's catalogue shows a long US dollar forward on the S&P 500 index:
   <StrikeCurrency>USD</StrikeCurrency>
   <Quantity>17000</Quantity>
 </EquityForwardData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityforward.tex][equityforward.tex]],
 listing =Equity Forward data=.

@@ -25,7 +25,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Performance Option Type 01 |
 | Short name              | Performance Option Type 01 |
 | ORE Studio product code | =ScriptedTrade= |
-| Asset class             | =scripted= |
+| Asset class             | determined per trade by the underlyings |
+| Family                  | Option |
 | ORE trade data node     | =ScriptedTradeData= |
 | ORE documentation       | =performanceoption_01.tex= |
 
@@ -169,7 +170,7 @@ CHF-EUR at 34%, NOK-EUR at 32%, and SEK-EUR twice, at 24% and 10%.
 The option strike of 1.15 is included in the performance
 calculation:
 
-#+begin_example
+#+begin_src xml
 <PerformanceOption01Data>
   <NotionalAmount>12500000</NotionalAmount>
   <ParticipationRate>0.9</ParticipationRate>
@@ -208,7 +209,7 @@ calculation:
   <Position>Long</Position>
   <PayCcy>EUR</PayCcy>
 </PerformanceOption01Data>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/performanceoption_01.tex][performanceoption_01.tex]],
 listing =Performance Option Type 01 data=.

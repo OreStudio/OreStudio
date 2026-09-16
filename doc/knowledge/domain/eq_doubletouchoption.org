@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Double Touch Option |
 | ORE Studio product code | =EquityDoubleTouchOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityDoubleTouchOptionData= |
 | ORE documentation       | =eq_doubletouchoption.tex= |
 
@@ -142,7 +143,7 @@ touch options to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a double one-touch on the S&P 500 index that
 pays one million when the spot touches 3000 or 4500:
 
-#+begin_example
+#+begin_src xml
 <EquityDoubleTouchOptionData>
     <OptionData>
         <LongShort>Long</LongShort>
@@ -168,7 +169,7 @@ pays one million when the spot touches 3000 or 4500:
     <Calendar>USD</Calendar>
     <EQIndex>EQ-RIC:.SPX</EQIndex>
 </EquityDoubleTouchOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doubletouchoption.tex][eq_doubletouchoption.tex]],
 listing =Equity Double Touch Option data=.

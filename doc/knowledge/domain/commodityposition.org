@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity Position |
 | ORE Studio product code | =CommodityPosition= |
 | Asset class             | =commodity= |
+| Family                  | Position |
 | ORE trade data node     | =CommodityPositionData= |
 | ORE documentation       | =commodityposition.tex= |
 
@@ -118,7 +119,7 @@ and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a basket of two commodities:
 
-#+begin_example
+#+begin_src xml
 <CommodityPositionData>
   <Quantity>1000</Quantity>
   <Underlying>
@@ -140,7 +141,7 @@ ORE's catalogue shows a basket of two commodities:
     <DeliveryRollCalendar>TARGET</DeliveryRollCalendar>
   </Underlying>
 </CommodityPositionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityposition.tex][commodityposition.tex]],
 listing =Commodity Position= (optional elements omitted).

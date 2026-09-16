@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Asian Option |
 | ORE Studio product code | =EquityAsianOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityAsianOptionData= |
 | ORE documentation       | =eq_asianoption.tex= |
 
@@ -119,7 +120,7 @@ to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a long call on the average of the S&P 500 index
 over daily observations:
 
-#+begin_example
+#+begin_src xml
 <Trade id="EquityAsianOption">
   <TradeType>EquityAsianOption</TradeType>
   <Envelope>
@@ -163,7 +164,7 @@ over daily observations:
     </ObservationDates>
   </EquityAsianOptionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_asianoption.tex][eq_asianoption.tex]],
 listing =Equity Asian Option data=.

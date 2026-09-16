@@ -24,7 +24,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | CPI Swap |
 | Short name              | CPI Swap |
 | ORE Studio product code | none; not a product in its own right |
-| Asset class             | — |
+| Asset class             | =inflation= |
+| Family                  | Swap |
 | ORE trade data node     | =CPILegData= on a =Swap= |
 | ORE documentation       | =cpiswap.tex= |
 
@@ -137,7 +138,7 @@ run sensitivities on the ORE engine.
 ORE's catalogue shows the structure with the =InflationSwap= trade
 type. The floating leg is abbreviated.
 
-#+begin_example
+#+begin_src xml
 <InflationSwapData>
   <LegData>
     <LegType>Floating</LegType>
@@ -153,7 +154,7 @@ type. The floating leg is abbreviated.
     </CPILegData>
   </LegData>
 </InflationSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cpiswap.tex][cpiswap.tex]],
 listing =CPI Swap Data= (using InflationSwap trade type).

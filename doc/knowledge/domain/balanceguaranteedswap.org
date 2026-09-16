@@ -25,7 +25,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Balance Guaranteed Swap |
 | Short name              | Balance Guaranteed Swap |
 | ORE Studio product code | =BalanceGuaranteedSwap= |
-| Asset class             | =swap= |
+| Asset class             | =rates= |
+| Family                  | Swap |
 | ORE trade data node     | =BalanceGuaranteedSwapData= |
 | ORE documentation       | =balanceguaranteedswap.tex= |
 
@@ -143,7 +144,7 @@ engine.
 ORE's catalogue shows a balance guaranteed swap on a two-tranche
 security:
 
-#+begin_example
+#+begin_src xml
 <BalanceGuaranteedSwapData>
   <ReferenceSecurity>ISIN:XS0983610930</ReferenceSecurity>
   <Tranches>
@@ -176,7 +177,7 @@ security:
 	 ...
   </LegData>
 </BalanceGuaranteedSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/balanceguaranteedswap.tex][balanceguaranteedswap.tex]],
 listing =Balance Guaranteed Swap data=. The source listing repeats

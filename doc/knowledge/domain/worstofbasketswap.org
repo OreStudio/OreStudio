@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Worst Of Basket Swap |
 | ORE Studio product code | =FxWorstOfBasketSwap=, =EquityWorstOfBasketSwap=, =CommodityWorstOfBasketSwap= |
 | Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Swap |
 | ORE trade data node     | =FxWorstOfBasketSwapData=, =EquityWorstOfBasketSwapData=, =CommodityWorstOfBasketSwapData= |
 | ORE documentation       | =worstofbasketswap.tex= |
 
@@ -210,7 +211,7 @@ Stoxx 50 and the S&P 500. The trade receives 4% coupons while the
 basket stays inside the trigger structure, and its knock-in level
 stands at 75% of the initial prices:
 
-#+begin_example
+#+begin_src xml
 <Trade id="EQ_WorstOfBasketSwap">
   <TradeType>EquityWorstOfBasketSwap</TradeType>
   <Envelope>
@@ -270,7 +271,7 @@ stands at 75% of the initial prices:
     </FloatingFixingSchedule>
   </EquityWorstOfBasketSwapData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/worstofbasketswap.tex][worstofbasketswap.tex]],
 listing =EquityWorstOfBasketSwap data=. The catalogue also shows the

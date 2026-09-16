@@ -24,7 +24,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Callable Swap |
 | Short name              | Callable Swap |
 | ORE Studio product code | =CallableSwap= |
-| Asset class             | =swap= |
+| Asset class             | =rates= |
+| Family                  | Swap |
 | ORE trade data node     | =CallableSwapData= |
 | ORE documentation       | =callableswap.tex= |
 
@@ -124,7 +125,7 @@ and run sensitivities on the ORE engine.
 ORE's catalogue shows a callable swap with a Bermudan call right on
 annual dates from 2031 to 2033:
 
-#+begin_example
+#+begin_src xml
 <CallableSwapData>
     <OptionData>
       <LongShort>Short</LongShort>
@@ -151,7 +152,7 @@ annual dates from 2031 to 2033:
     ...
   </LegData>
 </CallableSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callableswap.tex][callableswap.tex]],
 listing =Callable Swap data=. The source listing repeats the opening

@@ -24,7 +24,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Risk Participation Agreement |
 | Short name              | RPA |
 | ORE Studio product code | =RiskParticipationAgreement= |
-| Asset class             | =swap= |
+| Asset class             | =credit= |
+| Family                  | none; see below |
 | ORE trade data node     | =RiskParticipationAgreementData= |
 | ORE documentation       | =rpa.tex= |
 
@@ -126,7 +127,7 @@ the ORE engine.
 
 ORE's catalogue shows a trade with an 80 percent participation rate:
 
-#+begin_example
+#+begin_src xml
 <RiskParticipationAgreementData>
   <ParticipationRate>0.8</ParticipationRate>
   <ProtectionStart>2018-10-01</ProtectionStart>
@@ -151,7 +152,7 @@ ORE's catalogue shows a trade with an 80 percent participation rate:
     ...
   </Underlying>
 </RiskParticipationAgreementData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/rpa.tex][rpa.tex]],
 listing =RiskParticipationAgreement Data= (underlying abbreviated).

@@ -24,7 +24,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Composite Trade |
 | Short name              | Composite Trade |
 | ORE Studio product code | =CompositeTrade= |
-| Asset class             | =composite= |
+| Asset class             | inherited from the component subtrades |
+| Family                  | Container |
 | ORE trade data node     | =CompositeTradeData= |
 | ORE documentation       | =compositetrade.tex= |
 
@@ -143,7 +144,7 @@ engine.
 ORE's catalogue shows a composite with two component trades and a
 sum notional:
 
-#+begin_example
+#+begin_src xml
 <CompositeTradeData>
   <Currency>USD</Currency>
   <NotionalCalculation>Sum</NotionalCalculation>
@@ -156,7 +157,7 @@ sum notional:
     </SubTrade>
   </Components>
 </CompositeTradeData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/compositetrade.tex][compositetrade.tex]],
 listing =Composite trade data=. The catalogue also shows the

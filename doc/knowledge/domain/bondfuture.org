@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Bond Future |
 | ORE Studio product code | =BondFuture= |
 | Asset class             | =bond= |
+| Family                  | Future |
 | ORE trade data node     | =BondFutureData= |
 | ORE documentation       | =bondfuture.tex= |
 
@@ -137,13 +138,13 @@ and run sensitivities on the ORE engine.
 ORE's catalogue shows a bond future trade on a 10-year US Treasury
 note contract:
 
-#+begin_example
+#+begin_src xml
 <BondFutureData>
   <ContractName>with_ref</ContractName>
   <ContractNotional>1000000</ContractNotional>
   <LongShort>L</LongShort>
 </BondFutureData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondfuture.tex][bondfuture.tex]],
 listing =BondFutureData=. The example contract =TYU25= carries the

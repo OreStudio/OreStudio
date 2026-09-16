@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity Variance Swap |
 | ORE Studio product code | =CommodityVarianceSwap= |
 | Asset class             | =commodity= |
+| Family                  | Swap |
 | ORE trade data node     | =CommodityVarianceSwapData= |
 | ORE documentation       | =commodityvarianceswap.tex= |
 

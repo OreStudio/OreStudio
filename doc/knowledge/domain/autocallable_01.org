@@ -25,7 +25,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Autocallable Type 01 |
 | Short name              | Autocallable Type 01 |
 | ORE Studio product code | =ScriptedTrade= |
-| Asset class             | =scripted= |
+| Asset class             | determined per trade by the underlyings |
+| Family                  | Option |
 | ORE trade data node     | =ScriptedTradeData= |
 | ORE documentation       | =autocallable_01.tex= |
 
@@ -159,7 +160,7 @@ of 12000000 EUR, a determination level of 11.0 and a trigger level of
 9.8. The accumulation factors grow from 0.344 to 1.544 across the
 five annual fixings:
 
-#+begin_example
+#+begin_src xml
 <Autocallable01Data>
   <NotionalAmount>12000000</NotionalAmount>
   <DeterminationLevel>11.0</DeterminationLevel>
@@ -205,7 +206,7 @@ five annual fixings:
   </AccumulationFactors>
   <Cap>1.0</Cap>
 </Autocallable01Data>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/autocallable_01.tex][autocallable_01.tex]],
 listing =Autocallable Type 01 data=. The settlement dates follow

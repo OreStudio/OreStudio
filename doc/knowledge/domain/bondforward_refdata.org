@@ -27,6 +27,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Bond Forward (Reference Data) |
 | ORE Studio product code | =ForwardBond= |
 | Asset class             | =bond= |
+| Family                  | Forward |
 | ORE trade data node     | =ForwardBondData= |
 | ORE documentation       | =bondForward_refdata.tex= |
 
@@ -146,7 +147,7 @@ engine.
 ORE's catalogue shows a long, physically settled forward bond with a
 premium, on a bond from reference data:
 
-#+begin_example
+#+begin_src xml
 <ForwardBondData>
   <BondData>
     <SecurityId>ISIN:XS1234567890</SecurityId>
@@ -165,7 +166,7 @@ premium, on a bond from reference data:
   </PremiumData>
   <LongInForward>true</LongInForward>
 </ForwardBondData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondForward_refdata.tex][bondForward_refdata.tex]],
 listing =Forward Bond Data=. The source spells the settlement value

@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity Swap |
 | ORE Studio product code | =CommoditySwap= |
 | Asset class             | =commodity= |
+| Family                  | Swap |
 | ORE trade data node     | =CommoditySwapData= |
 | ORE documentation       | =commodityswap.tex= |
 
@@ -124,7 +125,7 @@ and run sensitivities on the ORE engine.
 
 ORE's catalogue shows the trade with its two legs:
 
-#+begin_example
+#+begin_src xml
 <Trade id="...">
   <TradeType>CommoditySwap</TradeType>
   <Envelope>
@@ -142,7 +143,7 @@ ORE's catalogue shows the trade with its two legs:
     <NettingPrecision>2</NettingPrecision>
   </SwapData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswap.tex][commodityswap.tex]],
 listing =Commodity Swap= (leg detail abbreviated).

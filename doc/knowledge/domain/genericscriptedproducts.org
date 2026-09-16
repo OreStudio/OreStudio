@@ -26,7 +26,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Generic Scripted Products |
 | Short name              | Generic Scripted Products |
 | ORE Studio product code | =ScriptedTrade= |
-| Asset class             | =scripted= |
+| Asset class             | determined per trade by the underlyings |
+| Family                  | none; see below |
 | ORE trade data node     | =ScriptedTradeData= |
 | ORE documentation       | =genericscriptedproducts.tex= |
 

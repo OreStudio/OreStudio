@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Forward Bond |
 | ORE Studio product code | =ForwardBond= |
 | Asset class             | =bond= |
+| Family                  | Forward |
 | ORE trade data node     | =ForwardBondData= |
 | ORE documentation       | =forwardbond.tex= |
 
@@ -185,7 +186,7 @@ ORE's catalogue shows a long, physically settled forward bond with a
 premium. The example names a benchmark compounding curve and a
 settlement amount of one million:
 
-#+begin_example
+#+begin_src xml
 <ForwardBondData>
   <BondData>
     ...
@@ -204,7 +205,7 @@ settlement amount of one million:
   </PremiumData>
   <LongInForward>true</LongInForward>
 </ForwardBondData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/forwardbond.tex][forwardbond.tex]],
 listing =Forward Bond Data=. The source spells the settlement value

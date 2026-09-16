@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | FX KIKO Barrier Option |
 | ORE Studio product code | =FxKIKOBarrierOption= |
 | Asset class             | =fx= |
+| Family                  | Option |
 | ORE trade data node     | =FxKIKOBarrierOptionData= |
 | ORE documentation       | =fx_kikobarrieroption.tex= |
 
@@ -118,7 +119,7 @@ engine.
 ORE's catalogue shows a long European call with an up-and-in and a
 down-and-out barrier:
 
-#+begin_example
+#+begin_src xml
 <FxKIKOBarrierOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -152,7 +153,7 @@ down-and-out barrier:
   <SoldCurrency>USD</SoldCurrency>
   <SoldAmount>1100000</SoldAmount>
 </FxKIKOBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_kikobarrieroption.tex][fx_kikobarrieroption.tex]],
 listing =FX KIKO Barrier Option data= (optional elements omitted).

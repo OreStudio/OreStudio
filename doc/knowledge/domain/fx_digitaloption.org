@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | FX Digital Option |
 | ORE Studio product code | =FxDigitalOption= |
 | Asset class             | =fx= |
+| Family                  | Option |
 | ORE trade data node     | =FxDigitalOptionData= |
 | ORE documentation       | =fx_digitaloption.tex= |
 
@@ -109,7 +110,7 @@ digital options to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a long European digital call:
 
-#+begin_example
+#+begin_src xml
 <FxDigitalOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -126,7 +127,7 @@ ORE's catalogue shows a long European digital call:
   <ForeignCurrency>EUR</ForeignCurrency>
   <DomesticCurrency>USD</DomesticCurrency>
 </FxDigitalOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitaloption.tex][fx_digitaloption.tex]],
 listing =FX Digital Option data= (optional elements omitted).

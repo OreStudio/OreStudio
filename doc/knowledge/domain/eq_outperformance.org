@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Outperformance Option |
 | ORE Studio product code | =EquityOutperformanceOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityOutperformanceOptionData= |
 | ORE documentation       | =eq_outperformance.tex= |
 
@@ -175,7 +176,7 @@ outperformance of the S&P 500 over the NASDAQ 100, with a strike
 return of 1% and a knock-in and knock-out window on the second
 index:
 
-#+begin_example
+#+begin_src xml
 <EquityOutperformanceOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -203,7 +204,7 @@ index:
   <KnockInPrice>12500</KnockInPrice>
   <KnockOutPrice>14000</KnockOutPrice>
 </EquityOutperformanceOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_outperformance.tex][eq_outperformance.tex]],
 listing =Equity Outperformance Option Data=.

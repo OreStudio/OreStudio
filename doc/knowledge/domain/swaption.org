@@ -24,7 +24,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Swaption |
 | Short name              | Swaption |
 | ORE Studio product code | =Swaption= |
-| Asset class             | =swap= |
+| Asset class             | =rates= |
+| Family                  | Swaption |
 | ORE trade data node     | =SwaptionData= |
 | ORE documentation       | =swaption.tex= |
 
@@ -162,7 +163,7 @@ and run sensitivities on the ORE engine.
 ORE's catalogue shows a long physically settled European receiver
 swaption on sterling:
 
-#+begin_example
+#+begin_src xml
 <SwaptionData>
     <OptionData>
         <LongShort>Long</LongShort>
@@ -193,7 +194,7 @@ swaption on sterling:
         ...
     </LegData>
 </SwaptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/swaption.tex][swaption.tex]],
 listing =Swaption data=.

@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Bond Option |
 | ORE Studio product code | =BondOption= |
 | Asset class             | =bond= |
+| Family                  | Option |
 | ORE trade data node     | =BondOptionData= |
 | ORE documentation       | =bondoption.tex= |
 
@@ -135,7 +136,7 @@ them and run sensitivities on the ORE engine.
 ORE's catalogue shows a European bond option on a bond with a strike
 in EUR and a dirty price convention:
 
-#+begin_example
+#+begin_src xml
 <Trade id="...">
   <TradeType>BondOption</TradeType>
   <Envelope>
@@ -160,7 +161,7 @@ in EUR and a dirty price convention:
     </BondData>
   </BondOptionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondoption.tex][bondoption.tex]],
 listing =Bond Option data=. The source closes the =BondData= element

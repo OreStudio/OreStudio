@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity APO |
 | ORE Studio product code | =CommodityAveragePriceOption= |
 | Asset class             | =commodity= |
+| Family                  | Option |
 | ORE trade data node     | =CommodityAveragePriceOptionData= |
 | ORE documentation       | =commodityapo.tex= |
 
@@ -113,7 +114,7 @@ APOs to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a short call with an up-and-in barrier:
 
-#+begin_example
+#+begin_src xml
 <Trade id="...">
   <TradeType>CommodityAveragePriceOption</TradeType>
   <Envelope>
@@ -151,7 +152,7 @@ ORE's catalogue shows a short call with an up-and-in barrier:
     <EndDate>2023-01-31</EndDate>
   </CommodityAveragePriceOptionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityapo.tex][commodityapo.tex]],
 listing =Commodity Average Price Option= (optional elements omitted).

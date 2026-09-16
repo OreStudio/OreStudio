@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Window Barrier Option |
 | ORE Studio product code | =FxWindowBarrierOption=, =EquityWindowBarrierOption=, =CommodityWindowBarrierOption= |
 | Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Option |
 | ORE trade data node     | =FxWindowBarrierOptionData=, =EquityWindowBarrierOptionData= |
 | ORE documentation       | =window_barrieroption.tex= |
 
@@ -179,7 +180,7 @@ ORE's catalogue shows a long FX window barrier call on EUR-USD with a
 1.1 strike and an up-and-out barrier at 1.3, monitored during 2023
 and expiring in 2026:
 
-#+begin_example
+#+begin_src xml
 <Trade id="FX_Window_BarrierOption">
   <TradeType>FxWindowBarrierOption</TradeType>
   <Envelope>
@@ -222,7 +223,7 @@ and expiring in 2026:
     </BarrierData>
   </FxWindowBarrierOptionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/window_barrieroption.tex][window_barrieroption.tex]],
 the example FX window barrier option trade. The catalogue shows the

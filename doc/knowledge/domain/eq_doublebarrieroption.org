@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Double Barrier Option |
 | ORE Studio product code | =EquityDoubleBarrierOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityDoubleBarrierOptionData= |
 | ORE documentation       | =eq_doublebarrieroption.tex= |
 
@@ -139,7 +140,7 @@ engine.
 ORE's catalogue shows a knock-out call on the S&P 500 index inside a
 corridor from 3000 to 3500:
 
-#+begin_example
+#+begin_src xml
 <EquityDoubleBarrierOptionData>
     <OptionData>
         <LongShort>Long</LongShort>
@@ -170,7 +171,7 @@ corridor from 3000 to 3500:
     <Calendar>US-NYSE</Calendar>
     <EQIndex>EQ-RIC:.SPX</EQIndex>
 </EquityDoubleBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/eq_doublebarrieroption.tex][eq_doublebarrieroption.tex]],
 listing =Equity Double Barrier Option data=.

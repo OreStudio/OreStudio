@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Bond Position |
 | ORE Studio product code | =BondPosition= |
 | Asset class             | =bond= |
+| Family                  | Position |
 | ORE trade data node     | none; the payload is not a per-type node |
 | ORE documentation       | =bondposition.tex= |
 
@@ -117,7 +118,7 @@ to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a basket of two US bonds, half each, with small
 bid-ask adjustments:
 
-#+begin_example
+#+begin_src xml
 <Trade id="BondPosition">
   <TradeType>BondPosition</TradeType>
   <Envelope>...</Envelope>
@@ -140,7 +141,7 @@ bid-ask adjustments:
     </Underlying>
   </BondBasketData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondposition.tex][bondposition.tex]],
 listing =Bond position data=.

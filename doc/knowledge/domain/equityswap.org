@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Swap |
 | ORE Studio product code | =EquitySwap= |
 | Asset class             | =equity= |
+| Family                  | Swap |
 | ORE trade data node     | =EquitySwapData= |
 | ORE documentation       | =equityswap.tex= |
 
@@ -163,7 +164,7 @@ run sensitivities on the ORE engine.
 ORE's catalogue shows an equity swap with a resettable notional and FX
 indexing. The funding leg derives its notional from the equity leg:
 
-#+begin_example
+#+begin_src xml
 <EquitySwapData>
   <LegData>
     <LegType>Floating</LegType>
@@ -197,7 +198,7 @@ indexing. The funding leg derives its notional from the equity leg:
       ...
   </LegData>
 </EquitySwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityswap.tex][equityswap.tex]],
 listing =Equity Swap Data with notional reset and FX indexing=.

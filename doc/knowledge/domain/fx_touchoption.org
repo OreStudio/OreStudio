@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | FX Touch Option |
 | ORE Studio product code | =FxTouchOption= |
 | Asset class             | =fx= |
+| Family                  | Option |
 | ORE trade data node     | =FxTouchOptionData= |
 | ORE documentation       | =fx_touchoption.tex= |
 
@@ -123,7 +124,7 @@ the ORE engine.
 
 ORE's catalogue shows a long no-touch on dollar-yen:
 
-#+begin_example
+#+begin_src xml
 <FxTouchOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -147,7 +148,7 @@ ORE's catalogue shows a long no-touch on dollar-yen:
   <FXIndex>FX-TR20H-USD-JPY</FXIndex>
   <Calendar>NYB,TKB</Calendar>
 </FxTouchOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_touchoption.tex][fx_touchoption.tex]],
 listing =FX Touch Option data= (optional elements omitted).

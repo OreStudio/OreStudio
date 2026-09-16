@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Bond TRS |
 | ORE Studio product code | =BondTRS= |
 | Asset class             | =bond= |
+| Family                  | Swap |
 | ORE trade data node     | =BondTRSData= |
 | ORE documentation       | =bondTotalReturnSwap.tex= |
 
@@ -155,7 +156,7 @@ sensitivities on the ORE engine.
 ORE's catalogue shows a composite bond TRS: a New Zealand bond pays
 its return in USD against a floating USD funding leg:
 
-#+begin_example
+#+begin_src xml
 <BondTRSData>
   <BondData>
     <SecurityId>ISIN:NZIIBDT005C5</SecurityId>
@@ -199,7 +200,7 @@ its return in USD against a floating USD funding leg:
     </LegData>
   </FundingData>
 </BondTRSData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bondTotalReturnSwap.tex][bondTotalReturnSwap.tex]],
 listing =Bond Total Return Swap Data with indexed funding leg=.

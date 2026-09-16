@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Collateral Bond Obligation |
 | ORE Studio product code | =CBO= |
 | Asset class             | =credit= |
+| Family                  | none; see below |
 | ORE trade data node     | =CBOData= |
 | ORE documentation       | =cbodata.tex= |
 
@@ -235,7 +236,7 @@ trade invests 4 million in a junior note of the =Constellation=
 structure, with a senior fee of 1 percent, a subordinated fee of 2
 percent and an equity kicker of 0.25:
 
-#+begin_example
+#+begin_src xml
 <CBOData>
   <CBOInvestment>
     <TrancheName>JuniorNote</TrancheName>
@@ -262,7 +263,7 @@ percent and an equity kicker of 0.25:
     </ScheduleData>
   </CBOStructure>
 </CBOData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/cbodata.tex][cbodata.tex]],
 listing =CBO Data=. The source elides the contents of the three

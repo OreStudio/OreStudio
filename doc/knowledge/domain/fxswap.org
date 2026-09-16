@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | FX Swap |
 | ORE Studio product code | =FxSwap= |
 | Asset class             | =fx= |
+| Family                  | Swap |
 | ORE trade data node     | =FxSwapData= |
 | ORE documentation       | =fxswap.tex= |
 
@@ -114,7 +115,7 @@ swaps to value them and run sensitivities on the ORE engine.
 
 ORE's catalogue shows a euro-dollar swap:
 
-#+begin_example
+#+begin_src xml
 <FxSwapData>
   <NearDate>2018-09-01</NearDate>
   <NearBoughtCurrency>EUR</NearBoughtCurrency>
@@ -126,7 +127,7 @@ ORE's catalogue shows a euro-dollar swap:
   <FarSoldAmount>1000000</FarSoldAmount>
   <Settlement>Cash</Settlement>
 </FxSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxswap.tex][fxswap.tex]],
 listing =FX Swap data=.

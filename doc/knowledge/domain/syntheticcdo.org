@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Synthetic CDO |
 | ORE Studio product code | =SyntheticCDO= |
 | Asset class             | =credit= |
+| Family                  | none; see below |
 | ORE trade data node     | none; the payload is not a per-type node |
 | ORE documentation       | =syntheticcdo.tex= |
 
@@ -117,7 +118,7 @@ sensitivities on the ORE engine.
 
 ORE's catalogue shows a mezzanine tranche of an index:
 
-#+begin_example
+#+begin_src xml
 <CdoData>
   <Qualifier>RED:2I65BRHH6</Qualifier>
   <AttachmentPoint>0.12</AttachmentPoint>
@@ -136,7 +137,7 @@ ORE's catalogue shows a mezzanine tranche of an index:
     ...
   </BasketData>
 </CdoData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/syntheticcdo.tex][syntheticcdo.tex]],
 listing =CDO Data= (leg and basket abbreviated).

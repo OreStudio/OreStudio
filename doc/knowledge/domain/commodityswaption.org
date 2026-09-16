@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity Swaption |
 | ORE Studio product code | =CommoditySwaption= |
 | Asset class             | =commodity= |
+| Family                  | Swaption |
 | ORE trade data node     | =CommoditySwaptionData= |
 | ORE documentation       | =commodityswaption.tex= |
 
@@ -118,7 +119,7 @@ on the ORE engine.
 
 ORE's catalogue shows a long European swaption:
 
-#+begin_example
+#+begin_src xml
 <Trade id="...">
   <TradeType>CommoditySwaption</TradeType>
   <Envelope>
@@ -143,7 +144,7 @@ ORE's catalogue shows a long European swaption:
     </LegData>
   </CommoditySwaptionData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityswaption.tex][commodityswaption.tex]],
 listing =Commodity swaption= (leg detail abbreviated).

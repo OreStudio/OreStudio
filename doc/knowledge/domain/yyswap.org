@@ -24,7 +24,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Year-on-Year Inflation Swap |
 | Short name              | Year-on-Year Inflation Swap |
 | ORE Studio product code | none; not a product in its own right |
-| Asset class             | — |
+| Asset class             | =inflation= |
+| Family                  | Swap |
 | ORE trade data node     | =YYLegData= on a =Swap= |
 | ORE documentation       | =yyswap.tex= |
 
@@ -112,7 +113,7 @@ sensitivities on the ORE engine.
 ORE's catalogue shows the structure with the =Swap= trade type. The
 fixed-rate leg is abbreviated.
 
-#+begin_example
+#+begin_src xml
 <SwapData>
   <LegData>
     <LegType>Floating</LegType>
@@ -128,7 +129,7 @@ fixed-rate leg is abbreviated.
     </YYLegData>
   </LegData>
 </SwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/yyswap.tex][yyswap.tex]],
 listing =Year on Year Swap Data= (using Swap trade type).

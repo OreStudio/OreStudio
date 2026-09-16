@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Callable Bond |
 | ORE Studio product code | =CallableBond= |
 | Asset class             | =bond= |
+| Family                  | Security |
 | ORE trade data node     | =CallableBondData= |
 | ORE documentation       | =callablebond.tex= |
 
@@ -124,7 +125,7 @@ callable bonds to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a callable bond trade whose terms are set up in
 reference data:
 
-#+begin_example
+#+begin_src xml
 <Trade id="CallableBond">
   <TradeType>CallableBond</TradeType>
   <Envelope>...</Envelope>
@@ -135,7 +136,7 @@ reference data:
     </BondData>
   </CallableBondData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/callablebond.tex][callablebond.tex]],
 listing =Callable bond set up using reference data=. The source

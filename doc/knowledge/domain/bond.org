@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Bond |
 | ORE Studio product code | =Bond= |
 | Asset class             | =bond= |
+| Family                  | Security |
 | ORE trade data node     | =BondData= |
 | ORE documentation       | =bond.tex= |
 
@@ -130,13 +131,13 @@ and rate sensitivities on the ORE engine.
 
 ORE's own catalogue shows the short form with reference data:
 
-#+begin_example
+#+begin_src xml
 <BondData>
   <SecurityId>ISIN:XS0982710740</SecurityId>
   <BondNotional>100000000.0</BondNotional>
   <CreditRisk>true</CreditRisk>
 </BondData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/bond.tex][bond.tex]],
 listing =BondData= (reference-data form).

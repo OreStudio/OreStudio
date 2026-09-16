@@ -25,7 +25,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Cap/Floor |
 | Short name              | Cap/Floor |
 | ORE Studio product code | =CapFloor= |
-| Asset class             | =swap= |
+| Asset class             | =rates= |
+| Family                  | Option |
 | ORE trade data node     | =CapFloorData= |
 | ORE documentation       | =capfloor.tex= |
 
@@ -145,7 +146,7 @@ engine.
 ORE's catalogue shows a long cap on a floating leg with a 5 percent
 cap rate and an upfront premium:
 
-#+begin_example
+#+begin_src xml
 <CapFloorData>
   <LongShort>Long</LongShort>
   <LegData>
@@ -164,7 +165,7 @@ cap rate and an upfront premium:
     </Premium>
   </Premiums>
 </CapFloorData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/capfloor.tex][capfloor.tex]],
 listing =Cap/Floor data=.

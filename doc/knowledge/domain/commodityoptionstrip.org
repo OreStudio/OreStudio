@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity Option Strip |
 | ORE Studio product code | =CommodityOptionStrip= |
 | Asset class             | =commodity= |
+| Family                  | Option |
 | ORE trade data node     | =CommodityOptionStripData= |
 | ORE documentation       | =commodityoptionstrip.tex= |
 
@@ -120,7 +121,7 @@ sensitivities on the ORE engine.
 
 ORE's catalogue shows a strip with a short call and a long put:
 
-#+begin_example
+#+begin_src xml
 <Trade id="...">
   <TradeType>CommodityOptionStrip</TradeType>
   <Envelope>
@@ -161,7 +162,7 @@ ORE's catalogue shows a strip with a short call and a long put:
     <Settlement>Cash</Settlement>
   </CommodityOptionStripData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityoptionstrip.tex][commodityoptionstrip.tex]],
 listing =Commodity Option Strip= (optional elements omitted).

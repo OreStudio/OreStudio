@@ -25,7 +25,8 @@ trade type catalogue's, which is what the database enforces.
 | Full name               | Swap |
 | Short name              | Swap |
 | ORE Studio product code | =Swap= |
-| Asset class             | =swap= |
+| Asset class             | =rates= |
+| Family                  | Swap |
 | ORE trade data node     | =SwapData= |
 | ORE documentation       | =swap.tex= |
 
@@ -132,7 +133,7 @@ Studio keeps for its round-trip tests. The fixed leg is shown. The
 floating leg follows in the same file. Source:
 =assets/test_data/golden_dataset/Products/Example_Trades/IR_Swap_Vanilla.xml=.
 
-#+begin_example
+#+begin_src xml
 <Portfolio>
   <Trade id="Swap_20y">
     <TradeType>Swap</TradeType>
@@ -161,7 +162,7 @@ floating leg follows in the same file. Source:
           </Rules>
         </ScheduleData>
       </LegData>
-#+end_example
+#+end_src
 
 Native ORE example portfolios with swaps sit under
 =external/ore/examples/=. The Academy and AmericanMonteCarlo

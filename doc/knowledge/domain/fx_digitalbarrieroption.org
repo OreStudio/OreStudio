@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | FX Digital Barrier Option |
 | ORE Studio product code | =FxDigitalBarrierOption= |
 | Asset class             | =fx= |
+| Family                  | Option |
 | ORE trade data node     | =FxDigitalBarrierOptionData= |
 | ORE documentation       | =fx_digitalbarrieroption.tex= |
 
@@ -132,7 +133,7 @@ engine.
 ORE's catalogue shows a long European digital call with a down-and-in
 barrier:
 
-#+begin_example
+#+begin_src xml
 <FxDigitalBarrierOptionData>
   <OptionData>
     <LongShort>Long</LongShort>
@@ -158,7 +159,7 @@ barrier:
   <ForeignCurrency>EUR</ForeignCurrency>
   <DomesticCurrency>USD</DomesticCurrency>
 </FxDigitalBarrierOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fx_digitalbarrieroption.tex][fx_digitalbarrieroption.tex]],
 listing =FX Digital Barrier Option data= (optional elements omitted).

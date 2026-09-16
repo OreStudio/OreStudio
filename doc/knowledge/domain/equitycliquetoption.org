@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Cliquet Option |
 | ORE Studio product code | =EquityCliquetOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityCliquetOptionData= |
 | ORE documentation       | =equitycliquetoption.tex= |
 
@@ -139,7 +140,7 @@ engine.
 ORE's catalogue shows a short call cliquet on the S&P 500 index with
 annual resets:
 
-#+begin_example
+#+begin_src xml
 <EquityCliquetOptionData>
     <Underlying>
       <Type>Equity</Type>
@@ -169,7 +170,7 @@ annual resets:
     <PremiumPaymentDate>31-12-2017</PremiumPaymentDate>
     <PremiumCurrency>USD</PremiumCurrency>
 </EquityCliquetOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equitycliquetoption.tex][equitycliquetoption.tex]],
 listing =Cliquet Option data=, intermediate schedule dates elided.

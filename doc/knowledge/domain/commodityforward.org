@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Commodity Forward |
 | ORE Studio product code | =CommodityForward= |
 | Asset class             | =commodity= |
+| Family                  | Forward |
 | ORE trade data node     | =CommodityForwardData= |
 | ORE documentation       | =commodityforward.tex= |
 
@@ -111,7 +112,7 @@ forwards to value them and run sensitivities on the ORE engine.
 ORE's catalogue shows a forward on the LME aluminium three-month
 future:
 
-#+begin_example
+#+begin_src xml
 <CommodityForwardData>
   <Position>Long</Position>
   <Maturity>2029-08-16</Maturity>
@@ -123,7 +124,7 @@ future:
   <FutureExpiryDate>2021-11-16</FutureExpiryDate>
   <PhysicallySettled>true</PhysicallySettled>
 </CommodityForwardData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/commodityforward.tex][commodityforward.tex]],
 listing =CommodityForwardData= for a forward on the LME Aluminium 3M

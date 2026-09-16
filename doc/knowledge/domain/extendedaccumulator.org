@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Extended Accumulator |
 | ORE Studio product code | =FxAccumulator=, =EquityAccumulator=, =CommodityAccumulator= |
 | Asset class             | =commodity=, =equity=, =fx= |
+| Family                  | Forward |
 | ORE trade data node     | =FxAccumulatorData=, =EquityAccumulatorData=, =CommodityAccumulatorData= |
 | ORE documentation       | =extendedaccumulator.tex= |
 
@@ -157,7 +158,7 @@ ORE's catalogue shows a long extended accumulator on EUR-USD. Six
 monthly installments run from September 2019, with the extension
 decision on 25 February 2020:
 
-#+begin_example
+#+begin_src xml
 <Trade id="FxExtendedAccumulatorLong">
   <TradeType>ScriptedTrade</TradeType>
   <Envelope>
@@ -231,7 +232,7 @@ decision on 25 February 2020:
     </ConditionalSettlementDates>
   </ExtendedAccumulatorData>
 </Trade>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/extendedaccumulator.tex][extendedaccumulator.tex]],
 the extended accumulator example trade.

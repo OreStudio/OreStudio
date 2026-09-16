@@ -25,6 +25,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | FX Forward |
 | ORE Studio product code | =FxForward= |
 | Asset class             | =fx= |
+| Family                  | Forward |
 | ORE trade data node     | =FxForwardData= |
 | ORE documentation       | =fxforward.tex= |
 
@@ -130,7 +131,7 @@ and deposits when covered interest parity breaks.
 
 ORE's own catalogue shows the trade data node:
 
-#+begin_example
+#+begin_src xml
 <FxForwardData>
     <ValueDate>2023-04-09</ValueDate>
     <BoughtCurrency>EUR</BoughtCurrency>
@@ -139,7 +140,7 @@ ORE's own catalogue shows the trade data node:
     <SoldAmount>1500000</SoldAmount>
     <Settlement>Physical</Settlement>
 </FxForwardData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/fxforward.tex][fxforward.tex]],
 listing =FX Forward data= (settlement details omitted).

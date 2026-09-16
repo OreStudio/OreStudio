@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | CDS |
 | ORE Studio product code | =CreditDefaultSwap= |
 | Asset class             | =credit= |
+| Family                  | Swap |
 | ORE trade data node     | =CreditDefaultSwapData= |
 | ORE documentation       | =creditdefaultswap.tex= |
 
@@ -129,7 +130,7 @@ value them, run credit sensitivities, and feed XVA on the ORE engine.
 
 ORE's catalogue shows the single-name form with a credit curve:
 
-#+begin_example
+#+begin_src xml
 <CreditDefaultSwapData>
   <IssuerId>CPTY_A</IssuerId>
   <CreditCurveId>RED:008CA0|SNRFOR|USD|MR14</CreditCurveId>
@@ -144,7 +145,7 @@ ORE's catalogue shows the single-name form with a credit curve:
     ...
   </LegData>
 </CreditDefaultSwapData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/creditdefaultswap.tex][creditdefaultswap.tex]],
 listing =CreditDefaultSwap Data= (leg detail abbreviated).

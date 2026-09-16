@@ -26,6 +26,7 @@ trade type catalogue's, which is what the database enforces.
 | Short name              | Equity Futures Option |
 | ORE Studio product code | =EquityFutureOption= |
 | Asset class             | =equity= |
+| Family                  | Option |
 | ORE trade data node     | =EquityFutureOptionData= |
 | ORE documentation       | =equityfuturesoption.tex= |
 
@@ -117,7 +118,7 @@ the ORE engine.
 ORE's catalogue shows an American call whose underlying is the S&P 500
 index, with a future expiry before the option expiry:
 
-#+begin_example
+#+begin_src xml
 <EquityFutureOptionData>
     <OptionData>
          <LongShort>Long</LongShort>
@@ -141,7 +142,7 @@ index, with a future expiry before the option expiry:
     <Quantity>17000</Quantity>
     <FutureExpiryDate>2021-01-29</FutureExpiryDate>
 </EquityFutureOptionData>
-#+end_example
+#+end_src
 
 Source: ORE User Guide, Products catalogue, [[https://github.com/OpenSourceRisk/Engine/blob/master/Docs/UserGuide/tradedata/equityfuturesoption.tex][equityfuturesoption.tex]],
 listing =Equity Future Option data=.

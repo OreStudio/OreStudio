@@ -372,8 +372,33 @@ The build is green for =ores.shell.exe=, =ores.qt.exe=,
 =compass test run -- -R ores.shell= reports 100 per cent passed, 0 failed out
 of 3, in 198.97 seconds.
 
+** Step 8, the drift gates
+
+=check_component_drift.py --component shell= passes on the committed tree:
+"No drift: regenerated output matches the checked-in tree."
+
+That gate is weaker than it looks, and the weakness is worth stating. The run
+reports "Regenerating 1 models for component 'shell'" and writes only
+=projects/ores.shell/CMakeLists.txt=, the composite root. The 23 units are
+not shell models. They are outputs of =ores.trading= entity models, so no
+regeneration of the =shell= component can reach them, and the =trading=
+component is the one this branch forbids.
+
+The gate for the units is therefore a direct one: regenerate each of the 23
+entities from its model at =ores.cpp.shell-command=, then check the tree. The
+run wrote 69 files and left =git status= empty, so every committed unit is
+byte-identical to what the generator produces from the committed model and
+the committed templates. A general form of this check needs its own task,
+because under the current registry no component gate covers an archetype that
+writes into another component's tree.
+
+The live check is the one item still open. It needs the service stack, and
+the shell builds its menus after login, so it cannot run against a bare
+executable.
+
 Acceptance is partly met. Three of the five criteria hold: no submenu is
 registered twice, one call from the REPL host reaches every trading unit, and
-the build and the shell suites are green. The criterion "every trading entity
-the hand-written surface serves has a generated unit" is not met for the 14
-named above. The drift gate and the live check are step 8.
+the build and the shell suites are green. The drift criterion holds for the
+composite root and for the units, by the two runs above. The criterion "every
+trading entity the hand-written surface serves has a generated unit" is not
+met for the 14 named above, and the live check is still open.

@@ -8,7 +8,7 @@
 #+filetags: :data-oriented-trading-model:sprint_25:v0:
 #+owner: marco
 #+branch: feature/document-product-identity-scheme
-#+pr:
+#+pr: 2085
 #+blocked_on:
 #+blocked_since:
 #+created: 2026-09-12
@@ -63,7 +63,7 @@ via its "Verifies task" field.
 
 | PR | Title |
 |----+-------|
-|    |       |
+| [[https://github.com/OreStudio/OreStudio/pull/2085][#2085]] | [doc] Document the product identity scheme and the trade domain |
 
 * Review
 

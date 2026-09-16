@@ -40,7 +40,7 @@ itself require authorisation, and so on without end.
 
 So authorisation sits outside the versioning model. It is a statement
 /about/ a version rather than a change /to/ the trade.
-[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers what does move a version.
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers what does move a version.
 
 The same rule holds for structures. Any change to a component
 increments the version of the structure that contains it, and
@@ -223,6 +223,6 @@ which fields it carries.
 - [[id:33CCB50B-8697-49A1-8761-4DB873A93515][Trading Permissions]] — the standing rules about what may be booked, which this is not.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the trade's own states, which this control does not move.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the steps by which terms are agreed with a counterparty.
-- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what does move a version, and why authorisation does not.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what does move a version, and why authorisation does not.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the controls that guard the same boundary.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

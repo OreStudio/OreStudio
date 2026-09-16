@@ -111,7 +111,7 @@ independent of one another.
   does it move a version, does it require a new confirmation, does it
   change the state.
 
-- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what a
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what a
   change produces. Two versions, because the audit trail and the
   commercial record move at different rates.
 

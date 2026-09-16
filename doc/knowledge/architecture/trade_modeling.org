@@ -304,7 +304,7 @@ or page.
 - [[id:936ACDC4-830B-434E-82E7-A92276869869][Product Family]] — the contract shape a product type takes; aggregation rather than trade definition.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states a trade moves through.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events that create, change or end a trade.
-- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what a change to a trade produces.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what a change to a trade produces.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — what is agreed with the counterparty.
 - [[id:41200F4A-BAC1-4C7A-8998-2EDCC8C8787F][Market Data Requirement]] — what a trade needs to be valued, and a candidate relation against the trade.
 - [[id:886AAFB5-62F3-4AA3-B325-386665AFF926][Positions]] — the aggregate over deals, which has no identity of its own.

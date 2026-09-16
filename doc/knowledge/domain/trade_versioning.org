@@ -1,8 +1,8 @@
 :PROPERTIES:
 :ID: 8BC3A226-6DD8-49C8-959A-F1AAC97A3F97
 :END:
-#+title: Deal Versioning
-#+description: How a change to a deal is recorded over time: the internal and external versions, one activity per version, and the forms an amendment takes.
+#+title: Trade Versioning
+#+description: How a change to a trade is recorded over time: the internal and external versions, the reason every version carries, and the forms an amendment takes.
 #+type: knowledge
 #+level: cross
 #+filetags: :trading:lifecycle:modeling:
@@ -11,18 +11,18 @@
 
 * Summary
 
-A deal is not replaced when it changes. Each change produces a new
+A trade is not replaced when it changes. Each change produces a new
 version, and the history of versions is what the firm can be held to.
 
-A deal carries two version numbers, because two audiences ask different
-questions of it, and they move at different rates. Confirmations depend
-on one of them; [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]] supplies the causes that move either.
+A trade carries two version numbers, because two audiences ask different
+questions of it, and they move at different rates.
+[[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] depend on one of them; [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]] supplies the causes that move either.
 
 * The two-version rule
 
-A deal carries two version numbers.
+A trade carries two version numbers.
 
-- The /internal version/ moves on every recorded change to the deal. It
+- The /internal version/ moves on every recorded change to the trade. It
   is the audit trail. It answers "what did we hold, and when".
 - The /external version/ moves only when the terms the customer has
   agreed to change. It is the commercial record. It answers "what has
@@ -38,10 +38,10 @@ the customer never agreed to and never asked for.
 
 Two consequences are worth stating plainly:
 
-1. Authorisation does not bump either version. Authorisation is our
-   workflow state, not a term of the deal. Treating it as a term would
+1. [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational authorisation]] does not bump either version. It is our
+   workflow state, not a term of the trade. Treating it as a term would
    make the firm issue confirmations for its own internal approvals.
-   Authorisation is metadata on the trade.
+   Operational authorisation is metadata on the trade.
 2. An economic change is normally confirmable, and a non-economic
    change normally is not. The two properties are close, but they are
    not the same property, and the next section separates them.
@@ -53,7 +53,7 @@ of one enumeration, and an amendment sits on all four at once.
 
 | Axis | Values | What it decides |
 |------+--------+-----------------|
-| Economic | Economic / non-economic | Whether the deal must be revalued |
+| Economic | Economic / non-economic | Whether the trade must be revalued |
 | Confirmable | Confirmable / non-confirmable | Whether a new confirmation is issued |
 | Real | Real / null | Whether anything at all feeds downstream |
 | Customer-visible | External version moves / does not move | Whether the customer sees a change |

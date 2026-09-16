@@ -117,7 +117,7 @@ was booked wrongly, which is what makes an error rate measurable
 rather than anecdotal.
 
 Some reasons require escalation, where a head of desk must authorise
-the change rather than the usual approver. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers
+the change rather than the usual approver. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers
 the reason codes themselves.
 
 ** Concurrency is a notification, not a lock

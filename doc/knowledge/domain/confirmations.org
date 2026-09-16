@@ -117,7 +117,7 @@ leaving a reader to infer it from an absent value.
 No other state is terminal either. A confirmed trade returns to
 =unconfirmed= whenever a confirmable amendment moves the external
 version, which is why confirmation is stated as of a version rather
-than once and for all. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers the versions
+than once and for all. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers the versions
 themselves, and [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]] which amendments are confirmable.
 
 When the trade expires or is cancelled this lifecycle simply stops.
@@ -338,7 +338,7 @@ What is missing, and what development should add:
   whose changes this page classifies.
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the other status a trade carries.
 - [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — the internal control that precedes these steps.
-- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — the external version a confirmation is stated as of.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — the external version a confirmation is stated as of.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — which activities require a new confirmation.
 - [[id:3976695F-F526-4C2A-80ED-89B54854CF6D][Trade Blotter]] — the deal actions that produce versions.
 - [[id:BA159E88-74EB-4401-91CC-1DE7DF5AE50A][Temporal Composite Entity Versioning: Target State]] — the versioning

@@ -103,7 +103,7 @@ diagram sits inside =live= and not around both.
 
 *** What blocks a draft
 
-A draft carries a reason saying why it is not live, and the reason
+A draft carries a [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][reason]] saying why it is not live, and the reason
 names who is responsible for unblocking it: waiting for allocation to
 a business, waiting for counterparty details, waiting for input from
 the requestor.
@@ -154,7 +154,7 @@ reason: a confirmable amendment returns a =confirmed= trade to
 =unconfirmed=. Both are agreements about terms that an amendment
 invalidates. [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] covers that side.
 
-What an amendment produces is a version. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers what
+What an amendment produces is a version. [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers what
 a version is and how the internal and external versions move, and
 [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][trade activity]] classifies which amendments are economic, which are
 confirmable, and which are real.
@@ -172,6 +172,25 @@ Unexpire and uncancel correct the record rather than revive an
 agreement, and a trade returning to =live= arrives =unauthorised=. The
 release it previously carried was a decision about a trade that was
 then taken off the book, so it does not survive the return.
+
+** Why fixings and coupon payments are not events here
+
+A contractual event such as a fixing or a coupon payment produces a
+new version of the trade, and so appears in the
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][reason for update]] enumeration, but it is not an event in this
+machine. The test is whether the event changes which state the trade
+is in. A fixing sets a rate on a trade that was =live= and remains
+=live=; a coupon payment discharges an obligation on a trade that
+stays =live= until its last one.
+
+Expiry passes that test and they do not. A contract that has expired
+no longer accrues, no longer resets, and no longer contributes, so
+=live= can no longer describe it.
+
+So the two vocabularies are different by construction. The lifecycle
+enumerates the transitions between states; the reason for update
+enumerates the causes of versions, of which state transitions are only
+one family. [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade activity]] holds the full taxonomy of causes.
 
 ** The substates of live are a flag
 
@@ -230,7 +249,7 @@ state, a point [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][trade classification]]
 - [[id:A9E9D1EF-5879-4488-87C8-BDD914C3B502][Operational Authorisation]] — the control that releases a trade into the book.
 - [[id:785C68A0-DD94-404A-BF16-57814554DA12][Operational Authorisation Queue]] — the screen a trade waits on.
 - [[id:584EC77C-9BA2-4200-9112-FBA1B6A2190D][Trade Activity]] — the events that create, change or end a trade.
-- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what an amendment produces.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what an amendment produces.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — the second status a trade carries.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the two dimensions that decide where confirmation starts.
 - [[id:DCF3C3CD-23E5-4F45-AE9C-CA91CC7F3B08][Trade Status FSM Implementation]] — how the lifecycle is held in the database.

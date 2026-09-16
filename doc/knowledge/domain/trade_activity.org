@@ -51,7 +51,7 @@ even though it is not a change of mind. It corrects an error in the
 original booking terms, so the confirmed terms change, and the customer
 must agree them again.
 
-[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal versioning]] covers what a version is and how the two move.
+[[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade versioning]] covers what a version is and how the two move.
 
 * The activity categories
 
@@ -186,7 +186,7 @@ live.
 * See also
 
 - [[id:B8D4F2A1-9E37-4C6B-A8D5-2F1E0C9B7A3D][Trade Lifecycle]] — the states an activity may move a trade between.
-- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Deal Versioning]] — what a version is, and which activities move which one.
+- [[id:8BC3A226-6DD8-49C8-959A-F1AAC97A3F97][Trade Versioning]] — what a version is, and which activities move which one.
 - [[id:74721BF2-2290-4AA7-8871-E215DA04351F][Confirmations]] — which activities require the counterparty to agree again.
 - [[id:03C12558-69AC-4925-AAE1-85FFF75B10BA][Trade Classification]] — the classification an activity never changes.
 - [[id:7474935C-95D1-3034-B833-83DCD9FB3A09][Knowledge]] — the hub of all knowledge notes.

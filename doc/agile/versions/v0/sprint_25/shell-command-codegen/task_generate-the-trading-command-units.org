@@ -424,9 +424,10 @@ writes into another component's tree.
 
 The round below re-ran both gates over the 22 units and the de-opted model.
 The regeneration wrote the same 66 files and touched nothing else, so the
-units still match their models. The =shell= gate then reported drift on
-exactly the round's own edits and nothing more, which is what it should
-report while those edits are uncommitted.
+units still match their models. Before the round's commit the =shell= gate
+reported drift on exactly the round's own edits and nothing more, which is
+what it should report while those edits sit uncommitted. After the commit it
+reports "No drift: regenerated output matches the checked-in tree."
 
 The live check is the one item still open. It needs the service stack, and
 the shell builds its menus after login, so it cannot run against a bare

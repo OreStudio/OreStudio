@@ -52,6 +52,7 @@ KNOWN_DRIFT_FREE = (
     "iam",
     "iam-cpp",
     "synthetic",
+    "shell",
 )
 
 
